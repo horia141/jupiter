@@ -4,7 +4,6 @@ from notion.client import NotionClient
 import yaml
 
 import command
-import config
 import lockfile
 import schedules
 import schema
@@ -26,7 +25,7 @@ class RemoveArchivedTasks(command.Command):
         parser.add_argument("--period", required=False,  default=[], action="append", help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
-        client = NotionClient(token_v2=config.TOKEN_V2)
+        client = NotionClient(token_v2=user["token_v2"])
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None
 
         with open(args.tasks, "r") as tasks_file:

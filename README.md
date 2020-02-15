@@ -1,1 +1,1 @@
-# Jupiter Goals And Tasks Tracker #
+# The Jupiter Goal Management System #

@@ -7,7 +7,6 @@ from notion.block import TodoBlock
 import yaml
 
 import command
-import config
 import lockfile
 import schedules
 import schema
@@ -47,7 +46,7 @@ class UpsertTasks(command.Command):
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.load(tasks_file)
 
-        client = NotionClient(token_v2=config.TOKEN_V2)
+        client = NotionClient(token_v2=user["token_v2"])
 
         update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, user, tasks)
 

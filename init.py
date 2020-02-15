@@ -4,7 +4,6 @@ from notion.client import NotionClient
 import yaml
 
 import command
-import config
 import lockfile
 import space_utils
 
@@ -36,8 +35,8 @@ class Init(command.Command):
         with open(args.user, "r") as user_file:
             user = yaml.load(user_file)
 
-        client = NotionClient(token_v2=config.TOKEN_V2)
-        space = client.get_space(config.SPACE_ID)
+        client = NotionClient(token_v2=user["token_v2"])
+        space = client.get_space(user["space_id"])
         name = user["name"]
 
         if "root_page_id" in system_lock:

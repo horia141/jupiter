@@ -8,7 +8,6 @@ from notion.client import NotionClient
 import yaml
 
 import command
-import config
 import schema
 import lockfile
 
@@ -35,7 +34,7 @@ class UpsertBigPlans(command.Command):
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.load(tasks_file)
 
-        client = NotionClient(token_v2=config.TOKEN_V2)
+        client = NotionClient(token_v2=user["token_v2"])
 
         upsert_big_plans(client, user, tasks, args.dry_run)
 

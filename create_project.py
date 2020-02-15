@@ -5,7 +5,6 @@ from notion.client import NotionClient
 import yaml
 
 import command
-import config
 import lockfile
 import schema
 import space_utils
@@ -33,9 +32,9 @@ class CreateProject(command.Command):
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.load(tasks_file)
 
-        client = NotionClient(token_v2=config.TOKEN_V2)
+        client = NotionClient(token_v2=user["token_v2"])
 
-        update_project(config.SPACE_ID, args.dry_run, client, user, tasks)
+        update_project(user["space_id"], args.dry_run, client, user, tasks)
 
 def merge_schemas(old_schema, new_schema):
     combined_schema = {}
