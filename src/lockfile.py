@@ -1,6 +1,6 @@
 import yaml
 
-_LOCKFILE_PATH = ".system.lock"
+_LOCKFILE_PATH = "/data/.system.lock"
 
 def get_lock_file():
     with open(_LOCKFILE_PATH) as system_lock_file:
