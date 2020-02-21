@@ -22,20 +22,25 @@ class ArchiveDoneTasks(command.Command):
         return "Archive tasks which are done"
 
     def build_parser(self, parser):
+        parser.add_argument("user", help="The user file")
         parser.add_argument("tasks", help="The tasks file")
         parser.add_argument("--period", required=False,  default=[], action="append", help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
 
-        client = NotionClient(token_v2=user["token_v2"])
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None
+
+        with open(args.user, "r") as user_file:
+            user = yaml.load(user_file)
 
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.load(tasks_file)
 
-        self._archive_done_tasks(period_filter, client, tasks, args.dry_run)
+        client = NotionClient(token_v2=user["token_v2"])
 
-    def _archive_done_tasks(self, period_filter, client, tasks, dry_run):
+        self._archive_done_tasks(period_filter, client, user, tasks, args.dry_run)
+
+    def _archive_done_tasks(self, period_filter, client, user, tasks, dry_run):
 
         system_lock = lockfile.get_lock_file()
         project_lock = system_lock["projects"][tasks["key"]]
