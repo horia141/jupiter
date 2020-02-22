@@ -1,4 +1,4 @@
 notion==0.0.25
-PyYAML==3.13
+PyYAML==5.1
 pendulum==2.0.5
 pytz==2018.7

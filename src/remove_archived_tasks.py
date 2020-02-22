@@ -29,10 +29,10 @@ class RemoveArchivedTasks(command.Command):
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None
 
         with open(args.user, "r") as user_file:
-            user = yaml.load(user_file)
+            user = yaml.safe_load(user_file)
 
         with open(args.tasks, "r") as tasks_file:
-            tasks = yaml.load(tasks_file)
+            tasks = yaml.safe_load(tasks_file)
 
         client = NotionClient(token_v2=user["token_v2"])
         self._remove_archived_tasks(period_filter, client, tasks, args.dry_run)

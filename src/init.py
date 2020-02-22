@@ -33,7 +33,7 @@ class Init(command.Command):
             LOGGER.info("No system lock")
 
         with open(args.user, "r") as user_file:
-            user = yaml.load(user_file)
+            user = yaml.safe_load(user_file)
 
         client = NotionClient(token_v2=user["token_v2"])
         space = client.get_space(user["space_id"])
