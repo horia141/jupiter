@@ -41,7 +41,7 @@ $ docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Buchare
 
 You should now see a folder named `Plans` in your Notion.so space.
 
-![Jupiter Tutorial 1](/assets/jupiter-tutorial-1.png)
+![Jupiter Tutorial 1](assets/jupiter-tutorial-1.png)
 
 Work in Jupiter is organised around projects. These contain an "Inbox", which is where your day-to-day tasks live. Both the ones you create and the ones the system creates. This is essentially a Trello/Jira like board, with some fancier capabilities. Then there are "Big Plans", which are longer-term projects, usually taking 1-6 months. They're made up of tasks too, and these tasks will appear in the Inbox too. There's more to say here, but as always, check the docs.
 
@@ -77,7 +77,7 @@ $ docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Buchare
 
 This will create a bunch of structures in Notion under your plan, looking like so:
 
-![Jupiter Tutorial 2](/assets/jupiter-tutorial-2.png)
+![Jupiter Tutorial 2](assets/jupiter-tutorial-2.png)
 
 Finally, run the `upsert-tasks` command to actually create some of the recurring tasks:
 
@@ -88,7 +88,7 @@ $ docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Buchare
 
 This will leave the inbox looking like:
 
-![Jupiter Tutorial 3](/assets/jupiter-tutorial-3.png)
+![Jupiter Tutorial 3](assets/jupiter-tutorial-3.png)
 
 There's a bunch more to explore, like big plans, various recurring options, vacations, task archival and removal, but head on over to the [docs](https://github.com/horia141/jupiter/tree/master/docs) for those.
 
