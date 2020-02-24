@@ -1,4 +1,8 @@
 docker-build:
 	docker build -t jupiter .
 
-.PHONY: docker-build
+docker-push:
+	docker tag jupiter horia141/jupiter:latest
+	docker push horia141/jupiter:latest
+
+.PHONY: docker-build docker-push

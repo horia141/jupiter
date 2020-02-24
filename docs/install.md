@@ -1,5 +1,20 @@
 There's just one way of installing jupiter right now, via GitHub, but more will come.
 
+# Docker
+
+You need to make sure you have a recent Docker installed. After that it's straightforward:
+
+```bash
+$ docker pull horia141/jupiter:latest
+```
+
+This will get you the latest version of the code. After this you can:
+
+```bash
+$ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
+$ docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest horia141/jupiter:latest upsert-tasks /data/user.yaml /data/tasks-work.yaml
+```
+
 # GitHub
 
 You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.6. Docker is also useful to have on board.
@@ -35,7 +50,7 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt
 ```
 
-Instead of running the Docker image, you can directly run the scripts, like so:
+Now, instead of running the Docker image, you can directly run the scripts, like so:
 
 ```bash
 $ cd ~/my-jupier-work-dir
