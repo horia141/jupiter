@@ -19,7 +19,8 @@ name: "Plans"
 vacations:
   - start: 2020-02-10
 
-    end: 2020-02-20```
+    end: 2020-02-20
+```
 
 `jupiter init` is idempotent, and is a good way to update workspaces as newer versions of the tool appear.
 
