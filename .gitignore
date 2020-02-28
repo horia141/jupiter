@@ -1,2 +1,4 @@
 __pycache__/
 .system.lock
+.idea
+.DS_Store
