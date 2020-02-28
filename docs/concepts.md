@@ -102,15 +102,9 @@ Here’s a sneak peak at them:
 ![Inbox calendar](assets/concepts-inbox-calendar.png)
 
 The inbox can get cluttered with time as you finish more and more tasks. The filtered views help a bit, but due to limitations in how Jupiter interacts with Notion, after some point there are performance issues. Some things you can do to do garbage collection is running:
-Task archival via `jupiter archive-done-tasks {user} {project}`. This operation simply changes any tasks with the “Not Done” or “Done” status to the “Archived” status, which essentially makes them invisible.
-Task removal via `jupiter remove-archived-tasks {user} {project}`. This operation actually removes the tasks with the “Archived” status from Notion. They’ll be available in the Notion trash, but quite hard to recover. Note - this will be improved in the future.
+* Task archival via `jupiter archive-done-tasks {user} {project}`. This operation simply changes any tasks with the “Not Done” or “Done” status to the “Archived” status, which essentially makes them invisible.
+* Task removal via `jupiter remove-archived-tasks {user} {project}`. This operation actually removes the tasks with the “Archived” status from Notion. They’ll be available in the Notion trash, but quite hard to recover. Note - this will be improved in the future.
 
 # Big Plans
 
 # Recurring Tasks
-
-Each project has big plans, recurring tasks, and the inbox.
-
-Finally there are tasks.
-
-Going back to the workspace level there are also vacations.
