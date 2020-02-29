@@ -1,12 +1,11 @@
 # Intro
 
 Jupiter is a tool for _life planning_. It is _opinionated_ in how it approaches
-this problem. The goal of this page is to document Jupiter's conceptual model,
+this problem. The goal of this page is to document Jupiter's conceptual model
 and how life planning is mapped to it.
 
 There will be references made to the current implementation. But the concepts
 are _separate_ from it, and could just as easily be implemented via pen & paper.
-
 
 # Overview
 
@@ -31,7 +30,7 @@ We’ll get there _sometime_ too, but for the sake of brevity it’s easier this
 # Workspace
 
 All the work for life planning takes place in a _workspace_. When you use
-`jupiter init` in a local directory you’re starting up your workspace. The local
+`jupiter init` in a local directory, you’re starting up your workspace. The local
 directory and its files, the Notion.so pages created, etc. are all part of the
 workspace.
 
@@ -258,3 +257,185 @@ columns.
 ![Big plans image](assets/concepts-big-plan-page.png)
 
 # Recurring Tasks
+
+A recurring task is some periodic and atomic unit of work. Recurring tasks live in the
+"project file", but they're instantiated as regular tasks in the "inbox". A recurring
+task is ideal to model work which needs to be done periodically, like a chore or a habit.
+
+For example, you can have a recurring task like "Clean out AC filters every week", or
+"Pay home insurance every month", or "Walk more than 10000 steps every day".
+
+Recurring tasks have a _period_ and a _period interval_. The former is set via the `period`
+property and the latter is derived uniquely from this. The period can be one of:
+* _Daily_: a task which needs to happen once a day. In a year there will be 365 or 366
+  instances of such a task, and the period interval for each one will be each day. The
+  intervals are numbered from 1 to 365.
+* _Weekly_: a task which needs to happen once a week. In a year there will be 52
+  instances of such a task, and the period interval for each one will be the corresponding
+  week. The intervals are numbered from 1 to 52.
+* _Monthly_: a task which needs to happen once a month. In a year there will be 12
+  instances of such a task, and the period interval for each one will be the corresponding
+  month. The intervals are numbered from 1 to 12.
+* _Quarterly_: a task which needs to happen once a quarter (group of three months). In a
+  year there will be 4 instances of such a task, and the period interval for each one will
+  be a group of three consecutive months (Jan/Feb/Mar, Apr/May/Jun, Jul/Aug/Sep, and Oct/Nov/Dec). The intervals are numbered from 1 to 4.
+* _Yearly_: a task which needs to happen once a year. In a year there will be 1 instance
+  of such a task, and the period interval for it will be the full year. The intervals
+  are numbered by the year.
+
+Notice that the smallest period is the `daily` one, with a period interval of one day. In
+general, for a given period interval there can be only one instantiation of a task of that
+period.
+
+In the project file the tasks might looks like:
+
+```yaml
+name: "Engineer 2.0"
+key: engineer-20
+
+groups:
+  knowledge:
+    format: "{name}"
+    tasks:
+      - name: Tech news scanning
+        period: weekly
+        due_at_day: 5
+      - name: Read 10 articles
+        period: weekly
+```
+
+While in the inbox, the instantiated tasks might look like this - notice the "Weekly" and
+"Monthly" labels:
+
+![Inbox with recurring tasks](assets/concepts-inbox-recurring.png)
+
+The instantiated task in the inbox is constructed from the recurring task template, but
+it also changes in the following way:
+* The name contains the period interval for which the task is active. So "Pay home
+  insurance" becomes "Pay home insurance Mar". The formats are "Mar13" for daily periods,
+  "W13" for weekly periods, "Mar" for monthly periods, "Q1" for quarterly periods,
+  and "2020" for yearly periods.
+* The "From Script", "Recurring Period" and "Recurring Timeline" fields are populated. But
+  they are rather implementation details.
+
+Recurring tasks also have a deadline. By default the deadline is the end day of the period
+interval, at midnight. You can override it however to specify, via the `due_at_day` and
+`due_at_time` properties. They work like so:
+* For tasks with daily period, only the `due_at_time` property can be set. For example
+  `due_at_time: "17:00"` will mark a task as due at 5PM in the local timezone, as opposed
+  to 11:59PM in the local timezone.
+* For tasks with weekly and monthly periods, the `due_at_day` and `due_at_time` property
+  can be set. For example `due_at_day: 10` will set the deadline of a monthly task
+  to be the midnight of the 10th day of the month. Adding `due_at_time: "13:00"` will
+  mark it as due at 1PM in the local timezone on the 10th day of the month.
+* For tasks with quarterly and yearly periods, the `due_at_month`, `due_at_day` and
+  `due_at_time` property can be set. For example `due_at_month: 3` will set the deadline
+  of a yearly task to be the midnight of the last day of March. Adding `due_at_day: 10`
+  will mark it as due at midnight of the 10th of March. and adding `due_at_time: "13:00"`
+  will mark it as due at 1PM on the 10th of March.
+
+Recurring tasks have subtasks. This is a neat facility to breakup work into even smaller
+pieces, usually the steps in a multi-step process. The `subtasks` property is used to
+configure these, like so:
+
+```yaml
+groups:
+  learning:
+    format: "{name}"
+    tasks:
+    - name: Tech news scanning
+      period: weekly
+      subtasks:
+      - name: Hacker News
+      - name: r/programming
+```
+
+In Notion an instantiated task might look like this then:
+
+![Instantiated recurring task image](assets/concepts-instantiated-recurring-task.png)
+
+Recurring tasks can be configured to skip certain periods via a skip rule. This is
+specified via the `skip_rule` property, which can be one of:
+* `odd`: skips the odd numbered intervals for the period. More precisely, the day/week/
+  month/quarter number within the year is checked to be odd. For yearly periods, the year
+  itself should be odd.
+* `even`: skips the even numbered intervals for the period. Same rules apply as above.
+* A set of values: skips the intervals within this set. For example, if the property is
+  `skip_rule: [1, 4, 7]` and `period: "weekly"`then the 1st, 4th and 7th weeks of the year
+  are skiped.
+
+Recurring tasks also have a group. Or rather, you need to place the tasks in a group
+as part of the project file format. The group serves just a organisational purpose, but
+isn't (yet) reflected anywhere else. A multi-group project might look like this:
+
+```yaml
+groups:
+  learning:
+    format: "{name}"
+    tasks:
+    - name: Tech news scanning
+      period: weekly
+  blogging:
+    format: "{name}"
+    tasks:
+    - name: Publish one blog article
+      period: monthly
+```
+
+Recurring tasks interact with vacations too. More precisely, if a task's period interval
+is fully contained within a vacation, that task won't be instantiated in the inbox via
+`jupiter upsert-tasks`. For example, if you have a vacation from Monday `2020-02-09` to
+Sunday `2020-02-15`, then all daily and weekly tasks for that week won't be created, but
+all monthly, quarterly and yearly ones will.
+
+A recurring task can be mark as "must do", via the `must_do` property, and that will cause
+it to ignore vacations. For example, paying rent or taking some medicine can't be
+interrupted by a vacation.
+
+Recurring tasks are created via the `jupiter upsert-tasks` command. This has some special
+forms too:
+* `jupiter upsert-tasks {user} {project}` is the standard form and inserts all of the
+  tasks whose period interval includes today. Thus, all daily tasks will be inserted, and
+  all weekly tasks for this week, etc. Of course, if the tasks for this week have already
+  been instantiated, they won't be again.
+* `jupiter upsert-tasks {user} {project} --date=YYYY-MM-DD` does an insert as if the day
+  were the one given by the `date` argument. Useful for creating tasks in the days before
+  the start of a certain week or month.
+* `jupiter upsert-tasks {user} {project} --group=GROUP` does an insert only on the
+  tasks for the particular group given by the `group` parameter.
+* `jupiter upsert-tasks {user} {project} --period=PERIOD` does an insert only on the
+  tasks with a certain period. Useful to speed up inserts when you know you only want
+  new tasks for the next day or week.
+
+The `jupiter upsert-tasks` command is idempotent, as described above. Furthermore it does
+not affect task status, or any extra edits on a particular instance of a task. Only
+archived and removed tasks are regenerated.
+
+## The Project File
+
+The project file is a representation of your recurring tasks. It's a file right now you
+need to manage, and doesn't (yet) have any Notion representation.
+
+It's a `yaml` file which looks like this:
+
+```yaml
+name: "Engineer 2.0"
+key: engineer20
+
+groups:
+  learning:
+    format: "{name}"
+    tasks:
+    - name: Tech news scanning
+      period: weekly
+  blogging:
+    format: "{name}"
+    tasks:
+    - name: Publish one blog article
+      period: monthly
+```
+
+The `name` is self-explanatory and `groups` has been covered above. The `key` field
+is a unique identifier for the project in your workspace. While you can change the name,
+add and remove groups and tasks, you should _never_ change the key. This would result in
+Jupiter not recognising the Notion structures and starting over again with them.
