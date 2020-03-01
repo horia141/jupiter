@@ -5,7 +5,8 @@ docker-build:
 	docker build -t jupiter .
 
 docker-push:
-	docker tag jupiter horia141/jupiter:${VERSION}
-	docker push horia141/jupiter:${VERSION}
+	docker login --username=${DOCKERHUB_USER} --password-stdin
+	docker tag jupiter ${DOCKERHUB_USER}/${BASENAME}:${VERSION}
+	docker push ${DOCKERHUB_USER}/${BASENAME}:${VERSION}
 
 .PHONY: docker-build docker-push
