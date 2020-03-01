@@ -16,6 +16,4 @@ jobs:
      - name: Build the docker image
        run: make docker-build
      - name: Publish the docker image
-       run: |
-         echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login --username ${{ secrets.DOCKERHUB_USER }} --password-stdin
-         make docker-push
+       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | make docker-push
