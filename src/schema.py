@@ -232,7 +232,7 @@ INBOX_KANBAN_FORMAT = {
         "visible": False
     }, {
         "property": "period",
-        "visible": False
+        "visible": True
     }, {
         "property": "timeline",
         "visible": False
@@ -432,7 +432,7 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "visible": False
         }, {
             "property": "period",
-            "visible": False
+            "visible": True
         }, {
             "property": "timeline",
             "visible": False
