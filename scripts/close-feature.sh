@@ -18,6 +18,6 @@ fi
 
 git checkout develop
 git merge --squash ${FEATURE_BRANCH_NAME}
-git commit -a -m "Merged ${FEATURE_BRANCH_NAME} into develop"
-git branch -d ${FEATURE_BRANCH_NAME}
+git commit -a -m "Merged branch ${FEATURE_BRANCH_NAME} into develop"
+git branch -D ${FEATURE_BRANCH_NAME}
 git push origin develop
