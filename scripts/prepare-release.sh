@@ -13,7 +13,7 @@ fi
 
 git pull
 git checkout -b "release/v${RELEASE_VERSION}"
-sed -i "s/VERSION=.*/${RELEASE_VERSION}/g" Config
+cat Config | sed -E "s/VERSION=.+/VERSION=${RELEASE_VERSION}/g" > Config
 cp docs/releases/template.md ${RELEASE_NOTES_PATH}
 sed -i "s/{{release_version}}/${RELEASE_VERSION}/g" ${RELEASE_NOTES_PATH}
 sed -i "s/{{release_date}}/$(date +\"%Y/%m/%d\")/g" ${RELEASE_NOTES_PATH}
