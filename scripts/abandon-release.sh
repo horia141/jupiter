@@ -10,7 +10,7 @@ then
     exit 1
 fi
 
-
 git checkout -- .
+git reset --hard HEAD
 git checkout develop
 git branch -D ${RELEASE_BRANCH}
