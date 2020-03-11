@@ -18,7 +18,7 @@ git commit -a -m "Prepared release version ${RELEASE_VERSION}"
 git checkout master
 git merge --squash ${RELEASE_BRANCH} --strategy recursive --strategy-option theirs
 git commit -a -m "Release version ${RELEASE_VERSION}"
-git tag -a ${RELEASE_VERSION}
+git tag -a ${RELEASE_VERSION} -m "Version ${RELEASE_VERSION}"
 git push --follow-tags origin master
 
 # Merge into develop
