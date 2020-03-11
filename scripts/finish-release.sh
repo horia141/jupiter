@@ -23,7 +23,7 @@ git push --follow-tags origin master
 
 # Merge into develop
 git checkout develop
-git merge master --strategy recursive --strategy-option theirs
+git merge master -m "Merge master with release ${RELEASE_VERSION} back into develop" --strategy recursive --strategy-option theirs
 git push origin develop
 
 # Remove old branch
