@@ -203,7 +203,7 @@ def update_project(space_id, dry_run, client, user_desc, project_desc):
 
     space = client.get_space(space_id)
 
-    system_lock = lockfile.get_lock_file()
+    system_lock = lockfile.load_lock_file()
 
     if key in system_lock["projects"]:
         project_lock = system_lock["projects"][key]

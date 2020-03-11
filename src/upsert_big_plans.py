@@ -51,7 +51,7 @@ def format_name(big_plan_name):
 def upsert_big_plans(client, user, tasks, dry_run):
     key = tasks["key"]
 
-    system_lock = lockfile.get_lock_file()
+    system_lock = lockfile.load_lock_file()
     project_lock = system_lock["projects"][key]
 
     inbox_collection = client.get_block(project_lock["inbox"]["root_page_id"]).collection

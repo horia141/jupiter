@@ -42,7 +42,7 @@ class ArchiveDoneTasks(command.Command):
 
     def _archive_done_tasks(self, period_filter, client, user, tasks, dry_run):
 
-        system_lock = lockfile.get_lock_file()
+        system_lock = lockfile.load_lock_file()
         project_lock = system_lock["projects"][tasks["key"]]
         root_page = client.get_block(project_lock["inbox"]["root_page_id"])
         page = client.get_collection_view(project_lock["inbox"]["database_view_id"], collection=root_page.collection)

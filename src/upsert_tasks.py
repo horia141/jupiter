@@ -137,7 +137,7 @@ def update_notion_group(dry_run, client, page, right_now, period_filter, schedul
 
 def update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, user, tasks):
 
-    system_lock = lockfile.get_lock_file()
+    system_lock = lockfile.load_lock_file()
     project_lock = system_lock["projects"][tasks["key"]]
     root_page = client.get_block(project_lock["inbox"]["root_page_id"])
     # Hack for notion-py. If we don't get all the collection views for a particular page like this one
