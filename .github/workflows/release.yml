@@ -14,6 +14,6 @@ jobs:
     steps:
      - uses: actions/checkout@v2
      - name: Build the docker image
-       run: make docker-build
+       run: ./scripts/docker-build.sh
      - name: Publish the docker image
-       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | make docker-push
+       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-push.sh
