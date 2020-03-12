@@ -1,9 +1,8 @@
 import logging
 
 from notion.client import NotionClient
-import yaml
 
-import command
+import commands.command as command
 import lockfile
 import space_utils
 import storage
@@ -14,7 +13,7 @@ class Init(command.Command):
 
     @staticmethod
     def name():
-        return "init"
+        return "ws-init"
 
     @staticmethod
     def description():

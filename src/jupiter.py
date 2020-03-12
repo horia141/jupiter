@@ -1,12 +1,12 @@
 import argparse
 import logging
 
-import archive_done_tasks
-import create_project
-import init
-import remove_archived_tasks
-import upsert_big_plans
-import upsert_tasks
+import commands.archive_done_tasks as archive_done_tasks
+import commands.create_project as create_project
+import commands.init as init
+import commands.remove_archived_tasks as remove_archived_tasks
+import commands.upsert_big_plans as upsert_big_plans
+import commands.upsert_tasks as upsert_tasks
 
 def main():
 

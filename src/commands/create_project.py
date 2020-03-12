@@ -4,7 +4,7 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 import yaml
 
-import command
+import commands.command as command
 import lockfile
 import schema
 import space_utils

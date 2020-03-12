@@ -1,13 +1,12 @@
 import hashlib
 import logging
-import re
 import uuid
 
 from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 import yaml
 
-import command
+import commands.command as command
 import lockfile
 import schema
 import storage

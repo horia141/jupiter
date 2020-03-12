@@ -6,7 +6,7 @@ from notion.client import NotionClient
 from notion.block import TodoBlock
 import yaml
 
-import command
+import commands.command as command
 import lockfile
 import schedules
 import schema
