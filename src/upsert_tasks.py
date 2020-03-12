@@ -10,6 +10,7 @@ import command
 import lockfile
 import schedules
 import schema
+import storage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +25,6 @@ class UpsertTasks(command.Command):
         return "Upsert recurring tasks"
 
     def build_parser(self, parser):
-        parser.add_argument("user", help="The user file")
         parser.add_argument("tasks", help="The tasks file")
         parser.add_argument("--date", required=False, default=None, help="The date on which the upsert should run at")
         parser.add_argument("--group", required=False, default=[], action="append", help="The group for which the upsert should happen. Defaults to all")
@@ -40,17 +40,16 @@ class UpsertTasks(command.Command):
         dry_run = args.dry_run
         schedule_factory = schedules.ScheduleFactory()
 
-        with open(args.user, "r") as user_file:
-            user = yaml.safe_load(user_file)
+        workspace = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=user["token_v2"])
+        client = NotionClient(token_v2=workspace["token_v2"])
 
-        update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, user, tasks)
+        update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, workspace, tasks)
 
-def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory, format, user, task, all_tasks):
+def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory, format, workspace, task, all_tasks):
     def get_possible_row(timeline):
         already_task_rows = [t for t in all_tasks if t.title.startswith(name)]
 
@@ -73,7 +72,7 @@ def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory
             subtask_row.title = subtask["name"]
             subtask_row.checked = subtasks_to_process[str(subtask["name"])]
 
-    vacations = user.get("vacations", [])
+    vacations = workspace.get("vacations", [])
     period = task["period"]
     name = format.format(name=task["name"])
     subtasks = task.get("subtasks", {})
@@ -128,14 +127,14 @@ def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory
                 raise e
             LOGGER.info("  - Failed. Trying again")
 
-def update_notion_group(dry_run, client, page, right_now, period_filter, schedule_factory, user, group, all_tasks):
+def update_notion_group(dry_run, client, page, right_now, period_filter, schedule_factory, workspace, group, all_tasks):
     format = group["format"]
     tasks = group["tasks"]
 
     for task in tasks:
-        update_notion_task(dry_run, page, right_now, period_filter, schedule_factory, format, user, task, all_tasks)
+        update_notion_task(dry_run, page, right_now, period_filter, schedule_factory, format, workspace, task, all_tasks)
 
-def update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, user, tasks):
+def update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, workspace, tasks):
 
     system_lock = lockfile.load_lock_file()
     project_lock = system_lock["projects"][tasks["key"]]
@@ -158,4 +157,4 @@ def update_notion(dry_run, client, right_now, group_filter, period_filter, sched
             LOGGER.info("Skipping group {name} on account of group filtering".format(name=group_name))
             continue
         LOGGER.info("Processing group {name}".format(name=group_name))
-        update_notion_group(dry_run, client, page, right_now, period_filter, schedule_factory, user, group, all_tasks)
+        update_notion_group(dry_run, client, page, right_now, period_filter, schedule_factory, workspace, group, all_tasks)

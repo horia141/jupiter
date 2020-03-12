@@ -8,6 +8,7 @@ import command
 import lockfile
 import schema
 import space_utils
+import storage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,19 +23,17 @@ class CreateProject(command.Command):
         return "Create or update a project"
 
     def build_parser(self, parser):
-        parser.add_argument("user", help="The user file")
         parser.add_argument("tasks", help="The tasks file")
 
     def run(self, args):
-        with open(args.user, "r") as user_file:
-            user = yaml.safe_load(user_file)
+        workspae = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=user["token_v2"])
+        client = NotionClient(token_v2=workspace["token_v2"])
 
-        update_project(user["space_id"], args.dry_run, client, user, tasks)
+        update_project(workspace["space_id"], args.dry_run, client, workspace, tasks)
 
 def merge_schemas(old_schema, new_schema):
     combined_schema = {}
@@ -197,7 +196,7 @@ def attach_view_to_collection(client, page, collection, lock_view_id, type, titl
 
     return view
 
-def update_project(space_id, dry_run, client, user_desc, project_desc):
+def update_project(space_id, dry_run, client, workspace_desc, project_desc):
     name = project_desc["name"]
     key = project_desc["key"]
 

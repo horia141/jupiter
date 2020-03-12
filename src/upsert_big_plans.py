@@ -8,8 +8,9 @@ from notion.client import NotionClient
 import yaml
 
 import command
-import schema
 import lockfile
+import schema
+import storage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,19 +25,17 @@ class UpsertBigPlans(command.Command):
         return "Upsert big plans"
 
     def build_parser(self, parser):
-        parser.add_argument("user", help="The user file")
         parser.add_argument("tasks", help="The tasks file")
 
     def run(self, args):
-        with open(args.user, "r") as user_file:
-            user = yaml.safe_load(user_file)
+        workspace = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=user["token_v2"])
+        client = NotionClient(token_v2=workspace["token_v2"])
 
-        upsert_big_plans(client, user, tasks, args.dry_run)
+        upsert_big_plans(client, workspace, tasks, args.dry_run)
 
 def get_stable_color(option_id):
     return schema.COLORS[hashlib.md5(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
@@ -48,7 +47,7 @@ def format_name(big_plan_name):
             output += ch
     return output
 
-def upsert_big_plans(client, user, tasks, dry_run):
+def upsert_big_plans(client, workspace, tasks, dry_run):
     key = tasks["key"]
 
     system_lock = lockfile.load_lock_file()
