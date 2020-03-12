@@ -10,6 +10,7 @@ import storage
 
 LOGGER = logging.getLogger(__name__)
 
+
 class RemoveArchivedTasks(command.Command):
 
     @staticmethod
@@ -22,7 +23,8 @@ class RemoveArchivedTasks(command.Command):
 
     def build_parser(self, parser):
         parser.add_argument("tasks", help="The tasks file")
-        parser.add_argument("--period", required=False,  default=[], action="append", help="The period for which the upsert should happen. Defaults to all")
+        parser.add_argument("--period", required=False, default=[], action="append",
+                            help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None

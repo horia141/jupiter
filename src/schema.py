@@ -136,6 +136,7 @@ BIG_PLAN_STATUS = {
     }
 }
 
+
 def get_inbox_schema():
     inbox_schema = {
         "title": {
@@ -189,6 +190,7 @@ def get_inbox_schema():
     }
 
     return inbox_schema
+
 
 INBOX_KANBAN_FORMAT = {
     "board_groups": [{
@@ -415,10 +417,10 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
         "calendar_properties": [{
             "property": "title",
             "visible": True
-        },{
+        }, {
             "property": "status",
             "visible": True
-        },{
+        }, {
             "property": INBOX_BIGPLAN_KEY,
             "visible": True
         }, {
@@ -479,6 +481,7 @@ INBOX_DATABASE_VIEW_SCHEMA = {
     }
 }
 
+
 def get_big_plan_schema():
     big_plan_schema = {
         "title": {
@@ -505,6 +508,7 @@ def get_big_plan_schema():
     }
 
     return big_plan_schema
+
 
 BIG_PLAN_FORMAT = {
     "board_groups": [{
@@ -556,6 +560,7 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
     "format": BIG_PLAN_FORMAT
 }
 
+
 def get_view_schema_for_big_plan_desc(big_plan_name):
     big_plan_view_schema = {
         "name": "Inbox Tasks",
@@ -587,7 +592,7 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "width": 300,
                 "property": "title",
                 "visible": True
-            },{
+            }, {
                 "width": 100,
                 "property": "status",
                 "visible": True

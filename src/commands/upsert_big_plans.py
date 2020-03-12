@@ -13,6 +13,7 @@ import storage
 
 LOGGER = logging.getLogger(__name__)
 
+
 class UpsertBigPlans(command.Command):
 
     @staticmethod
@@ -36,8 +37,10 @@ class UpsertBigPlans(command.Command):
 
         upsert_big_plans(client, workspace, tasks, args.dry_run)
 
+
 def get_stable_color(option_id):
     return schema.COLORS[hashlib.md5(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
+
 
 def format_name(big_plan_name):
     output = ""
@@ -45,6 +48,7 @@ def format_name(big_plan_name):
         if ch.isalnum() or ch == " ":
             output += ch
     return output
+
 
 def upsert_big_plans(client, workspace, tasks, dry_run):
     key = tasks["key"]
@@ -56,7 +60,7 @@ def upsert_big_plans(client, workspace, tasks, dry_run):
     inbox_schema = inbox_collection.get("schema")
     big_plan_collection = client.get_block(project_lock["big_plan"]["root_page_id"]).collection
 
-    inbox_big_plan_options = {} # s["id"]: s for s in inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"]}
+    inbox_big_plan_options = {}  # s["id"]: s for s in inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"]}
 
     for big_plan in big_plan_collection.get_rows():
         LOGGER.info(f"Creating field link for plan {big_plan}")

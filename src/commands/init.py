@@ -9,6 +9,7 @@ import storage
 
 LOGGER = logging.getLogger(__name__)
 
+
 class Init(command.Command):
 
     @staticmethod

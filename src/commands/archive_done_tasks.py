@@ -8,8 +8,9 @@ import lockfile
 import schema
 import storage
 
-DONE_STATUS = [ schema.DONE_STATUS, schema.NOT_DONE_STATUS ]
+DONE_STATUS = [schema.DONE_STATUS, schema.NOT_DONE_STATUS]
 LOGGER = logging.getLogger(__name__)
+
 
 class ArchiveDoneTasks(command.Command):
 
@@ -23,7 +24,8 @@ class ArchiveDoneTasks(command.Command):
 
     def build_parser(self, parser):
         parser.add_argument("tasks", help="The tasks file")
-        parser.add_argument("--period", required=False,  default=[], action="append", help="The period for which the upsert should happen. Defaults to all")
+        parser.add_argument("--period", required=False, default=[], action="append",
+                            help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
 
