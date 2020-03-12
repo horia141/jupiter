@@ -3,7 +3,7 @@ import logging
 
 import commands.archive_done_tasks as archive_done_tasks
 import commands.create_project as create_project
-import commands.init as init
+import commands.workspace_init as init
 import commands.remove_archived_tasks as remove_archived_tasks
 import commands.upsert_big_plans as upsert_big_plans
 import commands.upsert_tasks as upsert_tasks
@@ -13,7 +13,7 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     commands = {
-        init.Init.name(): init.Init(),
+        init.WorkspaceInit.name(): init.WorkspaceInit(),
         create_project.CreateProject.name(): create_project.CreateProject(),
         upsert_tasks.UpsertTasks.name(): upsert_tasks.UpsertTasks(),
         upsert_big_plans.UpsertBigPlans.name(): upsert_big_plans.UpsertBigPlans(),

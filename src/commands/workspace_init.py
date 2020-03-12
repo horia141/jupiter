@@ -10,7 +10,7 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class Init(command.Command):
+class WorkspaceInit(command.Command):
 
     @staticmethod
     def name():
