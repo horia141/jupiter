@@ -31,4 +31,7 @@ class VacationsShow(command.Command):
 
         # Dump out contents of workspace
 
-        yaml.safe_dump(workspace["vacations"], sys.stdout)
+        idx = 0
+        for vacation in workspace["vacations"]:
+            print(f'id={idx} start={vacation["start_date"]} end={vacation["end_date"]}')
+            idx = idx + 1

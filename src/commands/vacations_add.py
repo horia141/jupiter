@@ -17,7 +17,7 @@ class VacationsAdd(command.Command):
 
     @staticmethod
     def description():
-        return "Show the list of vacations"
+        return "Add a new vacation"
 
     def build_parser(self, parser):
         parser.add_argument("--start-date", dest="start_date", required=True, help="The plan name to use")
