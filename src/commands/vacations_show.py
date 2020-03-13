@@ -31,7 +31,5 @@ class VacationsShow(command.Command):
 
         # Dump out contents of workspace
 
-        idx = 0
-        for vacation in workspace["vacations"]:
-            print(f'id={idx} start={vacation["start_date"]} end={vacation["end_date"]}')
-            idx = idx + 1
+        for vacation in workspace["vacations"]["entries"]:
+            print(f'id={vacation["ref_id"]} {vacation["name"]} start={vacation["start_date"]} end={vacation["end_date"]}')

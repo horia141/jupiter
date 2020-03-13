@@ -26,6 +26,10 @@ def get_vacations_schema():
         "end-date": {
             "name": "End Date",
             "type": "date"
+        },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
         }
     }
 
@@ -47,6 +51,10 @@ VACATIONS_DATABASE_VIEW_SCHEMA = {
             "width": 200,
             "property": "end-date",
             "visible": True
+        }, {
+            "width": 100,
+            "property": "ref-id",
+            "visible": False
         }]
     },
     "query2": {

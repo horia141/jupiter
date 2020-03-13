@@ -8,7 +8,10 @@ def build_empty_workspace():
         "space_id": None,
         "name": None,
         "token": None,
-        "vacations": []
+        "vacations": {
+            "next_idx": 0,
+            "entries": []
+        }
     }
 
 
