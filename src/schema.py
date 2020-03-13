@@ -12,6 +12,54 @@ COLORS = [
     "red"
 ]
 
+
+def get_vacations_schema():
+    vacations_schema = {
+        "title": {
+            "name": "Name",
+            "type": "title"
+        },
+        "start-date": {
+            "name": "Start Date",
+            "type": "date"
+        },
+        "end-date": {
+            "name": "End Date",
+            "type": "date"
+        }
+    }
+
+    return vacations_schema
+
+
+VACATIONS_DATABASE_VIEW_SCHEMA = {
+    "name": "Database",
+    "format": {
+        "table_properties": [{
+            "width": 300,
+            "property": "title",
+            "visible": True
+        }, {
+            "width": 200,
+            "property": "start-date",
+            "visible": True
+        }, {
+            "width": 200,
+            "property": "end-date",
+            "visible": True
+        }]
+    },
+    "query2": {
+        "sort": [{
+            "property": "start-date",
+            "direction": "ascending"
+        }, {
+            "property": "end-date",
+            "direction": "ascending"
+        }]
+    }
+}
+
 RECURRING_STATUS = "Recurring"
 DONE_STATUS = "Done"
 NOT_DONE_STATUS = "Not Done"

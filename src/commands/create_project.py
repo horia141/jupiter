@@ -34,7 +34,7 @@ class CreateProject(command.Command):
 
         client = NotionClient(token_v2=workspace["token"])
 
-        update_project(workspace["space_id"], args.dry_run, client, workspace, tasks)
+        update_project(workspace["space_id"], client, tasks)
 
 
 def merge_schemas(old_schema, new_schema):
@@ -106,46 +106,39 @@ def update_inbox(client, root_page, inbox_lock):
         LOGGER.info(f"Created the inbox page collection as {inbox_collection}")
     inbox_collection.name = "Inbox"
 
-    inbox_collection_kanban_all_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                                 inbox_lock.get("kanban_all_view_id"), "board",
-                                                                 "Kanban All", schema.INBOX_KANBAN_ALL_VIEW_SCHEMA)
+    inbox_collection_kanban_all_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("kanban_all_view_id"), "board", "Kanban All",
+        schema.INBOX_KANBAN_ALL_VIEW_SCHEMA)
     inbox_lock["kanban_all_view_id"] = inbox_collection_kanban_all_view.id
 
-    inbox_collection_kanban_urgent_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                                    inbox_lock.get("kanban_urgent_view_id"), "board",
-                                                                    "Kanban Urgent",
-                                                                    schema.INBOX_KANBAN_URGENT_VIEW_SCHEMA)
+    inbox_collection_kanban_urgent_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("kanban_urgent_view_id"), "board",
+        "Kanban Urgent", schema.INBOX_KANBAN_URGENT_VIEW_SCHEMA)
     inbox_lock["kanban_urgent_view_id"] = inbox_collection_kanban_urgent_view.id
 
-    inbox_collection_kanban_due_today_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                                       inbox_lock.get("kanban_due_today_view_id"),
-                                                                       "board", "Kanban Due Today",
-                                                                       schema.INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA)
+    inbox_collection_kanban_due_today_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("kanban_due_today_view_id"), "board",
+        "Kanban Due Today", schema.INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA)
     inbox_lock["kanban_due_today_view_id"] = inbox_collection_kanban_due_today_view.id
 
-    inbox_collection_kanban_due_this_week_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                                           inbox_lock.get(
-                                                                               "kanban_due_this_week_view_id"), "board",
-                                                                           "Kanban Due This Week",
-                                                                           schema.INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA)
+    inbox_collection_kanban_due_this_week_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("kanban_due_this_week_view_id"), "board",
+        "Kanban Due This Week", schema.INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA)
     inbox_lock["kanban_due_this_week_view_id"] = inbox_collection_kanban_due_this_week_view.id
 
-    inbox_collection_kanban_due_this_month_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                                            inbox_lock.get(
-                                                                                "kanban_due_this_month_view_id"),
-                                                                            "board", "Kanban Due This Month",
-                                                                            schema.INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA)
+    inbox_collection_kanban_due_this_month_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("kanban_due_this_month_view_id"), "board",
+        "Kanban Due This Month", schema.INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA)
     inbox_lock["kanban_due_this_month_view_id"] = inbox_collection_kanban_due_this_month_view.id
 
-    inbox_collection_calendar_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                               inbox_lock.get("calendar_view_id"), "calendar",
-                                                               "Not Completed By Date",
-                                                               schema.INBOX_CALENDAR_VIEW_SCHEMA)
+    inbox_collection_calendar_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("calendar_view_id"), "calendar",
+        "Not Completed By Date", schema.INBOX_CALENDAR_VIEW_SCHEMA)
     inbox_lock["calendar_view_id"] = inbox_collection_calendar_view.id
 
-    inbox_collection_database_view = attach_view_to_collection(client, inbox_page, inbox_collection,
-                                                               inbox_lock.get("database_view_id"), "table", "Database",
-                                                               schema.INBOX_DATABASE_VIEW_SCHEMA)
+    inbox_collection_database_view = space_utils.attach_view_to_collection(
+        client, inbox_page, inbox_collection, inbox_lock.get("database_view_id"), "table",
+        "Database", schema.INBOX_DATABASE_VIEW_SCHEMA)
     inbox_lock["database_view_id"] = inbox_collection_database_view.id
 
     inbox_page.set("collection_id", inbox_collection.id)
@@ -192,9 +185,9 @@ def update_big_plan(client, root_page, big_plan_lock):
         LOGGER.info(f"Created the big plan collection {big_plan_collection}")
     big_plan_collection.name = "Big Plan"
 
-    big_plan_collection_kanban_all_view = attach_view_to_collection(client, big_plan_page, big_plan_collection,
-                                                                    big_plan_lock.get("kanban_all_view_id"), "board",
-                                                                    "Kanban All", schema.BIG_PLAN_KANBAN_ALL_SCHEMA)
+    big_plan_collection_kanban_all_view = space_utils.attach_view_to_collection(
+        client, big_plan_page, big_plan_collection, big_plan_lock.get("kanban_all_view_id"), "board",
+        "Kanban All", schema.BIG_PLAN_KANBAN_ALL_SCHEMA)
     big_plan_lock["kanban_all_view_id"] = big_plan_collection_kanban_all_view.id
 
     big_plan_page.set("collection_id", big_plan_collection.id)
@@ -203,29 +196,7 @@ def update_big_plan(client, root_page, big_plan_lock):
     return big_plan_lock
 
 
-def attach_view_to_collection(client, page, collection, lock_view_id, type, title, schema):
-    if lock_view_id:
-        view = client.get_collection_view(lock_view_id, collection=collection)
-        LOGGER.info(f"Found the collection view by id {title} {view}")
-    else:
-        view = client.get_collection_view(client.create_record("collection_view", parent=page, type=type),
-                                          collection=collection)
-        view.set("collection_id", collection.id)
-        LOGGER.info(f"Created the collection view {title} {view}")
-
-    view.title = title
-    client.submit_transaction([{
-        "id": view.id,
-        "table": "collection_view",
-        "path": [],
-        "command": "update",
-        "args": schema
-    }])
-
-    return view
-
-
-def update_project(space_id, dry_run, client, workspace_desc, project_desc):
+def update_project(space_id, client, project_desc):
     name = project_desc["name"]
     key = project_desc["key"]
 
@@ -240,11 +211,10 @@ def update_project(space_id, dry_run, client, workspace_desc, project_desc):
         project_lock = {}
         LOGGER.info("Project not in system lock")
 
-    system_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page_id"])
+    system_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page"]["root_page_id"])
     LOGGER.info(f"Found the root page via id {system_root_page}")
 
     # Create the root page.
-    found_root_page = None
     if "root_page_id" in project_lock:
         found_root_page = space_utils.find_page_from_space_by_id(client, project_lock["root_page_id"])
         LOGGER.info(f"Found the project page via id {found_root_page}")
