@@ -48,7 +48,7 @@ class UpsertTasks(command.Command):
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=workspace["token_v2"])
+        client = NotionClient(token_v2=workspace["token"])
 
         update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, workspace, tasks)
 

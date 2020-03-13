@@ -8,6 +8,7 @@ import commands.upsert_big_plans as upsert_big_plans
 import commands.upsert_tasks as upsert_tasks
 import commands.workspace_init as workspace_init
 import commands.workspace_set_name as workspace_set_name
+import commands.workspace_set_token as workspace_set_token
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
     commands = {
         workspace_init.WorkspaceInit.name(): workspace_init.WorkspaceInit(),
         workspace_set_name.WorkspaceSetName.name(): workspace_set_name.WorkspaceSetName(),
+        workspace_set_token.WorkspaceSetToken.name(): workspace_set_token.WorkspaceSetToken(),
         create_project.CreateProject.name(): create_project.CreateProject(),
         upsert_tasks.UpsertTasks.name(): upsert_tasks.UpsertTasks(),
         upsert_big_plans.UpsertBigPlans.name(): upsert_big_plans.UpsertBigPlans(),

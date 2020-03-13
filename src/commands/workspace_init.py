@@ -22,7 +22,7 @@ class WorkspaceInit(command.Command):
 
     def build_parser(self, parser):
         parser.add_argument("--name", required=True, help="The plan name to use")
-        parser.add_argument("--token-v2", dest="token_v2", required=True, help="The Notion token to use")
+        parser.add_argument("--token", dest="token", required=True, help="The Notion access token to use")
         parser.add_argument("--space-id", dest="space_id", required=True, help="The Notion space id to use")
 
     def run(self, args):
@@ -36,12 +36,12 @@ class WorkspaceInit(command.Command):
             LOGGER.info("No system lock")
 
         name = args.name
-        token_v2 = args.token_v2
+        token = args.token
         space_id = args.space_id
 
         # Retrieve or create the Notion page for the workspace
 
-        client = NotionClient(token_v2=token_v2)
+        client = NotionClient(token_v2=token)
         space = client.get_space(space_id)
 
         if "root_page_id" in system_lock:
@@ -73,9 +73,9 @@ class WorkspaceInit(command.Command):
             workspace = storage.build_empty_workspace()
             LOGGER.info("No workspace config")
 
-        workspace["name"] = name
         workspace["space_id"] = space_id
-        workspace["token_v2"] = token_v2
+        workspace["name"] = name
+        workspace["token"] = token
         storage.save_workspace(workspace)
         LOGGER.info("Applied changes on local side")
 

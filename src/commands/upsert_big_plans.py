@@ -33,7 +33,7 @@ class UpsertBigPlans(command.Command):
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=workspace["token_v2"])
+        client = NotionClient(token_v2=workspace["token"])
 
         upsert_big_plans(client, workspace, tasks, args.dry_run)
 

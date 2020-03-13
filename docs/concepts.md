@@ -42,7 +42,7 @@ Workspaces are created via the `jupiter init ${user.yaml}` command. The `user.ya
 file has the following format:
 
 ```yaml
-token_v2: "YOUR_SECRET_HERE"
+token: "YOUR_SECRET_HERE"
 space_id: "YOUR_SPACE_ID_HERE"
 
 name: "Plans"
@@ -56,7 +56,7 @@ vacations:
 `jupiter init` is idempotent, and is a good way to update workspaces as newer
 versions of the tool appear.
 
-The `name` field is self explanatory, and the `token_v2` and `space_id` ones are
+The `name` field is self explanatory, and the `token` and `space_id` ones are
 overed in the [tutorial section](https://github.com/horia141/jupiter/blob/master/docs/tutorial.md).
 
 The `vacations` array of entries describes what vacations you have planned.

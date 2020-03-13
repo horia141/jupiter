@@ -27,12 +27,12 @@ class CreateProject(command.Command):
         parser.add_argument("tasks", help="The tasks file")
 
     def run(self, args):
-        workspae = storage.load_workspace()
+        workspace = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=workspace["token_v2"])
+        client = NotionClient(token_v2=workspace["token"])
 
         update_project(workspace["space_id"], args.dry_run, client, workspace, tasks)
 

@@ -5,9 +5,9 @@ _WORKSPACE_FILE_PATH = "/data/workspace.yaml"
 
 def build_empty_workspace():
     return {
-        "name": None,
         "space_id": None,
-        "token_v2": None,
+        "name": None,
+        "token": None,
         "vacations": []
     }
 

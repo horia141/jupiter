@@ -34,7 +34,7 @@ class RemoveArchivedTasks(command.Command):
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=workspace["token_v2"])
+        client = NotionClient(token_v2=workspace["token"])
         self._remove_archived_tasks(period_filter, client, tasks, args.dry_run)
 
     def _remove_archived_tasks(self, period_filter, client, tasks, dry_run):

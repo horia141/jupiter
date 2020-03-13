@@ -7,7 +7,7 @@ Once that's done, you'll need two crucial pieces of information - your space id,
 2. Open your browser's inspector. Refresh the page and wait for things to calm down.
 3. Find the `/getPublicPageData` API call on the _Network_ tab.
 4. The response for this will be a JSON object with a `spaceId` property. That's your space's id. Write it down somewhere.
-5. In the headers field there will be a `cookie` set with the value `token_v2`. That's your token for accessing the API. Write it down somewhere.
+5. In the headers field there will be a `cookie` set with the value `token`. That's your token for accessing the API. Write it down somewhere.
 
 The painful part should have passed. You're ready for the proper part.
 
@@ -24,7 +24,7 @@ $ git commit -a -m "Initial commit"
 You'll need to then edit the `user.yaml` file and make it look something like this:
 
 ```yaml
-token_v2: "YOUR_TOKEN_HERE"
+token: "YOUR_TOKEN_HERE"
 space_id: "YOUR_SPACE_ID_HERE"
 
 name: "Plans" # This can be anything really
