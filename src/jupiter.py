@@ -3,17 +3,19 @@ import logging
 
 import commands.archive_done_tasks as archive_done_tasks
 import commands.create_project as create_project
-import commands.workspace_init as init
 import commands.remove_archived_tasks as remove_archived_tasks
 import commands.upsert_big_plans as upsert_big_plans
 import commands.upsert_tasks as upsert_tasks
+import commands.workspace_init as workspace_init
+import commands.workspace_set_name as workspace_set_name
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
 
     commands = {
-        init.WorkspaceInit.name(): init.WorkspaceInit(),
+        workspace_init.WorkspaceInit.name(): workspace_init.WorkspaceInit(),
+        workspace_set_name.WorkspaceSetName.name(): workspace_set_name.WorkspaceSetName(),
         create_project.CreateProject.name(): create_project.CreateProject(),
         upsert_tasks.UpsertTasks.name(): upsert_tasks.UpsertTasks(),
         upsert_big_plans.UpsertBigPlans.name(): upsert_big_plans.UpsertBigPlans(),
