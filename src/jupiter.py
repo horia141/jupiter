@@ -6,6 +6,8 @@ import commands.create_project as create_project
 import commands.remove_archived_tasks as remove_archived_tasks
 import commands.upsert_big_plans as upsert_big_plans
 import commands.upsert_tasks as upsert_tasks
+import commands.vacations_add as vacations_add
+import commands.vacations_show as vacations_show
 import commands.workspace_init as workspace_init
 import commands.workspace_set_name as workspace_set_name
 import commands.workspace_set_token as workspace_set_token
@@ -20,6 +22,8 @@ def main():
         workspace_set_name.WorkspaceSetName.name(): workspace_set_name.WorkspaceSetName(),
         workspace_set_token.WorkspaceSetToken.name(): workspace_set_token.WorkspaceSetToken(),
         workspace_show.WorkspaceShow.name(): workspace_show.WorkspaceShow(),
+        vacations_add.VacationsAdd.name(): vacations_add.VacationsAdd(),
+        vacations_show.VacationsShow.name(): vacations_show.VacationsShow(),
         create_project.CreateProject.name(): create_project.CreateProject(),
         upsert_tasks.UpsertTasks.name(): upsert_tasks.UpsertTasks(),
         upsert_big_plans.UpsertBigPlans.name(): upsert_big_plans.UpsertBigPlans(),
