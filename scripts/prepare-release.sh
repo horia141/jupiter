@@ -13,6 +13,7 @@ fi
 RELEASE_TAG="v${RELEASE_VERSION}"
 RELEASE_BRANCH="release/"v${RELEASE_VERSION}""
 
+# shellcheck disable=SC2143
 if [[ $(git tag | grep "${RELEASE_TAG}") ]]
 then
     echo "Release ${RELEASE_VERSION} seems to already exist"
@@ -29,10 +30,10 @@ RELEASE_NOTES_PATH="docs/releases/version-${RELEASE_VERSION}.md"
 RELEASE_DATE=$(date +"%Y/%m/%d")
 
 git pull
-git checkout -b ${RELEASE_BRANCH}
-cat Config | sed -E "s/VERSION=.+/VERSION=${RELEASE_VERSION}/g" > Config.bak
+git checkout -b "${RELEASE_BRANCH}"
+sed -E "s/VERSION=.+/VERSION=${RELEASE_VERSION}/g" < Config > Config.bak
 mv Config.bak Config
-cp docs/releases/template.md ${RELEASE_NOTES_PATH}
-sed -i -E "s/{{release_version}}/${RELEASE_VERSION}/g" ${RELEASE_NOTES_PATH}
-sed -i -E "s|{{release_date}}|${RELEASE_DATE}|g" ${RELEASE_NOTES_PATH}
-git add ${RELEASE_NOTES_PATH}
+cp docs/releases/template.md "${RELEASE_NOTES_PATH}"
+sed -i -E "s/{{release_version}}/${RELEASE_VERSION}/g" "${RELEASE_NOTES_PATH}"
+sed -i -E "s|{{release_date}}|${RELEASE_DATE}|g" "${RELEASE_NOTES_PATH}"
+git add "${RELEASE_NOTES_PATH}"
