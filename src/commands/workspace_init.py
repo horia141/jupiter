@@ -26,18 +26,28 @@ class WorkspaceInit(command.Command):
         parser.add_argument("--space-id", dest="space_id", required=True, help="The Notion space id to use")
 
     def run(self, args):
-        # Load lockfile
+
+        # Arguments parsing
+
+        name = args.name
+        token = args.token
+        space_id = args.space_id
+
+        # Load local storage
 
         try:
             system_lock = lockfile.load_lock_file()
             LOGGER.info("Found system lock")
         except Exception as e:
             system_lock = lockfile.build_empty_lockfile()
-            LOGGER.info("No system lock")
+            LOGGER.info("No system lock - creating it")
 
-        name = args.name
-        token = args.token
-        space_id = args.space_id
+        try:
+            workspace = storage.load_workspace()
+            LOGGER.info("Found workspace config")
+        except IOError as e:
+            workspace = storage.build_empty_workspace()
+            LOGGER.info("No workspace config - creating it")
 
         # Retrieve or create the Notion page for the workspace
 
@@ -66,20 +76,12 @@ class WorkspaceInit(command.Command):
 
         # Apply the changes to the local side
 
-        try:
-            workspace = storage.load_workspace()
-            LOGGER.info("Found workspace config")
-        except IOError as e:
-            workspace = storage.build_empty_workspace()
-            LOGGER.info("No workspace config")
-
         workspace["space_id"] = space_id
         workspace["name"] = name
         workspace["token"] = token
         storage.save_workspace(workspace)
-        LOGGER.info("Applied changes on local side")
-
-        # Save lockfile
+        LOGGER.info("Applied changes on local workspace")
 
         system_lock["root_page_id"] = found_root_page.id
         lockfile.save_lock_file(system_lock)
+        LOGGER.info("Applied changes on lockfile")
