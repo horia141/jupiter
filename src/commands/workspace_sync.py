@@ -10,24 +10,24 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class WorkspaceSetName(command.Command):
+class WorkspaceSync(command.Command):
 
     @staticmethod
     def name():
-        return "ws-set-name"
+        return "ws-sync"
 
     @staticmethod
     def description():
-        return "Change the name of the workspace"
+        return "Synchronises Notion and the local storage"
 
     def build_parser(self, parser):
-        parser.add_argument("name", help="The plan name to use")
+        parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
 
     def run(self, args):
 
-        # Argument parsing
+        # Parse arguments
 
-        name = args.name
+        prefer = args.prefer
 
         # Load local storage
 
@@ -46,13 +46,11 @@ class WorkspaceSetName(command.Command):
         if args.dry_run:
             return
 
-        # Apply the changes to the Notion side
-
-        found_root_page.title = name
-        LOGGER.info("Applied changes on Notion side")
-
-        # Apply the changes to the local side
-
-        workspace["name"] = name
-        storage.save_workspace(workspace)
-        LOGGER.info("Applied changes on local side")
+        if prefer == "notion":
+            name = found_root_page.title
+            workspace["name"] = name
+            storage.save_workspace(workspace)
+            LOGGER.info("Applied changes on local side")
+        elif prefer == "local":
+            found_root_page.title = workspace["name"]
+            LOGGER.info("Applied changes on Notion side")
