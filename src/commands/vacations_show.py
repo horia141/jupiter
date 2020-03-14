@@ -29,7 +29,8 @@ class VacationsShow(command.Command):
         workspace = storage.load_workspace()
         LOGGER.info("Loaded workspace data")
 
-        # Dump out contents of workspace
+        # Dump out contents of the vacations
 
         for vacation in workspace["vacations"]["entries"]:
-            print(f'id={vacation["ref_id"]} {vacation["name"]} start={vacation["start_date"]} end={vacation["end_date"]}')
+            print(
+                f'id={vacation["ref_id"]} {vacation["name"]} start={vacation["start_date"]} end={vacation["end_date"]}')

@@ -23,7 +23,6 @@ class WorkspaceShow(command.Command):
         pass
 
     def run(self, args):
-
         # Load local storage
 
         workspace = storage.load_workspace()
@@ -31,4 +30,10 @@ class WorkspaceShow(command.Command):
 
         # Dump out contents of workspace
 
-        yaml.safe_dump(workspace, sys.stdout)
+        print(f'{workspace["name"]}:')
+
+        print("  Vacations:")
+
+        for vacation in workspace["vacations"]["entries"]:
+            print(
+                f'    id={vacation["ref_id"]} {vacation["name"]} start={vacation["start_date"]} end={vacation["end_date"]}')

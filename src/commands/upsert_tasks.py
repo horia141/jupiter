@@ -76,7 +76,7 @@ def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory
             subtask_row.title = subtask["name"]
             subtask_row.checked = subtasks_to_process[str(subtask["name"])]
 
-    vacations = workspace.get("vacations", [])
+    vacations = workspace["vacations"]["entries"]
     period = task["period"]
     name = format.format(name=task["name"])
     subtasks = task.get("subtasks", {})
@@ -94,9 +94,10 @@ def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory
 
     if not must_do:
         for vacation in vacations:
-            start_date = pendulum.datetime(vacation["start"].year, vacation["start"].month, vacation["start"].day,
-                                           tz="UTC")
-            end_date = pendulum.datetime(vacation["end"].year, vacation["end"].month, vacation["end"].day, tz="UTC")
+            start_date = pendulum.datetime(vacation["start_date"].year, vacation["start_date"].month,
+                                           vacation["start_date"].day, tz="UTC")
+            end_date = pendulum.datetime(vacation["end_date"].year, vacation["end_date"].month,
+                                         vacation["end_date"].day, tz="UTC")
             if start_date <= schedule.first_day and schedule.end_day <= end_date:
                 LOGGER.info(
                     "Skipping '{name}' on account of being fully withing vacation {start_date} to {end_date}".format(
