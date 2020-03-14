@@ -54,3 +54,5 @@ class WorkspaceSync(command.Command):
         elif prefer == "local":
             found_root_page.title = workspace["name"]
             LOGGER.info("Applied changes on Notion side")
+        else:
+            raise Exception(f"Invalid preference {prefer}")

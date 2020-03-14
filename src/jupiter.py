@@ -9,6 +9,7 @@ import commands.upsert_tasks as upsert_tasks
 import commands.vacations_add as vacations_add
 import commands.vacations_remove as vacations_remove
 import commands.vacations_show as vacations_show
+import commands.vacations_sync as vacations_sync
 import commands.workspace_init as workspace_init
 import commands.workspace_set_name as workspace_set_name
 import commands.workspace_set_token as workspace_set_token
@@ -28,6 +29,7 @@ def main():
         vacations_add.VacationsAdd(),
         vacations_remove.VacationsRemove(),
         vacations_show.VacationsShow(),
+        vacations_sync.VacationsSync(),
         create_project.CreateProject(),
         upsert_tasks.UpsertTasks(),
         upsert_big_plans.UpsertBigPlans(),
