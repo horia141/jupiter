@@ -10,7 +10,15 @@ PERIODS = frozenset([
     "yearly"
 ])
 
+
 class Schedule(object):
+
+    def __init__(self):
+        self._should_skip = None
+        self._due_time = None
+        self._due_date = None
+        self._full_name = None
+        self._timeline = None
 
     def month_to_quarter_num(self, date):
         month_to_quarter_num = {
@@ -109,11 +117,11 @@ class Schedule(object):
     @property
     def due_time(self):
         if self._due_time:
-            return datetime.datetime(year=self._due_time.year,\
-                                     month=self._due_time.month,\
-                                     day=self._due_time.day,\
-                                     hour=self._due_time.hour,\
-                                     minute=self._due_time.minute,\
+            return datetime.datetime(year=self._due_time.year,
+                                     month=self._due_time.month,
+                                     day=self._due_time.day,
+                                     hour=self._due_time.hour,
+                                     minute=self._due_time.minute,
                                      second=self._due_time.second)
         else:
             return datetime.date(year=self._due_date.year, month=self._due_date.month, day=self._due_date.day)
@@ -134,16 +142,18 @@ class Schedule(object):
         else:
             return param in skip_rule
 
+
 class DailySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
         self._name = name
         self._date = date
         self._due_date = date.end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse("{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+            self._due_time = pendulum.parse(
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
         else:
             self._due_time = None
-        self._full_name = "{name} {month}{day}".format(name=name, month=self.month_to_month(date),day=date.day)
+        self._full_name = "{name} {month}{day}".format(name=name, month=self.month_to_month(date), day=date.day)
         self._timeline = self._generate_timeline(date)
         self._should_skip = self._should_skip(self._due_date, skip_rule) if skip_rule else False
 
@@ -169,7 +179,9 @@ class DailySchedule(Schedule):
         week = "W{week}".format(week=date.week_of_year)
         day = "D{day}".format(day=date.day_of_week)
 
-        return "{year},{quarter},{month},{week},{day}".format(year=year, quarter=quarter, month=month, week=week, day=day)
+        return "{year},{quarter},{month},{week},{day}".format(year=year, quarter=quarter, month=month, week=week,
+                                                              day=day)
+
 
 class WeeklySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
@@ -177,11 +189,12 @@ class WeeklySchedule(Schedule):
         self._name = name
         self._date = date
         if due_at_day:
-            self._due_date = start_of_week.add(days=due_at_day-1).end_of("day")
+            self._due_date = start_of_week.add(days=due_at_day - 1).end_of("day")
         else:
             self._due_date = start_of_week.end_of("week").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse("{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+            self._due_time = pendulum.parse(
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
         else:
             self._due_time = None
         self._full_name = "{name} W{week}".format(name=name, week=start_of_week.week_of_year)
@@ -211,17 +224,19 @@ class WeeklySchedule(Schedule):
 
         return "{year},{quarter},{month},{week}".format(year=year, quarter=quarter, month=month, week=week)
 
+
 class MonthlySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
         start_of_month = date.start_of("month")
         self._name = name
         self._date = date
         if due_at_day:
-            self._due_date = start_of_month.add(days=due_at_day-1).end_of("day")
+            self._due_date = start_of_month.add(days=due_at_day - 1).end_of("day")
         else:
             self._due_date = start_of_month.end_of("month").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse("{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+            self._due_time = pendulum.parse(
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
         else:
             self._due_time = None
         self._full_name = "{name} {month}".format(name=name, month=self.month_to_month(date))
@@ -250,21 +265,26 @@ class MonthlySchedule(Schedule):
 
         return "{year},{quarter},{month}".format(year=year, quarter=quarter, month=month)
 
+
 class QuarterlySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None, due_at_month=None):
         self._name = name
         self._date = date
         if due_at_month:
             if due_at_day:
-                self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(months=due_at_month-1).add(days=due_at_day-1).end_of("day")
+                self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(
+                    months=due_at_month - 1).add(days=due_at_day - 1).end_of("day")
             else:
-                self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(months=due_at_month-1).end_of("month").end_of("day")
+                self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(
+                    months=due_at_month - 1).end_of("month").end_of("day")
         elif due_at_day:
-            self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(days=due_at_day-1).end_of("day")
+            self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(
+                days=due_at_day - 1).end_of("day")
         else:
             self._due_date = date.on(date.year, self.month_to_quarter_end(date), date.day).end_of("month").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse("{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+            self._due_time = pendulum.parse(
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
         else:
             self._due_time = None
         self._full_name = "{name} {quarter}".format(name=name, quarter=self.month_to_quarter(date))
@@ -292,21 +312,24 @@ class QuarterlySchedule(Schedule):
 
         return "{year},{quarter}".format(year=year, quarter=quarter)
 
+
 class YearlySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None, due_at_month=None):
         self._name = name
         self._date = date
         if due_at_month:
             if due_at_day:
-                self._due_date = date.start_of("year").add(months=due_at_month-1).add(days=due_at_day-1).end_of("day")
+                self._due_date = date.start_of("year").add(months=due_at_month - 1).add(days=due_at_day - 1).end_of(
+                    "day")
             else:
-                self._due_date = date.start_of("year").add(months=due_at_month-1).end_of("month").end_of("day")
+                self._due_date = date.start_of("year").add(months=due_at_month - 1).end_of("month").end_of("day")
         elif due_at_day:
-            self._due_date = date.start_of("year").add(days=due_at_day-1).end_of("day")
+            self._due_date = date.start_of("year").add(days=due_at_day - 1).end_of("day")
         else:
             self._due_date = date.end_of("year").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse("{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+            self._due_time = pendulum.parse(
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
         else:
             self._due_time = None
         self._full_name = "{name} {year}".format(name=name, year=date.year)
@@ -332,6 +355,7 @@ class YearlySchedule(Schedule):
         year = "{year}".format(year=date.year)
 
         return year
+
 
 class ScheduleFactory(object):
     def __init__(self):

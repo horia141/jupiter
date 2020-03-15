@@ -12,12 +12,16 @@ This will get you the latest version of the code. After this you can:
 
 ```bash
 $ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
-$ docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest horia141/jupiter:latest upsert-tasks /data/user.yaml /data/tasks-work.yaml
+$ docker run \
+    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    horia141/jupiter:latest upsert-tasks \
+    /data/tasks-work.yaml
 ```
 
 # GitHub
 
-You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.6. Docker is also useful to have on board.
+You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.6. Docker is also
+useful to have on board.
 
 From GitHub you can just clone the repository like so:
 
@@ -38,7 +42,10 @@ This will chug for a while and produce a local image called `jupiter`. You can u
 
 ```bash
 $ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
-$ docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest jupiter upsert-tasks /data/user.yaml /data/tasks-work.yaml
+$ docker run \
+    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    jupiter upsert-tasks \
+    /data/tasks-work.yaml
 ```
 
 Alternatively, you can use the scripts locally, like so:

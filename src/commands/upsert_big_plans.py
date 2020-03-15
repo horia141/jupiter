@@ -1,17 +1,18 @@
 import hashlib
 import logging
-import re
 import uuid
 
 from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 import yaml
 
-import command
-import schema
+import commands.command as command
 import lockfile
+import schema
+import storage
 
 LOGGER = logging.getLogger(__name__)
+
 
 class UpsertBigPlans(command.Command):
 
@@ -24,22 +25,22 @@ class UpsertBigPlans(command.Command):
         return "Upsert big plans"
 
     def build_parser(self, parser):
-        parser.add_argument("user", help="The user file")
         parser.add_argument("tasks", help="The tasks file")
 
     def run(self, args):
-        with open(args.user, "r") as user_file:
-            user = yaml.safe_load(user_file)
+        workspace = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:
             tasks = yaml.safe_load(tasks_file)
 
-        client = NotionClient(token_v2=user["token_v2"])
+        client = NotionClient(token_v2=workspace["token"])
 
-        upsert_big_plans(client, user, tasks, args.dry_run)
+        upsert_big_plans(client, workspace, tasks, args.dry_run)
+
 
 def get_stable_color(option_id):
     return schema.COLORS[hashlib.md5(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
+
 
 def format_name(big_plan_name):
     output = ""
@@ -48,17 +49,18 @@ def format_name(big_plan_name):
             output += ch
     return output
 
-def upsert_big_plans(client, user, tasks, dry_run):
+
+def upsert_big_plans(client, workspace, tasks, dry_run):
     key = tasks["key"]
 
-    system_lock = lockfile.get_lock_file()
+    system_lock = lockfile.load_lock_file()
     project_lock = system_lock["projects"][key]
 
     inbox_collection = client.get_block(project_lock["inbox"]["root_page_id"]).collection
     inbox_schema = inbox_collection.get("schema")
     big_plan_collection = client.get_block(project_lock["big_plan"]["root_page_id"]).collection
 
-    inbox_big_plan_options = {} # s["id"]: s for s in inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"]}
+    inbox_big_plan_options = {}  # s["id"]: s for s in inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"]}
 
     for big_plan in big_plan_collection.get_rows():
         LOGGER.info(f"Creating field link for plan {big_plan}")
