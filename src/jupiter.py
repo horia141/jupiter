@@ -8,7 +8,9 @@ import commands.upsert_big_plans as upsert_big_plans
 import commands.upsert_tasks as upsert_tasks
 import commands.vacations_add as vacations_add
 import commands.vacations_remove as vacations_remove
+import commands.vacations_set_end_date as vacations_set_end_date
 import commands.vacations_set_name as vacations_set_name
+import commands.vacations_set_start_date as vacations_set_start_date
 import commands.vacations_show as vacations_show
 import commands.vacations_sync as vacations_sync
 import commands.workspace_init as workspace_init
@@ -30,6 +32,8 @@ def main():
         vacations_add.VacationsAdd(),
         vacations_remove.VacationsRemove(),
         vacations_set_name.VacationsSetName(),
+        vacations_set_start_date.VacationsSetStartDate(),
+        vacations_set_end_date.VacationsSetEndDate(),
         vacations_show.VacationsShow(),
         vacations_sync.VacationsSync(),
         create_project.CreateProject(),

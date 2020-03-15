@@ -1,4 +1,6 @@
+import datetime
 import logging
+import pendulum
 
 from notion.client import NotionClient
 
@@ -10,26 +12,26 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsSetName(command.Command):
+class VacationsSetStartDate(command.Command):
 
     @staticmethod
     def name():
-        return "vacations-set-name"
+        return "vacations-set-start-date"
 
     @staticmethod
     def description():
-        return "Change the name of a vacation"
+        return "Change the start date of a vacation"
 
     def build_parser(self, parser):
         parser.add_argument("id", type=str, help="The id of the vacations to modify")
-        parser.add_argument("name", type=str, help="The new name of the vacation")
+        parser.add_argument("start_date", type=str, help="The new start date of the vacation")
 
     def run(self, args):
 
         # Parse arguments
 
         ref_id = args.id
-        name = args.name
+        start_date = pendulum.parse(args.start_date, tz="UTC")
 
         # Load local storage
 
@@ -45,7 +47,7 @@ class VacationsSetName(command.Command):
 
         try:
             vacation = next(v for v in workspace["vacations"]["entries"] if v["ref_id"] == ref_id)
-            vacation["name"] = name
+            vacation["start_date"] = datetime.date(start_date.year, start_date.month, start_date.day)
             storage.save_workspace(workspace)
             LOGGER.info("Modified vacation")
         except StopIteration:
@@ -63,7 +65,7 @@ class VacationsSetName(command.Command):
         for vacation_row in vacations_rows:
             if vacation_row.ref_id != ref_id:
                 continue
-            vacation_row.title = vacation["name"]
+            vacation_row.start_date = vacation["start_date"]
             LOGGER.info("Applied Notion changes")
             break
         else:
