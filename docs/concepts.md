@@ -27,10 +27,15 @@ The rest of the document will cover each of these in greater detail.
 Docker based `docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest jupiter foo`.
 We’ll get there _sometime_ too, but for the sake of brevity it’s easier this way.
 
+As a general consideration, every action in Jupiter is done via a command in the `jupiter` CLI app. It will affect
+both the local storage and Notion at the same time. You can edit things in Notion, and for most things it will be
+easier to go this route though. So you'll need to run special `sync` commands to keep the local store and Notion in
+sync.
+
 # Workspace
 
 All the work for life planning takes place in a _workspace_. When you use
-`jupiter init` in a local directory, you’re starting up your workspace. The local
+`jupiter ws-init` in a local directory, you’re starting up your workspace. The local
 directory and its files, the Notion.so pages created, etc. are all part of the
 workspace.
 
@@ -38,35 +43,91 @@ You can have multiple workspaces, and they can even share the same Notion.so
 space/account, but realistically it makes sense to use just one. All further
 concepts we discuss are _relative_ to the workspace.
 
-Workspaces are created via the `jupiter init ${user.yaml}` command. The `user.yaml`
-file has the following format:
-
-```yaml
-token_v2: "YOUR_SECRET_HERE"
-space_id: "YOUR_SPACE_ID_HERE"
-
-name: "Plans"
-
-vacations:
-  - start: 2020-02-10
-
-    end: 2020-02-20
-```
-
-`jupiter init` is idempotent, and is a good way to update workspaces as newer
-versions of the tool appear.
-
-The `name` field is self explanatory, and the `token_v2` and `space_id` ones are
-overed in the [tutorial section](https://github.com/horia141/jupiter/blob/master/docs/tutorial.md).
-
-The `vacations` array of entries describes what vacations you have planned.
-These will be taken into account when scheduling recurring tasks for example.
+Workspaces are created via the `jupiter ws-init` command. `jupiter ws-init` is idempotent, and is a good way to
+update workspaces as newer versions of the tool appear.
 
 After creating a workspace, you’ll see something like the following in the Notion
 left hand bar - here with a couple of projects too at the top-level under “Plans”,
 namely “Personal”, “Engineer 2.0”, “Work @Bolt”, etc:
 
 ![Workspace image](assets/concepts-workspace.png)
+
+## Interactions Summary
+
+You can:
+* Create a workspace via `ws-init`
+* Set the name of the workspace via `ws-set-name` or editing the name in Notion directly
+* Set the token of the workspace via `ws-set-token`.
+* Synchronise changes between the local store and Notion via `ws-sync`.
+* See a summary of the workspace via `ws-show`.
+
+## Workspace Properties
+
+Workspaces have several important properties:
+* The name is specified when calling `ws-init` and can be overwritten via `ws-set-name`. It's the name of
+  the root page in Notion too.
+* The token is specified when calling `ws-init` and can be overwritten via `ws-set-token`. It's the secret used to
+  access Notion. From time to time it expires, so it needs tob be updated here as well. The token can be obtained
+  as described in the [tutorial section](https://github.com/horia141/jupiter/blob/master/docs/tutorial.md).
+* The space id is specified when calling `ws-init`. It identifies the Notion "space" where Jupiter will things up. It
+  can't be changed after creation though.
+
+## Syncing
+
+When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special
+syncing commands to make sure Notion and the local storage are in sync. The `ws-sync` command achieves this for
+workspaces. Presently, just the name can be changed, by editing the root page's name.
+
+# Vacations
+
+A _vacation_ is a set period of time when some scheduled tasks aren't scheduled. Vacations are attached to the
+workspace. They can be created both via Jupiter commands and in Notion.
+
+After creating a workspace you'll have an empty set of vacations. Adding to them you can obtain something like:
+
+![Workspace image](assets/concepts-vacations.png)
+
+Alternatively you can see vacations via `vacations-show` like so:
+
+```bash
+$ jupiter vacations-show
+INFO:commands.vacations_show:Loaded workspace data
+id=6 Barcelona trip start=2020-03-20 end=2020-04-04
+id=7 Eurotrip 2 start=2020-04-07 end=2020-04-22
+```
+
+## Interactions Summary
+
+You can:
+* Create a vacation via `vacations-add`, or by creating a new row in the "Vacations" page.
+* Remove a vacation via `vacations-remove`, or by removing the row in the "Vacations" page.
+* Change the name of a vacations via `vacations-set-name`, or by changing the name of the row in the "Vacations" page.
+* Change the start date of a vacation via `vacations-set-start-date`, or by changing it in the "Vacations" page. The
+  start date cannot be after the end date, and either the command or the sync will fail if it is.
+* Change the end date of a vacation via `vacations-set-end-date`, or by changing it in the "Vacations" page. The
+  end date cannot be before the start date, and either the command or the sync will fail if it is.
+* Synchronise changes between the local store and Notion via `vacations-sync`.
+* See a summary of the workspace via `vacations-show`.
+
+## Vacations Properties
+
+A vacation has several properties:
+* The name is specified when calling `vacations-add` and can be overwritten via `vacations-set-name`. It's the
+  name of the vacation, and will show up in Notion too.
+* The id is an unique identifier for a vacation, assigned when calling `vacations-add` or `vacations-sync`. It's
+  used to refer to a vacation for various commands.
+* The start date is the time when the vacation starts, and tasks should not be generated. It should be before the
+  end date. You can set it at creation time, or via `vacations-set-start-date`, or from Notion.
+* The end date is the time when the vacation end, and tasks should again be generated. It should be after the
+  start date. You can set it at creation time, or via `vacations-set-end-date`, or from Notion.
+
+## Syncing
+
+When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special
+syncing commands to make sure Notion and the local storage are in sync. The `vacations-sync` command achieves this
+for vacations. It adds new vacations from Notion, removes the ones not present locally, and also creates them
+remotely if they're in the local store, but not in Notion. Any changes in Notion will also be reflected in the local
+store.
 
 # Projects
 
@@ -97,7 +158,6 @@ left hand bar - here with two Jupiter created pages (“Inbox” and “Big Plan
 regular Notion page (“Blog Ideas”):
 
 ![Projects image](assets/concepts-projects.png)
-
 
 # Tasks
 

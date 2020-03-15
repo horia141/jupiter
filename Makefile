@@ -1,17 +1,7 @@
-include Config
-export
-
-new-feature:
-	./scripts/new-feature.sh
-
 docker-build:
-	docker build -t jupiter .
+	./scripts/docker-build.sh
 
 docker-push:
-	docker login --username=${DOCKERHUB_USER} --password-stdin
-	docker tag jupiter ${DOCKERHUB_USER}/${BASENAME}:${VERSION}
-	docker push ${DOCKERHUB_USER}/${BASENAME}:${VERSION}
-	docker tag jupiter ${DOCKERHUB_USER}/${BASENAME}:latest
-	docker push ${DOCKERHUB_USER}/${BASENAME}:latest
+	./scripts/docker-push.sh
 
-.PHONY: new-feature docker-build docker-push
+.PHONY: docker-build docker-push

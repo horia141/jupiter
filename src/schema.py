@@ -12,6 +12,62 @@ COLORS = [
     "red"
 ]
 
+
+def get_vacations_schema():
+    vacations_schema = {
+        "title": {
+            "name": "Name",
+            "type": "title"
+        },
+        "start-date": {
+            "name": "Start Date",
+            "type": "date"
+        },
+        "end-date": {
+            "name": "End Date",
+            "type": "date"
+        },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
+        }
+    }
+
+    return vacations_schema
+
+
+VACATIONS_DATABASE_VIEW_SCHEMA = {
+    "name": "Database",
+    "format": {
+        "table_properties": [{
+            "width": 300,
+            "property": "title",
+            "visible": True
+        }, {
+            "width": 200,
+            "property": "start-date",
+            "visible": True
+        }, {
+            "width": 200,
+            "property": "end-date",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "ref-id",
+            "visible": False
+        }]
+    },
+    "query2": {
+        "sort": [{
+            "property": "start-date",
+            "direction": "ascending"
+        }, {
+            "property": "end-date",
+            "direction": "ascending"
+        }]
+    }
+}
+
 RECURRING_STATUS = "Recurring"
 DONE_STATUS = "Done"
 NOT_DONE_STATUS = "Not Done"
@@ -136,6 +192,7 @@ BIG_PLAN_STATUS = {
     }
 }
 
+
 def get_inbox_schema():
     inbox_schema = {
         "title": {
@@ -189,6 +246,7 @@ def get_inbox_schema():
     }
 
     return inbox_schema
+
 
 INBOX_KANBAN_FORMAT = {
     "board_groups": [{
@@ -415,10 +473,10 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
         "calendar_properties": [{
             "property": "title",
             "visible": True
-        },{
+        }, {
             "property": "status",
             "visible": True
-        },{
+        }, {
             "property": INBOX_BIGPLAN_KEY,
             "visible": True
         }, {
@@ -479,6 +537,7 @@ INBOX_DATABASE_VIEW_SCHEMA = {
     }
 }
 
+
 def get_big_plan_schema():
     big_plan_schema = {
         "title": {
@@ -505,6 +564,7 @@ def get_big_plan_schema():
     }
 
     return big_plan_schema
+
 
 BIG_PLAN_FORMAT = {
     "board_groups": [{
@@ -556,6 +616,7 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
     "format": BIG_PLAN_FORMAT
 }
 
+
 def get_view_schema_for_big_plan_desc(big_plan_name):
     big_plan_view_schema = {
         "name": "Inbox Tasks",
@@ -587,7 +648,7 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "width": 300,
                 "property": "title",
                 "visible": True
-            },{
+            }, {
                 "width": 100,
                 "property": "status",
                 "visible": True
