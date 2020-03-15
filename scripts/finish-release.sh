@@ -10,7 +10,7 @@ then
     exit 1
 fi
 
-RELEASE_VERSION=$(echo "${RELEASE_BRANCH}" | sed "s|release/||")
+RELEASE_VERSION=${RELEASE_BRANCH/release\/}
 
 git commit -a -m "Prepared release version ${RELEASE_VERSION}"
 
