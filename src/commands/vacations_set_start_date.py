@@ -47,6 +47,9 @@ class VacationsSetStartDate(command.Command):
 
         try:
             vacation = next(v for v in workspace["vacations"]["entries"] if v["ref_id"] == ref_id)
+            if start_date >= pendulum.datetime(
+                    vacation["end_date"].year, vacation["end_date"].month, vacation["end_date"].day):
+                raise Exception("Cannot set a start date after the end date")
             vacation["start_date"] = datetime.date(start_date.year, start_date.month, start_date.day)
             storage.save_workspace(workspace)
             LOGGER.info("Modified vacation")

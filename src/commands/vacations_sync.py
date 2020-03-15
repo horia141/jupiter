@@ -63,6 +63,8 @@ class VacationsSync(command.Command):
                     "start_date": vacation_row.start_date.start,
                     "end_date": vacation_row.end_date.start
                 }
+                if vacation_row.start_date.start >= vacation_row.end_date.start:
+                    raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
                 workspace["vacations"]["next_idx"] = workspace["vacations"]["next_idx"] + 1
                 workspace["vacations"]["entries"].append(new_vacation)
                 LOGGER.info(f"Found new vacation from Notion {vacation_row.title}")
@@ -75,6 +77,8 @@ class VacationsSync(command.Command):
                     vacations_set[vacation_row.ref_id]["name"] = vacation_row.title
                     vacations_set[vacation_row.ref_id]["start_date"] = vacation_row.start_date.start
                     vacations_set[vacation_row.ref_id]["end_date"] = vacation_row.end_date.start
+                    if vacation_row.start_date.start >= vacation_row.end_date.start:
+                        raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
                 elif prefer == "local":
                     vacation_row.title = vacations_set[vacation_row.ref_id]["name"]
