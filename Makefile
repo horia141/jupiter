@@ -1,6 +1,5 @@
 lint:
-	./scripts/lint-scripts.sh
-	./scripts/lint-sources.sh
+	./scripts/lint.sh
 
 docker-build:
 	./scripts/docker-build.sh

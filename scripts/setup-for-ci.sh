@@ -3,4 +3,4 @@
 set -echo
 
 apt-get install python3-setuptools
-pip3 install pylint
+pip3 install pylint yamllint

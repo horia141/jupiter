@@ -1,6 +1,7 @@
+---
 name: Push
 
-on: [push]
+"on": [push]
 
 jobs:
   build:
@@ -8,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-     - uses: actions/checkout@v2
-     - name: Install deps test
-       run: sudo ../scripts/setup-for-ci.sh
-     - name: Lint scripts
-       run: ./scripts/lint.sh
+      - uses: actions/checkout@v2
+      - name: Install deps test
+        run: sudo ../scripts/setup-for-ci.sh
+      - name: Lint scripts
+        run: ./scripts/lint.sh
