@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   build:
+    name: Linter
     runs-on: ubuntu-latest
 
     steps:

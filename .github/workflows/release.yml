@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: Publish To Docker
     runs-on: ubuntu-latest
 
     steps:
@@ -16,4 +17,4 @@ jobs:
      - name: Build the docker image
        run: ./scripts/docker-build.sh
      - name: Publish the docker image
-       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-push.sh
+       run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-push.yml
