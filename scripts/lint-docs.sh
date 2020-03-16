@@ -2,4 +2,4 @@
 
 set -e
 
-mdl docs/
+mdl --style="./scripts/docs-style.rb" docs/
