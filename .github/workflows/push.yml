@@ -12,7 +12,7 @@ jobs:
      - name: Install deps test
        run: |
         sudo apt-get install python3-setuptools
-        pip3 install pylint
+        sudo pip3 install pylint
      - name: Lint scripts
        run: ./scripts/lint-scripts.sh
      - name: Lint sources
