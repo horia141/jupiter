@@ -2,4 +2,4 @@
 
 set -e
 
-hadolint Dockerfile
+docker run --rm -i hadolint/hadolint:latest-debian < Dockerfile
