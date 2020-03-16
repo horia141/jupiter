@@ -10,7 +10,7 @@ jobs:
     steps:
      - uses: actions/checkout@v2
      - name: Install Deps Test
-       run: pip3 install pylint
+       run: pip3 install setuptools pylint
      - name: Lint Scripts
        run: ./scripts/lint-scripts.sh
      - name: Lint Sources
