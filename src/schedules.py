@@ -1,3 +1,5 @@
+"""Module for working with schedules"""
+
 import datetime
 
 import pendulum
@@ -11,7 +13,8 @@ PERIODS = frozenset([
 ])
 
 
-class Schedule(object):
+class Schedule:
+    """The base class for the schedule descriptors class"""
 
     def __init__(self):
         self._should_skip = None
@@ -20,7 +23,10 @@ class Schedule(object):
         self._full_name = None
         self._timeline = None
 
-    def month_to_quarter_num(self, date):
+    @staticmethod
+    def month_to_quarter_num(date):
+        """Map a date to one of the four quarters from the year"""
+
         month_to_quarter_num = {
             1: 1,
             2: 1,
@@ -38,7 +44,10 @@ class Schedule(object):
 
         return month_to_quarter_num[date.month]
 
-    def month_to_quarter(self, date):
+    @staticmethod
+    def month_to_quarter(date):
+        """Map a date to the name of four quarters from the year"""
+
         month_to_quarter = {
             1: "Q1",
             2: "Q1",
@@ -56,7 +65,10 @@ class Schedule(object):
 
         return month_to_quarter[date.month]
 
-    def month_to_quarter_start(self, date):
+    @staticmethod
+    def month_to_quarter_start(date):
+        """Map a month in a date to the first month of a quarter of which the date belongs"""
+
         month_to_quarter = {
             1: 1,
             2: 1,
@@ -74,7 +86,10 @@ class Schedule(object):
 
         return month_to_quarter[date.month]
 
-    def month_to_quarter_end(self, date):
+    @staticmethod
+    def month_to_quarter_end(date):
+        """Map a month in a date to the last month of a quarter of which the date belongs"""
+
         month_to_quarter = {
             1: 3,
             2: 3,
@@ -92,7 +107,9 @@ class Schedule(object):
 
         return month_to_quarter[date.month]
 
-    def month_to_month(self, date):
+    @staticmethod
+    def month_to_month(date):
+        """Map a month to the name it has"""
         month_to_month = {
             1: "Jan",
             2: "Feb",
@@ -112,10 +129,13 @@ class Schedule(object):
 
     @property
     def should_skip(self):
+        """Whether the date should be skipped according to the planning rules"""
+
         return self._should_skip
 
     @property
     def due_time(self):
+        """The due time of an event according to the schedule"""
         if self._due_time:
             return datetime.datetime(year=self._due_time.year,
                                      month=self._due_time.month,
@@ -128,13 +148,16 @@ class Schedule(object):
 
     @property
     def full_name(self):
+        """The full name of the event with the schedule info in it"""
         return self._full_name
 
     @property
     def timeline(self):
+        """The timeline of an event"""
         return self._timeline
 
-    def _skip_helper(self, skip_rule, param):
+    @staticmethod
+    def _skip_helper(skip_rule, param):
         if skip_rule == "even":
             return param % 2 == 0
         elif skip_rule == "odd":
