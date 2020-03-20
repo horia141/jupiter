@@ -6,7 +6,7 @@ from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 import yaml
 
-import commands.command as command
+import command.command as command
 import lockfile
 import schema
 import storage

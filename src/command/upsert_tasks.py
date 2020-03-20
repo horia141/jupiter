@@ -6,7 +6,7 @@ from notion.client import NotionClient
 from notion.block import TodoBlock
 import yaml
 
-import commands.command as command
+import command.command as command
 import lockfile
 import schedules
 import schema
@@ -41,7 +41,6 @@ class UpsertTasks(command.Command):
         group_filter = frozenset(g.lower() for g in args.group) if len(args.group) > 0 else None
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else schedules.PERIODS
         dry_run = args.dry_run
-        schedule_factory = schedules.ScheduleFactory()
 
         workspace = storage.load_workspace()
 
@@ -50,10 +49,10 @@ class UpsertTasks(command.Command):
 
         client = NotionClient(token_v2=workspace["token"])
 
-        update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, workspace, tasks)
+        update_notion(dry_run, client, right_now, group_filter, period_filter, workspace, tasks)
 
 
-def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory, format, workspace, task, all_tasks):
+def update_notion_task(dry_run, page, right_now, period_filter, format, workspace, task, all_tasks):
     def get_possible_row(timeline):
         already_task_rows = [t for t in all_tasks if t.title.startswith(name)]
 
@@ -86,7 +85,7 @@ def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory
     due_at_month = task.get("due_at_month", None)
     must_do = task.get("must_do", False)
 
-    schedule = schedule_factory.get_schedule(period, name, right_now, skip_rule, due_at_time, due_at_day, due_at_month)
+    schedule = schedules.get_schedule(period, name, right_now, skip_rule, due_at_time, due_at_day, due_at_month)
 
     if period.lower() not in period_filter:
         LOGGER.info("Skipping '{name}' on account of period filtering".format(name=name))
@@ -136,16 +135,16 @@ def update_notion_task(dry_run, page, right_now, period_filter, schedule_factory
             LOGGER.info("  - Failed. Trying again")
 
 
-def update_notion_group(dry_run, client, page, right_now, period_filter, schedule_factory, workspace, group, all_tasks):
+def update_notion_group(dry_run, client, page, right_now, period_filter, workspace, group, all_tasks):
     format = group["format"]
     tasks = group["tasks"]
 
     for task in tasks:
-        update_notion_task(dry_run, page, right_now, period_filter, schedule_factory, format, workspace, task,
+        update_notion_task(dry_run, page, right_now, period_filter, format, workspace, task,
                            all_tasks)
 
 
-def update_notion(dry_run, client, right_now, group_filter, period_filter, schedule_factory, workspace, tasks):
+def update_notion(dry_run, client, right_now, group_filter, period_filter, workspace, tasks):
     system_lock = lockfile.load_lock_file()
     project_lock = system_lock["projects"][tasks["key"]]
     root_page = client.get_block(project_lock["inbox"]["root_page_id"])
@@ -167,5 +166,5 @@ def update_notion(dry_run, client, right_now, group_filter, period_filter, sched
             LOGGER.info("Skipping group {name} on account of group filtering".format(name=group_name))
             continue
         LOGGER.info("Processing group {name}".format(name=group_name))
-        update_notion_group(dry_run, client, page, right_now, period_filter, schedule_factory, workspace, group,
+        update_notion_group(dry_run, client, page, right_now, period_filter, workspace, group,
                             all_tasks)

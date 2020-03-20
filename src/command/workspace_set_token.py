@@ -1,6 +1,6 @@
 import logging
 
-import commands.command as command
+import command.command as command
 import storage
 
 LOGGER = logging.getLogger(__name__)

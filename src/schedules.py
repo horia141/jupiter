@@ -411,4 +411,5 @@ def get_schedule(period, name, date, skip_rule, due_at_time=None, due_at_day=Non
     elif period == "yearly":
         return YearlySchedule(name, date, due_at_time, due_at_day, due_at_month)
     else:
-        raise Exception("Invalid period {period}".format(period=period))
+      raise Exception("Invalid period {period}".format(period=period))
+
