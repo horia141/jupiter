@@ -167,7 +167,10 @@ class Schedule:
 
 
 class DailySchedule(Schedule):
-    def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
+    """A daily schedule"""
+
+    def __init__(self, name, date, skip_rule=None, due_at_time=None):
+        super().__init__()
         self._name = name
         self._date = date
         self._due_date = date.end_of("day")
@@ -178,22 +181,22 @@ class DailySchedule(Schedule):
             self._due_time = None
         self._full_name = "{name} {month}{day}".format(name=name, month=self.month_to_month(date), day=date.day)
         self._timeline = self._generate_timeline(date)
-        self._should_skip = self._should_skip(self._due_date, skip_rule) if skip_rule else False
+        self._should_skip = self._skip_helper(skip_rule, self._due_date.day_of_week) if skip_rule else False
 
     @property
     def period(self):
+        """The period string"""
         return "Daily"
 
     @property
     def first_day(self):
+        """The first day of the interval represented by the schedule block"""
         return self._due_date
 
     @property
     def end_day(self):
+        """The end day of the interval represented by the scedule block"""
         return self._due_date
-
-    def _should_skip(self, date, skip_rule):
-        return self._skip_helper(skip_rule, date.day_of_week)
 
     def _generate_timeline(self, date):
         year = "{year}".format(year=date.year)
@@ -207,7 +210,10 @@ class DailySchedule(Schedule):
 
 
 class WeeklySchedule(Schedule):
+    """A monthly schedule"""
+
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
+        super().__init__()
         start_of_week = date.start_of("week")
         self._name = name
         self._date = date
@@ -222,22 +228,22 @@ class WeeklySchedule(Schedule):
             self._due_time = None
         self._full_name = "{name} W{week}".format(name=name, week=start_of_week.week_of_year)
         self._timeline = self._generate_timeline(start_of_week)
-        self._should_skip = self._should_skip(self._due_date, skip_rule) if skip_rule else False
+        self._should_skip = self._skip_helper(skip_rule, self._due_date.week_of_year) if skip_rule else False
 
     @property
     def period(self):
+        """The period string"""
         return "Weekly"
 
     @property
     def first_day(self):
+        """The first day of the interval represented by the schedule block"""
         return self._date.start_of("week")
 
     @property
     def end_day(self):
+        """The end day of the interval represented by the scedule block"""
         return self._date.end_of("week")
-
-    def _should_skip(self, date, skip_rule):
-        return self._skip_helper(skip_rule, date.week_of_year)
 
     def _generate_timeline(self, date):
         year = "{year}".format(year=date.year)
@@ -249,7 +255,10 @@ class WeeklySchedule(Schedule):
 
 
 class MonthlySchedule(Schedule):
+    """A monthly schedule"""
+
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
+        super().__init__()
         start_of_month = date.start_of("month")
         self._name = name
         self._date = date
@@ -264,22 +273,22 @@ class MonthlySchedule(Schedule):
             self._due_time = None
         self._full_name = "{name} {month}".format(name=name, month=self.month_to_month(date))
         self._timeline = self._generate_timeline(start_of_month)
-        self._should_skip = self._should_skip(self._due_date, skip_rule) if skip_rule else False
+        self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
 
     @property
     def period(self):
+        """The period string"""
         return "Monthly"
 
     @property
     def first_day(self):
+        """The first day of the interval represented by the schedule block"""
         return self._date.start_of("month")
 
     @property
     def end_day(self):
+        """The end day of the interval represented by the scedule block"""
         return self._date.end_of("month")
-
-    def _should_skip(self, date, skip_rule):
-        return self._skip_helper(skip_rule, date.month)
 
     def _generate_timeline(self, date):
         year = "{year}".format(year=date.year)
@@ -290,7 +299,10 @@ class MonthlySchedule(Schedule):
 
 
 class QuarterlySchedule(Schedule):
+    """A quarterly schedule"""
+
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None, due_at_month=None):
+        super().__init__()
         self._name = name
         self._date = date
         if due_at_month:
@@ -312,22 +324,23 @@ class QuarterlySchedule(Schedule):
             self._due_time = None
         self._full_name = "{name} {quarter}".format(name=name, quarter=self.month_to_quarter(date))
         self._timeline = self._generate_timeline(date)
-        self._should_skip = self._should_skip(self._due_date, skip_rule) if skip_rule else False
+        self._should_skip = \
+            self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date)) if skip_rule else False
 
     @property
     def period(self):
+        """The period string"""
         return "Quarterly"
 
     @property
     def first_day(self):
+        """The first day of the interval represented by the schedule block"""
         return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).start_of("month")
 
     @property
     def end_day(self):
+        """The end day of the interval represented by the scedule block"""
         return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).end_of("month")
-
-    def _should_skip(self, date, skip_rule):
-        return self._skip_helper(skip_rule, self.month_to_quarter_num(date))
 
     def _generate_timeline(self, date):
         year = "{year}".format(year=date.year)
@@ -337,7 +350,10 @@ class QuarterlySchedule(Schedule):
 
 
 class YearlySchedule(Schedule):
-    def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None, due_at_month=None):
+    """A yearly schedule"""
+
+    def __init__(self, name, date, due_at_time=None, due_at_day=None, due_at_month=None):
+        super().__init__()
         self._name = name
         self._date = date
         if due_at_month:
@@ -357,43 +373,42 @@ class YearlySchedule(Schedule):
             self._due_time = None
         self._full_name = "{name} {year}".format(name=name, year=date.year)
         self._timeline = self._generate_timeline(date)
-        self._should_skip = self._should_skip(self._due_date, skip_rule) if skip_rule else False
+        self._should_skip = False
 
     @property
     def period(self):
+        """The period string"""
         return "Yearly"
 
     @property
     def first_day(self):
+        """The first day of the interval represented by the schedule block"""
         return self._date.start_of("year")
 
     @property
     def end_day(self):
+        """The end day of the interval represented by the scedule block"""
         return self._date.end_of("year")
 
-    def _should_skip(self, date, skip_rule):
-        return False
-
-    def _generate_timeline(self, date):
+    @staticmethod
+    def _generate_timeline(date):
         year = "{year}".format(year=date.year)
 
         return year
 
 
-class ScheduleFactory(object):
-    def __init__(self):
-        pass
+def get_schedule(period, name, date, skip_rule, due_at_time=None, due_at_day=None, due_at_month=None):
+    """Build an appropriate schedule from the given parameters"""
 
-    def get_schedule(self, period, name, date, skip_rule, due_at_time=None, due_at_day=None, due_at_month=None):
-        if period == "daily":
-            return DailySchedule(name, date, skip_rule, due_at_time, due_at_day)
-        elif period == "weekly":
-            return WeeklySchedule(name, date, skip_rule, due_at_time, due_at_day)
-        elif period == "monthly":
-            return MonthlySchedule(name, date, skip_rule, due_at_time, due_at_day)
-        elif period == "quarterly":
-            return QuarterlySchedule(name, date, skip_rule, due_at_time, due_at_day, due_at_month)
-        elif period == "yearly":
-            return YearlySchedule(name, date, skip_rule, due_at_time, due_at_day, due_at_month)
-        else:
-            raise Error("Invalid period {period}".format(period=period))
+    if period == "daily":
+        return DailySchedule(name, date, skip_rule, due_at_time)
+    elif period == "weekly":
+        return WeeklySchedule(name, date, skip_rule, due_at_time, due_at_day)
+    elif period == "monthly":
+        return MonthlySchedule(name, date, skip_rule, due_at_time, due_at_day)
+    elif period == "quarterly":
+        return QuarterlySchedule(name, date, skip_rule, due_at_time, due_at_day, due_at_month)
+    elif period == "yearly":
+        return YearlySchedule(name, date, due_at_time, due_at_day, due_at_month)
+    else:
+        raise Exception("Invalid period {period}".format(period=period))
