@@ -9,6 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceShow(command.Command):
+    """Command class for showing the workspace"""
 
     @staticmethod
     def name():
@@ -34,5 +35,5 @@ class WorkspaceShow(command.Command):
         print("  Vacations:")
 
         for vacation in workspace["vacations"]["entries"]:
-            print(
-                f'    id={vacation["ref_id"]} {vacation["name"]} start={vacation["start_date"]} end={vacation["end_date"]}')
+            print(f'    id={vacation["ref_id"]} {vacation["name"]} ' +
+                  f'start={vacation["start_date"]} end={vacation["end_date"]}')

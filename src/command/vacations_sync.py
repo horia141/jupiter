@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsSync(command.Command):
+    """Command class for creating projects"""
 
     @staticmethod
     def name():

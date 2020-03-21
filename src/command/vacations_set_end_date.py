@@ -1,4 +1,4 @@
-"""Command for setting the end date of a vaction"""
+"""Command for setting the end date of a vacation"""
 
 import datetime
 import logging
@@ -15,6 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsSetEndDate(command.Command):
+    """Command class for setting the end date of a vacation"""
 
     @staticmethod
     def name():

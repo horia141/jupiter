@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceSetName(command.Command):
+    """Command class for setting the name of a workspace"""
 
     @staticmethod
     def name():

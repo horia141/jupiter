@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsRemove(command.Command):
+    """Command class for removing a vacation"""
 
     @staticmethod
     def name():

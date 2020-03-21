@@ -9,6 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceSetToken(command.Command):
+    """Command class for setting the access token of a workspace"""
 
     @staticmethod
     def name():

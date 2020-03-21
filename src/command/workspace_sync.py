@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceSync(command.Command):
+    """Command class for syncing the workspace info from Notion"""
 
     @staticmethod
     def name():

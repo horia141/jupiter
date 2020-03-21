@@ -14,6 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class RemoveArchivedTasks(command.Command):
+    """Command class for removing archived tasks from a project"""
 
     @staticmethod
     def name():
@@ -39,7 +40,8 @@ class RemoveArchivedTasks(command.Command):
         client = NotionClient(token_v2=workspace["token"])
         self._remove_archived_tasks(period_filter, client, tasks, args.dry_run)
 
-    def _remove_archived_tasks(self, period_filter, client, tasks, dry_run):
+    @staticmethod
+    def _remove_archived_tasks(period_filter, client, tasks, dry_run):
         system_lock = lockfile.load_lock_file()
         project_lock = system_lock["projects"][tasks["key"]]
         root_page = client.get_block(project_lock["inbox"]["root_page_id"])
@@ -51,8 +53,8 @@ class RemoveArchivedTasks(command.Command):
             if archived_task.status != schema.ARCHIVED_STATUS:
                 continue
             if period_filter and (archived_task.script_period.lower() not in period_filter):
-                LOGGER.info("Skipping '{name}' on account of period filtering".format(name=archived_task.name))
+                LOGGER.info(f"Skipping '{archived_task.name}' on account of period filtering")
                 continue
-            LOGGER.info("Removing '{name}'".format(name=archived_task.name))
+            LOGGER.info(f"Removing '{archived_task.name}'")
             if not dry_run:
                 archived_task.remove()

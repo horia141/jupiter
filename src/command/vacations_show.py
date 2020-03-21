@@ -1,9 +1,6 @@
 """Command for showing the vacations"""
 
 import logging
-import sys
-
-import yaml
 
 import command.command as command
 import storage
@@ -12,6 +9,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsShow(command.Command):
+    """Command class for showing the vacations"""
 
     @staticmethod
     def name():
