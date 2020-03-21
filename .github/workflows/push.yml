@@ -1,10 +1,7 @@
 ---
 name: Normal Push
 
-"on":
-  push:
-    branches:
-      - '!master'
+"on": [push]
 
 jobs:
   linter:
