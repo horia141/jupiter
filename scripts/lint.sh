@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 ./scripts/lint-dockerfile.sh
 ./scripts/lint-workflows.sh

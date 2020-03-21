@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 RELEASE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 

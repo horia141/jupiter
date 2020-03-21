@@ -1,5 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 pylint ./src
+pyflakes ./src
