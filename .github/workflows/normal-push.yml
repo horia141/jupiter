@@ -1,10 +1,13 @@
 ---
-name: Push
+name: Normal Push
 
-"on": [push]
+"on":
+  push:
+    branches:
+      - '!master'
 
 jobs:
-  build:
+  linter:
     name: Linter
     runs-on: ubuntu-latest
 

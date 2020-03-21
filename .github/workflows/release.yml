@@ -9,7 +9,17 @@ name: Release
       - v*
 
 jobs:
-  build:
+  linter:
+    name: Linter
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare for CI
+        run: sudo ./scripts/setup-for-ci.sh
+      - name: Lint scripts
+        run: ./scripts/lint.sh
+  publish_to_docker:
     name: Publish To Docker
     runs-on: ubuntu-latest
 
@@ -18,4 +28,4 @@ jobs:
       - name: Build the docker image
         run: ./scripts/docker-build.sh
       - name: Publish the docker image
-        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-push.yml
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-normal-push.yml
