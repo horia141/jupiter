@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install deps test
+      - name: Prepare for CI
         run: sudo ./scripts/setup-for-ci.sh
       - name: Lint scripts
         run: ./scripts/lint.sh
