@@ -1,3 +1,5 @@
+"""Command for creating recurring tasks"""
+
 import logging
 
 import pendulum

@@ -1,3 +1,5 @@
+"""Command for setting the name of a workspace"""
+
 import logging
 
 from notion.client import NotionClient

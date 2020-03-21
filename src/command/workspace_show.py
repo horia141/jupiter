@@ -1,7 +1,6 @@
-import logging
-import sys
+"""Command for showing the workspace"""
 
-import yaml
+import logging
 
 import command.command as command
 import storage

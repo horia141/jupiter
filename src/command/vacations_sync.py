@@ -1,7 +1,7 @@
-import datetime
+"""Command for syncing the vacations from Notion"""
+
 import logging
 
-import pendulum
 from notion.client import NotionClient
 
 import command.command as command

@@ -1,3 +1,5 @@
+"""Command for creating projects"""
+
 import logging
 
 from notion.block import CollectionViewPageBlock
@@ -14,6 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class CreateProject(command.Command):
+    """Command class for creating projects"""
 
     @staticmethod
     def name():
@@ -34,10 +37,12 @@ class CreateProject(command.Command):
 
         client = NotionClient(token_v2=workspace["token"])
 
-        update_project(workspace["space_id"], client, tasks)
+        update_project(client, tasks)
 
 
 def merge_schemas(old_schema, new_schema):
+    """Merge two Notion collection schemas"""
+
     combined_schema = {}
 
     # Merging schema is limited right now. Basically we assume the new schema takes
@@ -46,38 +51,42 @@ def merge_schemas(old_schema, new_schema):
     # across schema updates.
     # As a special case, the big plan item is left to whatever value it had before
     # since this thing is managed via the big plan syncing flow!
-    for (k, v) in new_schema.items():
-        if k == schema.INBOX_BIGPLAN_KEY:
-            combined_schema[k] = old_schema[k] if (k in old_schema and old_schema[k]["type"] == "select") else v
-        elif v["type"] == "select" or v["type"] == "multi_select":
-            if k in old_schema:
-                old_v = old_schema[k]
+    for (schema_item_name, schema_item) in new_schema.items():
+        if schema_item_name == schema.INBOX_BIGPLAN_KEY:
+            combined_schema[schema_item_name] = old_schema[schema_item_name] \
+                if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
+                else schema_item
+        elif schema_item["type"] == "select" or schema_item["type"] == "multi_select":
+            if schema_item_name in old_schema:
+                old_v = old_schema[schema_item_name]
 
-                combined_schema[k] = {
-                    "name": v["name"],
-                    "type": v["type"],
+                combined_schema[schema_item_name] = {
+                    "name": schema_item["name"],
+                    "type": schema_item["type"],
                     "options": []
                 }
 
-                for option in v["options"]:
+                for option in schema_item["options"]:
                     old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]), None)
                     if old_option is not None:
-                        combined_schema[k]["options"].append({
+                        combined_schema[schema_item_name]["options"].append({
                             "color": option["color"],
                             "value": option["value"],
                             "id": old_option["id"]
                         })
                     else:
-                        combined_schema[k]["options"].append(option)
+                        combined_schema[schema_item_name]["options"].append(option)
             else:
-                combined_schema[k] = v
+                combined_schema[schema_item_name] = schema_item
         else:
-            combined_schema[k] = v
+            combined_schema[schema_item_name] = schema_item
 
     return combined_schema
 
 
 def update_inbox(client, root_page, inbox_lock):
+    """Update the inbox with the new structure"""
+
     if "root_page_id" in inbox_lock:
         inbox_page = space_utils.find_page_from_space_by_id(client, inbox_lock["root_page_id"])
         LOGGER.info(f"Found the inbox page via id {inbox_page}")
@@ -156,6 +165,8 @@ def update_inbox(client, root_page, inbox_lock):
 
 
 def update_big_plan(client, root_page, big_plan_lock):
+    """Update the big plan view with the new structures"""
+
     if "root_page_id" in big_plan_lock:
         found_big_plan_page = space_utils.find_page_from_space_by_id(client, big_plan_lock["root_page_id"])
         LOGGER.info(f"Found the big plan page via id {found_big_plan_page}")
@@ -196,11 +207,11 @@ def update_big_plan(client, root_page, big_plan_lock):
     return big_plan_lock
 
 
-def update_project(space_id, client, project_desc):
+def update_project(client, project_desc):
+    """Update the project itself"""
+
     name = project_desc["name"]
     key = project_desc["key"]
-
-    space = client.get_space(space_id)
 
     system_lock = lockfile.load_lock_file()
 

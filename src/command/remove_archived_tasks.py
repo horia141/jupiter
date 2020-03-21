@@ -1,3 +1,5 @@
+"""Command for removing archived tasks from a project"""
+
 import logging
 
 from notion.client import NotionClient

@@ -1,3 +1,5 @@
+"""Command for syncing the workspace info from Notion"""
+
 import logging
 
 from notion.client import NotionClient

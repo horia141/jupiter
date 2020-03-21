@@ -1,3 +1,5 @@
+"""Command for setting the access token of a workspace"""
+
 import logging
 
 import command.command as command

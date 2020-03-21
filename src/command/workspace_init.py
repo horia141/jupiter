@@ -1,3 +1,5 @@
+"""Command for initialising a workspace"""
+
 import logging
 
 from notion.block import CollectionViewPageBlock

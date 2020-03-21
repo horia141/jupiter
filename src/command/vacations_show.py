@@ -1,3 +1,5 @@
+"""Command for showing the vacations"""
+
 import logging
 import sys
 

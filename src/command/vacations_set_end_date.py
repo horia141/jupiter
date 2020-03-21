@@ -1,3 +1,5 @@
+"""Command for setting the end date of a vaction"""
+
 import datetime
 import logging
 import pendulum

@@ -1,3 +1,5 @@
+"""Command for removing a vacation"""
+
 import logging
 
 from notion.client import NotionClient

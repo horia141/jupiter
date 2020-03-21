@@ -1,3 +1,5 @@
+"""Command for adding a vacation"""
+
 import datetime
 import logging
 

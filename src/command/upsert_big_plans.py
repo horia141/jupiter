@@ -1,3 +1,5 @@
+"""Command for updating big plans for a project"""
+
 import hashlib
 import logging
 import uuid
