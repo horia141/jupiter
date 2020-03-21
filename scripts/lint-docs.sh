@@ -2,4 +2,4 @@
 
 set -ex
 
-mdl --style="./scripts/docs-style.rb" docs/
+mdl --style="./scripts/lint/docs.rb" docs/
