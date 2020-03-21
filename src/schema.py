@@ -1,3 +1,5 @@
+"""Definitions for Notion-side schemas"""
+
 import uuid
 
 COLORS = [
@@ -14,6 +16,8 @@ COLORS = [
 
 
 def get_vacations_schema():
+    """Get schemas for vacations screen"""
+
     vacations_schema = {
         "title": {
             "name": "Name",
@@ -194,6 +198,8 @@ BIG_PLAN_STATUS = {
 
 
 def get_inbox_schema():
+    """Get schemas for inbox screen"""
+
     inbox_schema = {
         "title": {
             "name": "Name",
@@ -539,6 +545,8 @@ INBOX_DATABASE_VIEW_SCHEMA = {
 
 
 def get_big_plan_schema():
+    """Get schemas for big plan screen"""
+
     big_plan_schema = {
         "title": {
             "name": "Name",
@@ -618,6 +626,8 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
 
 
 def get_view_schema_for_big_plan_desc(big_plan_name):
+    """Get the view schema for a big plan details view"""
+
     big_plan_view_schema = {
         "name": "Inbox Tasks",
         "query2": {

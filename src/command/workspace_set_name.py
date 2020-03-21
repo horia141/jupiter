@@ -1,8 +1,10 @@
+"""Command for setting the name of a workspace"""
+
 import logging
 
 from notion.client import NotionClient
 
-import commands.command as command
+import command.command as command
 import lockfile
 import space_utils
 import storage
@@ -10,24 +12,25 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class WorkspaceSync(command.Command):
+class WorkspaceSetName(command.Command):
+    """Command class for setting the name of a workspace"""
 
     @staticmethod
     def name():
-        return "ws-sync"
+        return "ws-set-name"
 
     @staticmethod
     def description():
-        return "Synchronises Notion and the local storage"
+        return "Change the name of the workspace"
 
     def build_parser(self, parser):
-        parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
+        parser.add_argument("name", help="The plan name to use")
 
     def run(self, args):
 
-        # Parse arguments
+        # Argument parsing
 
-        prefer = args.prefer
+        name = args.name
 
         # Load local storage
 
@@ -46,13 +49,13 @@ class WorkspaceSync(command.Command):
         if args.dry_run:
             return
 
-        if prefer == "notion":
-            name = found_root_page.title
-            workspace["name"] = name
-            storage.save_workspace(workspace)
-            LOGGER.info("Applied changes on local side")
-        elif prefer == "local":
-            found_root_page.title = workspace["name"]
-            LOGGER.info("Applied changes on Notion side")
-        else:
-            raise Exception(f"Invalid preference {prefer}")
+        # Apply the changes to the Notion side
+
+        found_root_page.title = name
+        LOGGER.info("Applied changes on Notion side")
+
+        # Apply the changes to the local side
+
+        workspace["name"] = name
+        storage.save_workspace(workspace)
+        LOGGER.info("Applied changes on local side")

@@ -1,10 +1,10 @@
 FROM python:3.6-alpine
-MAINTAINER Horia Coman <horia141@gmail.com>
+LABEL maintainer='horia141@gmail.com'
 
 RUN apk --no-cache --update add \
-    build-base \
-    libffi-dev \
-    openssl-dev
+    build-base=0.5-r1 \
+    libffi-dev=3.2.1-r6 \
+    openssl-dev=1.1.1d-r3
 
 WORKDIR /jupiter
 

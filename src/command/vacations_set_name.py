@@ -1,10 +1,10 @@
-import datetime
+"""Command for setting the name of a vacation"""
+
 import logging
-import pendulum
 
 from notion.client import NotionClient
 
-import commands.command as command
+import command.command as command
 import lockfile
 import space_utils
 import storage
@@ -12,26 +12,27 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsSetStartDate(command.Command):
+class VacationsSetName(command.Command):
+    """Command class for setting the name of a vacation"""
 
     @staticmethod
     def name():
-        return "vacations-set-start-date"
+        return "vacations-set-name"
 
     @staticmethod
     def description():
-        return "Change the start date of a vacation"
+        return "Change the name of a vacation"
 
     def build_parser(self, parser):
         parser.add_argument("id", type=str, help="The id of the vacations to modify")
-        parser.add_argument("start_date", type=str, help="The new start date of the vacation")
+        parser.add_argument("name", type=str, help="The new name of the vacation")
 
     def run(self, args):
 
         # Parse arguments
 
         ref_id = args.id
-        start_date = pendulum.parse(args.start_date, tz="UTC")
+        name = args.name
 
         # Load local storage
 
@@ -47,10 +48,7 @@ class VacationsSetStartDate(command.Command):
 
         try:
             vacation = next(v for v in workspace["vacations"]["entries"] if v["ref_id"] == ref_id)
-            if start_date >= pendulum.datetime(
-                    vacation["end_date"].year, vacation["end_date"].month, vacation["end_date"].day):
-                raise Exception("Cannot set a start date after the end date")
-            vacation["start_date"] = datetime.date(start_date.year, start_date.month, start_date.day)
+            vacation["name"] = name
             storage.save_workspace(workspace)
             LOGGER.info("Modified vacation")
         except StopIteration:
@@ -68,7 +66,7 @@ class VacationsSetStartDate(command.Command):
         for vacation_row in vacations_rows:
             if vacation_row.ref_id != ref_id:
                 continue
-            vacation_row.start_date = vacation["start_date"]
+            vacation_row.title = vacation["name"]
             LOGGER.info("Applied Notion changes")
             break
         else:

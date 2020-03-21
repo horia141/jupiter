@@ -1,10 +1,10 @@
-import datetime
+"""Command for syncing the vacations from Notion"""
+
 import logging
 
-import pendulum
 from notion.client import NotionClient
 
-import commands.command as command
+import command.command as command
 import lockfile
 import space_utils
 import storage
@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsSync(command.Command):
+    """Command class for creating projects"""
 
     @staticmethod
     def name():

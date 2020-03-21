@@ -1,9 +1,11 @@
+"""Command for initialising a workspace"""
+
 import logging
 
 from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
-import commands.command as command
+import command.command as command
 import lockfile
 import schema
 import space_utils
@@ -13,6 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceInit(command.Command):
+    """Command class for initialising a workspace"""
 
     @staticmethod
     def name():
@@ -40,14 +43,14 @@ class WorkspaceInit(command.Command):
         try:
             system_lock = lockfile.load_lock_file()
             LOGGER.info("Found system lock")
-        except Exception as e:
+        except IOError:
             system_lock = lockfile.build_empty_lockfile()
             LOGGER.info("No system lock - creating it")
 
         try:
             workspace = storage.load_workspace()
             LOGGER.info("Found workspace config")
-        except IOError as e:
+        except IOError:
             workspace = storage.build_empty_workspace()
             LOGGER.info("No workspace config - creating it")
 
@@ -58,8 +61,8 @@ class WorkspaceInit(command.Command):
 
         # Apply the changes to the Notion side
 
-        (root_page_lock, root_page) = self.update_root_page(client, space, system_lock.get("root_page", {}), name)
-        vacations_lock = self.update_vacations(client, root_page, system_lock.get("vacations", {}))
+        (root_page_lock, root_page) = self._update_root_page(client, space, system_lock.get("root_page", {}), name)
+        vacations_lock = self._update_vacations(client, root_page, system_lock.get("vacations", {}))
 
         # Apply the changes to the local side
 
@@ -75,7 +78,8 @@ class WorkspaceInit(command.Command):
         lockfile.save_lock_file(system_lock)
         LOGGER.info("Applied changes on lockfile")
 
-    def update_root_page(self, client, space, lock, name):
+    @staticmethod
+    def _update_root_page(client, space, lock, name):
         if "root_page_id" in lock:
             found_root_page = space_utils.find_page_from_space_by_id(client, lock["root_page_id"])
             LOGGER.info(f"Found the root page via id {found_root_page}")
@@ -90,11 +94,9 @@ class WorkspaceInit(command.Command):
         found_root_page.title = name
         LOGGER.info("Applied changes to root page on Notion side")
 
-        return ({
-                    "root_page_id": found_root_page.id
-                }, found_root_page)
+        return {"root_page_id": found_root_page.id}, found_root_page
 
-    def update_vacations(self, client, root_page, lock):
+    def _update_vacations(self, client, root_page, lock):
         if "root_page_id" in lock:
             vacations_page = space_utils.find_page_from_space_by_id(client, lock["root_page_id"])
             LOGGER.info(f"Found the vacation page via id {vacations_page}")
@@ -115,12 +117,11 @@ class WorkspaceInit(command.Command):
             vacations_collection = client.get_collection(vacations_collection_id)
             LOGGER.info(f"Found the already existing inbox page collection via id {vacations_collection}")
             vacations_old_schema = vacations_collection.get("schema")
-            vacations_schema = self.merge_schemas(vacations_old_schema, vacations_schema)
+            vacations_schema = self._merge_schemas(vacations_old_schema, vacations_schema)
             vacations_collection.set("schema", vacations_schema)
         else:
             vacations_collection = client.get_collection(
                 client.create_record("collection", parent=vacations_page, schema=vacations_schema))
-            inbox_collection_id = vacations_collection.id
             LOGGER.info(f"Created the inbox page collection as {vacations_collection}")
 
         vacations_collection.name = "Vacations"
@@ -131,11 +132,12 @@ class WorkspaceInit(command.Command):
         lock["database_view_id"] = vacations_collection_database_view.id
 
         vacations_page.set("collection_id", vacations_collection.id)
-        vacations_page.set("view_ids", [ vacations_collection_database_view.id ])
+        vacations_page.set("view_ids", [vacations_collection_database_view.id])
 
         return lock
 
-    def merge_schemas(self, old_schema, new_schema):
+    @staticmethod
+    def _merge_schemas(old_schema, new_schema):
         combined_schema = {}
 
         # Merging schema is limited right now. Basically we assume the new schema takes
@@ -144,31 +146,31 @@ class WorkspaceInit(command.Command):
         # across schema updates.
         # As a special case, the big plan item is left to whatever value it had before
         # since this thing is managed via the big plan syncing flow!
-        for (k, v) in new_schema.items():
-            if v["type"] == "select" or v["type"] == "multi_select":
-                if k in old_schema:
-                    old_v = old_schema[k]
+        for (schema_item_name, schema_item) in new_schema.items():
+            if schema_item["type"] == "select" or schema_item["type"] == "multi_select":
+                if schema_item_name in old_schema:
+                    old_v = old_schema[schema_item_name]
 
-                    combined_schema[k] = {
-                        "name": v["name"],
-                        "type": v["type"],
+                    combined_schema[schema_item_name] = {
+                        "name": schema_item["name"],
+                        "type": schema_item["type"],
                         "options": []
                     }
 
-                    for option in v["options"]:
+                    for option in schema_item["options"]:
                         old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
                                           None)
                         if old_option is not None:
-                            combined_schema[k]["options"].append({
+                            combined_schema[schema_item_name]["options"].append({
                                 "color": option["color"],
                                 "value": option["value"],
                                 "id": old_option["id"]
                             })
                         else:
-                            combined_schema[k]["options"].append(option)
+                            combined_schema[schema_item_name]["options"].append(option)
                 else:
-                    combined_schema[k] = v
+                    combined_schema[schema_item_name] = schema_item
             else:
-                combined_schema[k] = v
+                combined_schema[schema_item_name] = schema_item
 
         return combined_schema

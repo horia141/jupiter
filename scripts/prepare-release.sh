@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 RELEASE_VERSION=$1
 

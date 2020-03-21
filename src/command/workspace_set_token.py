@@ -1,12 +1,15 @@
+"""Command for setting the access token of a workspace"""
+
 import logging
 
-import commands.command as command
+import command.command as command
 import storage
 
 LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceSetToken(command.Command):
+    """Command class for setting the access token of a workspace"""
 
     @staticmethod
     def name():

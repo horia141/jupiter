@@ -1,0 +1,4 @@
+pylint==2.4.4
+yamllint==1.20.0
+pyflakes==2.1.1
+bandit==1.6.2
