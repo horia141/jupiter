@@ -28,4 +28,4 @@ jobs:
       - name: Build the docker image
         run: ./scripts/docker-build.sh
       - name: Publish the docker image
-        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-normal-push.yml
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | ./scripts/docker-push.yml
