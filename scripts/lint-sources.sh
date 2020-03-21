@@ -2,5 +2,6 @@
 
 set -ex
 
-pylint ./src
+pylint --jobs=8 ./src
 pyflakes ./src
+bandit -r ./src

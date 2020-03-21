@@ -42,7 +42,7 @@ class UpsertBigPlans(command.Command):
 
     @staticmethod
     def _get_stable_color(option_id):
-        return schema.COLORS[hashlib.md5(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
+        return schema.COLORS[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
 
     @staticmethod
     def _format_name(big_plan_name):
