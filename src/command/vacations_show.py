@@ -1,4 +1,4 @@
-"""Command for showing the vacations"""
+"""Command for showing the vacations."""
 
 import logging
 
@@ -9,23 +9,23 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsShow(command.Command):
-    """Command class for showing the vacations"""
+    """Command class for showing the vacations."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "vacations-show"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Show the list of vacations"
 
     def build_parser(self, parser):
-        pass
+        """Construct a argparse parser for the command."""
 
     def run(self, args):
-
-        # Load local storage
-
+        """Callback to execute when the command is invoked."""
         workspace = storage.load_workspace()
         LOGGER.info("Loaded workspace data")
 

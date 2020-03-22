@@ -1,4 +1,4 @@
-"""Command for syncing the vacations from Notion"""
+"""Command for syncing the vacations from Notion."""
 
 import logging
 
@@ -13,23 +13,24 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsSync(command.Command):
-    """Command class for creating projects"""
+    """Command class for creating projects."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "vacations-sync"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Synchronises Notion and the local storage"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
 
     def run(self, args):
-
-        # Parse arguments
-
+        """Callback to execute when the command is invoked."""
         prefer = args.prefer
 
         # Load local storage

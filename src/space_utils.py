@@ -1,4 +1,4 @@
-"""Notion space interactions"""
+"""Notion space interactions."""
 
 import logging
 
@@ -9,12 +9,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def find_page_from_space_by_id(client, page_id):
-    """Find a page from a space, with a given id"""
+    """Find a page from a space, with a given id."""
     return client.get_block(page_id)
 
 
 def find_page_from_page_by_name(root_page, name):
-    """Find a spage from a given page, with a name"""
+    """Find a spage from a given page, with a name."""
     for subblock in root_page.children:
         if not isinstance(subblock, CollectionViewPageBlock):
             continue
@@ -30,7 +30,7 @@ def find_page_from_page_by_name(root_page, name):
 
 
 def find_page_from_space_by_name(client, name, space):
-    """Find a page from a space, with a name"""
+    """Find a page from a space, with a name."""
     def find_page_by_name(page):
         if page.title == name:
             return page
@@ -55,19 +55,19 @@ def find_page_from_space_by_name(client, name, space):
 
 
 def create_page_in_space(space, name):
-    """Create a page in a space"""
+    """Create a page in a space."""
     return space.add_page(name)
 
 
 def create_page_in_page(page, name):
-    """Create a page under a page"""
+    """Create a page under a page."""
     new_page = page.children.add_new(PageBlock)
     new_page.title = name
     return new_page
 
 
 def attach_view_to_collection(client, page, collection, lock_view_id, view_type, title, schema):
-    """Attach a view to a collection"""
+    """Attach a view to a collection."""
     if lock_view_id:
         view = client.get_collection_view(lock_view_id, collection=collection)
         LOGGER.info(f"Found the collection view by id {title} {view}")

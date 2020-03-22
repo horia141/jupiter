@@ -1,4 +1,4 @@
-"""Command for setting the name of a workspace"""
+"""Command for setting the name of a workspace."""
 
 import logging
 
@@ -13,23 +13,24 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceSetName(command.Command):
-    """Command class for setting the name of a workspace"""
+    """Command class for setting the name of a workspace."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "ws-set-name"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Change the name of the workspace"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("name", help="The plan name to use")
 
     def run(self, args):
-
-        # Argument parsing
-
+        """Callback to execute when the command is invoked."""
         name = args.name
 
         # Load local storage

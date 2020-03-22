@@ -1,4 +1,4 @@
-"""Command for updating big plans for a project"""
+"""Command for updating big plans for a project."""
 
 import hashlib
 import logging
@@ -17,20 +17,24 @@ LOGGER = logging.getLogger(__name__)
 
 
 class UpsertBigPlans(command.Command):
-    """Command class for updating big plans for a project"""
+    """Command class for updating big plans for a project."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "upsert-big-plans"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Upsert big plans"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("tasks", help="The tasks file")
 
     def run(self, args):
+        """Callback to execute when the command is invoked."""
         workspace = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:

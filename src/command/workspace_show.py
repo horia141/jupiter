@@ -1,4 +1,4 @@
-"""Command for showing the workspace"""
+"""Command for showing the workspace."""
 
 import logging
 
@@ -9,22 +9,23 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceShow(command.Command):
-    """Command class for showing the workspace"""
+    """Command class for showing the workspace."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "ws-show"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Show the current information about the workspace"
 
     def build_parser(self, parser):
-        pass
+        """Construct a argparse parser for the command."""
 
     def run(self, args):
-        # Load local storage
-
+        """Callback to execute when the command is invoked."""
         workspace = storage.load_workspace()
         LOGGER.info("Loaded workspace data")
 

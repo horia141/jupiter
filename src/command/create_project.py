@@ -1,4 +1,4 @@
-"""Command for creating projects"""
+"""Command for creating projects."""
 
 import logging
 
@@ -16,20 +16,24 @@ LOGGER = logging.getLogger(__name__)
 
 
 class CreateProject(command.Command):
-    """Command class for creating projects"""
+    """Command class for creating projects."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "create-project"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Create or update a project"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("tasks", help="The tasks file")
 
     def run(self, args):
+        """Callback to execute when the command is invoked."""
         workspace = storage.load_workspace()
 
         with open(args.tasks, "r") as tasks_file:

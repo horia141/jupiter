@@ -1,4 +1,4 @@
-"""Command for removing a vacation"""
+"""Command for removing a vacation."""
 
 import logging
 
@@ -13,23 +13,24 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsRemove(command.Command):
-    """Command class for removing a vacation"""
+    """Command class for removing a vacation."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "vacations-remove"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Remove a vacation"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("id", type=str, help="The id of the vacations to remove")
 
     def run(self, args):
-
-        # Parse arguments
-
+        """Callback to execute when the command is invoked."""
         ref_id = args.id
 
         # Load local storage
