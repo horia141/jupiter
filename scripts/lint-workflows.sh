@@ -2,4 +2,4 @@
 
 set -ex
 
-yamllint --strict .github/
+yamllint --config-file=./scripts/lint/yamllint .github/
