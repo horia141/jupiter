@@ -655,7 +655,9 @@ BIG_PLAN_FORMAT = {
     "board_cover_size": "small"
 }
 
+
 BIG_PLAN_KANBAN_ALL_SCHEMA = {
+    "name": "Kanban All",
     "query2": {
         "group_by": "status",
         "filter_operator": "and",
@@ -668,6 +670,30 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
         }]
     },
     "format": BIG_PLAN_FORMAT
+}
+
+
+BIG_PLAN_DATABASE_VIEW_SCHEMA = {
+    "name": "Database",
+    "format": {
+        "table_properties": [{
+            "width": 300,
+            "property": "title",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "status",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "date",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "inboxid",
+            "visible": False
+        }]
+    }
 }
 
 

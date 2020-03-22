@@ -202,8 +202,16 @@ class CreateProject(command.Command):
             "Kanban All", schema.BIG_PLAN_KANBAN_ALL_SCHEMA)
         big_plan_lock["kanban_all_view_id"] = big_plan_collection_kanban_all_view.id
 
+        big_plan_collection_database_view = space_utils.attach_view_to_collection(
+            client, big_plan_page, big_plan_collection, big_plan_lock.get("database_view_id"), "table",
+            "Database", schema.BIG_PLAN_DATABASE_VIEW_SCHEMA)
+        big_plan_lock["database_view_id"] = big_plan_collection_database_view.id
+
         big_plan_page.set("collection_id", big_plan_collection.id)
-        big_plan_page.set("view_ids", [big_plan_collection_kanban_all_view.id])
+        big_plan_page.set("view_ids", [
+            big_plan_collection_kanban_all_view.id,
+            big_plan_collection_database_view.id
+        ])
 
         return big_plan_lock
 
