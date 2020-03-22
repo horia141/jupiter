@@ -168,7 +168,6 @@ class DailySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None):
         """Construct a schedule."""
         super().__init__()
-        self._name = name
         self._date = date
         self._due_date = date.end_of("day")
         if due_at_time:
@@ -213,7 +212,6 @@ class WeeklySchedule(Schedule):
         """Construct a schedule."""
         super().__init__()
         start_of_week = date.start_of("week")
-        self._name = name
         self._date = date
         if due_at_day:
             self._due_date = start_of_week.add(days=due_at_day - 1).end_of("day")
@@ -259,7 +257,6 @@ class MonthlySchedule(Schedule):
         """Construct a schedule."""
         super().__init__()
         start_of_month = date.start_of("month")
-        self._name = name
         self._date = date
         if due_at_day:
             self._due_date = start_of_month.add(days=due_at_day - 1).end_of("day")
@@ -303,7 +300,6 @@ class QuarterlySchedule(Schedule):
     def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None, due_at_month=None):
         """Construct a schedule."""
         super().__init__()
-        self._name = name
         self._date = date
         if due_at_month:
             if due_at_day:
@@ -355,7 +351,6 @@ class YearlySchedule(Schedule):
     def __init__(self, name, date, due_at_time=None, due_at_day=None, due_at_month=None):
         """Construct a schedule."""
         super().__init__()
-        self._name = name
         self._date = date
         if due_at_month:
             if due_at_day:

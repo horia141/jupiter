@@ -78,16 +78,11 @@ ARCHIVED_STATUS = "Archived"
 
 INBOX_BIGPLAN_KEY = "bigplan2"
 
-INBOX_TASK_ROW_STATUS_KEY = "status"
-INBOX_TASK_ROW_BIGPLAN_KEY = "big_plan"
 INBOX_TASK_ROW_DUE_DATE_KEY = "due_date"
-INBOX_TASK_ROW_EISEN_KEY = "eisenhower"
 INBOX_TASK_ROW_FROM_SCRIPT_KEY = "from_script"
 INBOX_TASK_ROW_PERIOD_KEY = "recurring_period"
 INBOX_TASK_ROW_TIMELINE_KEY = "recurring_timeline"
 
-BIG_PLAN_TASK_ROW_STATUS_KEY = "status"
-BIG_PLAN_TASK_DUE_DATE_KEY = "due_date"
 BIG_PLAN_TASK_INBOX_ID_KEY = "inbox_id_ref"
 
 INBOX_STATUS = {
