@@ -1,4 +1,4 @@
-"""Command for adding a vacation"""
+"""Command for adding a vacation."""
 
 import datetime
 import logging
@@ -15,25 +15,26 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsAdd(command.Command):
-    """Command class for adding a vacation"""
+    """Command class for adding a vacation."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "vacations-add"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Add a new vacation"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("--name", dest="name", required=True, help="The name of the vacation")
         parser.add_argument("--start-date", dest="start_date", required=True, help="The vacation start date")
         parser.add_argument("--end-date", dest="end_date", required=True, help="The vacation end date")
 
     def run(self, args):
-
-        # Parse arguments
-
+        """Callback to execute when the command is invoked."""
         name = args.name
         start_date = pendulum.parse(args.start_date, tz="UTC")
         end_date = pendulum.parse(args.end_date, tz="UTC")

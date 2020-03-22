@@ -1,4 +1,4 @@
-"""Command for setting the name of a vacation"""
+"""Command for setting the name of a vacation."""
 
 import logging
 
@@ -13,24 +13,25 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsSetName(command.Command):
-    """Command class for setting the name of a vacation"""
+    """Command class for setting the name of a vacation."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "vacations-set-name"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Change the name of a vacation"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("id", type=str, help="The id of the vacations to modify")
         parser.add_argument("name", type=str, help="The new name of the vacation")
 
     def run(self, args):
-
-        # Parse arguments
-
+        """Callback to execute when the command is invoked."""
         ref_id = args.id
         name = args.name
 

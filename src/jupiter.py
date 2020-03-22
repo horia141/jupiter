@@ -1,4 +1,4 @@
-"""The CLI entrypoint for Jupiter"""
+"""The CLI entrypoint for Jupiter."""
 
 import argparse
 import logging
@@ -23,7 +23,7 @@ import command.workspace_sync as workspace_sync
 
 
 def main():
-    """Application main function"""
+    """Application main function."""
     logging.basicConfig(level=logging.INFO)
 
     commands = [

@@ -1,4 +1,4 @@
-"""Command for initialising a workspace"""
+"""Command for initialising a workspace."""
 
 import logging
 
@@ -15,25 +15,26 @@ LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceInit(command.Command):
-    """Command class for initialising a workspace"""
+    """Command class for initialising a workspace."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "ws-init"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Initialise a workspace"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("--name", required=True, help="The plan name to use")
         parser.add_argument("--token", dest="token", required=True, help="The Notion access token to use")
         parser.add_argument("--space-id", dest="space_id", required=True, help="The Notion space id to use")
 
     def run(self, args):
-
-        # Arguments parsing
-
+        """Callback to execute when the command is invoked."""
         name = args.name
         token = args.token
         space_id = args.space_id

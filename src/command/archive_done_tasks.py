@@ -1,4 +1,4 @@
-"""Command for archiving done tasks"""
+"""Command for archiving done tasks."""
 
 import logging
 
@@ -15,23 +15,26 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ArchiveDoneTasks(command.Command):
-    """Command class for archiving done tasks"""
+    """Command class for archiving done tasks."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "archive-done-tasks"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Archive tasks which are done"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("tasks", help="The tasks file")
         parser.add_argument("--period", required=False, default=[], action="append",
                             help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
-
+        """Callback to execute when the command is invoked."""
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None
 
         workspace = storage.load_workspace()

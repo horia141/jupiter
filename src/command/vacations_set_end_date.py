@@ -1,4 +1,4 @@
-"""Command for setting the end date of a vacation"""
+"""Command for setting the end date of a vacation."""
 
 import datetime
 import logging
@@ -15,24 +15,25 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VacationsSetEndDate(command.Command):
-    """Command class for setting the end date of a vacation"""
+    """Command class for setting the end date of a vacation."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "vacations-set-end-date"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Change the end date of a vacation"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("id", type=str, help="The id of the vacations to modify")
         parser.add_argument("end_date", type=str, help="The new end date of the vacation")
 
     def run(self, args):
-
-        # Parse arguments
-
+        """Callback to execute when the command is invoked."""
         ref_id = args.id
         end_date = pendulum.parse(args.end_date, tz="UTC")
 

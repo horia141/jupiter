@@ -1,4 +1,4 @@
-"""Command for creating recurring tasks"""
+"""Command for creating recurring tasks."""
 
 import logging
 
@@ -18,17 +18,20 @@ LOGGER = logging.getLogger(__name__)
 
 
 class UpsertTasks(command.Command):
-    """Command class for creating recurring tasks"""
+    """Command class for creating recurring tasks."""
 
     @staticmethod
     def name():
+        """The name of the command."""
         return "upsert-tasks"
 
     @staticmethod
     def description():
+        """The description of the command."""
         return "Upsert recurring tasks"
 
     def build_parser(self, parser):
+        """Construct a argparse parser for the command."""
         parser.add_argument("tasks", help="The tasks file")
         parser.add_argument("--date", required=False, default=None, help="The date on which the upsert should run at")
         parser.add_argument("--group", required=False, default=[], action="append",
@@ -37,6 +40,7 @@ class UpsertTasks(command.Command):
                             help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
+        """Callback to execute when the command is invoked."""
         if args.date:
             right_now = pendulum.parse(args.date)
         else:
