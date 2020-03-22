@@ -124,13 +124,13 @@ INBOX_STATUS = {
 }
 
 INBOX_EISENHOWER = {
-    "Important": {
-        "name": "Important",
-        "color": "blue"
-    },
     "Urgent": {
         "name": "Urgent",
         "color": "red"
+    },
+    "Important": {
+        "name": "Important",
+        "color": "blue"
     }
 }
 
@@ -308,6 +308,15 @@ INBOX_KANBAN_ALL_VIEW_SCHEMA = {
         "sort": [{
             "property": "date",
             "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
+            "direction": "ascending"
         }]
     },
     "format": INBOX_KANBAN_FORMAT
@@ -323,6 +332,15 @@ INBOX_KANBAN_URGENT_VIEW_SCHEMA = {
         }],
         "sort": [{
             "property": "date",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
             "direction": "ascending"
         }],
         "filter": {
@@ -371,6 +389,15 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
         "sort": [{
             "property": "date",
             "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
+            "direction": "ascending"
         }],
         "filter": {
             "operator": "and",
@@ -399,6 +426,15 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
         }],
         "sort": [{
             "property": "date",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
             "direction": "ascending"
         }],
         "filter": {
@@ -429,6 +465,15 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
         "sort": [{
             "property": "date",
             "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
+            "direction": "ascending"
         }],
         "filter": {
             "operator": "and",
@@ -452,6 +497,15 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
     "query2": {
         "sort": [{
             "property": "date",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
             "direction": "ascending"
         }],
         "filter": {
