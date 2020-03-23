@@ -33,7 +33,7 @@ git pull
 git checkout -b "${RELEASE_BRANCH}"
 sed -E "s/VERSION=.+/VERSION=${RELEASE_VERSION}/g" < Config > Config.bak
 mv Config.bak Config
-cp docs/releases/template.md "${RELEASE_NOTES_PATH}"
+cp scripts/docs/template.md "${RELEASE_NOTES_PATH}"
 sed -i -E "s/{{release_version}}/${RELEASE_VERSION}/g" "${RELEASE_NOTES_PATH}"
 sed -i -E "s|{{release_date}}|${RELEASE_DATE}|g" "${RELEASE_NOTES_PATH}"
 git add "${RELEASE_NOTES_PATH}"
