@@ -54,9 +54,12 @@ class RemoveArchivedTasks(command.Command):
         archived_tasks = page.build_query().execute()
 
         for archived_task in archived_tasks:
+            task_period = getattr(archived_task, schema.INBOX_TASK_ROW_PERIOD_KEY)
+            if not task_period:
+                task_period = ""
             if archived_task.status != schema.ARCHIVED_STATUS:
                 continue
-            if period_filter and (archived_task.script_period.lower() not in period_filter):
+            if period_filter and (task_period.lower() not in period_filter):
                 LOGGER.info(f"Skipping '{archived_task.name}' on account of period filtering")
                 continue
             LOGGER.info(f"Removing '{archived_task.name}'")

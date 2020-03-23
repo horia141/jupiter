@@ -57,9 +57,12 @@ class ArchiveDoneTasks(command.Command):
         all_done_tasks = page.build_query().execute()
 
         for done_task in all_done_tasks:
+            task_period = getattr(done_task, schema.INBOX_TASK_ROW_PERIOD_KEY)
+            if not task_period:
+                task_period = ""
             if done_task.status not in DONE_STATUS:
                 continue
-            if period_filter and (done_task.script_period.lower() not in period_filter):
+            if period_filter and (task_period.lower() not in period_filter):
                 LOGGER.info(f"Skipping '{done_task.name}' on account of period filtering")
                 continue
             LOGGER.info(f"Archiving '{done_task.name}'")
