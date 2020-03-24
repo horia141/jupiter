@@ -1,3 +1,7 @@
 site_name: Jupiter
 
 docs_dir: docs
+
+theme:
+    name: mkdocs
+    highlightjs: true
