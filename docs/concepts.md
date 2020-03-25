@@ -1,4 +1,6 @@
-# Intro
+# Concepts
+
+## Intro
 
 Jupiter is a tool for _life planning_. It is _opinionated_ in how it approaches
 this problem. The goal of this page is to document Jupiter's conceptual model
@@ -7,9 +9,10 @@ and how life planning is mapped to it.
 There will be references made to the current implementation. But the concepts
 are _separate_ from it, and could just as easily be implemented via pen & paper.
 
-# Overview
+## Overview
 
 As a quick reference, here is the list of the more important concepts:
+
 * _Workspace_: the _place_ where all the work in Jupiter happens.
 * _Project_: the _place_ where some of the work happens. This is normally a
   neatly defined part such as "Personal" goals or "Career" goals, etc.
@@ -32,7 +35,7 @@ both the local storage and Notion at the same time. You can edit things in Notio
 easier to go this route though. So you'll need to run special `sync` commands to keep the local store and Notion in
 sync.
 
-# Workspace
+## Workspace
 
 All the work for life planning takes place in a _workspace_. When you use
 `jupiter ws-init` in a local directory, you’re starting up your workspace. The local
@@ -52,18 +55,20 @@ namely “Personal”, “Engineer 2.0”, “Work @Bolt”, etc:
 
 ![Workspace image](assets/concepts-workspace.png)
 
-## Interactions Summary
+### Workspace Interactions Summary
 
 You can:
+
 * Create a workspace via `ws-init`
 * Set the name of the workspace via `ws-set-name` or editing the name in Notion directly
 * Set the token of the workspace via `ws-set-token`.
 * Synchronise changes between the local store and Notion via `ws-sync`.
 * See a summary of the workspace via `ws-show`.
 
-## Workspace Properties
+### Workspace Properties
 
 Workspaces have several important properties:
+
 * The name is specified when calling `ws-init` and can be overwritten via `ws-set-name`. It's the name of
   the root page in Notion too.
 * The token is specified when calling `ws-init` and can be overwritten via `ws-set-token`. It's the secret used to
@@ -72,13 +77,13 @@ Workspaces have several important properties:
 * The space id is specified when calling `ws-init`. It identifies the Notion "space" where Jupiter will things up. It
   can't be changed after creation though.
 
-## Syncing
+### Workspace Syncing
 
 When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special
 syncing commands to make sure Notion and the local storage are in sync. The `ws-sync` command achieves this for
 workspaces. Presently, just the name can be changed, by editing the root page's name.
 
-# Vacations
+## Vacations
 
 A _vacation_ is a set period of time when some scheduled tasks aren't scheduled. Vacations are attached to the
 workspace. They can be created both via Jupiter commands and in Notion.
@@ -96,9 +101,10 @@ id=6 Barcelona trip start=2020-03-20 end=2020-04-04
 id=7 Eurotrip 2 start=2020-04-07 end=2020-04-22
 ```
 
-## Interactions Summary
+### Vacations Interactions Summary
 
 You can:
+
 * Create a vacation via `vacations-add`, or by creating a new row in the "Vacations" page.
 * Remove a vacation via `vacations-remove`, or by removing the row in the "Vacations" page.
 * Change the name of a vacations via `vacations-set-name`, or by changing the name of the row in the "Vacations" page.
@@ -109,9 +115,10 @@ You can:
 * Synchronise changes between the local store and Notion via `vacations-sync`.
 * See a summary of the workspace via `vacations-show`.
 
-## Vacations Properties
+### Vacations Properties
 
 A vacation has several properties:
+
 * The name is specified when calling `vacations-add` and can be overwritten via `vacations-set-name`. It's the
   name of the vacation, and will show up in Notion too.
 * The id is an unique identifier for a vacation, assigned when calling `vacations-add` or `vacations-sync`. It's
@@ -121,7 +128,7 @@ A vacation has several properties:
 * The end date is the time when the vacation end, and tasks should again be generated. It should be after the
   start date. You can set it at creation time, or via `vacations-set-end-date`, or from Notion.
 
-## Syncing
+### Vacations Syncing
 
 When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special
 syncing commands to make sure Notion and the local storage are in sync. The `vacations-sync` command achieves this
@@ -129,7 +136,7 @@ for vacations. It adds new vacations from Notion, removes the ones not present l
 remotely if they're in the local store, but not in Notion. Any changes in Notion will also be reflected in the local
 store.
 
-# Projects
+## Projects
 
 The workspace contains _one or more_ _projects_. If the workspace is where all the
 work happens, a project is where some part of the work happens. Usually some
@@ -159,7 +166,7 @@ regular Notion page (“Blog Ideas”):
 
 ![Projects image](assets/concepts-projects.png)
 
-# Tasks
+## Tasks
 
 A task is some atomic unit of work. Tasks live in the “inbox”. A task is ideal
 to model work which can be done in anything from a minute, to a day, excluding
@@ -170,6 +177,7 @@ For example, you can have a task like "Change AC filter", or "Take visa papers t
 embassy", or "Research team off-site locations".
 
 Tasks have a _status_, which can be one of:
+
 * _Accepted_: all tasks you created by hand should start with this status. It means
   you’re going to start working on the task in the near future.
 * _Recurring_: all tasks you created via recurring tasks and `jupiter upsert-tasks`
@@ -216,7 +224,7 @@ In Notion a task might look like this:
 The “From Script”, “Recurring Period” and “Recurring Timeline” fields are relevant
 only for recurring tasks.
 
-## The Inbox
+### The Inbox
 
 The inbox is a representation of your current work, as well as the work you recently
 finished or will recently start. It's a collection of tasks. They are created here
@@ -229,6 +237,7 @@ columns.
 ![Inbox image](assets/concepts-inbox.png)
 
 There are multiple views for the inbox though right now:
+
 * _Kanban All_: views all tasks in the inbox as a Kanban board.
 * _Database_: views all tasks in the inbox as a Excel-like table.
 * _Kanban Due $InPeriod Or Exceeded_: views all tasks due in a certain period
@@ -245,6 +254,7 @@ The inbox can get cluttered with time as you finish more and more tasks. The
 filtered views help a bit, but due to limitations in how Jupiter interacts with
 Notion, after some point there are performance issues. Some things you can do to
 do garbage collection is running:
+
 * Task archival via `jupiter archive-done-tasks {user} {project}`. This operation
   simply changes any tasks with the “Not Done” or “Done” status to the “Archived”
   status, which essentially makes them invisible.
@@ -253,7 +263,7 @@ do garbage collection is running:
   They’ll be available in the Notion trash, but quite hard to recover.
   Note - this will be improved in the future.
 
-# Big Plans
+## Big Plans
 
 Big plans are larger units of work. They are made up of multiple tasks. Big plans
 live in the "Big Plan page". A big plan is ideal to model work which can be done
@@ -263,6 +273,7 @@ For example, you can have a task like "Plan a family vacation", or "Get a talk
 accepted to a conference", or "Buy a new house".
 
 Big plans have a _status_, which can be one of:
+
 * _Accepted_: all big plans you create should start with this status. It means you're
   going to start working on this plan in the near to medium future.
 * _In Progress_: all big plans you're currently working on should be placed in this
@@ -306,7 +317,7 @@ can view the completion status here.
 You can create a task for the big plan directly here, or you can create one in the Inbox
 and link it via the `Big Plan` property.
 
-## Big Plans Page
+### Big Plans Page
 
 The big plan page is a representation of your current and longer term work. It's a
 collection of big plans. They are created here in the "Accepted" state.
@@ -316,7 +327,7 @@ columns.
 
 ![Big plans image](assets/concepts-big-plan-page.png)
 
-# Recurring Tasks
+## Recurring Tasks
 
 A recurring task is some periodic and atomic unit of work. Recurring tasks live in the
 "project file", but they're instantiated as regular tasks in the "inbox". A recurring
@@ -327,6 +338,7 @@ For example, you can have a recurring task like "Clean out AC filters every week
 
 Recurring tasks have a _period_ and a _period interval_. The former is set via the `period`
 property and the latter is derived uniquely from this. The period can be one of:
+
 * _Daily_: a task which needs to happen once a day. In a year there will be 365 or 366
   instances of such a task, and the period interval for each one will be each day. The
   intervals are numbered from 1 to 365.
@@ -338,7 +350,8 @@ property and the latter is derived uniquely from this. The period can be one of:
   month. The intervals are numbered from 1 to 12.
 * _Quarterly_: a task which needs to happen once a quarter (group of three months). In a
   year there will be 4 instances of such a task, and the period interval for each one will
-  be a group of three consecutive months (Jan/Feb/Mar, Apr/May/Jun, Jul/Aug/Sep, and Oct/Nov/Dec). The intervals are numbered from 1 to 4.
+  be a group of three consecutive months (Jan/Feb/Mar, Apr/May/Jun, Jul/Aug/Sep, and Oct/Nov/Dec).
+  The intervals are numbered from 1 to 4.
 * _Yearly_: a task which needs to happen once a year. In a year there will be 1 instance
   of such a task, and the period interval for it will be the full year. The intervals
   are numbered by the year.
@@ -371,6 +384,7 @@ While in the inbox, the instantiated tasks might look like this - notice the "We
 
 The instantiated task in the inbox is constructed from the recurring task template, but
 it also changes in the following way:
+
 * The name contains the period interval for which the task is active. So "Pay home
   insurance" becomes "Pay home insurance Mar". The formats are "Mar13" for daily periods,
   "W13" for weekly periods, "Mar" for monthly periods, "Q1" for quarterly periods,
@@ -381,6 +395,7 @@ it also changes in the following way:
 Recurring tasks also have a deadline. By default the deadline is the end day of the period
 interval, at midnight. You can override it however to specify, via the `due_at_day` and
 `due_at_time` properties. They work like so:
+
 * For tasks with daily period, only the `due_at_time` property can be set. For example
   `due_at_time: "17:00"` will mark a task as due at 5PM in the local timezone, as opposed
   to 11:59PM in the local timezone.
@@ -416,6 +431,7 @@ In Notion an instantiated task might look like this then:
 
 Recurring tasks can be configured to skip certain periods via a skip rule. This is
 specified via the `skip_rule` property, which can be one of:
+
 * `odd`: skips the odd numbered intervals for the period. More precisely, the day/week/
   month/quarter number within the year is checked to be odd. For yearly periods, the year
   itself should be odd.
@@ -454,6 +470,7 @@ interrupted by a vacation.
 
 Recurring tasks are created via the `jupiter upsert-tasks` command. This has some special
 forms too:
+
 * `jupiter upsert-tasks {user} {project}` is the standard form and inserts all of the
   tasks whose period interval includes today. Thus, all daily tasks will be inserted, and
   all weekly tasks for this week, etc. Of course, if the tasks for this week have already
@@ -471,7 +488,7 @@ The `jupiter upsert-tasks` command is idempotent, as described above. Furthermor
 not affect task status, or any extra edits on a particular instance of a task. Only
 archived and removed tasks are regenerated.
 
-## The Project File
+### The Project File
 
 The project file is a representation of your recurring tasks. It's a file right now you
 need to manage, and doesn't (yet) have any Notion representation.

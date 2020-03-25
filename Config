@@ -1,3 +1,4 @@
 BASENAME=jupiter
-VERSION=0.1.0
+VERSION=0.1.1
 DOCKERHUB_USER=horia141
+DOCS_URL=https://jupiter-goals.readthedocs.io/en/stable/

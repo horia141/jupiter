@@ -1,0 +1,16 @@
+---
+name: Normal Push
+
+"on": [push]
+
+jobs:
+  linter:
+    name: Linter
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare for CI
+        run: sudo ./scripts/setup-for-ci.sh
+      - name: Lint scripts
+        run: ./scripts/lint.sh

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 FEATURE_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 

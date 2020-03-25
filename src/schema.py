@@ -1,3 +1,5 @@
+"""Definitions for Notion-side schemas."""
+
 import uuid
 
 COLORS = [
@@ -14,6 +16,7 @@ COLORS = [
 
 
 def get_vacations_schema():
+    """Get schemas for vacations screen."""
     vacations_schema = {
         "title": {
             "name": "Name",
@@ -75,16 +78,11 @@ ARCHIVED_STATUS = "Archived"
 
 INBOX_BIGPLAN_KEY = "bigplan2"
 
-INBOX_TASK_ROW_STATUS_KEY = "status"
-INBOX_TASK_ROW_BIGPLAN_KEY = "big_plan"
 INBOX_TASK_ROW_DUE_DATE_KEY = "due_date"
-INBOX_TASK_ROW_EISEN_KEY = "eisenhower"
 INBOX_TASK_ROW_FROM_SCRIPT_KEY = "from_script"
 INBOX_TASK_ROW_PERIOD_KEY = "recurring_period"
 INBOX_TASK_ROW_TIMELINE_KEY = "recurring_timeline"
 
-BIG_PLAN_TASK_ROW_STATUS_KEY = "status"
-BIG_PLAN_TASK_DUE_DATE_KEY = "due_date"
 BIG_PLAN_TASK_INBOX_ID_KEY = "inbox_id_ref"
 
 INBOX_STATUS = {
@@ -126,13 +124,13 @@ INBOX_STATUS = {
 }
 
 INBOX_EISENHOWER = {
-    "Important": {
-        "name": "Important",
-        "color": "blue"
-    },
     "Urgent": {
         "name": "Urgent",
         "color": "red"
+    },
+    "Important": {
+        "name": "Important",
+        "color": "blue"
     }
 }
 
@@ -194,6 +192,7 @@ BIG_PLAN_STATUS = {
 
 
 def get_inbox_schema():
+    """Get schemas for inbox screen."""
     inbox_schema = {
         "title": {
             "name": "Name",
@@ -309,6 +308,15 @@ INBOX_KANBAN_ALL_VIEW_SCHEMA = {
         "sort": [{
             "property": "date",
             "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
+            "direction": "ascending"
         }]
     },
     "format": INBOX_KANBAN_FORMAT
@@ -324,6 +332,15 @@ INBOX_KANBAN_URGENT_VIEW_SCHEMA = {
         }],
         "sort": [{
             "property": "date",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
             "direction": "ascending"
         }],
         "filter": {
@@ -372,6 +389,15 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
         "sort": [{
             "property": "date",
             "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
+            "direction": "ascending"
         }],
         "filter": {
             "operator": "and",
@@ -401,6 +427,15 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
         "sort": [{
             "property": "date",
             "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
+            "direction": "ascending"
         }],
         "filter": {
             "operator": "and",
@@ -420,7 +455,7 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
 }
 
 INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
-    "name": "Kanban Due This Month Or Exceeded",
+    "name": "Kanban Due This Month Or Exceeded.",
     "query2": {
         "group_by": "status",
         "filter_operator": "and",
@@ -429,6 +464,15 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
         }],
         "sort": [{
             "property": "date",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
             "direction": "ascending"
         }],
         "filter": {
@@ -453,6 +497,15 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
     "query2": {
         "sort": [{
             "property": "date",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "fromscript",
+            "direction": "ascending"
+        }, {
+            "property": "period",
             "direction": "ascending"
         }],
         "filter": {
@@ -539,6 +592,7 @@ INBOX_DATABASE_VIEW_SCHEMA = {
 
 
 def get_big_plan_schema():
+    """Get schemas for big plan screen."""
     big_plan_schema = {
         "title": {
             "name": "Name",
@@ -601,7 +655,9 @@ BIG_PLAN_FORMAT = {
     "board_cover_size": "small"
 }
 
+
 BIG_PLAN_KANBAN_ALL_SCHEMA = {
+    "name": "Kanban All",
     "query2": {
         "group_by": "status",
         "filter_operator": "and",
@@ -617,7 +673,32 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
 }
 
 
+BIG_PLAN_DATABASE_VIEW_SCHEMA = {
+    "name": "Database",
+    "format": {
+        "table_properties": [{
+            "width": 300,
+            "property": "title",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "status",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "date",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "inboxid",
+            "visible": False
+        }]
+    }
+}
+
+
 def get_view_schema_for_big_plan_desc(big_plan_name):
+    """Get the view schema for a big plan details view."""
     big_plan_view_schema = {
         "name": "Inbox Tasks",
         "query2": {

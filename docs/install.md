@@ -1,6 +1,8 @@
+# Installation
+
 There's just one way of installing jupiter right now, via GitHub, but more will come.
 
-# Docker
+## Docker
 
 You need to make sure you have a recent Docker installed. After that it's straightforward:
 
@@ -18,7 +20,7 @@ $ docker run \
     /data/tasks-work.yaml
 ```
 
-# GitHub
+## GitHub
 
 You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.6. Docker is also
 useful to have on board.
