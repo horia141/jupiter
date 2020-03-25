@@ -13,5 +13,5 @@ Here's a demo of it in action:
 
 ![Jupiter Demo](docs/assets/jupiter-demo-anim2.gif)
 
-Follow the [tutorial](docs/tutorial.md) or go on to read the full [docs](docs/) to
+Follow the [tutorial](docs/tutorial.md) or go on to read the full [docs](https://jupiter-goals.readthedocs.io) to
 get a feeling for what the application can fully do!
