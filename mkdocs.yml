@@ -5,3 +5,4 @@ docs_dir: docs
 theme:
     name: mkdocs
     highlightjs: true
+    hljs_style: obsidian
