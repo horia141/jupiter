@@ -114,7 +114,7 @@ This will leave the inbox looking like:
 ![Jupiter Tutorial 3](assets/jupiter-tutorial-3.png)
 
 There's a bunch more to explore, like big plans, various recurring options, vacations, task archival and removal, but
-head on over to the [docs](https://github.com/horia141/jupiter/tree/master/docs) for those.
+head on over to the [docs](https://jupiter-goals.readthedocs.io/en/stable/) for those.
 
 In the end, if you've used git, you should run the following to save the work:
 

@@ -1,5 +1,7 @@
 # Jupiter
 
+## About
+
 Jupiter is a small tool for _life planning_, meaning goals management, task tracking,
 habit building, metrics tracking, etc.
 
@@ -12,5 +14,7 @@ and automating such things like recurring task creation, task archival, etc.
 Here's a demo of it in action:
 
 ![Jupiter Demo](assets/jupiter-demo-anim2.gif)
+
+## Further Reading
 
 Follow the [tutorial](tutorial.md) or [concepts](concepts.md) to get a feeling for what Jupiter can do.
