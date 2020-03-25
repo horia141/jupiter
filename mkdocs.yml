@@ -1,4 +1,9 @@
 site_name: Jupiter
+site_description: "Documentation for Jupiter, the life planning tool"
+site_author: "Horia Coman"
+copyright: "(c) 2020 Horia Coman"
+repo_url: https://github.com/horia141/jupiter
+repo_name: GitHub
 
 docs_dir: docs
 
