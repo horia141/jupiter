@@ -134,6 +134,21 @@ INBOX_EISENHOWER = {
     }
 }
 
+INBOX_DIFFICULTY = {
+    "Easy": {
+        "name": "Easy",
+        "color": "blue"
+    },
+    "Medium": {
+        "name": "Medium",
+        "color": "green"
+    },
+    "Hard": {
+        "name": "Hard",
+        "color": "purple"
+    }
+}
+
 INBOX_TIMELINE = {
     "Daily": {
         "name": "Daily",
@@ -225,6 +240,15 @@ def get_inbox_schema():
                 "value": v["name"]
             } for v in INBOX_EISENHOWER.values()]
         },
+        "difficulty": {
+            "name": "Difficulty",
+            "type": "select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in INBOX_DIFFICULTY.values()]
+        },
         "fromscript": {
             "name": "From Script",
             "type": "checkbox"
@@ -285,6 +309,9 @@ INBOX_KANBAN_FORMAT = {
         "property": "eisen",
         "visible": True
     }, {
+        "property": "difficulty",
+        "visible": True
+    }, {
         "property": "fromscript",
         "visible": False
     }, {
@@ -312,6 +339,9 @@ INBOX_KANBAN_ALL_VIEW_SCHEMA = {
             "property": "eisen",
             "direction": "ascending"
         }, {
+            "property": "difficulty",
+            "direction": "ascending"
+        }, {
             "property": "fromscript",
             "direction": "ascending"
         }, {
@@ -335,6 +365,9 @@ INBOX_KANBAN_URGENT_VIEW_SCHEMA = {
             "direction": "ascending"
         }, {
             "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "difficulty",
             "direction": "ascending"
         }, {
             "property": "fromscript",
@@ -393,6 +426,9 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
             "property": "eisen",
             "direction": "ascending"
         }, {
+            "property": "difficulty",
+            "direction": "ascending"
+        }, {
             "property": "fromscript",
             "direction": "ascending"
         }, {
@@ -429,6 +465,9 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
             "direction": "ascending"
         }, {
             "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "difficulty",
             "direction": "ascending"
         }, {
             "property": "fromscript",
@@ -469,6 +508,9 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
             "property": "eisen",
             "direction": "ascending"
         }, {
+            "property": "difficulty",
+            "direction": "ascending"
+        }, {
             "property": "fromscript",
             "direction": "ascending"
         }, {
@@ -500,6 +542,9 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "direction": "ascending"
         }, {
             "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "difficulty",
             "direction": "ascending"
         }, {
             "property": "fromscript",
@@ -539,6 +584,9 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "property": "eisen",
             "visible": True
         }, {
+            "property": "difficulty",
+            "visible": True
+        }, {
             "property": "fromscript",
             "visible": False
         }, {
@@ -573,6 +621,10 @@ INBOX_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": "eisen",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "difficulty",
             "visible": True
         }, {
             "width": 100,
