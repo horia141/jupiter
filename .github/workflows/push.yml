@@ -1,7 +1,12 @@
 ---
 name: Normal Push
 
-"on": [push]
+"on":
+  push:
+    branches:
+      - 'master'
+      - 'feature/**'
+      - 'bugfix/**'
 
 jobs:
   linter:
