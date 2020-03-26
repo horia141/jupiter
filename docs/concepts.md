@@ -217,6 +217,9 @@ as a goal setting rule.
 Tasks can also be labeled according to the [Eisenhower matrix](https://www.eisenhower.me/eisenhower-matrix/),
 as either _urgent_ or _important_.
 
+Tasks also have a notion of _difficulty_. They can be catalogued as `Easy`, `Medium` or `Hard`. These inform
+the way certain views are sorted. But there's no other semantic meaning attached to these categories though.
+
 In Notion a task might look like this:
 
 ![Task image](assets/concepts-task.png)
