@@ -1,4 +1,4 @@
-# The Jupiter Goal Management System ![Normal Push](https://github.com/horia141/jupiter/workflows/Normal%20Push/badge.svg) ![Release](https://github.com/horia141/jupiter/workflows/Release/badge.svg) [![Documentation Status](https://readthedocs.org/projects/jupiter-goals/badge/?version=stable)](https://jupiter-goals.readthedocs.io/en/stable/?badge=stable)
+# The Jupiter Goal Management System ![Develop](https://github.com/horia141/jupiter/workflows/Develop/badge.svg) ![Release](https://github.com/horia141/jupiter/workflows/Release/badge.svg) [![Documentation Status](https://readthedocs.org/projects/jupiter-goals/badge/?version=stable)](https://jupiter-goals.readthedocs.io/en/stable/?badge=stable)
 
 Jupiter is a small tool for _life planning_, meaning goals management, task tracking,
 habit building, metrics tracking, etc.
