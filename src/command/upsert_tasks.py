@@ -87,6 +87,8 @@ class UpsertTasks(command.Command):
         name = group_format.format(name=task["name"])
         subtasks = task.get("subtasks", {})
         skip_rule = task.get("skip_rule", None)
+        eisen = task.get("eisen", [])
+        difficulty = task.get("difficulty", None)
         due_at_time = task.get("due_at_time", None)
         due_at_day = task.get("due_at_day", None)
         due_at_month = task.get("due_at_month", None)
@@ -126,6 +128,8 @@ class UpsertTasks(command.Command):
                 if task_row.status is None:
                     task_row.status = schema.RECURRING_STATUS
                 setattr(task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
+                setattr(task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
+                setattr(task_row, schema.INBOX_TASK_ROW_DIFFICULTY_KEY, difficulty)
                 setattr(task_row, schema.INBOX_TASK_ROW_FROM_SCRIPT_KEY, True)
                 setattr(task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
                 setattr(task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)
