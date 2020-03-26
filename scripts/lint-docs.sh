@@ -2,5 +2,5 @@
 
 set -ex
 
-mdl --config="./scripts/lint/mdl" docs/
-mdl --config="./scripts/lint/mdl" README.md
+mdl --config="./scripts/lint/mdl-docs" docs/
+mdl --config="./scripts/lint/mdl-readme" README.md
