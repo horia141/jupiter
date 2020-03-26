@@ -1,5 +1,5 @@
 ---
-name: Normal Push
+name: Develop
 
 "on":
   push:
