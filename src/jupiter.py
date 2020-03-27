@@ -5,6 +5,7 @@ import logging
 
 import command.archive_done_tasks as archive_done_tasks
 import command.create_project as create_project
+import command.project_remove as project_remove
 import command.remove_archived_tasks as remove_archived_tasks
 import command.upsert_big_plans as upsert_big_plans
 import command.upsert_tasks as upsert_tasks
@@ -40,6 +41,7 @@ def main():
         vacations_show.VacationsShow(),
         vacations_sync.VacationsSync(),
         create_project.CreateProject(),
+        project_remove.ProjectRemove(),
         upsert_tasks.UpsertTasks(),
         upsert_big_plans.UpsertBigPlans(),
         archive_done_tasks.ArchiveDoneTasks(),
