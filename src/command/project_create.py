@@ -181,56 +181,6 @@ class ProjectCreate(command.Command):
         return inbox_lock
 
     @staticmethod
-    def _update_big_plan(client, root_page, big_plan_lock):
-
-        if "root_page_id" in big_plan_lock:
-            found_big_plan_page = space_utils.find_page_from_space_by_id(client, big_plan_lock["root_page_id"])
-            LOGGER.info(f"Found the big plan page via id {found_big_plan_page}")
-        else:
-            found_big_plan_page = space_utils.find_page_from_page_by_name(root_page, "Big Plan")
-            LOGGER.info(f"Found the big plan page via name {found_big_plan_page}")
-        if not found_big_plan_page:
-            found_big_plan_page = root_page.children.add_new(CollectionViewPageBlock)
-            LOGGER.info(f"Created the big plan page {found_big_plan_page}")
-        big_plan_lock["root_page_id"] = found_big_plan_page.id
-
-        big_plan_schema = schema.get_big_plan_schema()
-
-        big_plan_page = found_big_plan_page
-
-        big_plan_collection_id = big_plan_page.get("collection_id")
-        if big_plan_collection_id:
-            big_plan_collection = client.get_collection(big_plan_collection_id)
-            LOGGER.info(f"Found the already existing big plan page collection via id {big_plan_collection}")
-            big_plan_old_schema = big_plan_collection.get("schema")
-            big_plan_schema = ProjectCreate._merge_schemas(big_plan_old_schema, big_plan_schema)
-            big_plan_collection.set("schema", big_plan_schema)
-            LOGGER.info(f"Updated the big plan page collection schema")
-        else:
-            big_plan_collection = client.get_collection(
-                client.create_record("collection", parent=big_plan_page, schema=big_plan_schema))
-            LOGGER.info(f"Created the big plan collection {big_plan_collection}")
-        big_plan_collection.name = "Big Plan"
-
-        big_plan_collection_kanban_all_view = space_utils.attach_view_to_collection(
-            client, big_plan_page, big_plan_collection, big_plan_lock.get("kanban_all_view_id"), "board",
-            "Kanban All", schema.BIG_PLAN_KANBAN_ALL_SCHEMA)
-        big_plan_lock["kanban_all_view_id"] = big_plan_collection_kanban_all_view.id
-
-        big_plan_collection_database_view = space_utils.attach_view_to_collection(
-            client, big_plan_page, big_plan_collection, big_plan_lock.get("database_view_id"), "table",
-            "Database", schema.BIG_PLAN_DATABASE_VIEW_SCHEMA)
-        big_plan_lock["database_view_id"] = big_plan_collection_database_view.id
-
-        big_plan_page.set("collection_id", big_plan_collection.id)
-        big_plan_page.set("view_ids", [
-            big_plan_collection_kanban_all_view.id,
-            big_plan_collection_database_view.id
-        ])
-
-        return big_plan_lock
-
-    @staticmethod
     def _update_recurring_tasks(client, root_page, recurring_task_lock):
 
         if "root_page_id" in recurring_task_lock:
@@ -284,6 +234,56 @@ class ProjectCreate(command.Command):
         return recurring_task_lock
 
     @staticmethod
+    def _update_big_plan(client, root_page, big_plan_lock):
+
+        if "root_page_id" in big_plan_lock:
+            found_big_plan_page = space_utils.find_page_from_space_by_id(client, big_plan_lock["root_page_id"])
+            LOGGER.info(f"Found the big plan page via id {found_big_plan_page}")
+        else:
+            found_big_plan_page = space_utils.find_page_from_page_by_name(root_page, "Big Plan")
+            LOGGER.info(f"Found the big plan page via name {found_big_plan_page}")
+        if not found_big_plan_page:
+            found_big_plan_page = root_page.children.add_new(CollectionViewPageBlock)
+            LOGGER.info(f"Created the big plan page {found_big_plan_page}")
+        big_plan_lock["root_page_id"] = found_big_plan_page.id
+
+        big_plan_schema = schema.get_big_plan_schema()
+
+        big_plan_page = found_big_plan_page
+
+        big_plan_collection_id = big_plan_page.get("collection_id")
+        if big_plan_collection_id:
+            big_plan_collection = client.get_collection(big_plan_collection_id)
+            LOGGER.info(f"Found the already existing big plan page collection via id {big_plan_collection}")
+            big_plan_old_schema = big_plan_collection.get("schema")
+            big_plan_schema = ProjectCreate._merge_schemas(big_plan_old_schema, big_plan_schema)
+            big_plan_collection.set("schema", big_plan_schema)
+            LOGGER.info(f"Updated the big plan page collection schema")
+        else:
+            big_plan_collection = client.get_collection(
+                client.create_record("collection", parent=big_plan_page, schema=big_plan_schema))
+            LOGGER.info(f"Created the big plan collection {big_plan_collection}")
+        big_plan_collection.name = "Big Plan"
+
+        big_plan_collection_kanban_all_view = space_utils.attach_view_to_collection(
+            client, big_plan_page, big_plan_collection, big_plan_lock.get("kanban_all_view_id"), "board",
+            "Kanban All", schema.BIG_PLAN_KANBAN_ALL_SCHEMA)
+        big_plan_lock["kanban_all_view_id"] = big_plan_collection_kanban_all_view.id
+
+        big_plan_collection_database_view = space_utils.attach_view_to_collection(
+            client, big_plan_page, big_plan_collection, big_plan_lock.get("database_view_id"), "table",
+            "Database", schema.BIG_PLAN_DATABASE_VIEW_SCHEMA)
+        big_plan_lock["database_view_id"] = big_plan_collection_database_view.id
+
+        big_plan_page.set("collection_id", big_plan_collection.id)
+        big_plan_page.set("view_ids", [
+            big_plan_collection_kanban_all_view.id,
+            big_plan_collection_database_view.id
+        ])
+
+        return big_plan_lock
+
+    @staticmethod
     def _merge_schemas(old_schema, new_schema):
 
         combined_schema = {}
@@ -294,8 +294,10 @@ class ProjectCreate(command.Command):
         # across schema updates.
         # As a special case, the big plan item is left to whatever value it had before
         # since this thing is managed via the big plan syncing flow!
+        # As another special case, the recurring tasks group key is left to whatever value it had
+        # before since this thing is managed by the other flows!
         for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name == schema.INBOX_BIGPLAN_KEY:
+            if schema_item_name == schema.INBOX_BIGPLAN_KEY or schema_item_name == schema.RECURRING_TASKS_GROUP_KEY:
                 combined_schema[schema_item_name] = old_schema[schema_item_name] \
                     if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
                     else schema_item

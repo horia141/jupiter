@@ -1,10 +1,12 @@
 """Command for adding a recurring task."""
 
 import logging
+import uuid
 
 from notion.client import NotionClient
 
 import command.command as command
+import schema
 import space_utils
 import storage
 
@@ -74,8 +76,30 @@ class RecurringTasksCreate(command.Command):
 
         recurring_tasks_page = space_utils.find_page_from_space_by_id(
             client, the_lock["projects"][project_key]["recurring_tasks"]["root_page_id"])
-        new_recurring_task_row = recurring_tasks_page.collection.add_row()
-        # TODO(horia141): add group too!
+
+        # First, update the recurring tasks collection schema, with the full group
+        # structure.
+        recurring_tasks_collection = recurring_tasks_page.collection
+        recurring_tasks_schema = recurring_tasks_collection.get("schema")
+        all_local_groups = {k.lower().strip(): k for k in project["recurring_tasks"]["entries"].keys()}
+        all_notion_groups = recurring_tasks_schema[schema.RECURRING_TASKS_GROUP_KEY]
+        if "options" not in all_notion_groups:
+            all_notion_groups["options"] = []
+        all_notion_groups_key = [k["value"].lower().strip() for k in all_notion_groups["options"]]
+        for (local_group_key, local_group_value) in all_local_groups.items():
+            if local_group_key in all_notion_groups_key:
+                continue
+            all_notion_groups["options"].append({
+                "color": schema.get_stable_color(local_group_key),
+                "id": str(uuid.uuid4()),
+                "value": schema.format_name_for_option(local_group_value)
+            })
+        recurring_tasks_collection.set("schema", recurring_tasks_schema)
+
+        # Now, add the new task
+
+        new_recurring_task_row = recurring_tasks_collection.add_row()
+        new_recurring_task_row.group = group
         new_recurring_task_row.title = name
         new_recurring_task_row.period = period
         new_recurring_task_row.ref_id = new_recurring_task["ref_id"]

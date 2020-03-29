@@ -1,6 +1,5 @@
 """Command for updating big plans for a project."""
 
-import hashlib
 import logging
 import uuid
 
@@ -65,9 +64,9 @@ class BigPlansSync(command.Command):
                 option_uuid = str(uuid.uuid4())
             setattr(big_plan, schema.BIG_PLAN_TASK_INBOX_ID_KEY, option_uuid)
             inbox_big_plan_options[option_uuid] = {
-                "color": BigPlansSync._get_stable_color(option_uuid),
+                "color": schema.get_stable_color(option_uuid),
                 "id": option_uuid,
-                "value": BigPlansSync._format_name(big_plan.name)
+                "value": schema.format_name_for_option(big_plan.name)
             }
 
         inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"] = list(inbox_big_plan_options.values())
@@ -105,17 +104,5 @@ class BigPlansSync(command.Command):
                     "table": "collection_view",
                     "path": [],
                     "command": "update",
-                    "args": schema.get_view_schema_for_big_plan_desc(BigPlansSync._format_name(big_plan.name))
+                    "args": schema.get_view_schema_for_big_plan_desc(schema.format_name_for_option(big_plan.name))
                 }])
-
-    @staticmethod
-    def _get_stable_color(option_id):
-        return schema.COLORS[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
-
-    @staticmethod
-    def _format_name(big_plan_name):
-        output = ""
-        for char in big_plan_name:
-            if char.isalnum() or char == " ":
-                output += char
-        return output

@@ -1,5 +1,6 @@
 """Definitions for Notion-side schemas."""
 
+import hashlib
 import uuid
 
 COLORS = [
@@ -13,6 +14,20 @@ COLORS = [
     "pink",
     "red"
 ]
+
+
+def get_stable_color(option_id):
+    """Return a random-ish yet stable color for a given name."""
+    return COLORS[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(COLORS)]
+
+
+def format_name_for_option(option_name):
+    """Nicely format the name of an option."""
+    output = ""
+    for char in option_name:
+        if char.isalnum() or char == " ":
+            output += char
+    return output
 
 
 def get_vacations_schema():
@@ -84,6 +99,8 @@ INBOX_TASK_ROW_DIFFICULTY_KEY = "difficulty"
 INBOX_TASK_ROW_FROM_SCRIPT_KEY = "from_script"
 INBOX_TASK_ROW_PERIOD_KEY = "recurring_period"
 INBOX_TASK_ROW_TIMELINE_KEY = "recurring_timeline"
+
+RECURRING_TASKS_GROUP_KEY = "group"
 
 BIG_PLAN_TASK_INBOX_ID_KEY = "inbox_id_ref"
 
@@ -690,6 +707,11 @@ def get_recurring_tasks_schema():
                 "value": v["name"]
             } for v in RECURRING_TASKS_PERIOD.values()]
         },
+        RECURRING_TASKS_GROUP_KEY: {
+            "name": "Group",
+            "type": "select",
+            "options": [{}]
+        },
         "ref-id": {
             "name": "Ref Id",
             "type": "text"
@@ -707,7 +729,10 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
         "aggregations": [{
             "aggregator": "count"
         }],
-        "sort": []
+        "sort": [{
+            "property": "group",
+            "direction": "ascending"
+        }]
     },
     "format": {
         "board_groups": [{
@@ -728,6 +753,9 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
             "property": "period",
             "visible": False
         }, {
+            "property": "group",
+            "visible": True
+        }, {
             "property": "ref-id",
             "visible": False
         }],
@@ -746,6 +774,10 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": "period",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": RECURRING_TASKS_PERIOD,
             "visible": True
         }, {
             "width": 100,
