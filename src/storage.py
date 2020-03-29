@@ -64,7 +64,7 @@ def build_empty_project():
     return {
         "key": "",
         "name": "",
-        "recurringTasks": {}
+        "recurring_task": {}
     }
 
 

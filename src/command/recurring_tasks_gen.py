@@ -70,7 +70,7 @@ class RecurringTasksGen(command.Command):
                 continue
             page = client.get_collection_view(project_lock["inbox"][key], collection=root_page.collection)
 
-        recurring_tasks_groups = project["recurringTasks"]
+        recurring_tasks_groups = project["recurring_task"]
 
         all_tasks = page.build_query().execute()
 
