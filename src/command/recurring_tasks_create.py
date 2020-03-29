@@ -31,6 +31,9 @@ class RecurringTasksCreate(command.Command):
         parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
         parser.add_argument("--group", dest="group", required=True, help="The group for the recurring task")
         parser.add_argument("--period", dest="period", required=True, help="The period for the recurring task")
+        parser.add_argument("--eisen", dest="eisen", default=[], action="append",
+                            help="The Eisenhower matrix values to use for task")
+        parser.add_argument("--difficulty", dest="difficulty", help="The difficulty to use for tasks")
         parser.add_argument("--project", dest="project", required=True, help="The project key to add the task to")
 
     def run(self, args):
@@ -38,6 +41,8 @@ class RecurringTasksCreate(command.Command):
         name = args.name
         group = args.group
         period = args.period
+        eisen = args.eisen
+        difficulty = args.difficulty
         project_key = args.project
 
         # Load local storage
@@ -57,6 +62,8 @@ class RecurringTasksCreate(command.Command):
             "ref_id": str(project["recurring_tasks"]["next_idx"]),
             "name": name,
             "group": group,
+            "eisen": eisen,
+            "difficulty": difficulty,
             "period": period
         }
         project["recurring_tasks"]["next_idx"] = project["recurring_tasks"]["next_idx"] + 1
@@ -102,5 +109,7 @@ class RecurringTasksCreate(command.Command):
         new_recurring_task_row.group = group
         new_recurring_task_row.title = name
         new_recurring_task_row.period = period
+        setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
+        new_recurring_task_row.difficulty = difficulty
         new_recurring_task_row.ref_id = new_recurring_task["ref_id"]
         LOGGER.info("Applied Notion changes")

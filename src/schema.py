@@ -712,6 +712,24 @@ def get_recurring_tasks_schema():
             "type": "select",
             "options": [{}]
         },
+        "eisen": {
+            "name": "Eisenhower",
+            "type": "multi_select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in INBOX_EISENHOWER.values()]
+        },
+        "difficulty": {
+            "name": "Difficulty",
+            "type": "select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in INBOX_DIFFICULTY.values()]
+        },
         "ref-id": {
             "name": "Ref Id",
             "type": "text"
@@ -731,6 +749,12 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
         }],
         "sort": [{
             "property": "group",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "difficulty",
             "direction": "ascending"
         }]
     },
@@ -756,6 +780,12 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
             "property": "group",
             "visible": True
         }, {
+            "property": "eisen",
+            "visible": True
+        }, {
+            "property": "difficulty",
+            "visible": True
+        }, {
             "property": "ref-id",
             "visible": False
         }],
@@ -778,6 +808,14 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": RECURRING_TASKS_PERIOD,
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "eisen",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "difficulty",
             "visible": True
         }, {
             "width": 100,
