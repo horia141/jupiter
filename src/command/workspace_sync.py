@@ -5,7 +5,6 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
-import lockfile
 import space_utils
 import storage
 
@@ -35,7 +34,7 @@ class WorkspaceSync(command.Command):
 
         # Load local storage
 
-        system_lock = lockfile.load_lock_file()
+        system_lock = storage.load_lock_file()
         LOGGER.info("Loaded lockfile")
         workspace = storage.load_workspace()
         LOGGER.info("Loaded workspace data")

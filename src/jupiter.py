@@ -4,11 +4,12 @@ import argparse
 import logging
 
 import command.archive_done_tasks as archive_done_tasks
-import command.create_project as create_project
+import command.project_create as project_create
 import command.project_remove as project_remove
+import command.project_set_name as project_set_name
 import command.remove_archived_tasks as remove_archived_tasks
-import command.upsert_big_plans as upsert_big_plans
-import command.upsert_tasks as upsert_tasks
+import command.big_plans_sync as big_plans_sync
+import command.recurring_tasks_gen as recurring_tasks_gen
 import command.vacations_add as vacations_add
 import command.vacations_remove as vacations_remove
 import command.vacations_set_end_date as vacations_set_end_date
@@ -40,10 +41,11 @@ def main():
         vacations_set_end_date.VacationsSetEndDate(),
         vacations_show.VacationsShow(),
         vacations_sync.VacationsSync(),
-        create_project.CreateProject(),
+        project_create.ProjectCreate(),
         project_remove.ProjectRemove(),
-        upsert_tasks.UpsertTasks(),
-        upsert_big_plans.UpsertBigPlans(),
+        project_set_name.ProjectSetName(),
+        recurring_tasks_gen.RecurringTasksGen(),
+        big_plans_sync.BigPlansSync(),
         archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
     ]

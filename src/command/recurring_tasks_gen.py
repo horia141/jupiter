@@ -6,10 +6,8 @@ import pendulum
 import requests
 from notion.client import NotionClient
 from notion.block import TodoBlock
-import yaml
 
 import command.command as command
-import lockfile
 import schedules
 import schema
 import storage
@@ -17,22 +15,22 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class UpsertTasks(command.Command):
+class RecurringTasksGen(command.Command):
     """Command class for creating recurring tasks."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "upsert-tasks"
+        return "recurring-tasks-gen"
 
     @staticmethod
     def description():
         """The description of the command."""
-        return "Upsert recurring tasks"
+        return "Create recurring tasks"
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("tasks", help="The tasks file")
+        parser.add_argument("project", help="The key of the project")
         parser.add_argument("--date", required=False, default=None, help="The date on which the upsert should run at")
         parser.add_argument("--group", required=False, default=[], action="append",
                             help="The group for which the upsert should happen. Defaults to all")
@@ -41,6 +39,7 @@ class UpsertTasks(command.Command):
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        project_key = args.project
         if args.date:
             right_now = pendulum.parse(args.date)
         else:
@@ -49,14 +48,48 @@ class UpsertTasks(command.Command):
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else schedules.PERIODS
         dry_run = args.dry_run
 
-        workspace = storage.load_workspace()
+        system_lock = storage.load_lock_file()
+        LOGGER.info("Found system lock")
 
-        with open(args.tasks, "r") as tasks_file:
-            tasks = yaml.safe_load(tasks_file)
+        workspace = storage.load_workspace()
+        LOGGER.info("Found workspace file")
+
+        project = storage.load_project(project_key)
+        LOGGER.info("Found project file")
 
         client = NotionClient(token_v2=workspace["token"])
 
-        self._update_notion(dry_run, client, right_now, group_filter, period_filter, workspace, tasks)
+        project_lock = system_lock["projects"][project_key]
+        root_page = client.get_block(project_lock["inbox"]["root_page_id"])
+        # Hack for notion-py. If we don't get all the collection views for a particular page like this one
+        # rather than just a single one, there's gonna be some deep code somewhere which will assume all of
+        # them are present and croak! The code when you add an element to a collection, and you wanna assume
+        # it's gonna be added to all view in some order!
+        for key in project_lock["inbox"].keys():
+            if not key.endswith("_view_id"):
+                continue
+            page = client.get_collection_view(project_lock["inbox"][key], collection=root_page.collection)
+
+        recurring_tasks_groups = project["recurringTasks"]
+
+        all_tasks = page.build_query().execute()
+
+        for group_name, group in recurring_tasks_groups.items():
+            if group_filter is not None and group_name.lower() not in group_filter:
+                LOGGER.info(f"Skipping group {group_name} on account of group filtering")
+                continue
+            LOGGER.info(f"Processing group {group_name}")
+            RecurringTasksGen._update_notion_group(
+                dry_run, page, right_now, period_filter, workspace, group, all_tasks)
+
+    @staticmethod
+    def _update_notion_group(dry_run, page, right_now, period_filter, workspace, group, all_tasks):
+        group_format = group["format"]
+        tasks = group["tasks"]
+
+        for task in tasks:
+            RecurringTasksGen._update_notion_task(
+                dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks)
 
     @staticmethod
     def _update_notion_task(dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks):
@@ -143,38 +176,3 @@ class UpsertTasks(command.Command):
                 if try_count == 3:
                     raise error
                 LOGGER.info("  - Failed. Trying again")
-
-    @staticmethod
-    def _update_notion_group(dry_run, page, right_now, period_filter, workspace, group, all_tasks):
-        group_format = group["format"]
-        tasks = group["tasks"]
-
-        for task in tasks:
-            UpsertTasks._update_notion_task(
-                dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks)
-
-    @staticmethod
-    def _update_notion(dry_run, client, right_now, group_filter, period_filter, workspace, tasks):
-        system_lock = lockfile.load_lock_file()
-        project_lock = system_lock["projects"][tasks["key"]]
-        root_page = client.get_block(project_lock["inbox"]["root_page_id"])
-        # Hack for notion-py. If we don't get all the collection views for a particular page like this one
-        # rather than just a single one, there's gonna be some deep code somewhere which will assume all of
-        # them are present and croak! The code when you add an element to a collection, and you wanna assume
-        # it's gonna be added to all view in some order!
-        for key in project_lock["inbox"].keys():
-            if not key.endswith("_view_id"):
-                continue
-            page = client.get_collection_view(project_lock["inbox"][key], collection=root_page.collection)
-
-        groups = tasks["groups"]
-
-        all_tasks = page.build_query().execute()
-
-        for group_name, group in groups.items():
-            if group_filter is not None and group_name.lower() not in group_filter:
-                LOGGER.info(f"Skipping group {group_name} on account of group filtering")
-                continue
-            LOGGER.info(f"Processing group {group_name}")
-            UpsertTasks._update_notion_group(
-                dry_run, page, right_now, period_filter, workspace, group, all_tasks)

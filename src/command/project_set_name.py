@@ -1,4 +1,4 @@
-"""Command for removing a project."""
+"""Command for setting the name of a project."""
 
 import logging
 
@@ -11,45 +11,39 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class ProjectRemove(command.Command):
-    """Command class for remove a project."""
+class ProjectSetName(command.Command):
+    """Command class for setting the name of a project."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "project-remove"
+        return "project-set-name"
 
     @staticmethod
     def description():
         """The description of the command."""
-        return "Remove a project"
+        return "Change the name of a project"
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
         parser.add_argument("project", help="The key of the project")
+        parser.add_argument("--name", dest="name", required=True, help="The name of the project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        # Parse arguments
-
         project_key = args.project
-
-        # Load local storage
+        project_name = args.name
 
         system_lock = storage.load_lock_file()
-        LOGGER.info("Found system lock")
-
+        LOGGER.info("Found lock file")
         workspace = storage.load_workspace()
         LOGGER.info("Found workspace file")
-
-        _ = storage.load_project(project_key)
+        project = storage.load_project(project_key)
         LOGGER.info("Found project file")
 
-        # Retrieve or create the Notion page for the workspace
+        # Apply changes to Notion
 
         client = NotionClient(token_v2=workspace["token"])
-
-        # Apply the changes on Notion side
 
         if project_key in system_lock["projects"]:
             project_lock = system_lock["projects"][project_key]
@@ -60,14 +54,10 @@ class ProjectRemove(command.Command):
 
         project_root_page = space_utils.find_page_from_space_by_id(client, project_lock["root_page_id"])
         LOGGER.info(f"Found the root page via id {project_root_page}")
+        project_root_page.title = project_name
+        LOGGER.info("Applied changes on Notion")
 
-        project_root_page.remove()
-        LOGGER.info("Removed Notion structures")
-
-        # Apply the changes to the local side
-        del system_lock["projects"][project_key]
-        storage.save_lock_file(system_lock)
-        LOGGER.info("Removed from lockfile")
-
-        storage.remove_project(project_key)
-        LOGGER.info("Removed project storage")
+        # Apply changes locally
+        project["name"] = project_name
+        storage.save_project(project_key, project)
+        LOGGER.info("Applied changes locally")

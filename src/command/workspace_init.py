@@ -6,7 +6,6 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
-import lockfile
 import schema
 import space_utils
 import storage
@@ -42,10 +41,10 @@ class WorkspaceInit(command.Command):
         # Load local storage
 
         try:
-            system_lock = lockfile.load_lock_file()
+            system_lock = storage.load_lock_file()
             LOGGER.info("Found system lock")
         except IOError:
-            system_lock = lockfile.build_empty_lockfile()
+            system_lock = storage.build_empty_lockfile()
             LOGGER.info("No system lock - creating it")
 
         try:
@@ -76,7 +75,7 @@ class WorkspaceInit(command.Command):
         # Save changes to lockfile
         system_lock["root_page"] = root_page_lock
         system_lock["vacations"] = vacations_lock
-        lockfile.save_lock_file(system_lock)
+        storage.save_lock_file(system_lock)
         LOGGER.info("Applied changes on lockfile")
 
     @staticmethod

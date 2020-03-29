@@ -4,10 +4,8 @@ import logging
 
 from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
-import yaml
 
 import command.command as command
-import lockfile
 import schema
 import space_utils
 import storage
@@ -15,13 +13,13 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class CreateProject(command.Command):
+class ProjectCreate(command.Command):
     """Command class for creating projects."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "create-project"
+        return "project-create"
 
     @staticmethod
     def description():
@@ -30,62 +28,74 @@ class CreateProject(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("tasks", help="The tasks file")
+        parser.add_argument("project", help="The key of the project")
+        parser.add_argument("--name", dest="name", required=True, help="The name of the project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        workspace = storage.load_workspace()
+        project_key = args.project
+        project_name = args.name
 
-        with open(args.tasks, "r") as tasks_file:
-            tasks = yaml.safe_load(tasks_file)
+        # Load local storage
+
+        system_lock = storage.load_lock_file()
+        LOGGER.info("Found system lock")
+
+        workspace = storage.load_workspace()
+        LOGGER.info("Found workspace file")
+
+        try:
+            project = storage.load_project(project_key)
+            LOGGER.info("Found project file")
+        except IOError:
+            project = storage.build_empty_project()
+            LOGGER.info("No project file - creating it")
+
+        # Apply the changes Notion side
 
         client = NotionClient(token_v2=workspace["token"])
 
-        self._update_project(client, tasks)
+        if project_key in system_lock["projects"]:
+            project_lock = system_lock["projects"][project_key]
+            LOGGER.info("Project already in system lock")
+        else:
+            project_lock = {}
+            LOGGER.info("Project not in system lock")
 
-    @staticmethod
-    def _merge_schemas(old_schema, new_schema):
+        system_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page"]["root_page_id"])
+        LOGGER.info(f"Found the root page via id {system_root_page}")
 
-        combined_schema = {}
+        # Create the root page.
+        if "root_page_id" in project_lock:
+            found_root_page = space_utils.find_page_from_space_by_id(client, project_lock["root_page_id"])
+            LOGGER.info(f"Found the project page via id {found_root_page}")
+        else:
+            LOGGER.info("Attempting to find project page via name in full space")
+            found_root_page = space_utils.find_page_from_page_by_name(system_root_page, project_name)
+            LOGGER.info(f"Found the project page via name {found_root_page}")
+        if not found_root_page:
+            found_root_page = space_utils.create_page_in_page(system_root_page, project_name)
+            LOGGER.info(f"Created the root page {found_root_page}")
+        found_root_page.title = project_name
+        project_lock["root_page_id"] = found_root_page.id
 
-        # Merging schema is limited right now. Basically we assume the new schema takes
-        # precedence over the old one, except for select and multi_select, which have a set
-        # of options for them which are identified by "id"s. We wanna keep these stable
-        # across schema updates.
-        # As a special case, the big plan item is left to whatever value it had before
-        # since this thing is managed via the big plan syncing flow!
-        for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name == schema.INBOX_BIGPLAN_KEY:
-                combined_schema[schema_item_name] = old_schema[schema_item_name] \
-                    if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
-                    else schema_item
-            elif schema_item["type"] == "select" or schema_item["type"] == "multi_select":
-                if schema_item_name in old_schema:
-                    old_v = old_schema[schema_item_name]
+        # Create the inbox.
+        project_lock["inbox"] = ProjectCreate._update_inbox(client, found_root_page, project_lock.get("inbox", {}))
 
-                    combined_schema[schema_item_name] = {
-                        "name": schema_item["name"],
-                        "type": schema_item["type"],
-                        "options": []
-                    }
+        # Create the big plan.
+        project_lock["big_plan"] = ProjectCreate._update_big_plan(
+            client, found_root_page, project_lock.get("big_plan", {}))
 
-                    for option in schema_item["options"]:
-                        old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
-                                          None)
-                        if old_option is not None:
-                            combined_schema[schema_item_name]["options"].append({
-                                "color": option["color"],
-                                "value": option["value"],
-                                "id": old_option["id"]
-                            })
-                        else:
-                            combined_schema[schema_item_name]["options"].append(option)
-                else:
-                    combined_schema[schema_item_name] = schema_item
-            else:
-                combined_schema[schema_item_name] = schema_item
+        # Apply the changes locally
 
-        return combined_schema
+        system_lock["projects"][project_key] = project_lock
+        storage.save_lock_file(system_lock)
+        LOGGER.info("Applied changes to local system lock")
+
+        project["key"] = project_key
+        project["name"] = project_name
+        storage.save_project(project_key, project)
+        LOGGER.info("Applied changes to local project file")
 
     @staticmethod
     def _update_inbox(client, root_page, inbox_lock):
@@ -108,7 +118,7 @@ class CreateProject(command.Command):
             inbox_collection = client.get_collection(inbox_collection_id)
             LOGGER.info(f"Found the already existing inbox page collection via id {inbox_collection}")
             inbox_old_schema = inbox_collection.get("schema")
-            inbox_schema = CreateProject._merge_schemas(inbox_old_schema, inbox_schema)
+            inbox_schema = ProjectCreate._merge_schemas(inbox_old_schema, inbox_schema)
             inbox_collection.set("schema", inbox_schema)
             LOGGER.info(f"Updated the inbox page collection schema")
         else:
@@ -165,6 +175,7 @@ class CreateProject(command.Command):
 
         return inbox_lock
 
+
     @staticmethod
     def _update_big_plan(client, root_page, big_plan_lock):
 
@@ -188,7 +199,7 @@ class CreateProject(command.Command):
             big_plan_collection = client.get_collection(big_plan_collection_id)
             LOGGER.info(f"Found the already existing big plan page collection via id {big_plan_collection}")
             big_plan_old_schema = big_plan_collection.get("schema")
-            big_plan_schema = CreateProject._merge_schemas(big_plan_old_schema, big_plan_schema)
+            big_plan_schema = ProjectCreate._merge_schemas(big_plan_old_schema, big_plan_schema)
             big_plan_collection.set("schema", big_plan_schema)
             LOGGER.info(f"Updated the big plan page collection schema")
         else:
@@ -216,42 +227,45 @@ class CreateProject(command.Command):
         return big_plan_lock
 
     @staticmethod
-    def _update_project(client, project_desc):
+    def _merge_schemas(old_schema, new_schema):
 
-        name = project_desc["name"]
-        key = project_desc["key"]
+        combined_schema = {}
 
-        system_lock = lockfile.load_lock_file()
+        # Merging schema is limited right now. Basically we assume the new schema takes
+        # precedence over the old one, except for select and multi_select, which have a set
+        # of options for them which are identified by "id"s. We wanna keep these stable
+        # across schema updates.
+        # As a special case, the big plan item is left to whatever value it had before
+        # since this thing is managed via the big plan syncing flow!
+        for (schema_item_name, schema_item) in new_schema.items():
+            if schema_item_name == schema.INBOX_BIGPLAN_KEY:
+                combined_schema[schema_item_name] = old_schema[schema_item_name] \
+                    if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
+                    else schema_item
+            elif schema_item["type"] == "select" or schema_item["type"] == "multi_select":
+                if schema_item_name in old_schema:
+                    old_v = old_schema[schema_item_name]
 
-        if key in system_lock["projects"]:
-            project_lock = system_lock["projects"][key]
-            LOGGER.info("Project already in system lock")
-        else:
-            project_lock = {}
-            LOGGER.info("Project not in system lock")
+                    combined_schema[schema_item_name] = {
+                        "name": schema_item["name"],
+                        "type": schema_item["type"],
+                        "options": []
+                    }
 
-        system_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page"]["root_page_id"])
-        LOGGER.info(f"Found the root page via id {system_root_page}")
+                    for option in schema_item["options"]:
+                        old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
+                                          None)
+                        if old_option is not None:
+                            combined_schema[schema_item_name]["options"].append({
+                                "color": option["color"],
+                                "value": option["value"],
+                                "id": old_option["id"]
+                            })
+                        else:
+                            combined_schema[schema_item_name]["options"].append(option)
+                else:
+                    combined_schema[schema_item_name] = schema_item
+            else:
+                combined_schema[schema_item_name] = schema_item
 
-        # Create the root page.
-        if "root_page_id" in project_lock:
-            found_root_page = space_utils.find_page_from_space_by_id(client, project_lock["root_page_id"])
-            LOGGER.info(f"Found the project page via id {found_root_page}")
-        else:
-            LOGGER.info("Attempting to find project page via name in full space")
-            found_root_page = space_utils.find_page_from_page_by_name(system_root_page, name)
-            LOGGER.info(f"Found the project page via name {found_root_page}")
-        if not found_root_page:
-            found_root_page = space_utils.create_page_in_page(system_root_page, name)
-            LOGGER.info(f"Created the root page {found_root_page}")
-        project_lock["root_page_id"] = found_root_page.id
-
-        # Create the inbox.
-        project_lock["inbox"] = CreateProject._update_inbox(client, found_root_page, project_lock.get("inbox", {}))
-
-        # Create the big plan.
-        project_lock["big_plan"] = CreateProject._update_big_plan(
-            client, found_root_page, project_lock.get("big_plan", {}))
-
-        system_lock["projects"][key] = project_lock
-        lockfile.save_lock_file(system_lock)
+        return combined_schema

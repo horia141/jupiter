@@ -7,7 +7,6 @@ import pendulum
 from notion.client import NotionClient
 
 import command.command as command
-import lockfile
 import space_utils
 import storage
 
@@ -44,7 +43,7 @@ class VacationsAdd(command.Command):
 
         # Load local storage
 
-        the_lock = lockfile.load_lock_file()
+        the_lock = storage.load_lock_file()
         workspace = storage.load_workspace()
         LOGGER.info("Loaded workspace data")
 
