@@ -10,7 +10,7 @@ import command.project_set_name as project_set_name
 import command.remove_archived_tasks as remove_archived_tasks
 import command.big_plans_sync as big_plans_sync
 import command.recurring_tasks_gen as recurring_tasks_gen
-import command.vacations_add as vacations_add
+import command.vacations_create as vacations_create
 import command.vacations_remove as vacations_remove
 import command.vacations_set_end_date as vacations_set_end_date
 import command.vacations_set_name as vacations_set_name
@@ -34,7 +34,7 @@ def main():
         workspace_set_token.WorkspaceSetToken(),
         workspace_show.WorkspaceShow(),
         workspace_sync.WorkspaceSync(),
-        vacations_add.VacationsAdd(),
+        vacations_create.VacationsCreate(),
         vacations_remove.VacationsRemove(),
         vacations_set_name.VacationsSetName(),
         vacations_set_start_date.VacationsSetStartDate(),

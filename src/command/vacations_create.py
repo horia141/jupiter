@@ -13,13 +13,13 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsAdd(command.Command):
+class VacationsCreate(command.Command):
     """Command class for adding a vacation."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "vacations-add"
+        return "vacations-create"
 
     @staticmethod
     def description():
