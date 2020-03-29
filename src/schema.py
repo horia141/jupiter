@@ -730,6 +730,10 @@ def get_recurring_tasks_schema():
                 "value": v["name"]
             } for v in INBOX_DIFFICULTY.values()]
         },
+        "must-do": {
+            "name": "Must Do",
+            "type": "checkbox"
+        },
         "ref-id": {
             "name": "Ref Id",
             "type": "text"
@@ -786,6 +790,9 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
             "property": "difficulty",
             "visible": True
         }, {
+            "property": "must-do",
+            "visible": False
+        }, {
             "property": "ref-id",
             "visible": False
         }],
@@ -816,6 +823,10 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": "difficulty",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "must-do",
             "visible": True
         }, {
             "width": 100,
