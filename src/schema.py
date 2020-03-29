@@ -645,6 +645,106 @@ INBOX_DATABASE_VIEW_SCHEMA = {
 }
 
 
+RECURRING_TASKS_PERIOD = {
+    "Daily": {
+        "name": "Daily",
+        "color": "orange",
+        "in_board": True
+    },
+    "Weekly": {
+        "name": "Weekly",
+        "color": "green",
+        "in_board": True
+    },
+    "Monthly": {
+        "name": "Monthly",
+        "color": "yellow",
+        "in_board": True
+    },
+    "Quarterly": {
+        "name": "Quarterly",
+        "color": "blue",
+        "in_board": True
+    },
+    "Yearly": {
+        "name": "Yearly",
+        "color": "red",
+        "in_board": True
+    }
+}
+
+
+def get_recurring_tasks_schema():
+    """Get schemas for the recurring tasks screen."""
+    recurring_tasks_schema = {
+        "title": {
+            "name": "Name",
+            "type": "title"
+        },
+        "period": {
+            "name": "Period",
+            "type": "select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in RECURRING_TASKS_PERIOD.values()]
+        }
+    }
+
+    return recurring_tasks_schema
+
+
+RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
+    "name": "Kanban",
+    "query2": {
+        "group_by": "period",
+        "filter_operator": "and",
+        "aggregations": [{
+            "aggregator": "count"
+        }],
+        "sort": []
+    },
+    "format": {
+        "board_groups": [{
+            "property": "period",
+            "type": "select",
+            "value": v["name"],
+            "hidden": not v["in_board"]
+        } for v in RECURRING_TASKS_PERIOD.values()],
+        "board_groups2": [{
+            "property": "period",
+            "value": {
+                "type": "select",
+                "value": v["name"]
+            },
+            "hidden": not v["in_board"]
+        } for v in RECURRING_TASKS_PERIOD.values()],
+        "board_properties": [{
+            "property": "period",
+            "visible": False
+        }],
+        "board_cover_size": "small"
+    }
+}
+
+
+RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
+    "name": "Database",
+    "format": {
+        "table_properties": [{
+            "width": 300,
+            "property": "title",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "period",
+            "visible": True
+        }]
+    }
+}
+
+
 def get_big_plan_schema():
     """Get schemas for big plan screen."""
     big_plan_schema = {
