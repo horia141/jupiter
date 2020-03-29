@@ -689,6 +689,10 @@ def get_recurring_tasks_schema():
                 "id": str(uuid.uuid4()),
                 "value": v["name"]
             } for v in RECURRING_TASKS_PERIOD.values()]
+        },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
         }
     }
 
@@ -723,6 +727,9 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
         "board_properties": [{
             "property": "period",
             "visible": False
+        }, {
+            "property": "ref-id",
+            "visible": False
         }],
         "board_cover_size": "small"
     }
@@ -740,6 +747,10 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
             "width": 100,
             "property": "period",
             "visible": True
+        }, {
+            "width": 100,
+            "property": "ref-id",
+            "visible": False
         }]
     }
 }
