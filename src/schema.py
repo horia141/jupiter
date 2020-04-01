@@ -730,6 +730,18 @@ def get_recurring_tasks_schema():
                 "value": v["name"]
             } for v in INBOX_DIFFICULTY.values()]
         },
+        "due-at-time": {
+            "name": "Due At Time",
+            "type": "text",
+        },
+        "due-at-day": {
+            "name": "Due At Day",
+            "type": "number",
+        },
+        "due-at-month": {
+            "name": "Due At Month",
+            "type": "number",
+        },
         "must-do": {
             "name": "Must Do",
             "type": "checkbox"
@@ -759,6 +771,15 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
             "direction": "ascending"
         }, {
             "property": "difficulty",
+            "direction": "ascending"
+        }, {
+            "property": "due-at-month",
+            "direction": "ascending"
+        }, {
+            "property": "due-at-day",
+            "direction": "ascending"
+        }, {
+            "property": "due-at-time",
             "direction": "ascending"
         }]
     },
@@ -792,6 +813,15 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
         }, {
             "property": "must-do",
             "visible": False
+        }, {
+            "property": "due-at-time",
+            "visible": True
+        }, {
+            "property": "due-at-day",
+            "visible": True
+        }, {
+            "property": "due-at-month",
+            "visible": True
         }, {
             "property": "ref-id",
             "visible": False
@@ -827,6 +857,18 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": "must-do",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "due-at-time",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "due-at-day",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "due-at-month",
             "visible": True
         }, {
             "width": 100,

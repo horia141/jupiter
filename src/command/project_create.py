@@ -297,7 +297,7 @@ class ProjectCreate(command.Command):
         # As another special case, the recurring tasks group key is left to whatever value it had
         # before since this thing is managed by the other flows!
         for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name in (schema.INBOX_BIGPLAN_KEY, schema_item_name == schema.RECURRING_TASKS_GROUP_KEY):
+            if schema_item_name in (schema.INBOX_BIGPLAN_KEY, schema.RECURRING_TASKS_GROUP_KEY):
                 combined_schema[schema_item_name] = old_schema[schema_item_name] \
                     if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
                     else schema_item

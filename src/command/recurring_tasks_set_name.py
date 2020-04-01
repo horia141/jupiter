@@ -56,7 +56,7 @@ class RecurringTasksSetName(command.Command):
                 v for group in project["recurring_tasks"]["entries"].values()
                 for v in group["tasks"] if v["ref_id"] == ref_id)
             recurring_task["name"] = name
-            storage.save_project(project_key, workspace)
+            storage.save_project(project_key, project)
             LOGGER.info("Modified recurring task")
         except StopIteration:
             LOGGER.error(f"Recurring task with id {ref_id} does not exist")

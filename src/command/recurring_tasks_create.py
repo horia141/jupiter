@@ -36,6 +36,11 @@ class RecurringTasksCreate(command.Command):
         parser.add_argument("--difficulty", dest="difficulty", help="The difficulty to use for tasks")
         parser.add_argument("--must-do", dest="must_do", default=False, action="store_true",
                             help="Whether to treat this task as must do or not")
+        parser.add_argument("--due-at-time", dest="due_at_time", metavar="HH:MM", help="The time a task will be due on")
+        parser.add_argument("--due-at-day", type=int, dest="due_at_day", metavar="DAY",
+                            help="The day of the interval the task will be due on")
+        parser.add_argument("--due-at-month", type=int, dest="due_at_month", metavar="MONTH",
+                            help="The day of the interval the task will be due on")
         parser.add_argument("--project", dest="project", required=True, help="The project key to add the task to")
 
     def run(self, args):
@@ -46,6 +51,9 @@ class RecurringTasksCreate(command.Command):
         eisen = args.eisen
         difficulty = args.difficulty
         must_do = args.must_do
+        due_at_time = args.due_at_time
+        due_at_day = args.due_at_day
+        due_at_month = args.due_at_month
         project_key = args.project
 
         # Load local storage
@@ -68,6 +76,9 @@ class RecurringTasksCreate(command.Command):
             "eisen": eisen,
             "difficulty": difficulty,
             "must_do": must_do,
+            "due_at_time": due_at_time,
+            "due_at_day": due_at_day,
+            "due_at_month": due_at_month,
             "period": period
         }
         project["recurring_tasks"]["next_idx"] = project["recurring_tasks"]["next_idx"] + 1
@@ -116,5 +127,8 @@ class RecurringTasksCreate(command.Command):
         setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
         new_recurring_task_row.difficulty = difficulty
         new_recurring_task_row.must_do = must_do
+        new_recurring_task_row.due_at_time = due_at_time
+        new_recurring_task_row.due_at_day = due_at_day
+        new_recurring_task_row.due_at_month = due_at_month
         new_recurring_task_row.ref_id = new_recurring_task["ref_id"]
         LOGGER.info("Applied Notion changes")
