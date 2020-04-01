@@ -72,14 +72,15 @@ class RecurringTasksCreate(command.Command):
         new_recurring_task = {
             "ref_id": str(project["recurring_tasks"]["next_idx"]),
             "name": name,
+            "period": period,
             "group": group,
             "eisen": eisen,
             "difficulty": difficulty,
-            "must_do": must_do,
             "due_at_time": due_at_time,
             "due_at_day": due_at_day,
             "due_at_month": due_at_month,
-            "period": period
+            "suspended": False,
+            "must_do": must_do
         }
         project["recurring_tasks"]["next_idx"] = project["recurring_tasks"]["next_idx"] + 1
         if group in project["recurring_tasks"]["entries"]:
