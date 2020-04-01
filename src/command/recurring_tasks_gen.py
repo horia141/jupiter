@@ -126,11 +126,16 @@ class RecurringTasksGen(command.Command):
         due_at_day = task.get("due_at_day", None)
         due_at_month = task.get("due_at_month", None)
         must_do = task.get("must_do", False)
+        suspended = task.get("suspended", False)
 
         schedule = schedules.get_schedule(period, name, right_now, skip_rule, due_at_time, due_at_day, due_at_month)
 
         if period.lower() not in period_filter:
             LOGGER.info(f"Skipping '{name}' on account of period filtering")
+            return
+
+        if suspended:
+            LOGGER.info(f"Skipping '{name}' because it is suspended")
             return
 
         if not must_do:
