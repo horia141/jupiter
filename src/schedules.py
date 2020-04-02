@@ -153,13 +153,14 @@ class Schedule:
         return self._timeline
 
     @staticmethod
-    def _skip_helper(skip_rule, param):
+    def _skip_helper(skip_rule: str, param):
         if skip_rule == "even":
             return param % 2 == 0
         elif skip_rule == "odd":
             return param % 2 != 0
         else:
-            return param in skip_rule
+            # Why don't you write better programs, bro?
+            return skip_rule.find(str(param)) != -1
 
 
 class DailySchedule(Schedule):

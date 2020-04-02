@@ -750,6 +750,10 @@ def get_recurring_tasks_schema():
             "name": "Must Do",
             "type": "checkbox"
         },
+        "skip-rule": {
+            "name": "Skip Rule",
+            "type": "text"
+        },
         "ref-id": {
             "name": "Ref Id",
             "type": "text"
@@ -833,6 +837,9 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
             "property": "must-do",
             "visible": False
         }, {
+            "property": "skip-rule",
+            "visible": False
+        }, {
             "property": "ref-id",
             "visible": False
         }],
@@ -883,6 +890,10 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": "must-do",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "skip-rule",
             "visible": True
         }, {
             "width": 100,

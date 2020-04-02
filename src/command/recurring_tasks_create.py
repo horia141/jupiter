@@ -34,26 +34,28 @@ class RecurringTasksCreate(command.Command):
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
                             help="The Eisenhower matrix values to use for task")
         parser.add_argument("--difficulty", dest="difficulty", help="The difficulty to use for tasks")
-        parser.add_argument("--must-do", dest="must_do", default=False, action="store_true",
-                            help="Whether to treat this task as must do or not")
         parser.add_argument("--due-at-time", dest="due_at_time", metavar="HH:MM", help="The time a task will be due on")
         parser.add_argument("--due-at-day", type=int, dest="due_at_day", metavar="DAY",
                             help="The day of the interval the task will be due on")
         parser.add_argument("--due-at-month", type=int, dest="due_at_month", metavar="MONTH",
                             help="The day of the interval the task will be due on")
+        parser.add_argument("--must-do", dest="must_do", default=False, action="store_true",
+                            help="Whether to treat this task as must do or not")
+        parser.add_argument("--skip-rule", dest="skip_rule", help="The skip rule for the task")
         parser.add_argument("--project", dest="project", required=True, help="The project key to add the task to")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        name = args.name
+        name = args.name.strip()
         group = args.group
         period = args.period
         eisen = args.eisen
         difficulty = args.difficulty
-        must_do = args.must_do
         due_at_time = args.due_at_time
         due_at_day = args.due_at_day
         due_at_month = args.due_at_month
+        must_do = args.must_do
+        skip_rule = args.skip_rule
         project_key = args.project
 
         # Load local storage
@@ -80,6 +82,7 @@ class RecurringTasksCreate(command.Command):
             "due_at_day": due_at_day,
             "due_at_month": due_at_month,
             "suspended": False,
+            "skip_rule": skip_rule,
             "must_do": must_do
         }
         project["recurring_tasks"]["next_idx"] = project["recurring_tasks"]["next_idx"] + 1
@@ -122,14 +125,15 @@ class RecurringTasksCreate(command.Command):
         # Now, add the new task
 
         new_recurring_task_row = recurring_tasks_collection.add_row()
-        new_recurring_task_row.group = group
+        new_recurring_task_row.ref_id = new_recurring_task["ref_id"]
         new_recurring_task_row.title = name
+        new_recurring_task_row.group = group
         new_recurring_task_row.period = period
         setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
         new_recurring_task_row.difficulty = difficulty
-        new_recurring_task_row.must_do = must_do
         new_recurring_task_row.due_at_time = due_at_time
         new_recurring_task_row.due_at_day = due_at_day
         new_recurring_task_row.due_at_month = due_at_month
-        new_recurring_task_row.ref_id = new_recurring_task["ref_id"]
+        new_recurring_task_row.must_do = must_do
+        new_recurring_task_row.skip_rule = skip_rule
         LOGGER.info("Applied Notion changes")
