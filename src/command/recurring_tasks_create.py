@@ -1,6 +1,7 @@
 """Command for adding a recurring task."""
 
 import logging
+import re
 import uuid
 
 from notion.client import NotionClient
@@ -47,16 +48,40 @@ class RecurringTasksCreate(command.Command):
     def run(self, args):
         """Callback to execute when the command is invoked."""
         name = args.name.strip()
-        group = args.group
-        period = args.period
-        eisen = args.eisen
-        difficulty = args.difficulty
-        due_at_time = args.due_at_time
+        group = args.group.strip()
+        period = args.period.strip().lower()
+        eisen = [e.strip().lower() for e in args.eisen]
+        difficulty = args.difficulty.strip().lower() if args.difficulty else None
+        due_at_time = args.due_at_time.strip().lower() if args.due_at_time else None
         due_at_day = args.due_at_day
         due_at_month = args.due_at_month
         must_do = args.must_do
-        skip_rule = args.skip_rule
+        skip_rule = args.skip_rule.strip().lower() if args.skip_rule else None
         project_key = args.project
+
+        if len(name) == 0:
+            raise Exception("Must provide a non-empty name")
+
+        if len(group) == 0:
+            raise Exception("Most provide a non-empty group")
+
+        if len(period) == 0:
+            raise Exception("Must provide a non-empty project")
+        if period not in [k.lower() for k in schema.INBOX_TIMELINE]:
+            raise Exception(f"Invalid period value '{period}'")
+
+        if any(e not in [k.lower() for k in schema.INBOX_EISENHOWER] for e in eisen):
+            raise Exception(f"Invalid eisenhower values {eisen}")
+
+        if difficulty:
+            if len(difficulty) == 0:
+                raise Exception("Must provide a non-empty difficulty")
+            if difficulty not in [k.lower() for k in schema.INBOX_DIFFICULTY]:
+                raise Exception(f"Invalid difficulty value '{difficulty}")
+
+        if due_at_time:
+            if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):
+                raise Exception(f"Invalid due time value '{due_at_time}'")
 
         # Load local storage
 
