@@ -11,6 +11,7 @@ import command.remove_archived_tasks as remove_archived_tasks
 import command.big_plans_sync as big_plans_sync
 import command.recurring_tasks_create as recurring_tasks_create
 import command.recurring_tasks_gen as recurring_tasks_gen
+import command.recurring_tasks_set_eisen as recurring_tasks_set_eisen
 import command.recurring_tasks_set_name as recurring_tasks_set_name
 import command.recurring_tasks_suspend as recurring_tasks_suspend
 import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
@@ -51,6 +52,7 @@ def main():
         recurring_tasks_create.RecurringTasksCreate(),
         recurring_tasks_gen.RecurringTasksGen(),
         recurring_tasks_set_name.RecurringTasksSetName(),
+        recurring_tasks_set_eisen.RecurringTasksSetEisen(),
         recurring_tasks_suspend.RecurringTasksSuspend(),
         recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
         big_plans_sync.BigPlansSync(),
