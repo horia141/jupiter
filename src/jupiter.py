@@ -12,6 +12,8 @@ import command.big_plans_sync as big_plans_sync
 import command.recurring_tasks_create as recurring_tasks_create
 import command.recurring_tasks_gen as recurring_tasks_gen
 import command.recurring_tasks_set_name as recurring_tasks_set_name
+import command.recurring_tasks_suspend as recurring_tasks_suspend
+import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
 import command.vacations_create as vacations_create
 import command.vacations_remove as vacations_remove
 import command.vacations_set_end_date as vacations_set_end_date
@@ -49,6 +51,8 @@ def main():
         recurring_tasks_create.RecurringTasksCreate(),
         recurring_tasks_gen.RecurringTasksGen(),
         recurring_tasks_set_name.RecurringTasksSetName(),
+        recurring_tasks_suspend.RecurringTasksSuspend(),
+        recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
         big_plans_sync.BigPlansSync(),
         archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
