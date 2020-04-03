@@ -246,6 +246,10 @@ def get_inbox_schema():
             "type": "select",
             "options": [{}]
         },
+        "recurring-task-ref-id": {
+            "name": "Recurring Task Id",
+            "type": "text"
+        },
         "date": {
             "name": "Due Date",
             "type": "date"
@@ -321,6 +325,9 @@ INBOX_KANBAN_FORMAT = {
     }, {
         "property": INBOX_BIGPLAN_KEY,
         "visible": True
+    }, {
+        "property": "recurring-task-ref-id",
+        "visible": False
     }, {
         "property": "date",
         "visible": True
@@ -597,6 +604,9 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "property": INBOX_BIGPLAN_KEY,
             "visible": True
         }, {
+            "property": "recurring-task-ref-id",
+            "visible": False
+        }, {
             "property": "date",
             "visible": False
         }, {
@@ -628,6 +638,10 @@ INBOX_DATABASE_VIEW_SCHEMA = {
         }, {
             "width": 100,
             "property": INBOX_BIGPLAN_KEY,
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "recurring-task-ref-id",
             "visible": True
         }, {
             "width": 100,

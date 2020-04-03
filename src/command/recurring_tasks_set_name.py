@@ -55,6 +55,7 @@ class RecurringTasksSetName(command.Command):
             recurring_task = next(
                 v for group in project["recurring_tasks"]["entries"].values()
                 for v in group["tasks"] if v["ref_id"] == ref_id)
+            original_name = recurring_task["name"]
             recurring_task["name"] = name
             storage.save_project(project_key, project)
             LOGGER.info("Modified recurring task")
@@ -63,6 +64,8 @@ class RecurringTasksSetName(command.Command):
             return
 
         # Apply changes in Notion
+
+        # First, change the recurring task entry
 
         recurring_tasks_page = space_utils.find_page_from_space_by_id(
             client, the_lock["projects"][project_key]["recurring_tasks"]["root_page_id"])
@@ -81,3 +84,20 @@ class RecurringTasksSetName(command.Command):
             break
         else:
             LOGGER.error("Did not find Notion task to remove")
+
+        # Then, change every task
+
+        inbox_tasks_page = space_utils.find_page_from_space_by_id(
+            client, the_lock["projects"][project_key]["inbox"]["root_page_id"])
+        inbox_tasks_rows = client \
+            .get_collection_view(
+                the_lock["projects"][project_key]["inbox"]["database_view_id"],
+                collection=inbox_tasks_page.collection) \
+            .build_query() \
+            .execute()
+
+        for inbox_task_row in inbox_tasks_rows:
+            if inbox_task_row.recurring_task_id != ref_id:
+                continue
+            inbox_task_row.title = inbox_task_row.title.replace(original_name, name)
+            LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")
