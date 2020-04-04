@@ -250,8 +250,12 @@ def get_inbox_schema():
             "name": "Recurring Task Id",
             "type": "text"
         },
-        "date": {
+        "due-date": {
             "name": "Due Date",
+            "type": "date"
+        },
+        "created-date": {
+            "name": "Created Date",
             "type": "date"
         },
         "eisen": {
@@ -329,8 +333,11 @@ INBOX_KANBAN_FORMAT = {
         "property": "recurring-task-ref-id",
         "visible": False
     }, {
-        "property": "date",
+        "property": "due-date",
         "visible": True
+    }, {
+        "property": "created-date",
+        "visible": False
     }, {
         "property": "eisen",
         "visible": True
@@ -359,7 +366,7 @@ INBOX_KANBAN_ALL_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -387,7 +394,7 @@ INBOX_KANBAN_URGENT_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -446,7 +453,7 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -464,7 +471,7 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
-                "property": "date",
+                "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
                     "value": {
@@ -487,7 +494,7 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -505,7 +512,7 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
-                "property": "date",
+                "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
                     "value": {
@@ -528,7 +535,7 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -546,7 +553,7 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
-                "property": "date",
+                "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
                     "value": {
@@ -564,7 +571,7 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
     "name": "Not Completed By Date",
     "query2": {
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -607,7 +614,10 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "property": "recurring-task-ref-id",
             "visible": False
         }, {
-            "property": "date",
+            "property": "due-date",
+            "visible": False
+        }, {
+            "property": "created-date",
             "visible": False
         }, {
             "property": "eisen",
@@ -649,7 +659,11 @@ INBOX_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
-            "property": "date",
+            "property": "due-date",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "created-date",
             "visible": True
         }, {
             "width": 100,
@@ -934,9 +948,9 @@ def get_big_plan_schema():
                 "value": v["name"]
             } for v in BIG_PLAN_STATUS.values()]
         },
-        "date": {
+        "due-date": {
             "name": "Due Date",
-            "type": "date"
+            "type": "due-date"
         },
         "inboxid": {
             "name": "Inbox Id Ref",
@@ -976,7 +990,7 @@ BIG_PLAN_FORMAT = {
         "property": "status",
         "visible": False
     }, {
-        "property": "date",
+        "property": "due-date",
         "visible": True
     }],
     "board_cover_size": "small"
@@ -992,7 +1006,7 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }]
     },
@@ -1013,7 +1027,7 @@ BIG_PLAN_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
-            "property": "date",
+            "property": "due-date",
             "visible": True
         }, {
             "width": 100,
@@ -1034,7 +1048,7 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "property": "status",
                 "direction": "ascending"
             }, {
-                "property": "date",
+                "property": "due-date",
                 "direction": "ascending"
             }],
             "filter": {
@@ -1066,7 +1080,7 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "visible": False
             }, {
                 "width": 100,
-                "property": "date",
+                "property": "due-date",
                 "visible": True
             }, {
                 "width": 100,

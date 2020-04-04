@@ -80,14 +80,9 @@ class RecurringTasksSetEisen(command.Command):
             .build_query() \
             .execute()
 
-        for recurring_task_row in recurring_tasks_rows:
-            if recurring_task_row.ref_id != ref_id:
-                continue
-            setattr(recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
-            LOGGER.info("Applied Notion changes")
-            break
-        else:
-            LOGGER.error("Did not find Notion task to remove")
+        recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
+        setattr(recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
+        LOGGER.info("Applied Notion changes")
 
         # Then, change every task
 

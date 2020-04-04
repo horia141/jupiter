@@ -84,14 +84,9 @@ class RecurringTasksRemove(command.Command):
             .build_query() \
             .execute()
 
-        for recurring_task_row in recurring_tasks_rows:
-            if recurring_task_row.ref_id != ref_id:
-                continue
-            recurring_task_row.remove()
-            LOGGER.info("Removed recurring task from Notion")
-            break
-        else:
-            LOGGER.error("Did not find Notion task to remove")
+        recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
+        recurring_task_row.remove()
+        LOGGER.info("Removed recurring task from Notion")
 
         # Then, change every task
 

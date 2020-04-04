@@ -167,6 +167,7 @@ class RecurringTasksGen(command.Command):
                 if task_row.status is None:
                     task_row.status = schema.RECURRING_STATUS
                 task_row.recurring_task_id = recurring_task_id
+                task_row.created_date = right_now
                 setattr(task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
                 setattr(task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
                 setattr(task_row, schema.INBOX_TASK_ROW_DIFFICULTY_KEY, difficulty)

@@ -3,8 +3,10 @@
 import logging
 
 from notion.client import NotionClient
+import pendulum
 
 import command.command as command
+import schedules
 import space_utils
 import storage
 
@@ -58,7 +60,6 @@ class RecurringTasksSetName(command.Command):
             recurring_task = next(
                 v for group in project["recurring_tasks"]["entries"].values()
                 for v in group["tasks"] if v["ref_id"] == ref_id)
-            original_name = recurring_task["name"]
             recurring_task["name"] = name
             storage.save_project(project_key, project)
             LOGGER.info("Modified recurring task")
@@ -79,14 +80,9 @@ class RecurringTasksSetName(command.Command):
             .build_query() \
             .execute()
 
-        for recurring_task_row in recurring_tasks_rows:
-            if recurring_task_row.ref_id != ref_id:
-                continue
-            recurring_task_row.title = recurring_task["name"]
-            LOGGER.info("Applied Notion changes")
-            break
-        else:
-            LOGGER.error("Did not find Notion task to remove")
+        recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
+        recurring_task_row.title = recurring_task["name"]
+        LOGGER.info("Applied Notion changes")
 
         # Then, change every task
 
@@ -102,5 +98,10 @@ class RecurringTasksSetName(command.Command):
         for inbox_task_row in inbox_tasks_rows:
             if inbox_task_row.recurring_task_id != ref_id:
                 continue
-            inbox_task_row.title = inbox_task_row.title.replace(original_name, name)
+            schedule = schedules.get_schedule(
+                inbox_task_row.period, recurring_task_row.name,
+                pendulum.instance(inbox_task_row.created_date.start),
+                recurring_task_row.skip_rule, recurring_task_row.due_at_time,
+                recurring_task_row.due_at_day, recurring_task_row.due_at_month)
+            inbox_task_row.title = schedule.full_name
             LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")

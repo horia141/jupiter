@@ -396,15 +396,16 @@ class YearlySchedule(Schedule):
 
 def get_schedule(period, name, date, skip_rule, due_at_time=None, due_at_day=None, due_at_month=None):
     """Build an appropriate schedule from the given parameters."""
-    if period == "daily":
+    clean_period = period.lower()
+    if clean_period == "daily":
         return DailySchedule(name, date, skip_rule, due_at_time)
-    elif period == "weekly":
+    elif clean_period == "weekly":
         return WeeklySchedule(name, date, skip_rule, due_at_time, due_at_day)
-    elif period == "monthly":
+    elif clean_period == "monthly":
         return MonthlySchedule(name, date, skip_rule, due_at_time, due_at_day)
-    elif period == "quarterly":
+    elif clean_period == "quarterly":
         return QuarterlySchedule(name, date, skip_rule, due_at_time, due_at_day, due_at_month)
-    elif period == "yearly":
+    elif clean_period == "yearly":
         return YearlySchedule(name, date, due_at_time, due_at_day, due_at_month)
     else:
         raise Exception("Invalid period {period}".format(period=period))
