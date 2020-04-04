@@ -15,6 +15,7 @@ import command.recurring_tasks_remove as recurring_tasks_remove
 import command.recurring_tasks_set_difficulty as recurring_tasks_set_difficulty
 import command.recurring_tasks_set_eisen as recurring_tasks_set_eisen
 import command.recurring_tasks_set_name as recurring_tasks_set_name
+import command.recurring_tasks_show as recurring_tasks_show
 import command.recurring_tasks_suspend as recurring_tasks_suspend
 import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
 import command.vacations_create as vacations_create
@@ -59,6 +60,7 @@ def main():
         recurring_tasks_set_difficulty.RecurringTasksSetDifficulty(),
         recurring_tasks_suspend.RecurringTasksSuspend(),
         recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
+        recurring_tasks_show.RecurringTasksShow(),
         big_plans_sync.BigPlansSync(),
         archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
