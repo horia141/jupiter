@@ -889,7 +889,7 @@ RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
-            "property": RECURRING_TASKS_PERIOD,
+            "property": "group",
             "visible": True
         }, {
             "width": 100,
