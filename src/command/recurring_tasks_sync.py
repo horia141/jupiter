@@ -149,6 +149,25 @@ class RecurringtTasksSync(command.Command):
         # Now, go over each local recurring task, and add it to Notion if it doesn't
         # exist there!
 
+        for recurring_task in recurring_tasks_set.values():
+            # We've already processed this thing above
+            if recurring_task["ref_id"] in recurring_tasks_row_set:
+                continue
+
+            new_recurring_task_row = recurring_tasks_collection.add_row()
+            new_recurring_task_row.ref_id = recurring_task["ref_id"]
+            new_recurring_task_row.title = recurring_task["name"]
+            new_recurring_task_row.group = recurring_task["group"]
+            new_recurring_task_row.period = recurring_task["period"]
+            setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, recurring_task["eisen"])
+            new_recurring_task_row.difficulty = recurring_task["difficulty"]
+            new_recurring_task_row.due_at_time = recurring_task["due_at_time"]
+            new_recurring_task_row.due_at_day = recurring_task["due_at_day"]
+            new_recurring_task_row.due_at_month = recurring_task["due_at_month"]
+            new_recurring_task_row.must_do = recurring_task["must_do"]
+            new_recurring_task_row.skip_rule = recurring_task["skip_rule"]
+            LOGGER.info(f'Created Notion task for {recurring_task["name"]}')
+
         assert len(recurring_tasks_set) == len(recurring_tasks_row_set)
 
         # What is now left to do is just update all the inbox tasks according to the new forms of
