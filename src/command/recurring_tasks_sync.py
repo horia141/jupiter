@@ -64,6 +64,28 @@ class RecurringtTasksSync(command.Command):
             .build_query() \
             .execute()
 
+        # First, update the recurring tasks collection schema, with the full group
+        # structure. We need to do this at the start, so all other operations assume
+        # Notion and local are synced wrt this thing and can work easily.
+        recurring_tasks_collection = recurring_tasks_page.collection
+        recurring_tasks_schema = recurring_tasks_collection.get("schema")
+        all_local_groups = {k.lower().strip(): k for k in project["recurring_tasks"]["entries"].keys()}
+        all_notion_groups = recurring_tasks_schema[schema.RECURRING_TASKS_GROUP_KEY]
+        if "options" not in all_notion_groups:
+            all_notion_groups["options"] = []
+        all_notion_groups_key = [k["value"].lower().strip() for k in all_notion_groups["options"]]
+        for (local_group_key, local_group_value) in all_local_groups.items():
+            if local_group_key in all_notion_groups_key:
+                continue
+            all_notion_groups["options"].append({
+                "color": schema.get_stable_color(local_group_key),
+                "id": str(uuid.uuid4()),
+                "value": schema.format_name_for_option(local_group_value)
+            })
+        recurring_tasks_collection.set("schema", recurring_tasks_schema)
+
+        # Then look at each recurring task in Notion and try to match it with one in the local storage
+
         recurring_tasks_row_set = {}
         for recurring_tasks_row in recurring_tasks_rows:
             LOGGER.info(f"Processing {recurring_tasks_row}")
@@ -94,6 +116,29 @@ class RecurringtTasksSync(command.Command):
                 LOGGER.info(f"Found new recurring task from Notion {recurring_tasks_row.title}")
                 recurring_tasks_row.ref_id = new_recurring_task["ref_id"]
                 LOGGER.info(f"Applied changes on Notion side too as {recurring_tasks_row}")
+                recurring_tasks_set[recurring_tasks_row.ref_id] = new_recurring_task
+                recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
+            elif recurring_tasks_row.ref_id in recurring_tasks_set:
+                # If the recurring task exists locally, we sync it with the remote
+                recurring_task = recurring_tasks_set[recurring_tasks_row.ref_id]
+                if prefer == "notion":
+                    # Copy over the parameters from Notion to local
+                    LOGGER.error("Case not covered yet")
+                elif prefer == "local":
+                    # Copy over the parameters from local to Notion
+                    recurring_tasks_row.title = recurring_task["name"]
+                    recurring_tasks_row.group = recurring_task["group"]
+                    recurring_tasks_row.period = recurring_task["period"]
+                    setattr(recurring_tasks_row, schema.INBOX_TASK_ROW_EISEN_KEY, recurring_task["eisen"])
+                    recurring_tasks_row.difficulty = recurring_task["difficulty"]
+                    recurring_tasks_row.due_at_time = recurring_task["due_at_time"]
+                    recurring_tasks_row.due_at_day = recurring_task["due_at_day"]
+                    recurring_tasks_row.due_at_month = recurring_task["due_at_month"]
+                    recurring_tasks_row.must_do = recurring_task["must_do"]
+                    recurring_tasks_row.skip_rule = recurring_task["skip_rule"]
+                    LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from local")
+                else:
+                    raise Exception(f"Invalid preference {prefer}")
                 recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
             else:
                 LOGGER.error("Case not covered yet")
@@ -101,24 +146,13 @@ class RecurringtTasksSync(command.Command):
         storage.save_project(project_key, project)
         LOGGER.info("Applied local changes")
 
-        # First, update the recurring tasks collection schema, with the full group
-        # structure.
-        recurring_tasks_collection = recurring_tasks_page.collection
-        recurring_tasks_schema = recurring_tasks_collection.get("schema")
-        all_local_groups = {k.lower().strip(): k for k in project["recurring_tasks"]["entries"].keys()}
-        all_notion_groups = recurring_tasks_schema[schema.RECURRING_TASKS_GROUP_KEY]
-        if "options" not in all_notion_groups:
-            all_notion_groups["options"] = []
-        all_notion_groups_key = [k["value"].lower().strip() for k in all_notion_groups["options"]]
-        for (local_group_key, local_group_value) in all_local_groups.items():
-            if local_group_key in all_notion_groups_key:
-                continue
-            all_notion_groups["options"].append({
-                "color": schema.get_stable_color(local_group_key),
-                "id": str(uuid.uuid4()),
-                "value": schema.format_name_for_option(local_group_value)
-            })
-        recurring_tasks_collection.set("schema", recurring_tasks_schema)
+        # Now, go over each local recurring task, and add it to Notion if it doesn't
+        # exist there!
+
+        assert len(recurring_tasks_set) == len(recurring_tasks_row_set)
+
+        # What is now left to do is just update all the inbox tasks according to the new forms of
+        # recurring tasks.
 
         return
 
