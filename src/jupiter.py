@@ -22,6 +22,7 @@ import command.recurring_tasks_set_period as recurring_tasks_set_period
 import command.recurring_tasks_set_skip_rule as recurring_tasks_set_skip_rule
 import command.recurring_tasks_show as recurring_tasks_show
 import command.recurring_tasks_suspend as recurring_tasks_suspend
+import command.recurring_tasks_sync as recurring_tasks_sync
 import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
 import command.vacations_create as vacations_create
 import command.vacations_remove as vacations_remove
@@ -71,6 +72,7 @@ def main():
         recurring_tasks_suspend.RecurringTasksSuspend(),
         recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
         recurring_tasks_show.RecurringTasksShow(),
+        recurring_tasks_sync.RecurringtTasksSync(),
         big_plans_sync.BigPlansSync(),
         archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
