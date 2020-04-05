@@ -94,7 +94,7 @@ class RecurringTasksGen(command.Command):
     @staticmethod
     def _update_notion_task(dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks):
         def get_possible_row(timeline):
-            already_task_rows = [t for t in all_tasks if t.title.startswith(name)]
+            already_task_rows = [t for t in all_tasks if t.title.startswith(name) or t.ref_id == recurring_task_id]
 
             for already_task_row in already_task_rows:
                 if timeline == already_task_row.timeline:
