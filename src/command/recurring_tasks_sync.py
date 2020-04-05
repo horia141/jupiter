@@ -127,7 +127,39 @@ class RecurringtTasksSync(command.Command):
                 recurring_task = recurring_tasks_set[recurring_tasks_row.ref_id]
                 if prefer == "notion":
                     # Copy over the parameters from Notion to local
-                    LOGGER.error("Case not covered yet")
+                    old_group = recurring_task["group"]
+                    group = recurring_tasks_row.group
+
+                    recurring_task["name"] = recurring_tasks_row.title
+                    recurring_task["group"] = recurring_tasks_row.group
+                    recurring_task["period"] = recurring_tasks_row.period
+                    recurring_task["eisen"] = recurring_tasks_row.eisen
+                    recurring_task["difficulty"] = recurring_tasks_row.difficulty
+                    recurring_task["due_at_time"] = recurring_tasks_row.due_at_time
+                    recurring_task["due_at_day"] = recurring_tasks_row.due_at_day
+                    recurring_task["due_at_month"] = recurring_tasks_row.due_at_month
+                    recurring_task["must_do"] = recurring_tasks_row.must_do
+                    recurring_task["skip_rule"] = recurring_tasks_row.skip_rule
+
+                    # Recreate groups structure. Boy. I'll be glad to be rid of this!
+                    if old_group != recurring_task["group"]:
+                        if group in project["recurring_tasks"]["entries"]:
+                            project["recurring_tasks"]["entries"][group]["tasks"].append(recurring_task)
+                        else:
+                            project["recurring_tasks"]["entries"][group] = {
+                                "format": "{name}",
+                                "tasks": [recurring_task]
+                            }
+
+                        idx = 0
+                        for recurring_task_match in project["recurring_tasks"]["entries"][old_group]["tasks"]:
+                            if recurring_task_match["ref_id"] != recurring_task["ref_id"]:
+                                idx += 1
+                                continue
+                            del project["recurring_tasks"]["entries"][old_group]["tasks"][idx]
+                            break
+
+                    LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from Notion")
                 elif prefer == "local":
                     # Copy over the parameters from local to Notion
                     recurring_tasks_row.title = recurring_task["name"]
