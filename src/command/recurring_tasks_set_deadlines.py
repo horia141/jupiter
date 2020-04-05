@@ -30,7 +30,7 @@ class RecurringTasksSetDeadlines(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--due-at-time", dest="due_at_time", metavar="HH:MM", help="The time a task will be due on")
         parser.add_argument("--due-at-day", type=int, dest="due_at_day", metavar="DAY",
                             help="The day of the interval the task will be due on")

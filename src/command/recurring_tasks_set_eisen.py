@@ -27,7 +27,7 @@ class RecurringTasksSetEisen(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
                             help="The Eisenhower matrix values to use for task")
         parser.add_argument("--project", type=str, dest="project", help="The key of the project")
