@@ -17,6 +17,7 @@ import command.recurring_tasks_set_difficulty as recurring_tasks_set_difficulty
 import command.recurring_tasks_set_eisen as recurring_tasks_set_eisen
 import command.recurring_tasks_set_group as recurring_tasks_set_group
 import command.recurring_tasks_set_name as recurring_tasks_set_name
+import command.recurring_tasks_set_skip_rule as recurring_tasks_set_skip_rule
 import command.recurring_tasks_show as recurring_tasks_show
 import command.recurring_tasks_suspend as recurring_tasks_suspend
 import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
@@ -62,6 +63,7 @@ def main():
         recurring_tasks_set_eisen.RecurringTasksSetEisen(),
         recurring_tasks_set_difficulty.RecurringTasksSetDifficulty(),
         recurring_tasks_set_deadlines.RecurringTasksSetDeadlines(),
+        recurring_tasks_set_skip_rule.RecurringTasksSetSkipRule(),
         recurring_tasks_suspend.RecurringTasksSuspend(),
         recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
         recurring_tasks_show.RecurringTasksShow(),
