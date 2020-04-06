@@ -1,6 +1,7 @@
 """Command for syncing the recurring tasks from Notion."""
 
 import logging
+import re
 import uuid
 
 from notion.client import NotionClient
@@ -95,20 +96,11 @@ class RecurringtTasksSync(command.Command):
             LOGGER.info(f"Processing {recurring_tasks_row}")
             if recurring_tasks_row.ref_id is None or recurring_tasks_row.ref_id == "":
                 # If the recurring task doesn't exist locally, we create it!
-                new_recurring_task = {
-                    "ref_id": str(project["recurring_tasks"]["next_idx"]),
-                    "name": recurring_tasks_row.title,
-                    "period": recurring_tasks_row.period,
-                    "group": recurring_tasks_row.group,
-                    "eisen": recurring_tasks_row.eisen,
-                    "difficulty": recurring_tasks_row.difficulty,
-                    "due_at_time": recurring_tasks_row.due_at_time,
-                    "due_at_day": recurring_tasks_row.due_at_day,
-                    "due_at_month": recurring_tasks_row.due_at_month,
-                    "suspended": recurring_tasks_row.suspended,
-                    "skip_rule": recurring_tasks_row.skip_rule,
-                    "must_do": recurring_tasks_row.must_do
-                }
+
+                new_recurring_task = self._build_entity_from_row({
+                    "ref_id": str(project["recurring_tasks"]["next_idx"])
+                }, recurring_tasks_row)
+
                 project["recurring_tasks"]["next_idx"] = project["recurring_tasks"]["next_idx"] + 1
                 if recurring_tasks_row.group in project["recurring_tasks"]["entries"]:
                     project["recurring_tasks"]["entries"][recurring_tasks_row.group]["tasks"].append(new_recurring_task)
@@ -128,25 +120,16 @@ class RecurringtTasksSync(command.Command):
                 if prefer == "notion":
                     # Copy over the parameters from Notion to local
                     old_group = recurring_task["group"]
-                    group = recurring_tasks_row.group
 
-                    recurring_task["name"] = recurring_tasks_row.title
-                    recurring_task["group"] = recurring_tasks_row.group
-                    recurring_task["period"] = recurring_tasks_row.period
-                    recurring_task["eisen"] = recurring_tasks_row.eisen
-                    recurring_task["difficulty"] = recurring_tasks_row.difficulty
-                    recurring_task["due_at_time"] = recurring_tasks_row.due_at_time
-                    recurring_task["due_at_day"] = recurring_tasks_row.due_at_day
-                    recurring_task["due_at_month"] = recurring_tasks_row.due_at_month
-                    recurring_task["must_do"] = recurring_tasks_row.must_do
-                    recurring_task["skip_rule"] = recurring_tasks_row.skip_rule
+                    recurring_task = self._build_entity_from_row(recurring_task, recurring_tasks_row)
 
                     # Recreate groups structure. Boy. I'll be glad to be rid of this!
                     if old_group != recurring_task["group"]:
-                        if group in project["recurring_tasks"]["entries"]:
-                            project["recurring_tasks"]["entries"][group]["tasks"].append(recurring_task)
+                        if recurring_task["group"] in project["recurring_tasks"]["entries"]:
+                            project["recurring_tasks"]["entries"][recurring_task["group"]]["tasks"]\
+                                .append(recurring_task)
                         else:
-                            project["recurring_tasks"]["entries"][group] = {
+                            project["recurring_tasks"]["entries"][recurring_task["group"]] = {
                                 "format": "{name}",
                                 "tasks": [recurring_task]
                             }
@@ -165,13 +148,13 @@ class RecurringtTasksSync(command.Command):
                     recurring_tasks_row.title = recurring_task["name"]
                     recurring_tasks_row.group = recurring_task["group"]
                     recurring_tasks_row.period = recurring_task["period"]
-                    setattr(recurring_tasks_row, schema.INBOX_TASK_ROW_EISEN_KEY, recurring_task["eisen"])
-                    recurring_tasks_row.difficulty = recurring_task["difficulty"]
-                    recurring_tasks_row.due_at_time = recurring_task["due_at_time"]
-                    recurring_tasks_row.due_at_day = recurring_task["due_at_day"]
-                    recurring_tasks_row.due_at_month = recurring_task["due_at_month"]
-                    recurring_tasks_row.must_do = recurring_task["must_do"]
-                    recurring_tasks_row.skip_rule = recurring_task["skip_rule"]
+                    setattr(recurring_tasks_row, schema.INBOX_TASK_ROW_EISEN_KEY, recurring_task.get("eisen", []))
+                    recurring_tasks_row.difficulty = recurring_task.get("difficulty", None)
+                    recurring_tasks_row.due_at_time = recurring_task.get("due_at_time", None)
+                    recurring_tasks_row.due_at_day = recurring_task.get("due_at_day", None)
+                    recurring_tasks_row.due_at_month = recurring_task.get("due_at_month", None)
+                    recurring_tasks_row.must_do = recurring_task.get("must_do", False)
+                    recurring_tasks_row.skip_rule = recurring_task.get("skip_rule", None)
                     LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {prefer}")
@@ -195,13 +178,13 @@ class RecurringtTasksSync(command.Command):
             new_recurring_task_row.title = recurring_task["name"]
             new_recurring_task_row.group = recurring_task["group"]
             new_recurring_task_row.period = recurring_task["period"]
-            setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, recurring_task["eisen"])
-            new_recurring_task_row.difficulty = recurring_task["difficulty"]
-            new_recurring_task_row.due_at_time = recurring_task["due_at_time"]
-            new_recurring_task_row.due_at_day = recurring_task["due_at_day"]
-            new_recurring_task_row.due_at_month = recurring_task["due_at_month"]
-            new_recurring_task_row.must_do = recurring_task["must_do"]
-            new_recurring_task_row.skip_rule = recurring_task["skip_rule"]
+            setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, recurring_task.get("eisen", []))
+            new_recurring_task_row.difficulty = recurring_task.get("difficulty", None)
+            new_recurring_task_row.due_at_time = recurring_task.get("due_at_time", None)
+            new_recurring_task_row.due_at_day = recurring_task.get("due_at_day", None)
+            new_recurring_task_row.due_at_month = recurring_task.get("due_at_month", None)
+            new_recurring_task_row.must_do = recurring_task.get("must_do", False)
+            new_recurring_task_row.skip_rule = recurring_task.get("skip_rule", None)
             LOGGER.info(f'Created Notion task for {recurring_task["name"]}')
 
         # What is now left to do is just update all the inbox tasks according to the new forms of
@@ -217,6 +200,8 @@ class RecurringtTasksSync(command.Command):
             .execute()
 
         for inbox_task_row in inbox_tasks_rows:
+            if inbox_task_row.recurring_task_id is None or inbox_task_row.recurring_task_id == "":
+                continue
             recurring_task = recurring_tasks_set[inbox_task_row.recurring_task_id]
             schedule = schedules.get_schedule(
                 recurring_task["period"], recurring_task["name"], pendulum.instance(inbox_task_row.created_date.start),
@@ -230,3 +215,62 @@ class RecurringtTasksSync(command.Command):
                 setattr(inbox_task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
                 setattr(inbox_task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)
             LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")
+
+    @staticmethod
+    def _clean_eisen(eisen):
+        if len(eisen) == 0:
+            return []
+        if len(eisen) == 1 and eisen[0] == '':
+            return []
+        return eisen
+
+    @staticmethod
+    def _build_entity_from_row(entity, row):
+        name = row.title.strip()
+        group = row.group.strip()
+        period = row.period.strip().lower()
+        eisen = [e.strip().lower() for e in RecurringtTasksSync._clean_eisen(row.eisen)]
+        difficulty = row.difficulty.strip().lower() if row.difficulty else None
+        due_at_time = row.due_at_time.strip().lower() if row.due_at_time else None
+        due_at_day = row.due_at_day
+        due_at_month = row.due_at_month
+        must_do = row.must_do
+        skip_rule = row.skip_rule.strip().lower() if row.skip_rule else None
+
+        if len(name) == 0:
+            raise Exception("Must provide a non-empty name")
+
+        if len(group) == 0:
+            raise Exception("Most provide a non-empty group")
+
+        if len(period) == 0:
+            raise Exception("Must provide a non-empty project")
+        if period not in [k.lower() for k in schema.INBOX_TIMELINE]:
+            raise Exception(f"Invalid period value '{period}'")
+
+        if any(e not in [k.lower() for k in schema.INBOX_EISENHOWER] for e in eisen):
+            raise Exception(f"Invalid eisenhower values {eisen}")
+
+        if difficulty:
+            if len(difficulty) == 0:
+                raise Exception("Must provide a non-empty difficulty")
+            if difficulty not in [k.lower() for k in schema.INBOX_DIFFICULTY]:
+                raise Exception(f"Invalid difficulty value '{difficulty}")
+
+        if due_at_time:
+            if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):
+                raise Exception(f"Invalid due time value '{due_at_time}'")
+
+        entity["name"] = name
+        entity["group"] = group
+        entity["period"] = period
+        entity["eisen"] = eisen
+        entity["difficulty"] = difficulty
+        entity["due_at_time"] = due_at_time
+        entity["due_at_day"] = due_at_day
+        entity["due_at_month"] = due_at_month
+        entity["must_do"] = must_do
+        entity["suspended"] = row.suspended
+        entity["skip_rule"] = skip_rule
+
+        return entity
