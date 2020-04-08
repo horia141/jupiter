@@ -950,7 +950,7 @@ def get_big_plan_schema():
         },
         "due-date": {
             "name": "Due Date",
-            "type": "due-date"
+            "type": "date"
         },
         "inboxid": {
             "name": "Inbox Id Ref",

@@ -99,8 +99,9 @@ Notice that "Period" is set to "Monthly" (one of five valid choices) and group i
 is essentially a free-form label). The former determines the periodicity of the task, while the other helps with
 organising work.
 
-Before we move on to generation, you need to synchronise Notion with the local state by running a `sync` command
-, like so:
+Before we move on to generation, you need to synchronise Notion with the local state by running a `sync` command.
+This is needed because (at this moment), there's no way for Jupiter to know about changes that happen in Notion
+automatically. So you have to instruct it like so:
 
 ```bash
 $ docker run \
