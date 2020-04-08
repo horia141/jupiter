@@ -3,10 +3,8 @@
 import logging
 
 from notion.client import NotionClient
-import yaml
 
 import command.command as command
-import lockfile
 import schema
 import storage
 
@@ -29,28 +27,28 @@ class ArchiveDoneTasks(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("tasks", help="The tasks file")
+        parser.add_argument("project", help="The key of the project")
         parser.add_argument("--period", required=False, default=[], action="append",
                             help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        project_key = args.project
         period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None
+        dry_run = args.dry_run
+
+        system_lock = storage.load_lock_file()
+        LOGGER.info("Found system lock")
 
         workspace = storage.load_workspace()
+        LOGGER.info("Found workspace file")
 
-        with open(args.tasks, "r") as tasks_file:
-            tasks = yaml.safe_load(tasks_file)
+        _ = storage.load_project(project_key)
+        LOGGER.info("Found project file")
 
         client = NotionClient(token_v2=workspace["token"])
 
-        self._archive_done_tasks(period_filter, client, tasks, args.dry_run)
-
-    @staticmethod
-    def _archive_done_tasks(period_filter, client, tasks, dry_run):
-
-        system_lock = lockfile.load_lock_file()
-        project_lock = system_lock["projects"][tasks["key"]]
+        project_lock = system_lock["projects"][project_key]
         root_page = client.get_block(project_lock["inbox"]["root_page_id"])
         page = client.get_collection_view(project_lock["inbox"]["database_view_id"], collection=root_page.collection)
 

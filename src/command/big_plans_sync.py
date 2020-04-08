@@ -1,28 +1,25 @@
 """Command for updating big plans for a project."""
 
-import hashlib
 import logging
 import uuid
 
 from notion.block import CollectionViewBlock
 from notion.client import NotionClient
-import yaml
 
 import command.command as command
-import lockfile
 import schema
 import storage
 
 LOGGER = logging.getLogger(__name__)
 
 
-class UpsertBigPlans(command.Command):
+class BigPlansSync(command.Command):
     """Command class for updating big plans for a project."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "upsert-big-plans"
+        return "big-plans-sync"
 
     @staticmethod
     def description():
@@ -31,37 +28,25 @@ class UpsertBigPlans(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("tasks", help="The tasks file")
+        parser.add_argument("project", help="The key of the project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        workspace = storage.load_workspace()
+        project_key = args.project
+        dry_run = args.dry_run
 
-        with open(args.tasks, "r") as tasks_file:
-            tasks = yaml.safe_load(tasks_file)
+        system_lock = storage.load_lock_file()
+        LOGGER.info("Found system lock")
+
+        workspace = storage.load_workspace()
+        LOGGER.info("Found workspace file")
+
+        _ = storage.load_project(project_key)
+        LOGGER.info("Found project file")
 
         client = NotionClient(token_v2=workspace["token"])
 
-        self._upsert_big_plans(client, tasks, args.dry_run)
-
-    @staticmethod
-    def _get_stable_color(option_id):
-        return schema.COLORS[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(schema.COLORS)]
-
-    @staticmethod
-    def _format_name(big_plan_name):
-        output = ""
-        for char in big_plan_name:
-            if char.isalnum() or char == " ":
-                output += char
-        return output
-
-    @staticmethod
-    def _upsert_big_plans(client, tasks, dry_run):
-        key = tasks["key"]
-
-        system_lock = lockfile.load_lock_file()
-        project_lock = system_lock["projects"][key]
+        project_lock = system_lock["projects"][project_key]
 
         inbox_collection = client.get_block(project_lock["inbox"]["root_page_id"]).collection
         inbox_schema = inbox_collection.get("schema")
@@ -79,9 +64,9 @@ class UpsertBigPlans(command.Command):
                 option_uuid = str(uuid.uuid4())
             setattr(big_plan, schema.BIG_PLAN_TASK_INBOX_ID_KEY, option_uuid)
             inbox_big_plan_options[option_uuid] = {
-                "color": UpsertBigPlans._get_stable_color(option_uuid),
+                "color": schema.get_stable_color(option_uuid),
                 "id": option_uuid,
-                "value": UpsertBigPlans._format_name(big_plan.name)
+                "value": schema.format_name_for_option(big_plan.name)
             }
 
         inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"] = list(inbox_big_plan_options.values())
@@ -119,5 +104,5 @@ class UpsertBigPlans(command.Command):
                     "table": "collection_view",
                     "path": [],
                     "command": "update",
-                    "args": schema.get_view_schema_for_big_plan_desc(UpsertBigPlans._format_name(big_plan.name))
+                    "args": schema.get_view_schema_for_big_plan_desc(schema.format_name_for_option(big_plan.name))
                 }])

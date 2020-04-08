@@ -7,20 +7,19 @@ import pendulum
 from notion.client import NotionClient
 
 import command.command as command
-import lockfile
 import space_utils
 import storage
 
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsAdd(command.Command):
+class VacationsCreate(command.Command):
     """Command class for adding a vacation."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "vacations-add"
+        return "vacations-create"
 
     @staticmethod
     def description():
@@ -44,7 +43,7 @@ class VacationsAdd(command.Command):
 
         # Load local storage
 
-        the_lock = lockfile.load_lock_file()
+        the_lock = storage.load_lock_file()
         workspace = storage.load_workspace()
         LOGGER.info("Loaded workspace data")
 

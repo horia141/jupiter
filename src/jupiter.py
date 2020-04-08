@@ -4,11 +4,27 @@ import argparse
 import logging
 
 import command.archive_done_tasks as archive_done_tasks
-import command.create_project as create_project
+import command.project_create as project_create
+import command.project_remove as project_remove
+import command.project_set_name as project_set_name
 import command.remove_archived_tasks as remove_archived_tasks
-import command.upsert_big_plans as upsert_big_plans
-import command.upsert_tasks as upsert_tasks
-import command.vacations_add as vacations_add
+import command.big_plans_sync as big_plans_sync
+import command.recurring_tasks_create as recurring_tasks_create
+import command.recurring_tasks_gen as recurring_tasks_gen
+import command.recurring_tasks_remove as recurring_tasks_remove
+import command.recurring_tasks_set_deadlines as recurring_tasks_set_deadlines
+import command.recurring_tasks_set_difficulty as recurring_tasks_set_difficulty
+import command.recurring_tasks_set_eisen as recurring_tasks_set_eisen
+import command.recurring_tasks_set_group as recurring_tasks_set_group
+import command.recurring_tasks_set_must_do as recurring_tasks_set_must_do
+import command.recurring_tasks_set_name as recurring_tasks_set_name
+import command.recurring_tasks_set_period as recurring_tasks_set_period
+import command.recurring_tasks_set_skip_rule as recurring_tasks_set_skip_rule
+import command.recurring_tasks_show as recurring_tasks_show
+import command.recurring_tasks_suspend as recurring_tasks_suspend
+import command.recurring_tasks_sync as recurring_tasks_sync
+import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
+import command.vacations_create as vacations_create
 import command.vacations_remove as vacations_remove
 import command.vacations_set_end_date as vacations_set_end_date
 import command.vacations_set_name as vacations_set_name
@@ -32,16 +48,32 @@ def main():
         workspace_set_token.WorkspaceSetToken(),
         workspace_show.WorkspaceShow(),
         workspace_sync.WorkspaceSync(),
-        vacations_add.VacationsAdd(),
+        vacations_create.VacationsCreate(),
         vacations_remove.VacationsRemove(),
         vacations_set_name.VacationsSetName(),
         vacations_set_start_date.VacationsSetStartDate(),
         vacations_set_end_date.VacationsSetEndDate(),
         vacations_show.VacationsShow(),
         vacations_sync.VacationsSync(),
-        create_project.CreateProject(),
-        upsert_tasks.UpsertTasks(),
-        upsert_big_plans.UpsertBigPlans(),
+        project_create.ProjectCreate(),
+        project_remove.ProjectRemove(),
+        project_set_name.ProjectSetName(),
+        recurring_tasks_create.RecurringTasksCreate(),
+        recurring_tasks_remove.RecurringTasksRemove(),
+        recurring_tasks_gen.RecurringTasksGen(),
+        recurring_tasks_set_name.RecurringTasksSetName(),
+        recurring_tasks_set_period.RecurringTasksSetPeriod(),
+        recurring_tasks_set_group.RecurringTasksSetGroup(),
+        recurring_tasks_set_eisen.RecurringTasksSetEisen(),
+        recurring_tasks_set_difficulty.RecurringTasksSetDifficulty(),
+        recurring_tasks_set_deadlines.RecurringTasksSetDeadlines(),
+        recurring_tasks_set_skip_rule.RecurringTasksSetSkipRule(),
+        recurring_tasks_set_must_do.RecurringTasksSetMustDo(),
+        recurring_tasks_suspend.RecurringTasksSuspend(),
+        recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
+        recurring_tasks_show.RecurringTasksShow(),
+        recurring_tasks_sync.RecurringtTasksSync(),
+        big_plans_sync.BigPlansSync(),
         archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
     ]
