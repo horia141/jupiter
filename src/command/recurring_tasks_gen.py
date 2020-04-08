@@ -70,7 +70,7 @@ class RecurringTasksGen(command.Command):
                 continue
             page = client.get_collection_view(project_lock["inbox"][key], collection=root_page.collection)
 
-        recurring_tasks_groups = project["recurringTasks"]
+        recurring_tasks_groups = project["recurring_tasks"]["entries"]
 
         all_tasks = page.build_query().execute()
 
@@ -94,7 +94,8 @@ class RecurringTasksGen(command.Command):
     @staticmethod
     def _update_notion_task(dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks):
         def get_possible_row(timeline):
-            already_task_rows = [t for t in all_tasks if t.title.startswith(name)]
+            already_task_rows = [
+                t for t in all_tasks if t.title.startswith(name) or t.recurring_task_id == recurring_task_id]
 
             for already_task_row in already_task_rows:
                 if timeline == already_task_row.timeline:
@@ -116,6 +117,7 @@ class RecurringTasksGen(command.Command):
                 subtask_row.checked = subtasks_to_process[str(subtask["name"])]
 
         vacations = workspace["vacations"]["entries"]
+        recurring_task_id = task["ref_id"]
         period = task["period"]
         name = group_format.format(name=task["name"])
         subtasks = task.get("subtasks", {})
@@ -165,6 +167,8 @@ class RecurringTasksGen(command.Command):
                 task_row.name = schedule.full_name
                 if task_row.status is None:
                     task_row.status = schema.RECURRING_STATUS
+                task_row.recurring_task_id = recurring_task_id
+                task_row.created_date = right_now
                 setattr(task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
                 setattr(task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
                 setattr(task_row, schema.INBOX_TASK_ROW_DIFFICULTY_KEY, difficulty)

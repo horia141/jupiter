@@ -10,4 +10,7 @@ docker-build:
 docker-push:
 	./scripts/docker-push.sh
 
-.PHONY: lint docs docker-build docker-push
+stats-for-nerds:
+	./scripts/stats-for-nerds.sh
+
+.PHONY: lint docs docker-build docker-push stats-for-nerds

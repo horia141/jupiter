@@ -1,5 +1,6 @@
 """Definitions for Notion-side schemas."""
 
+import hashlib
 import uuid
 
 COLORS = [
@@ -13,6 +14,20 @@ COLORS = [
     "pink",
     "red"
 ]
+
+
+def get_stable_color(option_id):
+    """Return a random-ish yet stable color for a given name."""
+    return COLORS[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(COLORS)]
+
+
+def format_name_for_option(option_name):
+    """Nicely format the name of an option."""
+    output = ""
+    for char in option_name:
+        if char.isalnum() or char == " ":
+            output += char
+    return output
 
 
 def get_vacations_schema():
@@ -84,6 +99,8 @@ INBOX_TASK_ROW_DIFFICULTY_KEY = "difficulty"
 INBOX_TASK_ROW_FROM_SCRIPT_KEY = "from_script"
 INBOX_TASK_ROW_PERIOD_KEY = "recurring_period"
 INBOX_TASK_ROW_TIMELINE_KEY = "recurring_timeline"
+
+RECURRING_TASKS_GROUP_KEY = "group"
 
 BIG_PLAN_TASK_INBOX_ID_KEY = "inbox_id_ref"
 
@@ -229,8 +246,16 @@ def get_inbox_schema():
             "type": "select",
             "options": [{}]
         },
-        "date": {
+        "recurring-task-ref-id": {
+            "name": "Recurring Task Id",
+            "type": "text"
+        },
+        "due-date": {
             "name": "Due Date",
+            "type": "date"
+        },
+        "created-date": {
+            "name": "Created Date",
             "type": "date"
         },
         "eisen": {
@@ -305,8 +330,14 @@ INBOX_KANBAN_FORMAT = {
         "property": INBOX_BIGPLAN_KEY,
         "visible": True
     }, {
-        "property": "date",
+        "property": "recurring-task-ref-id",
+        "visible": False
+    }, {
+        "property": "due-date",
         "visible": True
+    }, {
+        "property": "created-date",
+        "visible": False
     }, {
         "property": "eisen",
         "visible": True
@@ -335,7 +366,7 @@ INBOX_KANBAN_ALL_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -363,7 +394,7 @@ INBOX_KANBAN_URGENT_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -422,7 +453,7 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -440,7 +471,7 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
-                "property": "date",
+                "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
                     "value": {
@@ -463,7 +494,7 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -481,7 +512,7 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
-                "property": "date",
+                "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
                     "value": {
@@ -504,7 +535,7 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -522,7 +553,7 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
-                "property": "date",
+                "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
                     "value": {
@@ -540,7 +571,7 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
     "name": "Not Completed By Date",
     "query2": {
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }, {
             "property": "eisen",
@@ -580,7 +611,13 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "property": INBOX_BIGPLAN_KEY,
             "visible": True
         }, {
-            "property": "date",
+            "property": "recurring-task-ref-id",
+            "visible": False
+        }, {
+            "property": "due-date",
+            "visible": False
+        }, {
+            "property": "created-date",
             "visible": False
         }, {
             "property": "eisen",
@@ -614,11 +651,19 @@ INBOX_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
+            "property": "recurring-task-ref-id",
+            "visible": True
+        }, {
+            "width": 100,
             "property": "status",
             "visible": True
         }, {
             "width": 100,
-            "property": "date",
+            "property": "due-date",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "created-date",
             "visible": True
         }, {
             "width": 100,
@@ -645,6 +690,248 @@ INBOX_DATABASE_VIEW_SCHEMA = {
 }
 
 
+RECURRING_TASKS_PERIOD = {
+    "Daily": {
+        "name": "Daily",
+        "color": "orange",
+        "in_board": True
+    },
+    "Weekly": {
+        "name": "Weekly",
+        "color": "green",
+        "in_board": True
+    },
+    "Monthly": {
+        "name": "Monthly",
+        "color": "yellow",
+        "in_board": True
+    },
+    "Quarterly": {
+        "name": "Quarterly",
+        "color": "blue",
+        "in_board": True
+    },
+    "Yearly": {
+        "name": "Yearly",
+        "color": "red",
+        "in_board": True
+    }
+}
+
+
+def get_recurring_tasks_schema():
+    """Get schemas for the recurring tasks screen."""
+    recurring_tasks_schema = {
+        "title": {
+            "name": "Name",
+            "type": "title"
+        },
+        "period": {
+            "name": "Period",
+            "type": "select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in RECURRING_TASKS_PERIOD.values()]
+        },
+        RECURRING_TASKS_GROUP_KEY: {
+            "name": "Group",
+            "type": "select",
+            "options": [{}]
+        },
+        "eisen": {
+            "name": "Eisenhower",
+            "type": "multi_select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in INBOX_EISENHOWER.values()]
+        },
+        "difficulty": {
+            "name": "Difficulty",
+            "type": "select",
+            "options": [{
+                "color": v["color"],
+                "id": str(uuid.uuid4()),
+                "value": v["name"]
+            } for v in INBOX_DIFFICULTY.values()]
+        },
+        "due-at-time": {
+            "name": "Due At Time",
+            "type": "text",
+        },
+        "due-at-day": {
+            "name": "Due At Day",
+            "type": "number",
+        },
+        "due-at-month": {
+            "name": "Due At Month",
+            "type": "number",
+        },
+        "suspended": {
+            "name": "Suspended",
+            "type": "checkbox",
+        },
+        "must-do": {
+            "name": "Must Do",
+            "type": "checkbox"
+        },
+        "skip-rule": {
+            "name": "Skip Rule",
+            "type": "text"
+        },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
+        }
+    }
+
+    return recurring_tasks_schema
+
+
+RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
+    "name": "Kanban",
+    "query2": {
+        "group_by": "period",
+        "filter_operator": "and",
+        "aggregations": [{
+            "aggregator": "count"
+        }],
+        "sort": [{
+            "property": "suspended",
+            "direction": "ascending"
+        }, {
+            "property": "group",
+            "direction": "ascending"
+        }, {
+            "property": "eisen",
+            "direction": "ascending"
+        }, {
+            "property": "difficulty",
+            "direction": "ascending"
+        }, {
+            "property": "due-at-month",
+            "direction": "ascending"
+        }, {
+            "property": "due-at-day",
+            "direction": "ascending"
+        }, {
+            "property": "due-at-time",
+            "direction": "ascending"
+        }]
+    },
+    "format": {
+        "board_groups": [{
+            "property": "period",
+            "type": "select",
+            "value": v["name"],
+            "hidden": not v["in_board"]
+        } for v in RECURRING_TASKS_PERIOD.values()],
+        "board_groups2": [{
+            "property": "period",
+            "value": {
+                "type": "select",
+                "value": v["name"]
+            },
+            "hidden": not v["in_board"]
+        } for v in RECURRING_TASKS_PERIOD.values()],
+        "board_properties": [{
+            "property": "period",
+            "visible": False
+        }, {
+            "property": "group",
+            "visible": True
+        }, {
+            "property": "eisen",
+            "visible": True
+        }, {
+            "property": "difficulty",
+            "visible": True
+        }, {
+            "property": "due-at-time",
+            "visible": True
+        }, {
+            "property": "due-at-day",
+            "visible": True
+        }, {
+            "property": "due-at-month",
+            "visible": True
+        }, {
+            "property": "suspended",
+            "visible": True
+        }, {
+            "property": "must-do",
+            "visible": False
+        }, {
+            "property": "skip-rule",
+            "visible": False
+        }, {
+            "property": "ref-id",
+            "visible": False
+        }],
+        "board_cover_size": "small"
+    }
+}
+
+
+RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
+    "name": "Database",
+    "format": {
+        "table_properties": [{
+            "width": 300,
+            "property": "title",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "period",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "group",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "eisen",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "difficulty",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "due-at-time",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "due-at-day",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "due-at-month",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "suspended",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "must-do",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "skip-rule",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "ref-id",
+            "visible": False
+        }]
+    }
+}
+
+
 def get_big_plan_schema():
     """Get schemas for big plan screen."""
     big_plan_schema = {
@@ -661,7 +948,7 @@ def get_big_plan_schema():
                 "value": v["name"]
             } for v in BIG_PLAN_STATUS.values()]
         },
-        "date": {
+        "due-date": {
             "name": "Due Date",
             "type": "date"
         },
@@ -703,7 +990,7 @@ BIG_PLAN_FORMAT = {
         "property": "status",
         "visible": False
     }, {
-        "property": "date",
+        "property": "due-date",
         "visible": True
     }],
     "board_cover_size": "small"
@@ -719,7 +1006,7 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
             "aggregator": "count"
         }],
         "sort": [{
-            "property": "date",
+            "property": "due-date",
             "direction": "ascending"
         }]
     },
@@ -740,7 +1027,7 @@ BIG_PLAN_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
-            "property": "date",
+            "property": "due-date",
             "visible": True
         }, {
             "width": 100,
@@ -761,7 +1048,7 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "property": "status",
                 "direction": "ascending"
             }, {
-                "property": "date",
+                "property": "due-date",
                 "direction": "ascending"
             }],
             "filter": {
@@ -793,7 +1080,7 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "visible": False
             }, {
                 "width": 100,
-                "property": "date",
+                "property": "due-date",
                 "visible": True
             }, {
                 "width": 100,

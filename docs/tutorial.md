@@ -56,70 +56,114 @@ and it's here where you'll  be doing most of the interacting with Jupiter.
 
 Work in Jupiter is organised around projects. These contain an "Inbox", which is where your day-to-day tasks live. Both
 the ones you create and the ones the system creates. This is essentially a Trello/Jira like board, with some fancier
-capabilities. Then there are "Big Plans", which are longer-term projects, usually taking 1-6 months. They're made up of
-tasks too, and these tasks will appear in the Inbox too. There's more to say here, but as always, check the docs.
+capabilities. Then there are "Recurring Tasks", which are templates for tasks that occur periodically - daily, weekly,
+monthly, quarterly, or yearly. Think chores and habits. Finally there are "Big Plans", which are longer-term projects,
+usually taking 1-6 months. They're made up of tasks too, and these tasks will appear in the Inbox too. There's
+more to say here, but as always, check the docs.
 
-To create a project, you need to first create a file called `tasks-works.yaml` in your workspace dir. The name is
-arbitrary actually, and you can name it whatever and have however many of them. This file should look like this:
-
-```yaml
-name: "Work"
-key: work
-
-groups:
-  ceremony:
-    format: "{name}"
-    tasks:
-      - name: Send weekly newhires email
-        period: weekly
-      - name: Send news digest
-        period: daily
-  research:
-    format: "{name}"
-    tasks:
-      - name: Read industry-site.com for latest news
-        period: monthly
-```
-
-There's a bunch of metadata at the top, of which `key` is the most important. Never change this once you've set it,
-because it'll de-associate the file here from the Notion.so boards. The `groups` structure contains all the recurring
-tasks the system will manage. Hopefully its format is self-explanatory.
-
-To create the project use:
+To create a project you need to run the `project-create` command, like so:
 
 ```bash
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest create-project \
-    /data/tasks-work.yaml
+    horia141/jupiter:latest project-create \
+        my-work \
+        --name "My Work"
 [ Some output here ]
+$ git add .
+$ git commit -a -m "Created project 'My Work'"
 ```
 
-This will create a bunch of structures in Notion under your plan, looking like so:
+The first argument is a "project key", which must be unique to your workspace and which will be used to reference the
+project later. This will create a bunch of structures in Notion under your plan, looking like so:
 
 ![Jupiter Tutorial 2](assets/jupiter-tutorial-2.png)
 
-Finally, run the `upsert-tasks` command to actually create some of the recurring tasks:
+The inbox at this point will look something like this:
+
+![Jupiter Tutorial 3](assets/jupiter-tutorial-3.png)
+
+So it's basically a blank canvas waiting for your work. The recurring task view and the big plans view will
+look the same.
+
+## Create A Recurring Task
+
+In this section you'll create a recurring task and generate instances of it corresponding to various times in the inbox.
+
+To start go to the "Recurring Tasks" view and add a new recurring monthly task named "Clean Drogon's lair". You need
+to click the "New" button, or the "+" button under the "Monthly" column. Complete the task as follows:
+
+![Jupiter Tutorial 4](assets/jupiter-tutorial-4.png)
+
+Notice that "Period" is set to "Monthly" (one of five valid choices) and group is set to "Army maintenance" (which
+is essentially a free-form label). The former determines the periodicity of the task, while the other helps with
+organising work.
+
+Before we move on to generation, you need to synchronise Notion with the local state by running a `sync` command.
+This is needed because (at this moment), there's no way for Jupiter to know about changes that happen in Notion
+automatically. So you have to instruct it like so:
 
 ```bash
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest upsert-tasks \
-    /data/tasks-work.yaml
+    horia141/jupiter:latest recurring-tasks-sync \
+    --project my-work
+[ Some output here ]
+$ git add .
+$ git commit -a -m "Synced some remote tasks"
+$ docker run \
+    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    horia141/jupiter:latest recurring-tasks-show \
+    --project my-work
+[ Some output here ]
+Army maintenance:
+  id=0 Clean Drogon's lair period=monthly group=Army maintenance
+$ docker run \
+    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    horia141/jupiter:latest recurring-tasks-show \
+    --project my-work \
+    --id 0
+[ Some output here ]
+id=10 Clean Drogon's lair period=monthly group="Army maintenance"
+    eisen="" difficulty=none skip_rule=none suspended=False must_do=False
+    due_at_time=none due_at_day=none due_at_month=none
+```
+
+> **Note**: the above can just as easily be done via the `recurring-tasks-create` command. You won't have to run
+> a separate sync step there, as the command will take care of creating the tasks on Notion side for you.
+
+To generate the tasks, you can run:
+
+```bash
+$ docker run \
+    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    horia141/jupiter:latest recurring-tasks-gen \
+    my-work
 [ Some output here ]
 ```
 
 This will leave the inbox looking like:
 
-![Jupiter Tutorial 3](assets/jupiter-tutorial-3.png)
+![Jupiter Tutorial 5](assets/jupiter-tutorial-5.png)
 
-There's a bunch more to explore, like big plans, various recurring options, vacations, task archival and removal, but
-head on over to the [docs](https://jupiter-goals.readthedocs.io) for those.
-
-In the end, if you've used git, you should run the following to save the work:
+You can set another date to run the generation for, like so:
 
 ```bash
-$ git add tasks-work.yaml
-$ git add .system.lock
-$ git commit -a -m "Setup some initial structures"
+$ docker run \
+    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    horia141/jupiter:latest recurring-tasks-gen \
+    my-work \
+    --date=2020-05-01
+[ Some output here ]
 ```
+
+And get a final output of the sort:
+
+![Jupiter Tutorial 5](assets/jupiter-tutorial-6.png)
+
+## Conclusion
+
+This concludes this short introduction to Jupiter.
+
+There's a lot more you can do with it, though. Checkout [concepts](concepts.md) and [how-tos](how-tos) for more in
+depth information.

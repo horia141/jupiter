@@ -80,7 +80,12 @@ class ProjectCreate(command.Command):
         project_lock["root_page_id"] = found_root_page.id
 
         # Create the inbox.
-        project_lock["inbox"] = ProjectCreate._update_inbox(client, found_root_page, project_lock.get("inbox", {}))
+        project_lock["inbox"] = ProjectCreate._update_inbox(
+            client, found_root_page, project_lock.get("inbox", {}))
+
+        # Create the recurring tasks.
+        project_lock["recurring_tasks"] = ProjectCreate._update_recurring_tasks(
+            client, found_root_page, project_lock.get("recurring_tasks", {}))
 
         # Create the big plan.
         project_lock["big_plan"] = ProjectCreate._update_big_plan(
@@ -175,6 +180,58 @@ class ProjectCreate(command.Command):
 
         return inbox_lock
 
+    @staticmethod
+    def _update_recurring_tasks(client, root_page, recurring_task_lock):
+
+        if "root_page_id" in recurring_task_lock:
+            found_recurring_tasks_page = space_utils.find_page_from_space_by_id(
+                client, recurring_task_lock["root_page_id"])
+            LOGGER.info(f"Found the recurring tasks page via id {found_recurring_tasks_page}")
+        else:
+            found_recurring_tasks_page = space_utils.find_page_from_page_by_name(root_page, "Recurring Tasks")
+            LOGGER.info(f"Found the recurring tasks page via name {found_recurring_tasks_page}")
+        if not found_recurring_tasks_page:
+            found_recurring_tasks_page = root_page.children.add_new(CollectionViewPageBlock)
+            LOGGER.info(f"Created the recurring tasks page {found_recurring_tasks_page}")
+        recurring_task_lock["root_page_id"] = found_recurring_tasks_page.id
+
+        recurring_tasks_schema = schema.get_recurring_tasks_schema()
+        recurring_tasks_page = found_recurring_tasks_page
+
+        recurring_tasks_collection_id = recurring_tasks_page.get("collection_id")
+        if recurring_tasks_collection_id:
+            recurring_tasks_collection = client.get_collection(recurring_tasks_collection_id)
+            LOGGER.info(
+                f"Found the already existing recurring tasks page collection via id {recurring_tasks_collection}")
+            recurring_tasks_old_schema = recurring_tasks_collection.get("schema")
+            recurring_tasks_schema = ProjectCreate._merge_schemas(recurring_tasks_old_schema, recurring_tasks_schema)
+            recurring_tasks_collection.set("schema", recurring_tasks_schema)
+            LOGGER.info(f"Updated the recurring tasks page collection schema")
+        else:
+            recurring_tasks_collection = client.get_collection(
+                client.create_record("collection", parent=recurring_tasks_page, schema=recurring_tasks_schema))
+            LOGGER.info(f"Created the recurring tasks collection {recurring_tasks_collection}")
+        recurring_tasks_collection.name = "Recurring Tasks"
+
+        recurring_tasks_collection_kanban_all_view = space_utils.attach_view_to_collection(
+            client, recurring_tasks_page, recurring_tasks_collection,
+            recurring_task_lock.get("kanban_all_view_id"), "board",
+            "Kanban All", schema.RECURRING_TASKS_KANBAN_ALL_SCHEMA)
+        recurring_task_lock["kanban_all_view_id"] = recurring_tasks_collection_kanban_all_view.id
+
+        recurring_tasks_collection_database_view = space_utils.attach_view_to_collection(
+            client, recurring_tasks_page, recurring_tasks_collection,
+            recurring_task_lock.get("database_view_id"), "table",
+            "Database", schema.RECURRING_TASKS_DATABASE_VIEW_SCHEMA)
+        recurring_task_lock["database_view_id"] = recurring_tasks_collection_database_view.id
+
+        recurring_tasks_page.set("collection_id", recurring_tasks_collection.id)
+        recurring_tasks_page.set("view_ids", [
+            recurring_tasks_collection_kanban_all_view.id,
+            recurring_tasks_collection_database_view.id
+        ])
+
+        return recurring_task_lock
 
     @staticmethod
     def _update_big_plan(client, root_page, big_plan_lock):
@@ -237,8 +294,10 @@ class ProjectCreate(command.Command):
         # across schema updates.
         # As a special case, the big plan item is left to whatever value it had before
         # since this thing is managed via the big plan syncing flow!
+        # As another special case, the recurring tasks group key is left to whatever value it had
+        # before since this thing is managed by the other flows!
         for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name == schema.INBOX_BIGPLAN_KEY:
+            if schema_item_name in (schema.INBOX_BIGPLAN_KEY, schema.RECURRING_TASKS_GROUP_KEY):
                 combined_schema[schema_item_name] = old_schema[schema_item_name] \
                     if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
                     else schema_item
