@@ -56,8 +56,8 @@ and it's here where you'll  be doing most of the interacting with Jupiter.
 
 Work in Jupiter is organised around projects. These contain an "Inbox", which is where your day-to-day tasks live. Both
 the ones you create and the ones the system creates. This is essentially a Trello/Jira like board, with some fancier
-capabilities. Then there are "Recurring Tasks", which are templates for tasks that occur periodically - daily, weekly, 
-monthly, quarterly, or yearly. Think chores and habits. Finally there are "Big Plans", which are longer-term projects, 
+capabilities. Then there are "Recurring Tasks", which are templates for tasks that occur periodically - daily, weekly,
+monthly, quarterly, or yearly. Think chores and habits. Finally there are "Big Plans", which are longer-term projects,
 usually taking 1-6 months. They're made up of tasks too, and these tasks will appear in the Inbox too. There's
 more to say here, but as always, check the docs.
 

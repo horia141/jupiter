@@ -76,7 +76,6 @@ You can:
 * Synchronise changes between the local store and Notion via `ws-sync`.
 * See a summary of the workspace via `ws-show`.
 
-
 ### Workspace Syncing
 
 When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special
@@ -104,7 +103,6 @@ id=7 Eurotrip 2 start=2020-04-07 end=2020-04-22
 ### Vacations Properties
 
 A vacation has a name. It's the name of the vacation, and will show up in Notion too.
-
 
 The start date is the time when the vacation starts, and tasks should not be generated. It should be before the
 end date.
@@ -255,7 +253,7 @@ do garbage collection is running:
   operation actually removes the tasks with the “Archived” status from Notion.
   They’ll be available in the Notion trash, but quite hard to recover.
   Note - this will be improved in the future.
-  
+
 ## Recurring Tasks
 
 A recurring task is some periodic and atomic unit of work. Recurring tasks live in the

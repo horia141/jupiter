@@ -160,7 +160,8 @@ class RecurringtTasksSync(command.Command):
                     raise Exception(f"Invalid preference {prefer}")
                 recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
             else:
-                LOGGER.error("Case not covered yet")
+                LOGGER.info(f"Removed dangling recurring task in Notion {recurring_tasks_row}")
+                recurring_tasks_row.remove()
 
         storage.save_project(project_key, project)
         LOGGER.info("Applied local changes")
@@ -202,7 +203,12 @@ class RecurringtTasksSync(command.Command):
         for inbox_task_row in inbox_tasks_rows:
             if inbox_task_row.recurring_task_id is None or inbox_task_row.recurring_task_id == "":
                 continue
-            recurring_task = recurring_tasks_set[inbox_task_row.recurring_task_id]
+            recurring_task = recurring_tasks_set.get(inbox_task_row.recurring_task_id, None)
+            if recurring_task is None:
+                # If this is happening, then this is a dangling inbox task. It'll be removed!
+                LOGGER.info(f"Removing dangling inbox task {inbox_task_row}")
+                inbox_task_row.remove()
+                continue
             schedule = schedules.get_schedule(
                 recurring_task["period"], recurring_task["name"], pendulum.instance(inbox_task_row.created_date.start),
                 recurring_task["skip_rule"], recurring_task["due_at_time"], recurring_task["due_at_day"],
