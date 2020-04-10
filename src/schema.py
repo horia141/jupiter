@@ -1088,6 +1088,10 @@ def get_view_schema_for_big_plan_desc(big_plan_name):
                 "visible": True
             }, {
                 "width": 100,
+                "property": "difficulty",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "fromscript",
                 "visible": False
             }, {
