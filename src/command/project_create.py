@@ -100,7 +100,10 @@ class ProjectCreate(command.Command):
         project["key"] = project_key
         project["name"] = project_name
         storage.save_project(project_key, project)
+        workspace["projects"][project_key] = workspace["projects"].get(project_key, {})
         LOGGER.info("Applied changes to local project file")
+        storage.save_workspace(workspace)
+        LOGGER.info("Applied changes to workspace")
 
     @staticmethod
     def _update_inbox(client, root_page, inbox_lock):

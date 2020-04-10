@@ -45,14 +45,8 @@ class ProjectSetName(command.Command):
 
         client = NotionClient(token_v2=workspace["token"])
 
-        if project_key in system_lock["projects"]:
-            project_lock = system_lock["projects"][project_key]
-            LOGGER.info("Project already in system lock")
-        else:
-            project_lock = {}
-            LOGGER.info("Project not in system lock")
-
-        project_root_page = space_utils.find_page_from_space_by_id(client, project_lock["root_page_id"])
+        project_root_page = space_utils.find_page_from_space_by_id(
+            client, system_lock["projects"][project_key]["root_page_id"])
         LOGGER.info(f"Found the root page via id {project_root_page}")
         project_root_page.title = project_name
         LOGGER.info("Applied changes on Notion")

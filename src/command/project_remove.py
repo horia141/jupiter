@@ -71,3 +71,7 @@ class ProjectRemove(command.Command):
 
         storage.remove_project(project_key)
         LOGGER.info("Removed project storage")
+
+        del workspace["projects"][project_key]
+        storage.save_workspace(workspace)
+        LOGGER.info("Removed project from workspace")

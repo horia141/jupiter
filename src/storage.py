@@ -43,6 +43,8 @@ def build_empty_workspace():
         "vacations": {
             "next_idx": 0,
             "entries": []
+        },
+        "projects": {
         }
     }
 

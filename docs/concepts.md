@@ -154,6 +154,26 @@ regular Notion page (“Blog Ideas”):
 
 ![Projects image](assets/concepts-projects.png)
 
+### Projects Properties
+
+On their own, projects have a signle property - their name.
+
+### Projects Interactions Summary
+
+You can:
+
+* Create a project via `project-create`.
+* Remote a project via `project-remove`.
+* Synchronise changes between the local store and Notion via `vacations-sync`.
+* See a summary of the workspace via `vacations-show`.
+
+### Projects Syncing
+
+When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special syncing
+commands to make sure Notion and the local storage are in sync. The `project-sync` command achieves this for
+a project. It takes changes from Notion and integrates them into the local project, and does the same for local
+changes.
+
 ## Tasks
 
 A task is some atomic unit of work. Tasks live in the “inbox”. A task is ideal
