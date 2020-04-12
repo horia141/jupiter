@@ -6,6 +6,7 @@ import uuid
 from notion.client import NotionClient
 
 import command.command as command
+import service.workspaces as workspaces
 import schema
 import space_utils
 import storage
@@ -45,14 +46,14 @@ class RecurringTasksSetGroup(command.Command):
 
         the_lock = storage.load_lock_file()
         LOGGER.info("Loaded the system lock")
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
         project = storage.load_project(project_key)
         LOGGER.info("Loaded the project data")
 
         # Prepare Notion connection
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply changes locally
 

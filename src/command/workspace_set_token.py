@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import service.workspace as sws
+import service.workspaces as workspaces
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,8 +29,8 @@ class WorkspaceSetToken(command.Command):
         """Callback to execute when the command is invoked."""
         token = args.token
 
-        workspace_repository = sws.WorkspaceRepository()
+        workspace_repository = workspaces.WorkspaceRepository()
         workspace = workspace_repository.load_workspace()
 
-        workspace.set_token(sws.WorkspaceToken(token))
+        workspace.set_token(workspaces.WorkspaceToken(token))
         workspace_repository.save_workspace(workspace)

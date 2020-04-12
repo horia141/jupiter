@@ -3,6 +3,7 @@
 import logging
 
 import command.command as command
+import service.workspaces as workspaces
 import storage
 
 LOGGER = logging.getLogger(__name__)
@@ -33,9 +34,8 @@ class ProjectShow(command.Command):
 
         _ = storage.load_lock_file()
         LOGGER.info("Loaded the system lock")
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-        # Dump out contents of the projects
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
 
         if project_key:
             # Print details about a single project
@@ -44,6 +44,6 @@ class ProjectShow(command.Command):
             print(f'{project_key}: {project["name"]}')
         else:
             # Print a summary of all projects
-            for project_key in workspace["projects"]:
+            for project_key in workspace.projects_meta:
                 project = storage.load_project(project_key)
                 print(f'{project_key}: {project["name"]}')

@@ -1,10 +1,13 @@
 """Command for syncing the vacations from Notion."""
 
 import logging
+from typing import Dict
 
 from notion.client import NotionClient
 
 import command.command as command
+import service.vacations as vacations
+import service.workspaces as workspaces
 import space_utils
 import storage
 
@@ -35,16 +38,20 @@ class VacationsSync(command.Command):
         # Load local storage
 
         the_lock = storage.load_lock_file()
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        vacations_repository = vacations.VacationsRepository()
+
+        workspace = workspace_repository.load_workspace()
 
         # Prepare Notion connection
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply changes locally
 
-        vacations_set = {v["ref_id"]: v for v in workspace["vacations"]["entries"]}
+        all_vacations = vacations_repository.load_all_vacations()
+
+        vacations_set: Dict[vacations.RefId, vacations.Vacation] = {v.ref_id: v for v in all_vacations}
 
         vacations_page = space_utils.find_page_from_space_by_id(client, the_lock["vacations"]["root_page_id"])
         vacations_rows = client \
@@ -58,33 +65,31 @@ class VacationsSync(command.Command):
             LOGGER.info(f"Processing {vacation_row}")
             if vacation_row.ref_id is None or vacation_row.ref_id == "":
                 # If the vacation doesn't exist locally, we create it:
-                new_vacation = {
-                    "ref_id": str(workspace["vacations"]["next_idx"]),
-                    "name": vacation_row.title,
-                    "start_date": vacation_row.start_date.start,
-                    "end_date": vacation_row.end_date.start
-                }
                 if vacation_row.start_date.start >= vacation_row.end_date.start:
                     raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
-                workspace["vacations"]["next_idx"] = workspace["vacations"]["next_idx"] + 1
-                workspace["vacations"]["entries"].append(new_vacation)
+
+                new_vacation = vacations_repository.create_vacation(
+                    vacation_row.title, vacation_row.start_date.start, vacation_row.end_date.start)
                 LOGGER.info(f"Found new vacation from Notion {vacation_row.title}")
-                vacation_row.ref_id = new_vacation["ref_id"]
+
+                vacation_row.ref_id = new_vacation.ref_id
                 LOGGER.info(f"Applies changes on Notion side too as {vacation_row}")
+
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
             elif vacation_row.ref_id in vacations_set:
                 # If the vacation exists locally, we sync it with the remote:
                 if prefer == "notion":
-                    vacations_set[vacation_row.ref_id]["name"] = vacation_row.title
-                    vacations_set[vacation_row.ref_id]["start_date"] = vacation_row.start_date.start
-                    vacations_set[vacation_row.ref_id]["end_date"] = vacation_row.end_date.start
                     if vacation_row.start_date.start >= vacation_row.end_date.start:
                         raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
+                    vacations_set[vacation_row.ref_id].set_name(vacation_row.title)
+                    vacations_set[vacation_row.ref_id].set_start_date(vacation_row.start_date.start)
+                    vacations_set[vacation_row.ref_id].set_end_date(vacation_row.end_date.start)
+                    vacations_repository.save_vacation(vacations_set[vacation_row.ref_id])
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
                 elif prefer == "local":
-                    vacation_row.title = vacations_set[vacation_row.ref_id]["name"]
-                    vacation_row.start_date = vacations_set[vacation_row.ref_id]["start_date"]
-                    vacation_row.end_date = vacations_set[vacation_row.ref_id]["end_date"]
+                    vacation_row.title = vacations_set[vacation_row.ref_id].name
+                    vacation_row.start_date = vacations_set[vacation_row.ref_id].start_date
+                    vacation_row.end_date = vacations_set[vacation_row.ref_id].end_date
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {prefer}")
@@ -96,20 +101,15 @@ class VacationsSync(command.Command):
                 LOGGER.info(f"Removed vacation with id={vacation_row.ref_id} from Notion")
 
         # Explore local and apply to Notion now
-        for vacation in workspace["vacations"]["entries"]:
+        for vacation in all_vacations:
             if vacation["ref_id"] in vacations_rows_set:
                 # The vacation already exists on Notion side, so it was handled by the above loop!
                 continue
 
             # If the vacation does not exist on Notion side, we create it.
             new_vacation_row = vacations_page.collection.add_row()
-            new_vacation_row.title = vacation["name"]
-            new_vacation_row.start_date = vacation["start_date"]
-            new_vacation_row.end_date = vacation["end_date"]
-            new_vacation_row.ref_id = vacation["ref_id"]
+            new_vacation_row.title = vacation.name
+            new_vacation_row.start_date = vacation.start_date
+            new_vacation_row.end_date = vacation.end_date
+            new_vacation_row.ref_id = vacation.ref_id
             LOGGER.info(f"Created new vacation on Notion side {new_vacation_row}")
-
-        workspace["vacations"]["entries"] = sorted(
-            workspace["vacations"]["entries"], key=lambda vac: vac["start_date"])
-        storage.save_workspace(workspace)
-        LOGGER.info("Applied local changes")

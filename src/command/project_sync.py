@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import service.workspaces as workspaces
 import space_utils
 import storage
 
@@ -37,14 +38,14 @@ class ProjectSync(command.Command):
         # Load local storage
 
         system_lock = storage.load_lock_file()
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
         project = storage.load_project(project_key)
         LOGGER.info("Found project file")
 
         # Prepare Notion connection
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply changes locally
 

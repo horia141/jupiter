@@ -2,7 +2,8 @@
 
 import datetime
 import logging
-from typing import Any, List, Sequence, Tuple
+import os.path
+from typing import Any, ClassVar, Dict, List, Sequence, Tuple
 
 import jsonschema as js
 import yaml
@@ -27,6 +28,18 @@ class Vacation:
         self._start_date = start_date
         self._end_date = end_date
 
+    def set_name(self, name: str) -> None:
+        """Set the name of a vacation."""
+        self._name = name
+
+    def set_start_date(self, start_date: datetime.date) -> None:
+        """Set the start date of a vacation."""
+        self._start_date = start_date
+
+    def set_end_date(self, end_date: datetime.date) -> None:
+        """Set the end date of a vacation."""
+        self._end_date = end_date
+
     @property
     def ref_id(self) -> RefId:
         """The unique id of the vacation."""
@@ -48,12 +61,12 @@ class Vacation:
         return self._end_date
 
 
-class VacationRepository:
+class VacationsRepository:
     """A repository for vacations."""
 
-    _VACATIONS_FILE_PATH: str = "/data/vacations.yaml"
+    _VACATIONS_FILE_PATH: ClassVar[str] = "/data/vacations.yaml"
 
-    _VACATIONS_SCHEMA = {
+    _VACATIONS_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},
@@ -75,13 +88,19 @@ class VacationRepository:
     def __init__(self) -> None:
         """Constructor."""
         custom_type_checker = js.Draft6Validator.TYPE_CHECKER \
-            .redefine("datetime-date", VacationRepository._schema_check_datetime_date)
+            .redefine("datetime-date", VacationsRepository._schema_check_datetime_date)
 
         self._validator = js.validators.extend(js.Draft6Validator, type_checker=custom_type_checker)
 
+    def initialize(self) -> None:
+        """Initialise this repository."""
+        if os.path.exists(VacationsRepository._VACATIONS_FILE_PATH):
+            return
+        self._bulk_save_vacations((0, []))
+
     def create_vacation(self, name: str, start_date: datetime.date, end_date: datetime.date) -> Vacation:
         """Create a vacation."""
-        vacations_next_idx, vacations = self._bulk_load_vacations(allow_missing=True)
+        vacations_next_idx, vacations = self._bulk_load_vacations()
 
         new_vacation = Vacation(RefId(str(vacations_next_idx)), name, start_date, end_date)
         vacations_next_idx += 1
@@ -95,7 +114,11 @@ class VacationRepository:
     def remove_vacation_by_id(self, ref_id: RefId) -> None:
         """Remove a particular vacation."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
-        new_vacations = filter(lambda v: v.ref_id != ref_id, vacations)
+        try:
+            next(v for v in vacations if v.ref_id == ref_id)
+        except StopIteration as error:
+            raise RepositoryError(f"Could not find vacation with id={ref_id}") from error
+        new_vacations = list(filter(lambda v: v.ref_id != ref_id, vacations))
         self._bulk_save_vacations((vacations_next_idx, new_vacations))
 
     def load_all_vacations(self) -> Sequence[Vacation]:
@@ -106,7 +129,10 @@ class VacationRepository:
     def load_vacation_by_id(self, ref_id: RefId) -> Vacation:
         """Retrieve a particular vacation by its id."""
         _, vacations = self._bulk_load_vacations()
-        return next(v for v in vacations if v.ref_id == ref_id)
+        try:
+            return next(v for v in vacations if v.ref_id == ref_id)
+        except StopIteration as error:
+            raise RepositoryError(f"Could not find vacation with id={ref_id}") from error
 
     def save_vacation(self, new_vacation: Vacation) -> None:
         """Store a particular vacation with all new properties."""
@@ -114,13 +140,13 @@ class VacationRepository:
         new_vacations = [(v if v.ref_id != new_vacation.ref_id else new_vacation) for v in vacations]
         self._bulk_save_vacations((vacations_next_idx, new_vacations))
 
-    def _bulk_load_vacations(self, allow_missing: bool = False) -> Tuple[int, List[Vacation]]:
+    def _bulk_load_vacations(self) -> Tuple[int, List[Vacation]]:
         try:
-            with open(VacationRepository._VACATIONS_FILE_PATH, "r") as vacations_file:
+            with open(VacationsRepository._VACATIONS_FILE_PATH, "r") as vacations_file:
                 vacations_ser = yaml.safe_load(vacations_file)
                 LOGGER.info("Loaded vacations data")
 
-                self._validator(VacationRepository._VACATIONS_SCHEMA).validate(vacations_ser)
+                self._validator(VacationsRepository._VACATIONS_SCHEMA).validate(vacations_ser)
                 LOGGER.info("Checked vacations structure")
 
                 vacations_next_idx = vacations_ser["next_idx"]
@@ -129,17 +155,12 @@ class VacationRepository:
                      for v in vacations_ser["entries"]]
 
                 return vacations_next_idx, vacations
-        except FileNotFoundError as error:
-            if not allow_missing:
-                raise RepositoryError from error
-
-            return 0, []
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
     def _bulk_save_vacations(self, bulk_data: Tuple[int, Sequence[Vacation]]) -> None:
         try:
-            with open(VacationRepository._VACATIONS_FILE_PATH, "w") as vacations_file:
+            with open(VacationsRepository._VACATIONS_FILE_PATH, "w") as vacations_file:
                 vacations_ser = {
                     "next_idx": bulk_data[0],
                     "entries": [{
@@ -150,7 +171,7 @@ class VacationRepository:
                     } for v in bulk_data[1]]
                 }
 
-                self._validator(VacationRepository._VACATIONS_SCHEMA).validate(vacations_ser)
+                self._validator(VacationsRepository._VACATIONS_SCHEMA).validate(vacations_ser)
                 LOGGER.info("Checked vacations structure")
 
                 yaml.dump(vacations_ser, vacations_file)

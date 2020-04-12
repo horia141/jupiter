@@ -6,7 +6,8 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
-import service.workspace as sws
+import service.vacations as vacations
+import service.workspaces as workspaces
 import schema
 import space_utils
 import storage
@@ -48,14 +49,13 @@ class WorkspaceInit(command.Command):
             system_lock = storage.build_empty_lockfile()
             LOGGER.info("No system lock - creating it")
 
-        workspace_repository = sws.WorkspaceRepository()
-        try:
-            workspace = workspace_repository.load_workspace()
-        except sws.RepositoryError as error:
-            if isinstance(error.__cause__, FileNotFoundError):
-                workspace = None
-            else:
-                raise
+        workspace_repository = workspaces.WorkspaceRepository()
+        vacations_repository = vacations.VacationsRepository()
+
+        workspace_repository.initialize()
+        vacations_repository.initialize()
+
+        workspace = workspace_repository.load_workspace()
 
         # Retrieve or create the Notion page for the workspace
 
@@ -69,10 +69,10 @@ class WorkspaceInit(command.Command):
 
         # Apply the changes to the local side
 
-        workspace = sws.Workspace(
-            name, sws.WorkspaceSpaceId(space_id), sws.WorkspaceToken(token),
+        new_workspace = workspaces.Workspace(
+            name, workspaces.WorkspaceSpaceId(space_id), workspaces.WorkspaceToken(token),
             workspace.projects_meta if workspace else [])
-        workspace_repository.save_workspace(workspace)
+        workspace_repository.save_workspace(new_workspace)
 
         # Save changes to lockfile
         system_lock["root_page"] = root_page_lock

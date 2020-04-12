@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import service.workspace as sws
+import service.workspaces as workspaces
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class WorkspaceShow(command.Command):
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        workspace_repository = sws.WorkspaceRepository()
+        workspace_repository = workspaces.WorkspaceRepository()
         workspace = workspace_repository.load_workspace()
 
         # Dump out contents of workspace

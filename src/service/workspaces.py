@@ -1,7 +1,8 @@
 """Repository for workspaces."""
 
 import logging
-from typing import NewType, List, Sequence
+import os.path
+from typing import Any, ClassVar, Dict, NewType, List, Sequence
 
 import jsonschema as js
 import yaml
@@ -42,6 +43,15 @@ class Workspace:
         """Change the token of the workspace."""
         self._token = new_token
 
+    def add_project(self, project_key: str) -> None:
+        """Add a project to the list of projects for the workspace."""
+        self._projects_meta.append(project_key)
+
+    def remove_project(self, project_key: str) -> None:
+        """Remove a project from the list of projects for the workspace."""
+        project_key_idx = self._projects_meta.index(project_key)
+        del self._projects_meta[project_key_idx]
+
     @property
     def name(self) -> str:
         """Name of the workspace."""
@@ -66,9 +76,9 @@ class Workspace:
 class WorkspaceRepository:
     """A repository for workspaces."""
 
-    _WORKSPACE_FILE_PATH: str = "/data/workspace.yaml"
+    _WORKSPACE_FILE_PATH: ClassVar[str] = "/data/workspace.yaml"
 
-    _WORKSPACE_SCHEMA = {
+    _WORKSPACE_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "name": {"type": "string"},
@@ -88,6 +98,13 @@ class WorkspaceRepository:
         custom_type_checker = js.Draft6Validator.TYPE_CHECKER
 
         self._validator = js.validators.extend(js.Draft6Validator, type_checker=custom_type_checker)
+
+    def initialize(self) -> None:
+        """Initialise the repository."""
+        if os.path.exists(WorkspaceRepository._WORKSPACE_FILE_PATH):
+            return
+        dummy_workspace = Workspace("dummy", WorkspaceSpaceId("FAKE_IT"), WorkspaceToken("TILL_YOU_MAKE_IT"), [])
+        self.save_workspace(dummy_workspace)
 
     def load_workspace(self) -> Workspace:
         """Load the workspace."""

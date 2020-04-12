@@ -4,7 +4,6 @@ from pathlib import Path
 import yaml
 
 _LOCKFILE_PATH = "/data/.system.lock"
-_WORKSPACE_FILE_PATH = "/data/workspace.yaml"
 _PROJECT_FILE_PATTERN = "/data/project-{0}.yaml"
 
 
@@ -32,33 +31,6 @@ def save_lock_file(lock):
     """Save a given lockfile."""
     with open(_LOCKFILE_PATH, "w") as project_lock_file:
         yaml.dump(lock, project_lock_file)
-
-
-def build_empty_workspace():
-    """Construct an empty workspace."""
-    return {
-        "space_id": None,
-        "name": None,
-        "token": None,
-        "vacations": {
-            "next_idx": 0,
-            "entries": []
-        },
-        "projects": {
-        }
-    }
-
-
-def load_workspace():
-    """Load the current workspace."""
-    with open(_WORKSPACE_FILE_PATH, "r") as workspace_file:
-        return yaml.safe_load(workspace_file)
-
-
-def save_workspace(workspace):
-    """Save a given workspace."""
-    with open(_WORKSPACE_FILE_PATH, "w") as workspace_file:
-        yaml.dump(workspace, workspace_file)
 
 
 def build_empty_project():

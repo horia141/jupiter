@@ -5,7 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
-import service.workspace as sws
+import service.workspaces as workspaces
 import space_utils
 import storage
 
@@ -38,7 +38,7 @@ class WorkspaceSetName(command.Command):
         system_lock = storage.load_lock_file()
         LOGGER.info("Loaded lockfile")
 
-        workspace_repository = sws.WorkspaceRepository()
+        workspace_repository = workspaces.WorkspaceRepository()
         workspace = workspace_repository.load_workspace()
 
         # Load Notion storage

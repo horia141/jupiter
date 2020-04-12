@@ -7,6 +7,7 @@ import uuid
 from notion.client import NotionClient
 
 import command.command as command
+import service.workspaces as workspaces
 import schema
 import space_utils
 import storage
@@ -87,8 +88,8 @@ class RecurringTasksCreate(command.Command):
 
         the_lock = storage.load_lock_file()
         LOGGER.info("Loaded system lock")
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
         project = storage.load_project(project_key)
         LOGGER.info("Loaded project data")
 
@@ -123,7 +124,7 @@ class RecurringTasksCreate(command.Command):
 
         # Apply changes in Notion
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         recurring_tasks_page = space_utils.find_page_from_space_by_id(
             client, the_lock["projects"][project_key]["recurring_tasks"]["root_page_id"])

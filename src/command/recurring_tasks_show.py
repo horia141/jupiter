@@ -3,6 +3,7 @@
 import logging
 
 import command.command as command
+import service.workspaces as workspaces
 import storage
 
 LOGGER = logging.getLogger(__name__)
@@ -35,8 +36,8 @@ class RecurringTasksShow(command.Command):
 
         _ = storage.load_lock_file()
         LOGGER.info("Loaded the system lock")
-        _ = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        _ = workspace_repository.load_workspace()
         project = storage.load_project(project_key)
         LOGGER.info("Loaded the project data")
 

@@ -7,6 +7,8 @@ import pendulum
 from notion.client import NotionClient
 
 import command.command as command
+import service.vacations as vacations
+import service.workspaces as workspaces
 import space_utils
 import storage
 
@@ -39,26 +41,23 @@ class VacationsSetEndDate(command.Command):
         # Load local storage
 
         the_lock = storage.load_lock_file()
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        vacations_repository = vacations.VacationsRepository()
+
+        workspace = workspace_repository.load_workspace()
 
         # Prepare Notion connection
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply changes locally
 
-        try:
-            vacation = next(v for v in workspace["vacations"]["entries"] if v["ref_id"] == ref_id)
-            if end_date <= pendulum.datetime(
-                    vacation["start_date"].year, vacation["start_date"].month, vacation["start_date"].day):
-                raise Exception("Cannot set an end date before the start date")
-            vacation["end_date"] = datetime.date(end_date.year, end_date.month, end_date.day)
-            storage.save_workspace(workspace)
-            LOGGER.info("Modified vacation")
-        except StopIteration:
-            LOGGER.error(f"Vacation with id {ref_id} does not exist")
-            return
+        vacation = vacations_repository.load_vacation_by_id(ref_id)
+        if end_date <= pendulum.instance(vacation.start_date):
+            raise Exception("Cannot set an end date before the start date")
+        vacation.set_end_date(datetime.date(end_date.year, end_date.month, end_date.day))
+        vacations_repository.save_vacation(vacation)
+        LOGGER.info("Modified vacation")
 
         # Apply changes in Notion
 
@@ -71,7 +70,7 @@ class VacationsSetEndDate(command.Command):
         for vacation_row in vacations_rows:
             if vacation_row.ref_id != ref_id:
                 continue
-            vacation_row.end_date = vacation["end_date"]
+            vacation_row.end_date = vacation.end_date
             LOGGER.info("Applied Notion changes")
             break
         else:

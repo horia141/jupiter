@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import service.workspaces as workspaces
 import space_utils
 import storage
 
@@ -39,15 +40,15 @@ class ProjectRemove(command.Command):
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")
 
-        workspace = storage.load_workspace()
-        LOGGER.info("Found workspace file")
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
 
         _ = storage.load_project(project_key)
         LOGGER.info("Found project file")
 
         # Retrieve or create the Notion page for the workspace
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply the changes on Notion side
 
@@ -72,6 +73,6 @@ class ProjectRemove(command.Command):
         storage.remove_project(project_key)
         LOGGER.info("Removed project storage")
 
-        del workspace["projects"][project_key]
-        storage.save_workspace(workspace)
+        workspace.remove_project(project_key)
+        workspace_repository.save_workspace(workspace)
         LOGGER.info("Removed project from workspace")

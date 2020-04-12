@@ -6,6 +6,7 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
+import service.workspaces as workspaces
 import schema
 import space_utils
 import storage
@@ -41,8 +42,8 @@ class ProjectCreate(command.Command):
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")
 
-        workspace = storage.load_workspace()
-        LOGGER.info("Found workspace file")
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
 
         try:
             project = storage.load_project(project_key)
@@ -53,7 +54,7 @@ class ProjectCreate(command.Command):
 
         # Apply the changes Notion side
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         if project_key in system_lock["projects"]:
             project_lock = system_lock["projects"][project_key]
@@ -100,9 +101,8 @@ class ProjectCreate(command.Command):
         project["key"] = project_key
         project["name"] = project_name
         storage.save_project(project_key, project)
-        workspace["projects"][project_key] = workspace["projects"].get(project_key, {})
-        LOGGER.info("Applied changes to local project file")
-        storage.save_workspace(workspace)
+        workspace.add_project(project_key)
+        workspace_repository.save_workspace(workspace)
         LOGGER.info("Applied changes to workspace")
 
     @staticmethod
