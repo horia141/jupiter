@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import storage
+import service.workspace as sws
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,15 +26,9 @@ class WorkspaceShow(command.Command):
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = sws.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
 
         # Dump out contents of workspace
 
-        print(f'{workspace["name"]}:')
-
-        print("  Vacations:")
-
-        for vacation in workspace["vacations"]["entries"]:
-            print(f'    id={vacation["ref_id"]} {vacation["name"]} ' +
-                  f'start={vacation["start_date"]} end={vacation["end_date"]}')
+        print(f'{workspace.name}')
