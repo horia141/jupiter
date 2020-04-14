@@ -8,6 +8,7 @@ from notion.client import NotionClient
 from notion.block import TodoBlock
 
 import command.command as command
+import service.vacations as vacations
 import service.workspaces as workspaces
 import schedules
 import schema
@@ -53,7 +54,10 @@ class RecurringTasksGen(command.Command):
         LOGGER.info("Found system lock")
 
         workspace_repository = workspaces.WorkspaceRepository()
+        vacations_repository = vacations.VacationsRepository()
+
         workspace = workspace_repository.load_workspace()
+        all_vacations = vacations_repository.load_all_vacations()
 
         project = storage.load_project(project_key)
         LOGGER.info("Found project file")
@@ -80,20 +84,20 @@ class RecurringTasksGen(command.Command):
                 LOGGER.info(f"Skipping group {group_name} on account of group filtering")
                 continue
             LOGGER.info(f"Processing group {group_name}")
-            RecurringTasksGen._update_notion_group(
-                dry_run, page, right_now, period_filter, workspace, group, all_tasks)
+            RecurringTasksGen._update_notion_group(dry_run, page, right_now, period_filter, all_vacations, group,
+                                                   all_tasks)
 
     @staticmethod
-    def _update_notion_group(dry_run, page, right_now, period_filter, workspace, group, all_tasks):
+    def _update_notion_group(dry_run, page, right_now, period_filter, all_vacations, group, all_tasks):
         group_format = group["format"]
         tasks = group["tasks"]
 
         for task in tasks:
-            RecurringTasksGen._update_notion_task(
-                dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks)
+            RecurringTasksGen._update_notion_task(dry_run, page, right_now, period_filter, group_format, all_vacations,
+                                                  task, all_tasks)
 
     @staticmethod
-    def _update_notion_task(dry_run, page, right_now, period_filter, group_format, workspace, task, all_tasks):
+    def _update_notion_task(dry_run, page, right_now, period_filter, group_format, all_vacations, task, all_tasks):
         def get_possible_row(timeline):
             already_task_rows = [
                 t for t in all_tasks if t.title.startswith(name) or t.recurring_task_id == recurring_task_id]
@@ -117,7 +121,6 @@ class RecurringTasksGen(command.Command):
                 subtask_row.title = subtask["name"]
                 subtask_row.checked = subtasks_to_process[str(subtask["name"])]
 
-        vacations = workspace["vacations"]["entries"]
         recurring_task_id = task["ref_id"]
         period = task["period"]
         name = group_format.format(name=task["name"])
@@ -142,11 +145,11 @@ class RecurringTasksGen(command.Command):
             return
 
         if not must_do:
-            for vacation in vacations:
-                start_date = pendulum.datetime(vacation["start_date"].year, vacation["start_date"].month,
-                                               vacation["start_date"].day, tz="UTC")
-                end_date = pendulum.datetime(vacation["end_date"].year, vacation["end_date"].month,
-                                             vacation["end_date"].day, tz="UTC")
+            for vacation in all_vacations:
+                start_date = pendulum.datetime(vacation.start_date.year, vacation.start_date.month,
+                                               vacation.start_date.day, tz="UTC")
+                end_date = pendulum.datetime(vacation.end_date.year, vacation.end_date.month,
+                                             vacation.end_date.day, tz="UTC")
                 if start_date <= schedule.first_day and schedule.end_day <= end_date:
                     LOGGER.info(
                         f"Skipping '{name}' on account of being fully withing vacation {start_date} to {end_date}")

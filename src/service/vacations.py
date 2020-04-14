@@ -3,7 +3,7 @@
 import datetime
 import logging
 import os.path
-from typing import Any, ClassVar, Dict, List, Sequence, Tuple
+from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import jsonschema as js
 import yaml
@@ -85,6 +85,8 @@ class VacationsRepository:
         }
     }
 
+    _validator: Any
+
     def __init__(self) -> None:
         """Constructor."""
         custom_type_checker = js.Draft6Validator.TYPE_CHECKER \
@@ -114,10 +116,9 @@ class VacationsRepository:
     def remove_vacation_by_id(self, ref_id: RefId) -> None:
         """Remove a particular vacation."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
-        try:
-            next(v for v in vacations if v.ref_id == ref_id)
-        except StopIteration as error:
-            raise RepositoryError(f"Could not find vacation with id={ref_id}") from error
+
+        if not self._find_vacation_by_id(ref_id, vacations):
+            raise RepositoryError(f"Vacation with id={ref_id} does not exist")
         new_vacations = list(filter(lambda v: v.ref_id != ref_id, vacations))
         self._bulk_save_vacations((vacations_next_idx, new_vacations))
 
@@ -129,14 +130,16 @@ class VacationsRepository:
     def load_vacation_by_id(self, ref_id: RefId) -> Vacation:
         """Retrieve a particular vacation by its id."""
         _, vacations = self._bulk_load_vacations()
-        try:
-            return next(v for v in vacations if v.ref_id == ref_id)
-        except StopIteration as error:
-            raise RepositoryError(f"Could not find vacation with id={ref_id}") from error
+        found_vacation = self._find_vacation_by_id(ref_id, vacations)
+        if not found_vacation:
+            raise RepositoryError(f"Vacation with id={ref_id} does not exist")
+        return found_vacation
 
     def save_vacation(self, new_vacation: Vacation) -> None:
         """Store a particular vacation with all new properties."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
+        if not self._find_vacation_by_id(new_vacation.ref_id, vacations):
+            raise RepositoryError(f"Vacation with id={new_vacation.ref_id} does not exist")
         new_vacations = [(v if v.ref_id != new_vacation.ref_id else new_vacation) for v in vacations]
         self._bulk_save_vacations((vacations_next_idx, new_vacations))
 
@@ -182,3 +185,10 @@ class VacationsRepository:
     @staticmethod
     def _schema_check_datetime_date(_checker: Any, instance: Any) -> bool:
         return isinstance(instance, datetime.date)
+
+    @staticmethod
+    def _find_vacation_by_id(ref_id: RefId, vacations: Sequence[Vacation]) -> Optional[Vacation]:
+        try:
+            return next(v for v in vacations if v.key == ref_id)
+        except StopIteration:
+            return None
