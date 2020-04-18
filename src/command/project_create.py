@@ -6,6 +6,7 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
+import service.projects as projects
 import service.workspaces as workspaces
 import schema
 import space_utils
@@ -43,13 +44,16 @@ class ProjectCreate(command.Command):
         LOGGER.info("Found system lock")
 
         workspace_repository = workspaces.WorkspaceRepository()
+        projects_repository = projects.ProjectsRepository()
+
         workspace = workspace_repository.load_workspace()
 
         try:
-            project = storage.load_project(project_key)
+            project = projects_repository.load_project_by_key(project_key)
+            project.set_name(project_name)
             LOGGER.info("Found project file")
-        except IOError:
-            project = storage.build_empty_project()
+        except projects.RepositoryError:
+            project = projects_repository.create_project(project_key, project_name)
             LOGGER.info("No project file - creating it")
 
         # Apply the changes Notion side
@@ -98,12 +102,9 @@ class ProjectCreate(command.Command):
         storage.save_lock_file(system_lock)
         LOGGER.info("Applied changes to local system lock")
 
-        project["key"] = project_key
-        project["name"] = project_name
-        storage.save_project(project_key, project)
-        workspace.add_project(project_key)
+        projects_repository.save_project(project)
         workspace_repository.save_workspace(workspace)
-        LOGGER.info("Applied changes to workspace")
+        LOGGER.info("Applied changes to local")
 
     @staticmethod
     def _update_inbox(client, root_page, inbox_lock):

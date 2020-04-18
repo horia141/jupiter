@@ -2,7 +2,7 @@
 
 import logging
 import os.path
-from typing import Any, ClassVar, Dict, NewType, List, Sequence
+from typing import Any, ClassVar, Dict, NewType
 
 import jsonschema as js
 import yaml
@@ -21,19 +21,16 @@ class Workspace:
     _name: str
     _space_id: WorkspaceSpaceId
     _token: WorkspaceToken
-    _projects_meta: List[str]
 
     def __init__(
             self,
             name: str,
             space_id: WorkspaceSpaceId,
-            token: WorkspaceToken,
-            projects_meta: List[str]) -> None:
+            token: WorkspaceToken) -> None:
         """Constructor."""
         self._name = name
         self._space_id = space_id
         self._token = token
-        self._projects_meta = projects_meta
 
     def set_name(self, new_name: str) -> None:
         """Change the name of the workspace."""
@@ -42,15 +39,6 @@ class Workspace:
     def set_token(self, new_token: WorkspaceToken) -> None:
         """Change the token of the workspace."""
         self._token = new_token
-
-    def add_project(self, project_key: str) -> None:
-        """Add a project to the list of projects for the workspace."""
-        self._projects_meta.append(project_key)
-
-    def remove_project(self, project_key: str) -> None:
-        """Remove a project from the list of projects for the workspace."""
-        project_key_idx = self._projects_meta.index(project_key)
-        del self._projects_meta[project_key_idx]
 
     @property
     def name(self) -> str:
@@ -67,11 +55,6 @@ class Workspace:
         """Access token for the workspace."""
         return self._token
 
-    @property
-    def projects_meta(self) -> Sequence[str]:
-        """The keys of all the projects."""
-        return self._projects_meta
-
 
 class WorkspaceRepository:
     """A repository for workspaces."""
@@ -83,13 +66,7 @@ class WorkspaceRepository:
         "properties": {
             "name": {"type": "string"},
             "space_id": {"type": "string"},
-            "token": {"type": "string"},
-            "projects_meta": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            }
+            "token": {"type": "string"}
         }
     }
 
@@ -103,7 +80,7 @@ class WorkspaceRepository:
         """Initialise the repository."""
         if os.path.exists(WorkspaceRepository._WORKSPACE_FILE_PATH):
             return
-        dummy_workspace = Workspace("dummy", WorkspaceSpaceId("FAKE_IT"), WorkspaceToken("TILL_YOU_MAKE_IT"), [])
+        dummy_workspace = Workspace("dummy", WorkspaceSpaceId("FAKE_IT"), WorkspaceToken("TILL_YOU_MAKE_IT"))
         self.save_workspace(dummy_workspace)
 
     def load_workspace(self) -> Workspace:
@@ -119,8 +96,7 @@ class WorkspaceRepository:
                 workspace = Workspace(
                     workspace_ser["name"],
                     WorkspaceSpaceId(workspace_ser["space_id"]),
-                    WorkspaceToken(workspace_ser["token"]),
-                    workspace_ser["projects_meta"])
+                    WorkspaceToken(workspace_ser["token"]))
 
                 return workspace
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
@@ -133,8 +109,7 @@ class WorkspaceRepository:
                 new_workspace_ser = {
                     "name": new_workspace.name,
                     "space_id": new_workspace.space_id,
-                    "token": new_workspace.token,
-                    "projects_meta": new_workspace.projects_meta
+                    "token": new_workspace.token
                 }
 
                 self._validator(WorkspaceRepository._WORKSPACE_SCHEMA).validate(new_workspace_ser)

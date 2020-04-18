@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import service.projects as projects
 import service.workspaces as workspaces
 import space_utils
 import storage
@@ -39,8 +40,10 @@ class ProjectSync(command.Command):
 
         system_lock = storage.load_lock_file()
         workspace_repository = workspaces.WorkspaceRepository()
+        projects_repository = projects.ProjectsRepository()
+
         workspace = workspace_repository.load_workspace()
-        project = storage.load_project(project_key)
+        project = projects_repository.load_project_by_key(project_key)
         LOGGER.info("Found project file")
 
         # Prepare Notion connection
@@ -54,10 +57,10 @@ class ProjectSync(command.Command):
         LOGGER.info(f"Found the root page via id {project_root_page}")
 
         if prefer == "local":
-            project_root_page.title = project["name"]
+            project_root_page.title = project.name
             LOGGER.info("Applied changes to Notion")
         elif prefer == "notion":
-            project["name"] = project_root_page.title
+            project.set_name(project_root_page.title)
             storage.save_project(project_key, project)
             LOGGER.info("Applied local change")
         else:

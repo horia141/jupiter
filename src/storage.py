@@ -1,6 +1,5 @@
 """Local storage interactions."""
 
-from pathlib import Path
 import yaml
 
 _LOCKFILE_PATH = "/data/.system.lock"
@@ -33,18 +32,6 @@ def save_lock_file(lock):
         yaml.dump(lock, project_lock_file)
 
 
-def build_empty_project():
-    """Construct an empty project."""
-    return {
-        "key": "",
-        "name": "",
-        "recurring_tasks": {
-            "next_idx": 0,
-            "entries": {}
-        }
-    }
-
-
 def load_project(key):
     """Load a project given by key."""
     project_file_path = _PROJECT_FILE_PATTERN.format(key)
@@ -57,9 +44,3 @@ def save_project(key, project):
     project_file_path = _PROJECT_FILE_PATTERN.format(key)
     with open(project_file_path, "w") as project_file:
         yaml.dump(project, project_file)
-
-
-def remove_project(key):
-    """Remove a project given by a key."""
-    project_file_path = Path(_PROJECT_FILE_PATTERN.format(key))
-    project_file_path.unlink()

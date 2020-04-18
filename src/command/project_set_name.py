@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import service.projects as projects
 import service.workspaces as workspaces
 import space_utils
 import storage
@@ -38,8 +39,10 @@ class ProjectSetName(command.Command):
         system_lock = storage.load_lock_file()
         LOGGER.info("Found lock file")
         workspace_repository = workspaces.WorkspaceRepository()
+        projects_repository = projects.ProjectsRepository()
+
         workspace = workspace_repository.load_workspace()
-        project = storage.load_project(project_key)
+        project = projects_repository.load_project_by_key(project_key)
         LOGGER.info("Found project file")
 
         # Apply changes to Notion
@@ -53,6 +56,6 @@ class ProjectSetName(command.Command):
         LOGGER.info("Applied changes on Notion")
 
         # Apply changes locally
-        project["name"] = project_name
+        project.set_name(project_name)
         storage.save_project(project_key, project)
         LOGGER.info("Applied changes locally")

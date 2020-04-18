@@ -6,6 +6,7 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
+import service.projects as projects
 import service.vacations as vacations
 import service.workspaces as workspaces
 import schema
@@ -51,11 +52,11 @@ class WorkspaceInit(command.Command):
 
         workspace_repository = workspaces.WorkspaceRepository()
         vacations_repository = vacations.VacationsRepository()
+        projects_repository = projects.ProjectsRepository()
 
         workspace_repository.initialize()
         vacations_repository.initialize()
-
-        workspace = workspace_repository.load_workspace()
+        projects_repository.initialize()
 
         # Retrieve or create the Notion page for the workspace
 
@@ -70,8 +71,7 @@ class WorkspaceInit(command.Command):
         # Apply the changes to the local side
 
         new_workspace = workspaces.Workspace(
-            name, workspaces.WorkspaceSpaceId(space_id), workspaces.WorkspaceToken(token),
-            workspace.projects_meta if workspace else [])
+            name, workspaces.WorkspaceSpaceId(space_id), workspaces.WorkspaceToken(token))
         workspace_repository.save_workspace(new_workspace)
 
         # Save changes to lockfile
