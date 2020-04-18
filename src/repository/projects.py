@@ -117,6 +117,14 @@ class ProjectsRepository:
         _, projects = self._bulk_load_projects()
         return projects
 
+    def load_project_by_id(self, ref_id: RefId) -> Project:
+        """Retrieve a particular project by its key."""
+        _, projects = self._bulk_load_projects()
+        found_project = self._find_project_by_id(ref_id, projects)
+        if not found_project:
+            raise RepositoryError(f"Project with id='{ref_id}' does not exist")
+        return found_project
+
     def load_project_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project by its key."""
         _, projects = self._bulk_load_projects()
@@ -172,6 +180,13 @@ class ProjectsRepository:
                 LOGGER.info("Saved projects")
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
+
+    @staticmethod
+    def _find_project_by_id(ref_id: RefId, projects: Sequence[Project]) -> Optional[Project]:
+        try:
+            return next(p for p in projects if p.ref_id == ref_id)
+        except StopIteration:
+            return None
 
     @staticmethod
     def _find_project_by_key(key: ProjectKey, projects: Sequence[Project]) -> Optional[Project]:

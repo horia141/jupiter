@@ -9,9 +9,7 @@ import yaml
 
 from repository.common import RefId, RepositoryError, TaskPeriod, TaskEisen, TaskDifficulty
 
-
 LOGGER = logging.getLogger(__name__)
-
 
 RecurringTaskGroup = NewType("RecurringTaskGroup", str)
 
@@ -25,18 +23,19 @@ class RecurringTask:
     _period: TaskPeriod
     _group: RecurringTaskGroup
     _eisen: List[TaskEisen]
-    _difficulty: TaskDifficulty
-    _due_at_time: str
-    _due_at_day: int
-    _due_at_month: int
+    _difficulty: Optional[TaskDifficulty]
+    _due_at_time: Optional[str]
+    _due_at_day: Optional[int]
+    _due_at_month: Optional[int]
     _suspended: bool
-    _skip_rule: str
+    _skip_rule: Optional[str]
     _must_do: bool
 
     def __init__(
             self, ref_id: RefId, project_ref_id: RefId, name: str, period: TaskPeriod, group: RecurringTaskGroup,
-            eisen: List[TaskEisen], difficulty: TaskDifficulty, due_at_time: str, due_at_day: int, due_at_month: int,
-            suspended: bool, skip_rule: str, must_do: bool) -> None:
+            eisen: List[TaskEisen], difficulty: Optional[TaskDifficulty], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
+            must_do: bool) -> None:
         """Constructor."""
         self._ref_id = ref_id
         self._project_ref_id = project_ref_id
@@ -50,6 +49,44 @@ class RecurringTask:
         self._due_at_month = due_at_month
         self._suspended = suspended
         self._skip_rule = skip_rule
+        self._must_do = must_do
+
+    def set_name(self, name: str) -> None:
+        """Change the name of the recurring task."""
+        self._name = name
+
+    def set_period(self, period: TaskPeriod) -> None:
+        """Change the period of the recurring task."""
+        self._period = period
+
+    def set_group(self, group: RecurringTaskGroup) -> None:
+        """Change the group of the recurring task."""
+        self._group = group
+
+    def set_eisen(self, eisen: Iterable[TaskEisen]) -> None:
+        """Change the Eisenhower status of the recurring task."""
+        self._eisen = list(eisen)
+
+    def set_difficulty(self, difficulty: Optional[TaskDifficulty]) -> None:
+        """Change the difficulty of the recurring task."""
+        self._difficulty = difficulty
+
+    def set_deadline(self, due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int]) -> None:
+        """Change the various deadlines of the recurring task."""
+        self._due_at_time = due_at_time
+        self._due_at_day = due_at_day
+        self._due_at_month = due_at_month
+
+    def set_suspended(self, suspended: bool) -> None:
+        """Change the suspended status of the recurring task."""
+        self._suspended = suspended
+
+    def set_skip_rule(self, skip_rule: Optional[str]) -> None:
+        """Change the skip rule of the recurring task."""
+        self._skip_rule = skip_rule
+
+    def set_must_do(self, must_do: bool) -> None:
+        """Change the must do status of the recurring task."""
         self._must_do = must_do
 
     @property
@@ -83,22 +120,22 @@ class RecurringTask:
         return self._eisen
 
     @property
-    def difficulty(self) -> TaskDifficulty:
+    def difficulty(self) -> Optional[TaskDifficulty]:
         """The difficulty of the recurring task."""
         return self._difficulty
 
     @property
-    def due_at_time(self) -> str:
+    def due_at_time(self) -> Optional[str]:
         """The time the task is due, on the day it is due."""
         return self._due_at_time
 
     @property
-    def due_at_day(self) -> int:
+    def due_at_day(self) -> Optional[int]:
         """The day the task is due, on the week/month it is due."""
         return self._due_at_day
 
     @property
-    def due_at_month(self) -> int:
+    def due_at_month(self) -> Optional[int]:
         """The month the task is due, on the quarter/year it is due."""
         return self._due_at_month
 
@@ -108,7 +145,7 @@ class RecurringTask:
         return self._suspended
 
     @property
-    def skip_rule(self) -> str:
+    def skip_rule(self) -> Optional[str]:
         """The skip rule for the recurring task."""
         return self._skip_rule
 
@@ -170,8 +207,9 @@ class RecurringTasksRepository:
 
     def create_recurring_task(
             self, project_ref_id: RefId, name: str, period: TaskPeriod, group: RecurringTaskGroup,
-            eisen: List[TaskEisen], difficulty: TaskDifficulty, due_at_time: str, due_at_day: int, due_at_month: int,
-            suspended: bool, skip_rule: str, must_do: str) -> RecurringTask:
+            eisen: Iterable[TaskEisen], difficulty: Optional[TaskDifficulty], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
+            must_do: bool) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._bulk_load_recurring_tasks()
 
@@ -181,7 +219,7 @@ class RecurringTasksRepository:
             name=name,
             period=period,
             group=group,
-            eisen=eisen,
+            eisen=list(eisen),
             difficulty=difficulty,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
@@ -207,9 +245,9 @@ class RecurringTasksRepository:
         new_recurring_tasks = filter(lambda p: p.ref_id == ref_id, recurring_tasks)
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
-    def list_all_recurring_tasks(self) -> Iterable[RecurringTask]:
+    def list_all_recurring_tasks(self, filter_parent_ref_id=None) -> Iterable[RecurringTask]:
         """Retrieve all the recurring tasks defined."""
-        _, recurring_tasks = self._bulk_load_recurring_tasks()
+        _, recurring_tasks = self._bulk_load_recurring_tasks(filter_parent_ref_id=filter_parent_ref_id)
         return recurring_tasks
 
     def load_recurring_task_by_id(self, ref_id: RefId) -> RecurringTask:
@@ -231,7 +269,7 @@ class RecurringTasksRepository:
                                for rt in recurring_tasks]
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
-    def _bulk_load_recurring_tasks(self) -> Tuple[int, List[RecurringTask]]:
+    def _bulk_load_recurring_tasks(self, filter_parent_ref_id=None) -> Tuple[int, List[RecurringTask]]:
         try:
             with open(RecurringTasksRepository._RECURRING_TASKS_FILE_PATH, "r") as recurring_tasks_file:
                 recurring_tasks_ser = yaml.safe_load(recurring_tasks_file)
@@ -241,21 +279,23 @@ class RecurringTasksRepository:
                 LOGGER.info("Checked recurring tasks structure")
 
                 recurring_tasks_next_idx = recurring_tasks_ser["next_idx"]
-                recurring_tasks = \
-                    [RecurringTask(
+                recurring_tasks_iter = \
+                    (RecurringTask(
                         ref_id=RefId(rt["ref_id"]),
                         project_ref_id=RefId(rt["project_ref_id"]),
                         name=rt["name"],
                         period=TaskPeriod(rt["period"]),
                         group=RecurringTaskGroup(rt["group"]),
                         eisen=[TaskEisen(e) for e in rt["eisen"]],
-                        difficulty=TaskDifficulty(rt["difficulty"]),
-                        due_at_time=rt["due_at_time"],
-                        due_at_day=rt["due_at_day"],
-                        due_at_month=rt["due_at_month"],
+                        difficulty=TaskDifficulty(rt["difficulty"]) if rt["difficulty"] else None,
+                        due_at_time=rt["due_at_time"] if rt["due_at_time"] else None,
+                        due_at_day=rt["due_at_day"] if rt["due_at_day"] else None,
+                        due_at_month=rt["due_at_month"] if rt["due_at_month"] else None,
                         suspended=rt["suspended"],
-                        skip_rule=rt["skip_rule"],
-                        must_do=rt["must_do"]) for rt in recurring_tasks_ser["entries"]]
+                        skip_rule=rt["skip_rule"] if rt["skip_rule"] else None,
+                        must_do=rt["must_do"]) for rt in recurring_tasks_ser["entries"])
+                recurring_tasks = list(rt for rt in recurring_tasks_iter
+                                       if (filter_parent_ref_id is None or rt.project_ref_id == filter_parent_ref_id))
 
                 return recurring_tasks_next_idx, recurring_tasks
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
@@ -273,7 +313,7 @@ class RecurringTasksRepository:
                         "period": rt.period.value,
                         "group": rt.group,
                         "eisen": [e.value for e in rt.eisen],
-                        "difficulty": rt.difficulty.value,
+                        "difficulty": rt.difficulty.value if rt.difficulty else None,
                         "due_at_time": rt.due_at_time,
                         "due_at_day": rt.due_at_day,
                         "due_at_month": rt.due_at_month,

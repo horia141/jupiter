@@ -4,14 +4,6 @@ import datetime
 
 import pendulum
 
-PERIODS = frozenset([
-    "daily",
-    "weekly",
-    "monthly",
-    "quarterly",
-    "yearly"
-])
-
 
 class Schedule:
     """The base class for the schedule descriptors class."""

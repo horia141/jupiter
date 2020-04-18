@@ -3,7 +3,6 @@
 import yaml
 
 _LOCKFILE_PATH = "/data/.system.lock"
-_PROJECT_FILE_PATTERN = "/data/project-{0}.yaml"
 
 
 def build_empty_lockfile():
@@ -30,17 +29,3 @@ def save_lock_file(lock):
     """Save a given lockfile."""
     with open(_LOCKFILE_PATH, "w") as project_lock_file:
         yaml.dump(lock, project_lock_file)
-
-
-def load_project(key):
-    """Load a project given by key."""
-    project_file_path = _PROJECT_FILE_PATTERN.format(key)
-    with open(project_file_path, "r") as project_file:
-        return yaml.safe_load(project_file)
-
-
-def save_project(key, project):
-    """Save a project given by a key."""
-    project_file_path = _PROJECT_FILE_PATTERN.format(key)
-    with open(project_file_path, "w") as project_file:
-        yaml.dump(project, project_file)

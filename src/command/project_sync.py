@@ -61,7 +61,7 @@ class ProjectSync(command.Command):
             LOGGER.info("Applied changes to Notion")
         elif prefer == "notion":
             project.set_name(project_root_page.title)
-            storage.save_project(project_key, project)
+            projects_repository.save_project(project)
             LOGGER.info("Applied local change")
         else:
             raise Exception(f"Invalid preference {prefer}")

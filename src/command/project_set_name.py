@@ -57,5 +57,5 @@ class ProjectSetName(command.Command):
 
         # Apply changes locally
         project.set_name(project_name)
-        storage.save_project(project_key, project)
+        projects_repository.save_project(project)
         LOGGER.info("Applied changes locally")
