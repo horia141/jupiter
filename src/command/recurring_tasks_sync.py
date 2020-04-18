@@ -8,7 +8,7 @@ from notion.client import NotionClient
 import pendulum
 
 import command.command as command
-import service.workspaces as workspaces
+import repository.workspaces as workspaces
 import schedules
 import schema
 import space_utils

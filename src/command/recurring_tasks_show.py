@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import service.workspaces as workspaces
+import repository.workspaces as workspaces
 import storage
 
 LOGGER = logging.getLogger(__name__)

@@ -5,8 +5,8 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
-import service.projects as projects
-import service.workspaces as workspaces
+import repository.projects as projects
+import repository.workspaces as workspaces
 import space_utils
 import storage
 

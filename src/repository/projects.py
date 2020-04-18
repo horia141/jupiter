@@ -7,7 +7,7 @@ from typing import Any, Dict, ClassVar, Iterator, List, NewType, Optional, Seque
 import jsonschema as js
 import yaml
 
-from service.common import RefId, RepositoryError
+from repository.common import RefId, RepositoryError
 
 
 LOGGER = logging.getLogger(__name__)

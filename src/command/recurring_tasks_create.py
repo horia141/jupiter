@@ -7,7 +7,7 @@ import uuid
 from notion.client import NotionClient
 
 import command.command as command
-import service.workspaces as workspaces
+import repository.workspaces as workspaces
 import schema
 import space_utils
 import storage

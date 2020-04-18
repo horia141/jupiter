@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import service.vacations as vacations
+import repository.vacations as vacations
 
 LOGGER = logging.getLogger(__name__)
 

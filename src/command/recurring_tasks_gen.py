@@ -8,8 +8,8 @@ from notion.client import NotionClient
 from notion.block import TodoBlock
 
 import command.command as command
-import service.vacations as vacations
-import service.workspaces as workspaces
+import repository.vacations as vacations
+import repository.workspaces as workspaces
 import schedules
 import schema
 import storage

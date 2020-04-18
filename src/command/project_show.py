@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import service.projects as projects
+import repository.projects as projects
 
 LOGGER = logging.getLogger(__name__)
 

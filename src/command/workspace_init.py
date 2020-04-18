@@ -6,9 +6,9 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
-import service.projects as projects
-import service.vacations as vacations
-import service.workspaces as workspaces
+import repository.projects as projects
+import repository.vacations as vacations
+import repository.workspaces as workspaces
 import schema
 import space_utils
 import storage
