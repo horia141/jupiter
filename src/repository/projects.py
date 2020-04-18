@@ -34,7 +34,7 @@ class Project:
         self._name = name
 
     @property
-    def ref_id(self):
+    def ref_id(self) -> RefId:
         """The id of a project."""
         return self._ref_id
 
@@ -109,7 +109,7 @@ class ProjectsRepository:
         if not self._find_project_by_key(key, projects):
             raise RepositoryError(f"Project with key='{key}' does not exist")
 
-        new_projects = filter(lambda p: p.key == key)
+        new_projects = filter(lambda p: p.key == key, projects)
         self._bulk_save_projects((projects_next_idx, new_projects))
 
     def list_all_projects(self) -> Iterator[Project]:
@@ -146,7 +146,7 @@ class ProjectsRepository:
 
                 projects_next_idx = projects_ser["next_idx"]
                 projects = \
-                    [Project(RefId(p["ref_id"]), p["key"], p["name"])
+                    [Project(RefId(p["ref_id"]), ProjectKey(p["key"]), p["name"])
                      for p in projects_ser["entries"]]
 
                 return projects_next_idx, projects
@@ -169,7 +169,7 @@ class ProjectsRepository:
                 LOGGER.info("Checked projects structure")
 
                 yaml.dump(projects_ser, projects_file)
-                LOGGER.info("Saved projects structure")
+                LOGGER.info("Saved projects")
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
