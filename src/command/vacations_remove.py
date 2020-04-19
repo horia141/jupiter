@@ -5,6 +5,8 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import repository.vacations as vacations
+import repository.workspaces as workspaces
 import space_utils
 import storage
 
@@ -35,23 +37,18 @@ class VacationsRemove(command.Command):
         # Load local storage
 
         the_lock = storage.load_lock_file()
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+        workspace_repository = workspaces.WorkspaceRepository()
+        vacations_repository = vacations.VacationsRepository()
+
+        workspace = workspace_repository.load_workspace()
 
         # Prepare Notion connection
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply changes locally
 
-        try:
-            idx = next(i for i, v in enumerate(workspace["vacations"]["entries"]) if v["ref_id"] == ref_id)
-            del workspace["vacations"]["entries"][idx]
-            storage.save_workspace(workspace)
-            LOGGER.info("Removed vacations")
-        except StopIteration:
-            LOGGER.error(f"Vacation with id {ref_id} does not exist")
-            return
+        vacations_repository.remove_vacation_by_id(ref_id)
 
         # Apply changes in Notion
 

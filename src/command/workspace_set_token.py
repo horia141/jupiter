@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import storage
+import repository.workspaces as workspaces
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,16 +29,8 @@ class WorkspaceSetToken(command.Command):
         """Callback to execute when the command is invoked."""
         token = args.token
 
-        # Load local storage
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
 
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-
-        if args.dry_run:
-            return
-
-        # Apply the changes to the local side
-
-        workspace["token"] = token
-        storage.save_workspace(workspace)
-        LOGGER.info("Applied changes on local side")
+        workspace.set_token(workspaces.WorkspaceToken(token))
+        workspace_repository.save_workspace(workspace)

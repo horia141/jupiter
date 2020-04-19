@@ -7,6 +7,9 @@ from notion.client import NotionClient
 import pendulum
 
 import command.command as command
+import repository.projects as projects
+import repository.recurring_tasks as recurring_tasks
+import repository.workspaces as workspaces
 import schedules
 import schema
 import space_utils
@@ -36,7 +39,6 @@ class RecurringTasksSetDeadlines(command.Command):
                             help="The day of the interval the task will be due on")
         parser.add_argument("--due-at-month", type=int, dest="due_at_month", metavar="MONTH",
                             help="The day of the interval the task will be due on")
-        parser.add_argument("--project", type=str, dest="project", help="The key of the project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
@@ -44,7 +46,6 @@ class RecurringTasksSetDeadlines(command.Command):
         due_at_time = args.due_at_time.strip().lower() if args.due_at_time else None
         due_at_day = args.due_at_day
         due_at_month = args.due_at_month
-        project_key = args.project
 
         if due_at_time:
             if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):
@@ -54,39 +55,33 @@ class RecurringTasksSetDeadlines(command.Command):
 
         the_lock = storage.load_lock_file()
         LOGGER.info("Loaded the system lock")
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-        project = storage.load_project(project_key)
-        LOGGER.info("Loaded the project data")
-
-        # Prepare Notion connection
-
-        client = NotionClient(token_v2=workspace["token"])
+        workspace_repository = workspaces.WorkspaceRepository()
+        projects_repository = projects.ProjectsRepository()
+        recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
 
         # Apply changes locally
 
-        try:
-            recurring_task = next(
-                v for group in project["recurring_tasks"]["entries"].values()
-                for v in group["tasks"] if v["ref_id"] == ref_id)
-            recurring_task["due_at_time"] = due_at_time
-            recurring_task["due_at_day"] = due_at_day
-            recurring_task["due_at_month"] = due_at_month
-            storage.save_project(project_key, project)
-            LOGGER.info("Modified recurring task")
-        except StopIteration:
-            LOGGER.error(f"Recurring task with id {ref_id} does not exist")
-            return
+        workspace = workspace_repository.load_workspace()
+
+        recurring_task = recurring_tasks_repository.load_recurring_task_by_id(ref_id)
+        recurring_task.set_deadline(due_at_time=due_at_time, due_at_day=due_at_day, due_at_month=due_at_month)
+        recurring_tasks_repository.save_recurring_task(recurring_task)
+
+        project = projects_repository.load_project_by_id(recurring_task.project_ref_id)
 
         # Apply changes in Notion
+
+        # Prepare Notion connection
+
+        client = NotionClient(token_v2=workspace.token)
 
         # First, change the recurring task entry
 
         recurring_tasks_page = space_utils.find_page_from_space_by_id(
-            client, the_lock["projects"][project_key]["recurring_tasks"]["root_page_id"])
+            client, the_lock["projects"][project.key]["recurring_tasks"]["root_page_id"])
         recurring_tasks_rows = client \
             .get_collection_view(
-                the_lock["projects"][project_key]["recurring_tasks"]["database_view_id"],
+                the_lock["projects"][project.key]["recurring_tasks"]["database_view_id"],
                 collection=recurring_tasks_page.collection) \
             .build_query() \
             .execute()
@@ -100,10 +95,10 @@ class RecurringTasksSetDeadlines(command.Command):
         # Then, change every task
 
         inbox_tasks_page = space_utils.find_page_from_space_by_id(
-            client, the_lock["projects"][project_key]["inbox"]["root_page_id"])
+            client, the_lock["projects"][project.key]["inbox"]["root_page_id"])
         inbox_tasks_rows = client \
             .get_collection_view(
-                the_lock["projects"][project_key]["inbox"]["database_view_id"],
+                the_lock["projects"][project.key]["inbox"]["database_view_id"],
                 collection=inbox_tasks_page.collection) \
             .build_query() \
             .execute()

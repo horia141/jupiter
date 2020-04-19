@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import repository.workspaces as workspaces
 import space_utils
 import storage
 
@@ -36,12 +37,13 @@ class WorkspaceSetName(command.Command):
 
         system_lock = storage.load_lock_file()
         LOGGER.info("Loaded lockfile")
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
+
+        workspace_repository = workspaces.WorkspaceRepository()
+        workspace = workspace_repository.load_workspace()
 
         # Load Notion storage
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
         LOGGER.info("Connected to Notion")
         found_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page"]["root_page_id"])
         LOGGER.info(f"Found the root page via id {found_root_page}")
@@ -56,6 +58,5 @@ class WorkspaceSetName(command.Command):
 
         # Apply the changes to the local side
 
-        workspace["name"] = name
-        storage.save_workspace(workspace)
-        LOGGER.info("Applied changes on local side")
+        workspace.set_name(name)
+        workspace_repository.save_workspace(workspace)

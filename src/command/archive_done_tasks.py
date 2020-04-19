@@ -5,6 +5,8 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import repository.projects as projects
+import repository.workspaces as workspaces
 import schema
 import storage
 
@@ -40,13 +42,12 @@ class ArchiveDoneTasks(command.Command):
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")
 
-        workspace = storage.load_workspace()
-        LOGGER.info("Found workspace file")
+        workspace_repository = workspaces.WorkspaceRepository()
+        projects_repository = projects.ProjectsRepository()
+        workspace = workspace_repository.load_workspace()
+        _ = projects_repository.load_project_by_key(project_key)
 
-        _ = storage.load_project(project_key)
-        LOGGER.info("Found project file")
-
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         project_lock = system_lock["projects"][project_key]
         root_page = client.get_block(project_lock["inbox"]["root_page_id"])

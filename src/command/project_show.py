@@ -3,7 +3,7 @@
 import logging
 
 import command.command as command
-import storage
+import repository.projects as projects
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,19 +31,15 @@ class ProjectShow(command.Command):
 
         # Load local storage
 
-        _ = storage.load_lock_file()
         LOGGER.info("Loaded the system lock")
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-        # Dump out contents of the projects
+        projects_repository = projects.ProjectsRepository()
 
         if project_key:
             # Print details about a single project
-            project = storage.load_project(project_key)
+            project = projects_repository.load_project_by_key(project_key)
             LOGGER.info("Loaded the project data")
-            print(f'{project_key}: {project["name"]}')
+            print(f'{project_key}: {project.name}')
         else:
             # Print a summary of all projects
-            for project_key in workspace["projects"]:
-                project = storage.load_project(project_key)
-                print(f'{project_key}: {project["name"]}')
+            for project in projects_repository.list_all_projects():
+                print(f'{project.key}: {project.name}')

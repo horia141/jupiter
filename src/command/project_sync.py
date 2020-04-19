@@ -5,6 +5,8 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+import repository.projects as projects
+import repository.workspaces as workspaces
 import space_utils
 import storage
 
@@ -37,14 +39,16 @@ class ProjectSync(command.Command):
         # Load local storage
 
         system_lock = storage.load_lock_file()
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-        project = storage.load_project(project_key)
+        workspace_repository = workspaces.WorkspaceRepository()
+        projects_repository = projects.ProjectsRepository()
+
+        workspace = workspace_repository.load_workspace()
+        project = projects_repository.load_project_by_key(project_key)
         LOGGER.info("Found project file")
 
         # Prepare Notion connection
 
-        client = NotionClient(token_v2=workspace["token"])
+        client = NotionClient(token_v2=workspace.token)
 
         # Apply changes locally
 
@@ -53,11 +57,11 @@ class ProjectSync(command.Command):
         LOGGER.info(f"Found the root page via id {project_root_page}")
 
         if prefer == "local":
-            project_root_page.title = project["name"]
+            project_root_page.title = project.name
             LOGGER.info("Applied changes to Notion")
         elif prefer == "notion":
-            project["name"] = project_root_page.title
-            storage.save_project(project_key, project)
+            project.set_name(project_root_page.title)
+            projects_repository.save_project(project)
             LOGGER.info("Applied local change")
         else:
             raise Exception(f"Invalid preference {prefer}")

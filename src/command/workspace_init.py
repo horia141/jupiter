@@ -6,6 +6,10 @@ from notion.block import CollectionViewPageBlock
 from notion.client import NotionClient
 
 import command.command as command
+import repository.recurring_tasks as recurring_tasks
+import repository.projects as projects
+import repository.vacations as vacations
+import repository.workspaces as workspaces
 import schema
 import space_utils
 import storage
@@ -47,12 +51,15 @@ class WorkspaceInit(command.Command):
             system_lock = storage.build_empty_lockfile()
             LOGGER.info("No system lock - creating it")
 
-        try:
-            workspace = storage.load_workspace()
-            LOGGER.info("Found workspace config")
-        except IOError:
-            workspace = storage.build_empty_workspace()
-            LOGGER.info("No workspace config - creating it")
+        workspace_repository = workspaces.WorkspaceRepository()
+        vacations_repository = vacations.VacationsRepository()
+        projects_repository = projects.ProjectsRepository()
+        recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
+
+        workspace_repository.initialize()
+        vacations_repository.initialize()
+        projects_repository.initialize()
+        recurring_tasks_repository.initialize()
 
         # Retrieve or create the Notion page for the workspace
 
@@ -66,11 +73,9 @@ class WorkspaceInit(command.Command):
 
         # Apply the changes to the local side
 
-        workspace["space_id"] = space_id
-        workspace["name"] = name
-        workspace["token"] = token
-        storage.save_workspace(workspace)
-        LOGGER.info("Applied changes on local workspace")
+        new_workspace = workspaces.Workspace(
+            name, workspaces.WorkspaceSpaceId(space_id), workspaces.WorkspaceToken(token))
+        workspace_repository.save_workspace(new_workspace)
 
         # Save changes to lockfile
         system_lock["root_page"] = root_page_lock
