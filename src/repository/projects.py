@@ -2,7 +2,7 @@
 
 import os.path
 import logging
-from typing import Any, Dict, ClassVar, Iterable, Iterator, List, NewType, Optional, Sequence, Tuple
+from typing import Any, Dict, ClassVar, Iterable, Iterator, List, NewType, Optional, Sequence, Tuple, Set
 
 import jsonschema as js
 import yaml
@@ -114,7 +114,7 @@ class ProjectsRepository:
 
     def list_all_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterator[Project]:
         """Retrieve all the projects defined."""
-        _, projects = self._bulk_load_projects(filter_keys=filter_keys)
+        _, projects = self._bulk_load_projects(filter_keys=frozenset(filter_keys) if filter_keys else None)
         return projects
 
     def load_project_by_id(self, ref_id: RefId) -> Project:
@@ -143,7 +143,7 @@ class ProjectsRepository:
         new_projects = [(p if p.ref_id != new_project.ref_id else new_project) for p in projects]
         self._bulk_save_projects((projects_next_idx, new_projects))
 
-    def _bulk_load_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Tuple[int, List[Project]]:
+    def _bulk_load_projects(self, filter_keys: Optional[Set[ProjectKey]] = None) -> Tuple[int, List[Project]]:
         try:
             with open(ProjectsRepository._PROJECTS_FILE_PATH, "r") as projects_file:
                 projects_ser = yaml.safe_load(projects_file)

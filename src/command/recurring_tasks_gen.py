@@ -160,7 +160,7 @@ class RecurringTasksGen(command.Command):
                 task_row.recurring_task_id = task.ref_id
                 task_row.created_date = right_now
                 setattr(task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
-                setattr(task_row, schema.INBOX_TASK_ROW_EISEN_KEY, task.eisen)
+                setattr(task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in task.eisen])
                 setattr(
                     task_row, schema.INBOX_TASK_ROW_DIFFICULTY_KEY, task.difficulty.value if task.difficulty else None)
                 setattr(task_row, schema.INBOX_TASK_ROW_FROM_SCRIPT_KEY, True)

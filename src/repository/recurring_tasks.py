@@ -2,7 +2,7 @@
 
 import logging
 import os.path
-from typing import Any, ClassVar, Dict, NewType, Iterable, List, Optional, Tuple
+from typing import Any, ClassVar, Dict, NewType, Iterable, List, Optional, Tuple, Set
 
 import jsonschema as js
 import yaml
@@ -248,7 +248,8 @@ class RecurringTasksRepository:
     def list_all_recurring_tasks(
             self, filter_parent_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[RecurringTask]:
         """Retrieve all the recurring tasks defined."""
-        _, recurring_tasks = self._bulk_load_recurring_tasks(filter_parent_ref_id=filter_parent_ref_id)
+        _, recurring_tasks = self._bulk_load_recurring_tasks(
+            filter_parent_ref_id=frozenset(filter_parent_ref_id) if filter_parent_ref_id else None)
         return recurring_tasks
 
     def load_recurring_task_by_id(self, ref_id: RefId) -> RecurringTask:
@@ -271,7 +272,7 @@ class RecurringTasksRepository:
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
     def _bulk_load_recurring_tasks(
-            self, filter_parent_ref_id: Optional[Iterable[RefId]] = None) -> Tuple[int, List[RecurringTask]]:
+            self, filter_parent_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[RecurringTask]]:
         try:
             with open(RecurringTasksRepository._RECURRING_TASKS_FILE_PATH, "r") as recurring_tasks_file:
                 recurring_tasks_ser = yaml.safe_load(recurring_tasks_file)
