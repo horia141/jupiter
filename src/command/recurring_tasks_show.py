@@ -57,7 +57,9 @@ class RecurringTasksShow(command.Command):
         else:
             all_projects = projects_repository.list_all_projects(filter_keys=project_keys)
             # Print a summary of all tasks
-            for recurring_task in recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=(p.ref_id for p in all_projects)):
+            for recurring_task in \
+                    recurring_tasks_repository\
+                            .list_all_recurring_tasks(filter_parent_ref_id=(p.ref_id for p in all_projects)):
                 print(f'  id={recurring_task.ref_id} {recurring_task.name}' +
                       f' period={recurring_task.period.value}' +
                       f' group={recurring_task.group}')

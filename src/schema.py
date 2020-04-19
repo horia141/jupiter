@@ -3,6 +3,8 @@
 import hashlib
 import uuid
 
+from repository.common import TaskDifficulty, TaskEisen, TaskPeriod
+
 COLORS = [
     "gray",
     "brown",
@@ -144,49 +146,49 @@ INBOX_STATUS = {
 
 INBOX_EISENHOWER = {
     "Urgent": {
-        "name": "Urgent",
+        "name": TaskEisen.URGENT.for_notion(),
         "color": "red"
     },
     "Important": {
-        "name": "Important",
+        "name": TaskEisen.IMPORTANT.for_notion(),
         "color": "blue"
     }
 }
 
 INBOX_DIFFICULTY = {
     "Easy": {
-        "name": "Easy",
+        "name": TaskDifficulty.EASY.for_notion(),
         "color": "blue"
     },
     "Medium": {
-        "name": "Medium",
+        "name": TaskDifficulty.MEDIUM.for_notion(),
         "color": "green"
     },
     "Hard": {
-        "name": "Hard",
+        "name": TaskDifficulty.HARD.for_notion(),
         "color": "purple"
     }
 }
 
 INBOX_TIMELINE = {
     "Daily": {
-        "name": "Daily",
+        "name": TaskPeriod.DAILY.for_notion(),
         "color": "orange"
     },
     "Weekly": {
-        "name": "Weekly",
+        "name": TaskPeriod.WEEKLY.for_notion(),
         "color": "red"
     },
     "Monthly": {
-        "name": "Monthly",
+        "name": TaskPeriod.MONTHLY.for_notion(),
         "color": "blue"
     },
     "Quarterly": {
-        "name": "Quarterly",
+        "name": TaskPeriod.QUARTERLY.for_notion(),
         "color": "green"
     },
     "Yearly": {
-        "name": "Yearly",
+        "name": TaskPeriod.YEARLY.for_notion(),
         "color": "yellow"
     }
 }

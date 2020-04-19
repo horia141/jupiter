@@ -19,12 +19,20 @@ class TaskPeriod(enum.Enum):
     QUARTERLY = "quarterly"
     YEARLY = "yearly"
 
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return str(self.value).capitalize()
+
 
 @enum.unique
 class TaskEisen(enum.Enum):
     """The Eisenhower status of a particular task."""
     IMPORTANT = "important"
     URGENT = "urgent"
+
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return str(self.value).capitalize()
 
 
 @enum.unique
@@ -33,3 +41,7 @@ class TaskDifficulty(enum.Enum):
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
+
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return str(self.value).capitalize()
