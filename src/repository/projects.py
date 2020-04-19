@@ -2,7 +2,7 @@
 
 import os.path
 import logging
-from typing import Any, Dict, ClassVar, Iterator, List, NewType, Optional, Sequence, Tuple
+from typing import Any, Dict, ClassVar, Iterable, Iterator, List, NewType, Optional, Sequence, Tuple
 
 import jsonschema as js
 import yaml
@@ -112,9 +112,9 @@ class ProjectsRepository:
         new_projects = filter(lambda p: p.key == key, projects)
         self._bulk_save_projects((projects_next_idx, new_projects))
 
-    def list_all_projects(self) -> Iterator[Project]:
+    def list_all_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterator[Project]:
         """Retrieve all the projects defined."""
-        _, projects = self._bulk_load_projects()
+        _, projects = self._bulk_load_projects(filter_keys=filter_keys)
         return projects
 
     def load_project_by_id(self, ref_id: RefId) -> Project:
@@ -143,7 +143,7 @@ class ProjectsRepository:
         new_projects = [(p if p.ref_id != new_project.ref_id else new_project) for p in projects]
         self._bulk_save_projects((projects_next_idx, new_projects))
 
-    def _bulk_load_projects(self) -> Tuple[int, List[Project]]:
+    def _bulk_load_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Tuple[int, List[Project]]:
         try:
             with open(ProjectsRepository._PROJECTS_FILE_PATH, "r") as projects_file:
                 projects_ser = yaml.safe_load(projects_file)
@@ -153,9 +153,10 @@ class ProjectsRepository:
                 LOGGER.info("Checked projects structure")
 
                 projects_next_idx = projects_ser["next_idx"]
-                projects = \
-                    [Project(RefId(p["ref_id"]), ProjectKey(p["key"]), p["name"])
-                     for p in projects_ser["entries"]]
+                all_projects = \
+                    (Project(RefId(p["ref_id"]), ProjectKey(p["key"]), p["name"])
+                     for p in projects_ser["entries"])
+                projects = [p for p in all_projects if (filter_keys is None or p.key in filter_keys)]
 
                 return projects_next_idx, projects
         except (IOError, yaml.YAMLError, js.ValidationError) as error:

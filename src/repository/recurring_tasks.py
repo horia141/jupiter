@@ -245,7 +245,8 @@ class RecurringTasksRepository:
         new_recurring_tasks = filter(lambda p: p.ref_id == ref_id, recurring_tasks)
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
-    def list_all_recurring_tasks(self, filter_parent_ref_id=None) -> Iterable[RecurringTask]:
+    def list_all_recurring_tasks(
+            self, filter_parent_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[RecurringTask]:
         """Retrieve all the recurring tasks defined."""
         _, recurring_tasks = self._bulk_load_recurring_tasks(filter_parent_ref_id=filter_parent_ref_id)
         return recurring_tasks
@@ -269,7 +270,8 @@ class RecurringTasksRepository:
                                for rt in recurring_tasks]
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
-    def _bulk_load_recurring_tasks(self, filter_parent_ref_id=None) -> Tuple[int, List[RecurringTask]]:
+    def _bulk_load_recurring_tasks(
+            self, filter_parent_ref_id: Optional[Iterable[RefId]] = None) -> Tuple[int, List[RecurringTask]]:
         try:
             with open(RecurringTasksRepository._RECURRING_TASKS_FILE_PATH, "r") as recurring_tasks_file:
                 recurring_tasks_ser = yaml.safe_load(recurring_tasks_file)
@@ -295,7 +297,7 @@ class RecurringTasksRepository:
                         skip_rule=rt["skip_rule"] if rt["skip_rule"] else None,
                         must_do=rt["must_do"]) for rt in recurring_tasks_ser["entries"])
                 recurring_tasks = list(rt for rt in recurring_tasks_iter
-                                       if (filter_parent_ref_id is None or rt.project_ref_id == filter_parent_ref_id))
+                                       if (filter_parent_ref_id is None or rt.project_ref_id in filter_parent_ref_id))
 
                 return recurring_tasks_next_idx, recurring_tasks
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
@@ -319,7 +321,7 @@ class RecurringTasksRepository:
                         "due_at_month": rt.due_at_month,
                         "suspended": rt.suspended,
                         "skip_rule": rt.skip_rule,
-                        "must_du": rt.must_do
+                        "must_do": rt.must_do
                     } for rt in bulk_data[1]]
                 }
 

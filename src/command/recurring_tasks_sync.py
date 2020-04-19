@@ -57,7 +57,7 @@ class RecurringtTasksSync(command.Command):
 
         workspace = workspace_repository.load_workspace()
         project = projects_repository.load_project_by_key(project_key)
-        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=project.ref_id)
+        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=[project.ref_id])
         all_recurring_tasks_set: Dict[RefId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
 
         # Prepare Notion connection
@@ -171,7 +171,7 @@ class RecurringtTasksSync(command.Command):
 
         for recurring_task in all_recurring_tasks_set.values():
             # We've already processed this thing above
-            if recurring_task["ref_id"] in recurring_tasks_row_set:
+            if recurring_task.ref_id in recurring_tasks_row_set:
                 continue
 
             new_recurring_task_row = recurring_tasks_collection.add_row()
@@ -234,7 +234,7 @@ class RecurringtTasksSync(command.Command):
     @staticmethod
     def _build_entity_from_row(row):
         name = row.title.strip()
-        group = row.group.strip()
+        group = row.group.strip() if row.group else ""
         period = TaskPeriod(row.period.strip().lower())
         eisen = [TaskEisen(e.strip().lower()) for e in RecurringtTasksSync._clean_eisen(row.eisen)]
         difficulty = TaskDifficulty(row.difficulty.strip().lower()) if row.difficulty else None
@@ -246,6 +246,9 @@ class RecurringtTasksSync(command.Command):
 
         if len(name) == 0:
             raise Exception("Must provide a non-empty name")
+
+        if len(group) == 0:
+            raise Exception("Must provide a non-empty group")
 
         if due_at_time:
             if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):

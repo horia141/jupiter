@@ -78,7 +78,7 @@ class RecurringTasksSetName(command.Command):
             .execute()
 
         recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
-        recurring_task_row.title = recurring_task["name"]
+        recurring_task_row.title = recurring_task.name
         LOGGER.info("Applied Notion changes")
 
         # Then, change every task

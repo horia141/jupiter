@@ -52,7 +52,7 @@ class RecurringTasksGen(command.Command):
         else:
             right_now = pendulum.now()
         group_filter = frozenset(g.lower() for g in args.group) if len(args.group) > 0 else None
-        period_filter = frozenset((TaskPeriod(p) for p in args.period) if len(args.period) > 0 else TaskPeriod)
+        period_filter = frozenset(TaskPeriod(p) for p in args.period) if len(args.period) > 0 else None
         dry_run = args.dry_run
 
         system_lock = storage.load_lock_file()
@@ -67,7 +67,7 @@ class RecurringTasksGen(command.Command):
         all_vacations = vacations_repository.load_all_vacations()
 
         project = projects_repository.load_project_by_key(project_key)
-        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=project.ref_id)
+        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=[project.ref_id])
 
         client = NotionClient(token_v2=workspace.token)
 
@@ -117,11 +117,11 @@ class RecurringTasksGen(command.Command):
             task.period.value, task.name, right_now, task.skip_rule, task.due_at_time,
             task.due_at_day, task.due_at_month)
 
-        if task.group != group_filter:
+        if group_filter is not None and task.group not in group_filter:
             LOGGER.info(f"Skipping '{task.name}' on account of group filtering")
             return
 
-        if task.period not in period_filter:
+        if period_filter is not None and task.period not in period_filter:
             LOGGER.info(f"Skipping '{task.name}' on account of period filtering")
             return
 

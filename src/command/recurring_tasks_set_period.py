@@ -79,7 +79,7 @@ class RecurringTasksSetPeriod(command.Command):
             .execute()
 
         recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
-        recurring_task_row.period = period
+        recurring_task_row.period = period.value
         LOGGER.info("Applied Notion changes")
 
         # Then, change every task
@@ -108,7 +108,7 @@ class RecurringTasksSetPeriod(command.Command):
             if inbox_task_row.status in DONE_STATUS:
                 continue
             schedule = schedules.get_schedule(
-                period, recurring_task_row.name,
+                period.value, recurring_task_row.name,
                 pendulum.instance(inbox_task_row.created_date.start),
                 recurring_task_row.skip_rule, recurring_task_row.due_at_time,
                 recurring_task_row.due_at_day, recurring_task_row.due_at_month)

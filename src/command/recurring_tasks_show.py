@@ -3,6 +3,7 @@
 import logging
 
 import command.command as command
+import repository.projects as projects
 import repository.recurring_tasks as recurring_tasks
 
 LOGGER = logging.getLogger(__name__)
@@ -24,13 +25,17 @@ class RecurringTasksShow(command.Command):
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", type=str, dest="id", help="The id of the vacations to modify")
+        parser.add_argument("--project", type=str, dest="project_keys", default=[], action="append",
+                            help="Allow only tasks from this project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
         ref_id = args.id
+        project_keys = args.project_keys if len(args.project_keys) > 0 else None
 
         # Load local storage
 
+        projects_repository = projects.ProjectsRepository()
         recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
 
         # Dump out contents of the recurring tasks
@@ -50,8 +55,9 @@ class RecurringTasksShow(command.Command):
                   f' due_at_day={recurring_task.due_at_day or "none"}' +
                   f' due_at_month={recurring_task.due_at_month or "none"}')
         else:
+            all_projects = projects_repository.list_all_projects(filter_keys=project_keys)
             # Print a summary of all tasks
-            for recurring_task in recurring_tasks_repository.list_all_recurring_tasks():
+            for recurring_task in recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=(p.ref_id for p in all_projects)):
                 print(f'  id={recurring_task.ref_id} {recurring_task.name}' +
                       f' period={recurring_task.period.value}' +
                       f' group={recurring_task.group}')

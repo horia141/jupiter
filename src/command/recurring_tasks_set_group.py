@@ -81,7 +81,8 @@ class RecurringTasksSetGroup(command.Command):
         # structure.
         recurring_tasks_collection = recurring_tasks_page.collection
         recurring_tasks_schema = recurring_tasks_collection.get("schema")
-        all_local_groups = {k.lower().strip(): k for k in project["recurring_tasks"]["entries"].keys()}
+        all_local_groups = {k.group.lower().strip(): k.group
+                            for k in recurring_tasks_repository.list_all_recurring_tasks()}
         all_notion_groups = recurring_tasks_schema[schema.RECURRING_TASKS_GROUP_KEY]
         if "options" not in all_notion_groups:
             all_notion_groups["options"] = []

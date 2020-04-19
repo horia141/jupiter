@@ -76,7 +76,7 @@ class RecurringTasksSetEisen(command.Command):
             .execute()
 
         recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
-        setattr(recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
+        setattr(recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in eisen])
         LOGGER.info("Applied Notion changes")
 
         # Then, change every task
@@ -93,5 +93,5 @@ class RecurringTasksSetEisen(command.Command):
         for inbox_task_row in inbox_tasks_rows:
             if inbox_task_row.recurring_task_id != ref_id:
                 continue
-            setattr(inbox_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, eisen)
+            setattr(inbox_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in eisen])
             LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")
