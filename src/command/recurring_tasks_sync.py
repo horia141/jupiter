@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 DONE_STATUS = [schema.DONE_STATUS, schema.NOT_DONE_STATUS]
 
 
-class RecurringtTasksSync(command.Command):
+class RecurringTasksSync(command.Command):
     """Command class for syncing  projects."""
 
     @staticmethod
@@ -236,7 +236,7 @@ class RecurringtTasksSync(command.Command):
         name = row.title.strip()
         group = row.group.strip() if row.group else ""
         period = TaskPeriod(row.period.strip().lower())
-        eisen = [TaskEisen(e.strip().lower()) for e in RecurringtTasksSync._clean_eisen(row.eisen)]
+        eisen = [TaskEisen(e.strip().lower()) for e in RecurringTasksSync._clean_eisen(row.eisen)]
         difficulty = TaskDifficulty(row.difficulty.strip().lower()) if row.difficulty else None
         due_at_time = row.due_at_time.strip().lower() if row.due_at_time else None
         due_at_day = row.due_at_day

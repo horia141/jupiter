@@ -4,6 +4,7 @@ import hashlib
 import uuid
 
 from repository.common import TaskDifficulty, TaskEisen, TaskPeriod
+from repository.big_plans import BigPlanStatus
 
 COLORS = [
     "gray",
@@ -104,8 +105,6 @@ INBOX_TASK_ROW_TIMELINE_KEY = "recurring_timeline"
 
 RECURRING_TASKS_GROUP_KEY = "group"
 
-BIG_PLAN_TASK_INBOX_ID_KEY = "inbox_id_ref"
-
 INBOX_STATUS = {
     "Accepted": {
         "name": "Accepted",
@@ -195,34 +194,29 @@ INBOX_TIMELINE = {
 
 BIG_PLAN_STATUS = {
     "Accepted": {
-        "name": "Accepted",
+        "name": BigPlanStatus.ACCEPTED.for_notion(),
         "color": "orange",
         "in_board": True
     },
     "In Progress": {
-        "name": "In Progress",
+        "name": BigPlanStatus.IN_PROGRESS.for_notion(),
         "color": "blue",
         "in_board": True
     },
     "Blocked": {
-        "name": "Blocked",
+        "name": BigPlanStatus.BLOCKED.for_notion(),
         "color": "yellow",
         "in_board": True
     },
     "Not Done": {
-        "name": "Not Done",
+        "name": BigPlanStatus.NOT_DONE.for_notion(),
         "color": "red",
         "in_board": True
     },
     "Done": {
-        "name": "Done",
+        "name": BigPlanStatus.DONE.for_notion(),
         "color": "green",
         "in_board": True
-    },
-    "Archived": {
-        "name": "Archived",
-        "color": "gray",
-        "in_board": False
     }
 }
 
@@ -950,9 +944,17 @@ def get_big_plan_schema():
                 "value": v["name"]
             } for v in BIG_PLAN_STATUS.values()]
         },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
+        },
         "due-date": {
             "name": "Due Date",
             "type": "date"
+        },
+        "archived": {
+            "name": "Archived",
+            "type": "checkbox"
         },
         "inboxid": {
             "name": "Inbox Id Ref",
@@ -994,6 +996,15 @@ BIG_PLAN_FORMAT = {
     }, {
         "property": "due-date",
         "visible": True
+    }, {
+        "property": "ref-id",
+        "visible": False
+    }, {
+        "property": "inbox-id",
+        "visible": False
+    }, {
+        "property": "archived",
+        "visible": False
     }],
     "board_cover_size": "small"
 }
@@ -1010,7 +1021,20 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
         "sort": [{
             "property": "due-date",
             "direction": "ascending"
-        }]
+        }],
+        "filter": {
+            "operator": "and",
+            "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }]
+        }
     },
     "format": BIG_PLAN_FORMAT
 }
@@ -1025,11 +1049,19 @@ BIG_PLAN_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
+            "property": "ref-id",
+            "visible": False
+        }, {
+            "width": 100,
             "property": "status",
             "visible": True
         }, {
             "width": 100,
             "property": "due-date",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "archived",
             "visible": True
         }, {
             "width": 100,

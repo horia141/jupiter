@@ -109,7 +109,7 @@ class ProjectsRepository:
         if not self._find_project_by_key(key, projects):
             raise RepositoryError(f"Project with key='{key}' does not exist")
 
-        new_projects = filter(lambda p: p.key == key, projects)
+        new_projects = filter(lambda p: p.key != key, projects)
         self._bulk_save_projects((projects_next_idx, new_projects))
 
     def list_all_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterator[Project]:

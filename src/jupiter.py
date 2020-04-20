@@ -4,6 +4,12 @@ import argparse
 import logging
 
 import command.archive_done_tasks as archive_done_tasks
+import command.big_plans_archive as big_plans_archive
+import command.big_plans_create as big_plans_create
+import command.big_plans_set_due_date as big_plans_set_due_date
+import command.big_plans_set_name as big_plans_set_name
+import command.big_plans_set_status as big_plans_set_status
+import command.big_plans_show as big_plans_show
 import command.project_create as project_create
 import command.project_remove as project_remove
 import command.project_set_name as project_set_name
@@ -76,8 +82,14 @@ def main():
         recurring_tasks_suspend.RecurringTasksSuspend(),
         recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
         recurring_tasks_show.RecurringTasksShow(),
-        recurring_tasks_sync.RecurringtTasksSync(),
+        recurring_tasks_sync.RecurringTasksSync(),
+        big_plans_create.BigPlansCreate(),
+        big_plans_archive.BigPlansArchive(),
+        big_plans_set_due_date.BigPlansSetDueDate(),
+        big_plans_set_name.BigPlansSetName(),
+        big_plans_set_status.BigPlansSetStatus(),
         big_plans_sync.BigPlansSync(),
+        big_plans_show.BigPlansShow(),
         archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
     ]

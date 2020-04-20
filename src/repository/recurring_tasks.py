@@ -242,7 +242,7 @@ class RecurringTasksRepository:
         if not self._find_recurring_task_by_id(ref_id, recurring_tasks):
             raise RepositoryError(f"Recurring task with id='{ref_id}' does not exist")
 
-        new_recurring_tasks = filter(lambda p: p.ref_id == ref_id, recurring_tasks)
+        new_recurring_tasks = filter(lambda p: p.ref_id != ref_id, recurring_tasks)
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
     def list_all_recurring_tasks(
@@ -296,7 +296,8 @@ class RecurringTasksRepository:
                         due_at_month=rt["due_at_month"] if rt["due_at_month"] else None,
                         suspended=rt["suspended"],
                         skip_rule=rt["skip_rule"] if rt["skip_rule"] else None,
-                        must_do=rt["must_do"]) for rt in recurring_tasks_ser["entries"])
+                        must_do=rt["must_do"])
+                     for rt in recurring_tasks_ser["entries"])
                 recurring_tasks = list(rt for rt in recurring_tasks_iter
                                        if (filter_parent_ref_id is None or rt.project_ref_id in filter_parent_ref_id))
 

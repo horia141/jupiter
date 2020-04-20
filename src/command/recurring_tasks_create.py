@@ -89,8 +89,6 @@ class RecurringTasksCreate(command.Command):
         workspace = workspace_repository.load_workspace()
         project = projects_repository.load_project_by_key(project_key)
 
-        # Prepare Notion connection
-
         # Apply changes locally
 
         new_recurring_task = recurring_tasks_repository.create_recurring_task(
@@ -99,6 +97,8 @@ class RecurringTasksCreate(command.Command):
             due_at_month=due_at_month, suspended=False, skip_rule=skip_rule, must_do=must_do)
 
         # Apply changes in Notion
+
+        # Prepare Notion connection
 
         client = NotionClient(token_v2=workspace.token)
 
