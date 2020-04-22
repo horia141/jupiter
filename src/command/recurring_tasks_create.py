@@ -92,9 +92,10 @@ class RecurringTasksCreate(command.Command):
         # Apply changes locally
 
         new_recurring_task = recurring_tasks_repository.create_recurring_task(
-            project_ref_id=project.ref_id, name=name, period=period, group=recurring_tasks.RecurringTaskGroup(group),
-            eisen=eisen, difficulty=difficulty, due_at_time=due_at_time, due_at_day=due_at_day,
-            due_at_month=due_at_month, suspended=False, skip_rule=skip_rule, must_do=must_do)
+            project_ref_id=project.ref_id, archived=False, name=name, period=period,
+            group=recurring_tasks.RecurringTaskGroup(group), eisen=[TaskEisen(e) for e in eisen], difficulty=difficulty,
+            due_at_time=due_at_time, due_at_day=due_at_day, due_at_month=due_at_month, suspended=False,
+            skip_rule=skip_rule, must_do=must_do)
 
         # Apply changes in Notion
 
@@ -129,11 +130,12 @@ class RecurringTasksCreate(command.Command):
 
         new_recurring_task_row = recurring_tasks_collection.add_row()
         new_recurring_task_row.ref_id = new_recurring_task.ref_id
+        new_recurring_task_row.archived = False
         new_recurring_task_row.title = name
         new_recurring_task_row.group = group
         new_recurring_task_row.period = period.value
         setattr(new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in eisen])
-        new_recurring_task_row.difficulty = difficulty.value
+        new_recurring_task_row.difficulty = difficulty.value if difficulty else None
         new_recurring_task_row.due_at_time = due_at_time
         new_recurring_task_row.due_at_day = due_at_day
         new_recurring_task_row.due_at_month = due_at_month

@@ -53,7 +53,7 @@ class ProjectCreate(command.Command):
             project.set_name(project_name)
             LOGGER.info("Found project file")
         except projects.RepositoryError:
-            project = projects_repository.create_project(project_key, project_name)
+            project = projects_repository.create_project(project_key, False, project_name)
             LOGGER.info("No project file - creating it")
 
         # Apply the changes Notion side

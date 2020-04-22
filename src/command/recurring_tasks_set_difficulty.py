@@ -75,7 +75,7 @@ class RecurringTasksSetDifficulty(command.Command):
             .execute()
 
         recurring_task_row = next(r for r in recurring_tasks_rows if r.ref_id == ref_id)
-        recurring_task_row.difficulty = difficulty.value
+        recurring_task_row.difficulty = difficulty.value if difficulty else None
         LOGGER.info("Applied Notion changes")
 
         # Then, change every task
@@ -92,5 +92,5 @@ class RecurringTasksSetDifficulty(command.Command):
         for inbox_task_row in inbox_tasks_rows:
             if inbox_task_row.recurring_task_id != ref_id:
                 continue
-            inbox_task_row.difficulty = difficulty.value
+            inbox_task_row.difficulty = difficulty.value if difficulty else None
             LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")

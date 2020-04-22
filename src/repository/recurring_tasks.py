@@ -19,6 +19,7 @@ class RecurringTask:
 
     _ref_id: RefId
     _project_ref_id: RefId
+    _archived: bool
     _name: str
     _period: TaskPeriod
     _group: RecurringTaskGroup
@@ -32,13 +33,14 @@ class RecurringTask:
     _must_do: bool
 
     def __init__(
-            self, ref_id: RefId, project_ref_id: RefId, name: str, period: TaskPeriod, group: RecurringTaskGroup,
-            eisen: List[TaskEisen], difficulty: Optional[TaskDifficulty], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
-            must_do: bool) -> None:
+            self, ref_id: RefId, project_ref_id: RefId, archived: bool, name: str, period: TaskPeriod,
+            group: RecurringTaskGroup, eisen: List[TaskEisen], difficulty: Optional[TaskDifficulty],
+            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
+            skip_rule: Optional[str], must_do: bool) -> None:
         """Constructor."""
         self._ref_id = ref_id
         self._project_ref_id = project_ref_id
+        self._archived = archived
         self._name = name
         self._period = period
         self._group = group
@@ -50,6 +52,10 @@ class RecurringTask:
         self._suspended = suspended
         self._skip_rule = skip_rule
         self._must_do = must_do
+
+    def set_archived(self, archived: bool) -> None:
+        """Change the archived status of the recurring task."""
+        self._archived = archived
 
     def set_name(self, name: str) -> None:
         """Change the name of the recurring task."""
@@ -98,6 +104,11 @@ class RecurringTask:
     def project_ref_id(self) -> RefId:
         """The id of the project to which the recurring task belongs to."""
         return self._project_ref_id
+
+    @property
+    def archived(self):
+        """The archived status of the recurring task."""
+        return self._archived
 
     @property
     def name(self) -> str:
@@ -171,6 +182,7 @@ class RecurringTasksRepository:
                     "properties": {
                         "ref_id": {"type": "string"},
                         "project_ref_id": {"type": "string"},
+                        "archived": {"type": "boolean"},
                         "name": {"type": "string"},
                         "period": {"type": "string"},
                         "group": {"type": "string"},
@@ -206,7 +218,7 @@ class RecurringTasksRepository:
         self._bulk_save_recurring_tasks((0, []))
 
     def create_recurring_task(
-            self, project_ref_id: RefId, name: str, period: TaskPeriod, group: RecurringTaskGroup,
+            self, project_ref_id: RefId, archived: bool, name: str, period: TaskPeriod, group: RecurringTaskGroup,
             eisen: Iterable[TaskEisen], difficulty: Optional[TaskDifficulty], due_at_time: Optional[str],
             due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
             must_do: bool) -> RecurringTask:
@@ -216,6 +228,7 @@ class RecurringTasksRepository:
         new_recurring_task = RecurringTask(
             ref_id=RefId(str(recurring_tasks_next_idx)),
             project_ref_id=project_ref_id,
+            archived=archived,
             name=name,
             period=period,
             group=group,
@@ -239,17 +252,20 @@ class RecurringTasksRepository:
         """Remove a particular recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._bulk_load_recurring_tasks()
 
-        if not self._find_recurring_task_by_id(ref_id, recurring_tasks):
+        for recurring_task in recurring_tasks:
+            if recurring_task.ref_id == ref_id:
+                recurring_task.set_archived(True)
+                break
+        else:
             raise RepositoryError(f"Recurring task with id='{ref_id}' does not exist")
 
-        new_recurring_tasks = filter(lambda p: p.ref_id != ref_id, recurring_tasks)
-        self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
+        self._bulk_save_recurring_tasks((recurring_tasks_next_idx, recurring_tasks))
 
     def list_all_recurring_tasks(
-            self, filter_parent_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[RecurringTask]:
+            self, filter_project_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[RecurringTask]:
         """Retrieve all the recurring tasks defined."""
         _, recurring_tasks = self._bulk_load_recurring_tasks(
-            filter_parent_ref_id=frozenset(filter_parent_ref_id) if filter_parent_ref_id else None)
+            filter_project_ref_id=frozenset(filter_project_ref_id) if filter_project_ref_id else None)
         return recurring_tasks
 
     def load_recurring_task_by_id(self, ref_id: RefId) -> RecurringTask:
@@ -272,7 +288,7 @@ class RecurringTasksRepository:
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
     def _bulk_load_recurring_tasks(
-            self, filter_parent_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[RecurringTask]]:
+            self, filter_project_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[RecurringTask]]:
         try:
             with open(RecurringTasksRepository._RECURRING_TASKS_FILE_PATH, "r") as recurring_tasks_file:
                 recurring_tasks_ser = yaml.safe_load(recurring_tasks_file)
@@ -286,6 +302,7 @@ class RecurringTasksRepository:
                     (RecurringTask(
                         ref_id=RefId(rt["ref_id"]),
                         project_ref_id=RefId(rt["project_ref_id"]),
+                        archived=rt.get("archived", False),
                         name=rt["name"],
                         period=TaskPeriod(rt["period"]),
                         group=RecurringTaskGroup(rt["group"]),
@@ -298,8 +315,9 @@ class RecurringTasksRepository:
                         skip_rule=rt["skip_rule"] if rt["skip_rule"] else None,
                         must_do=rt["must_do"])
                      for rt in recurring_tasks_ser["entries"])
-                recurring_tasks = list(rt for rt in recurring_tasks_iter
-                                       if (filter_parent_ref_id is None or rt.project_ref_id in filter_parent_ref_id))
+                recurring_tasks = [rt for rt in recurring_tasks_iter
+                                   if (rt.archived is False)
+                                   and (filter_project_ref_id is None or rt.project_ref_id in filter_project_ref_id)]
 
                 return recurring_tasks_next_idx, recurring_tasks
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
@@ -313,6 +331,7 @@ class RecurringTasksRepository:
                     "entries": [{
                         "ref_id": rt.ref_id,
                         "project_ref_id": rt.project_ref_id,
+                        "archived": rt.archived,
                         "name": rt.name,
                         "period": rt.period.value,
                         "group": rt.group,

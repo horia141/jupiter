@@ -13,13 +13,13 @@ import storage
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsRemove(command.Command):
+class VacationsArchive(command.Command):
     """Command class for removing a vacation."""
 
     @staticmethod
     def name():
         """The name of the command."""
-        return "vacations-remove"
+        return "vacations-archive"
 
     @staticmethod
     def description():
@@ -61,7 +61,7 @@ class VacationsRemove(command.Command):
         for vacation_row in vacations_rows:
             if vacation_row.ref_id != ref_id:
                 continue
-            vacation_row.remove()
+            vacation_row.archived = True
             LOGGER.info("Applied Notion changes")
             break
         else:

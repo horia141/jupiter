@@ -3,23 +3,33 @@
 import argparse
 import logging
 
-import command.archive_done_tasks as archive_done_tasks
 import command.big_plans_archive as big_plans_archive
 import command.big_plans_create as big_plans_create
 import command.big_plans_set_due_date as big_plans_set_due_date
 import command.big_plans_set_name as big_plans_set_name
 import command.big_plans_set_status as big_plans_set_status
 import command.big_plans_show as big_plans_show
+import command.inbox_tasks_archive_done as inbox_tasks_archive_done
+import command.inbox_tasks_archive as inbox_tasks_archive
+import command.inbox_tasks_associate_big_plan as inbox_tasks_associate_big_plan
+import command.inbox_tasks_create as inbox_tasks_create
+import command.inbox_tasks_set_difficulty as inbox_tasks_set_difficulty
+import command.inbox_tasks_set_due_date as inbox_tasks_set_due_date
+import command.inbox_tasks_set_eisen as inbox_tasks_set_eisen
+import command.inbox_tasks_set_name as inbox_tasks_set_name
+import command.inbox_tasks_set_status as inbox_tasks_set_status
+import command.inbox_tasks_show as inbox_tasks_show
+import command.inbox_tasks_sync as inbox_tasks_sync
+import command.project_archive as project_archive
 import command.project_create as project_create
-import command.project_remove as project_remove
 import command.project_set_name as project_set_name
 import command.project_show as project_show
 import command.project_sync as project_sync
 import command.remove_archived_tasks as remove_archived_tasks
 import command.big_plans_sync as big_plans_sync
+import command.recurring_tasks_archive as recurring_tasks_archive
 import command.recurring_tasks_create as recurring_tasks_create
 import command.recurring_tasks_gen as recurring_tasks_gen
-import command.recurring_tasks_remove as recurring_tasks_remove
 import command.recurring_tasks_set_deadlines as recurring_tasks_set_deadlines
 import command.recurring_tasks_set_difficulty as recurring_tasks_set_difficulty
 import command.recurring_tasks_set_eisen as recurring_tasks_set_eisen
@@ -33,7 +43,7 @@ import command.recurring_tasks_suspend as recurring_tasks_suspend
 import command.recurring_tasks_sync as recurring_tasks_sync
 import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
 import command.vacations_create as vacations_create
-import command.vacations_remove as vacations_remove
+import command.vacations_archive as vacations_archive
 import command.vacations_set_end_date as vacations_set_end_date
 import command.vacations_set_name as vacations_set_name
 import command.vacations_set_start_date as vacations_set_start_date
@@ -57,19 +67,30 @@ def main():
         workspace_show.WorkspaceShow(),
         workspace_sync.WorkspaceSync(),
         vacations_create.VacationsCreate(),
-        vacations_remove.VacationsRemove(),
+        vacations_archive.VacationsArchive(),
         vacations_set_name.VacationsSetName(),
         vacations_set_start_date.VacationsSetStartDate(),
         vacations_set_end_date.VacationsSetEndDate(),
         vacations_show.VacationsShow(),
         vacations_sync.VacationsSync(),
         project_create.ProjectCreate(),
-        project_remove.ProjectRemove(),
+        project_archive.ProjectArchive(),
         project_set_name.ProjectSetName(),
         project_show.ProjectShow(),
         project_sync.ProjectSync(),
+        inbox_tasks_create.InboxTasksCreate(),
+        inbox_tasks_archive.InboxTasksArchive(),
+        inbox_tasks_associate_big_plan.InboxTasksAssociateBigPlan(),
+        inbox_tasks_set_name.InboxTasksSetName(),
+        inbox_tasks_set_status.InboxTasksSetStatus(),
+        inbox_tasks_set_eisen.InboxTasksSetEisen(),
+        inbox_tasks_set_difficulty.InboxTasksSetDifficulty(),
+        inbox_tasks_set_due_date.InboxTasksSetDueDate(),
+        inbox_tasks_archive_done.InboxTasksArchiveDone(),
+        inbox_tasks_show.InboxTasksShow(),
+        inbox_tasks_sync.InboxTasksSync(),
         recurring_tasks_create.RecurringTasksCreate(),
-        recurring_tasks_remove.RecurringTasksRemove(),
+        recurring_tasks_archive.RecurringTasksArchive(),
         recurring_tasks_gen.RecurringTasksGen(),
         recurring_tasks_set_name.RecurringTasksSetName(),
         recurring_tasks_set_period.RecurringTasksSetPeriod(),
@@ -90,7 +111,6 @@ def main():
         big_plans_set_status.BigPlansSetStatus(),
         big_plans_sync.BigPlansSync(),
         big_plans_show.BigPlansShow(),
-        archive_done_tasks.ArchiveDoneTasks(),
         remove_archived_tasks.RemoveArchivedTasks()
     ]
 

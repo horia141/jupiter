@@ -125,14 +125,19 @@ class Schedule:
     def due_time(self):
         """The due time of an event according to the schedule."""
         if self._due_time:
-            return datetime.datetime(year=self._due_time.year,
+            return pendulum.DateTime(year=self._due_time.year,
                                      month=self._due_time.month,
                                      day=self._due_time.day,
                                      hour=self._due_time.hour,
                                      minute=self._due_time.minute,
                                      second=self._due_time.second)
         else:
-            return datetime.date(year=self._due_date.year, month=self._due_date.month, day=self._due_date.day)
+            return pendulum.DateTime(year=self._due_date.year,
+                                     month=self._due_date.month,
+                                     day=self._due_date.day,
+                                     hour=23,
+                                     minute=59,
+                                     second=59)
 
     @property
     def full_name(self):

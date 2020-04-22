@@ -17,16 +17,24 @@ class Vacation:
     """A vacation."""
 
     _ref_id: RefId
+    _archived: bool
     _name: str
     _start_date: datetime.date
     _end_date: datetime.date
 
-    def __init__(self, ref_id: RefId, name: str, start_date: datetime.date, end_date: datetime.date) -> None:
+    def __init__(
+            self, ref_id: RefId, archived: bool, name: str, start_date: datetime.date,
+            end_date: datetime.date) -> None:
         """Constructor."""
         self._ref_id = ref_id
+        self._archived = archived
         self._name = name
         self._start_date = start_date
         self._end_date = end_date
+
+    def set_archived(self, archived: bool) -> None:
+        """Set the archived status of a vacation."""
+        self._archived = archived
 
     def set_name(self, name: str) -> None:
         """Set the name of a vacation."""
@@ -44,6 +52,11 @@ class Vacation:
     def ref_id(self) -> RefId:
         """The unique id of the vacation."""
         return self._ref_id
+
+    @property
+    def archived(self) -> bool:
+        """The archived status of the vacation."""
+        return self._archived
 
     @property
     def name(self) -> str:
@@ -76,6 +89,7 @@ class VacationsRepository:
                     "type": "object",
                     "properties": {
                         "ref_id": {"type": "string"},
+                        "archived": {"type": "boolean"},
                         "name": {"type": "string"},
                         "start_date": {"type": "datetime-date"},
                         "end_date": {"type": "datetime-date"}
@@ -100,11 +114,17 @@ class VacationsRepository:
             return
         self._bulk_save_vacations((0, []))
 
-    def create_vacation(self, name: str, start_date: datetime.date, end_date: datetime.date) -> Vacation:
+    def create_vacation(
+            self, archived: bool, name: str, start_date: datetime.date, end_date: datetime.date) -> Vacation:
         """Create a vacation."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
 
-        new_vacation = Vacation(RefId(str(vacations_next_idx)), name, start_date, end_date)
+        new_vacation = Vacation(
+            ref_id=RefId(str(vacations_next_idx)),
+            archived=archived,
+            name=name,
+            start_date=start_date,
+            end_date=end_date)
         vacations_next_idx += 1
         vacations.append(new_vacation)
         vacations.sort(key=lambda v: v.start_date)
@@ -117,10 +137,14 @@ class VacationsRepository:
         """Remove a particular vacation."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
 
-        if not self._find_vacation_by_id(ref_id, vacations):
-            raise RepositoryError(f"Vacation with id={ref_id} does not exist")
-        new_vacations = list(filter(lambda v: v.ref_id != ref_id, vacations))
-        self._bulk_save_vacations((vacations_next_idx, new_vacations))
+        for vacation in vacations:
+            if vacation.ref_id == ref_id:
+                vacation.set_archived(True)
+                break
+        else:
+            raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
+
+        self._bulk_save_vacations((vacations_next_idx, vacations))
 
     def load_all_vacations(self) -> Sequence[Vacation]:
         """Retrieve all the vacations defined."""
@@ -153,9 +177,16 @@ class VacationsRepository:
                 LOGGER.info("Checked vacations structure")
 
                 vacations_next_idx = vacations_ser["next_idx"]
-                vacations = \
-                    [Vacation(RefId(v["ref_id"]), v["name"], v["start_date"], v["end_date"])
-                     for v in vacations_ser["entries"]]
+                all_vacations = \
+                    (Vacation(
+                        ref_id=RefId(v["ref_id"]),
+                        archived=v["archived"],
+                        name=v["name"],
+                        start_date=v["start_date"],
+                        end_date=v["end_date"])
+                     for v in vacations_ser["entries"])
+                vacations = [v for v in all_vacations
+                             if v.archived is False]
 
                 return vacations_next_idx, vacations
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
@@ -168,6 +199,7 @@ class VacationsRepository:
                     "next_idx": bulk_data[0],
                     "entries": [{
                         "ref_id": v.ref_id,
+                        "archived": v.archived,
                         "name": v.name,
                         "start_date": v.start_date,
                         "end_date": v.end_date

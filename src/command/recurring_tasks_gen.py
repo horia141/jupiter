@@ -1,6 +1,7 @@
 """Command for creating recurring tasks."""
 
 import logging
+from typing import Optional
 
 import pendulum
 import requests
@@ -9,6 +10,7 @@ from notion.client import NotionClient
 
 import command.command as command
 from repository.common import TaskPeriod
+import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 import repository.recurring_tasks as recurring_tasks
 import repository.vacations as vacations
@@ -61,13 +63,15 @@ class RecurringTasksGen(command.Command):
         workspace_repository = workspaces.WorkspaceRepository()
         vacations_repository = vacations.VacationsRepository()
         projects_repository = projects.ProjectsRepository()
+        inbox_tasks_repository = inbox_tasks.InboxTasksRepository()
         recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
 
         workspace = workspace_repository.load_workspace()
         all_vacations = vacations_repository.load_all_vacations()
 
         project = projects_repository.load_project_by_key(project_key)
-        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=[project.ref_id])
+        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(
+            filter_project_ref_id=[project.ref_id])
 
         client = NotionClient(token_v2=workspace.token)
 
@@ -82,25 +86,34 @@ class RecurringTasksGen(command.Command):
                 continue
             page = client.get_collection_view(project_lock["inbox"][key], collection=root_page.collection)
 
-        all_tasks = page.build_query().execute()
-
+        all_tasks = inbox_tasks_repository.list_all_inbox_tasks(
+            filter_project_ref_id=[project.ref_id])
+        inbox_tasks_rows = client \
+            .get_collection_view(
+                project_lock["inbox"]["database_view_id"],
+                collection=root_page.collection) \
+            .build_query() \
+            .execute()
         for task in all_recurring_tasks:
-            RecurringTasksGen._update_notion_task(dry_run, page, right_now, group_filter, period_filter, all_vacations,
-                                                  task, all_tasks)
+            RecurringTasksGen._update_notion_task(
+                project, dry_run, page, right_now, group_filter, period_filter, all_vacations,
+                task, all_tasks, inbox_tasks_rows, inbox_tasks_repository)
 
     @staticmethod
-    def _update_notion_task(dry_run, page, right_now, group_filter, period_filter, all_vacations, task, all_tasks):
-        def get_possible_row(timeline):
+    def _update_notion_task(
+            project, dry_run, page, right_now, group_filter, period_filter, all_vacations, task, all_tasks,
+            inbox_tasks_rows, inbox_tasks_repository):
+        def get_possible_row(timeline) -> Optional[inbox_tasks.InboxTask]:
             already_task_rows = [
-                t for t in all_tasks if t.title.startswith(task.name) or t.recurring_task_id == task.ref_id]
+                t for t in all_tasks if t.name.startswith(task.name) or t.recurring_task_ref_id == task.ref_id]
 
             for already_task_row in already_task_rows:
-                if timeline == already_task_row.timeline:
-                    LOGGER.info(f"  - Found it again with timeline = {already_task_row.timeline}")
+                if timeline == already_task_row.recurring_task_timeline:
+                    LOGGER.info(f"  - Found it again with timeline = {already_task_row.recurring_task_timeline}")
                     return already_task_row
 
             LOGGER.info("  - Need to create it")
-            return page.collection.add_row()
+            return None
 
         # def upsert_subtasks(task_row, subtasks):
         #     subtasks_to_process = {str(subtask["name"]): False for subtask in subtasks}
@@ -150,28 +163,53 @@ class RecurringTasksGen(command.Command):
         if dry_run:
             return
 
-        task_row = None
+        found_task = None
         while True:
             try:
-                task_row = get_possible_row(schedule.timeline)
-                task_row.name = schedule.full_name
-                if task_row.status is None:
-                    task_row.status = schema.RECURRING_STATUS
-                task_row.recurring_task_id = task.ref_id
-                task_row.created_date = right_now
-                setattr(task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
-                setattr(task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in task.eisen])
+                found_task = get_possible_row(schedule.timeline)
+
+                if found_task:
+                    found_task.set_name(schedule.full_name)
+                    found_task.set_due_date(schedule.due_time)
+                    found_task.set_eisen(task.eisen)
+                    found_task.set_difficulty(task.difficulty)
+                    found_task.set_recurring_task_timeline(schedule.timeline)
+
+                    found_task_row = next(r for r in inbox_tasks_rows if r.ref_id == found_task.ref_id)
+                else:
+                    found_task = inbox_tasks_repository.create_inbox_task(
+                        project_ref_id=project.ref_id,
+                        big_plan_ref_id=None,
+                        recurring_task_ref_id=task.ref_id,
+                        created_date=right_now,
+                        name=schedule.full_name,
+                        archived=False,
+                        status=inbox_tasks.InboxTaskStatus.RECURRING,
+                        eisen=task.eisen,
+                        difficulty=task.difficulty,
+                        due_date=schedule.due_time,
+                        recurring_task_timeline=schedule.timeline)
+                    found_task_row = page.collection.add_row()
+
+                found_task_row.name = schedule.full_name
+                if found_task_row.status is None:
+                    found_task_row.status = schema.RECURRING_STATUS
+                found_task_row.recurring_task_id = task.ref_id
+                found_task_row.created_date = found_task.created_date
+                setattr(found_task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
+                setattr(found_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in task.eisen])
                 setattr(
-                    task_row, schema.INBOX_TASK_ROW_DIFFICULTY_KEY, task.difficulty.value if task.difficulty else None)
-                setattr(task_row, schema.INBOX_TASK_ROW_FROM_SCRIPT_KEY, True)
-                setattr(task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
-                setattr(task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)
+                    found_task_row, schema.INBOX_TASK_ROW_DIFFICULTY_KEY,
+                    task.difficulty.value if task.difficulty else None)
+                setattr(found_task_row, schema.INBOX_TASK_ROW_FROM_SCRIPT_KEY, True)
+                setattr(found_task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
+                setattr(found_task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)
 
                 # upsert_subtasks(task_row, subtasks)
                 break
             except requests.exceptions.HTTPError as error:
-                if task_row:
-                    task_row.remove()
+                if found_task_row:
+                    found_task_row.remove()
                 try_count += 1
                 if try_count == 3:
                     raise error

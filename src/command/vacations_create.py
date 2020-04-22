@@ -57,6 +57,7 @@ class VacationsCreate(command.Command):
         # Apply changes locally
 
         new_vacation = vacations_repository.create_vacation(
+            archived=False,
             name=name,
             start_date=datetime.date(start_date.year, start_date.month, start_date.day),
             end_date=datetime.date(end_date.year, end_date.month, end_date.day))

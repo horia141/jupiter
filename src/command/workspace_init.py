@@ -7,6 +7,7 @@ from notion.client import NotionClient
 
 import command.command as command
 import repository.big_plans as big_plans
+import repository.inbox_tasks as inbox_tasks
 import repository.recurring_tasks as recurring_tasks
 import repository.projects as projects
 import repository.vacations as vacations
@@ -55,12 +56,14 @@ class WorkspaceInit(command.Command):
         workspace_repository = workspaces.WorkspaceRepository()
         vacations_repository = vacations.VacationsRepository()
         projects_repository = projects.ProjectsRepository()
+        inbox_tasks_repository = inbox_tasks.InboxTasksRepository()
         recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
         big_plans_repository = big_plans.BigPlansRepository()
 
         workspace_repository.initialize()
         vacations_repository.initialize()
         projects_repository.initialize()
+        inbox_tasks_repository.initialize()
         recurring_tasks_repository.initialize()
         big_plans_repository.initialze()
 

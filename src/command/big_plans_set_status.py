@@ -32,7 +32,7 @@ class BigPlansSetStatus(command.Command):
         parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--status", dest="status", required=True,
                             choices=[bps.value for bps in big_plans.BigPlanStatus],
-                            help="The due date of the big plan")
+                            help="The status of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""

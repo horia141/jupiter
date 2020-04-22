@@ -5,6 +5,7 @@ import uuid
 
 from repository.common import TaskDifficulty, TaskEisen, TaskPeriod
 from repository.big_plans import BigPlanStatus
+from repository.inbox_tasks import InboxTaskStatus
 
 COLORS = [
     "gray",
@@ -40,6 +41,10 @@ def get_vacations_schema():
             "name": "Name",
             "type": "title"
         },
+        "archived": {
+            "name": "Archived",
+            "type": "checkbox"
+        },
         "start-date": {
             "name": "Start Date",
             "type": "date"
@@ -65,6 +70,10 @@ VACATIONS_DATABASE_VIEW_SCHEMA = {
             "property": "title",
             "visible": True
         }, {
+            "width": 100,
+            "property": "archived",
+            "visible": False,
+        }, {
             "width": 200,
             "property": "start-date",
             "visible": True
@@ -85,7 +94,20 @@ VACATIONS_DATABASE_VIEW_SCHEMA = {
         }, {
             "property": "end-date",
             "direction": "ascending"
-        }]
+        }],
+        "filter": {
+            "operator": "and",
+            "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }]
+        }
     }
 }
 
@@ -106,40 +128,40 @@ INBOX_TASK_ROW_TIMELINE_KEY = "recurring_timeline"
 RECURRING_TASKS_GROUP_KEY = "group"
 
 INBOX_STATUS = {
+    "Not Started": {
+        "name": InboxTaskStatus.NOT_STARTED.for_notion(),
+        "color": "gray",
+        "in_board": False
+    },
     "Accepted": {
-        "name": "Accepted",
+        "name": InboxTaskStatus.ACCEPTED.for_notion(),
         "color": "orange",
         "in_board": True
     },
-    RECURRING_STATUS: {
-        "name": RECURRING_STATUS,
+    "Recurring": {
+        "name": InboxTaskStatus.RECURRING.for_notion(),
         "color": "orange",
         "in_board": True
     },
     "In Progress": {
-        "name": "In Progress",
+        "name": InboxTaskStatus.IN_PROGRESS.for_notion(),
         "color": "blue",
         "in_board": True
     },
     "Blocked": {
-        "name": "Blocked",
+        "name": InboxTaskStatus.BLOCKED.for_notion(),
         "color": "yellow",
         "in_board": True
     },
     "Not Done": {
-        "name": "Not Done",
+        "name": InboxTaskStatus.NOT_DONE.for_notion(),
         "color": "red",
         "in_board": True
     },
     "Done": {
-        "name": "Done",
+        "name": InboxTaskStatus.DONE.for_notion(),
         "color": "green",
         "in_board": True
-    },
-    "Archived": {
-        "name": "Archived",
-        "color": "gray",
-        "in_board": False
     }
 }
 
@@ -169,7 +191,7 @@ INBOX_DIFFICULTY = {
     }
 }
 
-INBOX_TIMELINE = {
+INBOX_TASK_PERIOD = {
     "Daily": {
         "name": TaskPeriod.DAILY.for_notion(),
         "color": "orange"
@@ -228,6 +250,10 @@ def get_inbox_schema():
             "name": "Name",
             "type": "title"
         },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
+        },
         "status": {
             "name": "Status",
             "type": "select",
@@ -236,6 +262,14 @@ def get_inbox_schema():
                 "id": str(uuid.uuid4()),
                 "value": v["name"]
             } for v in INBOX_STATUS.values()]
+        },
+        "archived": {
+            "name": "Archived",
+            "type": "checkbox"
+        },
+        "big-plan-ref-id": {
+            "name": "Big Plan Id",
+            "type": "text"
         },
         INBOX_BIGPLAN_KEY: {
             "name": "Big Plan",
@@ -283,7 +317,7 @@ def get_inbox_schema():
                 "color": v["color"],
                 "id": str(uuid.uuid4()),
                 "value": v["name"]
-            } for v in INBOX_TIMELINE.values()]
+            } for v in INBOX_TASK_PERIOD.values()]
         },
         "timeline": {
             "name": "Recurring Timeline",
@@ -320,7 +354,16 @@ INBOX_KANBAN_FORMAT = {
         "hidden": True
     }],
     "board_properties": [{
+        "property": "ref-id",
+        "visible": False
+    }, {
         "property": "status",
+        "visible": False
+    }, {
+        "property": "archived",
+        "visible": False
+    }, {
+        "property": "big-plan-ref-id",
         "visible": False
     }, {
         "property": INBOX_BIGPLAN_KEY,
@@ -376,7 +419,20 @@ INBOX_KANBAN_ALL_VIEW_SCHEMA = {
         }, {
             "property": "period",
             "direction": "ascending"
-        }]
+        }],
+        "filter": {
+            "operator": "and",
+            "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }]
+        }
     },
     "format": INBOX_KANBAN_FORMAT
 }
@@ -408,6 +464,15 @@ INBOX_KANBAN_URGENT_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }, {
                 "property": "status",
                 "filter": {
                     "operator": "enum_is_not",
@@ -467,6 +532,15 @@ INBOX_KANBAN_DUE_TODAY_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }, {
                 "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
@@ -508,6 +582,15 @@ INBOX_KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }, {
                 "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
@@ -549,6 +632,15 @@ INBOX_KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }, {
                 "property": "due-date",
                 "filter": {
                     "operator": "date_is_on_or_before",
@@ -585,6 +677,15 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
         "filter": {
             "operator": "and",
             "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }, {
                 "property": "status",
                 "filter": {
                     "operator": "enum_is_not",
@@ -601,8 +702,17 @@ INBOX_CALENDAR_VIEW_SCHEMA = {
             "property": "title",
             "visible": True
         }, {
+            "property": "ref-id",
+            "visible": False,
+        }, {
             "property": "status",
             "visible": True
+        }, {
+            "property": "archived",
+            "visible": False
+        }, {
+            "property": "big-plan-ref-id",
+            "visible": False
         }, {
             "property": INBOX_BIGPLAN_KEY,
             "visible": True
@@ -643,12 +753,24 @@ INBOX_DATABASE_VIEW_SCHEMA = {
             "visible": True
         }, {
             "width": 100,
+            "property": "ref-id",
+            "visible": False
+        }, {
+            "width": 100,
+            "property": "big-plan-ref-id",
+            "visible": False
+        }, {
+            "width": 100,
             "property": INBOX_BIGPLAN_KEY,
             "visible": True
         }, {
             "width": 100,
             "property": "recurring-task-ref-id",
             "visible": True
+        }, {
+            "width": 100,
+            "property": "archived",
+            "visible": False
         }, {
             "width": 100,
             "property": "status",
@@ -684,7 +806,6 @@ INBOX_DATABASE_VIEW_SCHEMA = {
         }]
     }
 }
-
 
 RECURRING_TASKS_PERIOD = {
     "Daily": {
@@ -735,6 +856,10 @@ def get_recurring_tasks_schema():
             "name": "Group",
             "type": "select",
             "options": [{}]
+        },
+        "archived": {
+            "name": "Archived",
+            "type": "checkbox"
         },
         "eisen": {
             "name": "Eisenhower",
@@ -816,7 +941,20 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
         }, {
             "property": "due-at-time",
             "direction": "ascending"
-        }]
+        }],
+        "filter": {
+            "operator": "and",
+            "filters": [{
+                "property": "archived",
+                "filter": {
+                    "operator": "checkbox_is_not",
+                    "value": {
+                        "type": "exact",
+                        "value": "True"
+                    }
+                }
+            }]
+        }
     },
     "format": {
         "board_groups": [{
@@ -839,6 +977,9 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
         }, {
             "property": "group",
             "visible": True
+        }, {
+            "property": "archived",
+            "visible": False,
         }, {
             "property": "eisen",
             "visible": True
@@ -871,13 +1012,16 @@ RECURRING_TASKS_KANBAN_ALL_SCHEMA = {
     }
 }
 
-
 RECURRING_TASKS_DATABASE_VIEW_SCHEMA = {
     "name": "Database",
     "format": {
         "table_properties": [{
             "width": 300,
             "property": "title",
+            "visible": True
+        }, {
+            "width": 100,
+            "property": "archived",
             "visible": True
         }, {
             "width": 100,
@@ -1009,7 +1153,6 @@ BIG_PLAN_FORMAT = {
     "board_cover_size": "small"
 }
 
-
 BIG_PLAN_KANBAN_ALL_SCHEMA = {
     "name": "Kanban All",
     "query2": {
@@ -1038,7 +1181,6 @@ BIG_PLAN_KANBAN_ALL_SCHEMA = {
     },
     "format": BIG_PLAN_FORMAT
 }
-
 
 BIG_PLAN_DATABASE_VIEW_SCHEMA = {
     "name": "Database",

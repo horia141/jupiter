@@ -46,13 +46,13 @@ class BigPlansShow(command.Command):
             print(f'id={big_plan.ref_id} {big_plan.name}' +
                   f' status={big_plan.status.value}' +
                   f' archived="{big_plan.archived}"' +
-                  f' due_date="{big_plan.due_date.to_datetime_string()}"')
+                  f' due_date="{big_plan.due_date.to_datetime_string() if big_plan.due_date else ""}"')
         else:
             all_projects = projects_repository.list_all_projects(filter_keys=project_keys)
             # Print a summary of all tasks
             for big_plan in \
                     big_plans_repository\
-                            .list_all_big_plans(filter_parent_ref_id=(p.ref_id for p in all_projects)):
+                            .list_all_big_plans(filter_project_ref_id=(p.ref_id for p in all_projects)):
                 print(f'id={big_plan.ref_id} {big_plan.name}' +
                       f' status={big_plan.status.value}' +
                       f' archived="{big_plan.archived}"' +

@@ -91,7 +91,7 @@ class BigPlansSetName(command.Command):
             "color": schema.get_stable_color(str(bp.notion_link_uuid)),
             "id": str(bp.notion_link_uuid),
             "value": schema.format_name_for_option(bp.name)
-        } for bp in big_plans_repository.list_all_big_plans(filter_parent_ref_id=[project.ref_id])]
+        } for bp in big_plans_repository.list_all_big_plans(filter_project_ref_id=[project.ref_id])]
         inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"] = inbox_big_plan_options
         inbox_collection.set("schema", inbox_schema)
         LOGGER.info("Updated the schema for the associated inbox")

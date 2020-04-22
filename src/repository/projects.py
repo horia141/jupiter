@@ -21,13 +21,19 @@ class Project:
 
     _ref_id: RefId
     _key: ProjectKey
+    _archived: bool
     _name: str
 
-    def __init__(self, ref_id: RefId, key: ProjectKey, name: str) -> None:
+    def __init__(self, ref_id: RefId, key: ProjectKey, archived: bool, name: str) -> None:
         """Constructor."""
         self._ref_id = ref_id
         self._key = key
+        self._archived = archived
         self._name = name
+
+    def set_archived(self, archived: bool) -> None:
+        """Set the archived status of a project."""
+        self._archived = archived
 
     def set_name(self, name: str) -> None:
         """Set the name of a project."""
@@ -42,6 +48,11 @@ class Project:
     def key(self) -> ProjectKey:
         """The key of a project."""
         return self._key
+
+    @property
+    def archived(self):
+        """The archived status of a project."""
+        return self._archived
 
     @property
     def name(self) -> str:
@@ -65,6 +76,7 @@ class ProjectsRepository:
                     "properties": {
                         "ref_id": {"type": "string"},
                         "key": {"type": "string"},
+                        "archived": {"type": "string"},
                         "name": {"type": "string"}
                     }
                 }
@@ -86,14 +98,18 @@ class ProjectsRepository:
             return
         self._bulk_save_projects((0, []))
 
-    def create_project(self, key: ProjectKey, name: str) -> Project:
+    def create_project(self, key: ProjectKey, archived: bool, name: str) -> Project:
         """Create a project."""
         projects_next_idx, projects = self._bulk_load_projects()
 
         if self._find_project_by_key(key, projects):
             raise RepositoryError(f"Project with key='{key}' already exists")
 
-        new_project = Project(RefId(str(projects_next_idx)), key, name)
+        new_project = Project(
+            ref_id=RefId(str(projects_next_idx)),
+            key=key,
+            archived=archived,
+            name=name)
 
         projects_next_idx += 1
         projects.append(new_project)
@@ -106,11 +122,14 @@ class ProjectsRepository:
         """Remove a particular project."""
         projects_next_idx, projects = self._bulk_load_projects()
 
-        if not self._find_project_by_key(key, projects):
+        for project in projects:
+            if project.key == key:
+                project.set_archived(True)
+                break
+        else:
             raise RepositoryError(f"Project with key='{key}' does not exist")
 
-        new_projects = filter(lambda p: p.key != key, projects)
-        self._bulk_save_projects((projects_next_idx, new_projects))
+        self._bulk_save_projects((projects_next_idx, projects))
 
     def list_all_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterator[Project]:
         """Retrieve all the projects defined."""
@@ -154,9 +173,15 @@ class ProjectsRepository:
 
                 projects_next_idx = projects_ser["next_idx"]
                 all_projects = \
-                    (Project(RefId(p["ref_id"]), ProjectKey(p["key"]), p["name"])
+                    (Project(
+                        ref_id=RefId(p["ref_id"]),
+                        key=ProjectKey(p["key"]),
+                        archived=p.get("archived", False),
+                        name=p["name"])
                      for p in projects_ser["entries"])
-                projects = [p for p in all_projects if (filter_keys is None or p.key in filter_keys)]
+                projects = [p for p in all_projects
+                            if (p.archived is False)
+                            and (filter_keys is None or p.key in filter_keys)]
 
                 return projects_next_idx, projects
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
@@ -170,6 +195,7 @@ class ProjectsRepository:
                     "entries": [{
                         "ref_id": p.ref_id,
                         "key": p.key,
+                        "archived": p.archived,
                         "name": p.name
                     } for p in bulk_data[1]]
                 }

@@ -69,7 +69,10 @@ class VacationsSync(command.Command):
                     raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
 
                 new_vacation = vacations_repository.create_vacation(
-                    vacation_row.title, vacation_row.start_date.start, vacation_row.end_date.start)
+                    archived=False,
+                    name=vacation_row.title,
+                    start_date=vacation_row.start_date.start,
+                    end_date=vacation_row.end_date.start)
                 LOGGER.info(f"Found new vacation from Notion {vacation_row.title}")
 
                 vacation_row.ref_id = new_vacation.ref_id
@@ -97,7 +100,7 @@ class VacationsSync(command.Command):
             else:
                 # If the vacation is not new, and does not exist on the local side, it means it got removed
                 # badly, and we need to redo this.
-                vacation_row.remove()
+                vacation_row.archived = True
                 LOGGER.info(f"Removed vacation with id={vacation_row.ref_id} from Notion")
 
         # Explore local and apply to Notion now

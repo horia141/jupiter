@@ -19,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 @enum.unique
 class BigPlanStatus(enum.Enum):
     """The status of a big plan."""
+    NOT_STARTED = "not-started"
     ACCEPTED = "accepted"
     IN_PROGRESS = "in-progress"
     BLOCKED = "blocked"
@@ -167,7 +168,7 @@ class BigPlansRepository:
 
         return new_big_plan
 
-    def remove_big_plan(self, ref_id: RefId) -> None:
+    def remove_big_plan_by_id(self, ref_id: RefId) -> None:
         """Remove a big plan."""
         big_plans_next_idx, big_plans = self._bulk_load_big_plans()
 
@@ -180,10 +181,10 @@ class BigPlansRepository:
 
         self._bulk_save_big_plans((big_plans_next_idx, big_plans))
 
-    def list_all_big_plans(self, filter_parent_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[BigPlan]:
+    def list_all_big_plans(self, filter_project_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[BigPlan]:
         """Retrieve all the big plans defined."""
         _, big_plans = self._bulk_load_big_plans(
-            filter_parent_ref_id=frozenset(filter_parent_ref_id) if filter_parent_ref_id else None)
+            filter_project_ref_id=frozenset(filter_project_ref_id) if filter_project_ref_id else None)
         return big_plans
 
     def load_big_plan_by_id(self, ref_id: RefId) -> BigPlan:
@@ -206,7 +207,7 @@ class BigPlansRepository:
         self._bulk_save_big_plans((big_plans_next_idx, new_big_plans))
 
     def _bulk_load_big_plans(
-            self, filter_parent_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[BigPlan]]:
+            self, filter_project_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[BigPlan]]:
         try:
             with open(BigPlansRepository._BIG_PLANS_FILE_PATH, "r") as big_plans_file:
                 big_plans_ser = yaml.safe_load(big_plans_file)
@@ -226,9 +227,9 @@ class BigPlansRepository:
                         due_date=pendulum.parse(bp["due_date"]) if bp["due_date"] else None,
                         notion_link_uuid=uuid.UUID(bp["notion_link_uuid"]))
                      for bp in big_plans_ser["entries"])
-                big_plans = list(rt for rt in big_plans_iter
-                                 if (rt.archived is False)
-                                 and (filter_parent_ref_id is None or rt.project_ref_id in filter_parent_ref_id))
+                big_plans = [rt for rt in big_plans_iter
+                             if (rt.archived is False)
+                             and (filter_project_ref_id is None or rt.project_ref_id in filter_project_ref_id)]
 
                 return big_plans_next_idx, big_plans
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:

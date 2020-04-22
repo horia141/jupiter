@@ -57,7 +57,8 @@ class RecurringTasksSync(command.Command):
 
         workspace = workspace_repository.load_workspace()
         project = projects_repository.load_project_by_key(project_key)
-        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(filter_parent_ref_id=[project.ref_id])
+        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(
+            filter_project_ref_id=[project.ref_id])
         all_recurring_tasks_set: Dict[RefId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
 
         # Prepare Notion connection
@@ -106,6 +107,7 @@ class RecurringTasksSync(command.Command):
                 new_recurring_task_raw = self._build_entity_from_row(recurring_tasks_row)
                 new_recurring_task = recurring_tasks_repository.create_recurring_task(
                     project_ref_id=project.ref_id,
+                    archived=False,
                     name=new_recurring_task_raw["name"],
                     period=new_recurring_task_raw["period"],
                     group=new_recurring_task_raw["group"],
@@ -187,7 +189,7 @@ class RecurringTasksSync(command.Command):
             new_recurring_task_row.due_at_month = recurring_task.due_at_month
             new_recurring_task_row.must_do = recurring_task.must_do
             new_recurring_task_row.skip_rule = recurring_task.skip_rule
-            LOGGER.info(f'Created Notion task for {recurring_task["name"]}')
+            LOGGER.info(f'Created Notion task for {recurring_task.name}')
 
         # What is now left to do is just update all the inbox tasks according to the new forms of
         # recurring tasks.
@@ -216,8 +218,8 @@ class RecurringTasksSync(command.Command):
                 recurring_task.due_at_month)
             setattr(inbox_task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
             inbox_task_row.title = schedule.full_name
+            setattr(inbox_task_row, "eisenhower", [e.value for e in recurring_task.eisen])
             inbox_task_row.difficulty = recurring_task.difficulty.value if recurring_task.difficulty else None
-            inbox_task_row.eisen = recurring_task.eisen
             if recurring_task not in DONE_STATUS:
                 setattr(inbox_task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
                 setattr(inbox_task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)

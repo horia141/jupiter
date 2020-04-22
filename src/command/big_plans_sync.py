@@ -54,7 +54,7 @@ class BigPlansSync(command.Command):
 
         workspace = workspace_repository.load_workspace()
         project = projects_repository.load_project_by_key(project_key)
-        all_big_plans = big_plans_repository.list_all_big_plans(filter_parent_ref_id=[project.ref_id])
+        all_big_plans = big_plans_repository.list_all_big_plans(filter_project_ref_id=[project.ref_id])
         all_big_plans_set: Dict[RefId, big_plans.BigPlan] = {rt.ref_id: rt for rt in all_big_plans}
 
         # Prepare Notion connection
@@ -79,7 +79,7 @@ class BigPlansSync(command.Command):
         for big_plan_row in big_plans_rows:
             LOGGER.info(f"Processing {big_plan_row}")
             if big_plan_row.ref_id is None or big_plan_row.ref_id == "":
-                # If the recurring task doesn't exist locally, we create it!
+                # If the big plan doesn't exist locally, we create it!
 
                 new_big_plan_raw = self._build_entity_from_row(big_plan_row)
                 new_big_plan = big_plans_repository.create_big_plan(
@@ -90,13 +90,13 @@ class BigPlansSync(command.Command):
                     due_date=new_big_plan_raw["due_date"],
                     notion_link_uuid=uuid.uuid4())
 
-                LOGGER.info(f"Found new recurring task from Notion {big_plan_row.title}")
+                LOGGER.info(f"Found new big plan from Notion {big_plan_row.title}")
                 big_plan_row.ref_id = new_big_plan.ref_id
                 setattr(big_plan_row, "inbox_id_ref", str(new_big_plan.notion_link_uuid))
                 all_big_plans_set[big_plan_row.ref_id] = new_big_plan
                 big_plans_row_set[big_plan_row.ref_id] = big_plan_row
             elif big_plan_row.ref_id in all_big_plans_set:
-                # If the recurring task exists locally, we sync it with the remote
+                # If the big plan exists locally, we sync it with the remote
                 big_plan = all_big_plans_set[big_plan_row.ref_id]
                 if prefer == "notion":
                     # Copy over the parameters from Notion to local
@@ -107,7 +107,7 @@ class BigPlansSync(command.Command):
                     big_plan.set_due_date(big_plan_raw["due_date"])
                     # Not updating inbox_id_ref
                     big_plans_repository.save_big_plan(big_plan)
-                    LOGGER.info(f"Changed recurring task with id={big_plan_row.ref_id} from Notion")
+                    LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from Notion")
                 elif prefer == "local":
                     # Copy over the parameters from local to Notion
                     big_plan_row.title = big_plan.name
@@ -115,17 +115,17 @@ class BigPlansSync(command.Command):
                     big_plan_row.status = big_plan.status
                     big_plan_row.due_date = big_plan.due_date
                     setattr(big_plan_row, "inbox_id_ref", str(new_big_plan.notion_link_uuid))
-                    LOGGER.info(f"Changed recurring task with id={big_plan_row.ref_id} from local")
+                    LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {prefer}")
                 big_plans_row_set[big_plan_row.ref_id] = big_plan_row
             else:
-                LOGGER.info(f"Removed dangling recurring task in Notion {big_plan_row}")
+                LOGGER.info(f"Removed dangling big plan in Notion {big_plan_row}")
                 big_plan_row.remove()
 
         LOGGER.info("Applied local changes")
 
-        # Now, go over each local recurring task, and add it to Notion if it doesn't
+        # Now, go over each local big plan, and add it to Notion if it doesn't
         # exist there!
 
         for big_plan in all_big_plans_set.values():
@@ -152,7 +152,7 @@ class BigPlansSync(command.Command):
             "color": schema.get_stable_color(str(bp.notion_link_uuid)),
             "id": str(bp.notion_link_uuid),
             "value": schema.format_name_for_option(bp.name)
-        } for bp in big_plans_repository.list_all_big_plans(filter_parent_ref_id=[project.ref_id])]
+        } for bp in big_plans_repository.list_all_big_plans(filter_project_ref_id=[project.ref_id])]
         inbox_schema[schema.INBOX_BIGPLAN_KEY]["options"] = inbox_big_plan_options
         inbox_collection.set("schema", inbox_schema)
         LOGGER.info("Updated the schema for the associated inbox")
@@ -196,7 +196,8 @@ class BigPlansSync(command.Command):
     def _build_entity_from_row(row):
         name = row.title.strip()
         archived = row.archived
-        status = big_plans.BigPlanStatus("-".join(f.lower() for f in row.status.strip().split(" ")))
+        status = big_plans.BigPlanStatus("-".join(f.lower() for f in row.status.strip().split(" "))) \
+            if row.status else big_plans.BigPlanStatus.NOT_STARTED
         due_date = row.due_date.start if row.due_date else None
 
         if len(name) == 0:
@@ -206,7 +207,7 @@ class BigPlansSync(command.Command):
             "name": name,
             "archived": archived,
             "status": status,
-            "due_date": pendulum.instance(due_date) if due_date else None
+            "due_date": pendulum.parse(str(due_date)) if due_date else None
         }
 
         return entity
