@@ -20,6 +20,6 @@ jobs:
         with:
           python-version: 3.8
       - name: Prepare for CI
-        run: sudo ./scripts/setup-for-ci.sh
+        run: echo python --version && sudo ./scripts/setup-for-ci.sh
       - name: Lint scripts
         run: ./scripts/lint.sh
