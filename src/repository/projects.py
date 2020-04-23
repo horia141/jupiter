@@ -2,7 +2,8 @@
 
 import os.path
 import logging
-from typing import Any, Dict, ClassVar, Iterable, Iterator, List, NewType, Optional, Sequence, Tuple, Set
+import typing
+from typing import Final, Any, Dict, ClassVar, Iterable, Iterator, List, NewType, Optional, Sequence, Tuple, Set
 
 import jsonschema as js
 import yaml
@@ -60,12 +61,13 @@ class Project:
         return self._name
 
 
+@typing.final
 class ProjectsRepository:
     """A repository for projects."""
 
-    _PROJECTS_FILE_PATH: ClassVar[str] = "/data/projects.yaml"
+    _PROJECTS_FILE_PATH: Final[ClassVar[str]] = "/data/projects.yaml"
 
-    _PROJECTS_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _PROJECTS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},
@@ -84,7 +86,7 @@ class ProjectsRepository:
         }
     }
 
-    _validator: Any
+    _validator: Final[Any]
 
     def __init__(self) -> None:
         """Constructor."""

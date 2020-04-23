@@ -3,7 +3,8 @@
 import logging
 import enum
 import os.path
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Set
+import typing
+from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Set
 
 import jsonschema as js
 import yaml
@@ -30,6 +31,7 @@ class InboxTaskStatus(enum.Enum):
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
 
+@typing.final
 class InboxTask:
     """An inbox task."""
 
@@ -162,12 +164,13 @@ class InboxTask:
         return self._recurring_task_timeline
 
 
+@typing.final
 class InboxTasksRepository:
     """A repository of the inbox tasks."""
 
-    _INBOX_TASKS_FILE_PATH: ClassVar[str] = "/data/inbox-tasks.yaml"
+    _INBOX_TASKS_FILE_PATH: Final[ClassVar[str]] = "/data/inbox-tasks.yaml"
 
-    _INBOX_TASKS_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _INBOX_TASKS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},
@@ -196,7 +199,7 @@ class InboxTasksRepository:
         }
     }
 
-    _validator: Any
+    _validator: Final[Any]
 
     def __init__(self) -> None:
         """Constructor."""

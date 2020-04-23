@@ -2,7 +2,8 @@
 
 import logging
 import os.path
-from typing import Any, ClassVar, Dict, NewType, Iterable, List, Optional, Tuple, Set
+import typing
+from typing import Final, Any, ClassVar, Dict, NewType, Iterable, List, Optional, Tuple, Set
 
 import jsonschema as js
 import yaml
@@ -166,12 +167,13 @@ class RecurringTask:
         return self._must_do
 
 
+@typing.final
 class RecurringTasksRepository:
     """A repository for recurring tasks."""
 
-    _RECURRING_TASKS_FILE_PATH: ClassVar[str] = "/data/recurring-tasks.yaml"
+    _RECURRING_TASKS_FILE_PATH: Final[ClassVar[str]] = "/data/recurring-tasks.yaml"
 
-    _RECURRING_TASKS_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _RECURRING_TASKS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},
@@ -203,7 +205,7 @@ class RecurringTasksRepository:
         }
     }
 
-    _validator: Any
+    _validator: Final[Any]
 
     def __init__(self) -> None:
         """Constructor."""
