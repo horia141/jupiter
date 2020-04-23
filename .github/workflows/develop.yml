@@ -24,6 +24,6 @@ jobs:
         with:
           ruby-version: 2.4
       - name: Prepare for CI
-        run: sudo ./scripts/setup-for-ci.sh
+        run: ./scripts/setup-for-ci.sh
       - name: Lint scripts
         run: ./scripts/lint.sh
