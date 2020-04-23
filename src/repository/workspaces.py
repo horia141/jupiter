@@ -2,7 +2,8 @@
 
 import logging
 import os.path
-from typing import Any, ClassVar, Dict, NewType
+import typing
+from typing import Final, Any, ClassVar, Dict, NewType
 
 import jsonschema as js
 import yaml
@@ -56,12 +57,13 @@ class Workspace:
         return self._token
 
 
+@typing.final
 class WorkspaceRepository:
     """A repository for workspaces."""
 
-    _WORKSPACE_FILE_PATH: ClassVar[str] = "/data/workspace.yaml"
+    _WORKSPACE_FILE_PATH: Final[ClassVar[str]] = "/data/workspace.yaml"
 
-    _WORKSPACE_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _WORKSPACE_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
         "type": "object",
         "properties": {
             "name": {"type": "string"},
@@ -69,6 +71,8 @@ class WorkspaceRepository:
             "token": {"type": "string"}
         }
     }
+
+    _validator: Final[Any]
 
     def __init__(self) -> None:
         """Constructor."""

@@ -3,7 +3,8 @@
 import datetime
 import logging
 import os.path
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple
+import typing
+from typing import Final, Any, ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import jsonschema as js
 import yaml
@@ -74,12 +75,13 @@ class Vacation:
         return self._end_date
 
 
+@typing.final
 class VacationsRepository:
     """A repository for vacations."""
 
-    _VACATIONS_FILE_PATH: ClassVar[str] = "/data/vacations.yaml"
+    _VACATIONS_FILE_PATH: Final[ClassVar[str]] = "/data/vacations.yaml"
 
-    _VACATIONS_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _VACATIONS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},
@@ -99,7 +101,7 @@ class VacationsRepository:
         }
     }
 
-    _validator: Any
+    _validator: Final[Any]
 
     def __init__(self) -> None:
         """Constructor."""

@@ -1,7 +1,5 @@
 """Module for working with schedules."""
 
-import datetime
-
 import pendulum
 
 

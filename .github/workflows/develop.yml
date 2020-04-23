@@ -15,7 +15,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Set up Ruby 2.4
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: 2.4
       - name: Prepare for CI
-        run: sudo ./scripts/setup-for-ci.sh
+        run: ./scripts/setup-for-ci.sh
       - name: Lint scripts
         run: ./scripts/lint.sh

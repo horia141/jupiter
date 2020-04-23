@@ -3,7 +3,8 @@
 import logging
 import enum
 import os.path
-from typing import Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Set
+import typing
+from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Set
 import uuid
 
 import jsonschema as js
@@ -31,6 +32,7 @@ class BigPlanStatus(enum.Enum):
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
 
+@typing.final
 class BigPlan:
     """A big plan."""
 
@@ -106,12 +108,13 @@ class BigPlan:
         return self._notion_link_uuid
 
 
+@typing.final
 class BigPlansRepository:
     """A repository for big plans."""
 
-    _BIG_PLANS_FILE_PATH: ClassVar[str] = "/data/big-plans.yaml"
+    _BIG_PLANS_FILE_PATH: Final[ClassVar[str]] = "/data/big-plans.yaml"
 
-    _BIG_PLANS_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _BIG_PLANS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},
@@ -132,7 +135,7 @@ class BigPlansRepository:
         }
     }
 
-    _validator: Any
+    _validator: Final[Any]
 
     def __init__(self) -> None:
         """Constructor."""
