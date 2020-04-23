@@ -92,10 +92,10 @@ class InboxTasksSync(command.Command):
             if inbox_task_raw["big_plan_ref_id"]:
                 big_plan = big_plans_repository.load_big_plan_by_id(inbox_task_raw["big_plan_ref_id"])
             elif inbox_task_raw["big_plan"]:
-                big_plan = all_big_plans_set[inbox_task_raw["big_plan"]]
+                big_plan = all_big_plans_set[schema.format_name_for_option(inbox_task_raw["big_plan"])]
             elif inbox_task_raw["recurring_task_ref_id"]:
                 recurring_task = recurring_tasks_repository. \
-                    load_recurring_task_by_id(inbox_task_raw["recurring_task_ref_if"])
+                    load_recurring_task_by_id(inbox_task_raw["recurring_task_ref_id"])
 
             if inbox_task_row.ref_id is None or inbox_task_row.ref_id == "":
                 # If the big plan doesn't exist locally, we create it!
