@@ -27,6 +27,10 @@ class Vacation:
     start_date: pendulum.DateTime
     end_date: pendulum.DateTime
 
+    def is_in_vacation(self, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> bool:
+        """Checks whether a particular date range is in this vacation."""
+        return self.start_date <= start_date and end_date <= self.end_date
+
 
 @typing.final
 class VacationsRepository:

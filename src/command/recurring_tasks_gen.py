@@ -144,13 +144,9 @@ class RecurringTasksGen(command.Command):
 
         if not task.must_do:
             for vacation in all_vacations:
-                start_date = pendulum.datetime(vacation.start_date.year, vacation.start_date.month,
-                                               vacation.start_date.day, tz="UTC")
-                end_date = pendulum.datetime(vacation.end_date.year, vacation.end_date.month,
-                                             vacation.end_date.day, tz="UTC")
-                if start_date <= schedule.first_day and schedule.end_day <= end_date:
+                if vacation.is_in_vacation(schedule.first_day, schedule.end_day):
                     LOGGER.info(
-                        f"Skipping '{task.name}' on account of being fully withing vacation {start_date} to {end_date}")
+                        f"Skipping '{task.name}' on account of being fully withing vacation {vacation}")
                     return
 
         if schedule.should_skip:
