@@ -195,7 +195,7 @@ class RecurringTasksRepository:
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
-    def _bulk_save_recurring_tasks(self, bulk_data: Tuple[int, Iterable[RecurringTask]]) -> None:
+    def _bulk_save_recurring_tasks(self, bulk_data: Tuple[int, List[RecurringTask]]) -> None:
         try:
             with open(RecurringTasksRepository._RECURRING_TASKS_FILE_PATH, "w") as recurring_tasks_file:
                 recurring_tasks_ser = {
@@ -227,7 +227,7 @@ class RecurringTasksRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_recurring_task_by_id(ref_id: RefId, recurring_tasks: Iterable[RecurringTask]) -> Optional[RecurringTask]:
+    def _find_recurring_task_by_id(ref_id: RefId, recurring_tasks: List[RecurringTask]) -> Optional[RecurringTask]:
         try:
             return next(rt for rt in recurring_tasks if rt.ref_id == ref_id)
         except StopIteration:

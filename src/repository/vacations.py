@@ -5,7 +5,7 @@ import datetime
 import logging
 import os.path
 import typing
-from typing import Final, Any, ClassVar, Dict, List, Optional, Sequence, Tuple
+from typing import Final, Any, ClassVar, Dict, List, Iterable, Optional, Tuple
 
 import jsonschema as js
 import pendulum
@@ -105,7 +105,7 @@ class VacationsRepository:
 
         self._bulk_save_vacations((vacations_next_idx, vacations))
 
-    def load_all_vacations(self) -> Sequence[Vacation]:
+    def load_all_vacations(self) -> Iterable[Vacation]:
         """Retrieve all the vacations defined."""
         _, vacations = self._bulk_load_vacations()
         return vacations
@@ -151,7 +151,7 @@ class VacationsRepository:
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
-    def _bulk_save_vacations(self, bulk_data: Tuple[int, Sequence[Vacation]]) -> None:
+    def _bulk_save_vacations(self, bulk_data: Tuple[int, List[Vacation]]) -> None:
         try:
             with open(VacationsRepository._VACATIONS_FILE_PATH, "w") as vacations_file:
                 vacations_ser = {
@@ -178,8 +178,8 @@ class VacationsRepository:
         return isinstance(instance, datetime.date)
 
     @staticmethod
-    def _find_vacation_by_id(ref_id: RefId, vacations: Sequence[Vacation]) -> Optional[Vacation]:
+    def _find_vacation_by_id(ref_id: RefId, vacations: List[Vacation]) -> Optional[Vacation]:
         try:
-            return next(v for v in vacations if v.key == ref_id)
+            return next(v for v in vacations if v.ref_id == ref_id)
         except StopIteration:
             return None

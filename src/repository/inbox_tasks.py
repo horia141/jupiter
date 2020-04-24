@@ -220,7 +220,7 @@ class InboxTasksRepository:
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
-    def _bulk_save_inbox_tasks(self, bulk_data: Tuple[int, Iterable[InboxTask]]) -> None:
+    def _bulk_save_inbox_tasks(self, bulk_data: Tuple[int, List[InboxTask]]) -> None:
         try:
             with open(InboxTasksRepository._INBOX_TASKS_FILE_PATH, "w") as inbox_tasks_file:
                 inbox_tasks_ser = {
@@ -250,7 +250,7 @@ class InboxTasksRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_inbox_task_by_id(ref_id: RefId, inbox_tasks: Iterable[InboxTask]) -> Optional[InboxTask]:
+    def _find_inbox_task_by_id(ref_id: RefId, inbox_tasks: List[InboxTask]) -> Optional[InboxTask]:
         try:
             return next(it for it in inbox_tasks if it.ref_id == ref_id)
         except StopIteration:

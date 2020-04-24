@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import os.path
 import logging
 import typing
-from typing import Final, Any, Dict, ClassVar, Iterable, Iterator, List, NewType, Optional, Sequence, Tuple, Set
+from typing import Final, Any, Dict, ClassVar, Iterable, List, NewType, Optional, Tuple, Set
 
 import jsonschema as js
 import yaml
@@ -101,7 +101,7 @@ class ProjectsRepository:
 
         self._bulk_save_projects((projects_next_idx, projects))
 
-    def list_all_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterator[Project]:
+    def list_all_projects(self, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
         """Retrieve all the projects defined."""
         _, projects = self._bulk_load_projects(filter_keys=frozenset(filter_keys) if filter_keys else None)
         return projects
@@ -157,7 +157,7 @@ class ProjectsRepository:
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
-    def _bulk_save_projects(self, bulk_data: Tuple[int, Iterator[Project]]) -> None:
+    def _bulk_save_projects(self, bulk_data: Tuple[int, List[Project]]) -> None:
         try:
             with open(ProjectsRepository._PROJECTS_FILE_PATH, "w") as projects_file:
                 projects_ser = {
@@ -179,14 +179,14 @@ class ProjectsRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_project_by_id(ref_id: RefId, projects: Sequence[Project]) -> Optional[Project]:
+    def _find_project_by_id(ref_id: RefId, projects: List[Project]) -> Optional[Project]:
         try:
             return next(p for p in projects if p.ref_id == ref_id)
         except StopIteration:
             return None
 
     @staticmethod
-    def _find_project_by_key(key: ProjectKey, projects: Sequence[Project]) -> Optional[Project]:
+    def _find_project_by_key(key: ProjectKey, projects: List[Project]) -> Optional[Project]:
         try:
             return next(p for p in projects if p.key == key)
         except StopIteration:

@@ -177,7 +177,7 @@ class BigPlansRepository:
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
             raise RepositoryError from error
 
-    def _bulk_save_big_plans(self, bulk_data: Tuple[int, Iterable[BigPlan]]) -> None:
+    def _bulk_save_big_plans(self, bulk_data: Tuple[int, List[BigPlan]]) -> None:
         try:
             with open(BigPlansRepository._BIG_PLANS_FILE_PATH, "w") as big_plans_file:
                 big_plans_ser = {
@@ -202,7 +202,7 @@ class BigPlansRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_big_plan_by_id(ref_id: RefId, big_plans: Iterable[BigPlan]) -> Optional[BigPlan]:
+    def _find_big_plan_by_id(ref_id: RefId, big_plans: List[BigPlan]) -> Optional[BigPlan]:
         try:
             return next(bp for bp in big_plans if bp.ref_id == ref_id)
         except StopIteration:
