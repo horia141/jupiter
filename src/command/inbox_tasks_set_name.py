@@ -58,7 +58,7 @@ class InboxTasksSetName(command.Command):
         if inbox_task.recurring_task_ref_id is not None:
             raise Exception(f"Task {inbox_task.name} is an instance of a recurring task and can't be changed")
 
-        inbox_task.set_name(name)
+        inbox_task.name = name
         inbox_tasks_repository.save_inbox_task(inbox_task)
 
         project = projects_repository.load_project_by_id(inbox_task.project_ref_id)

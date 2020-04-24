@@ -1,5 +1,6 @@
 """Repository for inbox tasks."""
 
+from dataclasses import dataclass
 import logging
 import enum
 import os.path
@@ -32,136 +33,27 @@ class InboxTaskStatus(enum.Enum):
 
 
 @typing.final
+@dataclass()
 class InboxTask:
     """An inbox task."""
 
-    _ref_id: RefId
-    _project_ref_id: RefId
-    _big_plan_ref_id: Optional[RefId]
-    _recurring_task_ref_id: Optional[RefId]
-    _created_date: pendulum.DateTime
-    _name: str
-    _archived: bool
-    _status: InboxTaskStatus
-    _eisen: List[TaskEisen]
-    _difficulty: Optional[TaskDifficulty]
-    _due_date: Optional[pendulum.DateTime]
-    _recurring_task_timeline: Optional[str]
+    ref_id: RefId
+    project_ref_id: RefId
+    big_plan_ref_id: Optional[RefId]
+    recurring_task_ref_id: Optional[RefId]
+    created_date: pendulum.DateTime
+    name: str
+    archived: bool
+    status: InboxTaskStatus
+    eisen: List[TaskEisen]
+    difficulty: Optional[TaskDifficulty]
+    due_date: Optional[pendulum.DateTime]
+    recurring_task_timeline: Optional[str]
 
-    def __init__(
-            self, ref_id: RefId, project_ref_id: RefId, big_plan_ref_id: Optional[RefId],
-            recurring_task_ref_id: Optional[RefId], created_date: pendulum.DateTime, name: str,
-            archived: bool, status: InboxTaskStatus, eisen: List[TaskEisen], difficulty: Optional[TaskDifficulty],
-            due_date: Optional[pendulum.DateTime], recurring_task_timeline: Optional[str]) -> None:
-        """Constructor."""
-        self._ref_id = ref_id
-        self._project_ref_id = project_ref_id
-        self._big_plan_ref_id = big_plan_ref_id
-        self._recurring_task_ref_id = recurring_task_ref_id
-        self._created_date = created_date
-        self._name = name
-        self._archived = archived
-        self._status = status
-        self._eisen = eisen
-        self._difficulty = difficulty
-        self._due_date = due_date
-        self._recurring_task_timeline = recurring_task_timeline
-
+    @property
     def is_considered_done(self) -> bool:
-        """Whether the task is considered done or not."""
-        return self._status == InboxTaskStatus.DONE or self._status == InboxTaskStatus.NOT_DONE
-
-    def set_big_plan_ref_id(self, big_plan_ref_id: Optional[RefId]) -> None:
-        """Change the big plan this inbox task is attached to."""
-        self._big_plan_ref_id = big_plan_ref_id
-
-    def set_name(self, name: str) -> None:
-        """Change the name of the recurring task."""
-        self._name = name
-
-    def set_archived(self, archived: bool) -> None:
-        """Change the archived status of a task."""
-        self._archived = archived
-
-    def set_status(self, status: InboxTaskStatus) -> None:
-        """Change the status of a task."""
-        self._status = status
-
-    def set_eisen(self, eisen: Iterable[TaskEisen]) -> None:
-        """Change the Eisenhower status of a task."""
-        self._eisen = list(eisen)
-
-    def set_difficulty(self, difficulty: Optional[TaskDifficulty]) -> None:
-        """Change the difficulty of the task."""
-        self._difficulty = difficulty
-
-    def set_due_date(self, due_date: Optional[pendulum.DateTime]) -> None:
-        """Change the due date of the task."""
-        self._due_date = due_date
-
-    def set_recurring_task_timeline(self, recurring_task_timeline: Optional[str]) -> None:
-        """Change the timeline of the recurring task."""
-        self._recurring_task_timeline = recurring_task_timeline
-
-    @property
-    def ref_id(self) -> RefId:
-        """The id of the inbox task."""
-        return self._ref_id
-
-    @property
-    def project_ref_id(self) -> RefId:
-        """The id of the project to which the inbox task belongs."""
-        return self._project_ref_id
-
-    @property
-    def big_plan_ref_id(self) -> Optional[RefId]:
-        """The id of a big plan to which the inbox task may be attached."""
-        return self._big_plan_ref_id
-
-    @property
-    def recurring_task_ref_id(self) -> Optional[RefId]:
-        """The id of a recurring task to which the inbox task may be attached."""
-        return self._recurring_task_ref_id
-
-    @property
-    def created_date(self) -> pendulum.DateTime:
-        """The time the inbox task was created."""
-        return self._created_date
-
-    @property
-    def name(self) -> str:
-        """The name of the inbox task."""
-        return self._name
-
-    @property
-    def archived(self) -> bool:
-        """The archived status of inbox task."""
-        return self._archived
-
-    @property
-    def status(self) -> InboxTaskStatus:
-        """The status of the inbox task."""
-        return self._status
-
-    @property
-    def eisen(self) -> Iterable[TaskEisen]:
-        """The Eisenhower status of the inbox task."""
-        return self._eisen
-
-    @property
-    def difficulty(self) -> Optional[TaskDifficulty]:
-        """The difficulty of the inbox task."""
-        return self._difficulty
-
-    @property
-    def due_date(self) -> Optional[pendulum.DateTime]:
-        """The due date of the inbox task."""
-        return self._due_date
-
-    @property
-    def recurring_task_timeline(self) -> Optional[str]:
-        """The timeline for this task if it's a recurring one."""
-        return self._recurring_task_timeline
+        """Whether the task is considered in a done-like state - either DONE or NOT_DONE."""
+        return self.status == InboxTaskStatus.DONE or self.status == InboxTaskStatus.NOT_DONE
 
 
 @typing.final
@@ -246,11 +138,14 @@ class InboxTasksRepository:
         """Remove a particular inbox task."""
         inbox_tasks_next_idx, inbox_tasks = self._bulk_load_inbox_tasks()
 
-        if not self._find_inbox_task_by_id(ref_id, inbox_tasks):
+        for inbox_task in inbox_tasks:
+            if inbox_task.ref_id == ref_id:
+                inbox_task.archived = True
+                break
+        else:
             raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
 
-        new_inbox_tasks = filter(lambda p: p.ref_id != ref_id, inbox_tasks)
-        self._bulk_save_inbox_tasks((inbox_tasks_next_idx, new_inbox_tasks))
+        self._bulk_save_inbox_tasks((inbox_tasks_next_idx, inbox_tasks))
 
     def list_all_inbox_tasks(
             self,

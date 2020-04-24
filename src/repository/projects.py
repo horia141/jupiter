@@ -1,5 +1,6 @@
 """Repository for projects."""
 
+from dataclasses import dataclass
 import os.path
 import logging
 import typing
@@ -17,48 +18,15 @@ LOGGER = logging.getLogger(__name__)
 ProjectKey = NewType("ProjectKey", str)
 
 
+@typing.final
+@dataclass()
 class Project:
     """A project."""
 
-    _ref_id: RefId
-    _key: ProjectKey
-    _archived: bool
-    _name: str
-
-    def __init__(self, ref_id: RefId, key: ProjectKey, archived: bool, name: str) -> None:
-        """Constructor."""
-        self._ref_id = ref_id
-        self._key = key
-        self._archived = archived
-        self._name = name
-
-    def set_archived(self, archived: bool) -> None:
-        """Set the archived status of a project."""
-        self._archived = archived
-
-    def set_name(self, name: str) -> None:
-        """Set the name of a project."""
-        self._name = name
-
-    @property
-    def ref_id(self) -> RefId:
-        """The id of a project."""
-        return self._ref_id
-
-    @property
-    def key(self) -> ProjectKey:
-        """The key of a project."""
-        return self._key
-
-    @property
-    def archived(self):
-        """The archived status of a project."""
-        return self._archived
-
-    @property
-    def name(self) -> str:
-        """The name of a project."""
-        return self._name
+    ref_id: RefId
+    key: ProjectKey
+    archived: bool
+    name: str
 
 
 @typing.final
@@ -126,7 +94,7 @@ class ProjectsRepository:
 
         for project in projects:
             if project.key == key:
-                project.set_archived(True)
+                project.archived = True
                 break
         else:
             raise RepositoryError(f"Project with key='{key}' does not exist")

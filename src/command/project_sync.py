@@ -60,7 +60,7 @@ class ProjectSync(command.Command):
             project_root_page.title = project.name
             LOGGER.info("Applied changes to Notion")
         elif prefer == "notion":
-            project.set_name(project_root_page.title)
+            project.name = project_root_page.title
             projects_repository.save_project(project)
             LOGGER.info("Applied local change")
         else:

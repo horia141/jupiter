@@ -1,5 +1,6 @@
 """Repository for recurring tasks."""
 
+from dataclasses import dataclass
 import logging
 import os.path
 import typing
@@ -15,156 +16,25 @@ LOGGER = logging.getLogger(__name__)
 RecurringTaskGroup = NewType("RecurringTaskGroup", str)
 
 
+@typing.final
+@dataclass()
 class RecurringTask:
     """A recurring task."""
 
-    _ref_id: RefId
-    _project_ref_id: RefId
-    _archived: bool
-    _name: str
-    _period: TaskPeriod
-    _group: RecurringTaskGroup
-    _eisen: List[TaskEisen]
-    _difficulty: Optional[TaskDifficulty]
-    _due_at_time: Optional[str]
-    _due_at_day: Optional[int]
-    _due_at_month: Optional[int]
-    _suspended: bool
-    _skip_rule: Optional[str]
-    _must_do: bool
-
-    def __init__(
-            self, ref_id: RefId, project_ref_id: RefId, archived: bool, name: str, period: TaskPeriod,
-            group: RecurringTaskGroup, eisen: List[TaskEisen], difficulty: Optional[TaskDifficulty],
-            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
-            skip_rule: Optional[str], must_do: bool) -> None:
-        """Constructor."""
-        self._ref_id = ref_id
-        self._project_ref_id = project_ref_id
-        self._archived = archived
-        self._name = name
-        self._period = period
-        self._group = group
-        self._eisen = eisen
-        self._difficulty = difficulty
-        self._due_at_time = due_at_time
-        self._due_at_day = due_at_day
-        self._due_at_month = due_at_month
-        self._suspended = suspended
-        self._skip_rule = skip_rule
-        self._must_do = must_do
-
-    def set_archived(self, archived: bool) -> None:
-        """Change the archived status of the recurring task."""
-        self._archived = archived
-
-    def set_name(self, name: str) -> None:
-        """Change the name of the recurring task."""
-        self._name = name
-
-    def set_period(self, period: TaskPeriod) -> None:
-        """Change the period of the recurring task."""
-        self._period = period
-
-    def set_group(self, group: RecurringTaskGroup) -> None:
-        """Change the group of the recurring task."""
-        self._group = group
-
-    def set_eisen(self, eisen: Iterable[TaskEisen]) -> None:
-        """Change the Eisenhower status of the recurring task."""
-        self._eisen = list(eisen)
-
-    def set_difficulty(self, difficulty: Optional[TaskDifficulty]) -> None:
-        """Change the difficulty of the recurring task."""
-        self._difficulty = difficulty
-
-    def set_deadline(self, due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int]) -> None:
-        """Change the various deadlines of the recurring task."""
-        self._due_at_time = due_at_time
-        self._due_at_day = due_at_day
-        self._due_at_month = due_at_month
-
-    def set_suspended(self, suspended: bool) -> None:
-        """Change the suspended status of the recurring task."""
-        self._suspended = suspended
-
-    def set_skip_rule(self, skip_rule: Optional[str]) -> None:
-        """Change the skip rule of the recurring task."""
-        self._skip_rule = skip_rule
-
-    def set_must_do(self, must_do: bool) -> None:
-        """Change the must do status of the recurring task."""
-        self._must_do = must_do
-
-    @property
-    def ref_id(self) -> RefId:
-        """The id of the recurring task."""
-        return self._ref_id
-
-    @property
-    def project_ref_id(self) -> RefId:
-        """The id of the project to which the recurring task belongs to."""
-        return self._project_ref_id
-
-    @property
-    def archived(self):
-        """The archived status of the recurring task."""
-        return self._archived
-
-    @property
-    def name(self) -> str:
-        """The name of the recurring task."""
-        return self._name
-
-    @property
-    def period(self) -> TaskPeriod:
-        """The period of the recurring task."""
-        return self._period
-
-    @property
-    def group(self) -> RecurringTaskGroup:
-        """The group of the recurring task."""
-        return self._group
-
-    @property
-    def eisen(self) -> Iterable[TaskEisen]:
-        """The Eisenhower status of the recurring task."""
-        return self._eisen
-
-    @property
-    def difficulty(self) -> Optional[TaskDifficulty]:
-        """The difficulty of the recurring task."""
-        return self._difficulty
-
-    @property
-    def due_at_time(self) -> Optional[str]:
-        """The time the task is due, on the day it is due."""
-        return self._due_at_time
-
-    @property
-    def due_at_day(self) -> Optional[int]:
-        """The day the task is due, on the week/month it is due."""
-        return self._due_at_day
-
-    @property
-    def due_at_month(self) -> Optional[int]:
-        """The month the task is due, on the quarter/year it is due."""
-        return self._due_at_month
-
-    @property
-    def suspended(self) -> bool:
-        """Whether the recurring task is suspended or not."""
-        return self._suspended
-
-    @property
-    def skip_rule(self) -> Optional[str]:
-        """The skip rule for the recurring task."""
-        return self._skip_rule
-
-    @property
-    def must_do(self) -> bool:
-        """Whether the recurring task should be done during vacations or not."""
-        return self._must_do
+    ref_id: RefId
+    project_ref_id: RefId
+    archived: bool
+    name: str
+    period: TaskPeriod
+    group: RecurringTaskGroup
+    eisen: List[TaskEisen]
+    difficulty: Optional[TaskDifficulty]
+    due_at_time: Optional[str]
+    due_at_day: Optional[int]
+    due_at_month: Optional[int]
+    suspended: bool
+    skip_rule: Optional[str]
+    must_do: bool
 
 
 @typing.final
@@ -256,7 +126,7 @@ class RecurringTasksRepository:
 
         for recurring_task in recurring_tasks:
             if recurring_task.ref_id == ref_id:
-                recurring_task.set_archived(True)
+                recurring_task.archived = True
                 break
         else:
             raise RepositoryError(f"Recurring task with id='{ref_id}' does not exist")

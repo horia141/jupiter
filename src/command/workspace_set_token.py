@@ -32,5 +32,5 @@ class WorkspaceSetToken(command.Command):
         workspace_repository = workspaces.WorkspaceRepository()
         workspace = workspace_repository.load_workspace()
 
-        workspace.set_token(workspaces.WorkspaceToken(token))
+        workspace.token = workspaces.WorkspaceToken(token)
         workspace_repository.save_workspace(workspace)

@@ -50,7 +50,7 @@ class ProjectCreate(command.Command):
 
         try:
             project = projects_repository.load_project_by_key(project_key)
-            project.set_name(project_name)
+            project.name = project_name
             LOGGER.info("Found project file")
         except projects.RepositoryError:
             project = projects_repository.create_project(project_key, False, project_name)

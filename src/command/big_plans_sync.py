@@ -101,10 +101,10 @@ class BigPlansSync(command.Command):
                 if prefer == "notion":
                     # Copy over the parameters from Notion to local
                     big_plan_raw = self._build_entity_from_row(big_plan_row)
-                    big_plan.set_name(big_plan_raw["name"])
-                    big_plan.set_archived(big_plan_raw["archived"])
-                    big_plan.set_status(big_plan_raw["status"])
-                    big_plan.set_due_date(big_plan_raw["due_date"])
+                    big_plan.name = big_plan_raw["name"]
+                    big_plan.archived = big_plan_raw["archived"]
+                    big_plan.status = big_plan_raw["status"]
+                    big_plan.due_date = big_plan_raw["due_date"]
                     # Not updating inbox_id_ref
                     big_plans_repository.save_big_plan(big_plan)
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from Notion")
@@ -114,7 +114,7 @@ class BigPlansSync(command.Command):
                     big_plan_row.archived = big_plan.archived
                     big_plan_row.status = big_plan.status
                     big_plan_row.due_date = big_plan.due_date
-                    setattr(big_plan_row, "inbox_id_ref", str(new_big_plan.notion_link_uuid))
+                    setattr(big_plan_row, "inbox_id_ref", str(big_plan.notion_link_uuid))
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {prefer}")
@@ -138,7 +138,7 @@ class BigPlansSync(command.Command):
             new_big_plan_row.archived = big_plan.archived
             new_big_plan_row.status = big_plan.status
             new_big_plan_row.due_date = big_plan.due_date
-            setattr(new_big_plan_row, "inbox_id_ref", str(new_big_plan.notion_link_uuid))
+            setattr(new_big_plan_row, "inbox_id_ref", str(big_plan.notion_link_uuid))
             LOGGER.info(f'Created Notion task for {big_plan["name"]}')
 
         # Also update the corresponding Inbox's schema for the big plan.

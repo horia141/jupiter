@@ -51,7 +51,7 @@ class VacationsSetName(command.Command):
         # Apply changes locally
 
         vacation = vacations_repository.load_vacation_by_id(ref_id)
-        vacation.set_name(name)
+        vacation.name = name
         vacations_repository.save_vacation(vacation)
         LOGGER.info("Modified vacation")
 

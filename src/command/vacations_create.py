@@ -1,6 +1,5 @@
 """Command for adding a vacation."""
 
-import datetime
 import logging
 
 import pendulum
@@ -59,8 +58,8 @@ class VacationsCreate(command.Command):
         new_vacation = vacations_repository.create_vacation(
             archived=False,
             name=name,
-            start_date=datetime.date(start_date.year, start_date.month, start_date.day),
-            end_date=datetime.date(end_date.year, end_date.month, end_date.day))
+            start_date=start_date,
+            end_date=end_date)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion

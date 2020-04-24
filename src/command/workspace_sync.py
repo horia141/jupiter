@@ -50,7 +50,7 @@ class WorkspaceSync(command.Command):
 
         if prefer == "notion":
             name = found_root_page.title
-            workspace.set_name(name)
+            workspace.name = name
             workspace_repository.save_workspace(workspace)
             LOGGER.info("Applied changes on local side")
         elif prefer == "local":

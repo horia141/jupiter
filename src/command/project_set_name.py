@@ -56,6 +56,6 @@ class ProjectSetName(command.Command):
         LOGGER.info("Applied changes on Notion")
 
         # Apply changes locally
-        project.set_name(project_name)
+        project.name = project_name
         projects_repository.save_project(project)
         LOGGER.info("Applied changes locally")

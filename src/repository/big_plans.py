@@ -1,5 +1,6 @@
 """Repository for big plans."""
 
+from dataclasses import dataclass
 import logging
 import enum
 import os.path
@@ -33,79 +34,17 @@ class BigPlanStatus(enum.Enum):
 
 
 @typing.final
+@dataclass()
 class BigPlan:
     """A big plan."""
 
-    _ref_id: RefId
-    _project_ref_id: RefId
-    _name: str
-    _archived: bool
-    _status: BigPlanStatus
-    _due_date: Optional[pendulum.DateTime]
-    _notion_link_uuid: uuid.UUID
-
-    def __init__(
-            self, ref_id: RefId, project_ref_id: RefId, name: str, archived: bool, status: BigPlanStatus,
-            due_date: Optional[pendulum.DateTime], notion_link_uuid: uuid.UUID) -> None:
-        """Constructor."""
-        self._ref_id = ref_id
-        self._project_ref_id = project_ref_id
-        self._name = name
-        self._archived = archived
-        self._status = status
-        self._due_date = due_date
-        self._notion_link_uuid = notion_link_uuid
-
-    def set_name(self, name: str) -> None:
-        """Change the name of the big plan."""
-        self._name = name
-
-    def set_archived(self, archived: bool) -> None:
-        """Change the archived status of a big plan."""
-        self._archived = archived
-
-    def set_status(self, status: BigPlanStatus) -> None:
-        """Change the status of the big plan."""
-        self._status = status
-
-    def set_due_date(self, due_date: Optional[pendulum.DateTime]) -> None:
-        """Change the due date of the big plan."""
-        self._due_date = due_date
-
-    @property
-    def ref_id(self) -> RefId:
-        """The id of the big plan."""
-        return self._ref_id
-
-    @property
-    def project_ref_id(self) -> RefId:
-        """The id of the project to which the big plan belongs to."""
-        return self._project_ref_id
-
-    @property
-    def name(self) -> str:
-        """The name of the big plan."""
-        return self._name
-
-    @property
-    def archived(self) -> bool:
-        """The archived status of the big plan."""
-        return self._archived
-
-    @property
-    def status(self) -> BigPlanStatus:
-        """The status of the big plan."""
-        return self._status
-
-    @property
-    def due_date(self) -> Optional[pendulum.DateTime]:
-        """The due date of the big plan."""
-        return self._due_date
-
-    @property
-    def notion_link_uuid(self) -> uuid.UUID:
-        """An UUID to use for linking stuff in Notion."""
-        return self._notion_link_uuid
+    ref_id: RefId
+    project_ref_id: RefId
+    name: str
+    archived: bool
+    status: BigPlanStatus
+    due_date: Optional[pendulum.DateTime]
+    notion_link_uuid: uuid.UUID
 
 
 @typing.final
@@ -177,7 +116,7 @@ class BigPlansRepository:
 
         for big_plan in big_plans:
             if big_plan.ref_id == ref_id:
-                big_plan.set_archived(True)
+                big_plan.archived = True
                 break
         else:
             raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")

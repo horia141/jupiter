@@ -124,13 +124,13 @@ class InboxTasksSync(command.Command):
                 inbox_task = all_inbox_tasks_set[inbox_task_row.ref_id]
                 if prefer == "notion":
                     # Copy over the parameters from Notion to local
-                    inbox_task.set_big_plan_ref_id(big_plan.ref_id if big_plan else None)
-                    inbox_task.set_name(inbox_task_raw["name"])
-                    inbox_task.set_archived(inbox_task_raw["archived"])
-                    inbox_task.set_status(inbox_task_raw["status"])
-                    inbox_task.set_eisen(inbox_task_raw["eisen"])
-                    inbox_task.set_difficulty(inbox_task_raw["difficulty"])
-                    inbox_task.set_due_date(inbox_task_raw["due_date"])
+                    inbox_task.big_plan_ref_id = big_plan.ref_id if big_plan else None
+                    inbox_task.name = inbox_task_raw["name"]
+                    inbox_task.archived = inbox_task_raw["archived"]
+                    inbox_task.status = inbox_task_raw["status"]
+                    inbox_task.eisen = inbox_task_raw["eisen"]
+                    inbox_task.difficulty = inbox_task_raw["difficulty"]
+                    inbox_task.due_date = inbox_task_raw["due_date"]
                     # Not updating inbox_id_ref
                     inbox_tasks_repository.save_inbox_task(inbox_task)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from Notion")

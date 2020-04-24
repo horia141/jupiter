@@ -1,6 +1,5 @@
 """Command for setting the end date of a vacation."""
 
-import datetime
 import logging
 import pendulum
 
@@ -53,9 +52,9 @@ class VacationsSetEndDate(command.Command):
         # Apply changes locally
 
         vacation = vacations_repository.load_vacation_by_id(ref_id)
-        if end_date <= pendulum.instance(vacation.start_date):
+        if end_date <= vacation.start_date:
             raise Exception("Cannot set an end date before the start date")
-        vacation.set_end_date(datetime.date(end_date.year, end_date.month, end_date.day))
+        vacation.end_date = end_date
         vacations_repository.save_vacation(vacation)
         LOGGER.info("Modified vacation")
 

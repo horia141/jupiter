@@ -4,6 +4,7 @@ import logging
 from typing import Dict
 
 from notion.client import NotionClient
+import pendulum
 
 import command.command as command
 import repository.vacations as vacations
@@ -71,8 +72,8 @@ class VacationsSync(command.Command):
                 new_vacation = vacations_repository.create_vacation(
                     archived=False,
                     name=vacation_row.title,
-                    start_date=vacation_row.start_date.start,
-                    end_date=vacation_row.end_date.start)
+                    start_date=pendulum.instance(vacation_row.start_date.start),
+                    end_date=pendulum.instance(vacation_row.end_date.start))
                 LOGGER.info(f"Found new vacation from Notion {vacation_row.title}")
 
                 vacation_row.ref_id = new_vacation.ref_id
@@ -84,9 +85,9 @@ class VacationsSync(command.Command):
                 if prefer == "notion":
                     if vacation_row.start_date.start >= vacation_row.end_date.start:
                         raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
-                    vacations_set[vacation_row.ref_id].set_name(vacation_row.title)
-                    vacations_set[vacation_row.ref_id].set_start_date(vacation_row.start_date.start)
-                    vacations_set[vacation_row.ref_id].set_end_date(vacation_row.end_date.start)
+                    vacations_set[vacation_row.ref_id].name = vacation_row.title
+                    vacations_set[vacation_row.ref_id].start_date = vacation_row.start_date.start
+                    vacations_set[vacation_row.ref_id].end_date = vacation_row.end_date.start
                     vacations_repository.save_vacation(vacations_set[vacation_row.ref_id])
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
                 elif prefer == "local":

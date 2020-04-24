@@ -1,5 +1,6 @@
 """Repository for vacations."""
 
+from dataclasses import dataclass
 import datetime
 import logging
 import os.path
@@ -7,6 +8,7 @@ import typing
 from typing import Final, Any, ClassVar, Dict, List, Optional, Sequence, Tuple
 
 import jsonschema as js
+import pendulum
 import yaml
 
 from repository.common import RefId, RepositoryError
@@ -14,65 +16,16 @@ from repository.common import RefId, RepositoryError
 LOGGER = logging.getLogger(__name__)
 
 
+@typing.final
+@dataclass()
 class Vacation:
     """A vacation."""
 
-    _ref_id: RefId
-    _archived: bool
-    _name: str
-    _start_date: datetime.date
-    _end_date: datetime.date
-
-    def __init__(
-            self, ref_id: RefId, archived: bool, name: str, start_date: datetime.date,
-            end_date: datetime.date) -> None:
-        """Constructor."""
-        self._ref_id = ref_id
-        self._archived = archived
-        self._name = name
-        self._start_date = start_date
-        self._end_date = end_date
-
-    def set_archived(self, archived: bool) -> None:
-        """Set the archived status of a vacation."""
-        self._archived = archived
-
-    def set_name(self, name: str) -> None:
-        """Set the name of a vacation."""
-        self._name = name
-
-    def set_start_date(self, start_date: datetime.date) -> None:
-        """Set the start date of a vacation."""
-        self._start_date = start_date
-
-    def set_end_date(self, end_date: datetime.date) -> None:
-        """Set the end date of a vacation."""
-        self._end_date = end_date
-
-    @property
-    def ref_id(self) -> RefId:
-        """The unique id of the vacation."""
-        return self._ref_id
-
-    @property
-    def archived(self) -> bool:
-        """The archived status of the vacation."""
-        return self._archived
-
-    @property
-    def name(self) -> str:
-        """The name of the vacation."""
-        return self._name
-
-    @property
-    def start_date(self) -> datetime.date:
-        """The start date of the vacation."""
-        return self._start_date
-
-    @property
-    def end_date(self) -> datetime.date:
-        """The end date of the vacation."""
-        return self._end_date
+    ref_id: RefId
+    archived: bool
+    name: str
+    start_date: pendulum.DateTime
+    end_date: pendulum.DateTime
 
 
 @typing.final
@@ -117,7 +70,7 @@ class VacationsRepository:
         self._bulk_save_vacations((0, []))
 
     def create_vacation(
-            self, archived: bool, name: str, start_date: datetime.date, end_date: datetime.date) -> Vacation:
+            self, archived: bool, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> Vacation:
         """Create a vacation."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
 
@@ -141,7 +94,7 @@ class VacationsRepository:
 
         for vacation in vacations:
             if vacation.ref_id == ref_id:
-                vacation.set_archived(True)
+                vacation.archived = True
                 break
         else:
             raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
@@ -184,8 +137,8 @@ class VacationsRepository:
                         ref_id=RefId(v["ref_id"]),
                         archived=v["archived"],
                         name=v["name"],
-                        start_date=v["start_date"],
-                        end_date=v["end_date"])
+                        start_date=pendulum.parse(v["start_date"]),
+                        end_date=pendulum.parse(v["end_date"]))
                      for v in vacations_ser["entries"])
                 vacations = [v for v in all_vacations
                              if v.archived is False]
@@ -203,8 +156,8 @@ class VacationsRepository:
                         "ref_id": v.ref_id,
                         "archived": v.archived,
                         "name": v.name,
-                        "start_date": v.start_date,
-                        "end_date": v.end_date
+                        "start_date": v.start_date.to_datetime_string(),
+                        "end_date": v.end_date.to_datetime_string()
                     } for v in bulk_data[1]]
                 }
 

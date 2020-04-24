@@ -52,7 +52,7 @@ class InboxTasksSetStatus(command.Command):
         workspace = workspace_repository.load_workspace()
 
         inbox_task = inbox_tasks_repository.load_inbox_task_by_id(ref_id)
-        inbox_task.set_status(status)
+        inbox_task.status = status
         inbox_tasks_repository.save_inbox_task(inbox_task)
 
         project = projects_repository.load_project_by_id(inbox_task.project_ref_id)

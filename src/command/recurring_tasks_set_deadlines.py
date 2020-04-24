@@ -64,7 +64,9 @@ class RecurringTasksSetDeadlines(command.Command):
         workspace = workspace_repository.load_workspace()
 
         recurring_task = recurring_tasks_repository.load_recurring_task_by_id(ref_id)
-        recurring_task.set_deadline(due_at_time=due_at_time, due_at_day=due_at_day, due_at_month=due_at_month)
+        recurring_task.due_at_time = due_at_time
+        recurring_task.due_at_day = due_at_day
+        recurring_task.due_at_month = due_at_month
         recurring_tasks_repository.save_recurring_task(recurring_task)
 
         project = projects_repository.load_project_by_id(recurring_task.project_ref_id)

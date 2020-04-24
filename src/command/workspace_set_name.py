@@ -58,5 +58,5 @@ class WorkspaceSetName(command.Command):
 
         # Apply the changes to the local side
 
-        workspace.set_name(name)
+        workspace.name = name
         workspace_repository.save_workspace(workspace)

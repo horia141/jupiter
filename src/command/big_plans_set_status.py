@@ -52,7 +52,7 @@ class BigPlansSetStatus(command.Command):
         workspace = workspace_repository.load_workspace()
 
         big_plan = big_plans_repository.load_big_plan_by_id(ref_id)
-        big_plan.set_status(status)
+        big_plan.status = status
         big_plans_repository.save_big_plan(big_plan)
 
         project = projects_repository.load_project_by_id(big_plan.project_ref_id)

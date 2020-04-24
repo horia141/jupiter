@@ -52,9 +52,9 @@ class VacationsSetStartDate(command.Command):
         # Apply changes locally
 
         vacation = vacations_repository.load_vacation_by_id(ref_id)
-        if start_date >= pendulum.instance(vacation.end_date):
+        if start_date >= vacation.end_date:
             raise Exception("Cannot set a start date after the end date")
-        vacation.set_start_date(start_date)
+        vacation.start_date = start_date
         vacations_repository.save_vacation(vacation)
         LOGGER.info("Modified vacation")
 

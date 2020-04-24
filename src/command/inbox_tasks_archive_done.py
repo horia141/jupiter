@@ -53,11 +53,11 @@ class InboxTasksArchiveDone(command.Command):
         # Apply changes locally
 
         for inbox_task in all_inbox_tasks:
-            if not inbox_task.is_considered_done():
+            if not inbox_task.is_considered_done:
                 continue
 
             LOGGER.info(f"Archived task {inbox_task.name} with status={inbox_task.status}")
-            inbox_task.set_archived(True)
+            inbox_task.archived = True
             inbox_tasks_repository.save_inbox_task(inbox_task)
 
         client = NotionClient(token_v2=workspace.token)

@@ -1,5 +1,6 @@
 """Repository for workspaces."""
 
+from dataclasses import dataclass
 import logging
 import os.path
 import typing
@@ -16,45 +17,13 @@ WorkspaceSpaceId = NewType("WorkspaceSpaceId", str)
 WorkspaceToken = NewType("WorkspaceToken", str)
 
 
+@dataclass()
 class Workspace:
     """A workspace."""
 
-    _name: str
-    _space_id: WorkspaceSpaceId
-    _token: WorkspaceToken
-
-    def __init__(
-            self,
-            name: str,
-            space_id: WorkspaceSpaceId,
-            token: WorkspaceToken) -> None:
-        """Constructor."""
-        self._name = name
-        self._space_id = space_id
-        self._token = token
-
-    def set_name(self, new_name: str) -> None:
-        """Change the name of the workspace."""
-        self._name = new_name
-
-    def set_token(self, new_token: WorkspaceToken) -> None:
-        """Change the token of the workspace."""
-        self._token = new_token
-
-    @property
-    def name(self) -> str:
-        """Name of the workspace."""
-        return self._name
-
-    @property
-    def space_id(self) -> WorkspaceSpaceId:
-        """Space id of the workspace."""
-        return self._space_id
-
-    @property
-    def token(self) -> WorkspaceToken:
-        """Access token for the workspace."""
-        return self._token
+    name: str
+    space_id: WorkspaceSpaceId
+    token: WorkspaceToken
 
 
 @typing.final

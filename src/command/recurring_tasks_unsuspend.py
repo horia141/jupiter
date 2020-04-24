@@ -48,7 +48,7 @@ class RecurringTasksUnsuspend(command.Command):
         workspace = workspace_repository.load_workspace()
 
         recurring_task = recurring_tasks_repository.load_recurring_task_by_id(ref_id)
-        recurring_task.set_suspended(False)
+        recurring_task.suspended = False
         recurring_tasks_repository.save_recurring_task(recurring_task)
 
         project = projects_repository.load_project_by_id(recurring_task.project_ref_id)
