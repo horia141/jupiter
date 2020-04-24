@@ -36,9 +36,9 @@ class Vacation:
 class VacationsRepository:
     """A repository for vacations."""
 
-    _VACATIONS_FILE_PATH: Final[ClassVar[str]] = "/data/vacations.yaml"
+    _VACATIONS_FILE_PATH: ClassVar[str] = "/data/vacations.yaml"
 
-    _VACATIONS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
+    _VACATIONS_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},

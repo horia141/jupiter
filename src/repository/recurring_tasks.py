@@ -41,9 +41,9 @@ class RecurringTask:
 class RecurringTasksRepository:
     """A repository for recurring tasks."""
 
-    _RECURRING_TASKS_FILE_PATH: Final[ClassVar[str]] = "/data/recurring-tasks.yaml"
+    _RECURRING_TASKS_FILE_PATH: ClassVar[str] = "/data/recurring-tasks.yaml"
 
-    _RECURRING_TASKS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
+    _RECURRING_TASKS_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},

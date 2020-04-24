@@ -33,9 +33,9 @@ class Project:
 class ProjectsRepository:
     """A repository for projects."""
 
-    _PROJECTS_FILE_PATH: Final[ClassVar[str]] = "/data/projects.yaml"
+    _PROJECTS_FILE_PATH: ClassVar[str] = "/data/projects.yaml"
 
-    _PROJECTS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
+    _PROJECTS_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},

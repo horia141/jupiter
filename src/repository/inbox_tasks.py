@@ -60,9 +60,9 @@ class InboxTask:
 class InboxTasksRepository:
     """A repository of the inbox tasks."""
 
-    _INBOX_TASKS_FILE_PATH: Final[ClassVar[str]] = "/data/inbox-tasks.yaml"
+    _INBOX_TASKS_FILE_PATH: ClassVar[str] = "/data/inbox-tasks.yaml"
 
-    _INBOX_TASKS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
+    _INBOX_TASKS_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},

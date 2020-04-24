@@ -51,9 +51,9 @@ class BigPlan:
 class BigPlansRepository:
     """A repository for big plans."""
 
-    _BIG_PLANS_FILE_PATH: Final[ClassVar[str]] = "/data/big-plans.yaml"
+    _BIG_PLANS_FILE_PATH: ClassVar[str] = "/data/big-plans.yaml"
 
-    _BIG_PLANS_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
+    _BIG_PLANS_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "next_idx": {"type": "number"},

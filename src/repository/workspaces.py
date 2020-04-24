@@ -30,9 +30,9 @@ class Workspace:
 class WorkspaceRepository:
     """A repository for workspaces."""
 
-    _WORKSPACE_FILE_PATH: Final[ClassVar[str]] = "/data/workspace.yaml"
+    _WORKSPACE_FILE_PATH: ClassVar[str] = "/data/workspace.yaml"
 
-    _WORKSPACE_SCHEMA: Final[ClassVar[Dict[str, Any]]] = {
+    _WORKSPACE_SCHEMA: ClassVar[Dict[str, Any]] = {
         "type": "object",
         "properties": {
             "name": {"type": "string"},
