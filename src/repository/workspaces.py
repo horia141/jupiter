@@ -67,9 +67,9 @@ class WorkspaceRepository:
                 LOGGER.info("Checked workspace structure")
 
                 workspace = Workspace(
-                    workspace_ser["name"],
-                    WorkspaceSpaceId(workspace_ser["space_id"]),
-                    WorkspaceToken(workspace_ser["token"]))
+                    name=workspace_ser["name"],
+                    space_id=WorkspaceSpaceId(workspace_ser["space_id"]),
+                    token=WorkspaceToken(workspace_ser["token"]))
 
                 return workspace
         except (IOError, yaml.YAMLError, js.ValidationError) as error:
