@@ -1214,6 +1214,77 @@ BIG_PLAN_DATABASE_VIEW_SCHEMA = {
 }
 
 
+def get_view_schema_for_recurring_task_desc(recurring_task_ref_id):
+    """Get the view schema for a recurring tasks details view."""
+    recurring_task_view_schema = {
+        "name": "Inbox Tasks",
+        "query2": {
+            "filter_operator": "and",
+            "sort": [{
+                "property": "status",
+                "direction": "ascending"
+            }, {
+                "property": "due-date",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "recurring-task-ref-id",
+                    "filter": {
+                        "operator": "string_is",
+                        "value": {
+                            "type": "exact",
+                            "value": recurring_task_ref_id
+                        }
+                    }
+                }]
+            }
+        },
+        "format": {
+            "table_properties": [{
+                "width": 300,
+                "property": "title",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "status",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": INBOX_BIGPLAN_KEY,
+                "visible": False
+            }, {
+                "width": 100,
+                "property": "due-date",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "eisen",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "difficulty",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "fromscript",
+                "visible": False
+            }, {
+                "width": 100,
+                "property": "period",
+                "visible": False
+            }, {
+                "width": 100,
+                "property": "timeline",
+                "visible": False
+            }]
+        }
+    }
+
+    return recurring_task_view_schema
+
+
 def get_view_schema_for_big_plan_desc(big_plan_name):
     """Get the view schema for a big plan details view."""
     big_plan_view_schema = {

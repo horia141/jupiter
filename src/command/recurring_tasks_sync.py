@@ -5,6 +5,7 @@ import re
 from typing import Dict
 import uuid
 
+from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 import pendulum
 
@@ -130,18 +131,17 @@ class RecurringTasksSync(command.Command):
                 if prefer == "notion":
                     # Copy over the parameters from Notion to local
                     recurring_task_raw = self._build_entity_from_row(recurring_tasks_row)
-                    recurring_task.set_name(recurring_task_raw["name"])
-                    recurring_task.set_period(recurring_task_raw["period"])
-                    recurring_task.set_group(recurring_task_raw["group"])
-                    recurring_task.set_eisen(recurring_task_raw["eisen"])
-                    recurring_task.set_difficulty(recurring_task_raw["difficulty"])
-                    recurring_task.set_deadline(
-                        recurring_task_raw["due_at_time"],
-                        recurring_task_raw["due_at_day"],
-                        recurring_task_raw["due_at_month"])
-                    recurring_task.set_suspended(recurring_task_raw["suspended"])
-                    recurring_task.set_skip_rule(recurring_task_raw["skip_rule"])
-                    recurring_task.set_must_do(recurring_task_raw["must_do"])
+                    recurring_task.name = recurring_task_raw["name"]
+                    recurring_task.period = recurring_task_raw["period"]
+                    recurring_task.group = recurring_task_raw["group"]
+                    recurring_task.eisen = recurring_task_raw["eisen"]
+                    recurring_task.difficulty = recurring_task_raw["difficulty"]
+                    recurring_task.due_at_time = recurring_task_raw["due_at_time"]
+                    recurring_task.due_at_day = recurring_task_raw["due_at_day"]
+                    recurring_task.due_at_month = recurring_task_raw["due_at_month"]
+                    recurring_task.suspended = recurring_task_raw["suspended"]
+                    recurring_task.skip_rule = recurring_task_raw["skip_rule"]
+                    recurring_task.must_do = recurring_task_raw["must_do"]
                     recurring_tasks_repository.save_recurring_task(recurring_task)
                     LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from Notion")
                 elif prefer == "local":
@@ -202,6 +202,7 @@ class RecurringTasksSync(command.Command):
                 collection=inbox_tasks_page.collection) \
             .build_query() \
             .execute()
+        inbox_collection = inbox_tasks_page.collection
 
         for inbox_task_row in inbox_tasks_rows:
             if inbox_task_row.recurring_task_id is None or inbox_task_row.recurring_task_id == "":
@@ -224,6 +225,42 @@ class RecurringTasksSync(command.Command):
                 setattr(inbox_task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
                 setattr(inbox_task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)
             LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")
+
+        # Hwllo
+
+        # OK, not setup view structure!
+
+        for recurring_task_row in recurring_tasks_row_set.values():
+            LOGGER.info(f"Creating views structure for recurring task {recurring_task_row}")
+
+            recurring_task_view_block = None
+            recurring_task_view = None
+
+            for recurring_task_child in recurring_task_row.children:
+                if not isinstance(recurring_task_child, CollectionViewBlock):
+                    continue
+
+                if recurring_task_child.title != "Inbox":
+                    continue
+
+                recurring_task_view_block = recurring_task_child
+                recurring_task_view = recurring_task_view_block.views[0]
+                LOGGER.info(f"Found already existing inbox tasks view {recurring_task_view_block}")
+                break
+
+            if not recurring_task_view_block:
+                recurring_task_view_block = recurring_task_row.children.add_new(CollectionViewBlock)
+                recurring_task_view_block.collection = inbox_collection
+                recurring_task_view = recurring_task_view_block.views.add_new(view_type="table")
+                LOGGER.info(f"Created new view block {recurring_task_view_block} and view for it {recurring_task_view}")
+
+            client.submit_transaction([{
+                "id": recurring_task_view.id,
+                "table": "collection_view",
+                "path": [],
+                "command": "update",
+                "args": schema.get_view_schema_for_recurring_task_desc(recurring_task_row.ref_id)
+            }])
 
     @staticmethod
     def _clean_eisen(eisen):

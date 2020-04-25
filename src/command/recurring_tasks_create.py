@@ -4,6 +4,7 @@ import logging
 import re
 import uuid
 
+from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 
 import command.command as command
@@ -142,3 +143,41 @@ class RecurringTasksCreate(command.Command):
         new_recurring_task_row.must_do = must_do
         new_recurring_task_row.skip_rule = skip_rule
         LOGGER.info("Applied Notion changes")
+
+        # Setup the structure, yo!
+
+        LOGGER.info(f"Creating views structure for recurring task {new_recurring_task_row}")
+
+        inbox_page = space_utils.find_page_from_space_by_id(
+            client, the_lock["projects"][project.key]["inbox"]["root_page_id"])
+        inbox_collection = inbox_page.collection
+
+        new_recurring_task_view_block = None
+        new_recurring_task_view = None
+
+        for recurring_task_child in new_recurring_task_row.children:
+            if not isinstance(recurring_task_child, CollectionViewBlock):
+                continue
+
+            if recurring_task_child.title != "Inbox":
+                continue
+
+            new_recurring_task_view_block = recurring_task_child
+            new_recurring_task_view = new_recurring_task_view_block.views[0]
+            LOGGER.info(f"Found already existing inbox tasks view {new_recurring_task_view_block}")
+            break
+
+        if not new_recurring_task_view_block:
+            new_recurring_task_view_block = new_recurring_task_row.children.add_new(CollectionViewBlock)
+            new_recurring_task_view_block.collection = inbox_collection
+            new_recurring_task_view = new_recurring_task_view_block.views.add_new(view_type="table")
+            LOGGER.info(
+                f"Created new view block {new_recurring_task_view_block} and view for it {new_recurring_task_view}")
+
+        client.submit_transaction([{
+            "id": new_recurring_task_view.id,
+            "table": "collection_view",
+            "path": [],
+            "command": "update",
+            "args": schema.get_view_schema_for_recurring_task_desc(new_recurring_task.ref_id)
+        }])
