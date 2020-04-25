@@ -104,7 +104,7 @@ class BigPlansSync(command.Command):
             elif big_plan_row.ref_id in all_big_plans_set:
                 # If the big plan exists locally, we sync it with the remote
                 big_plan = all_big_plans_set[big_plan_row.ref_id]
-                if sync_prefer == "notion":
+                if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
                     big_plan_raw = self._build_entity_from_row(big_plan_row)
                     big_plan.name = big_plan_raw["name"]
@@ -114,7 +114,7 @@ class BigPlansSync(command.Command):
                     # Not updating inbox_id_ref
                     big_plans_repository.save_big_plan(big_plan)
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from Notion")
-                elif sync_prefer == "local":
+                elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
                     big_plan_row.title = big_plan.name
                     big_plan_row.archived = big_plan.archived

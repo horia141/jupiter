@@ -61,10 +61,10 @@ class ProjectSync(command.Command):
             client, system_lock["projects"][project_key]["root_page_id"])
         LOGGER.info(f"Found the root page via id {project_root_page}")
 
-        if sync_prefer == "local":
+        if sync_prefer == SyncPrefer.LOCAL:
             project_root_page.title = project.name
             LOGGER.info("Applied changes to Notion")
-        elif sync_prefer == "notion":
+        elif sync_prefer == SyncPrefer.NOTION:
             project.name = project_root_page.title
             projects_repository.save_project(project)
             LOGGER.info("Applied local change")

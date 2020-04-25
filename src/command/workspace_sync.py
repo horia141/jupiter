@@ -54,12 +54,12 @@ class WorkspaceSync(command.Command):
         found_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page"]["root_page_id"])
         LOGGER.info(f"Found the root page via id {found_root_page}")
 
-        if sync_prefer == "notion":
+        if sync_prefer == SyncPrefer.NOTION:
             name = found_root_page.title
             workspace.name = name
             workspace_repository.save_workspace(workspace)
             LOGGER.info("Applied changes on local side")
-        elif sync_prefer == "local":
+        elif sync_prefer == SyncPrefer.LOCAL:
             found_root_page.title = workspace.name
             LOGGER.info("Applied changes on Notion side")
         else:

@@ -140,9 +140,9 @@ class BasicValidator:
 
         sync_prefer_str: str = sync_prefer_raw.strip().lower()
 
-        if sync_prefer_str not in self._big_plan_status_values:
+        if sync_prefer_str not in self._sync_prefer_values:
             raise ModelValidationError(
-                f"Expected sync prefer '{sync_prefer_raw}' for be one of '{','.join(self._big_plan_status_values)}'")
+                f"Expected sync prefer '{sync_prefer_raw}' for be one of '{','.join(self._sync_prefer_values)}'")
 
         return SyncPrefer(sync_prefer_str)
 

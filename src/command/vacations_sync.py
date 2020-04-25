@@ -87,7 +87,7 @@ class VacationsSync(command.Command):
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
             elif vacation_row.ref_id in vacations_set:
                 # If the vacation exists locally, we sync it with the remote:
-                if sync_prefer == "notion":
+                if sync_prefer == SyncPrefer.NOTION:
                     if vacation_row.start_date.start >= vacation_row.end_date.start:
                         raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
                     vacations_set[vacation_row.ref_id].name = vacation_row.title
@@ -95,7 +95,7 @@ class VacationsSync(command.Command):
                     vacations_set[vacation_row.ref_id].end_date = vacation_row.end_date.start
                     vacations_repository.save_vacation(vacations_set[vacation_row.ref_id])
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
-                elif sync_prefer == "local":
+                elif sync_prefer == SyncPrefer.LOCAL:
                     vacation_row.title = vacations_set[vacation_row.ref_id].name
                     vacation_row.start_date = vacations_set[vacation_row.ref_id].start_date
                     vacation_row.end_date = vacations_set[vacation_row.ref_id].end_date

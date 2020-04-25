@@ -39,9 +39,9 @@ class RecurringTasksSync(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", type=str, dest="project", required=True,
+        parser.add_argument("--project", dest="project_key", required=True,
                             help="Allow only tasks from this project")
-        parser.add_argument("--prefer", choices=BasicValidator.sync_prefer_values(),
+        parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
 
     def run(self, args):
@@ -132,7 +132,7 @@ class RecurringTasksSync(command.Command):
             elif recurring_tasks_row.ref_id in all_recurring_tasks_set:
                 # If the recurring task exists locally, we sync it with the remote
                 recurring_task = all_recurring_tasks_set[recurring_tasks_row.ref_id]
-                if sync_prefer == "notion":
+                if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
                     recurring_task_raw = self._build_entity_from_row(recurring_tasks_row)
                     recurring_task.name = recurring_task_raw["name"]
@@ -148,7 +148,7 @@ class RecurringTasksSync(command.Command):
                     recurring_task.must_do = recurring_task_raw["must_do"]
                     recurring_tasks_repository.save_recurring_task(recurring_task)
                     LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from Notion")
-                elif sync_prefer == "local":
+                elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
                     recurring_tasks_row.title = recurring_task.name
                     recurring_tasks_row.group = recurring_task.group
@@ -163,8 +163,6 @@ class RecurringTasksSync(command.Command):
                     recurring_tasks_row.must_do = recurring_task.must_do
                     recurring_tasks_row.skip_rule = recurring_task.skip_rule
                     LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from local")
-                else:
-                    raise Exception(f"Invalid preference {sync_prefer}")
                 recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
             else:
                 LOGGER.info(f"Removed dangling recurring task in Notion {recurring_tasks_row}")

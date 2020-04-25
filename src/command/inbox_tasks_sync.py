@@ -127,7 +127,7 @@ class InboxTasksSync(command.Command):
             elif inbox_task_row.ref_id in all_inbox_tasks_set:
                 # If the big plan exists locally, we sync it with the remote
                 inbox_task = all_inbox_tasks_set[inbox_task_row.ref_id]
-                if sync_prefer == "notion":
+                if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
                     inbox_task.big_plan_ref_id = big_plan.ref_id if big_plan else None
                     inbox_task.name = inbox_task_raw["name"]
@@ -139,7 +139,7 @@ class InboxTasksSync(command.Command):
                     # Not updating inbox_id_ref
                     inbox_tasks_repository.save_inbox_task(inbox_task)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from Notion")
-                elif sync_prefer == "local":
+                elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
                     inbox_task_row.big_plan_id = inbox_task.big_plan_ref_id
                     inbox_task_row.big_plan = schema.format_name_for_option(big_plan.name) if big_plan else None
