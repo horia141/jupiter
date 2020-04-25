@@ -1,7 +1,6 @@
 """Command for setting the end date of a vacation."""
 
 import logging
-import pendulum
 
 from notion.client import NotionClient
 
@@ -10,6 +9,7 @@ import repository.vacations as vacations
 import repository.workspaces as workspaces
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,13 +29,18 @@ class VacationsSetEndDate(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("id", type=str, help="The id of the vacations to modify")
-        parser.add_argument("end_date", type=str, help="The new end date of the vacation")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacation to modify")
+        parser.add_argument("--end_date", type=str, dest="end_date", required=True,
+                            help="The new end date of the vacation")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        end_date = pendulum.parse(args.end_date, tz="UTC")
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        end_date = basic_validator.datetime_validate_and_clean(args.end_date)
 
         # Load local storage
 

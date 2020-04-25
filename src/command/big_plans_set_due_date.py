@@ -3,9 +3,9 @@
 import logging
 
 from notion.client import NotionClient
-import pendulum
 
 import command.command as command
+from models.basic import BasicValidator
 import repository.big_plans as big_plans
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -30,13 +30,17 @@ class BigPlansSetDueDate(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        due_date = pendulum.parse(args.due_date) if args.due_date else None
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        due_date = basic_validator.date_validate_and_clean(args.due_date) if args.due_date else None
 
         # Load local storage
 

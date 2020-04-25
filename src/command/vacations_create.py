@@ -2,7 +2,6 @@
 
 import logging
 
-import pendulum
 from notion.client import NotionClient
 
 import command.command as command
@@ -10,6 +9,7 @@ import repository.vacations as vacations
 import repository.workspaces as workspaces
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,9 +35,13 @@ class VacationsCreate(command.Command):
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        name = args.name
-        start_date = pendulum.parse(args.start_date, tz="UTC")
-        end_date = pendulum.parse(args.end_date, tz="UTC")
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        name = basic_validator.entity_name_validate_and_clean(args.name)
+        start_date = basic_validator.datetime_validate_and_clean(args.start_date)
+        end_date = basic_validator.datetime_validate_and_clean(args.end_date)
 
         if start_date >= end_date:
             raise Exception(f"Start date {start_date} is after {end_date}")

@@ -9,7 +9,8 @@ from notion.client import NotionClient
 # from notion.block import TodoBlock
 
 import command.command as command
-from repository.common import TaskPeriod
+import models.basic
+from models.basic import BasicValidator
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 import repository.recurring_tasks as recurring_tasks
@@ -37,26 +38,29 @@ class RecurringTasksGen(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", type=str, dest="project", required=True,
+        parser.add_argument("--project", dest="project_key", required=True,
                             help="Allow only tasks from this project")
-        parser.add_argument("--date", required=False, default=None, help="The date on which the upsert should run at")
-        parser.add_argument("--group", required=False, default=[], action="append",
-                            help="The group for which the upsert should happen. Defaults to all")
-        parser.add_argument("--period", required=False, default=[], action="append",
-                            choices=[tp.value for tp in TaskPeriod],
+        parser.add_argument("--date", help="The date on which the upsert should run at")
+        parser.add_argument("--group", default=[], action="append",
+                            help="The groups for which the upsert should happen. Defaults to all")
+        parser.add_argument("--period", default=[], action="append",
+                            choices=BasicValidator.recurring_task_period_values(),
                             help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        project_key = args.project
-        if args.date:
-            right_now = pendulum.parse(args.date)
-        else:
-            right_now = pendulum.now()
-        group_filter = frozenset(g.lower() for g in args.group) if len(args.group) > 0 else None
-        period_filter = frozenset(TaskPeriod(p) for p in args.period) if len(args.period) > 0 else None
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        right_now = basic_validator.datetime_validate_and_clean(args.date) if args.date else pendulum.now()
+        group_filter = frozenset(basic_validator.entity_name_validate_and_clean(g) for g in args.group) \
+            if len(args.group) > 0 else None
+        period_filter = frozenset(basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period) \
+            if len(args.period) > 0 else None
         dry_run = args.dry_run
 
+        # Load the local data
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")
 
@@ -180,7 +184,7 @@ class RecurringTasksGen(command.Command):
                         created_date=right_now,
                         name=schedule.full_name,
                         archived=False,
-                        status=inbox_tasks.InboxTaskStatus.RECURRING,
+                        status=models.basic.InboxTaskStatus.RECURRING,
                         eisen=task.eisen,
                         difficulty=task.difficulty,
                         due_date=schedule.due_time,

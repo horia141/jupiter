@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+from models.basic import BasicValidator
 import repository.big_plans as big_plans
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -29,15 +30,18 @@ class BigPlansSetStatus(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--status", dest="status", required=True,
-                            choices=[bps.value for bps in big_plans.BigPlanStatus],
-                            help="The status of the big plan")
+                            choices=BasicValidator.big_plan_status_values(), help="The status of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        status = big_plans.BigPlanStatus(args.status)
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        status = basic_validator.big_plan_status_validate_and_clean(args.status)
 
         # Load local storage
 

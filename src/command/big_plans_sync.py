@@ -9,7 +9,7 @@ from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 
 import command.command as command
-from repository.common import RefId
+from models.basic import EntityId, BasicValidator, SyncPrefer
 import repository.big_plans as big_plans
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -35,14 +35,20 @@ class BigPlansSync(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
-        parser.add_argument("--project", dest="project", required="True",
+        parser.add_argument("--project", dest="project_key", required=True,
                             help="The key of the project")
+        parser.add_argument("--prefer", dest="sync_prefer",
+                            choices=BasicValidator.sync_prefer_values(), default=SyncPrefer.NOTION.value,
+                            help="Which source to prefer")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        prefer = args.prefer
-        project_key = args.project
+        basic_validator = BasicValidator()
+
+        # Parser arguments
+
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        sync_prefer = basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
 
         # Load local storage
 
@@ -55,7 +61,7 @@ class BigPlansSync(command.Command):
         workspace = workspace_repository.load_workspace()
         project = projects_repository.load_project_by_key(project_key)
         all_big_plans = big_plans_repository.list_all_big_plans(filter_project_ref_id=[project.ref_id])
-        all_big_plans_set: Dict[RefId, big_plans.BigPlan] = {rt.ref_id: rt for rt in all_big_plans}
+        all_big_plans_set: Dict[EntityId, big_plans.BigPlan] = {rt.ref_id: rt for rt in all_big_plans}
 
         # Prepare Notion connection
 
@@ -98,7 +104,7 @@ class BigPlansSync(command.Command):
             elif big_plan_row.ref_id in all_big_plans_set:
                 # If the big plan exists locally, we sync it with the remote
                 big_plan = all_big_plans_set[big_plan_row.ref_id]
-                if prefer == "notion":
+                if sync_prefer == "notion":
                     # Copy over the parameters from Notion to local
                     big_plan_raw = self._build_entity_from_row(big_plan_row)
                     big_plan.name = big_plan_raw["name"]
@@ -108,7 +114,7 @@ class BigPlansSync(command.Command):
                     # Not updating inbox_id_ref
                     big_plans_repository.save_big_plan(big_plan)
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from Notion")
-                elif prefer == "local":
+                elif sync_prefer == "local":
                     # Copy over the parameters from local to Notion
                     big_plan_row.title = big_plan.name
                     big_plan_row.archived = big_plan.archived
@@ -117,7 +123,7 @@ class BigPlansSync(command.Command):
                     setattr(big_plan_row, "inbox_id_ref", str(big_plan.notion_link_uuid))
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from local")
                 else:
-                    raise Exception(f"Invalid preference {prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
                 big_plans_row_set[big_plan_row.ref_id] = big_plan_row
             else:
                 LOGGER.info(f"Removed dangling big plan in Notion {big_plan_row}")

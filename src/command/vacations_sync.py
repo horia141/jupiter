@@ -7,6 +7,7 @@ from notion.client import NotionClient
 import pendulum
 
 import command.command as command
+from models.basic import EntityId, BasicValidator, SyncPrefer
 import repository.vacations as vacations
 import repository.workspaces as workspaces
 import space_utils
@@ -30,11 +31,15 @@ class VacationsSync(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
+        parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
+                            default=SyncPrefer.NOTION.value, help="Which source to prefer")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        prefer = args.prefer
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        sync_prefer = basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
 
         # Load local storage
 
@@ -52,7 +57,7 @@ class VacationsSync(command.Command):
 
         all_vacations = vacations_repository.load_all_vacations()
 
-        vacations_set: Dict[vacations.RefId, vacations.Vacation] = {v.ref_id: v for v in all_vacations}
+        vacations_set: Dict[EntityId, vacations.Vacation] = {v.ref_id: v for v in all_vacations}
 
         vacations_page = space_utils.find_page_from_space_by_id(client, the_lock["vacations"]["root_page_id"])
         vacations_rows = client \
@@ -82,7 +87,7 @@ class VacationsSync(command.Command):
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
             elif vacation_row.ref_id in vacations_set:
                 # If the vacation exists locally, we sync it with the remote:
-                if prefer == "notion":
+                if sync_prefer == "notion":
                     if vacation_row.start_date.start >= vacation_row.end_date.start:
                         raise Exception(f"Start date for vacation {vacation_row.title} is after end date")
                     vacations_set[vacation_row.ref_id].name = vacation_row.title
@@ -90,13 +95,13 @@ class VacationsSync(command.Command):
                     vacations_set[vacation_row.ref_id].end_date = vacation_row.end_date.start
                     vacations_repository.save_vacation(vacations_set[vacation_row.ref_id])
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
-                elif prefer == "local":
+                elif sync_prefer == "local":
                     vacation_row.title = vacations_set[vacation_row.ref_id].name
                     vacation_row.start_date = vacations_set[vacation_row.ref_id].start_date
                     vacation_row.end_date = vacations_set[vacation_row.ref_id].end_date
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from local")
                 else:
-                    raise Exception(f"Invalid preference {prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
             else:
                 # If the vacation is not new, and does not exist on the local side, it means it got removed

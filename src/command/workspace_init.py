@@ -15,6 +15,7 @@ import repository.workspaces as workspaces
 import schema
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,14 +36,17 @@ class WorkspaceInit(command.Command):
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
         parser.add_argument("--name", required=True, help="The plan name to use")
-        parser.add_argument("--token", dest="token", required=True, help="The Notion access token to use")
-        parser.add_argument("--space-id", dest="space_id", required=True, help="The Notion space id to use")
+        parser.add_argument("--space-id", dest="workspace_space_id", required=True, help="The Notion space id to use")
+        parser.add_argument("--token", dest="workspace_token", required=True, help="The Notion access token to use")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        name = args.name
-        token = args.token
-        space_id = args.space_id
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        name = basic_validator.entity_name_validate_and_clean(args.name)
+        space_id = basic_validator.workspace_space_id_validate_and_clean(args.space_id)
+        token = basic_validator.workspace_token_validate_and_clean(args.token)
 
         # Load local storage
 
@@ -80,7 +84,9 @@ class WorkspaceInit(command.Command):
         # Apply the changes to the local side
 
         new_workspace = workspaces.Workspace(
-            name, workspaces.WorkspaceSpaceId(space_id), workspaces.WorkspaceToken(token))
+            name=name,
+            space_id=space_id,
+            token=token)
         workspace_repository.save_workspace(new_workspace)
 
         # Save changes to lockfile

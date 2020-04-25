@@ -6,7 +6,7 @@ from typing import Dict
 from notion.client import NotionClient
 
 import command.command as command
-from repository.common import RefId
+from models.basic import EntityId, BasicValidator
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -32,11 +32,15 @@ class InboxTasksArchiveDone(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project", required=True, help="The key of the project")
+        parser.add_argument("--project", dest="project_key", required=True, help="The key of the project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        project_key = args.project
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
 
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")
@@ -48,7 +52,7 @@ class InboxTasksArchiveDone(command.Command):
         workspace = workspace_repository.load_workspace()
         project = projects_repository.load_project_by_key(project_key)
         all_inbox_tasks = inbox_tasks_repository.list_all_inbox_tasks(filter_project_ref_id=[project.ref_id])
-        all_inbox_tasks_set: Dict[RefId, inbox_tasks.InboxTask] = {it.ref_id: it for it in all_inbox_tasks}
+        all_inbox_tasks_set: Dict[EntityId, inbox_tasks.InboxTask] = {it.ref_id: it for it in all_inbox_tasks}
 
         # Apply changes locally
 

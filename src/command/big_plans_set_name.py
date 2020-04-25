@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+from models.basic import BasicValidator
 import repository.big_plans as big_plans
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -30,16 +31,15 @@ class BigPlansSetName(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--name", dest="name", required=True, help="The name of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        name = args.name.strip()
+        basic_validator = BasicValidator()
 
-        if len(name) == 0:
-            raise Exception("Must provide a non-empty name")
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        name = basic_validator.entity_name_validate_and_clean(args.name)
 
         # Load local storage
 

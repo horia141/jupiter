@@ -5,7 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
-from repository.common import TaskDifficulty
+from models.basic import BasicValidator
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -30,16 +30,20 @@ class InboxTasksSetDifficulty(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required="True", help="The if of the big plan")
-        parser.add_argument("--difficulty", dest="difficulty", choices=[td.value for td in TaskDifficulty],
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The if of the big plan")
+        parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
                             help="The difficulty to use for tasks")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        basic_validator = BasicValidator()
+
         # Parse arguments
 
-        ref_id = args.ref_id
-        difficulty = TaskDifficulty(args.difficulty) if args.difficulty else None
+        # Parse arguments
+
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        difficulty = basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
 
         # Load local storage
 

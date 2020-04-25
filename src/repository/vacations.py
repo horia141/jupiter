@@ -11,7 +11,8 @@ import jsonschema as js
 import pendulum
 import yaml
 
-from repository.common import RefId, RepositoryError
+from models.basic import EntityId
+from repository.common import RepositoryError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 class Vacation:
     """A vacation."""
 
-    ref_id: RefId
+    ref_id: EntityId
     archived: bool
     name: str
     start_date: pendulum.DateTime
@@ -79,7 +80,7 @@ class VacationsRepository:
         vacations_next_idx, vacations = self._bulk_load_vacations()
 
         new_vacation = Vacation(
-            ref_id=RefId(str(vacations_next_idx)),
+            ref_id=EntityId(str(vacations_next_idx)),
             archived=archived,
             name=name,
             start_date=start_date,
@@ -92,7 +93,7 @@ class VacationsRepository:
 
         return new_vacation
 
-    def remove_vacation_by_id(self, ref_id: RefId) -> None:
+    def remove_vacation_by_id(self, ref_id: EntityId) -> None:
         """Remove a particular vacation."""
         vacations_next_idx, vacations = self._bulk_load_vacations()
 
@@ -110,7 +111,7 @@ class VacationsRepository:
         _, vacations = self._bulk_load_vacations()
         return vacations
 
-    def load_vacation_by_id(self, ref_id: RefId) -> Vacation:
+    def load_vacation_by_id(self, ref_id: EntityId) -> Vacation:
         """Retrieve a particular vacation by its id."""
         _, vacations = self._bulk_load_vacations()
         found_vacation = self._find_vacation_by_id(ref_id, vacations)
@@ -138,7 +139,7 @@ class VacationsRepository:
                 vacations_next_idx = vacations_ser["next_idx"]
                 all_vacations = \
                     (Vacation(
-                        ref_id=RefId(v["ref_id"]),
+                        ref_id=EntityId(v["ref_id"]),
                         archived=v["archived"],
                         name=v["name"],
                         start_date=pendulum.parse(v["start_date"]),
@@ -178,7 +179,7 @@ class VacationsRepository:
         return isinstance(instance, datetime.date)
 
     @staticmethod
-    def _find_vacation_by_id(ref_id: RefId, vacations: List[Vacation]) -> Optional[Vacation]:
+    def _find_vacation_by_id(ref_id: EntityId, vacations: List[Vacation]) -> Optional[Vacation]:
         try:
             return next(v for v in vacations if v.ref_id == ref_id)
         except StopIteration:

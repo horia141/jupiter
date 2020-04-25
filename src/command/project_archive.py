@@ -12,6 +12,7 @@ import repository.recurring_tasks as recurring_tasks
 import repository.workspaces as workspaces
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,13 +32,15 @@ class ProjectArchive(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("project", help="The key of the project")
+        parser.add_argument("--project", dest="project_key", required=True, help="The key of the project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        basic_validator = BasicValidator()
+
         # Parse arguments
 
-        project_key = args.project
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
 
         # Load local storage
 

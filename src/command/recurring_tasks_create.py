@@ -1,14 +1,13 @@
 """Command for adding a recurring task."""
 
 import logging
-import re
 import uuid
 
 from notion.block import CollectionViewBlock
 from notion.client import NotionClient
 
 import command.command as command
-from repository.common import TaskPeriod, TaskEisen, TaskDifficulty
+from models.basic import BasicValidator, Eisen, RecurringTaskPeriod
 import repository.recurring_tasks as recurring_tasks
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -34,13 +33,14 @@ class RecurringTasksCreate(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
+        parser.add_argument("--project", dest="project_key", required=True, help="The project key to add the task to")
         parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
         parser.add_argument("--group", dest="group", required=True, help="The group for the recurring task")
-        parser.add_argument("--period", dest="period", choices=[tp.value for tp in TaskPeriod], required=True,
+        parser.add_argument("--period", dest="period", choices=[tp.value for tp in RecurringTaskPeriod], required=True,
                             help="The period for the recurring task")
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
-                            choices=[te.value for te in TaskEisen], help="The Eisenhower matrix values to use for task")
-        parser.add_argument("--difficulty", dest="difficulty", choices=[td.value for td in TaskDifficulty],
+                            choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
+        parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
                             help="The difficulty to use for tasks")
         parser.add_argument("--due-at-time", dest="due_at_time", metavar="HH:MM", help="The time a task will be due on")
         parser.add_argument("--due-at-day", type=int, dest="due_at_day", metavar="DAY",
@@ -50,34 +50,27 @@ class RecurringTasksCreate(command.Command):
         parser.add_argument("--must-do", dest="must_do", default=False, action="store_true",
                             help="Whether to treat this task as must do or not")
         parser.add_argument("--skip-rule", dest="skip_rule", help="The skip rule for the task")
-        parser.add_argument("--project", dest="project", required=True, help="The project key to add the task to")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        name = args.name.strip()
-        group = args.group.strip()
-        period = TaskPeriod(args.period)
-        eisen = [e.strip().lower() for e in args.eisen]
-        difficulty = TaskDifficulty(args.difficulty) if args.difficulty else None
-        due_at_time = args.due_at_time.strip().lower() if args.due_at_time else None
-        due_at_day = args.due_at_day
-        due_at_month = args.due_at_month
-        must_do = args.must_do if args.must_do else False
-        skip_rule = args.skip_rule.strip().lower() if args.skip_rule else None
-        project_key = args.project
+        basic_validator = BasicValidator()
 
-        if len(name) == 0:
-            raise Exception("Must provide a non-empty name")
-
-        if len(group) == 0:
-            raise Exception("Most provide a non-empty group")
-
-        if any(e not in [te.value for te in TaskEisen] for e in eisen):
-            raise Exception(f"Invalid eisenhower values {eisen}")
-
-        if due_at_time:
-            if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):
-                raise Exception(f"Invalid due time value '{due_at_time}'")
+        # Parse arguments
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        name = basic_validator.entity_name_validate_and_clean(args.name)
+        group = basic_validator.entity_name_validate_and_clean(args.group)
+        period = basic_validator.recurring_task_period_validate_and_clean(args.period)
+        eisen = [basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
+        difficulty = basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
+        due_at_time = basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time)\
+            if args.due_at_time else None
+        due_at_day = basic_validator.recurring_task_due_at_day_validate_and_clean(period, args.due_at_day) \
+            if args.due_at_day else None
+        due_at_month = basic_validator.recurring_task_due_at_month_validate_and_clean(period, args.due_at_month) \
+            if args.due_at_month else None
+        must_do = args.must_do
+        skip_rule = basic_validator.recurring_task_skip_rule_validate_and_clean(args.skip_rule) \
+            if args.skip_rule else None
 
         # Load local storage
 
@@ -94,7 +87,7 @@ class RecurringTasksCreate(command.Command):
 
         new_recurring_task = recurring_tasks_repository.create_recurring_task(
             project_ref_id=project.ref_id, archived=False, name=name, period=period,
-            group=recurring_tasks.RecurringTaskGroup(group), eisen=[TaskEisen(e) for e in eisen], difficulty=difficulty,
+            group=recurring_tasks.RecurringTaskGroup(group), eisen=[Eisen(e) for e in eisen], difficulty=difficulty,
             due_at_time=due_at_time, due_at_day=due_at_day, due_at_month=due_at_month, suspended=False,
             skip_rule=skip_rule, must_do=must_do)
 

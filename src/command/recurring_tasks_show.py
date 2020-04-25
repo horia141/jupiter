@@ -5,6 +5,7 @@ import logging
 import command.command as command
 import repository.projects as projects
 import repository.recurring_tasks as recurring_tasks
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,14 +25,18 @@ class RecurringTasksShow(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="ref_id", help="The id of the vacations to modify")
         parser.add_argument("--project", type=str, dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        project_keys = args.project_keys if len(args.project_keys) > 0 else None
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id) if args.ref_id else None
+        project_keys = [basic_validator.project_key_validate_and_clean(p) for p in args.project_keys] \
+            if len(args.project_keys) > 0 else None
 
         # Load local storage
 

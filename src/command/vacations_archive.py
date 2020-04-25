@@ -9,6 +9,7 @@ import repository.vacations as vacations
 import repository.workspaces as workspaces
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,11 +29,15 @@ class VacationsArchive(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("id", type=str, help="The id of the vacations to remove")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True,
+                            help="The id of the vacations to remove")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
 
         # Load local storage
 

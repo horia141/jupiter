@@ -4,6 +4,7 @@ import logging
 
 import command.command as command
 import repository.projects as projects
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,11 +24,14 @@ class ProjectShow(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project", help="The project key to show")
+        parser.add_argument("--project", dest="project_key", help="The project key to show")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        project_key = args.project
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key) if args.project_key else None
 
         # Load local storage
 

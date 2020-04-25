@@ -10,6 +10,7 @@ import repository.projects as projects
 import repository.workspaces as workspaces
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,16 +30,18 @@ class InboxTasksSetStatus(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required="True", help="The if of the big plan")
-        parser.add_argument("--status", dest="status", required=True,
-                            choices=[bps.value for bps in inbox_tasks.InboxTaskStatus],
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The if of the big plan")
+        parser.add_argument("--status", dest="status", required=True, choices=BasicValidator.inbox_task_status_values(),
                             help="The status of the inbox task")
+
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        basic_validator = BasicValidator()
+
         # Parse arguments
 
-        ref_id = args.ref_id
-        status = inbox_tasks.InboxTaskStatus(args.status.strip().lower())
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        status = basic_validator.inbox_task_status_validate_and_clean(args.status)
 
         # Load local storage
 

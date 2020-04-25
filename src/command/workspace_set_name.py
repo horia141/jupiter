@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+from models.basic import BasicValidator
 import repository.workspaces as workspaces
 import space_utils
 import storage
@@ -27,11 +28,15 @@ class WorkspaceSetName(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("name", help="The plan name to use")
+        parser.add_argument("--name", dest="name", required=True, help="The plan name to use")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        name = args.name
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        name = basic_validator.entity_name_validate_and_clean(args.name)
 
         # Load local storage
 

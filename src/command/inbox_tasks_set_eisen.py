@@ -5,7 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
-from repository.common import TaskEisen
+from models.basic import BasicValidator
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -30,16 +30,18 @@ class InboxTasksSetEisen(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required="True", help="The if of the big plan")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The if of the big plan")
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
-                            choices=[te.value for te in TaskEisen], help="The Eisenhower matrix values to use for task")
+                            choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        basic_validator = BasicValidator()
+
         # Parse arguments
 
-        ref_id = args.ref_id
-        eisen = [TaskEisen(e.strip().lower()) for e in args.eisen]
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        eisen = [basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
 
         # Load local storage
 

@@ -3,9 +3,8 @@
 import hashlib
 import uuid
 
-from repository.common import TaskDifficulty, TaskEisen, TaskPeriod
+from models.basic import Eisen, Difficulty, InboxTaskStatus, RecurringTaskPeriod
 from repository.big_plans import BigPlanStatus
-from repository.inbox_tasks import InboxTaskStatus
 
 COLORS = [
     "gray",
@@ -167,49 +166,49 @@ INBOX_STATUS = {
 
 INBOX_EISENHOWER = {
     "Urgent": {
-        "name": TaskEisen.URGENT.for_notion(),
+        "name": Eisen.URGENT.for_notion(),
         "color": "red"
     },
     "Important": {
-        "name": TaskEisen.IMPORTANT.for_notion(),
+        "name": Eisen.IMPORTANT.for_notion(),
         "color": "blue"
     }
 }
 
 INBOX_DIFFICULTY = {
     "Easy": {
-        "name": TaskDifficulty.EASY.for_notion(),
+        "name": Difficulty.EASY.for_notion(),
         "color": "blue"
     },
     "Medium": {
-        "name": TaskDifficulty.MEDIUM.for_notion(),
+        "name": Difficulty.MEDIUM.for_notion(),
         "color": "green"
     },
     "Hard": {
-        "name": TaskDifficulty.HARD.for_notion(),
+        "name": Difficulty.HARD.for_notion(),
         "color": "purple"
     }
 }
 
 INBOX_TASK_PERIOD = {
     "Daily": {
-        "name": TaskPeriod.DAILY.for_notion(),
+        "name": RecurringTaskPeriod.DAILY.for_notion(),
         "color": "orange"
     },
     "Weekly": {
-        "name": TaskPeriod.WEEKLY.for_notion(),
+        "name": RecurringTaskPeriod.WEEKLY.for_notion(),
         "color": "red"
     },
     "Monthly": {
-        "name": TaskPeriod.MONTHLY.for_notion(),
+        "name": RecurringTaskPeriod.MONTHLY.for_notion(),
         "color": "blue"
     },
     "Quarterly": {
-        "name": TaskPeriod.QUARTERLY.for_notion(),
+        "name": RecurringTaskPeriod.QUARTERLY.for_notion(),
         "color": "green"
     },
     "Yearly": {
-        "name": TaskPeriod.YEARLY.for_notion(),
+        "name": RecurringTaskPeriod.YEARLY.for_notion(),
         "color": "yellow"
     }
 }

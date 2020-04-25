@@ -7,7 +7,7 @@ import pendulum
 from notion.client import NotionClient
 
 import command.command as command
-from repository.common import RefId, TaskEisen, TaskDifficulty
+from models.basic import EntityId, Eisen, Difficulty, BasicValidator, SyncPrefer, InboxTaskStatus
 import repository.big_plans as big_plans
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
@@ -35,14 +35,19 @@ class InboxTasksSync(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
-        parser.add_argument("--project", dest="project", required="True",
+        parser.add_argument("--project", dest="project_key", required=True,
                             help="The key of the project")
+        parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
+                            default=SyncPrefer.NOTION.value, help="Which source to prefer")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        prefer = args.prefer
-        project_key = args.project
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        sync_prefer = basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
         right_now = pendulum.now()
 
         # Load local storage
@@ -61,7 +66,7 @@ class InboxTasksSync(command.Command):
             {schema.format_name_for_option(bp.name): bp
              for bp in big_plans_repository.list_all_big_plans(filter_project_ref_id=[project.ref_id])}
         all_inbox_tasks = inbox_tasks_repository.list_all_inbox_tasks(filter_project_ref_id=[project.ref_id])
-        all_inbox_tasks_set: Dict[RefId, inbox_tasks.InboxTask] = {rt.ref_id: rt for rt in all_inbox_tasks}
+        all_inbox_tasks_set: Dict[EntityId, inbox_tasks.InboxTask] = {rt.ref_id: rt for rt in all_inbox_tasks}
 
         # Prepare Notion connection
 
@@ -122,7 +127,7 @@ class InboxTasksSync(command.Command):
             elif inbox_task_row.ref_id in all_inbox_tasks_set:
                 # If the big plan exists locally, we sync it with the remote
                 inbox_task = all_inbox_tasks_set[inbox_task_row.ref_id]
-                if prefer == "notion":
+                if sync_prefer == "notion":
                     # Copy over the parameters from Notion to local
                     inbox_task.big_plan_ref_id = big_plan.ref_id if big_plan else None
                     inbox_task.name = inbox_task_raw["name"]
@@ -134,7 +139,7 @@ class InboxTasksSync(command.Command):
                     # Not updating inbox_id_ref
                     inbox_tasks_repository.save_inbox_task(inbox_task)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from Notion")
-                elif prefer == "local":
+                elif sync_prefer == "local":
                     # Copy over the parameters from local to Notion
                     inbox_task_row.big_plan_id = inbox_task.big_plan_ref_id
                     inbox_task_row.big_plan = schema.format_name_for_option(big_plan.name) if big_plan else None
@@ -149,7 +154,7 @@ class InboxTasksSync(command.Command):
                     inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from local")
                 else:
-                    raise Exception(f"Invalid preference {prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
                 inbox_tasks_row_set[inbox_task_row.ref_id] = inbox_task_row
             else:
                 LOGGER.info(f"Removed dangling big plan in Notion {inbox_task_row}")
@@ -201,10 +206,10 @@ class InboxTasksSync(command.Command):
         recurring_task_ref_id = row.recurring_task_id
         name = row.title.strip()
         archived = row.archived
-        status = inbox_tasks.InboxTaskStatus("-".join(f.lower() for f in row.status.strip().split(" ")))\
-            if row.status else inbox_tasks.InboxTaskStatus.NOT_STARTED
-        eisen = [TaskEisen(e.strip().lower()) for e in InboxTasksSync._clean_eisen(row.eisen)]
-        difficulty = TaskDifficulty(row.difficulty.strip().lower()) if row.difficulty else None
+        status = InboxTaskStatus("-".join(f.lower() for f in row.status.strip().split(" ")))\
+            if row.status else InboxTaskStatus.NOT_STARTED
+        eisen = [Eisen(e.strip().lower()) for e in InboxTasksSync._clean_eisen(row.eisen)]
+        difficulty = Difficulty(row.difficulty.strip().lower()) if row.difficulty else None
         due_date = row.due_date.start if row.due_date else None
         recurring_task_timeline = row.recurring_timeline
 

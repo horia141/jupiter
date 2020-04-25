@@ -9,6 +9,7 @@ import repository.projects as projects
 import repository.workspaces as workspaces
 import schema
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,15 +29,21 @@ class RemoveArchivedTasks(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("project", help="The key of the project")
-        parser.add_argument("--period", required=False, default=[], action="append",
-                            help="The period for which the upsert should happen. Defaults to all")
+        parser.add_argument("--project", dest="project_key", required=True, help="The key of the project")
+        parser.add_argument("--period", default=[], action="append",
+                            help="The period for which the remove should happen. Defaults to all")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        project_key = args.project
-        period_filter = frozenset(p.lower() for p in args.period) if len(args.period) > 0 else None
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        period_filter = frozenset(basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period) \
+            if len(args.period) > 0 else None
         dry_run = args.dry_run
+
+        # Load local storage.
 
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")

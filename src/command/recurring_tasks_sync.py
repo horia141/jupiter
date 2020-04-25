@@ -10,10 +10,10 @@ from notion.client import NotionClient
 import pendulum
 
 import command.command as command
-from repository.common import TaskPeriod, TaskEisen, TaskDifficulty
+from models.basic import EntityId, BasicValidator, Eisen, Difficulty, RecurringTaskPeriod, SyncPrefer
 import repository.projects as projects
 import repository.recurring_tasks as recurring_tasks
-from repository.recurring_tasks import RefId, RecurringTask
+from repository.recurring_tasks import RecurringTask
 import repository.workspaces as workspaces
 import schedules
 import schema
@@ -39,14 +39,18 @@ class RecurringTasksSync(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--prefer", choices=["notion", "local"], default="notion", help="Which source to prefer")
         parser.add_argument("--project", type=str, dest="project", required=True,
                             help="Allow only tasks from this project")
+        parser.add_argument("--prefer", choices=BasicValidator.sync_prefer_values(),
+                            default=SyncPrefer.NOTION.value, help="Which source to prefer")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        prefer = args.prefer
-        project_key = args.project
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        sync_prefer = basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
 
         # Load local storage
 
@@ -60,7 +64,7 @@ class RecurringTasksSync(command.Command):
         project = projects_repository.load_project_by_key(project_key)
         all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(
             filter_project_ref_id=[project.ref_id])
-        all_recurring_tasks_set: Dict[RefId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
+        all_recurring_tasks_set: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
 
         # Prepare Notion connection
 
@@ -128,7 +132,7 @@ class RecurringTasksSync(command.Command):
             elif recurring_tasks_row.ref_id in all_recurring_tasks_set:
                 # If the recurring task exists locally, we sync it with the remote
                 recurring_task = all_recurring_tasks_set[recurring_tasks_row.ref_id]
-                if prefer == "notion":
+                if sync_prefer == "notion":
                     # Copy over the parameters from Notion to local
                     recurring_task_raw = self._build_entity_from_row(recurring_tasks_row)
                     recurring_task.name = recurring_task_raw["name"]
@@ -144,7 +148,7 @@ class RecurringTasksSync(command.Command):
                     recurring_task.must_do = recurring_task_raw["must_do"]
                     recurring_tasks_repository.save_recurring_task(recurring_task)
                     LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from Notion")
-                elif prefer == "local":
+                elif sync_prefer == "local":
                     # Copy over the parameters from local to Notion
                     recurring_tasks_row.title = recurring_task.name
                     recurring_tasks_row.group = recurring_task.group
@@ -160,7 +164,7 @@ class RecurringTasksSync(command.Command):
                     recurring_tasks_row.skip_rule = recurring_task.skip_rule
                     LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from local")
                 else:
-                    raise Exception(f"Invalid preference {prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
                 recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
             else:
                 LOGGER.info(f"Removed dangling recurring task in Notion {recurring_tasks_row}")
@@ -274,9 +278,9 @@ class RecurringTasksSync(command.Command):
     def _build_entity_from_row(row):
         name = row.title.strip()
         group = row.group.strip() if row.group else ""
-        period = TaskPeriod(row.period.strip().lower())
-        eisen = [TaskEisen(e.strip().lower()) for e in RecurringTasksSync._clean_eisen(row.eisen)]
-        difficulty = TaskDifficulty(row.difficulty.strip().lower()) if row.difficulty else None
+        period = RecurringTaskPeriod(row.period.strip().lower())
+        eisen = [Eisen(e.strip().lower()) for e in RecurringTasksSync._clean_eisen(row.eisen)]
+        difficulty = Difficulty(row.difficulty.strip().lower()) if row.difficulty else None
         due_at_time = row.due_at_time.strip().lower() if row.due_at_time else None
         due_at_day = row.due_at_day
         due_at_month = row.due_at_month

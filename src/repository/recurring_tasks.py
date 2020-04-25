@@ -9,7 +9,8 @@ from typing import Final, Any, ClassVar, Dict, NewType, Iterable, List, Optional
 import jsonschema as js
 import yaml
 
-from repository.common import RefId, RepositoryError, TaskPeriod, TaskEisen, TaskDifficulty
+from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod
+from repository.common import RepositoryError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,14 +22,14 @@ RecurringTaskGroup = NewType("RecurringTaskGroup", str)
 class RecurringTask:
     """A recurring task."""
 
-    ref_id: RefId
-    project_ref_id: RefId
+    ref_id: EntityId
+    project_ref_id: EntityId
     archived: bool
     name: str
-    period: TaskPeriod
+    period: RecurringTaskPeriod
     group: RecurringTaskGroup
-    eisen: List[TaskEisen]
-    difficulty: Optional[TaskDifficulty]
+    eisen: List[Eisen]
+    difficulty: Optional[Difficulty]
     due_at_time: Optional[str]
     due_at_day: Optional[int]
     due_at_month: Optional[int]
@@ -90,15 +91,15 @@ class RecurringTasksRepository:
         self._bulk_save_recurring_tasks((0, []))
 
     def create_recurring_task(
-            self, project_ref_id: RefId, archived: bool, name: str, period: TaskPeriod, group: RecurringTaskGroup,
-            eisen: Iterable[TaskEisen], difficulty: Optional[TaskDifficulty], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
-            must_do: bool) -> RecurringTask:
+            self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod,
+            group: RecurringTaskGroup, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
+            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
+            skip_rule: Optional[str], must_do: bool) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._bulk_load_recurring_tasks()
 
         new_recurring_task = RecurringTask(
-            ref_id=RefId(str(recurring_tasks_next_idx)),
+            ref_id=EntityId(str(recurring_tasks_next_idx)),
             project_ref_id=project_ref_id,
             archived=archived,
             name=name,
@@ -120,7 +121,7 @@ class RecurringTasksRepository:
 
         return new_recurring_task
 
-    def remove_recurring_task_by_id(self, ref_id: RefId) -> None:
+    def remove_recurring_task_by_id(self, ref_id: EntityId) -> None:
         """Remove a particular recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._bulk_load_recurring_tasks()
 
@@ -134,13 +135,13 @@ class RecurringTasksRepository:
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, recurring_tasks))
 
     def list_all_recurring_tasks(
-            self, filter_project_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[RecurringTask]:
+            self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:
         """Retrieve all the recurring tasks defined."""
         _, recurring_tasks = self._bulk_load_recurring_tasks(
             filter_project_ref_id=frozenset(filter_project_ref_id) if filter_project_ref_id else None)
         return recurring_tasks
 
-    def load_recurring_task_by_id(self, ref_id: RefId) -> RecurringTask:
+    def load_recurring_task_by_id(self, ref_id: EntityId) -> RecurringTask:
         """Retrieve a particular recurring task by its id."""
         _, recurring_tasks = self._bulk_load_recurring_tasks()
         found_recurring_tasks = self._find_recurring_task_by_id(ref_id, recurring_tasks)
@@ -160,7 +161,7 @@ class RecurringTasksRepository:
         self._bulk_save_recurring_tasks((recurring_tasks_next_idx, new_recurring_tasks))
 
     def _bulk_load_recurring_tasks(
-            self, filter_project_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[RecurringTask]]:
+            self, filter_project_ref_id: Optional[Set[EntityId]] = None) -> Tuple[int, List[RecurringTask]]:
         try:
             with open(RecurringTasksRepository._RECURRING_TASKS_FILE_PATH, "r") as recurring_tasks_file:
                 recurring_tasks_ser = yaml.safe_load(recurring_tasks_file)
@@ -172,14 +173,14 @@ class RecurringTasksRepository:
                 recurring_tasks_next_idx = recurring_tasks_ser["next_idx"]
                 recurring_tasks_iter = \
                     (RecurringTask(
-                        ref_id=RefId(rt["ref_id"]),
-                        project_ref_id=RefId(rt["project_ref_id"]),
+                        ref_id=EntityId(rt["ref_id"]),
+                        project_ref_id=EntityId(rt["project_ref_id"]),
                         archived=rt.get("archived", False),
                         name=rt["name"],
-                        period=TaskPeriod(rt["period"]),
+                        period=RecurringTaskPeriod(rt["period"]),
                         group=RecurringTaskGroup(rt["group"]),
-                        eisen=[TaskEisen(e) for e in rt["eisen"]],
-                        difficulty=TaskDifficulty(rt["difficulty"]) if rt["difficulty"] else None,
+                        eisen=[Eisen(e) for e in rt["eisen"]],
+                        difficulty=Difficulty(rt["difficulty"]) if rt["difficulty"] else None,
                         due_at_time=rt["due_at_time"] if rt["due_at_time"] else None,
                         due_at_day=rt["due_at_day"] if rt["due_at_day"] else None,
                         due_at_month=rt["due_at_month"] if rt["due_at_month"] else None,
@@ -227,7 +228,7 @@ class RecurringTasksRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_recurring_task_by_id(ref_id: RefId, recurring_tasks: List[RecurringTask]) -> Optional[RecurringTask]:
+    def _find_recurring_task_by_id(ref_id: EntityId, recurring_tasks: List[RecurringTask]) -> Optional[RecurringTask]:
         try:
             return next(rt for rt in recurring_tasks if rt.ref_id == ref_id)
         except StopIteration:

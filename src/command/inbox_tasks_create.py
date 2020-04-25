@@ -6,7 +6,8 @@ from notion.client import NotionClient
 import pendulum
 
 import command.command as command
-from repository.common import TaskEisen, TaskDifficulty
+import models.basic
+from models.basic import BasicValidator
 import repository.big_plans as big_plans
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
@@ -33,28 +34,30 @@ class InboxTasksCreate(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project", required="True",
+        parser.add_argument("--project", dest="project_key", required=True,
                             help="The key of the project")
         parser.add_argument("--name", dest="name", required=True, help="The name of the inbox task")
-        parser.add_argument("--big-plan-id", dest="big_plan_ref_id",
+        parser.add_argument("--big-plan-id", type=str, dest="big_plan_ref_id",
                             help="The id of a big plan to associate this task to.")
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
-                            choices=[te.value for te in TaskEisen], help="The Eisenhower matrix values to use for task")
-        parser.add_argument("--difficulty", dest="difficulty", choices=[td.value for td in TaskDifficulty],
+                            choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
+        parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
                             help="The difficulty to use for tasks")
         parser.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        project_key = args.project
-        name = args.name.strip()
-        big_plan_ref_id = args.big_plan_ref_id
-        eisen = [TaskEisen(e.strip().lower()) for e in args.eisen]
-        difficulty = TaskDifficulty(args.difficulty) if args.difficulty else None
-        due_date = pendulum.parse(args.due_date) if args.due_date else None
+        basic_validator = BasicValidator()
 
-        if len(name) == 0:
-            raise Exception("Must provide a non-empty name")
+        # Parse arguments
+
+        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
+        name = basic_validator.entity_name_validate_and_clean(args.name)
+        big_plan_ref_id = basic_validator.entity_id_validate_and_clean(args.big_plan_ref_id) \
+            if args.big_plan_ref_id else None
+        eisen = [basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
+        difficulty = basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
+        due_date = basic_validator.datetime_validate_and_clean(args.due_date) if args.due_date else None
 
         right_now = pendulum.now()
 
@@ -83,7 +86,7 @@ class InboxTasksCreate(command.Command):
             created_date=right_now,
             name=name,
             archived=False,
-            status=inbox_tasks.InboxTaskStatus.ACCEPTED,
+            status=models.basic.InboxTaskStatus.ACCEPTED,
             eisen=eisen,
             difficulty=difficulty,
             due_date=due_date,

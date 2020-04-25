@@ -10,6 +10,7 @@ import repository.recurring_tasks as recurring_tasks
 import repository.workspaces as workspaces
 import space_utils
 import storage
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,11 +30,15 @@ class RecurringTasksUnsuspend(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True,
+                            help="The id of the recurring task to modify")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
 
         # Load local storage
 

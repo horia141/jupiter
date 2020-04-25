@@ -1,7 +1,6 @@
 """Command for setting the deadlines of a recurring task."""
 
 import logging
-import re
 
 from notion.client import NotionClient
 import pendulum
@@ -14,6 +13,7 @@ import schedules
 import schema
 import space_utils
 import storage
+from models.basic import BasicValidator, RecurringTaskPeriod
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +33,8 @@ class RecurringTasksSetDeadlines(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True,
+                            help="The id of the recurring task to modify")
         parser.add_argument("--due-at-time", dest="due_at_time", metavar="HH:MM", help="The time a task will be due on")
         parser.add_argument("--due-at-day", type=int, dest="due_at_day", metavar="DAY",
                             help="The day of the interval the task will be due on")
@@ -42,14 +43,20 @@ class RecurringTasksSetDeadlines(command.Command):
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        due_at_time = args.due_at_time.strip().lower() if args.due_at_time else None
-        due_at_day = args.due_at_day
-        due_at_month = args.due_at_month
+        basic_validator = BasicValidator()
 
-        if due_at_time:
-            if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):
-                raise Exception(f"Invalid due time value '{due_at_time}'")
+        # Parse arguments
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
+        due_at_time = basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time) \
+            if args.due_at_time else None
+        due_at_day = \
+            basic_validator.recurring_task_due_at_day_validate_and_clean(
+                RecurringTaskPeriod.YEARLY, args.due_at_day) \
+            if args.due_at_day else None
+        due_at_month = \
+            basic_validator.recurring_task_due_at_month_validate_and_clean(
+                RecurringTaskPeriod.YEARLY, args.due_at_month) \
+            if args.due_at_month else None
 
         # Load local storage
 
@@ -65,8 +72,10 @@ class RecurringTasksSetDeadlines(command.Command):
 
         recurring_task = recurring_tasks_repository.load_recurring_task_by_id(ref_id)
         recurring_task.due_at_time = due_at_time
-        recurring_task.due_at_day = due_at_day
-        recurring_task.due_at_month = due_at_month
+        recurring_task.due_at_day = basic_validator.recurring_task_due_at_day_validate_and_clean(
+            recurring_task.period, due_at_day) if due_at_day else None
+        recurring_task.due_at_month = basic_validator.recurring_task_due_at_month_validate_and_clean(
+            recurring_task.period, due_at_month) if due_at_month else None
         recurring_tasks_repository.save_recurring_task(recurring_task)
 
         project = projects_repository.load_project_by_id(recurring_task.project_ref_id)

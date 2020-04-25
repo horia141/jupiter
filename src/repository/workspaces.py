@@ -4,17 +4,15 @@ from dataclasses import dataclass
 import logging
 import os.path
 import typing
-from typing import Final, Any, ClassVar, Dict, NewType
+from typing import Final, Any, ClassVar, Dict
 
 import jsonschema as js
 import yaml
 
+from models.basic import WorkspaceSpaceId, WorkspaceToken
 from repository.common import RepositoryError
 
 LOGGER = logging.getLogger(__name__)
-
-WorkspaceSpaceId = NewType("WorkspaceSpaceId", str)
-WorkspaceToken = NewType("WorkspaceToken", str)
 
 
 @dataclass()

@@ -5,6 +5,7 @@ import logging
 from notion.client import NotionClient
 
 import command.command as command
+from models.basic import BasicValidator
 import repository.big_plans as big_plans
 import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
@@ -31,13 +32,15 @@ class BigPlansArchive(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required="True", help="The if of the big plan")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The if of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
+        basic_validator = BasicValidator()
+
         # Parse arguments
 
-        ref_id = args.ref_id
+        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
 
         # Load local storage
 

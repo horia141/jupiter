@@ -3,6 +3,7 @@
 import logging
 
 import command.command as command
+from models.basic import BasicValidator
 import repository.workspaces as workspaces
 
 LOGGER = logging.getLogger(__name__)
@@ -23,14 +24,17 @@ class WorkspaceSetToken(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("token", help="The plan name to use")
+        parser.add_argument("--token", dest="workspace_token", required=True, help="The plan name to use")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        token = args.token
+        basic_validator = BasicValidator()
+
+        # Parse arguments
+        token = basic_validator.workspace_token_validate_and_clean(args.token)
 
         workspace_repository = workspaces.WorkspaceRepository()
         workspace = workspace_repository.load_workspace()
 
-        workspace.token = workspaces.WorkspaceToken(token)
+        workspace.token = token
         workspace_repository.save_workspace(workspace)

@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 import logging
-import enum
 import os.path
 import typing
 from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Set
@@ -12,25 +11,11 @@ import jsonschema as js
 import yaml
 import pendulum
 
-from repository.common import RefId, RepositoryError
+from models.basic import EntityId, BigPlanStatus
+from repository.common import RepositoryError
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-@enum.unique
-class BigPlanStatus(enum.Enum):
-    """The status of a big plan."""
-    NOT_STARTED = "not-started"
-    ACCEPTED = "accepted"
-    IN_PROGRESS = "in-progress"
-    BLOCKED = "blocked"
-    NOT_DONE = "not-done"
-    DONE = "done"
-
-    def for_notion(self) -> str:
-        """A prettier version of the value for Notion."""
-        return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
 
 @typing.final
@@ -38,8 +23,8 @@ class BigPlanStatus(enum.Enum):
 class BigPlan:
     """A big plan."""
 
-    ref_id: RefId
-    project_ref_id: RefId
+    ref_id: EntityId
+    project_ref_id: EntityId
     name: str
     archived: bool
     status: BigPlanStatus
@@ -89,13 +74,13 @@ class BigPlansRepository:
         self._bulk_save_big_plans((0, []))
 
     def create_big_plan(
-            self, project_ref_id: RefId, name: str, archived: bool, status: BigPlanStatus,
+            self, project_ref_id: EntityId, name: str, archived: bool, status: BigPlanStatus,
             due_date: Optional[pendulum.DateTime], notion_link_uuid: uuid.UUID) -> BigPlan:
         """Create a big plan."""
         big_plans_next_idx, big_plans = self._bulk_load_big_plans()
 
         new_big_plan = BigPlan(
-            ref_id=RefId(str(big_plans_next_idx)),
+            ref_id=EntityId(str(big_plans_next_idx)),
             project_ref_id=project_ref_id,
             name=name,
             archived=archived,
@@ -110,7 +95,7 @@ class BigPlansRepository:
 
         return new_big_plan
 
-    def remove_big_plan_by_id(self, ref_id: RefId) -> None:
+    def remove_big_plan_by_id(self, ref_id: EntityId) -> None:
         """Remove a big plan."""
         big_plans_next_idx, big_plans = self._bulk_load_big_plans()
 
@@ -123,13 +108,13 @@ class BigPlansRepository:
 
         self._bulk_save_big_plans((big_plans_next_idx, big_plans))
 
-    def list_all_big_plans(self, filter_project_ref_id: Optional[Iterable[RefId]] = None) -> Iterable[BigPlan]:
+    def list_all_big_plans(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
         """Retrieve all the big plans defined."""
         _, big_plans = self._bulk_load_big_plans(
             filter_project_ref_id=frozenset(filter_project_ref_id) if filter_project_ref_id else None)
         return big_plans
 
-    def load_big_plan_by_id(self, ref_id: RefId) -> BigPlan:
+    def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a particular big plan by its id."""
         _, big_plans = self._bulk_load_big_plans()
         found_big_plans = self._find_big_plan_by_id(ref_id, big_plans)
@@ -149,7 +134,7 @@ class BigPlansRepository:
         self._bulk_save_big_plans((big_plans_next_idx, new_big_plans))
 
     def _bulk_load_big_plans(
-            self, filter_project_ref_id: Optional[Set[RefId]] = None) -> Tuple[int, List[BigPlan]]:
+            self, filter_project_ref_id: Optional[Set[EntityId]] = None) -> Tuple[int, List[BigPlan]]:
         try:
             with open(BigPlansRepository._BIG_PLANS_FILE_PATH, "r") as big_plans_file:
                 big_plans_ser = yaml.safe_load(big_plans_file)
@@ -161,8 +146,8 @@ class BigPlansRepository:
                 big_plans_next_idx = big_plans_ser["next_idx"]
                 big_plans_iter = \
                     (BigPlan(
-                        ref_id=RefId(bp["ref_id"]),
-                        project_ref_id=RefId(bp["project_ref_id"]),
+                        ref_id=EntityId(bp["ref_id"]),
+                        project_ref_id=EntityId(bp["project_ref_id"]),
                         name=bp["name"],
                         archived=bp["archived"],
                         status=BigPlanStatus(bp["status"]),
@@ -202,7 +187,7 @@ class BigPlansRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_big_plan_by_id(ref_id: RefId, big_plans: List[BigPlan]) -> Optional[BigPlan]:
+    def _find_big_plan_by_id(ref_id: EntityId, big_plans: List[BigPlan]) -> Optional[BigPlan]:
         try:
             return next(bp for bp in big_plans if bp.ref_id == ref_id)
         except StopIteration:

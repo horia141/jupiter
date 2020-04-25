@@ -4,18 +4,16 @@ from dataclasses import dataclass
 import os.path
 import logging
 import typing
-from typing import Final, Any, Dict, ClassVar, Iterable, List, NewType, Optional, Tuple, Set
+from typing import Final, Any, Dict, ClassVar, Iterable, List, Optional, Tuple, Set
 
 import jsonschema as js
 import yaml
 
-from repository.common import RefId, RepositoryError
+from models.basic import EntityId, ProjectKey
+from repository.common import RepositoryError
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-ProjectKey = NewType("ProjectKey", str)
 
 
 @typing.final
@@ -23,7 +21,7 @@ ProjectKey = NewType("ProjectKey", str)
 class Project:
     """A project."""
 
-    ref_id: RefId
+    ref_id: EntityId
     key: ProjectKey
     archived: bool
     name: str
@@ -76,7 +74,7 @@ class ProjectsRepository:
             raise RepositoryError(f"Project with key='{key}' already exists")
 
         new_project = Project(
-            ref_id=RefId(str(projects_next_idx)),
+            ref_id=EntityId(str(projects_next_idx)),
             key=key,
             archived=archived,
             name=name)
@@ -106,7 +104,7 @@ class ProjectsRepository:
         _, projects = self._bulk_load_projects(filter_keys=frozenset(filter_keys) if filter_keys else None)
         return projects
 
-    def load_project_by_id(self, ref_id: RefId) -> Project:
+    def load_project_by_id(self, ref_id: EntityId) -> Project:
         """Retrieve a particular project by its key."""
         _, projects = self._bulk_load_projects()
         found_project = self._find_project_by_id(ref_id, projects)
@@ -144,7 +142,7 @@ class ProjectsRepository:
                 projects_next_idx = projects_ser["next_idx"]
                 all_projects = \
                     (Project(
-                        ref_id=RefId(p["ref_id"]),
+                        ref_id=EntityId(p["ref_id"]),
                         key=ProjectKey(p["key"]),
                         archived=p.get("archived", False),
                         name=p["name"])
@@ -179,7 +177,7 @@ class ProjectsRepository:
             raise RepositoryError from error
 
     @staticmethod
-    def _find_project_by_id(ref_id: RefId, projects: List[Project]) -> Optional[Project]:
+    def _find_project_by_id(ref_id: EntityId, projects: List[Project]) -> Optional[Project]:
         try:
             return next(p for p in projects if p.ref_id == ref_id)
         except StopIteration:

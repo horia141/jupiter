@@ -5,9 +5,9 @@ import uuid
 
 from notion.block import CollectionViewBlock
 from notion.client import NotionClient
-import pendulum
 
 import command.command as command
+from models.basic import BasicValidator, BigPlanStatus
 import repository.big_plans as big_plans
 import repository.projects as projects
 import repository.workspaces as workspaces
@@ -33,19 +33,20 @@ class BigPlansCreate(command.Command):
 
     def build_parser(self, parser):
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project", required="True",
+        parser.add_argument("--project", dest="project", required=True,
                             help="The key of the project")
         parser.add_argument("--name", dest="name", required=True, help="The name of the big plan")
         parser.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
 
     def run(self, args):
         """Callback to execute when the command is invoked."""
-        project_key = args.project
-        name = args.name.strip()
-        due_date = pendulum.parse(args.due_date) if args.due_date else None
+        basic_validator = BasicValidator()
 
-        if len(name) == 0:
-            raise Exception("Must provide a non-empty name")
+        # Parse arguments
+
+        project_key = basic_validator.project_key_validate_and_clean(args.project)
+        name = basic_validator.entity_name_validate_and_clean(args.name)
+        due_date = basic_validator.date_validate_and_clean(args.due_date) if args.due_date else None
 
         # Load local storage
 
@@ -62,7 +63,7 @@ class BigPlansCreate(command.Command):
         # Apply changes locally
 
         new_big_plan = big_plans_repository.create_big_plan(
-            project_ref_id=project.ref_id, name=name, archived=False, status=big_plans.BigPlanStatus.ACCEPTED,
+            project_ref_id=project.ref_id, name=name, archived=False, status=BigPlanStatus.ACCEPTED,
             due_date=due_date, notion_link_uuid=uuid.uuid4())
 
         # Apply the changes Notion side
