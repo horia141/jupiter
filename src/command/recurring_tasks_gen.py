@@ -167,15 +167,16 @@ class RecurringTasksGen(command.Command):
         while True:
             try:
                 found_task = get_possible_row(schedule.timeline)
+                found_task_row = None
 
                 if found_task:
-                    found_task.set_name(schedule.full_name)
-                    found_task.set_due_date(schedule.due_time)
-                    found_task.set_eisen(task.eisen)
-                    found_task.set_difficulty(task.difficulty)
-                    found_task.set_recurring_task_timeline(schedule.timeline)
+                    found_task.name = schedule.full_name
+                    found_task.due_date = schedule.due_time
+                    found_task.eisen = task.eisen
+                    found_task.difficulty = task.difficulty
+                    found_task.recurring_task_timeline = schedule.timeline
 
-                    found_task_row = next(r for r in inbox_tasks_rows if r.ref_id == found_task.ref_id)
+                    found_task_row = next((r for r in inbox_tasks_rows if r.ref_id == found_task.ref_id), None)
                 else:
                     found_task = inbox_tasks_repository.create_inbox_task(
                         project_ref_id=project.ref_id,
@@ -189,6 +190,8 @@ class RecurringTasksGen(command.Command):
                         difficulty=task.difficulty,
                         due_date=schedule.due_time,
                         recurring_task_timeline=schedule.timeline)
+
+                if not found_task_row:
                     found_task_row = page.collection.add_row()
 
                 found_task_row.name = schedule.full_name

@@ -3,6 +3,7 @@
 import logging
 
 import command.command as command
+import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 import repository.recurring_tasks as recurring_tasks
 from models.basic import BasicValidator
@@ -41,6 +42,7 @@ class RecurringTasksShow(command.Command):
         # Load local storage
 
         projects_repository = projects.ProjectsRepository()
+        inbox_tasks_repository = inbox_tasks.InboxTasksRepository()
         recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
 
         # Dump out contents of the recurring tasks
@@ -48,6 +50,8 @@ class RecurringTasksShow(command.Command):
         if ref_id:
             # Print details about a single task
             recurring_task = recurring_tasks_repository.load_recurring_task_by_id(ref_id)
+            associated_inbox_tasks = inbox_tasks_repository.list_all_inbox_tasks(
+                filter_recurring_task_ref_id=[recurring_task.ref_id])
             print(f'id={recurring_task.ref_id} {recurring_task.name}' +
                   f' period={recurring_task.period.value}' +
                   f' group="{recurring_task.group}"' +
@@ -59,6 +63,13 @@ class RecurringTasksShow(command.Command):
                   f'\n    due_at_time={recurring_task.due_at_time or "none"}' +
                   f' due_at_day={recurring_task.due_at_day or "none"}' +
                   f' due_at_month={recurring_task.due_at_month or "none"}')
+            print("  Tasks:")
+
+            for inbox_task in associated_inbox_tasks:
+                print(f'   - id={inbox_task.ref_id} {inbox_task.name}' +
+                      f' status={inbox_task.status.value}' +
+                      f' archived="{inbox_task.archived}"' +
+                      f' due_date="{inbox_task.due_date.to_datetime_string() if inbox_task.due_date else ""}"')
         else:
             all_projects = projects_repository.list_all_projects(filter_keys=project_keys)
             # Print a summary of all tasks

@@ -43,8 +43,8 @@ class BigPlansShow(command.Command):
         # Load local storage
 
         projects_repository = projects.ProjectsRepository()
-        big_plans_repository = big_plans.BigPlansRepository()
         inbox_tasks_repository = inbox_tasks.InboxTasksRepository()
+        big_plans_repository = big_plans.BigPlansRepository()
 
         # Dump out contents of the recurring tasks
 
