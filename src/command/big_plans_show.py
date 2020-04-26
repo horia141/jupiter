@@ -4,6 +4,7 @@ import logging
 
 import command.command as command
 import repository.big_plans as big_plans
+import repository.inbox_tasks as inbox_tasks
 import repository.projects as projects
 from models.basic import BasicValidator
 
@@ -43,16 +44,25 @@ class BigPlansShow(command.Command):
 
         projects_repository = projects.ProjectsRepository()
         big_plans_repository = big_plans.BigPlansRepository()
+        inbox_tasks_repository = inbox_tasks.InboxTasksRepository()
 
         # Dump out contents of the recurring tasks
 
         if ref_id:
             # Print details about a single task
             big_plan = big_plans_repository.load_big_plan_by_id(ref_id)
+            associated_inbox_tasks = inbox_tasks_repository.list_all_inbox_tasks(
+                filter_big_plan_ref_id=[big_plan.ref_id])
             print(f'id={big_plan.ref_id} {big_plan.name}' +
                   f' status={big_plan.status.value}' +
                   f' archived="{big_plan.archived}"' +
                   f' due_date="{big_plan.due_date.to_datetime_string() if big_plan.due_date else ""}"')
+            print("  Tasks:")
+            for inbox_task in associated_inbox_tasks:
+                print(f'   - id={inbox_task.ref_id} {inbox_task.name}' +
+                      f' status={inbox_task.status.value}' +
+                      f' archived="{inbox_task.archived}"' +
+                      f' due_date="{inbox_task.due_date.to_datetime_string() if inbox_task.due_date else ""}"')
         else:
             all_projects = projects_repository.list_all_projects(filter_keys=project_keys)
             # Print a summary of all tasks
