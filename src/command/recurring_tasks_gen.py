@@ -194,6 +194,7 @@ class RecurringTasksGen(command.Command):
                 if not found_task_row:
                     found_task_row = page.collection.add_row()
 
+                found_task_row.ref_id = found_task.ref_id
                 found_task_row.name = schedule.full_name
                 if found_task_row.status is None:
                     found_task_row.status = schema.RECURRING_STATUS

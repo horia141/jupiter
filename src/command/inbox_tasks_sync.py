@@ -84,6 +84,16 @@ class InboxTasksSync(command.Command):
             .build_query() \
             .execute()
 
+        # Hack for notion-py. If we don't get all the collection views for a particular page like this one
+        # rather than just a single one, there's gonna be some deep code somewhere which will assume all of
+        # them are present and croak! The code when you add an element to a collection, and you wanna assume
+        # it's gonna be added to all view in some order!
+        for key in the_lock["projects"][project.key]["inbox"].keys():
+            if not key.endswith("_view_id"):
+                continue
+            _ = client.get_collection_view(
+                the_lock["projects"][project.key]["inbox"][key], collection=inbox_tasks_page.collection)
+
         # Then look at each big plan in Notion and try to match it with the one in the local stash
 
         inbox_tasks_row_set = {}
@@ -185,19 +195,19 @@ class InboxTasksSync(command.Command):
             if recurring_task:
                 new_inbox_task_row.recurring_task_id = inbox_task.recurring_task_ref_id
             new_inbox_task_row.recurring_task_id = None
-            new_inbox_task_row.created_date = new_inbox_task.created_date
-            new_inbox_task_row.title = new_inbox_task.name
+            new_inbox_task_row.created_date = inbox_task.created_date
+            new_inbox_task_row.title = inbox_task.name
             new_inbox_task_row.archived = False
-            new_inbox_task_row.status = new_inbox_task.status.value
-            setattr(new_inbox_task_row, "eisenhower", [e.value for e in new_inbox_task.eisen])
+            new_inbox_task_row.status = inbox_task.status.value
+            setattr(new_inbox_task_row, "eisenhower", [e.value for e in inbox_task.eisen])
             setattr(
                 new_inbox_task_row, "difficulty",
-                new_inbox_task.difficulty.value if new_inbox_task.difficulty else None)
-            new_inbox_task_row.due_date = new_inbox_task.due_date
+                inbox_task.difficulty.value if inbox_task.difficulty else None)
+            new_inbox_task_row.due_date = inbox_task.due_date
             setattr(new_inbox_task_row, "from_script", True)
             setattr(new_inbox_task_row, "recurring_period", recurring_task.period.value)
             new_inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
-            LOGGER.info(f'Created Notion inbox task for {inbox_task["name"]}')
+            LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
     @staticmethod
     def _build_entity_from_row(row):
