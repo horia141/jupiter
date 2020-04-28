@@ -41,8 +41,6 @@ class RemoveArchivedTasks(command.Command):
         project_key = basic_validator.project_key_validate_and_clean(args.project_key)
         period_filter = frozenset(basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period) \
             if len(args.period) > 0 else None
-        dry_run = args.dry_run
-
         # Load local storage.
 
         system_lock = storage.load_lock_file()
@@ -74,5 +72,4 @@ class RemoveArchivedTasks(command.Command):
                 LOGGER.info(f"Skipping '{archived_task.name}' on account of period filtering")
                 continue
             LOGGER.info(f"Removing '{archived_task.name}'")
-            if not dry_run:
-                archived_task.remove()
+            archived_task.remove()

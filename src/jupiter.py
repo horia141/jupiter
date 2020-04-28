@@ -114,9 +114,6 @@ def main():
 
     parser = argparse.ArgumentParser(description="The Jupiter goal management system")
     parser.add_argument(
-        "--dry-run", required=False, dest="dry_run", action="store_true", default=False,
-        help="Do not commit the changes")
-    parser.add_argument(
         "--min-log-level", dest="min_log_level", default="info",
         choices=["debug", "info", "warning", "error", "critical"],
         help="The logging level to use")

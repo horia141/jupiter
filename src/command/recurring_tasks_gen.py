@@ -58,8 +58,6 @@ class RecurringTasksGen(command.Command):
             if len(args.group) > 0 else None
         period_filter = frozenset(basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period) \
             if len(args.period) > 0 else None
-        dry_run = args.dry_run
-
         # Load the local data
         system_lock = storage.load_lock_file()
         LOGGER.info("Found system lock")
@@ -99,14 +97,12 @@ class RecurringTasksGen(command.Command):
             .build_query() \
             .execute()
         for task in all_recurring_tasks:
-            RecurringTasksGen._update_notion_task(
-                project, dry_run, page, right_now, group_filter, period_filter, all_vacations,
-                task, all_tasks, inbox_tasks_rows, inbox_tasks_repository)
+            RecurringTasksGen._update_notion_task(project, page, right_now, group_filter, period_filter, all_vacations,
+                                                  task, all_tasks, inbox_tasks_rows, inbox_tasks_repository)
 
     @staticmethod
-    def _update_notion_task(
-            project, dry_run, page, right_now, group_filter, period_filter, all_vacations, task, all_tasks,
-            inbox_tasks_rows, inbox_tasks_repository):
+    def _update_notion_task(project, page, right_now, group_filter, period_filter, all_vacations, task, all_tasks,
+                            inbox_tasks_rows, inbox_tasks_repository):
         def get_possible_row(timeline) -> Optional[inbox_tasks.InboxTask]:
             already_task_rows = [
                 t for t in all_tasks if t.name.startswith(task.name) or t.recurring_task_ref_id == task.ref_id]
@@ -159,9 +155,6 @@ class RecurringTasksGen(command.Command):
 
         LOGGER.info(f"Creating '{task.name}'")
         try_count = 0
-
-        if dry_run:
-            return
 
         found_task = None
         while True:

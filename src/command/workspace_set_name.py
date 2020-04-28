@@ -53,9 +53,6 @@ class WorkspaceSetName(command.Command):
         found_root_page = space_utils.find_page_from_space_by_id(client, system_lock["root_page"]["root_page_id"])
         LOGGER.info(f"Found the root page via id {found_root_page}")
 
-        if args.dry_run:
-            return
-
         # Apply the changes to the Notion side
 
         found_root_page.title = name
