@@ -58,8 +58,6 @@ import command.workspace_sync as workspace_sync
 
 def main():
     """Application main function."""
-    logging.basicConfig(level=logging.INFO)
-
     commands = [
         workspace_init.WorkspaceInit(),
         workspace_set_name.WorkspaceSetName(),
@@ -118,6 +116,10 @@ def main():
     parser.add_argument(
         "--dry-run", required=False, dest="dry_run", action="store_true", default=False,
         help="Do not commit the changes")
+    parser.add_argument(
+        "--min-log-level", dest="min_log_level", default="info",
+        choices=["debug", "info", "warning", "error", "critical"],
+        help="The logging level to use")
 
     subparsers = parser.add_subparsers(dest="subparser_name", help="Sub-command help")
 
@@ -127,12 +129,28 @@ def main():
         command.build_parser(command_parser)
 
     args = parser.parse_args()
+    logging.basicConfig(level=_map_log_level_to_log_class(args.min_log_level))
 
     for command in commands:
         if args.subparser_name != command.name():
             continue
         command.run(args)
         break
+
+
+def _map_log_level_to_log_class(log_level: str) -> int:
+    if log_level == "debug":
+        return logging.DEBUG
+    elif log_level == "info":
+        return logging.INFO
+    elif log_level == "warning":
+        return logging.WARNING
+    elif log_level == "error":
+        return logging.ERROR
+    elif log_level == "critical":
+        return logging.CRITICAL
+    else:
+        raise Exception(f"Invalid log level '{log_level}'")
 
 
 if __name__ == "__main__":
