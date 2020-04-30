@@ -161,6 +161,7 @@ class InboxTasksSync(command.Command):
                     setattr(inbox_task_row, "eisenhower", [e.value for e in inbox_task.eisen])
                     inbox_task_row.difficulty = inbox_task.difficulty.value if inbox_task.difficulty else None
                     inbox_task_row.due_date = inbox_task.due_date
+                    inbox_task_row.recurring_period = recurring_task.period.value if recurring_task else None
                     inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from local")
                 else:
@@ -205,7 +206,8 @@ class InboxTasksSync(command.Command):
                 inbox_task.difficulty.value if inbox_task.difficulty else None)
             new_inbox_task_row.due_date = inbox_task.due_date
             setattr(new_inbox_task_row, "from_script", True)
-            setattr(new_inbox_task_row, "recurring_period", recurring_task.period.value)
+            setattr(new_inbox_task_row, "recurring_period",
+                    recurring_task.period.value if recurring_task else None)
             new_inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
