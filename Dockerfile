@@ -10,4 +10,5 @@ COPY src src
 
 ENV TZ=UTC
 
+# ENTRYPOINT ["python", "-m", "cProfile", "-s", "time", "src/jupiter.py"]
 ENTRYPOINT ["python", "src/jupiter.py"]

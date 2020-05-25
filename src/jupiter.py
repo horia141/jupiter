@@ -1,138 +1,205 @@
-"""The CLI entrypoint for Jupiter."""
+"""The CLI entry-point for Jupiter."""
 
 import argparse
 import logging
 
-import command.big_plans_archive as big_plans_archive
-import command.big_plans_create as big_plans_create
-import command.big_plans_set_due_date as big_plans_set_due_date
-import command.big_plans_set_name as big_plans_set_name
-import command.big_plans_set_status as big_plans_set_status
-import command.big_plans_show as big_plans_show
-import command.inbox_tasks_archive_done as inbox_tasks_archive_done
-import command.inbox_tasks_archive as inbox_tasks_archive
-import command.inbox_tasks_associate_big_plan as inbox_tasks_associate_big_plan
-import command.inbox_tasks_create as inbox_tasks_create
-import command.inbox_tasks_set_difficulty as inbox_tasks_set_difficulty
-import command.inbox_tasks_set_due_date as inbox_tasks_set_due_date
-import command.inbox_tasks_set_eisen as inbox_tasks_set_eisen
-import command.inbox_tasks_set_name as inbox_tasks_set_name
-import command.inbox_tasks_set_status as inbox_tasks_set_status
-import command.inbox_tasks_show as inbox_tasks_show
-import command.inbox_tasks_sync as inbox_tasks_sync
-import command.project_archive as project_archive
-import command.project_create as project_create
-import command.project_set_name as project_set_name
-import command.project_show as project_show
-import command.project_sync as project_sync
-import command.remove_archived_tasks as remove_archived_tasks
-import command.big_plans_sync as big_plans_sync
-import command.recurring_tasks_archive as recurring_tasks_archive
-import command.recurring_tasks_create as recurring_tasks_create
-import command.recurring_tasks_gen as recurring_tasks_gen
-import command.recurring_tasks_set_deadlines as recurring_tasks_set_deadlines
-import command.recurring_tasks_set_difficulty as recurring_tasks_set_difficulty
-import command.recurring_tasks_set_eisen as recurring_tasks_set_eisen
-import command.recurring_tasks_set_group as recurring_tasks_set_group
-import command.recurring_tasks_set_must_do as recurring_tasks_set_must_do
-import command.recurring_tasks_set_name as recurring_tasks_set_name
-import command.recurring_tasks_set_period as recurring_tasks_set_period
-import command.recurring_tasks_set_skip_rule as recurring_tasks_set_skip_rule
-import command.recurring_tasks_show as recurring_tasks_show
-import command.recurring_tasks_suspend as recurring_tasks_suspend
-import command.recurring_tasks_sync as recurring_tasks_sync
-import command.recurring_tasks_unsuspend as recurring_tasks_unsuspend
-import command.vacations_create as vacations_create
-import command.vacations_archive as vacations_archive
-import command.vacations_set_end_date as vacations_set_end_date
-import command.vacations_set_name as vacations_set_name
-import command.vacations_set_start_date as vacations_set_start_date
-import command.vacations_show as vacations_show
-import command.vacations_sync as vacations_sync
-import command.workspace_init as workspace_init
-import command.workspace_set_name as workspace_set_name
-import command.workspace_set_token as workspace_set_token
-import command.workspace_show as workspace_show
-import command.workspace_sync as workspace_sync
+from command.big_plans_archive import BigPlansArchive
+from command.big_plans_create import BigPlansCreate
+from command.big_plans_set_due_date import BigPlansSetDueDate
+from command.big_plans_set_name import BigPlansSetName
+from command.big_plans_set_status import BigPlansSetStatus
+from command.big_plans_show import BigPlansShow
+from command.big_plans_sync import BigPlansSync
+from command.inbox_tasks_archive import InboxTasksArchive
+from command.inbox_tasks_archive_done import InboxTasksArchiveDone
+from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
+from command.inbox_tasks_create import InboxTasksCreate
+from command.inbox_tasks_set_difficulty import InboxTasksSetDifficulty
+from command.inbox_tasks_set_due_date import InboxTasksSetDueDate
+from command.inbox_tasks_set_eisen import InboxTasksSetEisen
+from command.inbox_tasks_set_name import InboxTasksSetName
+from command.inbox_tasks_set_status import InboxTasksSetStatus
+from command.inbox_tasks_show import InboxTasksShow
+from command.inbox_tasks_sync import InboxTasksSync
+from command.project_archive import ProjectArchive
+from command.project_create import ProjectCreate
+from command.project_set_name import ProjectSetName
+from command.project_show import ProjectShow
+from command.project_sync import ProjectSync
+from command.recurring_tasks_archive import RecurringTasksArchive
+from command.recurring_tasks_create import RecurringTasksCreate
+from command.recurring_tasks_gen import RecurringTasksGen
+from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
+from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
+from command.recurring_tasks_set_eisen import RecurringTasksSetEisen
+from command.recurring_tasks_set_group import RecurringTasksSetGroup
+from command.recurring_tasks_set_must_do import RecurringTasksSetMustDo
+from command.recurring_tasks_set_name import RecurringTasksSetName
+from command.recurring_tasks_set_period import RecurringTasksSetPeriod
+from command.recurring_tasks_set_skip_rule import RecurringTasksSetSkipRule
+from command.recurring_tasks_show import RecurringTasksShow
+from command.recurring_tasks_suspend import RecurringTasksSuspend
+from command.recurring_tasks_sync import RecurringTasksSync
+from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
+from command.vacations_archive import VacationsArchive
+from command.vacations_create import VacationsCreate
+from command.vacations_set_end_date import VacationsSetEndDate
+from command.vacations_set_name import VacationsSetName
+from command.vacations_set_start_date import VacationsSetStartDate
+from command.vacations_show import VacationsShow
+from command.vacations_sync import VacationsSync
+from command.workspace_init import WorkspaceInit
+from command.workspace_set_name import WorkspaceSetName
+from command.workspace_set_token import WorkspaceSetToken
+from command.workspace_show import WorkspaceShow
+from command.workspace_sync import WorkspaceSync
+from controllers.big_plans import BigPlansController
+from controllers.inbox_tasks import InboxTasksController
+from controllers.projects import ProjectsController
+from controllers.recurring_tasks import RecurringTasksController
+from controllers.vacations import VacationsController
+from controllers.workspaces import WorkspacesController
+from models.basic import BasicValidator
+from remote.notion.big_plans import BigPlansCollection
+from remote.notion.connection import MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
+from remote.notion.inbox_tasks import InboxTasksCollection
+from remote.notion.projects import ProjectsCollection
+from remote.notion.recurring_tasks import RecurringTasksCollection
+from remote.notion.vacations import VacationsCollection
+from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
+from repository.big_plans import BigPlansRepository
+from repository.inbox_tasks import InboxTasksRepository
+from repository.projects import ProjectsRepository
+from repository.recurring_tasks import RecurringTasksRepository
+from repository.vacations import VacationsRepository
+from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
+from service.big_plans import BigPlansService
+from service.inbox_tasks import InboxTasksService
+from service.projects import ProjectsService
+from service.recurring_tasks import RecurringTasksService
+from service.vacations import VacationsService
+from service.workspaces import WorkspacesService
 
 
-def main():
+def main() -> None:
     """Application main function."""
-    commands = [
-        workspace_init.WorkspaceInit(),
-        workspace_set_name.WorkspaceSetName(),
-        workspace_set_token.WorkspaceSetToken(),
-        workspace_show.WorkspaceShow(),
-        workspace_sync.WorkspaceSync(),
-        vacations_create.VacationsCreate(),
-        vacations_archive.VacationsArchive(),
-        vacations_set_name.VacationsSetName(),
-        vacations_set_start_date.VacationsSetStartDate(),
-        vacations_set_end_date.VacationsSetEndDate(),
-        vacations_show.VacationsShow(),
-        vacations_sync.VacationsSync(),
-        project_create.ProjectCreate(),
-        project_archive.ProjectArchive(),
-        project_set_name.ProjectSetName(),
-        project_show.ProjectShow(),
-        project_sync.ProjectSync(),
-        inbox_tasks_create.InboxTasksCreate(),
-        inbox_tasks_archive.InboxTasksArchive(),
-        inbox_tasks_associate_big_plan.InboxTasksAssociateBigPlan(),
-        inbox_tasks_set_name.InboxTasksSetName(),
-        inbox_tasks_set_status.InboxTasksSetStatus(),
-        inbox_tasks_set_eisen.InboxTasksSetEisen(),
-        inbox_tasks_set_difficulty.InboxTasksSetDifficulty(),
-        inbox_tasks_set_due_date.InboxTasksSetDueDate(),
-        inbox_tasks_archive_done.InboxTasksArchiveDone(),
-        inbox_tasks_show.InboxTasksShow(),
-        inbox_tasks_sync.InboxTasksSync(),
-        recurring_tasks_create.RecurringTasksCreate(),
-        recurring_tasks_archive.RecurringTasksArchive(),
-        recurring_tasks_gen.RecurringTasksGen(),
-        recurring_tasks_set_name.RecurringTasksSetName(),
-        recurring_tasks_set_period.RecurringTasksSetPeriod(),
-        recurring_tasks_set_group.RecurringTasksSetGroup(),
-        recurring_tasks_set_eisen.RecurringTasksSetEisen(),
-        recurring_tasks_set_difficulty.RecurringTasksSetDifficulty(),
-        recurring_tasks_set_deadlines.RecurringTasksSetDeadlines(),
-        recurring_tasks_set_skip_rule.RecurringTasksSetSkipRule(),
-        recurring_tasks_set_must_do.RecurringTasksSetMustDo(),
-        recurring_tasks_suspend.RecurringTasksSuspend(),
-        recurring_tasks_unsuspend.RecurringTasksUnsuspend(),
-        recurring_tasks_show.RecurringTasksShow(),
-        recurring_tasks_sync.RecurringTasksSync(),
-        big_plans_create.BigPlansCreate(),
-        big_plans_archive.BigPlansArchive(),
-        big_plans_set_due_date.BigPlansSetDueDate(),
-        big_plans_set_name.BigPlansSetName(),
-        big_plans_set_status.BigPlansSetStatus(),
-        big_plans_sync.BigPlansSync(),
-        big_plans_show.BigPlansShow(),
-        remove_archived_tasks.RemoveArchivedTasks()
-    ]
+    basic_validator = BasicValidator()
 
-    parser = argparse.ArgumentParser(description="The Jupiter goal management system")
-    parser.add_argument(
-        "--min-log-level", dest="min_log_level", default="info",
-        choices=["debug", "info", "warning", "error", "critical"],
-        help="The logging level to use")
+    notion_connection = NotionConnection()
 
-    subparsers = parser.add_subparsers(dest="subparser_name", help="Sub-command help")
+    workspaces_repository = WorkspaceRepository()
+    workspaces_singleton = WorkspaceSingleton(notion_connection)
 
-    for command in commands:
-        command_parser = subparsers.add_parser(
-            command.name(), help=command.description(), description=command.description())
-        command.build_parser(command_parser)
+    with VacationsRepository() as vacations_repository,\
+            ProjectsRepository() as projects_repository,\
+            InboxTasksRepository() as inbox_tasks_repository,\
+            RecurringTasksRepository() as recurring_tasks_repository,\
+            BigPlansRepository() as big_plans_repository, \
+            VacationsCollection(notion_connection) as vacations_collection, \
+            ProjectsCollection(notion_connection) as projects_collection, \
+            InboxTasksCollection(notion_connection) as inbox_tasks_collection, \
+            RecurringTasksCollection(notion_connection) as recurring_tasks_collection, \
+            BigPlansCollection(notion_connection) as big_plans_collection:
+        workspaces_service = WorkspacesService(
+            basic_validator, workspaces_repository, workspaces_singleton)
+        vacations_service = VacationsService(basic_validator, vacations_repository, vacations_collection)
+        projects_service = ProjectsService(
+            basic_validator, projects_repository, projects_collection)
+        inbox_tasks_service = InboxTasksService(
+            basic_validator, inbox_tasks_repository, inbox_tasks_collection)
+        recurring_tasks_service = RecurringTasksService(
+            basic_validator, recurring_tasks_repository, recurring_tasks_collection)
+        big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
 
-    args = parser.parse_args()
-    logging.basicConfig(level=_map_log_level_to_log_class(args.min_log_level))
+        workspaces_controller = WorkspacesController(notion_connection, workspaces_service, vacations_service)
+        vacations_controller = VacationsController(vacations_service)
+        projects_controller = ProjectsController(
+            workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+        inbox_tasks_controller = InboxTasksController(
+            projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+        recurring_tasks_controller = RecurringTasksController(
+            projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
+        big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
 
-    for command in commands:
-        if args.subparser_name != command.name():
-            continue
-        command.run(args)
-        break
+        commands = [
+            WorkspaceInit(basic_validator, workspaces_controller),
+            WorkspaceSetName(basic_validator, workspaces_controller),
+            WorkspaceSetToken(basic_validator, workspaces_controller),
+            WorkspaceShow(workspaces_controller),
+            WorkspaceSync(basic_validator, workspaces_controller),
+            VacationsCreate(basic_validator, vacations_controller),
+            VacationsArchive(basic_validator, vacations_controller),
+            VacationsSetName(basic_validator, vacations_controller),
+            VacationsSetStartDate(basic_validator, vacations_controller),
+            VacationsSetEndDate(basic_validator, vacations_controller),
+            VacationsShow(vacations_controller),
+            VacationsSync(basic_validator, vacations_controller),
+            ProjectCreate(basic_validator, projects_controller),
+            ProjectArchive(basic_validator, projects_controller),
+            ProjectSetName(basic_validator, projects_controller),
+            ProjectShow(basic_validator, projects_controller),
+            ProjectSync(basic_validator, projects_controller),
+            InboxTasksCreate(basic_validator, inbox_tasks_controller),
+            InboxTasksArchive(basic_validator, inbox_tasks_controller),
+            InboxTasksAssociateBigPlan(basic_validator, inbox_tasks_controller),
+            InboxTasksSetName(basic_validator, inbox_tasks_controller),
+            InboxTasksSetStatus(basic_validator, inbox_tasks_controller),
+            InboxTasksSetEisen(basic_validator, inbox_tasks_controller),
+            InboxTasksSetDifficulty(basic_validator, inbox_tasks_controller),
+            InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
+            InboxTasksArchiveDone(basic_validator, inbox_tasks_controller),
+            InboxTasksShow(basic_validator, inbox_tasks_controller),
+            InboxTasksSync(basic_validator, inbox_tasks_controller),
+            RecurringTasksCreate(basic_validator, recurring_tasks_controller),
+            RecurringTasksArchive(basic_validator, recurring_tasks_controller),
+            RecurringTasksGen(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetName(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetPeriod(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetGroup(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetEisen(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetDifficulty(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetDeadlines(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetSkipRule(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetMustDo(basic_validator, recurring_tasks_controller),
+            RecurringTasksSuspend(basic_validator, recurring_tasks_controller),
+            RecurringTasksUnsuspend(basic_validator, recurring_tasks_controller),
+            RecurringTasksShow(basic_validator, recurring_tasks_controller),
+            RecurringTasksSync(basic_validator, recurring_tasks_controller),
+            BigPlansCreate(basic_validator, big_plans_controller),
+            BigPlansArchive(basic_validator, big_plans_controller),
+            BigPlansSetDueDate(basic_validator, big_plans_controller),
+            BigPlansSetName(basic_validator, big_plans_controller),
+            BigPlansSetStatus(basic_validator, big_plans_controller),
+            BigPlansSync(basic_validator, big_plans_controller),
+            BigPlansShow(basic_validator, big_plans_controller)
+        ]
+
+        parser = argparse.ArgumentParser(description="The Jupiter goal management system")
+        parser.add_argument(
+            "--min-log-level", dest="min_log_level", default="info",
+            choices=["debug", "info", "warning", "error", "critical"],
+            help="The logging level to use")
+
+        subparsers = parser.add_subparsers(dest="subparser_name", help="Sub-command help")
+
+        for command in commands:
+            command_parser = subparsers.add_parser(
+                command.name(), help=command.description(), description=command.description())
+            command.build_parser(command_parser)
+
+        args = parser.parse_args()
+        logging.basicConfig(level=_map_log_level_to_log_class(args.min_log_level))
+
+        try:
+            for command in commands:
+                if args.subparser_name != command.name():
+                    continue
+                command.run(args)
+                break
+        except (MissingWorkspaceRepositoryError, MissingNotionConnectionError, MissingWorkspaceScreenError):
+            print("The Notion connection isn't setup, please run 'ws-init' to create a workspace!")
+        except OldTokenForNotionConnectionError:
+            print("The Notion connection's token has expired, please refresh it with 'ws-set-token'")
 
 
 def _map_log_level_to_log_class(log_level: str) -> int:

@@ -2,18 +2,16 @@
 
 from dataclasses import dataclass
 import logging
-import os.path
 import typing
-from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional, Tuple, Set
+from pathlib import Path
+from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional
 import uuid
 
-import jsonschema as js
-import yaml
 import pendulum
 
 from models.basic import EntityId, BigPlanStatus
 from repository.common import RepositoryError
-
+from utils.storage import StructuredCollectionStorage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,48 +34,30 @@ class BigPlan:
 class BigPlansRepository:
     """A repository for big plans."""
 
-    _BIG_PLANS_FILE_PATH: ClassVar[str] = "/data/big-plans.yaml"
+    _BIG_PLANS_FILE_PATH: ClassVar[Path] = Path("/data/big-plans.yaml")
 
-    _BIG_PLANS_SCHEMA: ClassVar[Dict[str, Any]] = {
-        "type": "object",
-        "properties": {
-            "next_idx": {"type": "number"},
-            "entries": {
-                "type": "array",
-                "item": {
-                    "type": "object",
-                    "properties": {
-                        "ref_id": {"type": "string"},
-                        "project_ref_id": {"type": "string"},
-                        "name": {"type": "string"},
-                        "archived": {"type": "boolean"},
-                        "status": {"type": "string"},
-                        "due_date": {"type": "string"}
-                    }
-                }
-            }
-        }
-    }
-
-    _validator: Final[Any]
+    _structured_storage: Final[StructuredCollectionStorage[BigPlan]]
 
     def __init__(self) -> None:
         """Constructor."""
-        custom_type_checker = js.Draft6Validator.TYPE_CHECKER
+        self._structured_storage = StructuredCollectionStorage(self._BIG_PLANS_FILE_PATH, self)
 
-        self._validator = js.validators.extend(js.Draft6Validator, type_checker=custom_type_checker)
+    def __enter__(self) -> 'BigPlansRepository':
+        """Enter context."""
+        self._structured_storage.initialize()
+        return self
 
-    def initialze(self) -> None:
-        """Initialise this repository."""
-        if os.path.exists(BigPlansRepository._BIG_PLANS_FILE_PATH):
+    def __exit__(self, exc_type, _exc_val, _exc_tb):
+        """Exit context."""
+        if exc_type is not None:
             return
-        self._bulk_save_big_plans((0, []))
+        self._structured_storage.exit_save()
 
     def create_big_plan(
             self, project_ref_id: EntityId, name: str, archived: bool, status: BigPlanStatus,
             due_date: Optional[pendulum.DateTime], notion_link_uuid: uuid.UUID) -> BigPlan:
         """Create a big plan."""
-        big_plans_next_idx, big_plans = self._bulk_load_big_plans()
+        big_plans_next_idx, big_plans = self._structured_storage.load()
 
         new_big_plan = BigPlan(
             ref_id=EntityId(str(big_plans_next_idx)),
@@ -91,13 +71,13 @@ class BigPlansRepository:
         big_plans_next_idx += 1
         big_plans.append(new_big_plan)
 
-        self._bulk_save_big_plans((big_plans_next_idx, big_plans))
+        self._structured_storage.save((big_plans_next_idx, big_plans))
 
         return new_big_plan
 
     def remove_big_plan_by_id(self, ref_id: EntityId) -> None:
         """Remove a big plan."""
-        big_plans_next_idx, big_plans = self._bulk_load_big_plans()
+        big_plans_next_idx, big_plans = self._structured_storage.load()
 
         for big_plan in big_plans:
             if big_plan.ref_id == ref_id:
@@ -106,85 +86,42 @@ class BigPlansRepository:
         else:
             raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")
 
-        self._bulk_save_big_plans((big_plans_next_idx, big_plans))
+        self._structured_storage.save((big_plans_next_idx, big_plans))
 
-    def list_all_big_plans(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
+    def list_all_big_plans(
+            self,
+            filter_archived: bool = True,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
         """Retrieve all the big plans defined."""
-        _, big_plans = self._bulk_load_big_plans(
-            filter_project_ref_id=frozenset(filter_project_ref_id) if filter_project_ref_id else None)
-        return big_plans
+        _, big_plans = self._structured_storage.load()
+        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else []
+        filter_project_ref_id_set = frozenset(filter_project_ref_ids) if filter_project_ref_ids else []
+        return [bp for bp in big_plans
+                if (filter_archived is False or bp.archived is False)
+                and (len(filter_ref_ids_set) == 0 or bp.ref_id in filter_ref_ids_set)
+                and (len(filter_project_ref_id_set) == 0 or bp.project_ref_id in filter_project_ref_id_set)]
 
     def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a particular big plan by its id."""
-        _, big_plans = self._bulk_load_big_plans()
+        _, big_plans = self._structured_storage.load()
         found_big_plans = self._find_big_plan_by_id(ref_id, big_plans)
         if not found_big_plans:
             raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")
+        if found_big_plans.archived:
+            raise RepositoryError(f"Big plan with id='{ref_id}' is archived")
         return found_big_plans
 
     def save_big_plan(self, new_big_plan: BigPlan) -> None:
         """Store a particular big plan with all new properties."""
-        big_plans_next_idx, big_plans = self._bulk_load_big_plans()
+        big_plans_next_idx, big_plans = self._structured_storage.load()
 
         if not self._find_big_plan_by_id(new_big_plan.ref_id, big_plans):
             raise RepositoryError(f"Big plan with id='{new_big_plan.ref_id}' does not exist")
 
         new_big_plans = [(rt if rt.ref_id != new_big_plan.ref_id else new_big_plan)
                          for rt in big_plans]
-        self._bulk_save_big_plans((big_plans_next_idx, new_big_plans))
-
-    def _bulk_load_big_plans(
-            self, filter_project_ref_id: Optional[Set[EntityId]] = None) -> Tuple[int, List[BigPlan]]:
-        try:
-            with open(BigPlansRepository._BIG_PLANS_FILE_PATH, "r") as big_plans_file:
-                big_plans_ser = yaml.safe_load(big_plans_file)
-                LOGGER.info("Loaded big plans data")
-
-                self._validator(BigPlansRepository._BIG_PLANS_SCHEMA).validate(big_plans_ser)
-                LOGGER.info("Checked big plans structure")
-
-                big_plans_next_idx = big_plans_ser["next_idx"]
-                big_plans_iter = \
-                    (BigPlan(
-                        ref_id=EntityId(bp["ref_id"]),
-                        project_ref_id=EntityId(bp["project_ref_id"]),
-                        name=bp["name"],
-                        archived=bp["archived"],
-                        status=BigPlanStatus(bp["status"]),
-                        due_date=pendulum.parse(bp["due_date"]) if bp["due_date"] else None,
-                        notion_link_uuid=uuid.UUID(bp["notion_link_uuid"]))
-                     for bp in big_plans_ser["entries"])
-                big_plans = [rt for rt in big_plans_iter
-                             if (rt.archived is False)
-                             and (filter_project_ref_id is None or rt.project_ref_id in filter_project_ref_id)]
-
-                return big_plans_next_idx, big_plans
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise RepositoryError from error
-
-    def _bulk_save_big_plans(self, bulk_data: Tuple[int, List[BigPlan]]) -> None:
-        try:
-            with open(BigPlansRepository._BIG_PLANS_FILE_PATH, "w") as big_plans_file:
-                big_plans_ser = {
-                    "next_idx": bulk_data[0],
-                    "entries": [{
-                        "ref_id": rt.ref_id,
-                        "project_ref_id": rt.project_ref_id,
-                        "name": rt.name,
-                        "archived": rt.archived,
-                        "status": rt.status.value,
-                        "due_date": rt.due_date.to_datetime_string() if rt.due_date else None,
-                        "notion_link_uuid": str(rt.notion_link_uuid)
-                    } for rt in bulk_data[1]]
-                }
-
-                self._validator(BigPlansRepository._BIG_PLANS_SCHEMA).validate(big_plans_ser)
-                LOGGER.info("Checked big plans structure")
-
-                yaml.dump(big_plans_ser, big_plans_file)
-                LOGGER.info("Saved big plans tasks")
-        except (IOError, yaml.YAMLError, js.ValidationError) as error:
-            raise RepositoryError from error
+        self._structured_storage.save((big_plans_next_idx, new_big_plans))
 
     @staticmethod
     def _find_big_plan_by_id(ref_id: EntityId, big_plans: List[BigPlan]) -> Optional[BigPlan]:
@@ -192,3 +129,43 @@ class BigPlansRepository:
             return next(bp for bp in big_plans if bp.ref_id == ref_id)
         except StopIteration:
             return None
+
+    @staticmethod
+    def storage_schema() -> Dict[str, Any]:
+        """The schema for the data."""
+        return {
+            "type": "object",
+            "properties": {
+                "ref_id": {"type": "string"},
+                "project_ref_id": {"type": "string"},
+                "name": {"type": "string"},
+                "archived": {"type": "boolean"},
+                "status": {"type": "string"},
+                "due_date": {"type": ["string", "null"]}
+            }
+        }
+
+    @staticmethod
+    def storage_to_live(storage_form: Any) -> BigPlan:
+        """Transform the data reconstructed from basic storage into something useful for the live system."""
+        return BigPlan(
+            ref_id=EntityId(storage_form["ref_id"]),
+            project_ref_id=EntityId(storage_form["project_ref_id"]),
+            name=storage_form["name"],
+            archived=storage_form["archived"],
+            status=BigPlanStatus(storage_form["status"]),
+            due_date=pendulum.parse(storage_form["due_date"]) if storage_form["due_date"] else None,
+            notion_link_uuid=uuid.UUID(storage_form["notion_link_uuid"]))
+
+    @staticmethod
+    def live_to_storage(live_form: BigPlan) -> Any:
+        """Transform the live system data to something suitable for basic storage."""
+        return {
+            "ref_id": live_form.ref_id,
+            "project_ref_id": live_form.project_ref_id,
+            "name": live_form.name,
+            "archived": live_form.archived,
+            "status": live_form.status.value,
+            "due_date": live_form.due_date.to_datetime_string() if live_form.due_date else None,
+            "notion_link_uuid": str(live_form.notion_link_uuid)
+        }

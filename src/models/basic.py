@@ -296,19 +296,19 @@ class BasicValidator:
         """The possible values for difficulty."""
         return BasicValidator._difficulty_values
 
-    def inbox_task_status_validate_and_clean(self, inbox_task_status_raw: Optional[str]) -> BigPlanStatus:
+    def inbox_task_status_validate_and_clean(self, inbox_task_status_raw: Optional[str]) -> InboxTaskStatus:
         """Validate and clean the big plan status."""
         if not inbox_task_status_raw:
             raise ModelValidationError("Expected inbox task status to be non-null")
 
-        inbox_task_status_str: str = inbox_task_status_raw.strip().lower()
+        inbox_task_status_str: str = '-'.join(inbox_task_status_raw.strip().lower().split(' '))
 
         if inbox_task_status_str not in self._inbox_task_status_values:
             raise ModelValidationError(
                 f"Expected inbox task status '{inbox_task_status_raw}' for be " +
-                "one of '{','.join(self._inbox_task_status_values)}'")
+                f"one of '{','.join(self._inbox_task_status_values)}'")
 
-        return BigPlanStatus(inbox_task_status_str)
+        return InboxTaskStatus(inbox_task_status_str)
 
     @staticmethod
     def inbox_task_status_values() -> Iterable[str]:
@@ -325,7 +325,7 @@ class BasicValidator:
         if recurring_task_period_str not in self._recurring_task_period_values:
             raise ModelValidationError(
                 f"Expected big plan status '{recurring_task_period_raw}' for be " +
-                "one of '{','.join(self._recurring_task_period_values)}'")
+                f"one of '{','.join(self._recurring_task_period_values)}'")
 
         return RecurringTaskPeriod(recurring_task_period_str)
 
@@ -347,7 +347,7 @@ class BasicValidator:
         if not self._recurring_task_due_at_time_re.match(recurring_task_due_at_time_str):
             raise ModelValidationError(
                 f"Expected due time info '{recurring_task_due_at_time_raw}' to " +
-                "match '{self._recurring_task_due_at_time_re.pattern}'")
+                f"match '{self._recurring_task_due_at_time_re.pattern}'")
 
         return recurring_task_due_at_time_str
 
@@ -392,12 +392,12 @@ class BasicValidator:
         if not big_plan_status_raw:
             raise ModelValidationError("Expected big plan status to be non-null")
 
-        big_plan_status_str: str = big_plan_status_raw.strip().lower()
+        big_plan_status_str: str = '-'.join(big_plan_status_raw.strip().lower().split(' '))
 
         if big_plan_status_str not in self._big_plan_status_values:
             raise ModelValidationError(
                 f"Expected big plan status '{big_plan_status_raw}' for be " +
-                "one of '{','.join(self._big_plan_status_values)}'")
+                f"one of '{','.join(self._big_plan_status_values)}'")
 
         return BigPlanStatus(big_plan_status_str)
 

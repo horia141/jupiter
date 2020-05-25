@@ -1,34 +1,29 @@
 """Command for syncing the recurring tasks from Notion."""
 
 import logging
-import re
-from typing import Dict
-import uuid
-
-from notion.block import CollectionViewBlock
-from notion.client import NotionClient
-import pendulum
+from argparse import ArgumentParser, Namespace
+from typing import Final
 
 import command.command as command
-from models.basic import EntityId, BasicValidator, Eisen, Difficulty, RecurringTaskPeriod, SyncPrefer
-import repository.projects as projects
-import repository.recurring_tasks as recurring_tasks
-from repository.recurring_tasks import RecurringTask
-import repository.workspaces as workspaces
-import schedules
-import schema
-import space_utils
-import storage
+from controllers.recurring_tasks import RecurringTasksController
+from models.basic import BasicValidator, SyncPrefer
 
 LOGGER = logging.getLogger(__name__)
-DONE_STATUS = [schema.DONE_STATUS, schema.NOT_DONE_STATUS]
 
 
 class RecurringTasksSync(command.Command):
     """Command class for syncing  projects."""
 
+    _basic_validator: Final[BasicValidator]
+    _recurring_tasks_controller: Final[RecurringTasksController]
+
+    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+        """Constructor."""
+        self._basic_validator = basic_validator
+        self._recurring_tasks_controller = recurring_tasks_controller
+
     @staticmethod
-    def name():
+    def name() -> str:
         """The name of the command."""
         return "recurring-tasks-sync"
 
@@ -37,276 +32,15 @@ class RecurringTasksSync(command.Command):
         """The description of the command."""
         return "Synchronises Notion and the local storage for recurring tasks"
 
-    def build_parser(self, parser):
+    def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--project", dest="project_key", required=True,
                             help="Allow only tasks from this project")
         parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
 
-    def run(self, args):
+    def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        basic_validator = BasicValidator()
-
-        # Parse arguments
-        project_key = basic_validator.project_key_validate_and_clean(args.project_key)
-        sync_prefer = basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
-
-        # Load local storage
-
-        the_lock = storage.load_lock_file()
-        LOGGER.info("Loaded the system lock")
-        workspace_repository = workspaces.WorkspaceRepository()
-        projects_repository = projects.ProjectsRepository()
-        recurring_tasks_repository = recurring_tasks.RecurringTasksRepository()
-
-        workspace = workspace_repository.load_workspace()
-        project = projects_repository.load_project_by_key(project_key)
-        all_recurring_tasks = recurring_tasks_repository.list_all_recurring_tasks(
-            filter_project_ref_id=[project.ref_id])
-        all_recurring_tasks_set: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
-
-        # Prepare Notion connection
-
-        client = NotionClient(token_v2=workspace.token)
-
-        # Explore Notion and apply to local
-
-        recurring_tasks_page = space_utils.find_page_from_space_by_id(
-            client, the_lock["projects"][project.key]["recurring_tasks"]["root_page_id"])
-        recurring_tasks_rows = client \
-            .get_collection_view(
-                the_lock["projects"][project.key]["recurring_tasks"]["database_view_id"],
-                collection=recurring_tasks_page.collection) \
-            .build_query() \
-            .execute()
-
-        # First, update the recurring tasks collection schema, with the full group
-        # structure. We need to do this at the start, so all other operations assume
-        # Notion and local are synced wrt this thing and can work easily.
-        recurring_tasks_collection = recurring_tasks_page.collection
-        recurring_tasks_schema = recurring_tasks_collection.get("schema")
-        all_local_groups = {k.group.lower().strip(): k.group for k in all_recurring_tasks}
-        all_notion_groups = recurring_tasks_schema[schema.RECURRING_TASKS_GROUP_KEY]
-        if "options" not in all_notion_groups:
-            all_notion_groups["options"] = []
-        all_notion_groups_key = [k["value"].lower().strip() for k in all_notion_groups["options"]]
-        for (local_group_key, local_group_value) in all_local_groups.items():
-            if local_group_key in all_notion_groups_key:
-                continue
-            all_notion_groups["options"].append({
-                "color": schema.get_stable_color(local_group_key),
-                "id": str(uuid.uuid4()),
-                "value": schema.format_name_for_option(local_group_value)
-            })
-        recurring_tasks_collection.set("schema", recurring_tasks_schema)
-
-        # Then look at each recurring task in Notion and try to match it with one in the local storage
-
-        recurring_tasks_row_set = {}
-        for recurring_tasks_row in recurring_tasks_rows:
-            LOGGER.info(f"Processing {recurring_tasks_row}")
-            if recurring_tasks_row.ref_id is None or recurring_tasks_row.ref_id == "":
-                # If the recurring task doesn't exist locally, we create it!
-
-                new_recurring_task_raw = self._build_entity_from_row(recurring_tasks_row)
-                new_recurring_task = recurring_tasks_repository.create_recurring_task(
-                    project_ref_id=project.ref_id,
-                    archived=False,
-                    name=new_recurring_task_raw["name"],
-                    period=new_recurring_task_raw["period"],
-                    group=new_recurring_task_raw["group"],
-                    eisen=new_recurring_task_raw["eisen"],
-                    difficulty=new_recurring_task_raw["difficulty"],
-                    due_at_time=new_recurring_task_raw["due_at_time"],
-                    due_at_day=new_recurring_task_raw["due_at_day"],
-                    due_at_month=new_recurring_task_raw["due_at_month"],
-                    suspended=new_recurring_task_raw["suspended"],
-                    skip_rule=new_recurring_task_raw["skip_rule"],
-                    must_do=new_recurring_task_raw["must_do"])
-
-                LOGGER.info(f"Found new recurring task from Notion {recurring_tasks_row.title}")
-                recurring_tasks_row.ref_id = new_recurring_task.ref_id
-                all_recurring_tasks_set[recurring_tasks_row.ref_id] = new_recurring_task
-                recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
-            elif recurring_tasks_row.ref_id in all_recurring_tasks_set:
-                # If the recurring task exists locally, we sync it with the remote
-                recurring_task = all_recurring_tasks_set[recurring_tasks_row.ref_id]
-                if sync_prefer == SyncPrefer.NOTION:
-                    # Copy over the parameters from Notion to local
-                    recurring_task_raw = self._build_entity_from_row(recurring_tasks_row)
-                    recurring_task.name = recurring_task_raw["name"]
-                    recurring_task.period = recurring_task_raw["period"]
-                    recurring_task.group = recurring_task_raw["group"]
-                    recurring_task.eisen = recurring_task_raw["eisen"]
-                    recurring_task.difficulty = recurring_task_raw["difficulty"]
-                    recurring_task.due_at_time = recurring_task_raw["due_at_time"]
-                    recurring_task.due_at_day = recurring_task_raw["due_at_day"]
-                    recurring_task.due_at_month = recurring_task_raw["due_at_month"]
-                    recurring_task.suspended = recurring_task_raw["suspended"]
-                    recurring_task.skip_rule = recurring_task_raw["skip_rule"]
-                    recurring_task.must_do = recurring_task_raw["must_do"]
-                    recurring_tasks_repository.save_recurring_task(recurring_task)
-                    LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from Notion")
-                elif sync_prefer == SyncPrefer.LOCAL:
-                    # Copy over the parameters from local to Notion
-                    recurring_tasks_row.title = recurring_task.name
-                    recurring_tasks_row.group = recurring_task.group
-                    recurring_tasks_row.period = recurring_task.period.value
-                    setattr(
-                        recurring_tasks_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in recurring_task.eisen])
-                    recurring_tasks_row.difficulty = \
-                        recurring_task.difficulty.value if recurring_task.difficulty else None
-                    recurring_tasks_row.due_at_time = recurring_task.due_at_time
-                    recurring_tasks_row.due_at_day = recurring_task.due_at_day
-                    recurring_tasks_row.due_at_month = recurring_task.due_at_month
-                    recurring_tasks_row.must_do = recurring_task.must_do
-                    recurring_tasks_row.skip_rule = recurring_task.skip_rule
-                    LOGGER.info(f"Changed recurring task with id={recurring_tasks_row.ref_id} from local")
-                recurring_tasks_row_set[recurring_tasks_row.ref_id] = recurring_tasks_row
-            else:
-                LOGGER.info(f"Removed dangling recurring task in Notion {recurring_tasks_row}")
-                recurring_tasks_row.remove()
-
-        LOGGER.info("Applied local changes")
-
-        # Now, go over each local recurring task, and add it to Notion if it doesn't
-        # exist there!
-
-        for recurring_task in all_recurring_tasks_set.values():
-            # We've already processed this thing above
-            if recurring_task.ref_id in recurring_tasks_row_set:
-                continue
-
-            new_recurring_task_row = recurring_tasks_collection.add_row()
-            new_recurring_task_row.ref_id = recurring_task.ref_id
-            new_recurring_task_row.title = recurring_task.name
-            new_recurring_task_row.group = recurring_task.group
-            new_recurring_task_row.period = recurring_task.period.value
-            setattr(
-                new_recurring_task_row, schema.INBOX_TASK_ROW_EISEN_KEY, [e.value for e in recurring_task.eisen])
-            new_recurring_task_row.difficulty = recurring_task.difficulty.value if recurring_task.difficulty else None
-            new_recurring_task_row.due_at_time = recurring_task.due_at_time
-            new_recurring_task_row.due_at_day = recurring_task.due_at_day
-            new_recurring_task_row.due_at_month = recurring_task.due_at_month
-            new_recurring_task_row.must_do = recurring_task.must_do
-            new_recurring_task_row.skip_rule = recurring_task.skip_rule
-            LOGGER.info(f'Created Notion task for {recurring_task.name}')
-
-        # What is now left to do is just update all the inbox tasks according to the new forms of
-        # recurring tasks.
-
-        inbox_tasks_page = space_utils.find_page_from_space_by_id(
-            client, the_lock["projects"][project.key]["inbox"]["root_page_id"])
-        inbox_tasks_rows = client \
-            .get_collection_view(
-                the_lock["projects"][project.key]["inbox"]["database_view_id"],
-                collection=inbox_tasks_page.collection) \
-            .build_query() \
-            .execute()
-        inbox_collection = inbox_tasks_page.collection
-
-        for inbox_task_row in inbox_tasks_rows:
-            if inbox_task_row.recurring_task_id is None or inbox_task_row.recurring_task_id == "":
-                continue
-            recurring_task = all_recurring_tasks_set.get(inbox_task_row.recurring_task_id, None)
-            if recurring_task is None:
-                # If this is happening, then this is a dangling inbox task. It'll be removed!
-                LOGGER.info(f"Removing dangling inbox task {inbox_task_row}")
-                inbox_task_row.remove()
-                continue
-            schedule = schedules.get_schedule(
-                recurring_task.period.value, recurring_task.name, pendulum.instance(inbox_task_row.created_date.start),
-                recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
-                recurring_task.due_at_month)
-            setattr(inbox_task_row, schema.INBOX_TASK_ROW_DUE_DATE_KEY, schedule.due_time)
-            inbox_task_row.title = schedule.full_name
-            setattr(inbox_task_row, "eisenhower", [e.value for e in recurring_task.eisen])
-            inbox_task_row.difficulty = recurring_task.difficulty.value if recurring_task.difficulty else None
-            if recurring_task not in DONE_STATUS:
-                setattr(inbox_task_row, schema.INBOX_TASK_ROW_PERIOD_KEY, schedule.period)
-                setattr(inbox_task_row, schema.INBOX_TASK_ROW_TIMELINE_KEY, schedule.timeline)
-            LOGGER.info(f"Applied Notion changes to inbox task {inbox_task_row}")
-
-        # Hwllo
-
-        # OK, not setup view structure!
-
-        for recurring_task_row in recurring_tasks_row_set.values():
-            LOGGER.info(f"Creating views structure for recurring task {recurring_task_row}")
-
-            recurring_task_view_block = None
-            recurring_task_view = None
-
-            for recurring_task_child in recurring_task_row.children:
-                if not isinstance(recurring_task_child, CollectionViewBlock):
-                    continue
-
-                if recurring_task_child.title != "Inbox":
-                    continue
-
-                recurring_task_view_block = recurring_task_child
-                recurring_task_view = recurring_task_view_block.views[0]
-                LOGGER.info(f"Found already existing inbox tasks view {recurring_task_view_block}")
-                break
-
-            if not recurring_task_view_block:
-                recurring_task_view_block = recurring_task_row.children.add_new(CollectionViewBlock)
-                recurring_task_view_block.collection = inbox_collection
-                recurring_task_view = recurring_task_view_block.views.add_new(view_type="table")
-                LOGGER.info(f"Created new view block {recurring_task_view_block} and view for it {recurring_task_view}")
-
-            client.submit_transaction([{
-                "id": recurring_task_view.id,
-                "table": "collection_view",
-                "path": [],
-                "command": "update",
-                "args": schema.get_view_schema_for_recurring_task_desc(recurring_task_row.ref_id)
-            }])
-
-    @staticmethod
-    def _clean_eisen(eisen):
-        if len(eisen) == 0:
-            return []
-        if len(eisen) == 1 and eisen[0] == '':
-            return []
-        return eisen
-
-    @staticmethod
-    def _build_entity_from_row(row):
-        name = row.title.strip()
-        group = row.group.strip() if row.group else ""
-        period = RecurringTaskPeriod(row.period.strip().lower())
-        eisen = [Eisen(e.strip().lower()) for e in RecurringTasksSync._clean_eisen(row.eisen)]
-        difficulty = Difficulty(row.difficulty.strip().lower()) if row.difficulty else None
-        due_at_time = row.due_at_time.strip().lower() if row.due_at_time else None
-        due_at_day = row.due_at_day
-        due_at_month = row.due_at_month
-        must_do = row.must_do
-        skip_rule = row.skip_rule.strip().lower() if row.skip_rule else None
-
-        if len(name) == 0:
-            raise Exception("Must provide a non-empty name")
-
-        if len(group) == 0:
-            raise Exception("Must provide a non-empty group")
-
-        if due_at_time:
-            if not re.match("^[0-9][0-9]:[0-9][0-9]$", due_at_time):
-                raise Exception(f"Invalid due time value '{due_at_time}'")
-
-        entity = {
-            "name": name,
-            "group": group,
-            "period": period,
-            "eisen": eisen,
-            "difficulty": difficulty,
-            "due_at_time": due_at_time,
-            "due_at_day": due_at_day,
-            "due_at_month": due_at_month,
-            "must_do": must_do,
-            "suspended": row.suspended,
-            "skip_rule": skip_rule
-        }
-
-        return entity
+        project_key = self._basic_validator.project_key_validate_and_clean(args.project_key)
+        sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
+        self._recurring_tasks_controller.recurring_tasks_sync(project_key, sync_prefer)

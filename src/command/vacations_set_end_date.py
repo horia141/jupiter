@@ -1,14 +1,11 @@
 """Command for setting the end date of a vacation."""
 
 import logging
-
-from notion.client import NotionClient
+from argparse import ArgumentParser, Namespace
+from typing import Final
 
 import command.command as command
-import repository.vacations as vacations
-import repository.workspaces as workspaces
-import space_utils
-import storage
+from controllers.vacations import VacationsController
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -17,65 +14,33 @@ LOGGER = logging.getLogger(__name__)
 class VacationsSetEndDate(command.Command):
     """Command class for setting the end date of a vacation."""
 
+    _basic_validator: Final[BasicValidator]
+    _vacations_controller: Final[VacationsController]
+
+    def __init__(self, basic_validator: BasicValidator, vacations_controller: VacationsController):
+        """Constructor."""
+        self._basic_validator = basic_validator
+        self._vacations_controller = vacations_controller
+
     @staticmethod
-    def name():
+    def name() -> str:
         """The name of the command."""
         return "vacations-set-end-date"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the end date of a vacation"
 
-    def build_parser(self, parser):
+    def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacation to modify")
-        parser.add_argument("--end_date", type=str, dest="end_date", required=True,
+        parser.add_argument("--end-date", type=str, dest="end_date", required=True,
                             help="The new end date of the vacation")
 
-    def run(self, args):
+    def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        basic_validator = BasicValidator()
+        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        end_date = self._basic_validator.datetime_validate_and_clean(args.end_date)
 
-        # Parse arguments
-
-        ref_id = basic_validator.entity_id_validate_and_clean(args.ref_id)
-        end_date = basic_validator.datetime_validate_and_clean(args.end_date)
-
-        # Load local storage
-
-        the_lock = storage.load_lock_file()
-        workspace_repository = workspaces.WorkspaceRepository()
-        vacations_repository = vacations.VacationsRepository()
-
-        workspace = workspace_repository.load_workspace()
-
-        # Prepare Notion connection
-
-        client = NotionClient(token_v2=workspace.token)
-
-        # Apply changes locally
-
-        vacation = vacations_repository.load_vacation_by_id(ref_id)
-        if end_date <= vacation.start_date:
-            raise Exception("Cannot set an end date before the start date")
-        vacation.end_date = end_date
-        vacations_repository.save_vacation(vacation)
-        LOGGER.info("Modified vacation")
-
-        # Apply changes in Notion
-
-        vacations_page = space_utils.find_page_from_space_by_id(client, the_lock["vacations"]["root_page_id"])
-        vacations_rows = client \
-            .get_collection_view(the_lock["vacations"]["database_view_id"], collection=vacations_page.collection) \
-            .build_query() \
-            .execute()
-
-        for vacation_row in vacations_rows:
-            if vacation_row.ref_id != ref_id:
-                continue
-            vacation_row.end_date = vacation.end_date
-            LOGGER.info("Applied Notion changes")
-            break
-        else:
-            LOGGER.error("Did not find Notion task to remove")
+        self._vacations_controller.set_vacation_end_date(ref_id, end_date)

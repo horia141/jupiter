@@ -1,18 +1,16 @@
 """Repository for vacations."""
 
 from dataclasses import dataclass
-import datetime
 import logging
-import os.path
 import typing
-from typing import Final, Any, ClassVar, Dict, List, Iterable, Optional, Tuple
+from pathlib import Path
+from typing import Any, ClassVar, Dict, List, Iterable, Optional
 
-import jsonschema as js
 import pendulum
-import yaml
 
 from models.basic import EntityId
 from repository.common import RepositoryError
+from utils.storage import StructuredCollectionStorage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,47 +35,29 @@ class Vacation:
 class VacationsRepository:
     """A repository for vacations."""
 
-    _VACATIONS_FILE_PATH: ClassVar[str] = "/data/vacations.yaml"
+    _VACATIONS_FILE_PATH: ClassVar[Path] = Path("/data/vacations.yaml")
 
-    _VACATIONS_SCHEMA: ClassVar[Dict[str, Any]] = {
-        "type": "object",
-        "properties": {
-            "next_idx": {"type": "number"},
-            "entries": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "ref_id": {"type": "string"},
-                        "archived": {"type": "boolean"},
-                        "name": {"type": "string"},
-                        "start_date": {"type": "datetime-date"},
-                        "end_date": {"type": "datetime-date"}
-                    }
-                }
-            }
-        }
-    }
-
-    _validator: Final[Any]
+    _structured_storage: StructuredCollectionStorage[Vacation]
 
     def __init__(self) -> None:
         """Constructor."""
-        custom_type_checker = js.Draft6Validator.TYPE_CHECKER \
-            .redefine("datetime-date", VacationsRepository._schema_check_datetime_date)
+        self._structured_storage = StructuredCollectionStorage(self._VACATIONS_FILE_PATH, self)
 
-        self._validator = js.validators.extend(js.Draft6Validator, type_checker=custom_type_checker)
+    def __enter__(self) -> 'VacationsRepository':
+        """Enter context."""
+        self._structured_storage.initialize()
+        return self
 
-    def initialize(self) -> None:
-        """Initialise this repository."""
-        if os.path.exists(VacationsRepository._VACATIONS_FILE_PATH):
+    def __exit__(self, exc_type, _exc_val, _exc_tb):
+        """Exit context."""
+        if exc_type is not None:
             return
-        self._bulk_save_vacations((0, []))
+        self._structured_storage.exit_save()
 
     def create_vacation(
             self, archived: bool, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> Vacation:
         """Create a vacation."""
-        vacations_next_idx, vacations = self._bulk_load_vacations()
+        vacations_next_idx, vacations = self._structured_storage.load()
 
         new_vacation = Vacation(
             ref_id=EntityId(str(vacations_next_idx)),
@@ -89,13 +69,13 @@ class VacationsRepository:
         vacations.append(new_vacation)
         vacations.sort(key=lambda v: v.start_date)
 
-        self._bulk_save_vacations((vacations_next_idx, vacations))
+        self._structured_storage.save((vacations_next_idx, vacations))
 
         return new_vacation
 
     def remove_vacation_by_id(self, ref_id: EntityId) -> None:
         """Remove a particular vacation."""
-        vacations_next_idx, vacations = self._bulk_load_vacations()
+        vacations_next_idx, vacations = self._structured_storage.load()
 
         for vacation in vacations:
             if vacation.ref_id == ref_id:
@@ -104,79 +84,30 @@ class VacationsRepository:
         else:
             raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
 
-        self._bulk_save_vacations((vacations_next_idx, vacations))
+        self._structured_storage.save((vacations_next_idx, vacations))
 
-    def load_all_vacations(self) -> Iterable[Vacation]:
+    def load_all_vacations(self, filter_archived: bool = True) -> Iterable[Vacation]:
         """Retrieve all the vacations defined."""
-        _, vacations = self._bulk_load_vacations()
-        return vacations
+        _, vacations = self._structured_storage.load()
+        return [v for v in vacations if (filter_archived is False or v.archived is False)]
 
     def load_vacation_by_id(self, ref_id: EntityId) -> Vacation:
         """Retrieve a particular vacation by its id."""
-        _, vacations = self._bulk_load_vacations()
+        _, vacations = self._structured_storage.load()
         found_vacation = self._find_vacation_by_id(ref_id, vacations)
         if not found_vacation:
             raise RepositoryError(f"Vacation with id={ref_id} does not exist")
+        if found_vacation.archived:
+            raise RepositoryError(f"Vacation with id={ref_id} is archived")
         return found_vacation
 
     def save_vacation(self, new_vacation: Vacation) -> None:
         """Store a particular vacation with all new properties."""
-        vacations_next_idx, vacations = self._bulk_load_vacations()
+        vacations_next_idx, vacations = self._structured_storage.load()
         if not self._find_vacation_by_id(new_vacation.ref_id, vacations):
             raise RepositoryError(f"Vacation with id={new_vacation.ref_id} does not exist")
         new_vacations = [(v if v.ref_id != new_vacation.ref_id else new_vacation) for v in vacations]
-        self._bulk_save_vacations((vacations_next_idx, new_vacations))
-
-    def _bulk_load_vacations(self) -> Tuple[int, List[Vacation]]:
-        try:
-            with open(VacationsRepository._VACATIONS_FILE_PATH, "r") as vacations_file:
-                vacations_ser = yaml.safe_load(vacations_file)
-                LOGGER.info("Loaded vacations data")
-
-                self._validator(VacationsRepository._VACATIONS_SCHEMA).validate(vacations_ser)
-                LOGGER.info("Checked vacations structure")
-
-                vacations_next_idx = vacations_ser["next_idx"]
-                all_vacations = \
-                    (Vacation(
-                        ref_id=EntityId(v["ref_id"]),
-                        archived=v["archived"],
-                        name=v["name"],
-                        start_date=pendulum.parse(v["start_date"]),
-                        end_date=pendulum.parse(v["end_date"]))
-                     for v in vacations_ser["entries"])
-                vacations = [v for v in all_vacations
-                             if v.archived is False]
-
-                return vacations_next_idx, vacations
-        except (IOError, yaml.YAMLError, js.ValidationError) as error:
-            raise RepositoryError from error
-
-    def _bulk_save_vacations(self, bulk_data: Tuple[int, List[Vacation]]) -> None:
-        try:
-            with open(VacationsRepository._VACATIONS_FILE_PATH, "w") as vacations_file:
-                vacations_ser = {
-                    "next_idx": bulk_data[0],
-                    "entries": [{
-                        "ref_id": v.ref_id,
-                        "archived": v.archived,
-                        "name": v.name,
-                        "start_date": v.start_date.to_datetime_string(),
-                        "end_date": v.end_date.to_datetime_string()
-                    } for v in bulk_data[1]]
-                }
-
-                self._validator(VacationsRepository._VACATIONS_SCHEMA).validate(vacations_ser)
-                LOGGER.info("Checked vacations structure")
-
-                yaml.dump(vacations_ser, vacations_file)
-                LOGGER.info("Saved vacations structure")
-        except (IOError, yaml.YAMLError, js.ValidationError) as error:
-            raise RepositoryError from error
-
-    @staticmethod
-    def _schema_check_datetime_date(_checker: Any, instance: Any) -> bool:
-        return isinstance(instance, datetime.date)
+        self._structured_storage.save((vacations_next_idx, new_vacations))
 
     @staticmethod
     def _find_vacation_by_id(ref_id: EntityId, vacations: List[Vacation]) -> Optional[Vacation]:
@@ -184,3 +115,38 @@ class VacationsRepository:
             return next(v for v in vacations if v.ref_id == ref_id)
         except StopIteration:
             return None
+
+    @staticmethod
+    def storage_schema() -> Dict[str, Any]:
+        """The schema for the data."""
+        return {
+            "type": "object",
+            "properties": {
+                "ref_id": {"type": "string"},
+                "archived": {"type": "boolean"},
+                "name": {"type": "string"},
+                "start_date": {"type": "string"},
+                "end_date": {"type": "string"}
+            }
+        }
+
+    @staticmethod
+    def storage_to_live(storage_form: Any) -> Vacation:
+        """Transform the data reconstructed from basic storage into something useful for the live system."""
+        return Vacation(
+            ref_id=EntityId(storage_form["ref_id"]),
+            archived=storage_form["archived"],
+            name=storage_form["name"],
+            start_date=pendulum.parse(storage_form["start_date"]),
+            end_date=pendulum.parse(storage_form["end_date"]))
+
+    @staticmethod
+    def live_to_storage(live_form: Vacation) -> Any:
+        """Transform the live system data to something suitable for basic storage."""
+        return {
+            "ref_id": live_form.ref_id,
+            "archived": live_form.archived,
+            "name": live_form.name,
+            "start_date": live_form.start_date.to_datetime_string(),
+            "end_date": live_form.end_date.to_datetime_string()
+        }

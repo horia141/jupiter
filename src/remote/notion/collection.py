@@ -1,0 +1,347 @@
+"""A generic Notion collection as understood by Jupiter."""
+import logging
+from dataclasses import field, dataclass
+from pathlib import Path
+from typing import TypeVar, Generic, Final, Dict, Any, Protocol, List, Optional, Iterable
+
+from notion.collection import CollectionRowBlock
+
+from models.basic import EntityId
+from remote.notion.client import NotionClient
+from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError
+from remote.notion.connection import NotionConnection
+from utils.storage import StructuredCollectionStorage
+
+LOGGER = logging.getLogger(__name__)
+
+
+@dataclass()
+class BasicRowType:
+    """A basic row type, which must contain a Notion id and an local id."""
+
+    notion_id: NotionId
+    ref_id: Optional[str]
+
+
+RowType = TypeVar("RowType", bound=BasicRowType)
+
+
+class NotionCollectionProtocol(Protocol[RowType]):
+    """Protocol for clients of StructuredIndividualStorage to expose."""
+
+    @staticmethod
+    def get_page_name() -> str:
+        """Get the name for the page."""
+        ...
+
+    @staticmethod
+    def get_notion_schema() -> Dict[str, Any]:
+        """Get the Notion schema for the collection."""
+        ...
+
+    @staticmethod
+    def merge_notion_schemas(_old_schema: Dict[str, Any], _new_schema: Dict[str, Any]) -> Dict[str, Any]:
+        """Merge an old and new schema for the collection."""
+        ...
+
+    @staticmethod
+    def get_view_schemas() -> Dict[str, Dict[str, Any]]:
+        """Get the Notion view schemas for the collection."""
+        ...
+
+    @staticmethod
+    def copy_row_to_notion_row(
+            _client: NotionClient, _row: RowType, _notion_row: CollectionRowBlock, **_kwargs) -> CollectionRowBlock:
+        """Copy the fields of the local row to the actual Notion structure."""
+        ...
+
+    @staticmethod
+    def copy_notion_row_to_row(_notion_row: CollectionRowBlock) -> RowType:
+        """Transform the live system data to something suitable for basic storage."""
+        ...
+
+
+@dataclass()
+class NotionCollectionLock:
+    """The lock contains information about the associated Notion entities."""
+
+    discriminant: str
+    page_id: NotionId
+    collection_id: NotionId
+    view_ids: Dict[str, NotionId] = field(default_factory=dict, compare=False)
+    ref_id_to_notion_id_map: Dict[EntityId, NotionId] = field(
+        default_factory=dict, repr=False, hash=False, compare=False)
+
+
+class NotionCollection(Generic[RowType]):
+    """A generic Notion collection as understood by Jupiter."""
+
+    _connection: Final[NotionConnection]
+    _structured_storage: Final[StructuredCollectionStorage[NotionCollectionLock]]
+    _protocol: Final[NotionCollectionProtocol[RowType]]
+
+    def __init__(
+            self, connection: NotionConnection, storage_path: Path,
+            protocol: NotionCollectionProtocol[RowType]) -> None:
+        """Constructor."""
+        self._connection = connection
+        self._structured_storage = StructuredCollectionStorage(storage_path, self)
+        self._protocol = protocol
+
+    def initialize(self) -> None:
+        """Initialise the collection storage."""
+        self._structured_storage.initialize()
+
+    def exit_save(self) -> None:
+        """Save everything at the end."""
+        self._structured_storage.exit_save()
+
+    def upsert_structure(self, discriminant: str, parent_page: NotionPageLink) -> NotionCollectionLink:
+        """Create the Notion-side structure for this collection."""
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+
+        client = self._connection.get_notion_client()
+
+        if lock:
+            page = client.get_collection_page_by_id(lock.page_id)
+            LOGGER.info(f"Found the already existing page as {page.id}")
+            collection = client.get_collection(lock.page_id, lock.collection_id, [])
+            LOGGER.info(f"Found the already existing collection {collection.id}")
+        else:
+            page = client.create_collection_page(parent_page=client.get_regular_page(parent_page.page_id))
+            LOGGER.info(f"Created the page as {page.id}")
+            collection = client.create_collection(page, self._protocol.get_notion_schema())
+            LOGGER.info(f"Created the collection as {collection}")
+
+        # Change the schema.
+
+        old_collection_schema = collection.get("schema")
+        collection_schema = self._protocol.merge_notion_schemas(
+            old_collection_schema, self._protocol.get_notion_schema())
+        collection.set("schema", collection_schema)
+        LOGGER.info("Applied the most current schema to the collection")
+
+        # Attach the views.
+        view_ids = lock.view_ids if lock else {}
+        for view_name, view_schema in self._protocol.get_view_schemas().items():
+            the_view = client.attach_view_to_collection_page(
+                page, collection, view_ids.get(view_name, None), view_schema["type"], view_schema)
+            view_ids[view_name] = the_view.id
+            LOGGER.info(f"Attached view '{view_name}' to collection id='{collection.id}'")
+
+        # Tie everything up.
+
+        page.set("collection_id", collection.id)
+        page.set("view_ids", list(view_ids.values()))
+
+        # Change the title.
+
+        page.title = self._protocol.get_page_name()
+        collection.name = self._protocol.get_page_name()
+        LOGGER.info("Changed the name")
+
+        # Save local locks.
+        new_lock = NotionCollectionLock(
+            discriminant=discriminant,
+            page_id=page.id,
+            collection_id=collection.id,
+            view_ids=view_ids,
+            ref_id_to_notion_id_map=lock.ref_id_to_notion_id_map if lock else {})
+        if lock:
+            # Just replace the old value with the new one here.
+            locks = [(itl if itl.discriminant != discriminant else new_lock) for itl in locks]
+        else:
+            # Add new value at the end here.
+            locks.append(new_lock)
+            locks_next_idx += 1
+        self._structured_storage.save((locks_next_idx, locks))
+        LOGGER.info("Saved lock structure")
+
+        return NotionCollectionLink(page_id=page.id, collection_id=collection.id)
+
+    def remove_structure(self, discriminant: str) -> None:
+        """Remove the Notion-side structure for this collection."""
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+
+        if lock is None:
+            raise CollectionError(f"Expected collection lock with discriminant='{discriminant}' to exist")
+
+        client = self._connection.get_notion_client()
+
+        page = client.get_collection_page_by_id(lock.page_id)
+        page.remove()
+
+        new_locks = [l for l in locks if l.discriminant != discriminant]
+        self._structured_storage.save((locks_next_idx, new_locks))
+
+    def get_structure(self, discriminant: str) -> NotionCollectionLink:
+        """Retrive the Notion-side structure for this collection."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+
+        if lock is None:
+            raise CollectionError(f"Expected collection lock with discriminant='{discriminant}' to exist")
+
+        return NotionCollectionLink(page_id=lock.page_id, collection_id=lock.collection_id)
+
+    def update_schema(self, discriminant, new_schema: Dict[str, Any]) -> None:
+        """Just updates the schema for the collection and asks no questions."""
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+
+        if lock is None:
+            raise CollectionError(f"Expected collection lock with discriminant='{discriminant}' to exist")
+
+        client = self._connection.get_notion_client()
+
+        client.update_collection_schema(lock.page_id, lock.collection_id, new_schema)
+
+    def create(self, discriminant: str, new_row: RowType, **kwargs) -> RowType:
+        """Create a Notion entity."""
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+
+        if new_row.ref_id in lock.ref_id_to_notion_id_map:
+            raise CollectionError(f"Entity already exists on Notion side for inbox task with id={new_row.ref_id}")
+
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(lock.page_id, lock.collection_id, [lock.view_ids["database_view_id"]])
+
+        new_notion_row = client.create_collection_row(collection)
+
+        new_row.notion_id = new_notion_row.id
+
+        lock.ref_id_to_notion_id_map[new_row.ref_id] = new_notion_row.id
+        self._structured_storage.save((locks_next_idx, locks))
+        LOGGER.info("Saved local locks")
+
+        self._protocol.copy_row_to_notion_row(client, new_row, new_notion_row, **kwargs)
+        LOGGER.info(f"Created new inbox task with id {new_notion_row.id}")
+
+        return new_row
+
+    def link_local_and_notion_entries(self, discriminant: str, ref_id: EntityId, notion_id: NotionId) -> None:
+        """Link a local entity with the Notio none, useful in syncing processes."""
+        locks_next_idx, task_locks = self._structured_storage.load()
+        lock = self._find_lock(task_locks, discriminant)
+        if ref_id in lock.ref_id_to_notion_id_map:
+            raise CollectionError(f"Entity already exists on Notion side for id={ref_id}")
+        lock.ref_id_to_notion_id_map[ref_id] = notion_id
+        self._structured_storage.save((locks_next_idx, task_locks))
+
+    def remove_by_id(self, discriminant: str, ref_id: EntityId) -> None:
+        """Remove a particular inbox task."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        client = self._connection.get_notion_client()
+        inbox_task_notion_row = self._find_notion_row(client, lock, ref_id)
+
+        inbox_task_notion_row.archived = True
+
+    def load_all(self, discriminant: str) -> Iterable[RowType]:
+        """Retrieve all the Notion-side inbox tasks."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(lock.page_id, lock.collection_id, [lock.view_ids["database_view_id"]])
+        all_notion_rows = client.get_collection_all_rows(collection, lock.view_ids["database_view_id"])
+
+        return [self._protocol.copy_notion_row_to_row(nr) for nr in all_notion_rows]
+
+    def load_by_id(self, discriminant: str, ref_id: EntityId) -> RowType:
+        """Retrieve the Notion-side inbox task associated with a particular entity."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        client = self._connection.get_notion_client()
+        inbox_task_notion_row = self._find_notion_row(client, lock, ref_id)
+
+        return self._protocol.copy_notion_row_to_row(inbox_task_notion_row)
+
+    def save(self, discriminant: str, row: RowType, **kwargs) -> None:
+        """Update the Notion-side inbox task with new data."""
+        if row.ref_id is None:
+            raise CollectionError(f"Can only save over an inbox task which has a ref_id")
+
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        client = self._connection.get_notion_client()
+        notion_row = self._find_notion_row(client, lock, EntityId(row.ref_id))
+
+        self._protocol.copy_row_to_notion_row(client, row, notion_row, **kwargs)
+
+    def hard_remove(self, discriminant: str, ref_id: EntityId) -> None:
+        """Hard remove the Notion entity associated with a local entity."""
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        client = self._connection.get_notion_client()
+        notion_row = self._find_notion_row(client, lock, ref_id)
+
+        if ref_id in lock.ref_id_to_notion_id_map:
+            del lock.ref_id_to_notion_id_map[ref_id]
+            self._structured_storage.save((locks_next_idx, locks))
+
+        notion_row.remove()
+
+    @staticmethod
+    def _find_lock(locks: List[NotionCollectionLock], discriminant: str) -> Optional[NotionCollectionLock]:
+        return next((itl for itl in locks if itl.discriminant == discriminant), None)
+
+    @staticmethod
+    def _find_notion_row(
+            client: NotionClient, lock: NotionCollectionLock, ref_id: EntityId) -> CollectionRowBlock:
+        collection = client.get_collection(lock.page_id, lock.collection_id, [lock.view_ids["database_view_id"]])
+        if ref_id in lock.ref_id_to_notion_id_map:
+            notion_row = client.get_collection_row(collection, lock.ref_id_to_notion_id_map[ref_id])
+            LOGGER.info(f"Finding by stored id")
+        else:
+            all_notion_rows = client.get_collection_all_rows(collection, lock.view_ids["database_view_id"])
+            notion_row = next((vnr.ref_id == ref_id for vnr in all_notion_rows), None)
+            LOGGER.info(f"Finding by ref_id search")
+
+        if not notion_row:
+            raise CollectionError(f"Could not find Notion row with ref_id={ref_id}")
+
+        return notion_row
+
+    @staticmethod
+    def storage_schema() -> Dict[str, Any]:
+        """The schema of the data for this structure storage, as meant for basic storage."""
+        return {
+            "type": "object",
+            "properties": {
+                "page_id": {"type": "string"},
+                "collection_id": {"type": "string"},
+                "view_ids": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string"}
+                },
+                "ref_id_to_notion_map": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string"}
+                }
+            }
+        }
+
+    @staticmethod
+    def storage_to_live(storage_form: Any) -> NotionCollectionLock:
+        """Transform the data reconstructed from basic storage into something useful for the live system."""
+        return NotionCollectionLock(
+            discriminant=storage_form["discriminant"],
+            page_id=NotionId(storage_form["page_id"]),
+            collection_id=NotionId(storage_form["collection_id"]),
+            view_ids={k: NotionId(v) for (k, v) in storage_form["view_ids"].items()},
+            ref_id_to_notion_id_map={EntityId(k): NotionId(v)
+                                     for (k, v) in storage_form["ref_id_to_notion_id_map"].items()})
+
+    @staticmethod
+    def live_to_storage(live_form: NotionCollectionLock) -> Any:
+        """Transform the live system data to something suitable for basic storage."""
+        return {
+            "discriminant": live_form.discriminant,
+            "page_id": live_form.page_id,
+            "collection_id": live_form.collection_id,
+            "view_ids": live_form.view_ids,
+            "ref_id_to_notion_id_map": live_form.ref_id_to_notion_id_map
+        }
