@@ -106,7 +106,7 @@ class NotionCollection(Generic[RowType]):
         if lock:
             page = client.get_collection_page_by_id(lock.page_id)
             LOGGER.info(f"Found the already existing page as {page.id}")
-            collection = client.get_collection(lock.page_id, lock.collection_id, [])
+            collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
             LOGGER.info(f"Found the already existing collection {collection.id}")
         else:
             page = client.create_collection_page(parent_page=client.get_regular_page(parent_page.page_id))
@@ -207,7 +207,7 @@ class NotionCollection(Generic[RowType]):
             raise CollectionError(f"Entity already exists on Notion side for inbox task with id={new_row.ref_id}")
 
         client = self._connection.get_notion_client()
-        collection = client.get_collection(lock.page_id, lock.collection_id, [lock.view_ids["database_view_id"]])
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
 
         new_notion_row = client.create_collection_row(collection)
 
@@ -245,7 +245,7 @@ class NotionCollection(Generic[RowType]):
         _, locks = self._structured_storage.load()
         lock = self._find_lock(locks, discriminant)
         client = self._connection.get_notion_client()
-        collection = client.get_collection(lock.page_id, lock.collection_id, [lock.view_ids["database_view_id"]])
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
         all_notion_rows = client.get_collection_all_rows(collection, lock.view_ids["database_view_id"])
 
         return [self._protocol.copy_notion_row_to_row(nr) for nr in all_notion_rows]
@@ -291,7 +291,7 @@ class NotionCollection(Generic[RowType]):
     @staticmethod
     def _find_notion_row(
             client: NotionClient, lock: NotionCollectionLock, ref_id: EntityId) -> CollectionRowBlock:
-        collection = client.get_collection(lock.page_id, lock.collection_id, [lock.view_ids["database_view_id"]])
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
         if ref_id in lock.ref_id_to_notion_id_map:
             notion_row = client.get_collection_row(collection, lock.ref_id_to_notion_id_map[ref_id])
             LOGGER.info(f"Finding by stored id")
