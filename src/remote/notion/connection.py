@@ -1,7 +1,7 @@
 """The connection handles the lifetime of the interaction with Notion."""
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar, Final, Dict, Any
+from typing import ClassVar, Final, Dict, Any, Optional
 
 import requests
 
@@ -32,10 +32,12 @@ class NotionConnection:
     _NOTION_LINK_FILE_PATH: ClassVar[Path] = Path("/data/notion-connection.yaml")
 
     _structured_storage: Final[StructuredIndividualStorage[NotionConnectionData]]
+    _cached_client: Optional[NotionClient]
 
     def __init__(self) -> None:
         """Constructor."""
         self._structured_storage = StructuredIndividualStorage(self._NOTION_LINK_FILE_PATH, self)
+        self._cached_client = None
 
     def initialize(self, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
         """Initialize the Notion collection."""
@@ -43,13 +45,17 @@ class NotionConnection:
 
     def get_notion_client(self) -> NotionClient:
         """Construct a new Notion client."""
+        if self._cached_client is not None:
+            return self._cached_client
+
         notion_link = self._structured_storage.load_optional()
 
         if not notion_link:
             raise MissingNotionConnectionError()
 
         try:
-            return NotionClient(NotionClientConfig(notion_link.space_id, notion_link.token))
+            self._cached_client = NotionClient(NotionClientConfig(notion_link.space_id, notion_link.token))
+            return self._cached_client
         except requests.exceptions.HTTPError as error:
             if str(error).find("Unauthorized for url"):
                 raise OldTokenForNotionConnectionError()
@@ -60,6 +66,7 @@ class NotionConnection:
         data = self._structured_storage.load()
         data.token = new_token
         self._structured_storage.save(data)
+        self._cached_client = None
 
     @staticmethod
     def storage_schema() -> Dict[str, Any]:
