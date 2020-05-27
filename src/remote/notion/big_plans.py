@@ -251,17 +251,17 @@ class BigPlansCollection:
         """Link a local entity with the Notion one, useful in syncing processes."""
         self._collection.link_local_and_notion_entries(project_ref_id, ref_id, notion_id)
 
-    def remove_big_plan_by_id(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def archive_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular big plans."""
-        self._collection.remove_by_id(project_ref_id, ref_id)
+        self._collection.archive(project_ref_id, ref_id)
 
     def load_all_big_plans(self, project_ref_id: EntityId) -> Iterable[BigPlanRow]:
         """Retrieve all the Notion-side big plans."""
         return cast(Iterable[BigPlanRow], self._collection.load_all(project_ref_id))
 
-    def load_big_plan_by_id(self, project_ref_id: EntityId, ref_id: EntityId) -> BigPlanRow:
+    def load_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> BigPlanRow:
         """Retrieve the Notion-side big plan associated with a particular entity."""
-        return cast(BigPlanRow, self._collection.load_by_id(project_ref_id, ref_id))
+        return cast(BigPlanRow, self._collection.load(project_ref_id, ref_id))
 
     def save_big_plan(
             self, project_ref_id: EntityId, new_big_plan_row: BigPlanRow,

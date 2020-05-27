@@ -77,7 +77,7 @@ class BigPlansRepository:
 
         return new_big_plan
 
-    def remove_big_plan_by_id(self, ref_id: EntityId) -> None:
+    def archive_big_plan(self, ref_id: EntityId) -> None:
         """Remove a big plan."""
         big_plans_next_idx, big_plans = self._structured_storage.load()
 
@@ -90,7 +90,7 @@ class BigPlansRepository:
 
         self._structured_storage.save((big_plans_next_idx, big_plans))
 
-    def list_all_big_plans(
+    def load_all_big_plans(
             self,
             filter_archived: bool = True,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -104,7 +104,7 @@ class BigPlansRepository:
                 and (len(filter_ref_ids_set) == 0 or bp.ref_id in filter_ref_ids_set)
                 and (len(filter_project_ref_id_set) == 0 or bp.project_ref_id in filter_project_ref_id_set)]
 
-    def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
+    def load_big_plan(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a particular big plan by its id."""
         _, big_plans = self._structured_storage.load()
         found_big_plans = self._find_big_plan_by_id(ref_id, big_plans)

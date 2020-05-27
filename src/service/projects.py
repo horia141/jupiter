@@ -65,9 +65,9 @@ class ProjectsService:
 
     def archive_project(self, key: ProjectKey) -> None:
         """Archive a project."""
-        removed_project = self._repository.remove_project_by_key(key)
+        removed_project = self._repository.archive_project(key)
         LOGGER.info("Applied local changes")
-        self._collection.remove_project(removed_project.ref_id)
+        self._collection.archive_project(removed_project.ref_id)
 
     def set_project_name(self, key: ProjectKey, name: str) -> None:
         """Change the name of a project."""
@@ -76,12 +76,12 @@ class ProjectsService:
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
-        project = self._repository.load_project_by_key(key)
+        project = self._repository.load_project(key)
         project.name = name
         self._repository.save_project(project)
         LOGGER.info("Modified local project")
 
-        project_screen = self._collection.load_project_by_id(project.ref_id)
+        project_screen = self._collection.load_project(project.ref_id)
         project_screen.name = name
         self._collection.save_project(project_screen)
         LOGGER.info("Applied Notion changes")
@@ -89,17 +89,17 @@ class ProjectsService:
     def load_all_projects(
             self, show_archived: bool = False, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
         """Retrieve all projects."""
-        return self._repository.list_all_projects(
+        return self._repository.load_all_projects(
             filter_archived=not show_archived, filter_keys=filter_keys)
 
     def load_project_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project, by key."""
-        return self._repository.load_project_by_key(key)
+        return self._repository.load_project(key)
 
     def sync_projects(self, key: ProjectKey, sync_prefer: SyncPrefer) -> None:
         """Synchronise projects between Notion and local storage."""
-        project = self._repository.load_project_by_key(key)
-        project_screen = self._collection.load_project_by_id(project.ref_id)
+        project = self._repository.load_project(key)
+        project_screen = self._collection.load_project(project.ref_id)
 
         if sync_prefer == SyncPrefer.LOCAL:
             project_screen.name = project.name

@@ -386,17 +386,17 @@ class RecurringTasksCollection:
         """Link a local entity with the Notio none, useful in syncing processes."""
         self._collection.link_local_and_notion_entries(project_ref_id, ref_id, notion_id)
 
-    def remove_recurring_task_by_id(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def archive_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular recurring task."""
-        self._collection.remove_by_id(project_ref_id, ref_id)
+        self._collection.archive(project_ref_id, ref_id)
 
     def load_all_recurring_tasks(self, project_ref_id: EntityId) -> Iterable[RecurringTaskRow]:
         """Retrieve all the Notion-side recurring tasks."""
         return cast(Iterable[RecurringTaskRow], self._collection.load_all(project_ref_id))
 
-    def load_recurring_task_by_id(self, project_ref_id: EntityId, ref_id: EntityId) -> RecurringTaskRow:
+    def load_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> RecurringTaskRow:
         """Retrieve the Notion-side recurring task associated with a particular entity."""
-        return cast(RecurringTaskRow, self._collection.load_by_id(project_ref_id, ref_id))
+        return cast(RecurringTaskRow, self._collection.load(project_ref_id, ref_id))
 
     def save_recurring_task(
             self, project_ref_id: EntityId, new_recurring_task_row: RecurringTaskRow,

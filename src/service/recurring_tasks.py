@@ -34,8 +34,8 @@ class RecurringTasksService:
 
     def remove_notion_structure(self, project_ref_id: EntityId) -> None:
         """Remove the Notion-side structure for inbox tasks."""
-        for recurring_task in self._repository.list_all_recurring_tasks(filter_project_ref_ids=[project_ref_id]):
-            self._repository.remove_recurring_task_by_id(recurring_task.ref_id)
+        for recurring_task in self._repository.load_all_recurring_tasks(filter_project_ref_ids=[project_ref_id]):
+            self._repository.archive_recurring_task(recurring_task.ref_id)
         self._collection.remove_recurring_tasks_structure(project_ref_id)
 
     def create_recurring_task(
@@ -91,9 +91,9 @@ class RecurringTasksService:
 
     def archive_recurring_task(self, ref_id: EntityId) -> RecurringTask:
         """Archive a given recurring task."""
-        recurring_task = self._repository.remove_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.archive_recurring_task(ref_id)
         LOGGER.info("Applied local changes")
-        self._collection.remove_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        self._collection.archive_recurring_task(recurring_task.project_ref_id, ref_id)
         LOGGER.info("Applied Notion changes")
 
         return recurring_task
@@ -105,12 +105,12 @@ class RecurringTasksService:
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.name = name
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.name = name
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
@@ -119,12 +119,12 @@ class RecurringTasksService:
 
     def set_recurring_task_period(self, ref_id: EntityId, period: RecurringTaskPeriod) -> RecurringTask:
         """Change the period of a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.period = period
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.period = period.value
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
@@ -135,7 +135,7 @@ class RecurringTasksService:
             self, ref_id: EntityId, due_at_time: Optional[str], due_at_day: Optional[int],
             due_at_month: Optional[int]) -> RecurringTask:
         """Change the deadline of a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
 
         try:
             due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(due_at_time)\
@@ -155,7 +155,7 @@ class RecurringTasksService:
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.due_at_time = due_at_time
         recurring_task_row.due_at_day = due_at_day
         recurring_task_row.due_at_month = due_at_month
@@ -166,12 +166,12 @@ class RecurringTasksService:
 
     def set_recurring_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> RecurringTask:
         """Change the Eisenhower status of a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.eisen = eisen
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.eisen = [e.value for e in eisen]
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
@@ -180,12 +180,12 @@ class RecurringTasksService:
 
     def set_recurring_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> RecurringTask:
         """Change the difficulty of a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.difficulty = difficulty
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.difficulty = difficulty.value if difficulty else None
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
@@ -194,48 +194,48 @@ class RecurringTasksService:
 
     def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> None:
         """Change the group for a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.group = group
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.group = group
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
 
     def set_recurring_task_must_do_state(self, ref_id: EntityId, must_do: bool) -> None:
         """Change the must do status for a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.must_do = must_do
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.must_do = must_do
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
 
     def set_recurring_task_skip_rule(self, ref_id: EntityId, skip_rule: Optional[str]) -> None:
         """Change the skip rule for a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.skip_rule = skip_rule
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.skip_rule = skip_rule
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
 
     def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> None:
         """Change the suspended state for a recurring task."""
-        recurring_task = self._repository.load_recurring_task_by_id(ref_id)
+        recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.suspended = suspended
         self._repository.save_recurring_task(recurring_task)
         LOGGER.info("Applied local changes")
 
-        recurring_task_row = self._collection.load_recurring_task_by_id(recurring_task.project_ref_id, ref_id)
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         recurring_task_row.suspended = suspended
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
@@ -244,21 +244,21 @@ class RecurringTasksService:
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:
         """Retrieve all the recurring tasks."""
-        return self._repository.list_all_recurring_tasks(
+        return self._repository.load_all_recurring_tasks(
             filter_archived=filter_archived,
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
 
     def load_recurring_task_by_id(self, ref_id: EntityId) -> RecurringTask:
         """Retrieve a particular recurring task by it's id."""
-        return self._repository.load_recurring_task_by_id(ref_id)
+        return self._repository.load_recurring_task(ref_id)
 
     def recurring_tasks_sync(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink,
             sync_prefer: SyncPrefer) -> None:
         """Synchronise recurring tasks between Notion and local storage."""
         # Load local storage
-        all_recurring_tasks = self._repository.list_all_recurring_tasks(
+        all_recurring_tasks = self._repository.load_all_recurring_tasks(
             filter_archived=False, filter_project_ref_ids=[project_ref_id])
         all_recurring_tasks_set = {rt.ref_id: rt for rt in all_recurring_tasks}
         all_recurring_tasks_rows = self._collection.load_all_recurring_tasks(project_ref_id)

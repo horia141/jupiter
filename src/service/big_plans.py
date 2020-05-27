@@ -36,8 +36,8 @@ class BigPlansService:
 
     def remove_notion_structure(self, project_ref_id: EntityId) -> None:
         """Remove the Notion-side structure for inbox tasks."""
-        for big_plan in self._repository.list_all_big_plans(filter_project_ref_ids=[project_ref_id]):
-            self._repository.remove_big_plan_by_id(big_plan.ref_id)
+        for big_plan in self._repository.load_all_big_plans(filter_project_ref_ids=[project_ref_id]):
+            self._repository.archive_big_plan(big_plan.ref_id)
         self._collection.remove_big_plans_structure(project_ref_id)
 
     def create_big_plan(
@@ -71,11 +71,11 @@ class BigPlansService:
 
     def archive_big_plan(self, ref_id: EntityId) -> None:
         """Archive a big plan."""
-        big_plan = self._repository.load_big_plan_by_id(ref_id)
+        big_plan = self._repository.load_big_plan(ref_id)
 
-        self._repository.remove_big_plan_by_id(ref_id)
+        self._repository.archive_big_plan(ref_id)
         LOGGER.info("Applied local changes")
-        self._collection.remove_big_plan_by_id(big_plan.project_ref_id, ref_id)
+        self._collection.archive_big_plan(big_plan.project_ref_id, ref_id)
         LOGGER.info("Applied Notion changes")
 
     def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
@@ -85,12 +85,12 @@ class BigPlansService:
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
-        big_plan = self._repository.load_big_plan_by_id(ref_id)
+        big_plan = self._repository.load_big_plan(ref_id)
         big_plan.name = name
         self._repository.save_big_plan(big_plan)
         LOGGER.info("Applied local changes")
 
-        big_plan_row = self._collection.load_big_plan_by_id(big_plan.project_ref_id, big_plan.ref_id)
+        big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, big_plan.ref_id)
         big_plan_row.name = name
         self._collection.save_big_plan(big_plan.project_ref_id, big_plan_row)
         LOGGER.info("Applied Notion changes")
@@ -100,12 +100,12 @@ class BigPlansService:
     def set_big_plan_status(
             self, ref_id: EntityId, status: BigPlanStatus) -> BigPlan:
         """Change the status of a big plan."""
-        big_plan = self._repository.load_big_plan_by_id(ref_id)
+        big_plan = self._repository.load_big_plan(ref_id)
         big_plan.status = status
         self._repository.save_big_plan(big_plan)
         LOGGER.info("Applied local changes")
 
-        big_plan_row = self._collection.load_big_plan_by_id(big_plan.project_ref_id, big_plan.ref_id)
+        big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, big_plan.ref_id)
         big_plan_row.status = status.for_notion()
         self._collection.save_big_plan(big_plan.project_ref_id, big_plan_row)
         LOGGER.info("Applied Notion changes")
@@ -114,12 +114,12 @@ class BigPlansService:
 
     def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> None:
         """Change the due date of a big plan."""
-        big_plan = self._repository.load_big_plan_by_id(ref_id)
+        big_plan = self._repository.load_big_plan(ref_id)
         big_plan.due_date = due_date
         self._repository.save_big_plan(big_plan)
         LOGGER.info("Applied local changes")
 
-        big_plan_row = self._collection.load_big_plan_by_id(big_plan.project_ref_id, big_plan.ref_id)
+        big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, big_plan.ref_id)
         big_plan_row.due_date = due_date
         self._collection.save_big_plan(big_plan.project_ref_id, big_plan_row)
         LOGGER.info("Applied Notion changes")
@@ -128,19 +128,19 @@ class BigPlansService:
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
         """Retrieve all big plans."""
-        return self._repository.list_all_big_plans(
+        return self._repository.load_all_big_plans(
             filter_archived=filter_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
 
     def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a big plan by id."""
-        return self._repository.load_big_plan_by_id(ref_id)
+        return self._repository.load_big_plan(ref_id)
 
     def big_plans_sync(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink,
             sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
         """Synchronise big plans between Notion and local storage."""
-        all_big_plans = self._repository.list_all_big_plans(
+        all_big_plans = self._repository.load_all_big_plans(
             filter_archived=False, filter_project_ref_ids=[project_ref_id])
         all_big_plans_set: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
 

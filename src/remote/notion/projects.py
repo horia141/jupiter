@@ -79,7 +79,7 @@ class ProjectsCollection:
             notion_id=new_page.id,
             ref_id=ref_id)
 
-    def remove_project(self, ref_id: EntityId) -> None:
+    def archive_project(self, ref_id: EntityId) -> None:
         """Remove a project on Notion side."""
         locks_next_idx, locks = self._structured_storage.load()
         lock = self._find_lock(locks, ref_id)
@@ -95,7 +95,7 @@ class ProjectsCollection:
         new_locks = [l for l in locks if l.ref_id != ref_id]
         self._structured_storage.save((locks_next_idx, new_locks))
 
-    def load_project_by_id(self, ref_id: EntityId) -> ProjectScreen:
+    def load_project(self, ref_id: EntityId) -> ProjectScreen:
         """Retrieve a project from Notion via id."""
         _, locks = self._structured_storage.load()
         lock = self._find_lock(locks, ref_id)

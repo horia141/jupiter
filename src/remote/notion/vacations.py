@@ -150,17 +150,17 @@ class VacationsCollection:
         """Link a local entity with the notion one, useful in syncing processes."""
         self._collection.link_local_and_notion_entries(self._DISCRIMINANT, ref_id, notion_id)
 
-    def remove_vacation_by_id(self, ref_id: EntityId) -> None:
+    def archive_vacation(self, ref_id: EntityId) -> None:
         """Remove a particular vacation."""
-        self._collection.remove_by_id(self._DISCRIMINANT, ref_id)
+        self._collection.archive(self._DISCRIMINANT, ref_id)
 
     def load_all_vacations(self) -> Iterable[VacationRow]:
         """Retrieve all the Notion-side vacations."""
         return cast(Iterable[VacationRow], self._collection.load_all(self._DISCRIMINANT))
 
-    def load_vacation_by_id(self, ref_id: EntityId) -> VacationRow:
+    def load_vacation(self, ref_id: EntityId) -> VacationRow:
         """Retrieve the Notion-side vacation associated with a particular entity."""
-        return cast(VacationRow, self._collection.load_by_id(self._DISCRIMINANT, ref_id))
+        return cast(VacationRow, self._collection.load(self._DISCRIMINANT, ref_id))
 
     def save_vacation(self, new_vacation_row: VacationRow) -> None:
         """Update a Notion-side vacation with new data."""

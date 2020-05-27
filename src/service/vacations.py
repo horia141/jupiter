@@ -66,12 +66,12 @@ class VacationsService:
         """Archive a given vacation."""
         # Apply changes locally
 
-        self._repository.remove_vacation_by_id(ref_id)
+        self._repository.archive_vacation(ref_id)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
 
-        self._collection.remove_vacation_by_id(ref_id)
+        self._collection.archive_vacation(ref_id)
         LOGGER.info("Applied Notion changes")
 
     def set_vacation_name(self, ref_id: EntityId, name: str) -> None:
@@ -83,14 +83,14 @@ class VacationsService:
 
         # Apply changes locally
 
-        vacation = self._repository.load_vacation_by_id(ref_id)
+        vacation = self._repository.load_vacation(ref_id)
         vacation.name = name
         self._repository.save_vacation(vacation)
         LOGGER.info("Modified vacation")
 
         # Apply changes in Notion
 
-        vacation_row = self._collection.load_vacation_by_id(vacation.ref_id)
+        vacation_row = self._collection.load_vacation(vacation.ref_id)
         vacation_row.name = name
         self._collection.save_vacation(vacation_row)
         LOGGER.info("Applied Notion changes")
@@ -99,7 +99,7 @@ class VacationsService:
         """Change the start date of a vacation."""
         # Apply changes locally
 
-        vacation = self._repository.load_vacation_by_id(ref_id)
+        vacation = self._repository.load_vacation(ref_id)
         if start_date >= vacation.end_date:
             raise ServiceValidationError("Cannot set a start date after the end date")
         vacation.start_date = start_date
@@ -108,7 +108,7 @@ class VacationsService:
 
         # Apply changes in Notion
 
-        vacation_row = self._collection.load_vacation_by_id(vacation.ref_id)
+        vacation_row = self._collection.load_vacation(vacation.ref_id)
         vacation_row.start_date = start_date
         self._collection.save_vacation(vacation_row)
         LOGGER.info("Applied Notion changes")
@@ -117,7 +117,7 @@ class VacationsService:
         """Change the end date of a vacation."""
         # Apply changes locally
 
-        vacation = self._repository.load_vacation_by_id(ref_id)
+        vacation = self._repository.load_vacation(ref_id)
         if end_date <= vacation.start_date:
             raise ServiceValidationError("Cannot set an end date before the start date")
         vacation.end_date = end_date
@@ -126,7 +126,7 @@ class VacationsService:
 
         # Apply changes in Notion
 
-        vacation_row = self._collection.load_vacation_by_id(vacation.ref_id)
+        vacation_row = self._collection.load_vacation(vacation.ref_id)
         vacation_row.end_date = end_date
         self._collection.save_vacation(vacation_row)
         LOGGER.info("Applied Notion changes")

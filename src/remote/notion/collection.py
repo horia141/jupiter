@@ -244,7 +244,7 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         lock.ref_id_to_notion_id_map[ref_id] = notion_id
         self._structured_storage.save((locks_next_idx, task_locks))
 
-    def remove_by_id(self, discriminant: str, ref_id: EntityId) -> None:
+    def archive(self, discriminant: str, ref_id: EntityId) -> None:
         """Remove a particular entity."""
         _, locks = self._structured_storage.load()
         lock = self._find_lock(locks, discriminant)
@@ -267,7 +267,7 @@ class NotionCollection(Generic[NotionCollectionRowType]):
 
         return [self._protocol.copy_notion_row_to_row(nr) for nr in all_notion_rows]
 
-    def load_by_id(self, discriminant: str, ref_id: EntityId) -> NotionCollectionRowType:
+    def load(self, discriminant: str, ref_id: EntityId) -> NotionCollectionRowType:
         """Retrieve the Notion-side entity associated with a particular entity."""
         _, locks = self._structured_storage.load()
         lock = self._find_lock(locks, discriminant)

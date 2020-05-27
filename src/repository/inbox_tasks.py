@@ -93,7 +93,7 @@ class InboxTasksRepository:
 
         return new_inbox_task
 
-    def remove_inbox_task_by_id(self, ref_id: EntityId) -> None:
+    def archive_inbox_task(self, ref_id: EntityId) -> None:
         """Remove a particular inbox task."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
@@ -106,7 +106,7 @@ class InboxTasksRepository:
 
         self._structured_storage.save((inbox_tasks_next_idx, inbox_tasks))
 
-    def list_all_inbox_tasks(
+    def load_all_inbox_task(
             self,
             filter_archived: bool = True,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -128,7 +128,7 @@ class InboxTasksRepository:
                 and (len(filter_recurring_task_ref_ids_set) == 0
                      or it.recurring_task_ref_id in filter_recurring_task_ref_ids_set)]
 
-    def load_inbox_task_by_id(self, ref_id: EntityId) -> InboxTask:
+    def load_inbox_task(self, ref_id: EntityId) -> InboxTask:
         """Retrieve a particular inbox task by its id."""
         _, inbox_tasks = self._structured_storage.load()
         found_inbox_tasks = self._find_inbox_task_by_id(ref_id, inbox_tasks)

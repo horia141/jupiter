@@ -91,7 +91,7 @@ class RecurringTasksRepository:
 
         return new_recurring_task
 
-    def remove_recurring_task_by_id(self, ref_id: EntityId) -> RecurringTask:
+    def archive_recurring_task(self, ref_id: EntityId) -> RecurringTask:
         """Remove a particular recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
@@ -103,7 +103,7 @@ class RecurringTasksRepository:
 
         raise RepositoryError(f"Recurring task with id='{ref_id}' does not exist")
 
-    def list_all_recurring_tasks(
+    def load_all_recurring_tasks(
             self,
             filter_archived: bool = True,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -117,7 +117,7 @@ class RecurringTasksRepository:
                 and (len(filter_ref_ids_set) == 0 or r.ref_id in filter_ref_ids_set)
                 and (len(filter_project_ref_ids_set) == 0 or r.project_ref_id in filter_project_ref_ids_set)]
 
-    def load_recurring_task_by_id(self, ref_id: EntityId) -> RecurringTask:
+    def load_recurring_task(self, ref_id: EntityId) -> RecurringTask:
         """Retrieve a particular recurring task by its id."""
         _, recurring_tasks = self._structured_storage.load()
         found_recurring_tasks = self._find_recurring_task_by_id(ref_id, recurring_tasks)

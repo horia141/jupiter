@@ -778,17 +778,17 @@ class InboxTasksCollection:
         """Link a local entity with the Notio none, useful in syncing processes."""
         self._collection.link_local_and_notion_entries(project_ref_id, ref_id, notion_id)
 
-    def remove_inbox_task_by_id(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def archive_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular inbox task."""
-        self._collection.remove_by_id(project_ref_id, ref_id)
+        self._collection.archive(project_ref_id, ref_id)
 
     def load_all_inbox_tasks(self, project_ref_id: EntityId) -> Iterable[InboxTaskRow]:
         """Retrieve all the Notion-side inbox tasks."""
         return cast(Iterable[InboxTaskRow], self._collection.load_all(project_ref_id))
 
-    def load_inbox_task_by_id(self, project_ref_id: EntityId, ref_id: EntityId) -> InboxTaskRow:
+    def load_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> InboxTaskRow:
         """Retrieve the Notion-side inbox task associated with a particular entity."""
-        return cast(InboxTaskRow, self._collection.load_by_id(project_ref_id, ref_id))
+        return cast(InboxTaskRow, self._collection.load(project_ref_id, ref_id))
 
     def save_inbox_task(self, project_ref_id: EntityId, new_inbox_task_row: InboxTaskRow) -> None:
         """Update the Notion-side inbox task with new data."""

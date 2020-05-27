@@ -69,7 +69,7 @@ class ProjectsRepository:
 
         return new_project
 
-    def remove_project_by_key(self, key: ProjectKey) -> Project:
+    def archive_project(self, key: ProjectKey) -> Project:
         """Remove a particular project."""
         projects_next_idx, projects = self._structured_storage.load()
 
@@ -81,7 +81,7 @@ class ProjectsRepository:
 
         raise RepositoryError(f"Project with key='{key}' does not exist")
 
-    def list_all_projects(
+    def load_all_projects(
             self,
             filter_archived: bool = True,
             filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
@@ -92,17 +92,7 @@ class ProjectsRepository:
                 if (filter_archived is False or p.archived is False)
                 and (len(filter_keys_set) == 0 or p.key in filter_keys_set)]
 
-    def load_project_by_id(self, ref_id: EntityId) -> Project:
-        """Retrieve a particular project by its key."""
-        _, projects = self._structured_storage.load()
-        found_project = self._find_project_by_id(ref_id, projects)
-        if not found_project:
-            raise RepositoryError(f"Project with id='{ref_id}' does not exist")
-        if found_project.archived:
-            raise RepositoryError(f"Project with id='{ref_id}' is archived")
-        return found_project
-
-    def load_project_by_key(self, key: ProjectKey) -> Project:
+    def load_project(self, key: ProjectKey) -> Project:
         """Retrieve a particular project by its key."""
         _, projects = self._structured_storage.load()
         found_project = self._find_project_by_key(key, projects)
@@ -121,13 +111,6 @@ class ProjectsRepository:
 
         new_projects = [(p if p.ref_id != new_project.ref_id else new_project) for p in projects]
         self._structured_storage.save((projects_next_idx, new_projects))
-
-    @staticmethod
-    def _find_project_by_id(ref_id: EntityId, projects: List[Project]) -> Optional[Project]:
-        try:
-            return next(p for p in projects if p.ref_id == ref_id)
-        except StopIteration:
-            return None
 
     @staticmethod
     def _find_project_by_key(key: ProjectKey, projects: List[Project]) -> Optional[Project]:

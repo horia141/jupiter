@@ -39,8 +39,8 @@ class InboxTasksService:
 
     def remove_notion_structure(self, project_ref_id: EntityId) -> None:
         """Remove the Notion-side structure for inbox tasks."""
-        for inbox_task in self._repository.list_all_inbox_tasks(filter_project_ref_ids=[project_ref_id]):
-            self._repository.remove_inbox_task_by_id(inbox_task.ref_id)
+        for inbox_task in self._repository.load_all_inbox_task(filter_project_ref_ids=[project_ref_id]):
+            self._repository.archive_inbox_task(inbox_task.ref_id)
         self._collection.remove_inbox_tasks_structure(project_ref_id)
 
     def get_notion_structure(self, project_ref_id: EntityId) -> NotionCollectionLink:
@@ -143,12 +143,12 @@ class InboxTasksService:
     def archive_inbox_task(self, ref_id: EntityId) -> None:
         """Archive an inbox task."""
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
 
-        self._repository.remove_inbox_task_by_id(ref_id)
+        self._repository.archive_inbox_task(ref_id)
         LOGGER.info("Applied local changes")
         # Apply Notion changes
-        self._collection.remove_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        self._collection.archive_inbox_task(inbox_task.project_ref_id, ref_id)
         LOGGER.info("Applied Notion changes")
 
     def set_inbox_task_name(self, ref_id: EntityId, name: str) -> None:
@@ -159,13 +159,13 @@ class InboxTasksService:
             raise ServiceValidationError("Invalid inputs") from error
 
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.name = name
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Modified inbox task locally")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.name = name
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
@@ -184,7 +184,7 @@ class InboxTasksService:
             raise ServiceValidationError("Invalid inputs") from error
 
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         if inbox_task.recurring_task_ref_id is not None:
             raise ServiceValidationError(
                 f"Inbox task with id='{ref_id}' is a recurring one and cannot be assigned to a big plan")
@@ -192,7 +192,7 @@ class InboxTasksService:
         self._repository.save_inbox_task(inbox_task)
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.big_plan_ref_id = big_plan_ref_id
         inbox_task_row.big_plan_name = \
             remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None
@@ -209,7 +209,7 @@ class InboxTasksService:
             raise ServiceValidationError("Invalid inputs") from error
 
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.name = name
         inbox_task.recurring_task_timeline = timeline
         inbox_task.due_date = due_time
@@ -219,7 +219,7 @@ class InboxTasksService:
         LOGGER.info("Modified inbox task locally")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.name = name
         inbox_task_row.recurring_period = period.value
         inbox_task_row.recurring_timeline = timeline
@@ -232,13 +232,13 @@ class InboxTasksService:
     def set_inbox_task_status(self, ref_id: EntityId, status: InboxTaskStatus) -> None:
         """Change the status of an inbox task."""
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.status = status
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.status = status.for_notion()
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
@@ -246,13 +246,13 @@ class InboxTasksService:
     def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> None:
         """Change the due date of an inbox task."""
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.due_date = due_date
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.due_date = due_date
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
@@ -260,13 +260,13 @@ class InboxTasksService:
     def set_inbox_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> None:
         """Change the Eisenhower status of an inbox task."""
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.eisen = eisen
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.eisen = [e.value for e in eisen]
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
@@ -274,20 +274,20 @@ class InboxTasksService:
     def set_inbox_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> None:
         """Change the difficulty of an inbox task."""
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task_by_id(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.difficulty = difficulty
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task_by_id(inbox_task.project_ref_id, ref_id)
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.difficulty = difficulty.value if difficulty else None
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
 
     def archive_done_inbox_tasks(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
         """Archive the done inbox tasks."""
-        inbox_tasks = self._repository.list_all_inbox_tasks(
+        inbox_tasks = self._repository.load_all_inbox_task(
             filter_archived=False, filter_project_ref_ids=filter_project_ref_id)
         LOGGER.info(inbox_tasks)
 
@@ -299,8 +299,8 @@ class InboxTasksService:
                 continue
 
             LOGGER.info(f"Removing task '{inbox_task.name}'")
-            self._repository.remove_inbox_task_by_id(inbox_task.ref_id)
-            self._collection.remove_inbox_task_by_id(inbox_task.project_ref_id, inbox_task.ref_id)
+            self._repository.archive_inbox_task(inbox_task.ref_id)
+            self._collection.archive_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
 
     def load_all_inbox_tasks(
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -308,7 +308,7 @@ class InboxTasksService:
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
         """Retrieve all inbox tasks."""
-        return self._repository.list_all_inbox_tasks(
+        return self._repository.load_all_inbox_task(
             filter_archived=filter_archived,
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids,
@@ -319,7 +319,7 @@ class InboxTasksService:
             self, project_ref_id: EntityId, all_big_plans: Iterable[BigPlan],
             all_recurring_tasks: Iterable[RecurringTask], sync_prefer: SyncPrefer) -> None:
         """Synchronise the inbox tasks between the Notion and local storage."""
-        all_inbox_tasks = self._repository.list_all_inbox_tasks(
+        all_inbox_tasks = self._repository.load_all_inbox_task(
             filter_archived=False, filter_project_ref_ids=[project_ref_id])
         all_inbox_tasks_set = {rt.ref_id: rt for rt in all_inbox_tasks}
         all_inbox_tasks_rows = self._collection.load_all_inbox_tasks(project_ref_id)

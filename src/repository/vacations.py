@@ -76,7 +76,7 @@ class VacationsRepository:
 
         return new_vacation
 
-    def remove_vacation_by_id(self, ref_id: EntityId) -> None:
+    def archive_vacation(self, ref_id: EntityId) -> None:
         """Remove a particular vacation."""
         vacations_next_idx, vacations = self._structured_storage.load()
 
@@ -94,7 +94,7 @@ class VacationsRepository:
         _, vacations = self._structured_storage.load()
         return [v for v in vacations if (filter_archived is False or v.archived is False)]
 
-    def load_vacation_by_id(self, ref_id: EntityId) -> Vacation:
+    def load_vacation(self, ref_id: EntityId) -> Vacation:
         """Retrieve a particular vacation by its id."""
         _, vacations = self._structured_storage.load()
         found_vacation = self._find_vacation_by_id(ref_id, vacations)
