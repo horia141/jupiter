@@ -28,7 +28,7 @@ class ProjectSetName(command.Command):
         return "project-set-name"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the name of a project"
 

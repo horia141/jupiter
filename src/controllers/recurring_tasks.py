@@ -109,7 +109,7 @@ class RecurringTasksController:
                 recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                 recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
-                schedule.full_name, schedule.period, schedule.timeline, schedule.due_time,
+                inbox_task.ref_id, schedule.full_name, schedule.period, schedule.timeline, schedule.due_time,
                 recurring_task.eisen, recurring_task.difficulty)
 
     def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> None:
@@ -162,11 +162,10 @@ class RecurringTasksController:
             self, show_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_keys: Optional[Iterable[ProjectKey]] = None) -> LoadAllRecurringTasksResponse:
         """Retrieve all recurring tasks."""
+        filter_project_ref_ids: Optional[List[EntityId]] = None
         if filter_project_keys:
             projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
             filter_project_ref_ids = [p.ref_id for p in projects]
-        else:
-            filter_project_ref_ids = None
 
         recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
             filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,
@@ -193,8 +192,12 @@ class RecurringTasksController:
             filter_archived=False, filter_project_ref_ids=[project.ref_id],
             filter_recurring_task_ref_ids=(rt.ref_id for rt in all_recurring_tasks))
 
-        all_inbox_tasks_by_recurring_task_ref_id_and_timeline = \
-            {(it.recurring_task_ref_id, it.recurring_task_timeline): it for it in all_inbox_tasks}
+        all_inbox_tasks_by_recurring_task_ref_id_and_timeline = {}
+        for inbox_task in all_inbox_tasks:
+            if inbox_task.recurring_task_ref_id is None or inbox_task.recurring_task_timeline is None:
+                raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
+            all_inbox_tasks_by_recurring_task_ref_id_and_timeline[
+                (inbox_task.recurring_task_ref_id, inbox_task.recurring_task_timeline)] = inbox_task
 
         for recurring_task in all_recurring_tasks:
             LOGGER.info(f"Generating inbox tasks for '{recurring_task.name}'")
@@ -211,7 +214,7 @@ class RecurringTasksController:
     def _generate_inbox_tasks_for_recurring_task(
             self,
             project: Project,
-            right_now,
+            right_now: pendulum.DateTime,
             group_filter: Optional[FrozenSet[EntityName]],
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
             all_vacations: List[Vacation],
@@ -284,6 +287,8 @@ class RecurringTasksController:
         for inbox_task in all_inbox_tasks:
             if inbox_task.is_considered_done:
                 continue
+            if inbox_task.recurring_task_ref_id is None:
+                raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
             recurring_task = all_recurring_tasks_set[inbox_task.recurring_task_ref_id]
             schedule = schedules.get_schedule(
                 recurring_task.period.value, recurring_task.name, pendulum.instance(inbox_task.created_date),

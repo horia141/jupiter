@@ -28,7 +28,7 @@ class BigPlansSetStatus(command.Command):
         return "big-plans-set-status"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the status of a recurring task"
 

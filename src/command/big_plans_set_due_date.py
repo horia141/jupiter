@@ -28,7 +28,7 @@ class BigPlansSetDueDate(command.Command):
         return "big-plans-set-due-date"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the due date of a recurring task"
 

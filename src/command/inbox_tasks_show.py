@@ -28,7 +28,7 @@ class InboxTasksShow(command.Command):
         return "inbox-tasks-show"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Show the list of inbox tasks"
 

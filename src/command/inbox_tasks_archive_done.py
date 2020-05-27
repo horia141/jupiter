@@ -28,7 +28,7 @@ class InboxTasksArchiveDone(command.Command):
         return "inbox-tasks-archive-done"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Archive tasks which are done"
 

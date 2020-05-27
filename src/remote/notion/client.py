@@ -2,7 +2,7 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Final, Optional, Dict, Any, Iterable
+from typing import Final, Optional, Iterable
 
 from notion.block import PageBlock, CollectionViewPageBlock, Block, CollectionViewBlock
 from notion.client import NotionClient as BaseNotionClient
@@ -11,6 +11,7 @@ from notion.space import Space
 
 from models.basic import WorkspaceSpaceId, WorkspaceToken
 from remote.notion.common import NotionId
+from utils.storage import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class NotionClient:
 
     def attach_view_to_collection_page(
             self, page: CollectionViewPageBlock, collection: Collection, view_id: Optional[NotionId], view_type: str,
-            schema: Dict) -> CollectionView:
+            schema: JSONDictType) -> CollectionView:
         """Attach a view to a collection."""
         if view_id:
             view = self._client.get_collection_view(view_id, collection=collection)
@@ -101,14 +102,14 @@ class NotionClient:
 
     # Collections.
 
-    def create_collection(self, collection_page: CollectionViewPageBlock, schema: Dict[str, Any]) -> Collection:
+    def create_collection(self, collection_page: CollectionViewPageBlock, schema: JSONDictType) -> Collection:
         """Create a collection for a given page and with a given schema."""
         collection = self._client.get_collection(
             self._client.create_record("collection", parent=collection_page, schema=schema))
         return collection
 
     def update_collection_schema(
-            self, collection_page_id: NotionId, collection_id: NotionId, new_schema: Dict[str, Any]) -> None:
+            self, collection_page_id: NotionId, collection_id: NotionId, new_schema: JSONDictType) -> None:
         """Update the schema for the collection."""
         collection_page = self.get_collection_page_by_id(collection_page_id)
         collection = collection_page.collection
@@ -162,7 +163,7 @@ class NotionClient:
 
     def attach_view_block_as_child_of_block(
             self, notion_row: Block, child_index: int, collection_id: NotionId,
-            schema: Dict[str, Any]) -> CollectionView:
+            schema: JSONDictType) -> CollectionView:
         """Attach a view block for a particular collection as the child_index'th one of the particular block."""
         if len(notion_row.children) > child_index:
             if isinstance(notion_row.children[child_index], CollectionViewBlock):

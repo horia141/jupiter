@@ -28,7 +28,7 @@ class RecurringTasksSetMustDo(command.Command):
         return "recurring-tasks-set-must-do"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the must do status of a recurring task"
 

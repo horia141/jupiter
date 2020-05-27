@@ -28,7 +28,7 @@ class InboxTasksSetName(command.Command):
         return "inbox-tasks-set-name"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Set the name an inbox task"
 

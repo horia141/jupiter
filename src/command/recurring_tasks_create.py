@@ -28,7 +28,7 @@ class RecurringTasksCreate(command.Command):
         return "recurring-tasks-create"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Create a new recurring task"
 

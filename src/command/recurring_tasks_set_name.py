@@ -28,7 +28,7 @@ class RecurringTasksSetName(command.Command):
         return "recurring-tasks-set-name"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the name of a recurring task"
 

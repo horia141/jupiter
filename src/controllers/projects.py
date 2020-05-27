@@ -45,7 +45,7 @@ class ProjectsController:
         self._recurring_tasks_service = recurring_tasks_service
         self._big_plans_service = big_plans_service
 
-    def create_project(self, key: ProjectKey, name: str) -> Project:
+    def create_project(self, key: ProjectKey, name: str) -> None:
         """Create a project."""
         workspace = self._workspaces_service.get_workspace_notion_structure()
 
@@ -53,8 +53,6 @@ class ProjectsController:
         self._inbox_tasks_service.upsert_notion_structure(response.project.ref_id, response.page)
         self._recurring_tasks_service.upsert_notion_structure(response.project.ref_id, response.page)
         self._big_plans_service.upsert_notion_structure(response.project.ref_id, response.page)
-
-        return response
 
     def archive_project(self, key: ProjectKey) -> None:
         """Archive a project."""
@@ -70,7 +68,7 @@ class ProjectsController:
         """Change the name of a project."""
         self._projects_service.set_project_name(key, name)
 
-    def load_all_projects(self, filter_project_keys: Optional[Iterable[ProjectKey]]) -> LoadAllProjectsResponse:
+    def load_all_projects(self, filter_project_keys: Optional[Iterable[ProjectKey]] = None) -> LoadAllProjectsResponse:
         """Retrieve all projects."""
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
 

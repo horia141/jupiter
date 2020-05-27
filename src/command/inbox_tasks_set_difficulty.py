@@ -28,7 +28,7 @@ class InboxTasksSetDifficulty(command.Command):
         return "inbox-tasks-set-difficulty"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Set the difficulty an inbox task"
 

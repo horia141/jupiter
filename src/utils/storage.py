@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple
+from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union
 
 import jsonschema as js
 import yaml
@@ -17,22 +17,25 @@ class StructuredStorageError(Exception):
 
 LiveType = TypeVar("LiveType")
 
+JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  # type: ignore
+JSONDictType = Dict[str, JSONValueType]
+
 
 class StructuredStorageProtocol(Protocol[LiveType]):
     """Protocol for clients of StructuredIndividualStorage to expose."""
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema of the data for this structure storage, as meant for basic storage."""
         ...
 
     @staticmethod
-    def storage_to_live(_storage_form: Any) -> LiveType:
+    def storage_to_live(_storage_form: JSONDictType) -> LiveType:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         ...
 
     @staticmethod
-    def live_to_storage(_live_form: LiveType) -> Any:
+    def live_to_storage(_live_form: LiveType) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         ...
 
@@ -41,13 +44,11 @@ class StructuredIndividualStorage(Generic[LiveType]):
     """A class for interacting with storage which has a structure (schema, etc.)."""
 
     _path: Final[Path]
-    _validator: Any
     _protocol: StructuredStorageProtocol[LiveType]
 
     def __init__(self, path: Path, protocol: StructuredStorageProtocol[LiveType]) -> None:
         """Constructor."""
         self._path = path
-        self._validator = js.validators.extend(js.Draft6Validator, type_checker=js.Draft6Validator.TYPE_CHECKER)
         self._protocol = protocol
 
     def initialize(self, data_live: LiveType) -> None:
@@ -63,7 +64,7 @@ class StructuredIndividualStorage(Generic[LiveType]):
                 data_store = yaml.safe_load(store_file)
                 LOGGER.info("Loaded storage")
 
-                self._validator(self._protocol.storage_schema()).validate(data_store)
+                js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
                 LOGGER.info("Checked storage structure")
 
                 data_live = self._protocol.storage_to_live(data_store)
@@ -82,7 +83,7 @@ class StructuredIndividualStorage(Generic[LiveType]):
                 data_store = yaml.safe_load(store_file)
                 LOGGER.info("Loaded storage")
 
-                self._validator(self._protocol.storage_schema()).validate(data_store)
+                js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
                 LOGGER.info("Checked storage structure")
 
                 data_live = self._protocol.storage_to_live(data_store)
@@ -99,7 +100,7 @@ class StructuredIndividualStorage(Generic[LiveType]):
                 data_store = self._protocol.live_to_storage(data_live)
                 LOGGER.info("Transformed live to storage data")
 
-                self._validator(self._protocol.storage_schema()).validate(data_store)
+                js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
                 LOGGER.info("Checked new storage structure")
 
                 yaml.dump(data_store, store_file)
@@ -112,14 +113,12 @@ class StructuredCollectionStorage(Generic[LiveType]):
     """A class for interacting with storage for a collection which has a structure (schema, etc.)."""
 
     _path: Final[Path]
-    _validator: Final[Any]
-    _protocol: Final[StructuredStorageProtocol[LiveType]]
+    _protocol: StructuredStorageProtocol[LiveType]
     _live_data: Optional[Tuple[int, List[LiveType]]]
 
     def __init__(self, path: Path, protocol: StructuredStorageProtocol[LiveType]) -> None:
         """Constructor."""
         self._path = path
-        self._validator = js.validators.extend(js.Draft6Validator, type_checker=js.Draft6Validator.TYPE_CHECKER)
         self._protocol = protocol
         self._live_data = None
 
@@ -133,10 +132,14 @@ class StructuredCollectionStorage(Generic[LiveType]):
 
     def exit_save(self) -> None:
         """Save before exit."""
+        if self._live_data is None:
+            raise Exception("Called exit_save without a prior call to initialize!")
         self._save(self._live_data)
 
     def load(self) -> Tuple[int, List[LiveType]]:
         """Load the structured storage fully."""
+        if self._live_data is None:
+            raise Exception("Called exit_save without a prior call to initialize!")
         return self._live_data
 
     def save(self, new_storage: Tuple[int, List[LiveType]]) -> None:
@@ -149,7 +152,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
                 data_store = yaml.safe_load(store_file)
                 LOGGER.info("Loaded storage")
 
-                self._validator(self._get_full_schema()).validate(data_store)
+                js.Draft6Validator(self._get_full_schema()).validate(data_store)
                 LOGGER.info("Checked storage structure")
 
                 next_idx = data_store["next_idx"]
@@ -169,7 +172,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
                 }
                 LOGGER.info("Transformed live to storage data")
 
-                self._validator(self._get_full_schema()).validate(data_store)
+                js.Draft6Validator(self._get_full_schema()).validate(data_store)
                 LOGGER.info("Checked new storage structure")
 
                 yaml.dump(data_store, store_file)
@@ -177,7 +180,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
             raise StructuredStorageError from error
 
-    def _get_full_schema(self) -> Any:
+    def _get_full_schema(self) -> JSONDictType:
         return {
             "type": "object",
             "properties": {

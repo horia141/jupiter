@@ -177,6 +177,7 @@ class VacationsService:
 
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
             elif vacation_row.ref_id in all_vacations_set:
+                vacation = all_vacations_set[EntityId(vacation_row.ref_id)]
                 # If the vacation exists locally, we sync it with the remote:
                 if sync_prefer == SyncPrefer.NOTION:
                     try:
@@ -192,26 +193,26 @@ class VacationsService:
                         raise ServiceValidationError(
                             f"Start date for vacation {vacation_row.name} is after end date")
 
-                    all_vacations_set[vacation_row.ref_id].archived = vacation_row.archived
-                    all_vacations_set[vacation_row.ref_id].name = vacation_name
-                    all_vacations_set[vacation_row.ref_id].start_date = vacation_row.start_date
-                    all_vacations_set[vacation_row.ref_id].end_date = vacation_row.end_date
-                    self._repository.save_vacation(all_vacations_set[vacation_row.ref_id])
+                    vacation.archived = vacation_row.archived
+                    vacation.name = vacation_name
+                    vacation.start_date = vacation_row.start_date
+                    vacation.end_date = vacation_row.end_date
+                    self._repository.save_vacation(vacation)
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
-                    vacation_row.archived = all_vacations_set[vacation_row.ref_id].archived
-                    vacation_row.name = all_vacations_set[vacation_row.ref_id].name
-                    vacation_row.start_date = all_vacations_set[vacation_row.ref_id].start_date
-                    vacation_row.end_date = all_vacations_set[vacation_row.ref_id].end_date
+                    vacation_row.archived = vacation.archived
+                    vacation_row.name = vacation.name
+                    vacation_row.start_date = vacation.start_date
+                    vacation_row.end_date = vacation.end_date
                     self._collection.save_vacation(vacation_row)
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from local")
                 else:
                     raise ServiceError(f"Invalid preference {sync_prefer}")
-                vacations_rows_set[vacation_row.ref_id] = vacation_row
+                vacations_rows_set[EntityId(vacation_row.ref_id)] = vacation_row
             else:
                 # If the vacation is not new, and does not exist on the local side, it means it got removed
                 # badly, and we need to hard remove it!
-                self._collection.hard_remove_vacation(vacation_row.ref_id)
+                self._collection.hard_remove_vacation(EntityId(vacation_row.ref_id))
                 LOGGER.info(f"Removed vacation with id={vacation_row.ref_id} from Notion")
 
         # Explore local and apply to Notion now

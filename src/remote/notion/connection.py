@@ -1,13 +1,13 @@
 """The connection handles the lifetime of the interaction with Notion."""
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar, Final, Dict, Any, Optional
+from typing import ClassVar, Final, Optional, cast
 
 import requests
 
 from models.basic import WorkspaceSpaceId, WorkspaceToken
 from remote.notion.client import NotionClient, NotionClientConfig
-from utils.storage import StructuredIndividualStorage
+from utils.storage import StructuredIndividualStorage, JSONDictType
 
 
 class MissingNotionConnectionError(Exception):
@@ -69,7 +69,7 @@ class NotionConnection:
         self._cached_client = None
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema of the data for this structure storage, as meant for basic storage."""
         return {
             "type": "object",
@@ -80,14 +80,14 @@ class NotionConnection:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> NotionConnectionData:
+    def storage_to_live(storage_form: JSONDictType) -> NotionConnectionData:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return NotionConnectionData(
-            space_id=WorkspaceSpaceId(storage_form["space_id"]),
-            token=WorkspaceToken(storage_form["token"]))
+            space_id=WorkspaceSpaceId(cast(str, storage_form["space_id"])),
+            token=WorkspaceToken(cast(str, storage_form["token"])))
 
     @staticmethod
-    def live_to_storage(live_form: NotionConnectionData) -> Any:
+    def live_to_storage(live_form: NotionConnectionData) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "space_id": live_form.space_id,

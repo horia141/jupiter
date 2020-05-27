@@ -28,7 +28,7 @@ class RecurringTasksSetPeriod(command.Command):
         return "recurring-tasks-set-period"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the period of a recurring task"
 

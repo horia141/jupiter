@@ -28,7 +28,7 @@ class ProjectSync(command.Command):
         return "project-sync"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Synchronises Notion and the local storage"
 

@@ -3,17 +3,21 @@ import logging
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Optional, Any, Dict, ClassVar, Iterable, cast
+from types import TracebackType
+import typing
+from typing import Final, Optional, Dict, ClassVar, Iterable, cast
 
 import pendulum
+
 from notion.collection import CollectionRowBlock
 
 import remote.notion.common
 from models.basic import EntityId, BigPlanStatus
 from remote.notion.client import NotionClient
-from remote.notion.collection import NotionCollection, BasicRowType
+from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
 from remote.notion.connection import NotionConnection
+from utils.storage import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +39,7 @@ class BigPlansCollection:
 
     _PAGE_NAME: ClassVar[str] = "Big Plans"
 
-    _STATUS: ClassVar[Dict[str, Any]] = {
+    _STATUS: ClassVar[JSONDictType] = {
         "Accepted": {
             "name": BigPlanStatus.ACCEPTED.for_notion(),
             "color": "orange",
@@ -63,7 +67,7 @@ class BigPlansCollection:
         }
     }
 
-    _SCHEMA: ClassVar[Dict[str, Any]] = {
+    _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
             "name": "Name",
             "type": "title"
@@ -72,9 +76,9 @@ class BigPlansCollection:
             "name": "Status",
             "type": "select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _STATUS.values()]
         },
         "ref-id": {
@@ -95,12 +99,12 @@ class BigPlansCollection:
         }
     }
 
-    _FORMAT: ClassVar[Dict[str, Any]] = {
+    _FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
             "property": "status",
             "type": "select",
-            "value": v["name"],
-            "hidden": not v["in_board"]
+            "value": cast(Dict[str, str], v)["name"],
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
         } for v in _STATUS.values()] + [{
             "property": "status",
             "type": "select",
@@ -110,9 +114,9 @@ class BigPlansCollection:
             "property": "status",
             "value": {
                 "type": "select",
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             },
-            "hidden": not v["in_board"]
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
         } for v in _STATUS.values()] + [{
             "property": "status",
             "value": {
@@ -139,7 +143,7 @@ class BigPlansCollection:
         "board_cover_size": "small"
     }
 
-    _KANBAN_ALL_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _KANBAN_ALL_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban All",
         "type": "board",
         "query2": {
@@ -169,7 +173,7 @@ class BigPlansCollection:
         "format": _FORMAT
     }
 
-    _DATABASE_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Database",
         "type": "table",
         "format": {
@@ -201,18 +205,20 @@ class BigPlansCollection:
         }
     }
 
-    _collection: Final[NotionCollection]
+    _collection: Final[NotionCollection[BigPlanRow]]
 
     def __init__(self, connection: NotionConnection) -> None:
         """Constructor."""
-        self._collection = NotionCollection(connection, self._LOCK_FILE_PATH, self)
+        self._collection = NotionCollection[BigPlanRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'BigPlansCollection':
         """Enter context."""
         self._collection.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -273,12 +279,12 @@ class BigPlansCollection:
         return BigPlansCollection._PAGE_NAME
 
     @staticmethod
-    def get_notion_schema() -> Dict[str, Any]:
+    def get_notion_schema() -> JSONDictType:
         """Get the Notion schema for the collection."""
         return BigPlansCollection._SCHEMA
 
     @staticmethod
-    def get_view_schemas() -> Dict[str, Dict[str, Any]]:
+    def get_view_schemas() -> Dict[str, JSONDictType]:
         """Get the Notion view schemas for the collection."""
         return {
             "kanban_all_view_id": BigPlansCollection._KANBAN_ALL_VIEW_SCHEMA,
@@ -286,7 +292,8 @@ class BigPlansCollection:
         }
 
     @staticmethod
-    def merge_notion_schemas(old_schema: Dict[str, Any], new_schema: Dict[str, Any]) -> Dict[str, Any]:
+    @typing.no_type_check
+    def merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
         """Merge an old and new schema for the collection."""
         combined_schema = {}
 
@@ -327,27 +334,29 @@ class BigPlansCollection:
 
     @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, big_plan_row: BigPlanRow, big_plan_notion_row: CollectionRowBlock,
-            inbox_collection_link: Optional[NotionCollectionLink] = None) -> CollectionRowBlock:
+            client: NotionClient, row: BigPlanRow, notion_row: CollectionRowBlock,
+            **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
+        inbox_collection_link = cast(NotionCollectionLink, kwargs.get("inbox_collection_link", None))
+
         # Create fields of the big plan row.
-        big_plan_notion_row.title = big_plan_row.name
-        big_plan_notion_row.archived = big_plan_row.archived
-        big_plan_notion_row.status = big_plan_row.status
-        big_plan_notion_row.due_date = big_plan_row.due_date
-        big_plan_notion_row.ref_id = big_plan_row.ref_id
+        notion_row.title = row.name
+        notion_row.archived = row.archived
+        notion_row.status = row.status
+        notion_row.due_date = row.due_date
+        notion_row.ref_id = row.ref_id
 
         # Create structure for the big plan.
 
         if inbox_collection_link:
-            LOGGER.info(f"Creating views structure for plan {big_plan_notion_row}")
+            LOGGER.info(f"Creating views structure for plan {notion_row}")
 
             client.attach_view_block_as_child_of_block(
-                big_plan_notion_row, 0, inbox_collection_link.collection_id,
+                notion_row, 0, inbox_collection_link.collection_id,
                 BigPlansCollection._get_view_schema_for_big_plan_desc(
-                    remote.notion.common.format_name_for_option(big_plan_row.name)))
+                    remote.notion.common.format_name_for_option(row.name)))
 
-        return big_plan_notion_row
+        return notion_row
 
     @staticmethod
     def copy_notion_row_to_row(inbox_task_notion_row: CollectionRowBlock) -> BigPlanRow:
@@ -362,7 +371,7 @@ class BigPlansCollection:
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod
-    def _get_view_schema_for_big_plan_desc(big_plan_name: str) -> Dict[str, Any]:
+    def _get_view_schema_for_big_plan_desc(big_plan_name: str) -> JSONDictType:
         """Get the view schema for a big plan details view."""
         return {
             "name": "Inbox Tasks",

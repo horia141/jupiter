@@ -92,7 +92,7 @@ class InboxTasksService:
             recurring_task_ref_id=None,
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
-            difficulty=difficulty.for_notion() if new_inbox_task.difficulty else None,
+            difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
             due_date=new_inbox_task.due_date,
             recurring_period=None,
             recurring_timeline=None,
@@ -131,7 +131,7 @@ class InboxTasksService:
             recurring_task_ref_id=new_inbox_task.recurring_task_ref_id,
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
-            difficulty=difficulty.for_notion() if new_inbox_task.difficulty else None,
+            difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
             due_date=new_inbox_task.due_date,
             recurring_period=recurring_task_period.value,
             recurring_timeline=new_inbox_task.recurring_task_timeline,
@@ -201,7 +201,7 @@ class InboxTasksService:
 
     def set_inbox_task_to_recurring_task_link(
             self, ref_id: EntityId, name: str, period: RecurringTaskPeriod, timeline: str,
-            due_time: pendulum.DateTime, eisen: List[Eisen], difficulty: Difficulty) -> None:
+            due_time: pendulum.DateTime, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> None:
         """Change the parameters of the link between the inbox task as an instance of a recurring task."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -285,7 +285,7 @@ class InboxTasksService:
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
 
-    def archive_done_inbox_tasks(self, filter_project_ref_id: Iterable[EntityId] = None) -> None:
+    def archive_done_inbox_tasks(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
         """Archive the done inbox tasks."""
         inbox_tasks = self._repository.list_all_inbox_tasks(
             filter_archived=False, filter_project_ref_ids=filter_project_ref_id)
@@ -395,8 +395,8 @@ class InboxTasksService:
 
                 inbox_task_row.ref_id = new_inbox_task.ref_id
                 inbox_task_row.status = new_inbox_task.status.for_notion()
-                inbox_task_row.big_plan_id = big_plan.ref_id if big_plan else None
-                inbox_task_row.recurring_task_id = recurring_task.ref_id if recurring_task else None
+                inbox_task_row.big_plan_ref_id = big_plan.ref_id if big_plan else None
+                inbox_task_row.recurring_task_ref_id = recurring_task.ref_id if recurring_task else None
                 self._collection.save_inbox_task(project_ref_id, inbox_task_row)
                 LOGGER.info(f"Applied changes on Notion side too as {inbox_task_row}")
 
@@ -404,7 +404,7 @@ class InboxTasksService:
                 all_inbox_tasks_row_set[inbox_task_row.ref_id] = inbox_task_row
             elif inbox_task_row.ref_id in all_inbox_tasks_set:
                 # If the big plan exists locally, we sync it with the remote
-                inbox_task = all_inbox_tasks_set[inbox_task_row.ref_id]
+                inbox_task = all_inbox_tasks_set[EntityId(inbox_task_row.ref_id)]
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
                     try:
@@ -452,14 +452,14 @@ class InboxTasksService:
                     big_plan = None
                     recurring_task = None
                     if inbox_task.big_plan_ref_id is not None:
-                        big_plan = all_big_plans[inbox_task.big_plan_ref_id]
+                        big_plan = all_big_plans_map[inbox_task.big_plan_ref_id]
                     elif inbox_task.recurring_task_ref_id is not None:
-                        recurring_task = all_recurring_tasks[inbox_task.recurring_task_ref_id]
+                        recurring_task = all_recurring_tasks_map[inbox_task.recurring_task_ref_id]
 
                     inbox_task_row.big_plan_ref_id = inbox_task.big_plan_ref_id
                     inbox_task_row.big_plan_name = \
                         remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None
-                    inbox_task_row.recurring_task_id = inbox_task.recurring_task_ref_id
+                    inbox_task_row.recurring_task_ref_id = inbox_task.recurring_task_ref_id
                     inbox_task_row.created_date = inbox_task.created_date
                     inbox_task_row.name = inbox_task.name
                     inbox_task_row.archived = inbox_task.archived
@@ -473,9 +473,9 @@ class InboxTasksService:
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
-                all_inbox_tasks_row_set[inbox_task_row.ref_id] = inbox_task_row
+                all_inbox_tasks_row_set[EntityId(inbox_task_row.ref_id)] = inbox_task_row
             else:
-                self._collection.hard_remove_inbox_task(project_ref_id, inbox_task_row.ref_id)
+                self._collection.hard_remove_inbox_task(project_ref_id, EntityId(inbox_task_row.ref_id))
                 LOGGER.info(f"Removed dangling big plan in Notion {inbox_task_row}")
 
         LOGGER.info("Applied local changes")

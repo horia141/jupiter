@@ -28,7 +28,7 @@ class InboxTasksSetStatus(command.Command):
         return "inbox-tasks-set-status"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Set the status an inbox task"
 

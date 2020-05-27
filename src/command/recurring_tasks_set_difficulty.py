@@ -28,7 +28,7 @@ class RecurringTasksSetDifficulty(command.Command):
         return "recurring-tasks-set-difficulty"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the difficulty of a recurring task"
 

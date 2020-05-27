@@ -28,7 +28,7 @@ class RecurringTasksSetSkipRule(command.Command):
         return "recurring-tasks-set-skip-rule"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the skip rule of a recurring task"
 

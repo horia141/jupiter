@@ -2,12 +2,13 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, ClassVar, List, Optional, Dict, Any
+from types import TracebackType
+from typing import Final, ClassVar, List, Optional, Type, cast
 
 from models.basic import EntityId
 from remote.notion.common import NotionId, NotionPageLink, CollectionError
 from remote.notion.connection import NotionConnection
-from utils.storage import StructuredCollectionStorage
+from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +47,9 @@ class ProjectsCollection:
         self._structured_storage.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -126,7 +129,7 @@ class ProjectsCollection:
         return next((l for l in locks if l.ref_id == ref_id), None)
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
             "type": "object",
@@ -137,14 +140,14 @@ class ProjectsCollection:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> ProjectLock:
+    def storage_to_live(storage_form: JSONDictType) -> ProjectLock:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return ProjectLock(
-            page_id=NotionId(storage_form["page_id"]),
-            ref_id=EntityId(storage_form["ref_id"]))
+            page_id=NotionId(cast(str, storage_form["page_id"])),
+            ref_id=EntityId(cast(str, storage_form["ref_id"])))
 
     @staticmethod
-    def live_to_storage(live_form: ProjectLock) -> Any:
+    def live_to_storage(live_form: ProjectLock) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "page_id": live_form.page_id,

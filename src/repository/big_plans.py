@@ -2,21 +2,21 @@
 
 from dataclasses import dataclass
 import logging
-import typing
 from pathlib import Path
-from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional
+from types import TracebackType
+import typing
+from typing import Final, ClassVar, Iterable, List, Optional, Type
 import uuid
 
 import pendulum
 
 from models.basic import EntityId, BigPlanStatus
 from repository.common import RepositoryError
-from utils.storage import StructuredCollectionStorage
+from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
 
-@typing.final
 @dataclass()
 class BigPlan:
     """A big plan."""
@@ -47,7 +47,9 @@ class BigPlansRepository:
         self._structured_storage.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -131,7 +133,7 @@ class BigPlansRepository:
             return None
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
             "type": "object",
@@ -146,19 +148,19 @@ class BigPlansRepository:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> BigPlan:
+    def storage_to_live(storage_form: JSONDictType) -> BigPlan:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return BigPlan(
-            ref_id=EntityId(storage_form["ref_id"]),
-            project_ref_id=EntityId(storage_form["project_ref_id"]),
-            name=storage_form["name"],
-            archived=storage_form["archived"],
-            status=BigPlanStatus(storage_form["status"]),
-            due_date=pendulum.parse(storage_form["due_date"]) if storage_form["due_date"] else None,
-            notion_link_uuid=uuid.UUID(storage_form["notion_link_uuid"]))
+            ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+            project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
+            name=typing.cast(str, storage_form["name"]),
+            archived=typing.cast(bool, storage_form["archived"]),
+            status=BigPlanStatus(typing.cast(str, storage_form["status"])),
+            due_date=pendulum.parse(typing.cast(str, storage_form["due_date"])) if storage_form["due_date"] else None,
+            notion_link_uuid=uuid.UUID(typing.cast(str, storage_form["notion_link_uuid"])))
 
     @staticmethod
-    def live_to_storage(live_form: BigPlan) -> Any:
+    def live_to_storage(live_form: BigPlan) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "ref_id": live_form.ref_id,

@@ -28,7 +28,7 @@ class RecurringTasksSync(command.Command):
         return "recurring-tasks-sync"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Synchronises Notion and the local storage for recurring tasks"
 

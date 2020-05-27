@@ -28,7 +28,7 @@ class ProjectCreate(command.Command):
         return "project-create"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Create or update a project"
 

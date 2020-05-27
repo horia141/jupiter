@@ -28,7 +28,7 @@ class InboxTasksSync(command.Command):
         return "inbox-tasks-sync"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Sync the inbox tasks for a project between the local store and Notion"
 

@@ -1,21 +1,23 @@
 """Module for working with schedules."""
+import abc
+from typing import Optional
 
 import pendulum
 
+from models.basic import RecurringTaskPeriod
 
-class Schedule:
+
+class Schedule(abc.ABC):
     """The base class for the schedule descriptors class."""
 
-    def __init__(self):
-        """Construct a schedule."""
-        self._should_skip = None
-        self._due_time = None
-        self._due_date = None
-        self._full_name = None
-        self._timeline = None
+    _should_skip: bool
+    _due_date: pendulum.DateTime
+    _due_time: Optional[pendulum.DateTime]
+    _full_name: str
+    _timeline: str
 
     @staticmethod
-    def month_to_quarter_num(date):
+    def month_to_quarter_num(date: pendulum.DateTime) -> int:
         """Map a date to one of the four quarters from the year."""
         month_to_quarter_num = {
             1: 1,
@@ -35,7 +37,7 @@ class Schedule:
         return month_to_quarter_num[date.month]
 
     @staticmethod
-    def month_to_quarter(date):
+    def month_to_quarter(date: pendulum.DateTime) -> str:
         """Map a date to the name of four quarters from the year."""
         month_to_quarter = {
             1: "Q1",
@@ -55,7 +57,7 @@ class Schedule:
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_quarter_start(date):
+    def month_to_quarter_start(date: pendulum.DateTime) -> int:
         """Map a month in a date to the first month of a quarter of which the date belongs."""
         month_to_quarter = {
             1: 1,
@@ -75,7 +77,7 @@ class Schedule:
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_quarter_end(date):
+    def month_to_quarter_end(date: pendulum.DateTime) -> int:
         """Map a month in a date to the last month of a quarter of which the date belongs."""
         month_to_quarter = {
             1: 3,
@@ -95,7 +97,7 @@ class Schedule:
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_month(date):
+    def month_to_month(date: pendulum.DateTime) -> str:
         """Map a month to the name it has."""
         month_to_month = {
             1: "Jan",
@@ -115,12 +117,12 @@ class Schedule:
         return month_to_month[date.month]
 
     @property
-    def should_skip(self):
+    def should_skip(self) -> bool:
         """Whether the date should be skipped according to the planning rules."""
         return self._should_skip
 
     @property
-    def due_time(self):
+    def due_time(self) -> pendulum.DateTime:
         """The due time of an event according to the schedule."""
         if self._due_time:
             return pendulum.DateTime(year=self._due_time.year,
@@ -138,17 +140,17 @@ class Schedule:
                                      second=59)
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         """The full name of the event with the schedule info in it."""
         return self._full_name
 
     @property
-    def timeline(self):
+    def timeline(self) -> str:
         """The timeline of an event."""
         return self._timeline
 
     @staticmethod
-    def _skip_helper(skip_rule: str, param):
+    def _skip_helper(skip_rule: str, param: int) -> bool:
         if skip_rule == "even":
             return param % 2 == 0
         elif skip_rule == "odd":
@@ -157,13 +159,28 @@ class Schedule:
             # Why don't you write better programs, bro?
             return skip_rule.find(str(param)) != -1
 
+    @abc.abstractmethod
+    @property
+    def period(self) -> RecurringTaskPeriod:
+        """The period for the schedule."""
+
+    @abc.abstractmethod
+    @property
+    def first_day(self) -> pendulum.DateTime:
+        """The first day of the interval represented by the schedule block."""
+
+    @abc.abstractmethod
+    @property
+    def end_day(self) -> pendulum.DateTime:
+        """The end day of the interval represented by the schedule block."""
+        return self._due_date
 
 class DailySchedule(Schedule):
     """A daily schedule."""
 
-    def __init__(self, name, date, skip_rule=None, due_at_time=None):
+    def __init__(self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+                 due_at_time: Optional[str] = None) -> None:
         """Construct a schedule."""
-        super().__init__()
         self._date = date
         self._due_date = date.end_of("day")
         if due_at_time:
@@ -176,21 +193,21 @@ class DailySchedule(Schedule):
         self._should_skip = self._skip_helper(skip_rule, self._due_date.day_of_week) if skip_rule else False
 
     @property
-    def period(self):
+    def period(self) -> RecurringTaskPeriod:
         """The period string."""
-        return "Daily"
+        return RecurringTaskPeriod.DAILY
 
     @property
-    def first_day(self):
+    def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
         return self._due_date
 
     @property
-    def end_day(self):
+    def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the schedule block."""
         return self._due_date
 
-    def _generate_timeline(self, date):
+    def _generate_timeline(self, date: pendulum.DateTime) -> str:
         year = "{year}".format(year=date.year)
         quarter = self.month_to_quarter(date)
         month = self.month_to_month(date)
@@ -204,7 +221,9 @@ class DailySchedule(Schedule):
 class WeeklySchedule(Schedule):
     """A monthly schedule."""
 
-    def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
+    def __init__(
+            self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+            due_at_time: Optional[str] = None, due_at_day: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
         start_of_week = date.start_of("week")
@@ -223,21 +242,21 @@ class WeeklySchedule(Schedule):
         self._should_skip = self._skip_helper(skip_rule, self._due_date.week_of_year) if skip_rule else False
 
     @property
-    def period(self):
+    def period(self) -> RecurringTaskPeriod:
         """The period string."""
-        return "Weekly"
+        return RecurringTaskPeriod.WEEKLY
 
     @property
-    def first_day(self):
+    def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
         return self._date.start_of("week")
 
     @property
-    def end_day(self):
+    def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the schedule block."""
         return self._date.end_of("week")
 
-    def _generate_timeline(self, date):
+    def _generate_timeline(self, date: pendulum.DateTime) -> str:
         year = "{year}".format(year=date.year)
         quarter = self.month_to_quarter(date)
         month = self.month_to_month(date)
@@ -249,7 +268,9 @@ class WeeklySchedule(Schedule):
 class MonthlySchedule(Schedule):
     """A monthly schedule."""
 
-    def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None):
+    def __init__(
+            self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+            due_at_time: Optional[str] = None, due_at_day: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
         start_of_month = date.start_of("month")
@@ -268,21 +289,21 @@ class MonthlySchedule(Schedule):
         self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
 
     @property
-    def period(self):
+    def period(self) -> RecurringTaskPeriod:
         """The period string."""
-        return "Monthly"
+        return RecurringTaskPeriod.MONTHLY
 
     @property
-    def first_day(self):
+    def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
         return self._date.start_of("month")
 
     @property
-    def end_day(self):
+    def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the schedule block."""
         return self._date.end_of("month")
 
-    def _generate_timeline(self, date):
+    def _generate_timeline(self, date: pendulum.DateTime) -> str:
         year = "{year}".format(year=date.year)
         quarter = self.month_to_quarter(date)
         month = self.month_to_month(date)
@@ -293,7 +314,10 @@ class MonthlySchedule(Schedule):
 class QuarterlySchedule(Schedule):
     """A quarterly schedule."""
 
-    def __init__(self, name, date, skip_rule=None, due_at_time=None, due_at_day=None, due_at_month=None):
+    def __init__(
+            self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+            due_at_time: Optional[str] = None, due_at_day: Optional[int] = None,
+            due_at_month: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
         self._date = date
@@ -320,21 +344,21 @@ class QuarterlySchedule(Schedule):
             self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date)) if skip_rule else False
 
     @property
-    def period(self):
+    def period(self) -> RecurringTaskPeriod:
         """The period string."""
-        return "Quarterly"
+        return RecurringTaskPeriod.QUARTERLY
 
     @property
-    def first_day(self):
+    def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
         return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).start_of("month")
 
     @property
-    def end_day(self):
+    def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the scedule block."""
         return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).end_of("month")
 
-    def _generate_timeline(self, date):
+    def _generate_timeline(self, date: pendulum.DateTime) -> str:
         year = "{year}".format(year=date.year)
         quarter = self.month_to_quarter(date)
 
@@ -344,7 +368,9 @@ class QuarterlySchedule(Schedule):
 class YearlySchedule(Schedule):
     """A yearly schedule."""
 
-    def __init__(self, name, date, due_at_time=None, due_at_day=None, due_at_month=None):
+    def __init__(
+            self, name: str, date: pendulum.DateTime, due_at_time: Optional[str] = None,
+            due_at_day: Optional[int] = None, due_at_month: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
         self._date = date
@@ -368,39 +394,41 @@ class YearlySchedule(Schedule):
         self._should_skip = False
 
     @property
-    def period(self):
+    def period(self) -> RecurringTaskPeriod:
         """The period string."""
-        return "Yearly"
+        return RecurringTaskPeriod.YEARLY
 
     @property
-    def first_day(self):
+    def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
         return self._date.start_of("year")
 
     @property
-    def end_day(self):
+    def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the schedule block."""
         return self._date.end_of("year")
 
     @staticmethod
-    def _generate_timeline(date):
+    def _generate_timeline(date: pendulum.DateTime) -> str:
         year = "{year}".format(year=date.year)
 
         return year
 
 
-def get_schedule(period, name, date, skip_rule, due_at_time=None, due_at_day=None, due_at_month=None):
+def get_schedule(
+        period: RecurringTaskPeriod, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+        due_at_time: Optional[str] = None, due_at_day: Optional[int] = None,
+        due_at_month: Optional[int] = None) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
-    clean_period = period.lower()
-    if clean_period == "daily":
+    if period == RecurringTaskPeriod.DAILY:
         return DailySchedule(name, date, skip_rule, due_at_time)
-    elif clean_period == "weekly":
+    elif period == RecurringTaskPeriod.WEEKLY:
         return WeeklySchedule(name, date, skip_rule, due_at_time, due_at_day)
-    elif clean_period == "monthly":
+    elif period == RecurringTaskPeriod.MONTHLY:
         return MonthlySchedule(name, date, skip_rule, due_at_time, due_at_day)
-    elif clean_period == "quarterly":
+    elif period == RecurringTaskPeriod.QUARTERLY:
         return QuarterlySchedule(name, date, skip_rule, due_at_time, due_at_day, due_at_month)
-    elif clean_period == "yearly":
+    elif period == RecurringTaskPeriod.YEARLY:
         return YearlySchedule(name, date, due_at_time, due_at_day, due_at_month)
     else:
-        raise Exception("Invalid period {period}".format(period=period))
+        raise Exception(f"Invalid period {period}")

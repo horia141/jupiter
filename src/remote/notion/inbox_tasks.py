@@ -5,7 +5,9 @@ import logging
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Optional, Any, Dict, ClassVar, Iterable, List, cast
+from types import TracebackType
+import typing
+from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 
 import pendulum
 from notion.collection import CollectionRowBlock
@@ -14,10 +16,11 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod
 from remote.notion import common
 from remote.notion.client import NotionClient
-from remote.notion.collection import NotionCollection, BasicRowType
+from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, format_name_for_option
 from remote.notion.connection import NotionConnection
 from repository.big_plans import BigPlan
+from utils.storage import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +50,7 @@ class InboxTasksCollection:
     _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/inbox-tasks.lock.yaml")
 
     _PAGE_NAME: ClassVar[str] = "Inbox Tasks"
-    _STATUS: ClassVar[Dict[str, Any]] = {
+    _STATUS: ClassVar[JSONDictType] = {
         "Not Started": {
             "name": InboxTaskStatus.NOT_STARTED.for_notion(),
             "color": "gray",
@@ -85,7 +88,7 @@ class InboxTasksCollection:
         }
     }
 
-    _EISENHOWER: ClassVar[Dict[str, Any]] = {
+    _EISENHOWER: ClassVar[JSONDictType] = {
         "Urgent": {
             "name": Eisen.URGENT.for_notion(),
             "color": "red"
@@ -96,7 +99,7 @@ class InboxTasksCollection:
         }
     }
 
-    _DIFFICULTY: ClassVar[Dict[str, Any]] = {
+    _DIFFICULTY: ClassVar[JSONDictType] = {
         "Easy": {
             "name": Difficulty.EASY.for_notion(),
             "color": "blue"
@@ -111,7 +114,7 @@ class InboxTasksCollection:
         }
     }
 
-    _TASK_PERIOD: ClassVar[Dict[str, Any]] = {
+    _TASK_PERIOD: ClassVar[JSONDictType] = {
         "Daily": {
             "name": RecurringTaskPeriod.DAILY.for_notion(),
             "color": "orange"
@@ -134,7 +137,7 @@ class InboxTasksCollection:
         }
     }
 
-    _SCHEMA: ClassVar[Dict[str, Any]] = {
+    _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
             "name": "Name",
             "type": "title"
@@ -147,9 +150,9 @@ class InboxTasksCollection:
             "name": "Status",
             "type": "select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _STATUS.values()]
         },
         "archived": {
@@ -181,18 +184,18 @@ class InboxTasksCollection:
             "name": "Eisenhower",
             "type": "multi_select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _EISENHOWER.values()]
         },
         "difficulty": {
             "name": "Difficulty",
             "type": "select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _DIFFICULTY.values()]
         },
         "fromscript": {
@@ -203,9 +206,9 @@ class InboxTasksCollection:
             "name": "Recurring Period",
             "type": "select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _TASK_PERIOD.values()]
         },
         "timeline": {
@@ -214,12 +217,12 @@ class InboxTasksCollection:
         }
     }
 
-    _KANBAN_FORMAT: ClassVar[Dict[str, Any]] = {
+    _KANBAN_FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
             "property": "status",
             "type": "select",
-            "value": v["name"],
-            "hidden": not v["in_board"]
+            "value": cast(Dict[str, str], v)["name"],
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
         } for v in _STATUS.values()] + [{
             "property": "status",
             "type": "select",
@@ -229,9 +232,9 @@ class InboxTasksCollection:
             "property": "status",
             "value": {
                 "type": "select",
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             },
-            "hidden": not v["in_board"]
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
         } for v in _STATUS.values()] + [{
             "property": "status",
             "value": {
@@ -282,7 +285,7 @@ class InboxTasksCollection:
         "board_cover_size": "small"
     }
 
-    _KANBAN_ALL_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _KANBAN_ALL_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban All",
         "type": "board",
         "query2": {
@@ -324,7 +327,7 @@ class InboxTasksCollection:
         "format": _KANBAN_FORMAT
     }
 
-    _KANBAN_URGENT_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _KANBAN_URGENT_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban Urgent",
         "type": "board",
         "query2": {
@@ -393,7 +396,7 @@ class InboxTasksCollection:
         "format": _KANBAN_FORMAT
     }
 
-    _KANBAN_DUE_TODAY_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _KANBAN_DUE_TODAY_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban Due Today Or Exceeded",
         "type": "board",
         "query2": {
@@ -444,7 +447,7 @@ class InboxTasksCollection:
         "format": _KANBAN_FORMAT
     }
 
-    _KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban Due This Week Or Exceeded",
         "type": "board",
         "query2": {
@@ -495,7 +498,7 @@ class InboxTasksCollection:
         "format": _KANBAN_FORMAT
     }
 
-    _KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban Due This Month Or Exceeded",
         "type": "board",
         "query2": {
@@ -546,7 +549,7 @@ class InboxTasksCollection:
         "format": _KANBAN_FORMAT
     }
 
-    _CALENDAR_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _CALENDAR_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Not Completed By Date",
         "type": "calendar",
         "query2": {
@@ -636,7 +639,7 @@ class InboxTasksCollection:
         }
     }
 
-    _DATABASE_VIEW_SCHEMA: ClassVar[Dict[str, Any]] = {
+    _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Database",
         "type": "table",
         "format": {
@@ -700,18 +703,20 @@ class InboxTasksCollection:
         }
     }
 
-    _collection: Final[NotionCollection]
+    _collection: Final[NotionCollection[InboxTaskRow]]
 
     def __init__(self, connection: NotionConnection) -> None:
         """Constructor."""
-        self._collection = NotionCollection(connection, self._LOCK_FILE_PATH, self)
+        self._collection = NotionCollection[InboxTaskRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'InboxTasksCollection':
         """Enter context."""
         self._collection.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -739,8 +744,8 @@ class InboxTasksCollection:
             "value": format_name_for_option(bp.name)
         } for bp in big_plans]
 
-        new_schema = copy.deepcopy(self._SCHEMA)
-        new_schema["bigplan2"]["options"] = inbox_big_plan_options
+        new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
+        new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
 
         self._collection.update_schema(project_ref_id, new_schema)
         LOGGER.info("Updated the schema for the associated inbox")
@@ -799,12 +804,12 @@ class InboxTasksCollection:
         return InboxTasksCollection._PAGE_NAME
 
     @staticmethod
-    def get_notion_schema() -> Dict[str, Any]:
+    def get_notion_schema() -> JSONDictType:
         """Get the Notion schema for the collection."""
         return InboxTasksCollection._SCHEMA
 
     @staticmethod
-    def get_view_schemas() -> Dict[str, Dict[str, Any]]:
+    def get_view_schemas() -> Dict[str, JSONDictType]:
         """Get the Notion view schemas for the collection."""
         return {
             "kanban_all_view_id": InboxTasksCollection._KANBAN_ALL_VIEW_SCHEMA,
@@ -817,7 +822,8 @@ class InboxTasksCollection:
         }
 
     @staticmethod
-    def merge_notion_schemas(old_schema: Dict[str, Any], new_schema: Dict[str, Any]) -> Dict[str, Any]:
+    @typing.no_type_check
+    def merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
         """Merge an old and new schema for the collection."""
         combined_schema = {}
 
@@ -864,26 +870,27 @@ class InboxTasksCollection:
 
     @staticmethod
     def copy_row_to_notion_row(
-            _client: NotionClient, inbox_task_row: InboxTaskRow,
-            inbox_task_notion_row: CollectionRowBlock) -> CollectionRowBlock:
+            client: NotionClient, row: InboxTaskRow, notion_row: CollectionRowBlock,
+            **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
-        inbox_task_notion_row.title = inbox_task_row.name
-        inbox_task_notion_row.archived = inbox_task_row.archived
-        inbox_task_notion_row.created_date = inbox_task_row.created_date
-        inbox_task_notion_row.big_plan_id = inbox_task_row.big_plan_ref_id
-        if inbox_task_row.big_plan_name:
-            inbox_task_notion_row.big_plan = inbox_task_row.big_plan_name
-        inbox_task_notion_row.recurring_task_id = inbox_task_row.recurring_task_ref_id
-        inbox_task_notion_row.status = inbox_task_row.status
-        inbox_task_notion_row.eisenhower = inbox_task_row.eisen
-        inbox_task_notion_row.difficulty = inbox_task_row.difficulty
-        inbox_task_notion_row.due_date = inbox_task_row.due_date
-        inbox_task_notion_row.from_script = inbox_task_row.from_script
-        inbox_task_notion_row.recurring_period = inbox_task_row.recurring_period
-        inbox_task_notion_row.recurring_timeline = inbox_task_row.recurring_timeline
-        inbox_task_notion_row.ref_id = inbox_task_row.ref_id
+        # pylint: disable=unused-argument
+        notion_row.title = row.name
+        notion_row.archived = row.archived
+        notion_row.created_date = row.created_date
+        notion_row.big_plan_id = row.big_plan_ref_id
+        if row.big_plan_name:
+            notion_row.big_plan = row.big_plan_name
+        notion_row.recurring_task_id = row.recurring_task_ref_id
+        notion_row.status = row.status
+        notion_row.eisenhower = row.eisen
+        notion_row.difficulty = row.difficulty
+        notion_row.due_date = row.due_date
+        notion_row.from_script = row.from_script
+        notion_row.recurring_period = row.recurring_period
+        notion_row.recurring_timeline = row.recurring_timeline
+        notion_row.ref_id = row.ref_id
 
-        return inbox_task_notion_row
+        return notion_row
 
     @staticmethod
     def copy_notion_row_to_row(inbox_task_notion_row: CollectionRowBlock) -> InboxTaskRow:
@@ -908,7 +915,7 @@ class InboxTasksCollection:
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod
-    def _get_stable_color(option_id: str):
+    def _get_stable_color(option_id: str) -> str:
         """Return a random-ish yet stable color for a given name."""
         colors = [
             "gray",

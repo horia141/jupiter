@@ -2,12 +2,11 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar, Final, Dict, Any
+from typing import ClassVar, Final, cast
 
 from remote.notion.common import NotionId, CollectionError, NotionPageLink
 from remote.notion.connection import NotionConnection
-from utils.storage import StructuredIndividualStorage
-
+from utils.storage import StructuredIndividualStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -100,7 +99,7 @@ class WorkspaceSingleton:
         return new_workspace_screen
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema of the data for this structure storage, as meant for basic storage."""
         return {
             "type": "object",
@@ -110,12 +109,12 @@ class WorkspaceSingleton:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> WorkspaceLock:
+    def storage_to_live(storage_form: JSONDictType) -> WorkspaceLock:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return WorkspaceLock(page_id=NotionId(storage_form["page_id"]))
+        return WorkspaceLock(page_id=NotionId(cast(str, storage_form["page_id"])))
 
     @staticmethod
-    def live_to_storage(live_form: WorkspaceLock) -> Any:
+    def live_to_storage(live_form: WorkspaceLock) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "page_id": live_form.page_id

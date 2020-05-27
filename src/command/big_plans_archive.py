@@ -28,7 +28,7 @@ class BigPlansArchive(command.Command):
         return "big-plans-archive"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Archive a big plan"
 

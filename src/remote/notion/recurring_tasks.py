@@ -3,16 +3,19 @@ import logging
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Optional, Any, Dict, ClassVar, Iterable, List, cast
+from types import TracebackType
+import typing
+from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod
 from remote.notion import common
 from remote.notion.client import NotionClient
-from remote.notion.collection import NotionCollection, BasicRowType
+from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
 from remote.notion.connection import NotionConnection
+from utils.storage import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +45,7 @@ class RecurringTasksCollection:
 
     _PAGE_NAME: ClassVar[str] = "Recurring Tasks"
 
-    _PERIOD: ClassVar[Dict[str, Any]] = {
+    _PERIOD: ClassVar[JSONDictType] = {
         "Daily": {
             "name": RecurringTaskPeriod.DAILY.for_notion(),
             "color": "orange",
@@ -70,7 +73,7 @@ class RecurringTasksCollection:
         }
     }
 
-    _EISENHOWER: ClassVar[Dict[str, Any]] = {
+    _EISENHOWER: ClassVar[JSONDictType] = {
         "Urgent": {
             "name": Eisen.URGENT.for_notion(),
             "color": "red"
@@ -96,7 +99,7 @@ class RecurringTasksCollection:
         }
     }
 
-    _SCHEMA: ClassVar[Dict[str, Any]] = {
+    _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
             "name": "Name",
             "type": "title"
@@ -105,9 +108,9 @@ class RecurringTasksCollection:
             "name": "Period",
             "type": "select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _PERIOD.values()]
         },
         "group": {
@@ -122,18 +125,18 @@ class RecurringTasksCollection:
             "name": "Eisenhower",
             "type": "multi_select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _EISENHOWER.values()]
         },
         "difficulty": {
             "name": "Difficulty",
             "type": "select",
             "options": [{
-                "color": v["color"],
+                "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
-                "value": v["name"]
+                "value": cast(Dict[str, str], v)["name"]
             } for v in _DIFFICULTY.values()]
         },
         "due-at-time": {
@@ -166,7 +169,7 @@ class RecurringTasksCollection:
         }
     }
 
-    _KANBAN_ALL_VIEW_SCHEMA = {
+    _KANBAN_ALL_VIEW_SCHEMA: JSONDictType = {
         "name": "Kanban",
         "type": "board",
         "query2": {
@@ -215,16 +218,16 @@ class RecurringTasksCollection:
             "board_groups": [{
                 "property": "period",
                 "type": "select",
-                "value": v["name"],
-                "hidden": not v["in_board"]
+                "value": cast(Dict[str, str], v)["name"],
+                "hidden": not cast(Dict[str, bool], v)["in_board"]
             } for v in _PERIOD.values()],
             "board_groups2": [{
                 "property": "period",
                 "value": {
                     "type": "select",
-                    "value": v["name"]
+                    "value": cast(Dict[str, str], v)["name"]
                 },
-                "hidden": not v["in_board"]
+                "hidden": not cast(Dict[str, bool], v)["in_board"]
             } for v in _PERIOD.values()],
             "board_properties": [{
                 "property": "period",
@@ -267,7 +270,7 @@ class RecurringTasksCollection:
         }
     }
 
-    _DATABASE_VIEW_SCHEMA = {
+    _DATABASE_VIEW_SCHEMA: JSONDictType = {
         "name": "Database",
         "type": "table",
         "format": {
@@ -327,18 +330,20 @@ class RecurringTasksCollection:
         }
     }
 
-    _collection: Final[NotionCollection]
+    _collection: Final[NotionCollection[RecurringTaskRow]]
 
     def __init__(self, connection: NotionConnection):
         """Constructor."""
-        self._collection = NotionCollection(connection, self._LOCK_FILE_PATH, self)
+        self._collection = NotionCollection[RecurringTaskRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'RecurringTasksCollection':
         """Enter context."""
         self._collection.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -409,12 +414,12 @@ class RecurringTasksCollection:
         return RecurringTasksCollection._PAGE_NAME
 
     @staticmethod
-    def get_notion_schema() -> Dict[str, Any]:
+    def get_notion_schema() -> JSONDictType:
         """Get the Notion schema for the collection."""
         return RecurringTasksCollection._SCHEMA
 
     @staticmethod
-    def get_view_schemas() -> Dict[str, Dict[str, Any]]:
+    def get_view_schemas() -> Dict[str, JSONDictType]:
         """Get the Notion view schemas for the collection."""
         return {
             "kanban_all_view_id": RecurringTasksCollection._KANBAN_ALL_VIEW_SCHEMA,
@@ -422,7 +427,8 @@ class RecurringTasksCollection:
         }
 
     @staticmethod
-    def merge_notion_schemas(old_schema: Dict[str, Any], new_schema: Dict[str, Any]) -> Dict[str, Any]:
+    @typing.no_type_check
+    def merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
         """Merge an old and new schema for the collection."""
         combined_schema = {}
 
@@ -469,32 +475,36 @@ class RecurringTasksCollection:
 
     @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, recurring_task_row: RecurringTaskRow,
-            recurring_task_notion_row: CollectionRowBlock,
-            inbox_collection_link: Optional[NotionCollectionLink] = None) -> CollectionRowBlock:
+            client: NotionClient, row: RecurringTaskRow, notion_row: CollectionRowBlock,
+            **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
-        recurring_task_notion_row.title = recurring_task_row.name
-        recurring_task_notion_row.archived = recurring_task_row.archived
-        recurring_task_notion_row.period = recurring_task_row.period
-        recurring_task_notion_row.group = recurring_task_row.group
-        recurring_task_notion_row.eisenhower = recurring_task_row.eisen
-        recurring_task_notion_row.difficulty = recurring_task_row.difficulty
-        recurring_task_notion_row.due_at_time = recurring_task_row.due_at_time
-        recurring_task_notion_row.due_at_day = recurring_task_row.due_at_day
-        recurring_task_notion_row.due_at_month = recurring_task_row.due_at_month
-        recurring_task_notion_row.suspended = recurring_task_row.suspended
-        recurring_task_notion_row.skip_rule = recurring_task_row.skip_rule
-        recurring_task_notion_row.must_do = recurring_task_row.must_do
-        recurring_task_notion_row.ref_id = recurring_task_row.ref_id
+        if row.ref_id is None:
+            raise Exception(f"Recurring task row '{row.name}' which is synced must have a ref id")
+
+        inbox_collection_link = cast(NotionCollectionLink, kwargs.get("inbox_collection_link", None))
+
+        notion_row.title = row.name
+        notion_row.archived = row.archived
+        notion_row.period = row.period
+        notion_row.group = row.group
+        notion_row.eisenhower = row.eisen
+        notion_row.difficulty = row.difficulty
+        notion_row.due_at_time = row.due_at_time
+        notion_row.due_at_day = row.due_at_day
+        notion_row.due_at_month = row.due_at_month
+        notion_row.suspended = row.suspended
+        notion_row.skip_rule = row.skip_rule
+        notion_row.must_do = row.must_do
+        notion_row.ref_id = row.ref_id
 
         if inbox_collection_link:
-            LOGGER.info(f"Creating views structure for recurring task {recurring_task_notion_row}")
+            LOGGER.info(f"Creating views structure for recurring task {notion_row}")
 
             client.attach_view_block_as_child_of_block(
-                recurring_task_notion_row, 0, inbox_collection_link.collection_id,
-                RecurringTasksCollection._get_view_schema_for_recurring_task_desc(recurring_task_row.ref_id))
+                notion_row, 0, inbox_collection_link.collection_id,
+                RecurringTasksCollection._get_view_schema_for_recurring_task_desc(row.ref_id))
 
-        return recurring_task_notion_row
+        return notion_row
 
     @staticmethod
     def copy_notion_row_to_row(inbox_task_notion_row: CollectionRowBlock) -> RecurringTaskRow:
@@ -516,7 +526,7 @@ class RecurringTasksCollection:
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod
-    def _get_view_schema_for_recurring_task_desc(recurring_task_ref_id: str) -> Dict[str, Any]:
+    def _get_view_schema_for_recurring_task_desc(recurring_task_ref_id: str) -> JSONDictType:
         """Get the view schema for a recurring tasks details view."""
         return {
             "name": "Inbox Tasks",

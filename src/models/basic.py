@@ -2,7 +2,7 @@
 
 import enum
 import re
-from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple
+from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern
 
 import pendulum
 import pendulum.parsing.exceptions
@@ -106,17 +106,17 @@ class BasicValidator:
     """A validator class for various basic model types."""
 
     _sync_prefer_values: Final[FrozenSet[str]] = frozenset(sp.value for sp in SyncPrefer)
-    _entity_id_re: Final[re.Pattern] = re.compile(r"^\d+$")
-    _entity_name_re: Final[re.Pattern] = re.compile(r"^.+$")
-    _workspace_space_id_re: Final[re.Pattern] = re.compile(r"^[0-9a-z-]{36}$")
-    _workspace_token_re: Final[re.Pattern] = re.compile(r"^[0-9a-f]+$")
-    _project_key_re: Final[re.Pattern] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
+    _entity_id_re: Final[Pattern[str]] = re.compile(r"^\d+$")
+    _entity_name_re: Final[Pattern[str]] = re.compile(r"^.+$")
+    _workspace_space_id_re: Final[Pattern[str]] = re.compile(r"^[0-9a-z-]{36}$")
+    _workspace_token_re: Final[Pattern[str]] = re.compile(r"^[0-9a-f]+$")
+    _project_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
     _default_tz: Final[str] = "UTC"
     _eisen_values: Final[FrozenSet[str]] = frozenset(e.value for e in Eisen)
     _difficulty_values: Final[FrozenSet[str]] = frozenset(d.value for d in Difficulty)
     _inbox_task_status_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskStatus)
     _recurring_task_period_values: Final[FrozenSet[str]] = frozenset(rtp.value for rtp in RecurringTaskPeriod)
-    _recurring_task_due_at_time_re: Final[re.Pattern] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
+    _recurring_task_due_at_time_re: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
     _recurring_task_due_at_day_bounds: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
         RecurringTaskPeriod.DAILY: (0, 0),
         RecurringTaskPeriod.WEEKLY: (0, 6),

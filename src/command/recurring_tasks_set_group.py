@@ -28,7 +28,7 @@ class RecurringTasksSetGroup(command.Command):
         return "recurring-tasks-set-group"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the group of a recurring task"
 

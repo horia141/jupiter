@@ -28,7 +28,7 @@ class ProjectShow(command.Command):
         return "project-show"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Show the projects"
 

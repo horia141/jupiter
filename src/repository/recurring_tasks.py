@@ -4,11 +4,13 @@ from dataclasses import dataclass
 import logging
 import typing
 from pathlib import Path
-from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional
+from types import TracebackType
+from typing import Final, ClassVar, Iterable, List, Optional
+
 
 from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, EntityName
 from repository.common import RepositoryError
-from utils.storage import StructuredCollectionStorage
+from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +52,9 @@ class RecurringTasksRepository:
         self._structured_storage.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -142,7 +146,7 @@ class RecurringTasksRepository:
             return None
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
             "type": "object",
@@ -168,26 +172,26 @@ class RecurringTasksRepository:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> RecurringTask:
+    def storage_to_live(storage_form: JSONDictType) -> RecurringTask:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return RecurringTask(
-            ref_id=EntityId(storage_form["ref_id"]),
-            project_ref_id=EntityId(storage_form["project_ref_id"]),
-            archived=storage_form.get("archived", False),
-            name=storage_form["name"],
-            period=RecurringTaskPeriod(storage_form["period"]),
-            group=EntityName(storage_form["group"]),
-            eisen=[Eisen(e) for e in storage_form["eisen"]],
-            difficulty=Difficulty(storage_form["difficulty"]) if storage_form["difficulty"] else None,
-            due_at_time=storage_form["due_at_time"] if storage_form["due_at_time"] else None,
-            due_at_day=storage_form["due_at_day"] if storage_form["due_at_day"] else None,
-            due_at_month=storage_form["due_at_month"] if storage_form["due_at_month"] else None,
-            suspended=storage_form["suspended"],
-            skip_rule=storage_form["skip_rule"] if storage_form["skip_rule"] else None,
-            must_do=storage_form["must_do"])
+            ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+            project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
+            archived=typing.cast(bool, storage_form["archived"]),
+            name=typing.cast(str, storage_form["name"]),
+            period=RecurringTaskPeriod(typing.cast(str, storage_form["period"])),
+            group=EntityName(typing.cast(str, storage_form["group"])),
+            eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
+            difficulty=Difficulty(typing.cast(str, storage_form["difficulty"])) if storage_form["difficulty"] else None,
+            due_at_time=typing.cast(str, storage_form["due_at_time"]) if storage_form["due_at_time"] else None,
+            due_at_day=typing.cast(int, storage_form["due_at_day"]) if storage_form["due_at_day"] else None,
+            due_at_month=typing.cast(int, storage_form["due_at_month"]) if storage_form["due_at_month"] else None,
+            suspended=typing.cast(bool, storage_form["suspended"]),
+            skip_rule=typing.cast(str, storage_form["skip_rule"]) if storage_form["skip_rule"] else None,
+            must_do=typing.cast(bool, storage_form["must_do"]))
 
     @staticmethod
-    def live_to_storage(live_form: RecurringTask) -> Any:
+    def live_to_storage(live_form: RecurringTask) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "ref_id": live_form.ref_id,

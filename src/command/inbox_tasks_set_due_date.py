@@ -28,7 +28,7 @@ class InboxTasksSetDueDate(command.Command):
         return "inbox-tasks-set-due-date"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Set the due date an inbox task"
 

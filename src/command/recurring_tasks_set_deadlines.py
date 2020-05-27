@@ -28,7 +28,7 @@ class RecurringTasksSetDeadlines(command.Command):
         return "recurring-tasks-set-deadlines"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the deadlines of a recurring task"
 

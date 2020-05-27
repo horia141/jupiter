@@ -28,7 +28,7 @@ class InboxTasksAssociateBigPlan(command.Command):
         return "inbox-tasks-associate-big-plan"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Associate an inbox task with a big plan"
 

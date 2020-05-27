@@ -28,7 +28,7 @@ class RecurringTasksArchive(command.Command):
         return "recurring-tasks-archive"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Remove a recurring task"
 

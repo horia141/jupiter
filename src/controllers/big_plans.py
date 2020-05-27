@@ -1,7 +1,7 @@
 """The controller for big plans."""
 import logging
 from dataclasses import dataclass
-from typing import Final, Iterable, Optional
+from typing import Final, Iterable, Optional, List
 
 import pendulum
 
@@ -90,11 +90,10 @@ class BigPlansController:
             self, show_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_keys: Optional[Iterable[ProjectKey]] = None) -> LoadAllBigPlansResponse:
         """Retrieve all big plan."""
+        filter_project_ref_ids: Optional[List[EntityId]] = None
         if filter_project_keys:
             projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
             filter_project_ref_ids = [p.ref_id for p in projects]
-        else:
-            filter_project_ref_ids = None
 
         big_plans = self._big_plans_service.load_all_big_plans(
             filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,

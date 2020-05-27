@@ -28,7 +28,7 @@ class ProjectArchive(command.Command):
         return "project-archive"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Remove a project"
 

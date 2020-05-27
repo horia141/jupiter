@@ -28,7 +28,7 @@ class BigPlansCreate(command.Command):
         return "big-plans-create"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Create a big plan"
 

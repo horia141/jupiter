@@ -28,7 +28,7 @@ class RecurringTasksShow(command.Command):
         return "recurring-tasks-show"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Show the list of recurring tasks"
 

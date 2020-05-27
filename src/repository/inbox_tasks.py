@@ -4,18 +4,18 @@ from dataclasses import dataclass
 import logging
 import typing
 from pathlib import Path
-from typing import Final, Any, ClassVar, Dict, Iterable, List, Optional
+from types import TracebackType
+from typing import Final, ClassVar, Iterable, List, Optional
 
 import pendulum
 
 from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus
 from repository.common import RepositoryError
-from utils.storage import StructuredCollectionStorage
+from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
 
-@typing.final
 @dataclass()
 class InboxTask:
     """An inbox task."""
@@ -56,7 +56,9 @@ class InboxTasksRepository:
         self._structured_storage.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -155,7 +157,7 @@ class InboxTasksRepository:
             return None
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
             "type": "object",
@@ -178,25 +180,29 @@ class InboxTasksRepository:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> InboxTask:
+    def storage_to_live(storage_form: JSONDictType) -> InboxTask:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return InboxTask(
-            ref_id=EntityId(storage_form["ref_id"]),
-            project_ref_id=EntityId(storage_form["project_ref_id"]),
-            big_plan_ref_id=EntityId(storage_form["big_plan_ref_id"]) if storage_form["big_plan_ref_id"] else None,
-            recurring_task_ref_id=EntityId(storage_form["recurring_task_ref_id"])
+            ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+            project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
+            big_plan_ref_id=EntityId(typing.cast(str, storage_form["big_plan_ref_id"]))
+            if storage_form["big_plan_ref_id"] else None,
+            recurring_task_ref_id=EntityId(typing.cast(str, (storage_form["recurring_task_ref_id"])))
             if storage_form["recurring_task_ref_id"] else None,
-            created_date=pendulum.parse(storage_form["created_date"]),
-            name=storage_form["name"],
-            archived=storage_form["archived"],
-            status=InboxTaskStatus(storage_form["status"]),
-            eisen=[Eisen(e) for e in storage_form["eisen"]],
-            difficulty=Difficulty(storage_form["difficulty"]) if storage_form["difficulty"] else None,
-            due_date=pendulum.parse(storage_form["due_date"]) if storage_form["due_date"] else None,
-            recurring_task_timeline=storage_form.get("recurring_task_timeline", None))
+            created_date=pendulum.parse(typing.cast(str, storage_form["created_date"])),
+            name=typing.cast(str, storage_form["name"]),
+            archived=typing.cast(bool, storage_form["archived"]),
+            status=InboxTaskStatus(typing.cast(str, storage_form["status"])),
+            eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
+            difficulty=Difficulty(typing.cast(str, storage_form["difficulty"]))
+            if storage_form["difficulty"] else None,
+            due_date=pendulum.parse(typing.cast(str, storage_form["due_date"]))
+            if storage_form["due_date"] else None,
+            recurring_task_timeline=typing.cast(str, storage_form["recurring_task_timeline"])
+            if storage_form["recurring_task_timeline"] else None)
 
     @staticmethod
-    def live_to_storage(live_form: InboxTask) -> Any:
+    def live_to_storage(live_form: InboxTask) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "ref_id": live_form.ref_id,

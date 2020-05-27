@@ -4,13 +4,14 @@ from dataclasses import dataclass
 import logging
 import typing
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Iterable, Optional
+from types import TracebackType
+from typing import ClassVar, List, Iterable, Optional
 
 import pendulum
 
 from models.basic import EntityId
 from repository.common import RepositoryError
-from utils.storage import StructuredCollectionStorage
+from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class Vacation:
 
     def is_in_vacation(self, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> bool:
         """Checks whether a particular date range is in this vacation."""
-        return self.start_date <= start_date and end_date <= self.end_date
+        return typing.cast(bool, self.start_date <= start_date) and typing.cast(bool, end_date <= self.end_date)
 
 
 @typing.final
@@ -48,7 +49,9 @@ class VacationsRepository:
         self._structured_storage.initialize()
         return self
 
-    def __exit__(self, exc_type, _exc_val, _exc_tb):
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
         """Exit context."""
         if exc_type is not None:
             return
@@ -117,7 +120,7 @@ class VacationsRepository:
             return None
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
             "type": "object",
@@ -131,17 +134,17 @@ class VacationsRepository:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> Vacation:
+    def storage_to_live(storage_form: JSONDictType) -> Vacation:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return Vacation(
-            ref_id=EntityId(storage_form["ref_id"]),
-            archived=storage_form["archived"],
-            name=storage_form["name"],
-            start_date=pendulum.parse(storage_form["start_date"]),
-            end_date=pendulum.parse(storage_form["end_date"]))
+            ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+            archived=typing.cast(bool, storage_form["archived"]),
+            name=typing.cast(str, storage_form["name"]),
+            start_date=pendulum.parse(typing.cast(str, storage_form["start_date"])),
+            end_date=pendulum.parse(typing.cast(str, storage_form["end_date"])))
 
     @staticmethod
-    def live_to_storage(live_form: Vacation) -> Any:
+    def live_to_storage(live_form: Vacation) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "ref_id": live_form.ref_id,

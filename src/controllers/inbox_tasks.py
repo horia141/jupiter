@@ -52,11 +52,10 @@ class InboxTasksController:
         """Create an inbox task."""
         project = self._projects_service.load_project_by_key(project_key)
 
+        big_plan_name: Optional[str] = None
         if big_plan_ref_id:
             big_plan = self._big_plans_service.load_big_plan_by_id(big_plan_ref_id)
             big_plan_name = big_plan.name
-        else:
-            big_plan_name = None
 
         return self._inbox_tasks_service.create_inbox_task(
             project.ref_id, name, big_plan_ref_id, big_plan_name, eisen, difficulty, due_date)
@@ -67,18 +66,17 @@ class InboxTasksController:
 
     def associate_inbox_task_with_big_plan(self, ref_id: EntityId, big_plan_ref_id: Optional[EntityId]) -> None:
         """Associate a big plan with an inbox task."""
+        big_plan_name: Optional[str] = None
         if big_plan_ref_id:
             big_plan = self._big_plans_service.load_big_plan_by_id(big_plan_ref_id)
             big_plan_name = big_plan.name
-        else:
-            big_plan_name = None
 
         self._inbox_tasks_service.associate_inbox_task_with_big_plan(ref_id, big_plan_ref_id, big_plan_name)
 
     def archive_done_inbox_tasks(self, project_key: ProjectKey) -> None:
         """Archive all the inbox tasks which are considered done."""
         project = self._projects_service.load_project_by_key(project_key)
-        self._inbox_tasks_service.archive_done_inbox_tasks(project.ref_id)
+        self._inbox_tasks_service.archive_done_inbox_tasks([project.ref_id])
 
     def set_inbox_task_name(self, ref_id: EntityId, name: str) -> None:
         """Change the difficulty of an inbox task."""
@@ -104,11 +102,10 @@ class InboxTasksController:
             self, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_keys: Optional[Iterable[ProjectKey]] = None) -> LoadAllInboxTasksResponse:
         """Retrieve all inbox tasks."""
+        filter_project_ref_ids: Optional[List[EntityId]] = None
         if filter_project_keys:
             projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
             filter_project_ref_ids = [p.ref_id for p in projects]
-        else:
-            filter_project_ref_ids = None
 
         inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_ref_ids=filter_ref_ids, filter_project_ref_ids=filter_project_ref_ids)

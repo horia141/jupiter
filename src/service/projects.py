@@ -1,7 +1,7 @@
 """The service class for dealing with projects."""
 import logging
 from dataclasses import dataclass
-from typing import Final, Iterable
+from typing import Final, Iterable, Optional
 
 from models.basic import ProjectKey, BasicValidator, ModelValidationError, SyncPrefer
 from remote.notion.common import NotionPageLink
@@ -87,7 +87,7 @@ class ProjectsService:
         LOGGER.info("Applied Notion changes")
 
     def load_all_projects(
-            self, show_archived: bool = False, filter_keys: Iterable[ProjectKey] = None) -> Iterable[Project]:
+            self, show_archived: bool = False, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
         """Retrieve all projects."""
         return self._repository.list_all_projects(
             filter_archived=not show_archived, filter_keys=filter_keys)

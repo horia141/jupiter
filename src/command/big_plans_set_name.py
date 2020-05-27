@@ -28,7 +28,7 @@ class BigPlansSetName(command.Command):
         return "big-plans-set-name"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the name of a recurring task"
 

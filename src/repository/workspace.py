@@ -4,10 +4,10 @@ from dataclasses import dataclass
 import logging
 import typing
 from pathlib import Path
-from typing import Final, Any, ClassVar, Dict
+from typing import Final, ClassVar
 
 from repository.common import RepositoryError
-from utils.storage import StructuredIndividualStorage
+from utils.storage import StructuredIndividualStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class WorkspaceRepository:
         self._structured_storage.save(new_workspace)
 
     @staticmethod
-    def storage_schema() -> Dict[str, Any]:
+    def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
             "type": "object",
@@ -63,12 +63,12 @@ class WorkspaceRepository:
         }
 
     @staticmethod
-    def storage_to_live(storage_form: Any) -> Workspace:
+    def storage_to_live(storage_form: JSONDictType) -> Workspace:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return Workspace(name=storage_form["name"])
+        return Workspace(name=typing.cast(str, storage_form["name"]))
 
     @staticmethod
-    def live_to_storage(live_form: Workspace) -> Any:
+    def live_to_storage(live_form: Workspace) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "name": live_form.name

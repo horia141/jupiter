@@ -28,7 +28,7 @@ class RecurringTasksSetEisen(command.Command):
         return "recurring-tasks-set-eisen"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Change the Eisenhower status of a recurring task"
 

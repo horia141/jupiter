@@ -28,7 +28,7 @@ class RecurringTasksUnsuspend(command.Command):
         return "recurring-tasks-unsuspend"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Unsuspend a recurring task"
 

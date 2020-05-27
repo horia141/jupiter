@@ -69,7 +69,7 @@ class BigPlansService:
 
         return new_big_plan
 
-    def archive_big_plan(self, ref_id: EntityId):
+    def archive_big_plan(self, ref_id: EntityId) -> None:
         """Archive a big plan."""
         big_plan = self._repository.load_big_plan_by_id(ref_id)
 
@@ -132,7 +132,7 @@ class BigPlansService:
             filter_archived=filter_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
 
-    def load_big_plan_by_id(self, ref_id) -> BigPlan:
+    def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a big plan by id."""
         return self._repository.load_big_plan_by_id(ref_id)
 
@@ -183,7 +183,7 @@ class BigPlansService:
                 all_big_plans_rows_set[big_plan_row.ref_id] = big_plan_row
             elif big_plan_row.ref_id in all_big_plans_set:
                 # If the big plan exists locally, we sync it with the remote
-                big_plan = all_big_plans_set[big_plan_row.ref_id]
+                big_plan = all_big_plans_set[EntityId(big_plan_row.ref_id)]
                 if sync_prefer == SyncPrefer.NOTION:
                     try:
                         big_plan_name = self._basic_validator.entity_name_validate_and_clean(big_plan_row.name)
@@ -210,9 +210,9 @@ class BigPlansService:
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
-                all_big_plans_rows_set[big_plan_row.ref_id] = big_plan_row
+                all_big_plans_rows_set[EntityId(big_plan_row.ref_id)] = big_plan_row
             else:
-                self._collection.hard_remove_big_plan(project_ref_id, big_plan_row.ref_id)
+                self._collection.hard_remove_big_plan(project_ref_id, EntityId(big_plan_row.ref_id))
                 LOGGER.info(f"Removed dangling big plan in Notion {big_plan_row}")
 
         LOGGER.info("Applied local changes")

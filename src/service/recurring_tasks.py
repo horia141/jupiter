@@ -329,7 +329,7 @@ class RecurringTasksService:
                 all_recurring_tasks_row_set[recurring_task_row.ref_id] = recurring_task_row
             elif recurring_task_row.ref_id in all_recurring_tasks_set:
                 # If the recurring task exists locally, we sync it with the remote
-                recurring_task = all_recurring_tasks_set[recurring_task_row.ref_id]
+                recurring_task = all_recurring_tasks_set[EntityId(recurring_task_row.ref_id)]
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
                     try:
@@ -389,10 +389,10 @@ class RecurringTasksService:
                     self._collection.save_recurring_task(
                         project_ref_id, recurring_task_row, inbox_collection_link=inbox_collection_link)
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from local")
-                all_recurring_tasks_row_set[recurring_task_row.ref_id] = recurring_task_row
+                all_recurring_tasks_row_set[EntityId(recurring_task_row.ref_id)] = recurring_task_row
             else:
                 LOGGER.info(f"Removed dangling recurring task in Notion {recurring_task_row}")
-                self._collection.hard_remove_recurring_task(project_ref_id, recurring_task_row.ref_id)
+                self._collection.hard_remove_recurring_task(project_ref_id, EntityId(recurring_task_row.ref_id))
 
         LOGGER.info("Applied local changes")
 
@@ -411,7 +411,7 @@ class RecurringTasksService:
                 period=recurring_task.period.value,
                 group=recurring_task.group,
                 eisen=[e.value for e in recurring_task.eisen],
-                difficulty=recurring_task.difficulty.value,
+                difficulty=recurring_task.difficulty.value if recurring_task.difficulty else None,
                 due_at_time=recurring_task.due_at_time,
                 due_at_day=recurring_task.due_at_day,
                 due_at_month=recurring_task.due_at_month,

@@ -27,7 +27,7 @@ class InboxTasksSetEisen(command.Command):
         return "inbox-tasks-set-eisen"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Set the Eisenhower status an inbox task"
 

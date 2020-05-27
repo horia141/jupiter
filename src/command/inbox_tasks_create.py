@@ -28,7 +28,7 @@ class InboxTasksCreate(command.Command):
         return "inbox-tasks-create"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Create an inbox task"
 
