@@ -127,6 +127,10 @@ class InboxTasksController:
     def inbox_tasks_sync(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
         """Synchronise inbox tasks between Notion and local."""
         project = self._projects_service.load_project_by_key(project_key)
+        project_page = self._projects_service.get_project_notion_structure(project.ref_id)
+
+        self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page)
+
         all_big_plans = self._big_plans_service.load_all_big_plans(
             filter_archived=False, filter_project_ref_ids=[project.ref_id])
         all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(

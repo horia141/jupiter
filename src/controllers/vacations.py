@@ -6,15 +6,18 @@ import pendulum
 from models.basic import EntityId, SyncPrefer
 from repository.vacations import Vacation
 from service.vacations import VacationsService
+from service.workspaces import WorkspacesService
 
 
 class VacationsController:
     """The controller for vacations."""
 
+    _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]
 
-    def __init__(self, vacations_service: VacationsService):
+    def __init__(self, workspaces_service: WorkspacesService, vacations_service: VacationsService):
         """Constructor."""
+        self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
 
     def create_vacation(self, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> Vacation:
@@ -43,4 +46,6 @@ class VacationsController:
 
     def vacations_sync(self, sync_prefer: SyncPrefer) -> None:
         """Synchronise vacations between Notion and local."""
+        workspace_page = self._workspaces_service.get_workspace_notion_structure()
+        self._vacations_service.upsert_notion_structure(workspace_page)
         self._vacations_service.vacations_sync(sync_prefer)

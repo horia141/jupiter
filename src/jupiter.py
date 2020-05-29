@@ -111,8 +111,10 @@ def main() -> None:
             basic_validator, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
 
-        workspaces_controller = WorkspacesController(notion_connection, workspaces_service, vacations_service)
-        vacations_controller = VacationsController(vacations_service)
+        workspaces_controller = WorkspacesController(
+            notion_connection, workspaces_service, vacations_service, projects_service, inbox_tasks_service,
+            recurring_tasks_service, big_plans_service)
+        vacations_controller = VacationsController(workspaces_service, vacations_service)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         inbox_tasks_controller = InboxTasksController(

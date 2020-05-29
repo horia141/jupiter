@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional
 
-from models.basic import ProjectKey, BasicValidator, ModelValidationError, SyncPrefer
+from models.basic import ProjectKey, BasicValidator, ModelValidationError, SyncPrefer, EntityId
 from remote.notion.common import NotionPageLink
 from remote.notion.projects import ProjectsCollection, ProjectScreen
 from repository.projects import ProjectsRepository, Project
@@ -39,6 +39,10 @@ class ProjectsService:
         self._basic_validator = basic_validator
         self._repository = repository
         self._collection = collection
+
+    def get_project_notion_structure(self, ref_id: EntityId) -> NotionPageLink:
+        """Retrieve the Notion-side page."""
+        return self._collection.get_project_page_structure(ref_id)
 
     def create_project(self, key: ProjectKey, name: str, parent_page: NotionPageLink) -> CreateProjectResponse:
         """Create a project."""

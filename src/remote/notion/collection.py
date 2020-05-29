@@ -371,5 +371,5 @@ class NotionCollection(Generic[NotionCollectionRowType]):
             "page_id": live_form.page_id,
             "collection_id": live_form.collection_id,
             "view_ids": live_form.view_ids,
-            "ref_id_to_notion_id_map": {str(k): str(v) for (k, v) in live_form.ref_id_to_notion_id_map}
+            "ref_id_to_notion_id_map": {str(k): str(v) for (k, v) in live_form.ref_id_to_notion_id_map.items()}
         }

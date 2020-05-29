@@ -159,21 +159,22 @@ class Schedule(abc.ABC):
             # Why don't you write better programs, bro?
             return skip_rule.find(str(param)) != -1
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def period(self) -> RecurringTaskPeriod:
         """The period for the schedule."""
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the schedule block."""
         return self._due_date
+
 
 class DailySchedule(Schedule):
     """A daily schedule."""

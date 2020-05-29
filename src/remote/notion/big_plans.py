@@ -92,10 +92,6 @@ class BigPlansCollection:
         "archived": {
             "name": "Archived",
             "type": "checkbox"
-        },
-        "inboxid": {
-            "name": "Inbox Id Ref",
-            "type": "text"
         }
     }
 

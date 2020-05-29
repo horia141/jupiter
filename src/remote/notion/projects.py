@@ -55,6 +55,16 @@ class ProjectsCollection:
             return
         self._structured_storage.exit_save()
 
+    def get_project_page_structure(self, ref_id: EntityId) -> NotionPageLink:
+        """Retrieve the Notion-side structure link for this collection."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, ref_id)
+
+        if lock is None:
+            raise CollectionError(f"Entity with id='{ref_id}' already exists on Notion side")
+
+        return NotionPageLink(page_id=lock.page_id)
+
     def create_project(self, name: str, ref_id: EntityId, parent_page: NotionPageLink) -> ProjectScreen:
         """Create a project on Notion side."""
         locks_next_idx, locks = self._structured_storage.load()
