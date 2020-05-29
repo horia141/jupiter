@@ -51,12 +51,6 @@ class StructuredIndividualStorage(Generic[LiveType]):
         self._path = path
         self._protocol = protocol
 
-    def initialize(self, data_live: LiveType) -> None:
-        """Initialise."""
-        if self._path.exists():
-            return
-        self.save(data_live)
-
     def load_optional(self) -> Optional[LiveType]:
         """Load the structured storage fully, but return None if nothing was previously saved."""
         try:

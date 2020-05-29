@@ -41,7 +41,7 @@ class NotionConnection:
 
     def initialize(self, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
         """Initialize the Notion collection."""
-        self._structured_storage.initialize(NotionConnectionData(space_id=space_id, token=token))
+        self._structured_storage.save(NotionConnectionData(space_id=space_id, token=token))
 
     def get_notion_client(self) -> NotionClient:
         """Construct a new Notion client."""
