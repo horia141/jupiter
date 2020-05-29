@@ -72,6 +72,7 @@ class RecurringTasksService:
         LOGGER.info("Applied local changes")
         self._collection.create_recurring_task(
             project_ref_id=project_ref_id,
+            archived=False,
             inbox_collection_link=inbox_collection_link,
             name=new_recurring_task.name,
             period=new_recurring_task.period.value,
@@ -414,6 +415,7 @@ class RecurringTasksService:
 
             self._collection.create_recurring_task(
                 project_ref_id=project_ref_id,
+                archived=recurring_task.archived,
                 inbox_collection_link=inbox_collection_link,
                 name=recurring_task.name,
                 period=recurring_task.period.value,

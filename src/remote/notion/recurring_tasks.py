@@ -359,15 +359,15 @@ class RecurringTasksCollection:
         return self._collection.remove_structure(project_ref_id)
 
     def create_recurring_task(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str, period: str,
-            group: str, eisen: List[str], difficulty: Optional[str], due_at_time: Optional[str],
+            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool, name: str,
+            period: str, group: str, eisen: List[str], difficulty: Optional[str], due_at_time: Optional[str],
             due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
             must_do: bool, ref_id: EntityId) -> RecurringTaskRow:
         """Create a recurring task."""
         new_recurring_task_row = RecurringTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
             name=name,
-            archived=False,
+            archived=archived,
             period=period,
             group=group,
             eisen=eisen,

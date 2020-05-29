@@ -134,13 +134,13 @@ class VacationsCollection:
         return self._collection.upsert_structure(self._DISCRIMINANT, parent_page)
 
     def create_vacation(
-            self, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime,
+            self, archived: bool, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime,
             ref_id: EntityId) -> VacationRow:
         """Create a vacation."""
         new_vacation_row = VacationRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
             name=name,
-            archived=False,
+            archived=archived,
             start_date=start_date,
             end_date=end_date,
             ref_id=ref_id)

@@ -54,6 +54,7 @@ class VacationsService:
         # Apply changes in Notion
 
         self._collection.create_vacation(
+            archived=False,
             name=name,
             start_date=start_date,
             end_date=end_date,
@@ -231,6 +232,7 @@ class VacationsService:
 
             # If the vacation does not exist on Notion side, we create it.
             new_vacation_row = self._collection.create_vacation(
+                archived=vacation.archived,
                 name=vacation.name,
                 start_date=vacation.start_date,
                 end_date=vacation.end_date,

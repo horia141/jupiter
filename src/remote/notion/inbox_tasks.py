@@ -751,7 +751,7 @@ class InboxTasksCollection:
         LOGGER.info("Updated the schema for the associated inbox")
 
     def create_inbox_task(
-            self, project_ref_id: EntityId, name: str, big_plan_ref_id: Optional[EntityId],
+            self, project_ref_id: EntityId, name: str, archived: bool, big_plan_ref_id: Optional[EntityId],
             big_plan_name: Optional[str], recurring_task_ref_id: Optional[EntityId], status: str,
             eisen: Optional[List[str]], difficulty: Optional[str], due_date: Optional[pendulum.DateTime],
             recurring_period: Optional[str], recurring_timeline: Optional[str], ref_id: EntityId) -> InboxTaskRow:
@@ -759,7 +759,7 @@ class InboxTasksCollection:
         new_inbox_task_row = InboxTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
             name=name,
-            archived=False,
+            archived=archived,
             created_date=pendulum.now(),
             big_plan_ref_id=big_plan_ref_id,
             big_plan_name=big_plan_name,

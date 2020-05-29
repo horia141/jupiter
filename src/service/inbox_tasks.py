@@ -86,6 +86,7 @@ class InboxTasksService:
         # Apply Notion changes
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
+            archived=False,
             name=new_inbox_task.name,
             big_plan_ref_id=new_inbox_task.big_plan_ref_id,
             big_plan_name=remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None,
@@ -125,6 +126,7 @@ class InboxTasksService:
         # Apply Notion changes
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
+            archived=False,
             name=new_inbox_task.name,
             big_plan_ref_id=None,
             big_plan_name=None,
@@ -511,6 +513,7 @@ class InboxTasksService:
 
             self._collection.create_inbox_task(
                 project_ref_id=project_ref_id,
+                archived=inbox_task.archived,
                 name=inbox_task.name,
                 big_plan_ref_id=big_plan.ref_id if big_plan else None,
                 big_plan_name=remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None,
