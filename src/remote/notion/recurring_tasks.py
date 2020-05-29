@@ -400,9 +400,11 @@ class RecurringTasksCollection:
 
     def save_recurring_task(
             self, project_ref_id: EntityId, new_recurring_task_row: RecurringTaskRow,
-            inbox_collection_link: Optional[NotionCollectionLink] = None) -> None:
+            inbox_collection_link: Optional[NotionCollectionLink] = None) -> RecurringTaskRow:
         """Update the Notion-side recurring task with new data."""
-        self._collection.save(project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link)
+        return cast(
+            RecurringTaskRow,
+            self._collection.save(project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link))
 
     def hard_remove_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""

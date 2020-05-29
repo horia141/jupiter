@@ -102,7 +102,7 @@ class ProjectsRepository:
             raise RepositoryError(f"Project with key='{key}' is archived")
         return found_project
 
-    def save_project(self, new_project: Project) -> None:
+    def save_project(self, new_project: Project) -> Project:
         """Store a particular project with all new properties."""
         projects_next_idx, projects = self._structured_storage.load()
 
@@ -111,6 +111,8 @@ class ProjectsRepository:
 
         new_projects = [(p if p.ref_id != new_project.ref_id else new_project) for p in projects]
         self._structured_storage.save((projects_next_idx, new_projects))
+
+        return new_project
 
     @staticmethod
     def _find_project_by_key(key: ProjectKey, projects: List[Project]) -> Optional[Project]:

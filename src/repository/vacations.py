@@ -76,18 +76,17 @@ class VacationsRepository:
 
         return new_vacation
 
-    def archive_vacation(self, ref_id: EntityId) -> None:
+    def archive_vacation(self, ref_id: EntityId) -> Vacation:
         """Remove a particular vacation."""
         vacations_next_idx, vacations = self._structured_storage.load()
 
         for vacation in vacations:
             if vacation.ref_id == ref_id:
                 vacation.archived = True
-                break
-        else:
-            raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
+                self._structured_storage.save((vacations_next_idx, vacations))
+                return vacation
 
-        self._structured_storage.save((vacations_next_idx, vacations))
+        raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
 
     def load_all_vacations(self, filter_archived: bool = True) -> Iterable[Vacation]:
         """Retrieve all the vacations defined."""
@@ -104,13 +103,15 @@ class VacationsRepository:
             raise RepositoryError(f"Vacation with id={ref_id} is archived")
         return found_vacation
 
-    def save_vacation(self, new_vacation: Vacation) -> None:
+    def save_vacation(self, new_vacation: Vacation) -> Vacation:
         """Store a particular vacation with all new properties."""
         vacations_next_idx, vacations = self._structured_storage.load()
         if not self._find_vacation_by_id(new_vacation.ref_id, vacations):
             raise RepositoryError(f"Vacation with id={new_vacation.ref_id} does not exist")
         new_vacations = [(v if v.ref_id != new_vacation.ref_id else new_vacation) for v in vacations]
         self._structured_storage.save((vacations_next_idx, new_vacations))
+
+        return new_vacation
 
     @staticmethod
     def _find_vacation_by_id(ref_id: EntityId, vacations: List[Vacation]) -> Optional[Vacation]:

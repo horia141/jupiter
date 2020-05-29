@@ -93,18 +93,17 @@ class InboxTasksRepository:
 
         return new_inbox_task
 
-    def archive_inbox_task(self, ref_id: EntityId) -> None:
+    def archive_inbox_task(self, ref_id: EntityId) -> InboxTask:
         """Remove a particular inbox task."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
         for inbox_task in inbox_tasks:
             if inbox_task.ref_id == ref_id:
                 inbox_task.archived = True
-                break
-        else:
-            raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
+                self._structured_storage.save((inbox_tasks_next_idx, inbox_tasks))
+                return inbox_task
 
-        self._structured_storage.save((inbox_tasks_next_idx, inbox_tasks))
+        raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
 
     def load_all_inbox_task(
             self,
@@ -138,7 +137,7 @@ class InboxTasksRepository:
             raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
         return found_inbox_tasks
 
-    def save_inbox_task(self, new_inbox_task: InboxTask) -> None:
+    def save_inbox_task(self, new_inbox_task: InboxTask) -> InboxTask:
         """Store a particular inbox task with all new properties."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
@@ -148,6 +147,8 @@ class InboxTasksRepository:
         new_inbox_tasks = [(rt if rt.ref_id != new_inbox_task.ref_id else new_inbox_task)
                            for rt in inbox_tasks]
         self._structured_storage.save((inbox_tasks_next_idx, new_inbox_tasks))
+
+        return new_inbox_task
 
     @staticmethod
     def _find_inbox_task_by_id(ref_id: EntityId, inbox_tasks: List[InboxTask]) -> Optional[InboxTask]:

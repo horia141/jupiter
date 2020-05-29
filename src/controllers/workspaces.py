@@ -34,9 +34,9 @@ class WorkspacesController:
         new_workspace_page = self._workspaces_service.create_workspace(name)
         self._vacations_service.upsert_notion_structure(new_workspace_page)
 
-    def set_workspace_name(self, name: str) -> None:
+    def set_workspace_name(self, name: str) -> Workspace:
         """Change the workspace name."""
-        self._workspaces_service.set_workspace_name(name)
+        return self._workspaces_service.set_workspace_name(name)
 
     def set_workspace_token(self, token: WorkspaceToken) -> None:
         """Change the workspace token."""

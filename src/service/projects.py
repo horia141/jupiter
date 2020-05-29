@@ -63,13 +63,15 @@ class ProjectsService:
             project=new_project,
             project_screen=new_project_screen)
 
-    def archive_project(self, key: ProjectKey) -> None:
+    def archive_project(self, key: ProjectKey) -> Project:
         """Archive a project."""
-        removed_project = self._repository.archive_project(key)
+        project = self._repository.archive_project(key)
         LOGGER.info("Applied local changes")
-        self._collection.archive_project(removed_project.ref_id)
+        self._collection.archive_project(project.ref_id)
 
-    def set_project_name(self, key: ProjectKey, name: str) -> None:
+        return project
+
+    def set_project_name(self, key: ProjectKey, name: str) -> Project:
         """Change the name of a project."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -85,6 +87,8 @@ class ProjectsService:
         project_screen.name = name
         self._collection.save_project(project_screen)
         LOGGER.info("Applied Notion changes")
+
+        return project
 
     def load_all_projects(
             self, show_archived: bool = False, filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:

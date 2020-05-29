@@ -60,43 +60,43 @@ class InboxTasksController:
         return self._inbox_tasks_service.create_inbox_task(
             project.ref_id, name, big_plan_ref_id, big_plan_name, eisen, difficulty, due_date)
 
-    def archive_inbox_task(self, ref_id: EntityId) -> None:
+    def archive_inbox_task(self, ref_id: EntityId) -> InboxTask:
         """Archive an inbox task."""
-        self._inbox_tasks_service.archive_inbox_task(ref_id)
+        return self._inbox_tasks_service.archive_inbox_task(ref_id)
 
-    def associate_inbox_task_with_big_plan(self, ref_id: EntityId, big_plan_ref_id: Optional[EntityId]) -> None:
+    def associate_inbox_task_with_big_plan(self, ref_id: EntityId, big_plan_ref_id: Optional[EntityId]) -> InboxTask:
         """Associate a big plan with an inbox task."""
         big_plan_name: Optional[str] = None
         if big_plan_ref_id:
             big_plan = self._big_plans_service.load_big_plan_by_id(big_plan_ref_id)
             big_plan_name = big_plan.name
 
-        self._inbox_tasks_service.associate_inbox_task_with_big_plan(ref_id, big_plan_ref_id, big_plan_name)
+        return self._inbox_tasks_service.associate_inbox_task_with_big_plan(ref_id, big_plan_ref_id, big_plan_name)
 
     def archive_done_inbox_tasks(self, project_key: ProjectKey) -> None:
         """Archive all the inbox tasks which are considered done."""
         project = self._projects_service.load_project_by_key(project_key)
         self._inbox_tasks_service.archive_done_inbox_tasks([project.ref_id])
 
-    def set_inbox_task_name(self, ref_id: EntityId, name: str) -> None:
+    def set_inbox_task_name(self, ref_id: EntityId, name: str) -> InboxTask:
         """Change the difficulty of an inbox task."""
-        self._inbox_tasks_service.set_inbox_task_name(ref_id, name)
+        return self._inbox_tasks_service.set_inbox_task_name(ref_id, name)
 
-    def set_inbox_task_status(self, ref_id: EntityId, status: InboxTaskStatus) -> None:
+    def set_inbox_task_status(self, ref_id: EntityId, status: InboxTaskStatus) -> InboxTask:
         """Change the difficulty of an inbox task."""
-        self._inbox_tasks_service.set_inbox_task_status(ref_id, status)
+        return self._inbox_tasks_service.set_inbox_task_status(ref_id, status)
 
-    def set_inbox_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> None:
+    def set_inbox_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> InboxTask:
         """Change the difficulty of an inbox task."""
-        self._inbox_tasks_service.set_inbox_task_eisen(ref_id, eisen)
+        return self._inbox_tasks_service.set_inbox_task_eisen(ref_id, eisen)
 
-    def set_inbox_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> None:
+    def set_inbox_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> InboxTask:
         """Change the difficulty of an inbox task."""
-        self._inbox_tasks_service.set_inbox_task_difficulty(ref_id, difficulty)
+        return self._inbox_tasks_service.set_inbox_task_difficulty(ref_id, difficulty)
 
-    def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> None:
+    def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> InboxTask:
         """Change the due date of an inbox task."""
-        self._inbox_tasks_service.set_inbox_task_due_date(ref_id, due_date)
+        return self._inbox_tasks_service.set_inbox_task_due_date(ref_id, due_date)
 
     def load_all_inbox_tasks(
             self, filter_ref_ids: Optional[Iterable[EntityId]] = None,

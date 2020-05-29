@@ -162,9 +162,9 @@ class VacationsCollection:
         """Retrieve the Notion-side vacation associated with a particular entity."""
         return cast(VacationRow, self._collection.load(self._DISCRIMINANT, ref_id))
 
-    def save_vacation(self, new_vacation_row: VacationRow) -> None:
+    def save_vacation(self, new_vacation_row: VacationRow) -> VacationRow:
         """Update a Notion-side vacation with new data."""
-        self._collection.save(self._DISCRIMINANT, new_vacation_row)
+        return cast(VacationRow, self._collection.save(self._DISCRIMINANT, new_vacation_row))
 
     def hard_remove_vacation(self, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""

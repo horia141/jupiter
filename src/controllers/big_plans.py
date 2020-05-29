@@ -54,37 +54,40 @@ class BigPlansController:
 
         return big_plan
 
-    def archive_big_plan(self, ref_id: EntityId) -> None:
+    def archive_big_plan(self, ref_id: EntityId) -> BigPlan:
         """Archive a big plan."""
-        big_plan = self._big_plans_service.load_big_plan_by_id(ref_id)
         inbox_tasks_for_big_plan = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_big_plan_ref_ids=[big_plan.ref_id])
+            filter_big_plan_ref_ids=[ref_id])
 
         for inbox_task in inbox_tasks_for_big_plan:
             LOGGER.info(f"Archiving task {inbox_task.name} for plan")
             self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
         LOGGER.info("Archived all tasks")
 
-        self._big_plans_service.archive_big_plan(ref_id)
+        big_plan = self._big_plans_service.archive_big_plan(ref_id)
         LOGGER.info(f"Archived the big plan")
 
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
         self._inbox_tasks_service.upsert_notion_big_plan_ref_options(big_plan.project_ref_id, all_big_plans)
         LOGGER.info(f"Updated the schema for the associated inbox")
 
-    def set_big_plan_name(self, ref_id: EntityId, name: str) -> None:
+        return big_plan
+
+    def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
         """Change the due date of a big plan."""
         big_plan = self._big_plans_service.set_big_plan_name(ref_id, name)
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
         self._inbox_tasks_service.upsert_notion_big_plan_ref_options(big_plan.project_ref_id, all_big_plans)
 
-    def set_big_plan_status(self, ref_id: EntityId, status: BigPlanStatus) -> None:
-        """Change the due date of a big plan."""
-        self._big_plans_service.set_big_plan_status(ref_id, status)
+        return big_plan
 
-    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> None:
+    def set_big_plan_status(self, ref_id: EntityId, status: BigPlanStatus) -> BigPlan:
         """Change the due date of a big plan."""
-        self._big_plans_service.set_big_plan_due_date(ref_id, due_date)
+        return self._big_plans_service.set_big_plan_status(ref_id, status)
+
+    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> BigPlan:
+        """Change the due date of a big plan."""
+        return self._big_plans_service.set_big_plan_due_date(ref_id, due_date)
 
     def load_all_big_plans(
             self, show_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,

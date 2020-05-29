@@ -77,18 +77,17 @@ class BigPlansRepository:
 
         return new_big_plan
 
-    def archive_big_plan(self, ref_id: EntityId) -> None:
+    def archive_big_plan(self, ref_id: EntityId) -> BigPlan:
         """Remove a big plan."""
         big_plans_next_idx, big_plans = self._structured_storage.load()
 
         for big_plan in big_plans:
             if big_plan.ref_id == ref_id:
                 big_plan.archived = True
-                break
-        else:
-            raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")
+                self._structured_storage.save((big_plans_next_idx, big_plans))
+                return big_plan
 
-        self._structured_storage.save((big_plans_next_idx, big_plans))
+        raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")
 
     def load_all_big_plans(
             self,
@@ -114,7 +113,7 @@ class BigPlansRepository:
             raise RepositoryError(f"Big plan with id='{ref_id}' is archived")
         return found_big_plans
 
-    def save_big_plan(self, new_big_plan: BigPlan) -> None:
+    def save_big_plan(self, new_big_plan: BigPlan) -> BigPlan:
         """Store a particular big plan with all new properties."""
         big_plans_next_idx, big_plans = self._structured_storage.load()
 
@@ -124,6 +123,8 @@ class BigPlansRepository:
         new_big_plans = [(rt if rt.ref_id != new_big_plan.ref_id else new_big_plan)
                          for rt in big_plans]
         self._structured_storage.save((big_plans_next_idx, new_big_plans))
+
+        return new_big_plan
 
     @staticmethod
     def _find_big_plan_by_id(ref_id: EntityId, big_plans: List[BigPlan]) -> Optional[BigPlan]:

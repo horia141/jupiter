@@ -192,7 +192,7 @@ class RecurringTasksService:
 
         return recurring_task
 
-    def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> None:
+    def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> RecurringTask:
         """Change the group for a recurring task."""
         recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.group = group
@@ -204,7 +204,9 @@ class RecurringTasksService:
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
 
-    def set_recurring_task_must_do_state(self, ref_id: EntityId, must_do: bool) -> None:
+        return recurring_task
+
+    def set_recurring_task_must_do_state(self, ref_id: EntityId, must_do: bool) -> RecurringTask:
         """Change the must do status for a recurring task."""
         recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.must_do = must_do
@@ -216,7 +218,9 @@ class RecurringTasksService:
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
 
-    def set_recurring_task_skip_rule(self, ref_id: EntityId, skip_rule: Optional[str]) -> None:
+        return recurring_task
+
+    def set_recurring_task_skip_rule(self, ref_id: EntityId, skip_rule: Optional[str]) -> RecurringTask:
         """Change the skip rule for a recurring task."""
         recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.skip_rule = skip_rule
@@ -228,7 +232,9 @@ class RecurringTasksService:
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
 
-    def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> None:
+        return recurring_task
+
+    def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> RecurringTask:
         """Change the suspended state for a recurring task."""
         recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.suspended = suspended
@@ -239,6 +245,8 @@ class RecurringTasksService:
         recurring_task_row.suspended = suspended
         self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
+
+        return recurring_task
 
     def load_all_recurring_tasks(
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,

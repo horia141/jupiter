@@ -74,7 +74,7 @@ class RecurringTasksController:
 
         return recurring_task
 
-    def archive_recurring_task(self, ref_id: EntityId) -> None:
+    def archive_recurring_task(self, ref_id: EntityId) -> RecurringTask:
         """Archive an recurring task."""
         recurring_task = self._recurring_tasks_service.load_recurring_task_by_id(ref_id)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
@@ -82,9 +82,9 @@ class RecurringTasksController:
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
             LOGGER.info(f"Removing inbox task instance {inbox_task.name}")
-        self._recurring_tasks_service.archive_recurring_task(ref_id)
+        return self._recurring_tasks_service.archive_recurring_task(ref_id)
 
-    def set_recurring_task_name(self, ref_id: EntityId, name: str) -> None:
+    def set_recurring_task_name(self, ref_id: EntityId, name: str) -> RecurringTask:
         """Change the name for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_name(ref_id, name)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
@@ -95,8 +95,9 @@ class RecurringTasksController:
                 recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                 recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_name(inbox_task.ref_id, schedule.full_name)
+        return recurring_task
 
-    def set_recurring_task_period(self, ref_id: EntityId, period: RecurringTaskPeriod) -> None:
+    def set_recurring_task_period(self, ref_id: EntityId, period: RecurringTaskPeriod) -> RecurringTask:
         """Change the period for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_period(ref_id, period)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
@@ -111,30 +112,33 @@ class RecurringTasksController:
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                 inbox_task.ref_id, schedule.full_name, schedule.period, schedule.timeline, schedule.due_time,
                 recurring_task.eisen, recurring_task.difficulty)
+        return recurring_task
 
-    def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> None:
+    def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> RecurringTask:
         """Change the group for a recurring task."""
-        self._recurring_tasks_service.set_recurring_task_group(ref_id, group)
+        return self._recurring_tasks_service.set_recurring_task_group(ref_id, group)
 
-    def set_recurring_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> None:
+    def set_recurring_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> RecurringTask:
         """Change the difficulty for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_eisen(ref_id, eisen)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.set_inbox_task_eisen(inbox_task.ref_id, eisen)
+        return recurring_task
 
-    def set_recurring_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> None:
+    def set_recurring_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> RecurringTask:
         """Change the difficulty for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_difficulty(ref_id, difficulty)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.set_inbox_task_difficulty(inbox_task.ref_id, difficulty)
+        return recurring_task
 
     def set_recurring_task_deadlines(
             self, ref_id: EntityId, due_at_time: Optional[str], due_at_day: Optional[int],
-            due_at_month: Optional[int]) -> None:
+            due_at_month: Optional[int]) -> RecurringTask:
         """Change the deadlines for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_deadlines(
             ref_id, due_at_time, due_at_day, due_at_month)
@@ -145,18 +149,19 @@ class RecurringTasksController:
                 recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
                 recurring_task.skip_rule, due_at_time, due_at_day, due_at_month)
             self._inbox_tasks_service.set_inbox_task_due_date(inbox_task.ref_id, schedule.due_time)
+        return recurring_task
 
-    def set_recurring_task_must_do_state(self, ref_id: EntityId, must_do: bool) -> None:
+    def set_recurring_task_must_do_state(self, ref_id: EntityId, must_do: bool) -> RecurringTask:
         """Change the skip rule for a recurring task."""
-        self._recurring_tasks_service.set_recurring_task_must_do_state(ref_id, must_do)
+        return self._recurring_tasks_service.set_recurring_task_must_do_state(ref_id, must_do)
 
-    def set_recurring_task_skip_rule(self, ref_id: EntityId, skip_rule: Optional[str]) -> None:
+    def set_recurring_task_skip_rule(self, ref_id: EntityId, skip_rule: Optional[str]) -> RecurringTask:
         """Change the skip rule for a recurring task."""
-        self._recurring_tasks_service.set_recurring_task_skip_rule(ref_id, skip_rule)
+        return self._recurring_tasks_service.set_recurring_task_skip_rule(ref_id, skip_rule)
 
-    def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> None:
+    def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> RecurringTask:
         """Change the suspended state for a recurring task."""
-        self._recurring_tasks_service.set_recurring_task_suspended(ref_id, suspended)
+        return self._recurring_tasks_service.set_recurring_task_suspended(ref_id, suspended)
 
     def load_all_recurring_tasks(
             self, show_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,

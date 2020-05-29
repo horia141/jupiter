@@ -69,14 +69,14 @@ class BigPlansService:
 
         return new_big_plan
 
-    def archive_big_plan(self, ref_id: EntityId) -> None:
+    def archive_big_plan(self, ref_id: EntityId) -> BigPlan:
         """Archive a big plan."""
-        big_plan = self._repository.load_big_plan(ref_id)
-
-        self._repository.archive_big_plan(ref_id)
+        big_plan = self._repository.archive_big_plan(ref_id)
         LOGGER.info("Applied local changes")
         self._collection.archive_big_plan(big_plan.project_ref_id, ref_id)
         LOGGER.info("Applied Notion changes")
+
+        return big_plan
 
     def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
         """Change the name of a big plan."""
@@ -112,7 +112,7 @@ class BigPlansService:
 
         return big_plan
 
-    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> None:
+    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> BigPlan:
         """Change the due date of a big plan."""
         big_plan = self._repository.load_big_plan(ref_id)
         big_plan.due_date = due_date
@@ -123,6 +123,8 @@ class BigPlansService:
         big_plan_row.due_date = due_date
         self._collection.save_big_plan(big_plan.project_ref_id, big_plan_row)
         LOGGER.info("Applied Notion changes")
+
+        return big_plan
 
     def load_all_big_plans(
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,

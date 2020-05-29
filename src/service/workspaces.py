@@ -45,7 +45,7 @@ class WorkspacesService:
         """Return a link to the Notion-side structure, maybe like a hack."""
         return self._singleton.get_notion_structure()
 
-    def set_workspace_name(self, name: str) -> None:
+    def set_workspace_name(self, name: str) -> Workspace:
         """Set the name of the workspace."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -59,6 +59,8 @@ class WorkspacesService:
         workspace_screen = self._singleton.load_workspace_screen()
         workspace_screen.name = name
         self._singleton.save_workspace_screen(workspace_screen)
+
+        return workspace
 
     def load_workspace(self) -> Workspace:
         """Retrieve the workspace."""

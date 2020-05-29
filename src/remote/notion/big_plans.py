@@ -255,9 +255,11 @@ class BigPlansCollection:
 
     def save_big_plan(
             self, project_ref_id: EntityId, new_big_plan_row: BigPlanRow,
-            inbox_collection_link: Optional[NotionCollectionLink] = None) -> None:
+            inbox_collection_link: Optional[NotionCollectionLink] = None) -> BigPlanRow:
         """Update the Notion-side big plan with new data."""
-        self._collection.save(project_ref_id, new_big_plan_row, inbox_collection_link=inbox_collection_link)
+        return cast(
+            BigPlanRow,
+            self._collection.save(project_ref_id, new_big_plan_row, inbox_collection_link=inbox_collection_link))
 
     def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""

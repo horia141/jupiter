@@ -48,9 +48,10 @@ class WorkspaceRepository:
             raise MissingWorkspaceRepositoryError()
         return workspace
 
-    def save_workspace(self, new_workspace: Workspace) -> None:
+    def save_workspace(self, new_workspace: Workspace) -> Workspace:
         """Save the workspace."""
         self._structured_storage.save(new_workspace)
+        return new_workspace
 
     @staticmethod
     def storage_schema() -> JSONDictType:

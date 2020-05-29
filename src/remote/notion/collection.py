@@ -278,12 +278,14 @@ class NotionCollection(Generic[NotionCollectionRowType]):
 
         return self._protocol.copy_notion_row_to_row(inbox_task_notion_row)
 
-    def save(self, discriminant: str, row: NotionCollectionRowType, **kwargs: NotionCollectionKWArgsType) -> None:
+    def save(
+            self, discriminant: str, row: NotionCollectionRowType,
+            **kwargs: NotionCollectionKWArgsType) -> NotionCollectionRowType:
         """Update the Notion-side entity with new data."""
         if row.ref_id is None:
             raise Exception("Can only save over an entity which has a ref_id")
 
-        locks_next_idx, locks = self._structured_storage.load()
+        _, locks = self._structured_storage.load()
         lock = self._find_lock(locks, discriminant)
         if lock is None:
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
@@ -291,6 +293,8 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         notion_row = self._find_notion_row(client, lock, EntityId(row.ref_id))
 
         self._protocol.copy_row_to_notion_row(client, row, notion_row, **kwargs)
+
+        return row
 
     def hard_remove(self, discriminant: str, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""

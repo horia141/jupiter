@@ -62,11 +62,11 @@ class VacationsService:
 
         return new_vacation
 
-    def archive_vacation(self, ref_id: EntityId) -> None:
+    def archive_vacation(self, ref_id: EntityId) -> Vacation:
         """Archive a given vacation."""
         # Apply changes locally
 
-        self._repository.archive_vacation(ref_id)
+        vacation = self._repository.archive_vacation(ref_id)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
@@ -74,7 +74,9 @@ class VacationsService:
         self._collection.archive_vacation(ref_id)
         LOGGER.info("Applied Notion changes")
 
-    def set_vacation_name(self, ref_id: EntityId, name: str) -> None:
+        return vacation
+
+    def set_vacation_name(self, ref_id: EntityId, name: str) -> Vacation:
         """Change the name of a vacation."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -95,7 +97,9 @@ class VacationsService:
         self._collection.save_vacation(vacation_row)
         LOGGER.info("Applied Notion changes")
 
-    def set_vacation_start_date(self, ref_id: EntityId, start_date: pendulum.DateTime) -> None:
+        return vacation
+
+    def set_vacation_start_date(self, ref_id: EntityId, start_date: pendulum.DateTime) -> Vacation:
         """Change the start date of a vacation."""
         # Apply changes locally
 
@@ -113,7 +117,9 @@ class VacationsService:
         self._collection.save_vacation(vacation_row)
         LOGGER.info("Applied Notion changes")
 
-    def set_vacation_end_date(self, ref_id: EntityId, end_date: pendulum.DateTime) -> None:
+        return vacation
+
+    def set_vacation_end_date(self, ref_id: EntityId, end_date: pendulum.DateTime) -> Vacation:
         """Change the end date of a vacation."""
         # Apply changes locally
 
@@ -130,6 +136,8 @@ class VacationsService:
         vacation_row.end_date = end_date
         self._collection.save_vacation(vacation_row)
         LOGGER.info("Applied Notion changes")
+
+        return vacation
 
     def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""

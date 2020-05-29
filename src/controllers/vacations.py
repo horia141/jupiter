@@ -21,21 +21,21 @@ class VacationsController:
         """Create a vacation."""
         return self._vacations_service.create_vacation(name, start_date, end_date)
 
-    def archive_vacation(self, ref_id: EntityId) -> None:
+    def archive_vacation(self, ref_id: EntityId) -> Vacation:
         """Archive a vacation."""
-        self._vacations_service.archive_vacation(ref_id)
+        return self._vacations_service.archive_vacation(ref_id)
 
-    def set_vacation_name(self, ref_id: EntityId, name: str) -> None:
+    def set_vacation_name(self, ref_id: EntityId, name: str) -> Vacation:
         """Change the vacation name."""
-        self._vacations_service.set_vacation_name(ref_id, name)
+        return self._vacations_service.set_vacation_name(ref_id, name)
 
-    def set_vacation_start_date(self, ref_id: EntityId, start_date: pendulum.DateTime) -> None:
+    def set_vacation_start_date(self, ref_id: EntityId, start_date: pendulum.DateTime) -> Vacation:
         """Change the vacation start date."""
-        self._vacations_service.set_vacation_start_date(ref_id, start_date)
+        return self._vacations_service.set_vacation_start_date(ref_id, start_date)
 
-    def set_vacation_end_date(self, ref_id: EntityId, end_date: pendulum.DateTime) -> None:
+    def set_vacation_end_date(self, ref_id: EntityId, end_date: pendulum.DateTime) -> Vacation:
         """Change the vacation end date."""
-        self._vacations_service.set_vacation_end_date(ref_id, end_date)
+        return self._vacations_service.set_vacation_end_date(ref_id, end_date)
 
     def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""

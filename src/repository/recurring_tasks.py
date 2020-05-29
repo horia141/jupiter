@@ -127,7 +127,7 @@ class RecurringTasksRepository:
             raise RepositoryError(f"Recurring task with id='{ref_id}' is archived")
         return found_recurring_tasks
 
-    def save_recurring_task(self, new_recurring_task: RecurringTask) -> None:
+    def save_recurring_task(self, new_recurring_task: RecurringTask) -> RecurringTask:
         """Store a particular recurring task with all new properties."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
@@ -137,6 +137,8 @@ class RecurringTasksRepository:
         new_recurring_tasks = [(rt if rt.ref_id != new_recurring_task.ref_id else new_recurring_task)
                                for rt in recurring_tasks]
         self._structured_storage.save((recurring_tasks_next_idx, new_recurring_tasks))
+
+        return new_recurring_task
 
     @staticmethod
     def _find_recurring_task_by_id(ref_id: EntityId, recurring_tasks: List[RecurringTask]) -> Optional[RecurringTask]:

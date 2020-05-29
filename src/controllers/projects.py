@@ -54,7 +54,7 @@ class ProjectsController:
         self._recurring_tasks_service.upsert_notion_structure(response.project.ref_id, response.page)
         self._big_plans_service.upsert_notion_structure(response.project.ref_id, response.page)
 
-    def archive_project(self, key: ProjectKey) -> None:
+    def archive_project(self, key: ProjectKey) -> Project:
         """Archive a project."""
         project = self._projects_service.load_project_by_key(key)
 
@@ -62,11 +62,11 @@ class ProjectsController:
         self._recurring_tasks_service.remove_notion_structure(project.ref_id)
         self._big_plans_service.remove_notion_structure(project.ref_id)
 
-        self._projects_service.archive_project(key)
+        return self._projects_service.archive_project(key)
 
-    def set_project_name(self, key: ProjectKey, name: str) -> None:
+    def set_project_name(self, key: ProjectKey, name: str) -> Project:
         """Change the name of a project."""
-        self._projects_service.set_project_name(key, name)
+        return self._projects_service.set_project_name(key, name)
 
     def load_all_projects(self, filter_project_keys: Optional[Iterable[ProjectKey]] = None) -> LoadAllProjectsResponse:
         """Retrieve all projects."""

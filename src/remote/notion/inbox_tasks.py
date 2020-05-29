@@ -790,9 +790,9 @@ class InboxTasksCollection:
         """Retrieve the Notion-side inbox task associated with a particular entity."""
         return cast(InboxTaskRow, self._collection.load(project_ref_id, ref_id))
 
-    def save_inbox_task(self, project_ref_id: EntityId, new_inbox_task_row: InboxTaskRow) -> None:
+    def save_inbox_task(self, project_ref_id: EntityId, new_inbox_task_row: InboxTaskRow) -> InboxTaskRow:
         """Update the Notion-side inbox task with new data."""
-        self._collection.save(project_ref_id, new_inbox_task_row)
+        return cast(InboxTaskRow, self._collection.save(project_ref_id, new_inbox_task_row))
 
     def hard_remove_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
