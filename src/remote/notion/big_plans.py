@@ -131,12 +131,6 @@ class BigPlansCollection:
             "property": "due-date",
             "visible": True
         }, {
-            "property": "ref-id",
-            "visible": False
-        }, {
-            "property": "inbox-id",
-            "visible": False
-        }, {
             "property": "archived",
             "visible": False
         }],
@@ -197,10 +191,6 @@ class BigPlansCollection:
                 "width": 100,
                 "property": "archived",
                 "visible": True
-            }, {
-                "width": 100,
-                "property": "inboxid",
-                "visible": False
             }]
         }
     }
