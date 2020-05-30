@@ -7,7 +7,7 @@ from typing import Final
 import pendulum
 
 import command.command as command
-from controllers.recurring_tasks import RecurringTasksController
+from controllers.recurring_tasks_gen import RecurringTasksGenController
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -17,17 +17,18 @@ class RecurringTasksGen(command.Command):
     """Command class for creating recurring tasks."""
 
     _basic_validator: Final[BasicValidator]
-    _recurring_tasks_controller: Final[RecurringTasksController]
+    _recurring_tasks_gen_controller: Final[RecurringTasksGenController]
 
-    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+    def __init__(
+            self, basic_validator: BasicValidator, recurring_tasks_gen_controller: RecurringTasksGenController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._recurring_tasks_controller = recurring_tasks_controller
+        self._recurring_tasks_gen_controller = recurring_tasks_gen_controller
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "recurring-tasks-gen"
+        return "gen"
 
     @staticmethod
     def description() -> str:
@@ -54,4 +55,4 @@ class RecurringTasksGen(command.Command):
             if len(args.group) > 0 else None
         period_filter = [self._basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period] \
             if len(args.period) > 0 else None
-        self._recurring_tasks_controller.recurring_tasks_gen(right_now, project_keys, group_filter, period_filter)
+        self._recurring_tasks_gen_controller.recurring_tasks_gen(right_now, project_keys, group_filter, period_filter)

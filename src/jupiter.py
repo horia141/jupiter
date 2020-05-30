@@ -54,6 +54,7 @@ from controllers.correct_notion_structure import CorrectNotionStructureControlle
 from controllers.inbox_tasks import InboxTasksController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
+from controllers.recurring_tasks_gen import RecurringTasksGenController
 from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
@@ -116,7 +117,7 @@ def main() -> None:
         inbox_tasks_controller = InboxTasksController(
             projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         recurring_tasks_controller = RecurringTasksController(
-            projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
+            projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         correct_structure_controller = CorrectNotionStructureController(
             workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
@@ -124,6 +125,8 @@ def main() -> None:
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
             big_plans_service)
+        recurring_tasks_gen_controller = RecurringTasksGenController(
+            projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
 
         commands = [
             WorkspaceInit(basic_validator, workspaces_controller),
@@ -152,7 +155,6 @@ def main() -> None:
             InboxTasksShow(basic_validator, inbox_tasks_controller),
             RecurringTasksCreate(basic_validator, recurring_tasks_controller),
             RecurringTasksArchive(basic_validator, recurring_tasks_controller),
-            RecurringTasksGen(basic_validator, recurring_tasks_controller),
             RecurringTasksSetName(basic_validator, recurring_tasks_controller),
             RecurringTasksSetPeriod(basic_validator, recurring_tasks_controller),
             RecurringTasksSetGroup(basic_validator, recurring_tasks_controller),
@@ -171,7 +173,8 @@ def main() -> None:
             BigPlansSetStatus(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
             CorrectNotionStructure(basic_validator, correct_structure_controller),
-            SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller)
+            SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
+            RecurringTasksGen(basic_validator, recurring_tasks_gen_controller)
         ]
 
         parser = argparse.ArgumentParser(description="The Jupiter goal management system")
