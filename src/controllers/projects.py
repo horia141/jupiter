@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional
 
-from models.basic import ProjectKey, SyncPrefer
+from models.basic import ProjectKey
 from repository.projects import Project
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
@@ -74,7 +74,3 @@ class ProjectsController:
 
         return LoadAllProjectsResponse(
             projects=[LoadAllProjectsEntry(project=p) for p in projects])
-
-    def sync_projects(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
-        """Synchronise projects between Notion and local."""
-        self._projects_service.sync_projects(project_key, sync_prefer)

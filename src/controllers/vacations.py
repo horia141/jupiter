@@ -3,7 +3,7 @@ from typing import Final, Iterable
 
 import pendulum
 
-from models.basic import EntityId, SyncPrefer
+from models.basic import EntityId
 from repository.vacations import Vacation
 from service.vacations import VacationsService
 
@@ -40,7 +40,3 @@ class VacationsController:
     def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
         return self._vacations_service.load_all_vacations(show_archived)
-
-    def vacations_sync(self, sync_prefer: SyncPrefer) -> None:
-        """Synchronise vacations between Notion and local."""
-        self._vacations_service.vacations_sync(sync_prefer)

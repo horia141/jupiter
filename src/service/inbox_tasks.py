@@ -333,7 +333,7 @@ class InboxTasksService:
 
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, all_big_plans: Iterable[BigPlan],
-            all_recurring_tasks: Iterable[RecurringTask], sync_prefer: SyncPrefer) -> None:
+            all_recurring_tasks: Iterable[RecurringTask], sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
         all_inbox_tasks = self._repository.load_all_inbox_task(
             filter_archived=False, filter_project_ref_ids=[project_ref_id])
@@ -526,3 +526,5 @@ class InboxTasksService:
                 recurring_timeline=inbox_task.recurring_task_timeline,
                 ref_id=inbox_task.ref_id)
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
+
+        return all_inbox_tasks_set.values()

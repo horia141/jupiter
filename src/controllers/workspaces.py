@@ -2,7 +2,7 @@
 import logging
 from typing import Final
 
-from models.basic import WorkspaceSpaceId, WorkspaceToken, SyncPrefer
+from models.basic import WorkspaceSpaceId, WorkspaceToken
 from remote.notion.connection import NotionConnection
 from repository.workspace import Workspace
 from service.vacations import VacationsService
@@ -45,7 +45,3 @@ class WorkspacesController:
     def load_workspace(self) -> Workspace:
         """Retrieve a workspace."""
         return self._workspaces_service.load_workspace()
-
-    def workspace_sync(self, sync_prefer: SyncPrefer) -> None:
-        """Synchronise the workspace between Notion and local."""
-        self._workspaces_service.workspace_sync(sync_prefer)

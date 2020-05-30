@@ -4,7 +4,7 @@ from typing import Final, Iterable, Optional, List
 
 import pendulum
 
-from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, SyncPrefer
+from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
@@ -123,13 +123,3 @@ class InboxTasksController:
                 recurring_task=recurring_tasks_map[it.recurring_task_ref_id]
                 if it.recurring_task_ref_id is not None else None)
                          for it in inbox_tasks])
-
-    def inbox_tasks_sync(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
-        """Synchronise inbox tasks between Notion and local."""
-        project = self._projects_service.load_project_by_key(project_key)
-        all_big_plans = self._big_plans_service.load_all_big_plans(
-            filter_archived=False, filter_project_ref_ids=[project.ref_id])
-        all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-            filter_archived=False, filter_project_ref_ids=[project.ref_id])
-        self._inbox_tasks_service.inbox_tasks_sync(
-            project.ref_id, all_big_plans, all_recurring_tasks, sync_prefer)

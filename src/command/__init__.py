@@ -1,1 +1,1 @@
-"""Module for all commands."""
+"""The commands modules."""

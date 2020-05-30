@@ -5,7 +5,7 @@ from typing import Final, Iterable, Optional, List
 
 import pendulum
 
-from models.basic import EntityId, ProjectKey, BigPlanStatus, SyncPrefer
+from models.basic import EntityId, ProjectKey, BigPlanStatus
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from service.big_plans import BigPlansService
@@ -109,10 +109,3 @@ class BigPlansController:
                 big_plan=bp,
                 inbox_tasks=[it for it in inbox_tasks if it.big_plan_ref_id == bp.ref_id])
                        for bp in big_plans])
-
-    def big_plans_sync(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
-        """Synchronise big plan between Notion and local."""
-        project = self._projects_service.load_project_by_key(project_key)
-        inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
-        all_big_plans = self._big_plans_service.big_plans_sync(project.ref_id, inbox_collection_link, sync_prefer)
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)

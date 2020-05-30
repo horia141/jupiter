@@ -1,4 +1,4 @@
-"""The controller for vacations."""
+"""The controller for correcting the Notion-side structure."""
 import logging
 from typing import Final
 
@@ -12,8 +12,8 @@ from service.workspaces import WorkspacesService
 LOGGER = logging.getLogger(__name__)
 
 
-class CorrectStructureController:
-    """The controller for vacations."""
+class CorrectNotionStructureController:
+    """The controller for correcting the Notion-side structure."""
 
     _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]

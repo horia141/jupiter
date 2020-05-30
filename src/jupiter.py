@@ -9,8 +9,7 @@ from command.big_plans_set_due_date import BigPlansSetDueDate
 from command.big_plans_set_name import BigPlansSetName
 from command.big_plans_set_status import BigPlansSetStatus
 from command.big_plans_show import BigPlansShow
-from command.big_plans_sync import BigPlansSync
-from command.correct_structure import CorrectStructure
+from command.correct_notion_structure import CorrectNotionStructure
 from command.inbox_tasks_archive import InboxTasksArchive
 from command.inbox_tasks_archive_done import InboxTasksArchiveDone
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
@@ -21,12 +20,10 @@ from command.inbox_tasks_set_eisen import InboxTasksSetEisen
 from command.inbox_tasks_set_name import InboxTasksSetName
 from command.inbox_tasks_set_status import InboxTasksSetStatus
 from command.inbox_tasks_show import InboxTasksShow
-from command.inbox_tasks_sync import InboxTasksSync
 from command.project_archive import ProjectArchive
 from command.project_create import ProjectCreate
 from command.project_set_name import ProjectSetName
 from command.project_show import ProjectShow
-from command.project_sync import ProjectSync
 from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
 from command.recurring_tasks_gen import RecurringTasksGen
@@ -40,25 +37,24 @@ from command.recurring_tasks_set_period import RecurringTasksSetPeriod
 from command.recurring_tasks_set_skip_rule import RecurringTasksSetSkipRule
 from command.recurring_tasks_show import RecurringTasksShow
 from command.recurring_tasks_suspend import RecurringTasksSuspend
-from command.recurring_tasks_sync import RecurringTasksSync
 from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
+from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacations_archive import VacationsArchive
 from command.vacations_create import VacationsCreate
 from command.vacations_set_end_date import VacationsSetEndDate
 from command.vacations_set_name import VacationsSetName
 from command.vacations_set_start_date import VacationsSetStartDate
 from command.vacations_show import VacationsShow
-from command.vacations_sync import VacationsSync
 from command.workspace_init import WorkspaceInit
 from command.workspace_set_name import WorkspaceSetName
 from command.workspace_set_token import WorkspaceSetToken
 from command.workspace_show import WorkspaceShow
-from command.workspace_sync import WorkspaceSync
 from controllers.big_plans import BigPlansController
-from controllers.correct_structure import CorrectStructureController
+from controllers.correct_notion_structure import CorrectNotionStructureController
 from controllers.inbox_tasks import InboxTasksController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
+from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
 from models.basic import BasicValidator
@@ -122,7 +118,10 @@ def main() -> None:
         recurring_tasks_controller = RecurringTasksController(
             projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
-        correct_structure_controller = CorrectStructureController(
+        correct_structure_controller = CorrectNotionStructureController(
+            workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
+            big_plans_service)
+        sync_local_and_notion_controller = SyncLocalAndNotionController(
             workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
             big_plans_service)
 
@@ -131,19 +130,16 @@ def main() -> None:
             WorkspaceSetName(basic_validator, workspaces_controller),
             WorkspaceSetToken(basic_validator, workspaces_controller),
             WorkspaceShow(workspaces_controller),
-            WorkspaceSync(basic_validator, workspaces_controller),
             VacationsCreate(basic_validator, vacations_controller),
             VacationsArchive(basic_validator, vacations_controller),
             VacationsSetName(basic_validator, vacations_controller),
             VacationsSetStartDate(basic_validator, vacations_controller),
             VacationsSetEndDate(basic_validator, vacations_controller),
             VacationsShow(vacations_controller),
-            VacationsSync(basic_validator, vacations_controller),
             ProjectCreate(basic_validator, projects_controller),
             ProjectArchive(basic_validator, projects_controller),
             ProjectSetName(basic_validator, projects_controller),
             ProjectShow(basic_validator, projects_controller),
-            ProjectSync(basic_validator, projects_controller),
             InboxTasksCreate(basic_validator, inbox_tasks_controller),
             InboxTasksArchive(basic_validator, inbox_tasks_controller),
             InboxTasksAssociateBigPlan(basic_validator, inbox_tasks_controller),
@@ -154,7 +150,6 @@ def main() -> None:
             InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
             InboxTasksArchiveDone(basic_validator, inbox_tasks_controller),
             InboxTasksShow(basic_validator, inbox_tasks_controller),
-            InboxTasksSync(basic_validator, inbox_tasks_controller),
             RecurringTasksCreate(basic_validator, recurring_tasks_controller),
             RecurringTasksArchive(basic_validator, recurring_tasks_controller),
             RecurringTasksGen(basic_validator, recurring_tasks_controller),
@@ -169,15 +164,14 @@ def main() -> None:
             RecurringTasksSuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksUnsuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksShow(basic_validator, recurring_tasks_controller),
-            RecurringTasksSync(basic_validator, recurring_tasks_controller),
             BigPlansCreate(basic_validator, big_plans_controller),
             BigPlansArchive(basic_validator, big_plans_controller),
             BigPlansSetDueDate(basic_validator, big_plans_controller),
             BigPlansSetName(basic_validator, big_plans_controller),
             BigPlansSetStatus(basic_validator, big_plans_controller),
-            BigPlansSync(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
-            CorrectStructure(basic_validator, correct_structure_controller)
+            CorrectNotionStructure(basic_validator, correct_structure_controller),
+            SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller)
         ]
 
         parser = argparse.ArgumentParser(description="The Jupiter goal management system")

@@ -5,20 +5,21 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from controllers.correct_structure import CorrectStructureController
+from controllers.correct_notion_structure import CorrectNotionStructureController
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class CorrectStructure(command.Command):
+class CorrectNotionStructure(command.Command):
     """Command class for correcting the Notion-side structure."""
 
     _basic_validator: Final[BasicValidator]
-    _correct_structure_controller: Final[CorrectStructureController]
+    _correct_structure_controller: Final[CorrectNotionStructureController]
 
     def __init__(
-            self, basic_validator: BasicValidator, correct_structure_controller: CorrectStructureController) -> None:
+            self, basic_validator: BasicValidator,
+            correct_structure_controller: CorrectNotionStructureController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._correct_structure_controller = correct_structure_controller

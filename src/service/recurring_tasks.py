@@ -264,7 +264,7 @@ class RecurringTasksService:
 
     def recurring_tasks_sync(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink,
-            sync_prefer: SyncPrefer) -> None:
+            sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
         """Synchronise recurring tasks between Notion and local storage."""
         # Load local storage
         all_recurring_tasks = self._repository.load_all_recurring_tasks(
@@ -430,3 +430,5 @@ class RecurringTasksService:
                 suspended=recurring_task.suspended,
                 ref_id=recurring_task.ref_id)
             LOGGER.info(f'Created Notion task for {recurring_task.name}')
+
+        return all_recurring_tasks_set.values()

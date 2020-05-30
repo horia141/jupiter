@@ -13,6 +13,17 @@ class ModelValidationError(Exception):
 
 
 @enum.unique
+class SyncTarget(enum.Enum):
+    """What exactly to sync."""
+    WORKSPACE = "workspace"
+    VACATIONS = "vacations"
+    PROJECTS = "projects"
+    INBOX_TASKS = "inbox-tasks"
+    RECURRING_TASKS = "recurring-tasks"
+    BIG_PLANS = "big-plans"
+
+
+@enum.unique
 class SyncPrefer(enum.Enum):
     """The source of data to prefer for a sync operation."""
     LOCAL = "local"
@@ -105,6 +116,7 @@ class BigPlanStatus(enum.Enum):
 class BasicValidator:
     """A validator class for various basic model types."""
 
+    _sync_target_values: Final[FrozenSet[str]] = frozenset(st.value for st in SyncTarget)
     _sync_prefer_values: Final[FrozenSet[str]] = frozenset(sp.value for sp in SyncPrefer)
     _entity_id_re: Final[Pattern[str]] = re.compile(r"^\d+$")
     _entity_name_re: Final[Pattern[str]] = re.compile(r"^.+$")
@@ -132,6 +144,24 @@ class BasicValidator:
         RecurringTaskPeriod.YEARLY: (0, 12)
     }
     _big_plan_status_values: Final[FrozenSet[str]] = frozenset(bps.value for bps in BigPlanStatus)
+
+    def sync_target_validate_and_clean(self, sync_target_raw: Optional[str]) -> SyncTarget:
+        """Validate and clean the big plan status."""
+        if not sync_target_raw:
+            raise ModelValidationError("Expected sync target to be non-null")
+
+        sync_target_str: str = sync_target_raw.strip().lower()
+
+        if sync_target_str not in self._sync_target_values:
+            raise ModelValidationError(
+                f"Expected sync prefer '{sync_target_raw}' for be one of '{','.join(self._sync_target_values)}'")
+
+        return SyncTarget(sync_target_str)
+
+    @staticmethod
+    def sync_target_values() -> Iterable[str]:
+        """The possible values for sync targets."""
+        return BasicValidator._sync_target_values
 
     def sync_prefer_validate_and_clean(self, sync_prefer_raw: Optional[str]) -> SyncPrefer:
         """Validate and clean the big plan status."""

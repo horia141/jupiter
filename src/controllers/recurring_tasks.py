@@ -6,7 +6,7 @@ from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 import pendulum
 
 from models import schedules
-from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, EntityName, SyncPrefer
+from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, EntityName
 from repository.inbox_tasks import InboxTask
 from repository.projects import Project
 from repository.recurring_tasks import RecurringTask
@@ -276,36 +276,3 @@ class RecurringTasksController:
                 eisen=recurring_task.eisen,
                 difficulty=recurring_task.difficulty,
                 due_date=schedule.due_time)
-
-    def recurring_tasks_sync(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
-        """Synchronise recurring tasks between Notion and local."""
-        project = self._projects_service.load_project_by_key(project_key)
-
-        inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
-        self._recurring_tasks_service.recurring_tasks_sync(
-            project.ref_id, inbox_collection_link, sync_prefer)
-        all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(filter_archived=False)
-        all_recurring_tasks_set = {rt.ref_id: rt for rt in all_recurring_tasks}
-        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_project_ref_ids=[project.ref_id],
-            filter_recurring_task_ref_ids=[r.ref_id for r in all_recurring_tasks])
-
-        for inbox_task in all_inbox_tasks:
-            if inbox_task.is_considered_done:
-                continue
-            if inbox_task.recurring_task_ref_id is None:
-                raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
-            recurring_task = all_recurring_tasks_set[inbox_task.recurring_task_ref_id]
-            schedule = schedules.get_schedule(
-                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
-                recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
-                recurring_task.due_at_month)
-            self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
-                ref_id=inbox_task.ref_id,
-                name=schedule.full_name,
-                period=recurring_task.period,
-                due_time=schedule.due_time,
-                eisen=recurring_task.eisen,
-                difficulty=recurring_task.difficulty,
-                timeline=schedule.timeline)
-            LOGGER.info(f"Applied Notion changes to inbox task {inbox_task}")
