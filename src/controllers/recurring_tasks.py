@@ -238,7 +238,7 @@ class RecurringTasksController:
             return
 
         schedule = schedules.get_schedule(
-            recurring_task.period.value, recurring_task.name, right_now, recurring_task.skip_rule,
+            recurring_task.period, recurring_task.name, right_now, recurring_task.skip_rule,
             recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
 
         if not recurring_task.must_do:
@@ -300,7 +300,7 @@ class RecurringTasksController:
                 raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
             recurring_task = all_recurring_tasks_set[inbox_task.recurring_task_ref_id]
             schedule = schedules.get_schedule(
-                recurring_task.period.value, recurring_task.name, pendulum.instance(inbox_task.created_date),
+                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
                 recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                 recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
