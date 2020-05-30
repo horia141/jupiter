@@ -185,36 +185,38 @@ class RecurringTasksController:
                              for rt in recurring_tasks])
 
     def recurring_tasks_gen(
-            self, right_now: pendulum.DateTime, project_key: ProjectKey,
+            self, right_now: pendulum.DateTime, project_keys: Optional[Iterable[ProjectKey]] = None,
             group_filter: Optional[Iterable[EntityName]] = None,
             period_filter: Optional[Iterable[RecurringTaskPeriod]] = None) -> None:
         """Generate recurring tasks to inbox tasks."""
-        project = self._projects_service.load_project_by_key(project_key)
         all_vacations = self._vacations_service.load_all_vacations()
-        all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-            filter_project_ref_ids=[project.ref_id])
-        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_project_ref_ids=[project.ref_id],
-            filter_recurring_task_ref_ids=(rt.ref_id for rt in all_recurring_tasks))
 
-        all_inbox_tasks_by_recurring_task_ref_id_and_timeline = {}
-        for inbox_task in all_inbox_tasks:
-            if inbox_task.recurring_task_ref_id is None or inbox_task.recurring_task_timeline is None:
-                raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
-            all_inbox_tasks_by_recurring_task_ref_id_and_timeline[
-                (inbox_task.recurring_task_ref_id, inbox_task.recurring_task_timeline)] = inbox_task
+        for project in self._projects_service.load_all_projects(filter_keys=project_keys):
+            LOGGER.info(f"Generating tasks for project '{project.name}'")
+            all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
+                filter_project_ref_ids=[project.ref_id])
+            all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
+                filter_archived=False, filter_project_ref_ids=[project.ref_id],
+                filter_recurring_task_ref_ids=(rt.ref_id for rt in all_recurring_tasks))
 
-        for recurring_task in all_recurring_tasks:
-            LOGGER.info(f"Generating inbox tasks for '{recurring_task.name}'")
-            self._generate_inbox_tasks_for_recurring_task(
-                project=project,
-                right_now=right_now,
-                group_filter=frozenset(group_filter) if group_filter else None,
-                period_filter=frozenset(period_filter) if period_filter else None,
-                all_vacations=list(all_vacations),
-                recurring_task=recurring_task,
-                all_inbox_tasks_by_recurring_task_ref_id_and_timeline=
-                all_inbox_tasks_by_recurring_task_ref_id_and_timeline)
+            all_inbox_tasks_by_recurring_task_ref_id_and_timeline = {}
+            for inbox_task in all_inbox_tasks:
+                if inbox_task.recurring_task_ref_id is None or inbox_task.recurring_task_timeline is None:
+                    raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
+                all_inbox_tasks_by_recurring_task_ref_id_and_timeline[
+                    (inbox_task.recurring_task_ref_id, inbox_task.recurring_task_timeline)] = inbox_task
+
+            for recurring_task in all_recurring_tasks:
+                LOGGER.info(f"Generating inbox tasks for '{recurring_task.name}'")
+                self._generate_inbox_tasks_for_recurring_task(
+                    project=project,
+                    right_now=right_now,
+                    group_filter=frozenset(group_filter) if group_filter else None,
+                    period_filter=frozenset(period_filter) if period_filter else None,
+                    all_vacations=list(all_vacations),
+                    recurring_task=recurring_task,
+                    all_inbox_tasks_by_recurring_task_ref_id_and_timeline=
+                    all_inbox_tasks_by_recurring_task_ref_id_and_timeline)
 
     def _generate_inbox_tasks_for_recurring_task(
             self,

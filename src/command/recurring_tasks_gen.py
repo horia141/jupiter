@@ -37,7 +37,7 @@ class RecurringTasksGen(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--date", help="The date on which the upsert should run at")
-        parser.add_argument("--project", dest="project_key", required=True,
+        parser.add_argument("--project", dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
         parser.add_argument("--group", default=[], action="append",
                             help="The groups for which the upsert should happen. Defaults to all")
@@ -48,9 +48,10 @@ class RecurringTasksGen(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         right_now = self._basic_validator.datetime_validate_and_clean(args.date) if args.date else pendulum.now()
-        project_key = self._basic_validator.project_key_validate_and_clean(args.project_key)
+        project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
+            if len(args.project_keys) > 0 else None
         group_filter = [self._basic_validator.entity_name_validate_and_clean(g) for g in args.group] \
             if len(args.group) > 0 else None
         period_filter = [self._basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period] \
             if len(args.period) > 0 else None
-        self._recurring_tasks_controller.recurring_tasks_gen(right_now, project_key, group_filter, period_filter)
+        self._recurring_tasks_controller.recurring_tasks_gen(right_now, project_keys, group_filter, period_filter)
