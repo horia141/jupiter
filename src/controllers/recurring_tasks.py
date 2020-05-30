@@ -280,9 +280,6 @@ class RecurringTasksController:
     def recurring_tasks_sync(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
         """Synchronise recurring tasks between Notion and local."""
         project = self._projects_service.load_project_by_key(project_key)
-        project_page = self._projects_service.get_project_notion_structure(project.ref_id)
-
-        self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page)
 
         inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
         self._recurring_tasks_service.recurring_tasks_sync(

@@ -77,9 +77,4 @@ class ProjectsController:
 
     def sync_projects(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
         """Synchronise projects between Notion and local."""
-        project = self._projects_service.load_project_by_key(project_key)
-        project_page = self._projects_service.get_project_notion_structure(project.ref_id)
-        self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page)
-        self._recurring_tasks_service.upsert_notion_structure(project.ref_id, project_page)
-        self._big_plans_service.upsert_notion_structure(project.ref_id, project_page)
         self._projects_service.sync_projects(project_key, sync_prefer)

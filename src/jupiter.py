@@ -10,6 +10,7 @@ from command.big_plans_set_name import BigPlansSetName
 from command.big_plans_set_status import BigPlansSetStatus
 from command.big_plans_show import BigPlansShow
 from command.big_plans_sync import BigPlansSync
+from command.correct_structure import CorrectStructure
 from command.inbox_tasks_archive import InboxTasksArchive
 from command.inbox_tasks_archive_done import InboxTasksArchiveDone
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
@@ -54,6 +55,7 @@ from command.workspace_set_token import WorkspaceSetToken
 from command.workspace_show import WorkspaceShow
 from command.workspace_sync import WorkspaceSync
 from controllers.big_plans import BigPlansController
+from controllers.correct_structure import CorrectStructureController
 from controllers.inbox_tasks import InboxTasksController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
@@ -111,10 +113,8 @@ def main() -> None:
             basic_validator, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
 
-        workspaces_controller = WorkspacesController(
-            notion_connection, workspaces_service, vacations_service, projects_service, inbox_tasks_service,
-            recurring_tasks_service, big_plans_service)
-        vacations_controller = VacationsController(workspaces_service, vacations_service)
+        workspaces_controller = WorkspacesController(notion_connection, workspaces_service, vacations_service)
+        vacations_controller = VacationsController(vacations_service)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         inbox_tasks_controller = InboxTasksController(
@@ -122,6 +122,9 @@ def main() -> None:
         recurring_tasks_controller = RecurringTasksController(
             projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
+        correct_structure_controller = CorrectStructureController(
+            workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
+            big_plans_service)
 
         commands = [
             WorkspaceInit(basic_validator, workspaces_controller),
@@ -173,7 +176,8 @@ def main() -> None:
             BigPlansSetName(basic_validator, big_plans_controller),
             BigPlansSetStatus(basic_validator, big_plans_controller),
             BigPlansSync(basic_validator, big_plans_controller),
-            BigPlansShow(basic_validator, big_plans_controller)
+            BigPlansShow(basic_validator, big_plans_controller),
+            CorrectStructure(basic_validator, correct_structure_controller)
         ]
 
         parser = argparse.ArgumentParser(description="The Jupiter goal management system")

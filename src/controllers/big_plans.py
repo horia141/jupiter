@@ -113,10 +113,6 @@ class BigPlansController:
     def big_plans_sync(self, project_key: ProjectKey, sync_prefer: SyncPrefer) -> None:
         """Synchronise big plan between Notion and local."""
         project = self._projects_service.load_project_by_key(project_key)
-        project_page = self._projects_service.get_project_notion_structure(project.ref_id)
-
-        self._big_plans_service.upsert_notion_structure(project.ref_id, project_page)
-
         inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
         all_big_plans = self._big_plans_service.big_plans_sync(project.ref_id, inbox_collection_link, sync_prefer)
         self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
