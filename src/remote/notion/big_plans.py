@@ -40,6 +40,11 @@ class BigPlansCollection:
     _PAGE_NAME: ClassVar[str] = "Big Plans"
 
     _STATUS: ClassVar[JSONDictType] = {
+        "Not Started": {
+            "name": BigPlanStatus.NOT_STARTED.for_notion(),
+            "color": "orange",
+            "in_board": True
+        },
         "Accepted": {
             "name": BigPlanStatus.ACCEPTED.for_notion(),
             "color": "orange",
@@ -256,6 +261,10 @@ class BigPlansCollection:
         return cast(
             BigPlanRow,
             self._collection.save(project_ref_id, new_big_plan_row, inbox_collection_link=inbox_collection_link))
+
+    def drop_all_big_plans(self, project_ref_id: EntityId) -> None:
+        """Remove all big plans Notion-side."""
+        self._collection.drop_all(project_ref_id)
 
     def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""

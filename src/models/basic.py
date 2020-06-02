@@ -15,10 +15,12 @@ class ModelValidationError(Exception):
 @enum.unique
 class SyncTarget(enum.Enum):
     """What exactly to sync."""
+    STRUCTURE = "structure"
     WORKSPACE = "workspace"
     VACATIONS = "vacations"
     PROJECTS = "projects"
     INBOX_TASKS = "inbox-tasks"
+    INBOX_TASKS_RECURRING = "inbox-tasks-recurring"
     RECURRING_TASKS = "recurring-tasks"
     BIG_PLANS = "big-plans"
 

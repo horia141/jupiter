@@ -9,7 +9,6 @@ from command.big_plans_set_due_date import BigPlansSetDueDate
 from command.big_plans_set_name import BigPlansSetName
 from command.big_plans_set_status import BigPlansSetStatus
 from command.big_plans_show import BigPlansShow
-from command.correct_notion_structure import CorrectNotionStructure
 from command.inbox_tasks_archive import InboxTasksArchive
 from command.inbox_tasks_archive_done import InboxTasksArchiveDone
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
@@ -50,7 +49,6 @@ from command.workspace_set_name import WorkspaceSetName
 from command.workspace_set_token import WorkspaceSetToken
 from command.workspace_show import WorkspaceShow
 from controllers.big_plans import BigPlansController
-from controllers.correct_notion_structure import CorrectNotionStructureController
 from controllers.inbox_tasks import InboxTasksController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
@@ -119,9 +117,6 @@ def main() -> None:
         recurring_tasks_controller = RecurringTasksController(
             projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
-        correct_structure_controller = CorrectNotionStructureController(
-            workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
-            big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
             big_plans_service)
@@ -172,7 +167,6 @@ def main() -> None:
             BigPlansSetName(basic_validator, big_plans_controller),
             BigPlansSetStatus(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
-            CorrectNotionStructure(basic_validator, correct_structure_controller),
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             RecurringTasksGen(basic_validator, recurring_tasks_gen_controller)
         ]

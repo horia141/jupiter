@@ -406,6 +406,10 @@ class RecurringTasksCollection:
             RecurringTaskRow,
             self._collection.save(project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link))
 
+    def drop_all_recurring_tasks(self, project_ref_id: EntityId) -> None:
+        """Hard remove all Notion-side entities."""
+        self._collection.drop_all(project_ref_id)
+
     def hard_remove_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         self._collection.hard_remove(project_ref_id, ref_id)

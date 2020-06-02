@@ -263,14 +263,19 @@ class RecurringTasksService:
         return self._repository.load_recurring_task(ref_id)
 
     def recurring_tasks_sync(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
             sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
         """Synchronise recurring tasks between Notion and local storage."""
         # Load local storage
         all_recurring_tasks = self._repository.load_all_recurring_tasks(
             filter_archived=False, filter_project_ref_ids=[project_ref_id])
         all_recurring_tasks_set = {rt.ref_id: rt for rt in all_recurring_tasks}
-        all_recurring_tasks_rows = self._collection.load_all_recurring_tasks(project_ref_id)
+
+        if not drop_all_notion_side:
+            all_recurring_tasks_rows = self._collection.load_all_recurring_tasks(project_ref_id)
+        else:
+            self._collection.drop_all_recurring_tasks(project_ref_id)
+            all_recurring_tasks_rows = {}
         all_recurring_tasks_row_set = {}
 
         # Then look at each recurring task in Notion and try to match it with one in the local storage

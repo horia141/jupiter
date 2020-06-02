@@ -139,14 +139,18 @@ class BigPlansService:
         return self._repository.load_big_plan(ref_id)
 
     def big_plans_sync(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
             sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
         """Synchronise big plans between Notion and local storage."""
         all_big_plans = self._repository.load_all_big_plans(
             filter_archived=False, filter_project_ref_ids=[project_ref_id])
         all_big_plans_set: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
 
-        all_big_plans_rows = self._collection.load_all_big_plans(project_ref_id)
+        if not drop_all_notion_side:
+            all_big_plans_rows = self._collection.load_all_big_plans(project_ref_id)
+        else:
+            self._collection.drop_all_big_plans(project_ref_id)
+            all_big_plans_rows = {}
         all_big_plans_rows_set = {}
 
         # Then look at each big plan in Notion and try to match it with the one in the local stash
@@ -232,7 +236,7 @@ class BigPlansService:
                 inbox_collection_link=inbox_collection_link,
                 name=big_plan.name,
                 archived=big_plan.archived,
-                status=big_plan.status.value,
+                status=big_plan.status.for_notion(),
                 due_date=big_plan.due_date,
                 ref_id=big_plan.ref_id)
             LOGGER.info(f'Created Notion task for {big_plan.name}')

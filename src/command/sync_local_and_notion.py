@@ -42,6 +42,8 @@ class SyncLocalAndNotion(command.Command):
                             help="Sync only from this project")
         parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
+        parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
+                            help="Drop all Notion-side entities before syncing and restore from local entirely")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -50,4 +52,5 @@ class SyncLocalAndNotion(command.Command):
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys]\
             if len(args.project_keys) > 0 else None
         sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
-        self._sync_local_and_notion_controller.sync(sync_targets, project_keys, sync_prefer)
+        drop_all_notion = args.drop_all_notion
+        self._sync_local_and_notion_controller.sync(sync_targets, drop_all_notion, project_keys, sync_prefer)

@@ -296,6 +296,23 @@ class NotionCollection(Generic[NotionCollectionRowType]):
 
         return row
 
+    def drop_all(self, discriminant: str) -> None:
+        """Hard remove all the Notion-side entities."""
+        locks_next_idx, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        if lock is None:
+            raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+
+        all_notion_rows = client.get_collection_all_rows(collection, lock.view_ids["database_view_id"])
+
+        for notion_row in all_notion_rows:
+            notion_row.remove()
+
+        lock.ref_id_to_notion_id_map = {}
+        self._structured_storage.save((locks_next_idx, locks))
+
     def hard_remove(self, discriminant: str, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         locks_next_idx, locks = self._structured_storage.load()
