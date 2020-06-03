@@ -140,6 +140,16 @@ class RecurringTasksRepository:
 
         return new_recurring_task
 
+    def hard_remove_recurring_task(self, ref_id: EntityId) -> RecurringTask:
+        """Hard remove an inbox task."""
+        recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
+        found_recurring_task = self._find_recurring_task_by_id(ref_id, recurring_tasks)
+        if not found_recurring_task:
+            raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
+        new_recurring_tasks = [it for it in recurring_tasks if it.ref_id != ref_id]
+        self._structured_storage.save((recurring_tasks_next_idx, new_recurring_tasks))
+        return found_recurring_task
+
     @staticmethod
     def _find_recurring_task_by_id(ref_id: EntityId, recurring_tasks: List[RecurringTask]) -> Optional[RecurringTask]:
         try:

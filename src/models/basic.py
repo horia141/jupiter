@@ -20,7 +20,6 @@ class SyncTarget(enum.Enum):
     VACATIONS = "vacations"
     PROJECTS = "projects"
     INBOX_TASKS = "inbox-tasks"
-    INBOX_TASKS_RECURRING = "inbox-tasks-recurring"
     RECURRING_TASKS = "recurring-tasks"
     BIG_PLANS = "big-plans"
 

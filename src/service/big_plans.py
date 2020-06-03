@@ -126,6 +126,17 @@ class BigPlansService:
 
         return big_plan
 
+    def hard_remove_big_plan(self, ref_id: EntityId) -> BigPlan:
+        """Hard remove an big plan."""
+        # Apply changes locally
+        big_plan = self._repository.hard_remove_big_plan(ref_id)
+        LOGGER.info("Applied local changes")
+        big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, ref_id)
+        self._collection.hard_remove_big_plan(big_plan.project_ref_id, big_plan_row)
+        LOGGER.info("Applied Notion changes")
+
+        return big_plan
+
     def load_all_big_plans(
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:

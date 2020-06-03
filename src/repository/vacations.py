@@ -113,6 +113,16 @@ class VacationsRepository:
 
         return new_vacation
 
+    def hard_remove_vacation(self, ref_id: EntityId) -> Vacation:
+        """Hard remove a vacation."""
+        vacations_next_idx, vacations = self._structured_storage.load()
+        found_vacations = self._find_vacation_by_id(ref_id, vacations)
+        if not found_vacations:
+            raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
+        new_vacations = [it for it in vacations if it.ref_id != ref_id]
+        self._structured_storage.save((vacations_next_idx, new_vacations))
+        return found_vacations
+
     @staticmethod
     def _find_vacation_by_id(ref_id: EntityId, vacations: List[Vacation]) -> Optional[Vacation]:
         try:

@@ -140,6 +140,17 @@ class VacationsService:
 
         return vacation
 
+    def hard_remove_vacation(self, ref_id: EntityId) -> Vacation:
+        """Hard remove an big plan."""
+        # Apply changes locally
+        vacation = self._repository.hard_remove_vacation(ref_id)
+        LOGGER.info("Applied local changes")
+        vacation_row = self._collection.load_vacation(ref_id)
+        self._collection.hard_remove_vacation(vacation_row)
+        LOGGER.info("Applied Notion changes")
+
+        return vacation
+
     def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
         return self._repository.load_all_vacations(filter_archived=not show_archived)

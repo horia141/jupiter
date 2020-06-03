@@ -3,6 +3,7 @@ from typing import Final, Iterable
 
 import pendulum
 
+from controllers.common import ControllerInputValidationError
 from models.basic import EntityId
 from repository.vacations import Vacation
 from service.vacations import VacationsService
@@ -40,3 +41,11 @@ class VacationsController:
     def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
         return self._vacations_service.load_all_vacations(show_archived)
+
+    def hard_remove_vacations(self, ref_ids: Iterable[EntityId]) -> None:
+        """Hard remove a vacation."""
+        ref_ids = list(ref_ids)
+        if len(ref_ids) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
+        for ref_id in ref_ids:
+            self._vacations_service.hard_remove_vacation(ref_id)

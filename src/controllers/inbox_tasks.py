@@ -4,6 +4,7 @@ from typing import Final, Iterable, Optional, List
 
 import pendulum
 
+from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
@@ -123,3 +124,11 @@ class InboxTasksController:
                 recurring_task=recurring_tasks_map[it.recurring_task_ref_id]
                 if it.recurring_task_ref_id is not None else None)
                          for it in inbox_tasks])
+
+    def hard_remove_inbox_tasks(self, ref_ids: Iterable[EntityId]) -> None:
+        """Hard remove inbox tasks."""
+        ref_ids = list(ref_ids)
+        if len(ref_ids) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
+        for ref_id in ref_ids:
+            self._inbox_tasks_service.hard_remove_inbox_task(ref_id)

@@ -5,6 +5,7 @@ from typing import Final, Iterable, Optional, List
 
 import pendulum
 
+from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, BigPlanStatus
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
@@ -109,3 +110,11 @@ class BigPlansController:
                 big_plan=bp,
                 inbox_tasks=[it for it in inbox_tasks if it.big_plan_ref_id == bp.ref_id])
                        for bp in big_plans])
+
+    def hard_remove_big_plans(self, ref_ids: Iterable[EntityId]) -> None:
+        """Hard remove big plans."""
+        ref_ids = list(ref_ids)
+        if len(ref_ids) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
+        for ref_id in ref_ids:
+            self._big_plans_service.hard_remove_big_plan(ref_id)

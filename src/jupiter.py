@@ -5,6 +5,7 @@ import logging
 
 from command.big_plans_archive import BigPlansArchive
 from command.big_plans_create import BigPlansCreate
+from command.big_plans_hard_remove import BigPlansHardRemove
 from command.big_plans_set_due_date import BigPlansSetDueDate
 from command.big_plans_set_name import BigPlansSetName
 from command.big_plans_set_status import BigPlansSetStatus
@@ -13,6 +14,7 @@ from command.inbox_tasks_archive import InboxTasksArchive
 from command.inbox_tasks_archive_done import InboxTasksArchiveDone
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
 from command.inbox_tasks_create import InboxTasksCreate
+from command.inbox_tasks_hard_remove import InboxTasksHardRemove
 from command.inbox_tasks_set_difficulty import InboxTasksSetDifficulty
 from command.inbox_tasks_set_due_date import InboxTasksSetDueDate
 from command.inbox_tasks_set_eisen import InboxTasksSetEisen
@@ -26,6 +28,7 @@ from command.project_show import ProjectShow
 from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
 from command.recurring_tasks_gen import RecurringTasksGen
+from command.recurring_tasks_hard_remove import RecurringTasksHardRemove
 from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
 from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
 from command.recurring_tasks_set_eisen import RecurringTasksSetEisen
@@ -40,6 +43,7 @@ from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
 from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacations_archive import VacationsArchive
 from command.vacations_create import VacationsCreate
+from command.vacations_hard_remove import VacationsHardRemove
 from command.vacations_set_end_date import VacationsSetEndDate
 from command.vacations_set_name import VacationsSetName
 from command.vacations_set_start_date import VacationsSetStartDate
@@ -133,6 +137,7 @@ def main() -> None:
             VacationsSetName(basic_validator, vacations_controller),
             VacationsSetStartDate(basic_validator, vacations_controller),
             VacationsSetEndDate(basic_validator, vacations_controller),
+            VacationsHardRemove(basic_validator, vacations_controller),
             VacationsShow(vacations_controller),
             ProjectCreate(basic_validator, projects_controller),
             ProjectArchive(basic_validator, projects_controller),
@@ -147,6 +152,7 @@ def main() -> None:
             InboxTasksSetDifficulty(basic_validator, inbox_tasks_controller),
             InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
             InboxTasksArchiveDone(basic_validator, inbox_tasks_controller),
+            InboxTasksHardRemove(basic_validator, inbox_tasks_controller),
             InboxTasksShow(basic_validator, inbox_tasks_controller),
             RecurringTasksCreate(basic_validator, recurring_tasks_controller),
             RecurringTasksArchive(basic_validator, recurring_tasks_controller),
@@ -160,12 +166,14 @@ def main() -> None:
             RecurringTasksSetMustDo(basic_validator, recurring_tasks_controller),
             RecurringTasksSuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksUnsuspend(basic_validator, recurring_tasks_controller),
+            RecurringTasksHardRemove(basic_validator, recurring_tasks_controller),
             RecurringTasksShow(basic_validator, recurring_tasks_controller),
             BigPlansCreate(basic_validator, big_plans_controller),
             BigPlansArchive(basic_validator, big_plans_controller),
             BigPlansSetDueDate(basic_validator, big_plans_controller),
             BigPlansSetName(basic_validator, big_plans_controller),
             BigPlansSetStatus(basic_validator, big_plans_controller),
+            BigPlansHardRemove(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             RecurringTasksGen(basic_validator, recurring_tasks_gen_controller)

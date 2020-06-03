@@ -249,6 +249,17 @@ class RecurringTasksService:
 
         return recurring_task
 
+    def hard_remove_recurring_task(self, ref_id: EntityId) -> RecurringTask:
+        """Hard remove a recurring task."""
+        # Apply changes locally
+        recurring_task = self._repository.hard_remove_recurring_task(ref_id)
+        LOGGER.info("Applied local changes")
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
+        self._collection.hard_remove_recurring_task(recurring_task.project_ref_id, recurring_task_row)
+        LOGGER.info("Applied Notion changes")
+
+        return recurring_task
+
     def load_all_recurring_tasks(
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:

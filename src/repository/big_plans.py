@@ -126,6 +126,16 @@ class BigPlansRepository:
 
         return new_big_plan
 
+    def hard_remove_big_plan(self, ref_id: EntityId) -> BigPlan:
+        """Hard remove a big plan."""
+        big_plans_next_idx, big_plans = self._structured_storage.load()
+        found_big_plan = self._find_big_plan_by_id(ref_id, big_plans)
+        if not found_big_plan:
+            raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")
+        new_big_plans = [it for it in big_plans if it.ref_id != ref_id]
+        self._structured_storage.save((big_plans_next_idx, new_big_plans))
+        return found_big_plan
+
     @staticmethod
     def _find_big_plan_by_id(ref_id: EntityId, big_plans: List[BigPlan]) -> Optional[BigPlan]:
         try:

@@ -301,6 +301,17 @@ class InboxTasksService:
 
         return inbox_task
 
+    def hard_remove_inbox_task(self, ref_id: EntityId) -> InboxTask:
+        """Hard remove an inbox task."""
+        # Apply changes locally
+        inbox_task = self._repository.hard_remove_inbox_task(ref_id)
+        LOGGER.info("Applied local changes")
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+        self._collection.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+        LOGGER.info("Applied Notion changes")
+
+        return inbox_task
+
     def archive_done_inbox_tasks(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
         """Archive the done inbox tasks."""
         inbox_tasks = self._repository.load_all_inbox_task(
@@ -332,7 +343,7 @@ class InboxTasksService:
             filter_recurring_task_ref_ids=filter_recurring_task_ref_ids)
 
     def inbox_tasks_sync(
-            self, project_ref_id: EntityId, sync_regular: bool, sync_recurring: bool, drop_all_notion_side: bool,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool,
             all_big_plans: Iterable[BigPlan], all_recurring_tasks: Iterable[RecurringTask],
             sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
@@ -432,13 +443,6 @@ class InboxTasksService:
                 # If the big plan exists locally, we sync it with the remote
                 inbox_task = all_inbox_tasks_set[EntityId(inbox_task_row.ref_id)]
 
-                if not sync_regular and inbox_task.recurring_task_ref_id is None:
-                    all_inbox_tasks_row_set[inbox_task.ref_id] = inbox_task_row
-                    continue
-                if not sync_recurring and inbox_task.recurring_task_ref_id is not None:
-                    all_inbox_tasks_row_set[inbox_task.ref_id] = inbox_task_row
-                    continue
-
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
                     try:
@@ -526,12 +530,6 @@ class InboxTasksService:
             # We've already processed this thing above
             if inbox_task.ref_id in all_inbox_tasks_row_set:
                 continue
-
-            if not sync_regular and inbox_task.recurring_task_ref_id is None:
-                continue
-            if not sync_recurring and inbox_task.recurring_task_ref_id is not None:
-                continue
-
             if inbox_task.archived:
                 continue
 
