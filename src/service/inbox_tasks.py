@@ -312,11 +312,23 @@ class InboxTasksService:
 
         return inbox_task
 
+    def remove_inbox_task_on_notion_side(self, ref_id: EntityId) -> InboxTask:
+        """Remove entries for a inbox task on Notion-side."""
+        inbox_task = self._repository.load_inbox_task(ref_id, allow_archived=True)
+        try:
+            inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+            self._collection.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionError:
+            # If we can't find this locally it means it's already gone
+            pass
+
+        return inbox_task
+
     def archive_done_inbox_tasks(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
         """Archive the done inbox tasks."""
         inbox_tasks = self._repository.load_all_inbox_task(
             filter_archived=False, filter_project_ref_ids=filter_project_ref_id)
-        LOGGER.info(inbox_tasks)
 
         for inbox_task in inbox_tasks:
             if inbox_task.archived:

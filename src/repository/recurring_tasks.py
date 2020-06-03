@@ -117,13 +117,13 @@ class RecurringTasksRepository:
                 and (len(filter_ref_ids_set) == 0 or r.ref_id in filter_ref_ids_set)
                 and (len(filter_project_ref_ids_set) == 0 or r.project_ref_id in filter_project_ref_ids_set)]
 
-    def load_recurring_task(self, ref_id: EntityId) -> RecurringTask:
+    def load_recurring_task(self, ref_id: EntityId, allow_archived: bool = False) -> RecurringTask:
         """Retrieve a particular recurring task by its id."""
         _, recurring_tasks = self._structured_storage.load()
         found_recurring_tasks = self._find_recurring_task_by_id(ref_id, recurring_tasks)
         if not found_recurring_tasks:
             raise RepositoryError(f"Recurring task with id='{ref_id}' does not exist")
-        if found_recurring_tasks.archived:
+        if not allow_archived and found_recurring_tasks.archived:
             raise RepositoryError(f"Recurring task with id='{ref_id}' is archived")
         return found_recurring_tasks
 

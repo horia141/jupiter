@@ -127,13 +127,13 @@ class InboxTasksRepository:
                 and (len(filter_recurring_task_ref_ids_set) == 0
                      or it.recurring_task_ref_id in filter_recurring_task_ref_ids_set)]
 
-    def load_inbox_task(self, ref_id: EntityId) -> InboxTask:
+    def load_inbox_task(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTask:
         """Retrieve a particular inbox task by its id."""
         _, inbox_tasks = self._structured_storage.load()
         found_inbox_task = self._find_inbox_task_by_id(ref_id, inbox_tasks)
         if not found_inbox_task:
             raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
-        if found_inbox_task.archived:
+        if not allow_archived and found_inbox_task.archived:
             raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
         return found_inbox_task
 

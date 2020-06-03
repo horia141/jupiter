@@ -5,7 +5,7 @@ from typing import Final, Iterable, Dict
 import pendulum
 
 from models.basic import BasicValidator, EntityId, SyncPrefer, ModelValidationError
-from remote.notion.common import NotionPageLink, NotionCollectionLink
+from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError
 from remote.notion.vacations import VacationsCollection
 from repository.vacations import VacationsRepository, Vacation
 from service.errors import ServiceError, ServiceValidationError
@@ -151,11 +151,23 @@ class VacationsService:
 
         return vacation
 
+    def remove_vacation_on_notion_side(self, ref_id: EntityId) -> Vacation:
+        """Remove entries for a vacation on Notion-side."""
+        vacation = self._repository.load_vacation(ref_id, allow_archived=True)
+        try:
+            vacation_row = self._collection.load_vacation(ref_id)
+            self._collection.hard_remove_vacation(vacation_row)
+            LOGGER.info("Applied Notion changes")
+        except CollectionError:
+            pass
+
+        return vacation
+
     def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
         return self._repository.load_all_vacations(filter_archived=not show_archived)
 
-    def vacations_sync(self, drop_all_notion_side: bool, sync_prefer: SyncPrefer) -> None:
+    def vacations_sync(self, drop_all_notion_side: bool, sync_prefer: SyncPrefer) -> Iterable[Vacation]:
         """Synchronise vacations between Notion and local storage."""
         all_vacations = self._repository.load_all_vacations(filter_archived=False)
         all_vacations_set: Dict[EntityId, Vacation] = {v.ref_id: v for v in all_vacations}
@@ -250,6 +262,9 @@ class VacationsService:
                 # The vacation already exists on Notion side, so it was handled by the above loop!
                 continue
 
+            if vacation.archived:
+                continue
+
             # If the vacation does not exist on Notion side, we create it.
             new_vacation_row = self._collection.create_vacation(
                 archived=vacation.archived,
@@ -258,3 +273,5 @@ class VacationsService:
                 end_date=vacation.end_date,
                 ref_id=vacation.ref_id)
             LOGGER.info(f"Created new vacation on Notion side {new_vacation_row}")
+
+        return all_vacations_set.values()

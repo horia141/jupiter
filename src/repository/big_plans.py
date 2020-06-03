@@ -103,13 +103,13 @@ class BigPlansRepository:
                 and (len(filter_ref_ids_set) == 0 or bp.ref_id in filter_ref_ids_set)
                 and (len(filter_project_ref_id_set) == 0 or bp.project_ref_id in filter_project_ref_id_set)]
 
-    def load_big_plan(self, ref_id: EntityId) -> BigPlan:
+    def load_big_plan(self, ref_id: EntityId, allow_archived: bool = False) -> BigPlan:
         """Retrieve a particular big plan by its id."""
         _, big_plans = self._structured_storage.load()
         found_big_plans = self._find_big_plan_by_id(ref_id, big_plans)
         if not found_big_plans:
             raise RepositoryError(f"Big plan with id='{ref_id}' does not exist")
-        if found_big_plans.archived:
+        if not allow_archived and found_big_plans.archived:
             raise RepositoryError(f"Big plan with id='{ref_id}' is archived")
         return found_big_plans
 

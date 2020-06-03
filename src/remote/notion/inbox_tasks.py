@@ -699,6 +699,10 @@ class InboxTasksCollection:
                 "width": 100,
                 "property": "timeline",
                 "visible": True
+            }, {
+                "width": 100,
+                "property": "archived",
+                "visible": True
             }]
         }
     }

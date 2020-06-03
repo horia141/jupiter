@@ -7,7 +7,7 @@ import pendulum
 
 from models.basic import EntityId, BasicValidator, ModelValidationError, BigPlanStatus, SyncPrefer
 from remote.notion.big_plans import BigPlansCollection
-from remote.notion.common import NotionPageLink, NotionCollectionLink
+from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError
 from repository.big_plans import BigPlan, BigPlansRepository
 from service.errors import ServiceValidationError
 
@@ -134,6 +134,18 @@ class BigPlansService:
         big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, ref_id)
         self._collection.hard_remove_big_plan(big_plan.project_ref_id, big_plan_row)
         LOGGER.info("Applied Notion changes")
+
+        return big_plan
+
+    def remove_big_plan_on_notion_side(self, ref_id: EntityId) -> BigPlan:
+        """Remove entries for a big plan on Notion-side."""
+        big_plan = self._repository.load_big_plan(ref_id, allow_archived=True)
+        try:
+            big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, ref_id)
+            self._collection.hard_remove_big_plan(big_plan.project_ref_id, big_plan_row)
+            LOGGER.info("Applied Notion changes")
+        except CollectionError:
+            pass
 
         return big_plan
 

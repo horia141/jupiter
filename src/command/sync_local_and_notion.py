@@ -46,6 +46,8 @@ class SyncLocalAndNotion(command.Command):
                             help="Try to correct issues due to lack of local-to-Notion transactionality")
         parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
                             help="Drop all Notion-side entities before syncing and restore from local entirely")
+        parser.add_argument("--gc-notion", dest="drop_all_notion_archived", action="store_true", default=False,
+                            help="Drop all Notion-side archived")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -56,5 +58,6 @@ class SyncLocalAndNotion(command.Command):
         sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
         anti_entropy = args.anti_entropy
         drop_all_notion = args.drop_all_notion
+        drop_all_notion_archived = args.drop_all_notion_archived
         self._sync_local_and_notion_controller.sync(
-            sync_targets, anti_entropy, drop_all_notion, project_keys, sync_prefer)
+            sync_targets, anti_entropy, drop_all_notion, drop_all_notion_archived, project_keys, sync_prefer)

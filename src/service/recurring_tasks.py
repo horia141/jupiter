@@ -4,7 +4,7 @@ from typing import Final, Optional, Iterable, List
 
 from models.basic import EntityId, Difficulty, Eisen, BasicValidator, ModelValidationError, RecurringTaskPeriod, \
     EntityName, SyncPrefer
-from remote.notion.common import NotionPageLink, NotionCollectionLink
+from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTask
 from service.errors import ServiceValidationError
@@ -257,6 +257,18 @@ class RecurringTasksService:
         recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
         self._collection.hard_remove_recurring_task(recurring_task.project_ref_id, recurring_task_row)
         LOGGER.info("Applied Notion changes")
+
+        return recurring_task
+
+    def remove_recurring_task_on_notion_side(self, ref_id: EntityId) -> RecurringTask:
+        """Remove entries for a recurring task on Notion-side."""
+        recurring_task = self._repository.load_recurring_task(ref_id, allow_archived=True)
+        try:
+            recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
+            self._collection.hard_remove_recurring_task(recurring_task.project_ref_id, recurring_task_row)
+            LOGGER.info("Applied Notion changes")
+        except CollectionError:
+            pass
 
         return recurring_task
 

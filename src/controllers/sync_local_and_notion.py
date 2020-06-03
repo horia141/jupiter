@@ -9,6 +9,7 @@ from models.basic import SyncPrefer, ProjectKey, SyncTarget
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
+from repository.vacations import Vacation
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
@@ -43,7 +44,7 @@ class SyncLocalAndNotionController:
 
     def sync(
             self, sync_targets: Iterable[SyncTarget], anti_entropy_by_name: bool, drop_all_notion: bool,
-            filter_project_keys: Optional[Iterable[ProjectKey]] = None,
+            drop_all_notion_archived: bool, filter_project_keys: Optional[Iterable[ProjectKey]] = None,
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
         sync_targets = frozenset(sync_targets)
@@ -61,7 +62,11 @@ class SyncLocalAndNotionController:
 
         if SyncTarget.VACATIONS in sync_targets:
             LOGGER.info("Syncing the vacations")
-            self._vacations_service.vacations_sync(False, sync_prefer)
+            all_vacations = self._vacations_service.vacations_sync(False, sync_prefer)
+            if anti_entropy_by_name:
+                _ = self._do_anti_entropy_for_vacations(all_vacations)
+            if drop_all_notion_archived:
+                self._do_drop_all_archived_vacations(all_vacations)
 
         for project in self._projects_service.load_all_projects(filter_keys=filter_project_keys):
             if SyncTarget.STRUCTURE in sync_targets:
@@ -86,6 +91,8 @@ class SyncLocalAndNotionController:
                     project.ref_id, False, inbox_collection_link, sync_prefer)
                 if anti_entropy_by_name:
                     all_big_plans = self._do_anti_entropy_for_big_plans(all_big_plans)
+                if drop_all_notion_archived:
+                    self._do_drop_all_big_plans(all_big_plans)
                 self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
             else:
                 all_big_plans = self._big_plans_service.load_all_big_plans(
@@ -97,6 +104,8 @@ class SyncLocalAndNotionController:
                     project.ref_id, False, inbox_collection_link, sync_prefer)
                 if anti_entropy_by_name:
                     all_recurring_tasks = self._do_anti_entropy_for_recurring_tasks(all_recurring_tasks)
+                if drop_all_notion_archived:
+                    self._do_drop_all_recurring_tasks(all_recurring_tasks)
             else:
                 all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
                     filter_archived=False, filter_project_ref_ids=[project.ref_id])
@@ -108,6 +117,8 @@ class SyncLocalAndNotionController:
                     project.ref_id, drop_all_notion, all_big_plans, all_recurring_tasks, sync_prefer)
                 if anti_entropy_by_name:
                     all_inbox_tasks = self._do_anti_entropy_for_inbox_tasks(all_inbox_tasks)
+                if drop_all_notion_archived:
+                    self._do_drop_all_inbox_tasks(all_inbox_tasks)
             else:
                 all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
                     filter_archived=False, filter_project_ref_ids=[project.ref_id])
@@ -134,16 +145,40 @@ class SyncLocalAndNotionController:
                         difficulty=recurring_task.difficulty,
                         timeline=schedule.timeline)
 
-    def _do_anti_entropy_for_big_plans(
-            self, all_big_plans: Iterable[BigPlan]) -> Iterable[BigPlan]:
+    def _do_anti_entropy_for_vacations(
+            self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:
+        vacations_names_set = {}
+        for vacation in all_vacation:
+            if vacation.name in vacations_names_set:
+                LOGGER.info(f"Found a duplicate vacation '{vacation.name}' - removing in anti-entropy")
+                self._vacations_service.hard_remove_vacation(vacation.ref_id)
+                continue
+            vacations_names_set[vacation.name] = vacation
+        return vacations_names_set.values()
+
+    def _do_drop_all_archived_vacations(self, all_vacations: Iterable[Vacation]) -> None:
+        for vacation in all_vacations:
+            if not vacation.archived:
+                continue
+            LOGGER.info(f"Removed an archived vacation '{vacation.name}' on Notion side")
+            self._vacations_service.remove_vacation_on_notion_side(vacation.ref_id)
+
+    def _do_anti_entropy_for_big_plans(self, all_big_plans: Iterable[BigPlan]) -> Iterable[BigPlan]:
         big_plans_names_set = {}
         for big_plan in all_big_plans:
             if big_plan.name in big_plans_names_set:
                 LOGGER.info(f"Found a duplicate big plan '{big_plan.name}' - removing in anti-entropy")
-                self._big_plans_service.hard_remove_big_plan(big_plan.ref_id)
+                self._inbox_tasks_service.hard_remove_inbox_task(big_plan.ref_id)
                 continue
             big_plans_names_set[big_plan.name] = big_plan
         return big_plans_names_set.values()
+
+    def _do_drop_all_big_plans(self, big_plans: Iterable[BigPlan]) -> None:
+        for big_plan in big_plans:
+            if not big_plan.archived:
+                continue
+            LOGGER.info(f"Removed an archived big plan '{big_plan.name}' on Notion side")
+            self._big_plans_service.remove_big_plan_on_notion_side(big_plan.ref_id)
 
     def _do_anti_entropy_for_recurring_tasks(
             self, all_recurring_tasks: Iterable[RecurringTask]) -> Iterable[RecurringTask]:
@@ -156,6 +191,13 @@ class SyncLocalAndNotionController:
             recurring_tasks_names_set[recurring_task.name] = recurring_task
         return recurring_tasks_names_set.values()
 
+    def _do_drop_all_recurring_tasks(self, recurring_tasks: Iterable[RecurringTask]) -> None:
+        for recurring_task in recurring_tasks:
+            if not recurring_task.archived:
+                continue
+            LOGGER.info(f"Removed an archived recurring task '{recurring_task.name}' on Notion side")
+            self._recurring_tasks_service.remove_recurring_task_on_notion_side(recurring_task.ref_id)
+
     def _do_anti_entropy_for_inbox_tasks(self, all_inbox_tasks: Iterable[InboxTask]) -> Iterable[InboxTask]:
         inbox_tasks_names_set = {}
         for inbox_task in all_inbox_tasks:
@@ -165,3 +207,10 @@ class SyncLocalAndNotionController:
                 continue
             inbox_tasks_names_set[inbox_task.name] = inbox_task
         return inbox_tasks_names_set.values()
+
+    def _do_drop_all_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> None:
+        for inbox_task in inbox_tasks:
+            if not inbox_task.archived:
+                continue
+            LOGGER.info(f"Removed an archived recurring task '{inbox_task.name}' on Notion side")
+            self._inbox_tasks_service.remove_inbox_task_on_notion_side(inbox_task.ref_id)

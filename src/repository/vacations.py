@@ -93,13 +93,13 @@ class VacationsRepository:
         _, vacations = self._structured_storage.load()
         return [v for v in vacations if (filter_archived is False or v.archived is False)]
 
-    def load_vacation(self, ref_id: EntityId) -> Vacation:
+    def load_vacation(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Retrieve a particular vacation by its id."""
         _, vacations = self._structured_storage.load()
         found_vacation = self._find_vacation_by_id(ref_id, vacations)
         if not found_vacation:
             raise RepositoryError(f"Vacation with id={ref_id} does not exist")
-        if found_vacation.archived:
+        if not allow_archived and found_vacation.archived:
             raise RepositoryError(f"Vacation with id={ref_id} is archived")
         return found_vacation
 
