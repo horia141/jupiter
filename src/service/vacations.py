@@ -144,16 +144,22 @@ class VacationsService:
         """Retrieve all vacations."""
         return self._repository.load_all_vacations(filter_archived=not show_archived)
 
-    def vacations_sync(self, sync_prefer: SyncPrefer) -> None:
+    def vacations_sync(self, drop_all_notion_side: bool, sync_prefer: SyncPrefer) -> None:
         """Synchronise vacations between Notion and local storage."""
         all_vacations = self._repository.load_all_vacations(filter_archived=False)
         all_vacations_set: Dict[EntityId, Vacation] = {v.ref_id: v for v in all_vacations}
 
-        vacations_rows = self._collection.load_all_vacations()
+        if not drop_all_notion_side:
+            all_vacations_rows = self._collection.load_all_vacations()
+            all_vacations_notion_ids = set(self._collection.load_all_saved_vacation_notion_ids())
+        else:
+            self._collection.drop_all_vacations()
+            all_vacations_rows = {}
+            all_vacations_notion_ids = set()
         vacations_rows_set = {}
 
         # Explore Notion and apply to local
-        for vacation_row in vacations_rows:
+        for vacation_row in all_vacations_rows:
             LOGGER.info(f"Processing {vacation_row.name}")
             if vacation_row.ref_id is None or vacation_row.ref_id == "":
                 # If the vacation doesn't exist locally, we create it:
@@ -185,7 +191,7 @@ class VacationsService:
                 LOGGER.info(f"Applies changes on Notion side too as {vacation_row}")
 
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
-            elif vacation_row.ref_id in all_vacations_set:
+            elif vacation_row.ref_id in all_vacations_set and vacation_row.notion_id in all_vacations_notion_ids:
                 vacation = all_vacations_set[EntityId(vacation_row.ref_id)]
                 # If the vacation exists locally, we sync it with the remote:
                 if sync_prefer == SyncPrefer.NOTION:
@@ -219,9 +225,12 @@ class VacationsService:
                     raise ServiceError(f"Invalid preference {sync_prefer}")
                 vacations_rows_set[EntityId(vacation_row.ref_id)] = vacation_row
             else:
-                # If the vacation is not new, and does not exist on the local side, it means it got removed
-                # badly, and we need to hard remove it!
-                self._collection.hard_remove_vacation(EntityId(vacation_row.ref_id))
+                # If we're here, one of two cases have happened:
+                # 1. This is some random vacation added by someone, where they completed themselves a ref_id. It's a bad
+                #    setup, and we remove it.
+                # 2. This is a vacation added by the script, but which failed before local data could be saved.
+                #    We'll have duplicates in these cases, and they need to be removed.
+                self._collection.hard_remove_vacation(vacation_row)
                 LOGGER.info(f"Removed vacation with id={vacation_row.ref_id} from Notion")
 
         # Explore local and apply to Notion now

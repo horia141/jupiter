@@ -58,11 +58,9 @@ class SyncLocalAndNotionController:
 
         if SyncTarget.VACATIONS in sync_targets:
             LOGGER.info("Syncing the vacations")
-            self._vacations_service.vacations_sync(sync_prefer)
+            self._vacations_service.vacations_sync(False, sync_prefer)
 
         for project in self._projects_service.load_all_projects(filter_keys=filter_project_keys):
-            inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
-
             if SyncTarget.STRUCTURE in sync_targets:
                 LOGGER.info(f"Recreating project {project.name}")
                 project_page = self._projects_service.get_project_notion_structure(project.ref_id)
@@ -73,6 +71,8 @@ class SyncLocalAndNotionController:
                 LOGGER.info("Recreating big plans")
                 self._big_plans_service.upsert_notion_structure(project.ref_id, project_page)
 
+            inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
+
             if SyncTarget.PROJECTS in sync_targets:
                 LOGGER.info(f"Syncing project '{project.name}'")
                 self._projects_service.sync_projects(project.key, sync_prefer)
@@ -80,7 +80,7 @@ class SyncLocalAndNotionController:
             if SyncTarget.BIG_PLANS in sync_targets:
                 LOGGER.info(f"Syncing big plans for '{project.name}'")
                 all_big_plans = self._big_plans_service.big_plans_sync(
-                    project.ref_id, drop_all_notion, inbox_collection_link, sync_prefer)
+                    project.ref_id, False, inbox_collection_link, sync_prefer)
                 self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
             else:
                 all_big_plans = self._big_plans_service.load_all_big_plans(
@@ -89,7 +89,7 @@ class SyncLocalAndNotionController:
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks for '{project.name}'")
                 all_recurring_tasks = self._recurring_tasks_service.recurring_tasks_sync(
-                    project.ref_id, drop_all_notion, inbox_collection_link, sync_prefer)
+                    project.ref_id, False, inbox_collection_link, sync_prefer)
             else:
                 all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
                     filter_archived=False, filter_project_ref_ids=[project.ref_id])

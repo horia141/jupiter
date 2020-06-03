@@ -406,13 +406,19 @@ class RecurringTasksCollection:
             RecurringTaskRow,
             self._collection.save(project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link))
 
+    def load_all_saved_recurring_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collection.load_all_saved_notion_ids(project_ref_id)
+
     def drop_all_recurring_tasks(self, project_ref_id: EntityId) -> None:
         """Hard remove all Notion-side entities."""
         self._collection.drop_all(project_ref_id)
 
-    def hard_remove_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def hard_remove_recurring_task(self, project_ref_id: EntityId, recurring_task_row: RecurringTaskRow) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collection.hard_remove(project_ref_id, ref_id)
+        self._collection.hard_remove(
+            project_ref_id, recurring_task_row.notion_id,
+            EntityId(recurring_task_row.ref_id) if recurring_task_row.ref_id else None)
 
     @staticmethod
     def get_page_name() -> str:

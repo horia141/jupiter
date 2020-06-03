@@ -273,9 +273,12 @@ class RecurringTasksService:
 
         if not drop_all_notion_side:
             all_recurring_tasks_rows = self._collection.load_all_recurring_tasks(project_ref_id)
+            all_reccuring_tasks_saved_notion_ids = \
+                set(self._collection.load_all_saved_recurring_tasks_notion_ids(project_ref_id))
         else:
             self._collection.drop_all_recurring_tasks(project_ref_id)
             all_recurring_tasks_rows = {}
+            all_reccuring_tasks_saved_notion_ids = set()
         all_recurring_tasks_row_set = {}
 
         # Then look at each recurring task in Notion and try to match it with one in the local storage
@@ -341,7 +344,8 @@ class RecurringTasksService:
 
                 all_recurring_tasks_set[recurring_task_row.ref_id] = new_recurring_task
                 all_recurring_tasks_row_set[recurring_task_row.ref_id] = recurring_task_row
-            elif recurring_task_row.ref_id in all_recurring_tasks_set:
+            elif recurring_task_row.ref_id in all_recurring_tasks_set \
+                    and recurring_task_row.notion_id in all_reccuring_tasks_saved_notion_ids:
                 # If the recurring task exists locally, we sync it with the remote
                 recurring_task = all_recurring_tasks_set[EntityId(recurring_task_row.ref_id)]
                 if sync_prefer == SyncPrefer.NOTION:
@@ -405,8 +409,13 @@ class RecurringTasksService:
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from local")
                 all_recurring_tasks_row_set[EntityId(recurring_task_row.ref_id)] = recurring_task_row
             else:
+                # If we're here, one of two cases have happened:
+                # 1. This is some random task added by someone, where they completed themselves a ref_id. It's a bad
+                #    setup, and we remove it.
+                # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
+                #    duplicates in these cases, and they need to be removed.
                 LOGGER.info(f"Removed dangling recurring task in Notion {recurring_task_row}")
-                self._collection.hard_remove_recurring_task(project_ref_id, EntityId(recurring_task_row.ref_id))
+                self._collection.hard_remove_recurring_task(project_ref_id, recurring_task_row)
 
         LOGGER.info("Applied local changes")
 

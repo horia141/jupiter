@@ -296,6 +296,14 @@ class NotionCollection(Generic[NotionCollectionRowType]):
 
         return row
 
+    def load_all_saved_notion_ids(self, discriminant: str) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        if lock is None:
+            raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
+        return lock.ref_id_to_notion_id_map.values()
+
     def drop_all(self, discriminant: str) -> None:
         """Hard remove all the Notion-side entities."""
         locks_next_idx, locks = self._structured_storage.load()
@@ -313,20 +321,22 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         lock.ref_id_to_notion_id_map = {}
         self._structured_storage.save((locks_next_idx, locks))
 
-    def hard_remove(self, discriminant: str, ref_id: EntityId) -> None:
+    def hard_remove(self, discriminant: str, notion_id: NotionId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         locks_next_idx, locks = self._structured_storage.load()
         lock = self._find_lock(locks, discriminant)
         if lock is None:
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
         client = self._connection.get_notion_client()
-        notion_row = self._find_notion_row(client, lock, ref_id)
+
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+
+        notion_row = client.get_collection_row(collection, notion_id)
+        notion_row.remove()
 
         if ref_id in lock.ref_id_to_notion_id_map:
             del lock.ref_id_to_notion_id_map[ref_id]
             self._structured_storage.save((locks_next_idx, locks))
-
-        notion_row.remove()
 
     @staticmethod
     def _find_lock(locks: List[NotionCollectionLock], discriminant: str) -> Optional[NotionCollectionLock]:

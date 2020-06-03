@@ -262,13 +262,19 @@ class BigPlansCollection:
             BigPlanRow,
             self._collection.save(project_ref_id, new_big_plan_row, inbox_collection_link=inbox_collection_link))
 
+    def load_all_saved_big_plans_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collection.load_all_saved_notion_ids(project_ref_id)
+
     def drop_all_big_plans(self, project_ref_id: EntityId) -> None:
         """Remove all big plans Notion-side."""
         self._collection.drop_all(project_ref_id)
 
-    def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def hard_remove_big_plan(self, project_ref_id: EntityId, big_plan_row: BigPlanRow) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collection.hard_remove(project_ref_id, ref_id)
+        self._collection.hard_remove(
+            project_ref_id, big_plan_row.notion_id,
+            EntityId(big_plan_row.ref_id) if big_plan_row.ref_id else None)
 
     @staticmethod
     def get_page_name() -> str:

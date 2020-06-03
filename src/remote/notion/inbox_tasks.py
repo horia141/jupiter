@@ -794,13 +794,19 @@ class InboxTasksCollection:
         """Update the Notion-side inbox task with new data."""
         return cast(InboxTaskRow, self._collection.save(project_ref_id, new_inbox_task_row))
 
+    def load_all_saved_inbox_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collection.load_all_saved_notion_ids(project_ref_id)
+
     def drop_all_inbox_tasks(self, project_ref_id: EntityId) -> None:
         """Hard remove all the Notion-side inbox tasks."""
         self._collection.drop_all(project_ref_id)
 
-    def hard_remove_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def hard_remove_inbox_task(self, project_ref_id: EntityId, inbox_task_row: InboxTaskRow) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collection.hard_remove(project_ref_id, ref_id)
+        self._collection.hard_remove(
+            project_ref_id, inbox_task_row.notion_id,
+            EntityId(inbox_task_row.ref_id) if inbox_task_row.ref_id else None)
 
     @staticmethod
     def get_page_name() -> str:

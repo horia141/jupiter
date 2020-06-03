@@ -166,9 +166,19 @@ class VacationsCollection:
         """Update a Notion-side vacation with new data."""
         return cast(VacationRow, self._collection.save(self._DISCRIMINANT, new_vacation_row))
 
-    def hard_remove_vacation(self, ref_id: EntityId) -> None:
+    def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collection.load_all_saved_notion_ids(self._DISCRIMINANT)
+
+    def drop_all_vacations(self) -> None:
+        """Remove all big plans Notion-side."""
+        self._collection.drop_all(self._DISCRIMINANT)
+
+    def hard_remove_vacation(self, vacation_row: VacationRow) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collection.hard_remove(self._DISCRIMINANT, ref_id)
+        self._collection.hard_remove(
+            self._DISCRIMINANT, vacation_row.notion_id,
+            EntityId(vacation_row.ref_id) if vacation_row.ref_id else None)
 
     @staticmethod
     def get_page_name() -> str:

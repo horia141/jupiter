@@ -342,9 +342,12 @@ class InboxTasksService:
 
         if not drop_all_notion_side:
             all_inbox_tasks_rows = self._collection.load_all_inbox_tasks(project_ref_id)
+            all_inbox_tasks_saved_notion_ids_set = \
+                set(self._collection.load_all_saved_inbox_tasks_notion_ids(project_ref_id))
         else:
             self._collection.drop_all_inbox_tasks(project_ref_id)
             all_inbox_tasks_rows = {}
+            all_inbox_tasks_saved_notion_ids_set = set()
         all_inbox_tasks_row_set = {}
 
         right_now = pendulum.now()
@@ -424,7 +427,8 @@ class InboxTasksService:
 
                 all_inbox_tasks_set[inbox_task_row.ref_id] = new_inbox_task
                 all_inbox_tasks_row_set[inbox_task_row.ref_id] = inbox_task_row
-            elif inbox_task_row.ref_id in all_inbox_tasks_set:
+            elif inbox_task_row.ref_id in all_inbox_tasks_set and \
+                    inbox_task_row.notion_id in all_inbox_tasks_saved_notion_ids_set:
                 # If the big plan exists locally, we sync it with the remote
                 inbox_task = all_inbox_tasks_set[EntityId(inbox_task_row.ref_id)]
 
@@ -505,7 +509,12 @@ class InboxTasksService:
                     raise Exception(f"Invalid preference {sync_prefer}")
                 all_inbox_tasks_row_set[EntityId(inbox_task_row.ref_id)] = inbox_task_row
             else:
-                self._collection.hard_remove_inbox_task(project_ref_id, EntityId(inbox_task_row.ref_id))
+                # If we're here, one of two cases have happened:
+                # 1. This is some random task added by someone, where they completed themselves a ref_id. It's a bad
+                #    setup, and we remove it.
+                # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
+                #    duplicates in these cases, and they need to be removed.
+                self._collection.hard_remove_inbox_task(project_ref_id, inbox_task_row)
                 LOGGER.info(f"Removed dangling big plan in Notion {inbox_task_row}")
 
         LOGGER.info("Applied local changes")
@@ -521,6 +530,9 @@ class InboxTasksService:
             if not sync_regular and inbox_task.recurring_task_ref_id is None:
                 continue
             if not sync_recurring and inbox_task.recurring_task_ref_id is not None:
+                continue
+
+            if inbox_task.archived:
                 continue
 
             big_plan = None

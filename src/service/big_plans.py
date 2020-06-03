@@ -148,9 +148,12 @@ class BigPlansService:
 
         if not drop_all_notion_side:
             all_big_plans_rows = self._collection.load_all_big_plans(project_ref_id)
+            all_big_plans_notion_ids = \
+                set(self._collection.load_all_saved_big_plans_notion_ids(project_ref_id))
         else:
             self._collection.drop_all_big_plans(project_ref_id)
             all_big_plans_rows = {}
+            all_big_plans_notion_ids = set()
         all_big_plans_rows_set = {}
 
         # Then look at each big plan in Notion and try to match it with the one in the local stash
@@ -187,7 +190,8 @@ class BigPlansService:
 
                 all_big_plans_set[big_plan_row.ref_id] = new_big_plan
                 all_big_plans_rows_set[big_plan_row.ref_id] = big_plan_row
-            elif big_plan_row.ref_id in all_big_plans_set:
+            elif big_plan_row.ref_id in all_big_plans_set and\
+                    big_plan_row.notion_id in all_big_plans_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
                 big_plan = all_big_plans_set[EntityId(big_plan_row.ref_id)]
                 if sync_prefer == SyncPrefer.NOTION:
@@ -218,7 +222,12 @@ class BigPlansService:
                     raise Exception(f"Invalid preference {sync_prefer}")
                 all_big_plans_rows_set[EntityId(big_plan_row.ref_id)] = big_plan_row
             else:
-                self._collection.hard_remove_big_plan(project_ref_id, EntityId(big_plan_row.ref_id))
+                # If we're here, one of two cases have happened:
+                # 1. This is some random big plan added by someone, where they completed themselves a ref_id. It's a bad
+                #    setup, and we remove it.
+                # 2. This is a big plan added by the script, but which failed before local data could be saved.
+                #    We'll have duplicates in these cases, and they need to be removed.
+                self._collection.hard_remove_big_plan(project_ref_id, big_plan_row)
                 LOGGER.info(f"Removed dangling big plan in Notion {big_plan_row}")
 
         LOGGER.info("Applied local changes")
