@@ -342,7 +342,7 @@ class RecurringTasksService:
 
                 new_recurring_task = self._repository.create_recurring_task(
                     project_ref_id=project_ref_id,
-                    archived=False,
+                    archived=recurring_task_row.archived,
                     name=recurring_task_name,
                     period=recurring_task_period,
                     group=recurring_task_group,
@@ -403,6 +403,7 @@ class RecurringTasksService:
 
                     recurring_task.name = recurring_task_name
                     recurring_task.period = recurring_task_period
+                    recurring_task.archived = recurring_task_row.archived
                     recurring_task.group = recurring_task_group
                     recurring_task.eisen = recurring_task_eisen
                     recurring_task.difficulty = recurring_task_difficulty
@@ -419,6 +420,7 @@ class RecurringTasksService:
                     recurring_task_row.name = recurring_task.name
                     recurring_task_row.period = recurring_task.period.value
                     recurring_task_row.group = recurring_task.group
+                    recurring_task_row.archived = recurring_task.archived
                     recurring_task_row.eisen = [e.value for e in recurring_task.eisen]
                     recurring_task_row.difficulty = \
                         recurring_task.difficulty.value if recurring_task.difficulty else None
