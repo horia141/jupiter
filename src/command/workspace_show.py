@@ -22,7 +22,7 @@ class WorkspaceShow(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "ws-show"
+        return "workspace-show"
 
     @staticmethod
     def description() -> str:

@@ -25,7 +25,7 @@ class ProjectCreate(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "project-create"
+        return "projects-create"
 
     @staticmethod
     def description() -> str:

@@ -21,10 +21,10 @@ from command.inbox_tasks_set_eisen import InboxTasksSetEisen
 from command.inbox_tasks_set_name import InboxTasksSetName
 from command.inbox_tasks_set_status import InboxTasksSetStatus
 from command.inbox_tasks_show import InboxTasksShow
-from command.project_archive import ProjectArchive
-from command.project_create import ProjectCreate
-from command.project_set_name import ProjectSetName
-from command.project_show import ProjectShow
+from command.projects_archive import ProjectArchive
+from command.projects_create import ProjectCreate
+from command.projects_set_name import ProjectSetName
+from command.projects_show import ProjectShow
 from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
 from command.recurring_tasks_gen import RecurringTasksGen

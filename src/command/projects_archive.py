@@ -25,7 +25,7 @@ class ProjectArchive(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "project-archive"
+        return "projects-archive"
 
     @staticmethod
     def description() -> str:

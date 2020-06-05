@@ -25,7 +25,7 @@ class WorkspaceSetToken(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "ws-set-token"
+        return "workspace-set-token"
 
     @staticmethod
     def description() -> str:

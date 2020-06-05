@@ -25,7 +25,7 @@ class WorkspaceInit(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "ws-init"
+        return "workspace-init"
 
     @staticmethod
     def description() -> str:
