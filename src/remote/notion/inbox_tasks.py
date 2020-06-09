@@ -12,7 +12,6 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 import pendulum
 from notion.collection import CollectionRowBlock
 
-
 from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod
 from remote.notion import common
 from remote.notion.client import NotionClient
@@ -755,16 +754,17 @@ class InboxTasksCollection:
         LOGGER.info("Updated the schema for the associated inbox")
 
     def create_inbox_task(
-            self, project_ref_id: EntityId, name: str, archived: bool, big_plan_ref_id: Optional[EntityId],
-            big_plan_name: Optional[str], recurring_task_ref_id: Optional[EntityId], status: str,
-            eisen: Optional[List[str]], difficulty: Optional[str], due_date: Optional[pendulum.DateTime],
-            recurring_period: Optional[str], recurring_timeline: Optional[str], ref_id: EntityId) -> InboxTaskRow:
+            self, project_ref_id: EntityId, name: str, archived: bool, created_date: pendulum.DateTime,
+            big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
+            recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
+            difficulty: Optional[str], due_date: Optional[pendulum.DateTime], recurring_period: Optional[str],
+            recurring_timeline: Optional[str], ref_id: EntityId) -> InboxTaskRow:
         """Create an inbox task."""
         new_inbox_task_row = InboxTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
             name=name,
             archived=archived,
-            created_date=pendulum.now(),
+            created_date=created_date,
             big_plan_ref_id=big_plan_ref_id,
             big_plan_name=big_plan_name,
             recurring_task_ref_id=recurring_task_ref_id,

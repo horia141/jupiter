@@ -80,11 +80,13 @@ from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
+from utils.time_provider import TimeProvider
 
 
 def main() -> None:
     """Application main function."""
     basic_validator = BasicValidator()
+    time_provider = TimeProvider()
 
     notion_connection = NotionConnection()
 
@@ -107,7 +109,7 @@ def main() -> None:
         projects_service = ProjectsService(
             basic_validator, projects_repository, projects_collection)
         inbox_tasks_service = InboxTasksService(
-            basic_validator, inbox_tasks_repository, inbox_tasks_collection)
+            basic_validator, time_provider, inbox_tasks_repository, inbox_tasks_collection)
         recurring_tasks_service = RecurringTasksService(
             basic_validator, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
@@ -176,7 +178,7 @@ def main() -> None:
             BigPlansHardRemove(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
-            RecurringTasksGen(basic_validator, recurring_tasks_gen_controller)
+            RecurringTasksGen(basic_validator, time_provider, recurring_tasks_gen_controller)
         ]
 
         parser = argparse.ArgumentParser(description="The Jupiter goal management system")

@@ -13,6 +13,7 @@ from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTasksRepository, InboxTask
 from repository.recurring_tasks import RecurringTask
 from service.errors import ServiceValidationError
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,14 +22,16 @@ class InboxTasksService:
     """The service class for dealing with inbox tasks."""
 
     _basic_validator: Final[BasicValidator]
+    _time_provider: Final[TimeProvider]
     _repository: Final[InboxTasksRepository]
     _collection: Final[InboxTasksCollection]
 
     def __init__(
-            self, basic_validator: BasicValidator, repository: InboxTasksRepository,
+            self, basic_validator: BasicValidator, time_provider: TimeProvider, repository: InboxTasksRepository,
             collection: InboxTasksCollection) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
+        self._time_provider = time_provider
         self._repository = repository
         self._collection = collection
 
@@ -67,14 +70,12 @@ class InboxTasksService:
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
-        right_now = pendulum.now()
-
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
             recurring_task_ref_id=None,
-            created_date=right_now,
+            created_date=self._time_provider.get_current_time(),
             name=name,
             archived=False,
             status=InboxTaskStatus.ACCEPTED,
@@ -87,6 +88,7 @@ class InboxTasksService:
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
             archived=False,
+            created_date=new_inbox_task.created_date,
             name=new_inbox_task.name,
             big_plan_ref_id=new_inbox_task.big_plan_ref_id,
             big_plan_name=remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None,
@@ -107,14 +109,12 @@ class InboxTasksService:
             recurring_task_period: RecurringTaskPeriod, recurring_task_timeline: str, eisen: List[Eisen],
             difficulty: Optional[Difficulty], due_date: Optional[pendulum.DateTime]) -> InboxTask:
         """Create an inbox task."""
-        right_now = pendulum.now()
-
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
             project_ref_id=project_ref_id,
             big_plan_ref_id=None,
             recurring_task_ref_id=recurring_task_ref_id,
-            created_date=right_now,
+            created_date=self._time_provider.get_current_time(),
             name=name,
             archived=False,
             status=InboxTaskStatus.RECURRING,
@@ -127,6 +127,7 @@ class InboxTasksService:
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
             archived=False,
+            created_date=new_inbox_task.created_date,
             name=new_inbox_task.name,
             big_plan_ref_id=None,
             big_plan_name=None,
@@ -373,8 +374,6 @@ class InboxTasksService:
             all_inbox_tasks_saved_notion_ids_set = set()
         all_inbox_tasks_row_set = {}
 
-        right_now = pendulum.now()
-
         all_big_plans_by_name = \
             {remote.notion.common.format_name_for_option(
                 self._basic_validator.entity_name_validate_and_clean(bp.name)): bp for bp in all_big_plans}
@@ -427,7 +426,7 @@ class InboxTasksService:
                     project_ref_id=project_ref_id,
                     big_plan_ref_id=big_plan.ref_id if big_plan else None,
                     recurring_task_ref_id=recurring_task.ref_id if recurring_task else None,
-                    created_date=right_now,
+                    created_date=self._time_provider.get_current_time(),
                     name=inbox_task_name,
                     archived=inbox_task_row.archived,
                     status=inbox_task_status,
@@ -555,6 +554,7 @@ class InboxTasksService:
             self._collection.create_inbox_task(
                 project_ref_id=project_ref_id,
                 archived=inbox_task.archived,
+                created_date=inbox_task.created_date,
                 name=inbox_task.name,
                 big_plan_ref_id=big_plan.ref_id if big_plan else None,
                 big_plan_name=remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None,
