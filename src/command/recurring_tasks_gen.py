@@ -44,6 +44,8 @@ class RecurringTasksGen(command.Command):
                             help="Allow only tasks from this project")
         parser.add_argument("--group", default=[], action="append",
                             help="The groups for which the upsert should happen. Defaults to all")
+        parser.add_argument("--id", dest="ref_ids", default=[], action="append",
+                            help="Allow only tasks with this id")
         parser.add_argument("--period", default=[], action="append",
                             choices=BasicValidator.recurring_task_period_values(),
                             help="The period for which the upsert should happen. Defaults to all")
@@ -56,6 +58,9 @@ class RecurringTasksGen(command.Command):
             if len(args.project_keys) > 0 else None
         group_filter = [self._basic_validator.entity_name_validate_and_clean(g) for g in args.group] \
             if len(args.group) > 0 else None
+        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids] \
+            if len(args.ref_ids) > 0 else None
         period_filter = [self._basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period] \
             if len(args.period) > 0 else None
-        self._recurring_tasks_gen_controller.recurring_tasks_gen(right_now, project_keys, group_filter, period_filter)
+        self._recurring_tasks_gen_controller.recurring_tasks_gen(
+            right_now, project_keys, group_filter, ref_ids, period_filter)

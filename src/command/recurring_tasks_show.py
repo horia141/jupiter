@@ -35,7 +35,7 @@ class RecurringTasksShow(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", type=str, dest="ref_ids", default=[], action="append",
-                            help="The id of the vacations to modify")
+                            help="The id of the vacations to show")
         parser.add_argument("--project", type=str, dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
 

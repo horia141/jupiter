@@ -37,15 +37,17 @@ class RecurringTasksGenController:
 
     def recurring_tasks_gen(
             self, right_now: pendulum.DateTime, project_keys: Optional[Iterable[ProjectKey]] = None,
-            group_filter: Optional[Iterable[EntityName]] = None,
+            group_filter: Optional[Iterable[EntityName]] = None, ref_ids: Optional[Iterable[EntityId]] = None,
             period_filter: Optional[Iterable[RecurringTaskPeriod]] = None) -> None:
         """Generate recurring tasks to inbox tasks."""
         all_vacations = self._vacations_service.load_all_vacations()
 
         for project in self._projects_service.load_all_projects(filter_keys=project_keys):
             LOGGER.info(f"Generating tasks for project '{project.name}'")
-            all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-                filter_project_ref_ids=[project.ref_id])
+            all_recurring_tasks = list(self._recurring_tasks_service.load_all_recurring_tasks(
+                filter_ref_ids=ref_ids, filter_project_ref_ids=[project.ref_id]))
+            if len(all_recurring_tasks) == 0:
+                continue
             all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
                 filter_archived=False, filter_project_ref_ids=[project.ref_id],
                 filter_recurring_task_ref_ids=(rt.ref_id for rt in all_recurring_tasks))
