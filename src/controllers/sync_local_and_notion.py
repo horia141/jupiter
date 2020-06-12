@@ -133,7 +133,7 @@ class SyncLocalAndNotionController:
                     LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
                     recurring_task = all_recurring_tasks_set[inbox_task.recurring_task_ref_id]
                     schedule = schedules.get_schedule(
-                        recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
+                        recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
                         recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                         recurring_task.due_at_month)
                     self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(

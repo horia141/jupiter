@@ -13,6 +13,8 @@ import pendulum
 from models.basic import EntityId, BigPlanStatus
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.time_field_action import TimeFieldAction
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +30,15 @@ class BigPlan:
     status: BigPlanStatus
     due_date: Optional[pendulum.DateTime]
     notion_link_uuid: uuid.UUID
+    created_time: pendulum.DateTime
+    last_modified_time: pendulum.DateTime
+    archived_time: Optional[pendulum.DateTime]
+    considered_done_time: Optional[pendulum.DateTime]
+
+    @property
+    def is_considered_done(self) -> bool:
+        """Whether the task is considered in a done-like state - either DONE or NOT_DONE."""
+        return self.status.is_considered_done
 
 
 @typing.final
@@ -36,10 +47,12 @@ class BigPlansRepository:
 
     _BIG_PLANS_FILE_PATH: ClassVar[Path] = Path("/data/big-plans.yaml")
 
+    _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[BigPlan]]
 
-    def __init__(self) -> None:
+    def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._structured_storage = StructuredCollectionStorage(self._BIG_PLANS_FILE_PATH, self)
 
     def __enter__(self) -> 'BigPlansRepository':
@@ -68,7 +81,11 @@ class BigPlansRepository:
             archived=archived,
             status=status,
             due_date=due_date,
-            notion_link_uuid=notion_link_uuid)
+            notion_link_uuid=notion_link_uuid,
+            created_time=self._time_provider.get_current_time(),
+            last_modified_time=self._time_provider.get_current_time(),
+            archived_time=self._time_provider.get_current_time() if archived else None,
+            considered_done_time=self._time_provider.get_current_time() if status.is_considered_done else None)
 
         big_plans_next_idx += 1
         big_plans.append(new_big_plan)
@@ -84,6 +101,8 @@ class BigPlansRepository:
         for big_plan in big_plans:
             if big_plan.ref_id == ref_id:
                 big_plan.archived = True
+                big_plan.last_modified_time = self._time_provider.get_current_time()
+                big_plan.archived_time = self._time_provider.get_current_time()
                 self._structured_storage.save((big_plans_next_idx, big_plans))
                 return big_plan
 
@@ -113,13 +132,19 @@ class BigPlansRepository:
             raise RepositoryError(f"Big plan with id='{ref_id}' is archived")
         return found_big_plans
 
-    def save_big_plan(self, new_big_plan: BigPlan) -> BigPlan:
+    def save_big_plan(
+            self, new_big_plan: BigPlan,
+            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
+            considered_done_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> BigPlan:
         """Store a particular big plan with all new properties."""
         big_plans_next_idx, big_plans = self._structured_storage.load()
 
         if not self._find_big_plan_by_id(new_big_plan.ref_id, big_plans):
             raise RepositoryError(f"Big plan with id='{new_big_plan.ref_id}' does not exist")
 
+        new_big_plan.last_modified_time = self._time_provider.get_current_time()
+        archived_time_action.act(new_big_plan, "archived_time", self._time_provider.get_current_time())
+        considered_done_time_action.act(new_big_plan, "considered_done_time", self._time_provider.get_current_time())
         new_big_plans = [(rt if rt.ref_id != new_big_plan.ref_id else new_big_plan)
                          for rt in big_plans]
         self._structured_storage.save((big_plans_next_idx, new_big_plans))
@@ -154,7 +179,11 @@ class BigPlansRepository:
                 "name": {"type": "string"},
                 "archived": {"type": "boolean"},
                 "status": {"type": "string"},
-                "due_date": {"type": ["string", "null"]}
+                "due_date": {"type": ["string", "null"]},
+                "created_time": {"type": "string"},
+                "last_modified_time": {"type": "string"},
+                "archived_time": {"type": ["string", "null"]},
+                "considered_done_time": {"type": ["string", "null"]},
             }
         }
 
@@ -168,7 +197,13 @@ class BigPlansRepository:
             archived=typing.cast(bool, storage_form["archived"]),
             status=BigPlanStatus(typing.cast(str, storage_form["status"])),
             due_date=pendulum.parse(typing.cast(str, storage_form["due_date"])) if storage_form["due_date"] else None,
-            notion_link_uuid=uuid.UUID(typing.cast(str, storage_form["notion_link_uuid"])))
+            notion_link_uuid=uuid.UUID(typing.cast(str, storage_form["notion_link_uuid"])),
+            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            if storage_form["archived_time"] is not None else None,
+            considered_done_time=pendulum.parse(typing.cast(str, storage_form["considered_done_time"]))
+            if storage_form.get("considered_done_time", None) else None)
 
     @staticmethod
     def live_to_storage(live_form: BigPlan) -> JSONDictType:
@@ -180,5 +215,10 @@ class BigPlansRepository:
             "archived": live_form.archived,
             "status": live_form.status.value,
             "due_date": live_form.due_date.to_datetime_string() if live_form.due_date else None,
-            "notion_link_uuid": str(live_form.notion_link_uuid)
+            "notion_link_uuid": str(live_form.notion_link_uuid),
+            "created_time": live_form.created_time.to_datetime_string(),
+            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
+            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None,
+            "considered_done_time": live_form.considered_done_time.to_datetime_string()
+                                    if live_form.considered_done_time else None
         }

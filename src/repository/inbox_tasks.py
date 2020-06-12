@@ -12,6 +12,8 @@ import pendulum
 from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.time_field_action import TimeFieldAction
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +26,6 @@ class InboxTask:
     project_ref_id: EntityId
     big_plan_ref_id: Optional[EntityId]
     recurring_task_ref_id: Optional[EntityId]
-    created_date: pendulum.DateTime
     name: str
     archived: bool
     status: InboxTaskStatus
@@ -32,11 +33,15 @@ class InboxTask:
     difficulty: Optional[Difficulty]
     due_date: Optional[pendulum.DateTime]
     recurring_task_timeline: Optional[str]
+    created_time: pendulum.DateTime
+    last_modified_time: pendulum.DateTime
+    archived_time: Optional[pendulum.DateTime]
+    considered_done_time: Optional[pendulum.DateTime]
 
     @property
     def is_considered_done(self) -> bool:
         """Whether the task is considered in a done-like state - either DONE or NOT_DONE."""
-        return self.status == InboxTaskStatus.DONE or self.status == InboxTaskStatus.NOT_DONE
+        return self.status.is_considered_done
 
 
 @typing.final
@@ -45,10 +50,12 @@ class InboxTasksRepository:
 
     _INBOX_TASKS_FILE_PATH: ClassVar[Path] = Path("/data/inbox-tasks.yaml")
 
+    _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[InboxTask]]
 
-    def __init__(self) -> None:
+    def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._structured_storage = StructuredCollectionStorage(self._INBOX_TASKS_FILE_PATH, self)
 
     def __enter__(self) -> 'InboxTasksRepository':
@@ -66,9 +73,9 @@ class InboxTasksRepository:
 
     def create_inbox_task(
             self, project_ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
-            recurring_task_ref_id: Optional[EntityId], created_date: pendulum.DateTime, name: str, archived: bool,
-            status: InboxTaskStatus, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
-            due_date: Optional[pendulum.DateTime], recurring_task_timeline: Optional[str]) -> InboxTask:
+            recurring_task_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
+            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_date: Optional[pendulum.DateTime],
+            recurring_task_timeline: Optional[str]) -> InboxTask:
         """Create a recurring task."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
@@ -77,14 +84,17 @@ class InboxTasksRepository:
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
             recurring_task_ref_id=recurring_task_ref_id,
-            created_date=created_date,
             name=name,
             archived=archived,
             status=status,
             eisen=list(eisen),
             difficulty=difficulty,
             due_date=due_date,
-            recurring_task_timeline=recurring_task_timeline)
+            recurring_task_timeline=recurring_task_timeline,
+            created_time=self._time_provider.get_current_time(),
+            last_modified_time=self._time_provider.get_current_time(),
+            archived_time=self._time_provider.get_current_time() if archived else None,
+            considered_done_time=self._time_provider.get_current_time() if status.is_considered_done else None)
 
         inbox_tasks_next_idx += 1
         inbox_tasks.append(new_inbox_task)
@@ -100,6 +110,8 @@ class InboxTasksRepository:
         for inbox_task in inbox_tasks:
             if inbox_task.ref_id == ref_id:
                 inbox_task.archived = True
+                inbox_task.last_modified_time = self._time_provider.get_current_time()
+                inbox_task.archived_time = self._time_provider.get_current_time()
                 self._structured_storage.save((inbox_tasks_next_idx, inbox_tasks))
                 return inbox_task
 
@@ -137,13 +149,19 @@ class InboxTasksRepository:
             raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
         return found_inbox_task
 
-    def save_inbox_task(self, new_inbox_task: InboxTask) -> InboxTask:
+    def save_inbox_task(
+            self, new_inbox_task: InboxTask,
+            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
+            considered_done_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> InboxTask:
         """Store a particular inbox task with all new properties."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
         if not self._find_inbox_task_by_id(new_inbox_task.ref_id, inbox_tasks):
             raise RepositoryError(f"Inbox task with id='{new_inbox_task.ref_id}' does not exist")
 
+        new_inbox_task.last_modified_time = self._time_provider.get_current_time()
+        archived_time_action.act(new_inbox_task, "archived_time", self._time_provider.get_current_time())
+        considered_done_time_action.act(new_inbox_task, "considered_done_time", self._time_provider.get_current_time())
         new_inbox_tasks = [(rt if rt.ref_id != new_inbox_task.ref_id else new_inbox_task)
                            for rt in inbox_tasks]
         self._structured_storage.save((inbox_tasks_next_idx, new_inbox_tasks))
@@ -177,7 +195,6 @@ class InboxTasksRepository:
                 "project_ref_id": {"type": "string"},
                 "big_plan_ref_id": {"type": ["string", "null"]},
                 "recurring_tasks_ref_id": {"type": ["string", "null"]},
-                "created_date": {"type": "string"},
                 "name": {"type": "string"},
                 "archived": {"type": "boolean"},
                 "eisen": {
@@ -186,7 +203,11 @@ class InboxTasksRepository:
                 },
                 "difficulty": {"type": ["string", "null"]},
                 "due_date": {"type": ["string", "null"]},
-                "recurring_task_timeline": {"type": ["string", "null"]}
+                "recurring_task_timeline": {"type": ["string", "null"]},
+                "created_time": {"type": "string"},
+                "last_modified_time": {"type": "string"},
+                "archived_time": {"type": ["string", "null"]},
+                "considered_done_time": {"type": ["string", "null"]},
             }
         }
 
@@ -200,7 +221,6 @@ class InboxTasksRepository:
             if storage_form["big_plan_ref_id"] else None,
             recurring_task_ref_id=EntityId(typing.cast(str, (storage_form["recurring_task_ref_id"])))
             if storage_form["recurring_task_ref_id"] else None,
-            created_date=pendulum.parse(typing.cast(str, storage_form["created_date"])),
             name=typing.cast(str, storage_form["name"]),
             archived=typing.cast(bool, storage_form["archived"]),
             status=InboxTaskStatus(typing.cast(str, storage_form["status"])),
@@ -210,7 +230,13 @@ class InboxTasksRepository:
             due_date=pendulum.parse(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             recurring_task_timeline=typing.cast(str, storage_form["recurring_task_timeline"])
-            if storage_form["recurring_task_timeline"] else None)
+            if storage_form["recurring_task_timeline"] else None,
+            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            if storage_form["archived_time"] is not None else None,
+            considered_done_time=pendulum.parse(typing.cast(str, storage_form["considered_done_time"]))
+            if storage_form.get("considered_done_time", None) else None)
 
     @staticmethod
     def live_to_storage(live_form: InboxTask) -> JSONDictType:
@@ -220,12 +246,16 @@ class InboxTasksRepository:
             "project_ref_id": live_form.project_ref_id,
             "big_plan_ref_id": live_form.big_plan_ref_id,
             "recurring_task_ref_id": live_form.recurring_task_ref_id,
-            "created_date": live_form.created_date.to_datetime_string(),
             "name": live_form.name,
             "archived": live_form.archived,
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
             "due_date": live_form.due_date.to_datetime_string() if live_form.due_date else None,
-            "recurring_task_timeline": live_form.recurring_task_timeline
+            "recurring_task_timeline": live_form.recurring_task_timeline,
+            "created_time": live_form.created_time.to_datetime_string(),
+            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
+            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None,
+            "considered_done_time": live_form.considered_done_time.to_datetime_string()
+                                    if live_form.considered_done_time else None
         }

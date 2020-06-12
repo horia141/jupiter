@@ -7,9 +7,12 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
+import pendulum
+
 from models.basic import EntityId, ProjectKey
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +25,9 @@ class Project:
     key: ProjectKey
     archived: bool
     name: str
+    created_time: pendulum.DateTime
+    last_modified_time: pendulum.DateTime
+    archived_time: Optional[pendulum.DateTime]
 
 
 @typing.final
@@ -30,10 +36,12 @@ class ProjectsRepository:
 
     _PROJECTS_FILE_PATH: ClassVar[Path] = Path("/data/projects.yaml")
 
+    _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[Project]]
 
-    def __init__(self) -> None:
+    def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._structured_storage = StructuredCollectionStorage(self._PROJECTS_FILE_PATH, self)
 
     def __enter__(self) -> 'ProjectsRepository':
@@ -60,7 +68,10 @@ class ProjectsRepository:
             ref_id=EntityId(str(projects_next_idx)),
             key=key,
             archived=archived,
-            name=name)
+            name=name,
+            created_time=self._time_provider.get_current_time(),
+            last_modified_time=self._time_provider.get_current_time(),
+            archived_time=self._time_provider.get_current_time() if archived else None)
 
         projects_next_idx += 1
         projects.append(new_project)
@@ -76,6 +87,8 @@ class ProjectsRepository:
         for project in projects:
             if project.key == key:
                 project.archived = True
+                project.last_modified_time = self._time_provider.get_current_time()
+                project.archived_time = self._time_provider.get_current_time()
                 self._structured_storage.save((projects_next_idx, projects))
                 return project
 
@@ -109,6 +122,7 @@ class ProjectsRepository:
         if not self._find_project_by_key(new_project.key, projects):
             raise RepositoryError(f"Project with key='{new_project.key}' does not exist")
 
+        new_project.last_modified_time = self._time_provider.get_current_time()
         new_projects = [(p if p.ref_id != new_project.ref_id else new_project) for p in projects]
         self._structured_storage.save((projects_next_idx, new_projects))
 
@@ -130,7 +144,10 @@ class ProjectsRepository:
                 "ref_id": {"type": "string"},
                 "key": {"type": "string"},
                 "archived": {"type": "boolean"},
-                "name": {"type": "string"}
+                "name": {"type": "string"},
+                "created_time": {"type": "string"},
+                "last_modified_time": {"type": "string"},
+                "archived_time": {"type": ["string", "null"]}
             }
         }
 
@@ -141,7 +158,11 @@ class ProjectsRepository:
             ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
             key=ProjectKey(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
-            name=typing.cast(str, storage_form["name"]))
+            name=typing.cast(str, storage_form["name"]),
+            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            if storage_form["archived_time"] is not None else None)
 
     @staticmethod
     def live_to_storage(live_form: Project) -> JSONDictType:
@@ -150,5 +171,8 @@ class ProjectsRepository:
             "ref_id": live_form.ref_id,
             "key": live_form.key,
             "archived": live_form.archived,
-            "name": live_form.name
+            "name": live_form.name,
+            "created_time": live_form.created_time.to_datetime_string(),
+            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
+            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None
         }

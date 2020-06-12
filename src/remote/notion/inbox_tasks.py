@@ -30,7 +30,6 @@ class InboxTaskRow(BasicRowType):
 
     name: str
     archived: bool
-    created_date: Optional[pendulum.DateTime]
     big_plan_ref_id: Optional[str]
     big_plan_name: Optional[str]
     recurring_task_ref_id: Optional[str]
@@ -175,10 +174,6 @@ class InboxTasksCollection:
             "name": "Due Date",
             "type": "date"
         },
-        "created-date": {
-            "name": "Created Date",
-            "type": "date"
-        },
         "eisen": {
             "name": "Eisenhower",
             "type": "multi_select",
@@ -262,9 +257,6 @@ class InboxTasksCollection:
         }, {
             "property": "due-date",
             "visible": True
-        }, {
-            "property": "created-date",
-            "visible": False
         }, {
             "property": "eisen",
             "visible": True
@@ -617,9 +609,6 @@ class InboxTasksCollection:
                 "property": "due-date",
                 "visible": False
             }, {
-                "property": "created-date",
-                "visible": False
-            }, {
                 "property": "eisen",
                 "visible": True
             }, {
@@ -673,10 +662,6 @@ class InboxTasksCollection:
             }, {
                 "width": 100,
                 "property": "due-date",
-                "visible": True
-            }, {
-                "width": 100,
-                "property": "created-date",
                 "visible": True
             }, {
                 "width": 100,
@@ -754,17 +739,15 @@ class InboxTasksCollection:
         LOGGER.info("Updated the schema for the associated inbox")
 
     def create_inbox_task(
-            self, project_ref_id: EntityId, name: str, archived: bool, created_date: pendulum.DateTime,
-            big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
-            recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
-            difficulty: Optional[str], due_date: Optional[pendulum.DateTime], recurring_period: Optional[str],
-            recurring_timeline: Optional[str], ref_id: EntityId) -> InboxTaskRow:
+            self, project_ref_id: EntityId, name: str, archived: bool, big_plan_ref_id: Optional[EntityId],
+            big_plan_name: Optional[str], recurring_task_ref_id: Optional[EntityId], status: str,
+            eisen: Optional[List[str]], difficulty: Optional[str], due_date: Optional[pendulum.DateTime],
+            recurring_period: Optional[str], recurring_timeline: Optional[str], ref_id: EntityId) -> InboxTaskRow:
         """Create an inbox task."""
         new_inbox_task_row = InboxTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
             name=name,
             archived=archived,
-            created_date=created_date,
             big_plan_ref_id=big_plan_ref_id,
             big_plan_name=big_plan_name,
             recurring_task_ref_id=recurring_task_ref_id,
@@ -890,7 +873,6 @@ class InboxTasksCollection:
         # pylint: disable=unused-argument
         notion_row.title = row.name
         notion_row.archived = row.archived
-        notion_row.created_date = row.created_date
         notion_row.big_plan_id = row.big_plan_ref_id
         if row.big_plan_name:
             notion_row.big_plan = row.big_plan_name
@@ -913,8 +895,6 @@ class InboxTasksCollection:
             notion_id=inbox_task_notion_row.id,
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,
-            created_date=pendulum.parse(str(inbox_task_notion_row.created_date.start))
-            if inbox_task_notion_row.created_date else None,
             big_plan_ref_id=inbox_task_notion_row.big_plan_id,
             big_plan_name=inbox_task_notion_row.big_plan,
             recurring_task_ref_id=inbox_task_notion_row.recurring_task_id,

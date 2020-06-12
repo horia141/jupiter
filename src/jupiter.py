@@ -90,14 +90,14 @@ def main() -> None:
 
     notion_connection = NotionConnection()
 
-    workspaces_repository = WorkspaceRepository()
+    workspaces_repository = WorkspaceRepository(time_provider)
     workspaces_singleton = WorkspaceSingleton(notion_connection)
 
-    with VacationsRepository() as vacations_repository,\
-            ProjectsRepository() as projects_repository,\
-            InboxTasksRepository() as inbox_tasks_repository,\
-            RecurringTasksRepository() as recurring_tasks_repository,\
-            BigPlansRepository() as big_plans_repository, \
+    with VacationsRepository(time_provider) as vacations_repository,\
+            ProjectsRepository(time_provider) as projects_repository,\
+            InboxTasksRepository(time_provider) as inbox_tasks_repository,\
+            RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
+            BigPlansRepository(time_provider) as big_plans_repository, \
             VacationsCollection(notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(notion_connection) as inbox_tasks_collection, \
@@ -105,11 +105,12 @@ def main() -> None:
             BigPlansCollection(notion_connection) as big_plans_collection:
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
-        vacations_service = VacationsService(basic_validator, vacations_repository, vacations_collection)
+        vacations_service = VacationsService(
+            basic_validator, vacations_repository, vacations_collection)
         projects_service = ProjectsService(
             basic_validator, projects_repository, projects_collection)
         inbox_tasks_service = InboxTasksService(
-            basic_validator, time_provider, inbox_tasks_repository, inbox_tasks_collection)
+            basic_validator, inbox_tasks_repository, inbox_tasks_collection)
         recurring_tasks_service = RecurringTasksService(
             basic_validator, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)

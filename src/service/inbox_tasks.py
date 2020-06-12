@@ -13,7 +13,7 @@ from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTasksRepository, InboxTask
 from repository.recurring_tasks import RecurringTask
 from service.errors import ServiceValidationError
-from utils.time_provider import TimeProvider
+from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,16 +22,14 @@ class InboxTasksService:
     """The service class for dealing with inbox tasks."""
 
     _basic_validator: Final[BasicValidator]
-    _time_provider: Final[TimeProvider]
     _repository: Final[InboxTasksRepository]
     _collection: Final[InboxTasksCollection]
 
     def __init__(
-            self, basic_validator: BasicValidator, time_provider: TimeProvider, repository: InboxTasksRepository,
+            self, basic_validator: BasicValidator, repository: InboxTasksRepository,
             collection: InboxTasksCollection) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._time_provider = time_provider
         self._repository = repository
         self._collection = collection
 
@@ -75,7 +73,6 @@ class InboxTasksService:
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
             recurring_task_ref_id=None,
-            created_date=self._time_provider.get_current_time(),
             name=name,
             archived=False,
             status=InboxTaskStatus.ACCEPTED,
@@ -88,7 +85,6 @@ class InboxTasksService:
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
             archived=False,
-            created_date=new_inbox_task.created_date,
             name=new_inbox_task.name,
             big_plan_ref_id=new_inbox_task.big_plan_ref_id,
             big_plan_name=remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None,
@@ -114,7 +110,6 @@ class InboxTasksService:
             project_ref_id=project_ref_id,
             big_plan_ref_id=None,
             recurring_task_ref_id=recurring_task_ref_id,
-            created_date=self._time_provider.get_current_time(),
             name=name,
             archived=False,
             status=InboxTaskStatus.RECURRING,
@@ -127,7 +122,6 @@ class InboxTasksService:
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
             archived=False,
-            created_date=new_inbox_task.created_date,
             name=new_inbox_task.name,
             big_plan_ref_id=None,
             big_plan_name=None,
@@ -242,8 +236,12 @@ class InboxTasksService:
         """Change the status of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        considered_done_time_action = \
+            TimeFieldAction.SET if not inbox_task.is_considered_done and status.is_considered_done else \
+            TimeFieldAction.CLEAR if inbox_task.is_considered_done and not status.is_considered_done else \
+            TimeFieldAction.DO_NOTHING
         inbox_task.status = status
-        self._repository.save_inbox_task(inbox_task)
+        self._repository.save_inbox_task(inbox_task, considered_done_time_action=considered_done_time_action)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
@@ -426,7 +424,6 @@ class InboxTasksService:
                     project_ref_id=project_ref_id,
                     big_plan_ref_id=big_plan.ref_id if big_plan else None,
                     recurring_task_ref_id=recurring_task.ref_id if recurring_task else None,
-                    created_date=self._time_provider.get_current_time(),
                     name=inbox_task_name,
                     archived=inbox_task_row.archived,
                     status=inbox_task_status,
@@ -487,6 +484,16 @@ class InboxTasksService:
                         big_plan = \
                             all_big_plans_by_name[remote.notion.common.format_name_for_option(inbox_task_big_plan_name)]
 
+                    archived_time_action = \
+                        TimeFieldAction.SET if not inbox_task.archived and inbox_task_row.archived else \
+                        TimeFieldAction.CLEAR if inbox_task.archived and not inbox_task_row.archived else \
+                            TimeFieldAction.DO_NOTHING
+                    considered_done_time_action = \
+                        TimeFieldAction.SET if \
+                            (not inbox_task.is_considered_done and inbox_task_status.is_considered_done) else \
+                        TimeFieldAction.CLEAR if \
+                            (inbox_task.is_considered_done and not inbox_task_status.is_considered_done) else \
+                        TimeFieldAction.DO_NOTHING
                     inbox_task.big_plan_ref_id = big_plan.ref_id if big_plan else None
                     inbox_task.name = inbox_task_name
                     inbox_task.archived = inbox_task_row.archived
@@ -494,7 +501,9 @@ class InboxTasksService:
                     inbox_task.eisen = inbox_task_eisen
                     inbox_task.difficulty = inbox_task_difficulty
                     inbox_task.due_date = inbox_task_row.due_date
-                    self._repository.save_inbox_task(inbox_task)
+                    self._repository.save_inbox_task(
+                        inbox_task, archived_time_action=archived_time_action,
+                        considered_done_time_action=considered_done_time_action)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
@@ -509,7 +518,6 @@ class InboxTasksService:
                     inbox_task_row.big_plan_name = \
                         remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None
                     inbox_task_row.recurring_task_ref_id = inbox_task.recurring_task_ref_id
-                    inbox_task_row.created_date = inbox_task.created_date
                     inbox_task_row.name = inbox_task.name
                     inbox_task_row.archived = inbox_task.archived
                     inbox_task_row.status = inbox_task.status.for_notion()
@@ -554,7 +562,6 @@ class InboxTasksService:
             self._collection.create_inbox_task(
                 project_ref_id=project_ref_id,
                 archived=inbox_task.archived,
-                created_date=inbox_task.created_date,
                 name=inbox_task.name,
                 big_plan_ref_id=big_plan.ref_id if big_plan else None,
                 big_plan_name=remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None,

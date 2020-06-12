@@ -7,10 +7,13 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
+import pendulum
 
 from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, EntityName
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.time_field_action import TimeFieldAction
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +36,9 @@ class RecurringTask:
     suspended: bool
     skip_rule: Optional[str]
     must_do: bool
+    created_time: pendulum.DateTime
+    last_modified_time: pendulum.DateTime
+    archived_time: Optional[pendulum.DateTime]
 
 
 @typing.final
@@ -41,10 +47,12 @@ class RecurringTasksRepository:
 
     _RECURRING_TASKS_FILE_PATH: ClassVar[Path] = Path("/data/recurring-tasks.yaml")
 
+    _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[RecurringTask]]
 
-    def __init__(self) -> None:
+    def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._structured_storage = StructuredCollectionStorage(self._RECURRING_TASKS_FILE_PATH, self)
 
     def __enter__(self) -> 'RecurringTasksRepository':
@@ -61,10 +69,10 @@ class RecurringTasksRepository:
         self._structured_storage.exit_save()
 
     def create_recurring_task(
-            self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod,
-            group: EntityName, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
-            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
-            skip_rule: Optional[str], must_do: bool) -> RecurringTask:
+            self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod, group: EntityName,
+            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
+            must_do: bool) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
@@ -82,7 +90,10 @@ class RecurringTasksRepository:
             due_at_month=due_at_month,
             suspended=suspended,
             skip_rule=skip_rule,
-            must_do=must_do)
+            must_do=must_do,
+            created_time=self._time_provider.get_current_time(),
+            last_modified_time=self._time_provider.get_current_time(),
+            archived_time=self._time_provider.get_current_time() if archived else None)
 
         recurring_tasks_next_idx += 1
         recurring_tasks.append(new_recurring_task)
@@ -98,6 +109,8 @@ class RecurringTasksRepository:
         for recurring_task in recurring_tasks:
             if recurring_task.ref_id == ref_id:
                 recurring_task.archived = True
+                recurring_task.last_modified_time = self._time_provider.get_current_time()
+                recurring_task.archived_time = self._time_provider.get_current_time()
                 self._structured_storage.save((recurring_tasks_next_idx, recurring_tasks))
                 return recurring_task
 
@@ -127,13 +140,17 @@ class RecurringTasksRepository:
             raise RepositoryError(f"Recurring task with id='{ref_id}' is archived")
         return found_recurring_tasks
 
-    def save_recurring_task(self, new_recurring_task: RecurringTask) -> RecurringTask:
+    def save_recurring_task(
+            self, new_recurring_task: RecurringTask,
+            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> RecurringTask:
         """Store a particular recurring task with all new properties."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
         if not self._find_recurring_task_by_id(new_recurring_task.ref_id, recurring_tasks):
             raise RepositoryError(f"Recurring task with id='{new_recurring_task.ref_id}' does not exist")
 
+        new_recurring_task.last_modified_time = self._time_provider.get_current_time()
+        archived_time_action.act(new_recurring_task, "archived_task", self._time_provider.get_current_time())
         new_recurring_tasks = [(rt if rt.ref_id != new_recurring_task.ref_id else new_recurring_task)
                                for rt in recurring_tasks]
         self._structured_storage.save((recurring_tasks_next_idx, new_recurring_tasks))
@@ -179,7 +196,10 @@ class RecurringTasksRepository:
                 "due_at_month": {"type": ["number", "null"]},
                 "suspended": {"type": "boolean"},
                 "skip_rule": {"type": ["string", "null"]},
-                "must_do": {"type": "boolean"}
+                "must_do": {"type": "boolean"},
+                "created_time": {"type": "string"},
+                "last_modified_time": {"type": "string"},
+                "archived_time": {"type": ["string", "null"]}
             }
         }
 
@@ -200,7 +220,11 @@ class RecurringTasksRepository:
             due_at_month=typing.cast(int, storage_form["due_at_month"]) if storage_form["due_at_month"] else None,
             suspended=typing.cast(bool, storage_form["suspended"]),
             skip_rule=typing.cast(str, storage_form["skip_rule"]) if storage_form["skip_rule"] else None,
-            must_do=typing.cast(bool, storage_form["must_do"]))
+            must_do=typing.cast(bool, storage_form["must_do"]),
+            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            if storage_form["archived_time"] is not None else None)
 
     @staticmethod
     def live_to_storage(live_form: RecurringTask) -> JSONDictType:
@@ -219,5 +243,8 @@ class RecurringTasksRepository:
             "due_at_month": live_form.due_at_month,
             "suspended": live_form.suspended,
             "skip_rule": live_form.skip_rule,
-            "must_do": live_form.must_do
+            "must_do": live_form.must_do,
+            "created_time": live_form.created_time.to_datetime_string(),
+            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
+            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None
         }

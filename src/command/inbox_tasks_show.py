@@ -59,6 +59,6 @@ class InboxTasksShow(command.Command):
                   (f' big_plan="{big_plan.name}"' if big_plan else "") +
                   (f' recurring_task="{recurring_task.name}"' if recurring_task else "") +
                   f' due_date="{inbox_task.due_date.to_datetime_string() if inbox_task.due_date else ""}"' +
-                  f'\n    created_date="{inbox_task.created_date.to_datetime_string()}"' +
+                  f'\n    created_time="{inbox_task.created_time.to_datetime_string()}"' +
                   f' eisen={",".join(e.for_notion() for e in inbox_task.eisen)}' +
                   f' difficulty={inbox_task.difficulty.for_notion() if inbox_task.difficulty else ""}')

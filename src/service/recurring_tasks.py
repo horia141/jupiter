@@ -8,6 +8,7 @@ from remote.notion.common import NotionPageLink, NotionCollectionLink, Collectio
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTask
 from service.errors import ServiceValidationError
+from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -401,6 +402,10 @@ class RecurringTasksService:
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
 
+                    archived_time_action = \
+                        TimeFieldAction.SET if not recurring_task.archived and recurring_task_row.archived else \
+                        TimeFieldAction.CLEAR if recurring_task.archived and not recurring_task_row.archived else \
+                        TimeFieldAction.DO_NOTHING
                     recurring_task.name = recurring_task_name
                     recurring_task.period = recurring_task_period
                     recurring_task.archived = recurring_task_row.archived
@@ -413,7 +418,7 @@ class RecurringTasksService:
                     recurring_task.suspended = recurring_task_row.suspended
                     recurring_task.skip_rule = recurring_task_row.skip_rule
                     recurring_task.must_do = recurring_task_row.must_do
-                    self._repository.save_recurring_task(recurring_task)
+                    self._repository.save_recurring_task(recurring_task, archived_time_action=archived_time_action)
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion

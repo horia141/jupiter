@@ -2,6 +2,7 @@
 
 import enum
 import re
+import typing
 from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern
 
 import pendulum
@@ -84,6 +85,13 @@ class InboxTaskStatus(enum.Enum):
         """A prettier version of the value for Notion."""
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
+    @property
+    def is_considered_done(self) -> bool:
+        """Whether this is a done status or not."""
+        # pylint: disable=comparison-with-callable
+        # Because of https://github.com/PyCQA/pylint/issues/2306
+        return (typing.cast(str, self.value) == "not-done") or (typing.cast(str, self.value) == "done")
+
 
 @enum.unique
 class RecurringTaskPeriod(enum.Enum):
@@ -112,6 +120,13 @@ class BigPlanStatus(enum.Enum):
     def for_notion(self) -> str:
         """A prettier version of the value for Notion."""
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
+
+    @property
+    def is_considered_done(self) -> bool:
+        """Whether this is a done status or not."""
+        # pylint: disable=comparison-with-callable
+        # Because of https://github.com/PyCQA/pylint/issues/2306
+        return (typing.cast(str, self.value) == "not-done") or (typing.cast(str, self.value) == "done")
 
 
 class BasicValidator:

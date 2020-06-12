@@ -87,7 +87,7 @@ class RecurringTasksController:
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
-                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
+                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
                 recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                 recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_name(inbox_task.ref_id, schedule.full_name)
@@ -102,7 +102,7 @@ class RecurringTasksController:
             if inbox_task.is_considered_done:
                 continue
             schedule = schedules.get_schedule(
-                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
+                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
                 recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                 recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
@@ -142,7 +142,7 @@ class RecurringTasksController:
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
-                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_date),
+                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
                 recurring_task.skip_rule, due_at_time, due_at_day, due_at_month)
             self._inbox_tasks_service.set_inbox_task_due_date(inbox_task.ref_id, schedule.due_time)
         return recurring_task

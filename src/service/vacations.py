@@ -9,6 +9,7 @@ from remote.notion.common import NotionPageLink, NotionCollectionLink, Collectio
 from remote.notion.vacations import VacationsCollection
 from repository.vacations import VacationsRepository, Vacation
 from service.errors import ServiceError, ServiceValidationError
+from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -200,7 +201,7 @@ class VacationsService:
                         f"Start date for vacation {vacation_row.name} is after end date")
 
                 new_vacation = self._repository.create_vacation(
-                    archived=False,
+                    archived=vacation_row.archived,
                     name=vacation_name,
                     start_date=pendulum.instance(vacation_row.start_date),
                     end_date=pendulum.instance(vacation_row.end_date))
@@ -231,11 +232,15 @@ class VacationsService:
                         raise ServiceValidationError(
                             f"Start date for vacation {vacation_row.name} is after end date")
 
+                    archived_time_action = \
+                        TimeFieldAction.SET if not vacation.archived and vacation_row.archived else \
+                        TimeFieldAction.CLEAR if vacation.archived and not vacation_row.archived else \
+                        TimeFieldAction.DO_NOTHING
                     vacation.archived = vacation_row.archived
                     vacation.name = vacation_name
                     vacation.start_date = vacation_row.start_date
                     vacation.end_date = vacation_row.end_date
-                    self._repository.save_vacation(vacation)
+                    self._repository.save_vacation(vacation, archived_time_action=archived_time_action)
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     vacation_row.archived = vacation.archived
