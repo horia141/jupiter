@@ -1,6 +1,7 @@
 """The CLI entry-point for Jupiter."""
 
 import argparse
+import coloredlogs
 import logging
 
 from command.big_plans_archive import BigPlansArchive
@@ -201,7 +202,12 @@ def main() -> None:
             command.build_parser(command_parser)
 
         args = parser.parse_args()
-        logging.basicConfig(level=_map_log_level_to_log_class(args.min_log_level))
+
+        coloredlogs.install(level=_map_log_level_to_log_class(args.min_log_level))
+        logging.basicConfig(
+            level=_map_log_level_to_log_class(args.min_log_level),
+            format="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S")
 
         try:
             for command in commands:
