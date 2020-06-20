@@ -36,12 +36,9 @@ class InboxTask:
     created_time: pendulum.DateTime
     last_modified_time: pendulum.DateTime
     archived_time: Optional[pendulum.DateTime]
-    considered_done_time: Optional[pendulum.DateTime]
-
-    @property
-    def is_considered_done(self) -> bool:
-        """Whether the task is considered in a done-like state - either DONE or NOT_DONE."""
-        return self.status.is_considered_done
+    accepted_time: Optional[pendulum.DateTime]
+    working_time: Optional[pendulum.DateTime]
+    completed_time: Optional[pendulum.DateTime]
 
 
 @typing.final
@@ -94,7 +91,9 @@ class InboxTasksRepository:
             created_time=self._time_provider.get_current_time(),
             last_modified_time=self._time_provider.get_current_time(),
             archived_time=self._time_provider.get_current_time() if archived else None,
-            considered_done_time=self._time_provider.get_current_time() if status.is_considered_done else None)
+            accepted_time=self._time_provider.get_current_time() if status.is_accepted_or_more else None,
+            working_time=self._time_provider.get_current_time() if status.is_working_or_more else None,
+            completed_time=self._time_provider.get_current_time() if status.is_completed else None)
 
         inbox_tasks_next_idx += 1
         inbox_tasks.append(new_inbox_task)
@@ -152,7 +151,9 @@ class InboxTasksRepository:
     def save_inbox_task(
             self, new_inbox_task: InboxTask,
             archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
-            considered_done_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> InboxTask:
+            accepted_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
+            working_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
+            completed_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> InboxTask:
         """Store a particular inbox task with all new properties."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
@@ -161,7 +162,9 @@ class InboxTasksRepository:
 
         new_inbox_task.last_modified_time = self._time_provider.get_current_time()
         archived_time_action.act(new_inbox_task, "archived_time", self._time_provider.get_current_time())
-        considered_done_time_action.act(new_inbox_task, "considered_done_time", self._time_provider.get_current_time())
+        accepted_time_action.act(new_inbox_task, "accepted_time", self._time_provider.get_current_time())
+        working_time_action.act(new_inbox_task, "working_time", self._time_provider.get_current_time())
+        completed_time_action.act(new_inbox_task, "completed_time", self._time_provider.get_current_time())
         new_inbox_tasks = [(rt if rt.ref_id != new_inbox_task.ref_id else new_inbox_task)
                            for rt in inbox_tasks]
         self._structured_storage.save((inbox_tasks_next_idx, new_inbox_tasks))
@@ -207,7 +210,9 @@ class InboxTasksRepository:
                 "created_time": {"type": "string"},
                 "last_modified_time": {"type": "string"},
                 "archived_time": {"type": ["string", "null"]},
-                "considered_done_time": {"type": ["string", "null"]},
+                "accepted_time": {"type": ["string", "null"]},
+                "working_time": {"type": ["string", "null"]},
+                "completed_time": {"type": ["string", "null"]}
             }
         }
 
@@ -234,9 +239,13 @@ class InboxTasksRepository:
             created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
             last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
-            if storage_form["archived_time"] is not None else None,
-            considered_done_time=pendulum.parse(typing.cast(str, storage_form["considered_done_time"]))
-            if storage_form.get("considered_done_time", None) else None)
+            if storage_form["archived_time"] else None,
+            accepted_time=pendulum.parse(typing.cast(str, storage_form["accepted_time"]))
+            if storage_form["accepted_time"] else None,
+            working_time=pendulum.parse(typing.cast(str, storage_form["working_time"]))
+            if storage_form["working_time"] else None,
+            completed_time=pendulum.parse(typing.cast(str, storage_form["completed_time"]))
+            if storage_form["completed_time"] else None)
 
     @staticmethod
     def live_to_storage(live_form: InboxTask) -> JSONDictType:
@@ -256,6 +265,7 @@ class InboxTasksRepository:
             "created_time": live_form.created_time.to_datetime_string(),
             "last_modified_time": live_form.last_modified_time.to_datetime_string(),
             "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None,
-            "considered_done_time": live_form.considered_done_time.to_datetime_string()
-                                    if live_form.considered_done_time else None
+            "accepted_time": live_form.accepted_time.to_datetime_string() if live_form.accepted_time else None,
+            "working_time": live_form.working_time.to_datetime_string() if live_form.working_time else None,
+            "completed_time": live_form.completed_time.to_datetime_string() if live_form.completed_time else None
         }

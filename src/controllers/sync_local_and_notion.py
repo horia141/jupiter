@@ -126,7 +126,7 @@ class SyncLocalAndNotionController:
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks instances for '{project.name}'")
                 for inbox_task in all_inbox_tasks:
-                    if inbox_task.is_considered_done:
+                    if inbox_task.status.is_completed:
                         continue
                     if inbox_task.recurring_task_ref_id is None:
                         continue

@@ -102,12 +102,22 @@ class BigPlansService:
             self, ref_id: EntityId, status: BigPlanStatus) -> BigPlan:
         """Change the status of a big plan."""
         big_plan = self._repository.load_big_plan(ref_id)
-        considered_done_time_action = \
-            TimeFieldAction.SET if not big_plan.is_considered_done and status.is_considered_done else \
-            TimeFieldAction.CLEAR if big_plan.is_considered_done and not status.is_considered_done else \
+        accepted_time_action = \
+            TimeFieldAction.SET if not big_plan.status.is_accepted_or_more and status.is_accepted_or_more else \
+            TimeFieldAction.CLEAR if big_plan.status.is_accepted_or_more and not status.is_accepted_or_more else \
+            TimeFieldAction.DO_NOTHING
+        working_time_action = \
+            TimeFieldAction.SET if not big_plan.status.is_working_or_more and status.is_working_or_more else \
+            TimeFieldAction.CLEAR if big_plan.status.is_working_or_more and not status.is_working_or_more else \
+            TimeFieldAction.DO_NOTHING
+        completed_time_action = \
+            TimeFieldAction.SET if not big_plan.status.is_completed and status.is_completed else \
+            TimeFieldAction.CLEAR if big_plan.status.is_completed and not status.is_completed else \
             TimeFieldAction.DO_NOTHING
         big_plan.status = status
-        self._repository.save_big_plan(big_plan, considered_done_time_action=considered_done_time_action)
+        self._repository.save_big_plan(
+            big_plan, accepted_time_action=accepted_time_action, working_time_action=working_time_action,
+            completed_time_action=completed_time_action)
         LOGGER.info("Applied local changes")
 
         big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, big_plan.ref_id)
@@ -235,11 +245,23 @@ class BigPlansService:
                         TimeFieldAction.SET if not big_plan.archived and big_plan_row.archived else \
                         TimeFieldAction.CLEAR if big_plan.archived and not big_plan_row.archived else \
                         TimeFieldAction.DO_NOTHING
-                    considered_done_time_action = \
+                    accepted_time_action = \
                         TimeFieldAction.SET if \
-                            (not big_plan.is_considered_done and big_plan_status.is_considered_done) else \
+                            (not big_plan.status.is_accepted_or_more and big_plan_status.is_accepted_or_more) else \
                         TimeFieldAction.CLEAR if \
-                            (big_plan.is_considered_done and not big_plan_status.is_considered_done) else \
+                            (big_plan.status.is_accepted_or_more and not big_plan_status.is_accepted_or_more) else \
+                        TimeFieldAction.DO_NOTHING
+                    working_time_action = \
+                        TimeFieldAction.SET if \
+                            (not big_plan.status.is_working_or_more and big_plan_status.is_working_or_more) else \
+                        TimeFieldAction.CLEAR if \
+                            (big_plan.status.is_working_or_more and not big_plan_status.is_working_or_more) else \
+                        TimeFieldAction.DO_NOTHING
+                    completed_time_action = \
+                        TimeFieldAction.SET if \
+                            (not big_plan.status.is_completed and big_plan_status.is_completed) else \
+                        TimeFieldAction.CLEAR if \
+                            (big_plan.status.is_completed and not big_plan_status.is_completed) else \
                         TimeFieldAction.DO_NOTHING
                     big_plan.name = big_plan_name
                     big_plan.archived = big_plan_row.archived
@@ -247,7 +269,8 @@ class BigPlansService:
                     big_plan.due_date = big_plan.due_date
                     self._repository.save_big_plan(
                         big_plan, archived_time_action=archived_time_action,
-                        considered_done_time_action=considered_done_time_action)
+                        accepted_time_action=accepted_time_action, working_time_action=working_time_action,
+                        completed_time_action=completed_time_action)
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion

@@ -99,7 +99,7 @@ class RecurringTasksController:
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
-            if inbox_task.is_considered_done:
+            if inbox_task.status.is_completed:
                 continue
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),

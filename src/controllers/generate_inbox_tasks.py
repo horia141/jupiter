@@ -1,4 +1,4 @@
-"""The controller for recurring tasks."""
+"""The controller for generating inbox tasks."""
 import logging
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
@@ -18,8 +18,8 @@ from service.vacations import VacationsService
 LOGGER = logging.getLogger(__name__)
 
 
-class RecurringTasksGenController:
-    """The controller for recurring tasks."""
+class GenerateInboxTasksController:
+    """The controller for generating inbox tasks."""
 
     _projects_service: Final[ProjectsService]
     _vacations_service: Final[VacationsService]

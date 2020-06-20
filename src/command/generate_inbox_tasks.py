@@ -5,27 +5,27 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from controllers.recurring_tasks_gen import RecurringTasksGenController
+from controllers.generate_inbox_tasks import GenerateInboxTasksController
 from models.basic import BasicValidator
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class RecurringTasksGen(command.Command):
+class GenerateInboxTasks(command.Command):
     """Command class for creating recurring tasks."""
 
     _basic_validator: Final[BasicValidator]
     _time_provider: Final[TimeProvider]
-    _recurring_tasks_gen_controller: Final[RecurringTasksGenController]
+    _generate_inbox_tasks_controller: Final[GenerateInboxTasksController]
 
     def __init__(
             self, basic_validator: BasicValidator, time_provider: TimeProvider,
-            recurring_tasks_gen_controller: RecurringTasksGenController) -> None:
+            generate_inbox_tasks_controller: GenerateInboxTasksController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._time_provider = time_provider
-        self._recurring_tasks_gen_controller = recurring_tasks_gen_controller
+        self._generate_inbox_tasks_controller = generate_inbox_tasks_controller
 
     @staticmethod
     def name() -> str:
@@ -62,5 +62,5 @@ class RecurringTasksGen(command.Command):
             if len(args.ref_ids) > 0 else None
         period_filter = [self._basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period] \
             if len(args.period) > 0 else None
-        self._recurring_tasks_gen_controller.recurring_tasks_gen(
+        self._generate_inbox_tasks_controller.recurring_tasks_gen(
             right_now, project_keys, group_filter, ref_ids, period_filter)

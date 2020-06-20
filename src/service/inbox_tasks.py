@@ -236,12 +236,22 @@ class InboxTasksService:
         """Change the status of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
-        considered_done_time_action = \
-            TimeFieldAction.SET if not inbox_task.is_considered_done and status.is_considered_done else \
-            TimeFieldAction.CLEAR if inbox_task.is_considered_done and not status.is_considered_done else \
+        accepted_time_action = \
+            TimeFieldAction.SET if not inbox_task.status.is_accepted_or_more and status.is_accepted_or_more else \
+            TimeFieldAction.CLEAR if inbox_task.status.is_accepted_or_more and not status.is_accepted_or_more else \
+            TimeFieldAction.DO_NOTHING
+        working_time_action = \
+            TimeFieldAction.SET if not inbox_task.status.is_working_or_more and status.is_working_or_more else \
+            TimeFieldAction.CLEAR if inbox_task.status.is_working_or_more and not status.is_working_or_more else \
+            TimeFieldAction.DO_NOTHING
+        completed_time_action = \
+            TimeFieldAction.SET if not inbox_task.status.is_completed and status.is_completed else \
+            TimeFieldAction.CLEAR if inbox_task.status.is_completed and not status.is_completed else \
             TimeFieldAction.DO_NOTHING
         inbox_task.status = status
-        self._repository.save_inbox_task(inbox_task, considered_done_time_action=considered_done_time_action)
+        self._repository.save_inbox_task(
+            inbox_task, accepted_time_action=accepted_time_action, working_time_action=working_time_action,
+            completed_time_action=completed_time_action)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
@@ -333,7 +343,7 @@ class InboxTasksService:
             if inbox_task.archived:
                 continue
 
-            if not inbox_task.is_considered_done:
+            if not inbox_task.status.is_completed:
                 continue
 
             LOGGER.info(f"Removing task '{inbox_task.name}'")
@@ -487,12 +497,24 @@ class InboxTasksService:
                     archived_time_action = \
                         TimeFieldAction.SET if not inbox_task.archived and inbox_task_row.archived else \
                         TimeFieldAction.CLEAR if inbox_task.archived and not inbox_task_row.archived else \
-                            TimeFieldAction.DO_NOTHING
-                    considered_done_time_action = \
+                        TimeFieldAction.DO_NOTHING
+                    accepted_time_action = \
                         TimeFieldAction.SET if \
-                            (not inbox_task.is_considered_done and inbox_task_status.is_considered_done) else \
+                            (not inbox_task.status.is_accepted_or_more and inbox_task_status.is_accepted_or_more) else \
                         TimeFieldAction.CLEAR if \
-                            (inbox_task.is_considered_done and not inbox_task_status.is_considered_done) else \
+                            (inbox_task.status.is_accepted_or_more and not inbox_task_status.is_accepted_or_more) else \
+                        TimeFieldAction.DO_NOTHING
+                    working_time_action = \
+                        TimeFieldAction.SET if \
+                            (not inbox_task.status.is_working_or_more and inbox_task_status.is_working_or_more) else \
+                        TimeFieldAction.CLEAR if \
+                            (inbox_task.status.is_working_or_more and not inbox_task_status.is_working_or_more) else \
+                        TimeFieldAction.DO_NOTHING
+                    completed_time_action = \
+                        TimeFieldAction.SET if \
+                            (not inbox_task.status.is_completed and inbox_task_status.is_completed) else \
+                        TimeFieldAction.CLEAR if \
+                            (inbox_task.status.is_completed and not inbox_task_status.is_completed) else \
                         TimeFieldAction.DO_NOTHING
                     inbox_task.big_plan_ref_id = big_plan.ref_id if big_plan else None
                     inbox_task.name = inbox_task_name
@@ -503,7 +525,8 @@ class InboxTasksService:
                     inbox_task.due_date = inbox_task_row.due_date
                     self._repository.save_inbox_task(
                         inbox_task, archived_time_action=archived_time_action,
-                        considered_done_time_action=considered_done_time_action)
+                        accepted_time_action=accepted_time_action, working_time_action=working_time_action,
+                        completed_time_action=completed_time_action)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion

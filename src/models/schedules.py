@@ -1,5 +1,6 @@
 """Module for working with schedules."""
 import abc
+import typing
 from typing import Optional
 
 import pendulum
@@ -174,6 +175,11 @@ class Schedule(abc.ABC):
     def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the schedule block."""
         return self._due_date
+
+    def contains(self, datetime: pendulum.DateTime) -> bool:
+        """Tests whether a particular datetime is in the schedule block."""
+        return typing.cast(bool, self.first_day.start_of("day") <= datetime) \
+               and typing.cast(bool, datetime <= self.end_day.end_of("day"))
 
 
 class DailySchedule(Schedule):
@@ -352,7 +358,7 @@ class QuarterlySchedule(Schedule):
     @property
     def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
-        return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).start_of("month")
+        return self._date.on(self._date.year, self.month_to_quarter_start(self._date), self._date.day).start_of("month")
 
     @property
     def end_day(self) -> pendulum.DateTime:

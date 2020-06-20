@@ -1,8 +1,6 @@
 """Basic model types and validators for them."""
-
 import enum
 import re
-import typing
 from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern
 
 import pendulum
@@ -73,11 +71,15 @@ class Difficulty(enum.Enum):
 @enum.unique
 class InboxTaskStatus(enum.Enum):
     """The status of an inbox task."""
+    # Created
     NOT_STARTED = "not-started"
+    # Accepted
     ACCEPTED = "accepted"
     RECURRING = "recurring"
+    # Working
     IN_PROGRESS = "in-progress"
     BLOCKED = "blocked"
+    # Completed
     NOT_DONE = "not-done"
     DONE = "done"
 
@@ -86,11 +88,29 @@ class InboxTaskStatus(enum.Enum):
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
     @property
-    def is_considered_done(self) -> bool:
-        """Whether this is a done status or not."""
-        # pylint: disable=comparison-with-callable
-        # Because of https://github.com/PyCQA/pylint/issues/2306
-        return (typing.cast(str, self.value) == "not-done") or (typing.cast(str, self.value) == "done")
+    def is_accepted(self) -> bool:
+        """Whether the status means work has been accepted on the inbox task."""
+        return self in (InboxTaskStatus.ACCEPTED, InboxTaskStatus.RECURRING)
+
+    @property
+    def is_accepted_or_more(self) -> bool:
+        """Whether the status means work has been accepted, or is ongoing, or is completed."""
+        return self.is_accepted or self.is_working or self.is_completed
+
+    @property
+    def is_working(self) -> bool:
+        """Whether the status means work is ongoing for the inbox task."""
+        return self in (InboxTaskStatus.IN_PROGRESS, InboxTaskStatus.BLOCKED)
+
+    @property
+    def is_working_or_more(self) -> bool:
+        """Whether the status means work is ongoing, or is completed."""
+        return self.is_working or self.is_completed
+
+    @property
+    def is_completed(self) -> bool:
+        """Whether the status means work is completed on the inbox task."""
+        return self in (InboxTaskStatus.NOT_DONE, InboxTaskStatus.DONE)
 
 
 @enum.unique
@@ -110,10 +130,14 @@ class RecurringTaskPeriod(enum.Enum):
 @enum.unique
 class BigPlanStatus(enum.Enum):
     """The status of a big plan."""
+    # Created
     NOT_STARTED = "not-started"
+    # Accepted
     ACCEPTED = "accepted"
+    # Working
     IN_PROGRESS = "in-progress"
     BLOCKED = "blocked"
+    # Completed
     NOT_DONE = "not-done"
     DONE = "done"
 
@@ -122,11 +146,29 @@ class BigPlanStatus(enum.Enum):
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
     @property
-    def is_considered_done(self) -> bool:
-        """Whether this is a done status or not."""
-        # pylint: disable=comparison-with-callable
-        # Because of https://github.com/PyCQA/pylint/issues/2306
-        return (typing.cast(str, self.value) == "not-done") or (typing.cast(str, self.value) == "done")
+    def is_accepted(self) -> bool:
+        """Whether the status means work has been accepted on the inbox task."""
+        return self == BigPlanStatus.ACCEPTED
+
+    @property
+    def is_accepted_or_more(self) -> bool:
+        """Whether the status means work has been accepted, or is ongoing, or is completed."""
+        return self.is_accepted or self.is_working or self.is_completed
+
+    @property
+    def is_working(self) -> bool:
+        """Whether the status means work is ongoing for the inbox task."""
+        return self in (BigPlanStatus.IN_PROGRESS, BigPlanStatus.BLOCKED)
+
+    @property
+    def is_working_or_more(self) -> bool:
+        """Whether the status means work is ongoing, or is completed."""
+        return self.is_working or self.is_completed
+
+    @property
+    def is_completed(self) -> bool:
+        """Whether the status means work is completed on the inbox task."""
+        return self in (BigPlanStatus.NOT_DONE, BigPlanStatus.DONE)
 
 
 class BasicValidator:

@@ -4,3 +4,4 @@ pendulum==2.0.5
 pytz==2018.7
 jsonschema==3.2.0
 requests==2.23.0
+nested-dataclasses==0.1

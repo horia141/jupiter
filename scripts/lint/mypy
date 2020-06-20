@@ -26,3 +26,6 @@ ignore_missing_imports = True
 
 [mypy-pendulum.*]
 ignore_missing_imports = True
+
+[mypy-nested_dataclasses.*]
+ignore_missing_imports = True

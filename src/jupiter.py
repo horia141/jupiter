@@ -27,7 +27,7 @@ from command.projects_set_name import ProjectSetName
 from command.projects_show import ProjectShow
 from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
-from command.recurring_tasks_gen import RecurringTasksGen
+from command.generate_inbox_tasks import GenerateInboxTasks
 from command.recurring_tasks_hard_remove import RecurringTasksHardRemove
 from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
 from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
@@ -40,6 +40,7 @@ from command.recurring_tasks_set_skip_rule import RecurringTasksSetSkipRule
 from command.recurring_tasks_show import RecurringTasksShow
 from command.recurring_tasks_suspend import RecurringTasksSuspend
 from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
+from command.report_progress import ReportProgress
 from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacations_archive import VacationsArchive
 from command.vacations_create import VacationsCreate
@@ -56,7 +57,8 @@ from controllers.big_plans import BigPlansController
 from controllers.inbox_tasks import InboxTasksController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
-from controllers.recurring_tasks_gen import RecurringTasksGenController
+from controllers.generate_inbox_tasks import GenerateInboxTasksController
+from controllers.report_progress import ReportProgressController
 from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
@@ -127,8 +129,10 @@ def main() -> None:
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
             big_plans_service)
-        recurring_tasks_gen_controller = RecurringTasksGenController(
+        generate_inbox_tasks_controller = GenerateInboxTasksController(
             projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
+        report_progress_controller = ReportProgressController(
+            projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
 
         commands = [
             WorkspaceInit(basic_validator, workspaces_controller),
@@ -179,7 +183,8 @@ def main() -> None:
             BigPlansHardRemove(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
-            RecurringTasksGen(basic_validator, time_provider, recurring_tasks_gen_controller)
+            GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),
+            ReportProgress(basic_validator, time_provider, report_progress_controller)
         ]
 
         parser = argparse.ArgumentParser(description="The Jupiter goal management system")
