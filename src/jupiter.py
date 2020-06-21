@@ -203,10 +203,9 @@ def main() -> None:
 
         args = parser.parse_args()
 
-        coloredlogs.install(level=_map_log_level_to_log_class(args.min_log_level))
-        logging.basicConfig(
+        coloredlogs.install(
             level=_map_log_level_to_log_class(args.min_log_level),
-            format="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
+            fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S")
 
         try:
