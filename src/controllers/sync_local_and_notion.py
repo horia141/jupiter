@@ -5,7 +5,7 @@ from typing import Final, Optional, Iterable
 import pendulum
 
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
@@ -44,9 +44,15 @@ class SyncLocalAndNotionController:
 
     def sync(
             self, sync_targets: Iterable[SyncTarget], anti_entropy_by_name: bool, drop_all_notion: bool,
-            drop_all_notion_archived: bool, filter_project_keys: Optional[Iterable[ProjectKey]] = None,
+            drop_all_notion_archived: bool, vacation_ref_ids: Optional[Iterable[EntityId]],
+            filter_project_keys: Optional[Iterable[ProjectKey]],
+            filter_inbox_task_ref_ids: Optional[Iterable[EntityId]],
+            filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
+            filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
+        filter_recurring_task_ref_ids_set = \
+            frozenset(filter_recurring_task_ref_ids) if filter_recurring_task_ref_ids else None
         sync_targets = frozenset(sync_targets)
 
         if SyncTarget.STRUCTURE in sync_targets:
@@ -62,7 +68,7 @@ class SyncLocalAndNotionController:
 
         if SyncTarget.VACATIONS in sync_targets:
             LOGGER.info("Syncing the vacations")
-            all_vacations = self._vacations_service.vacations_sync(False, sync_prefer)
+            all_vacations = self._vacations_service.vacations_sync(False, vacation_ref_ids, sync_prefer)
             if anti_entropy_by_name:
                 _ = self._do_anti_entropy_for_vacations(all_vacations)
             if drop_all_notion_archived:
@@ -88,7 +94,7 @@ class SyncLocalAndNotionController:
             if SyncTarget.BIG_PLANS in sync_targets:
                 LOGGER.info(f"Syncing big plans for '{project.name}'")
                 all_big_plans = self._big_plans_service.big_plans_sync(
-                    project.ref_id, False, inbox_collection_link, sync_prefer)
+                    project.ref_id, False, inbox_collection_link, filter_big_plan_ref_ids, sync_prefer)
                 if anti_entropy_by_name:
                     all_big_plans = self._do_anti_entropy_for_big_plans(all_big_plans)
                 if drop_all_notion_archived:
@@ -96,32 +102,36 @@ class SyncLocalAndNotionController:
                 self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
             else:
                 all_big_plans = self._big_plans_service.load_all_big_plans(
-                    filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                    filter_archived=False, filter_ref_ids=filter_big_plan_ref_ids,
+                    filter_project_ref_ids=[project.ref_id])
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks for '{project.name}'")
                 all_recurring_tasks = self._recurring_tasks_service.recurring_tasks_sync(
-                    project.ref_id, False, inbox_collection_link, sync_prefer)
+                    project.ref_id, False, inbox_collection_link, filter_recurring_task_ref_ids, sync_prefer)
                 if anti_entropy_by_name:
                     all_recurring_tasks = self._do_anti_entropy_for_recurring_tasks(all_recurring_tasks)
                 if drop_all_notion_archived:
                     self._do_drop_all_recurring_tasks(all_recurring_tasks)
             else:
                 all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-                    filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                    filter_archived=False, filter_ref_ids=filter_recurring_task_ref_ids,
+                    filter_project_ref_ids=[project.ref_id])
             all_recurring_tasks_set = {rt.ref_id: rt for rt in all_recurring_tasks}
 
             if SyncTarget.INBOX_TASKS in sync_targets:
                 LOGGER.info(f"Syncing inbox tasks for '{project.name}'")
                 all_inbox_tasks = self._inbox_tasks_service.inbox_tasks_sync(
-                    project.ref_id, drop_all_notion, all_big_plans, all_recurring_tasks, sync_prefer)
+                    project.ref_id, drop_all_notion, all_big_plans, all_recurring_tasks, filter_inbox_task_ref_ids,
+                    sync_prefer)
                 if anti_entropy_by_name:
                     all_inbox_tasks = self._do_anti_entropy_for_inbox_tasks(all_inbox_tasks)
                 if drop_all_notion_archived:
                     self._do_drop_all_inbox_tasks(all_inbox_tasks)
             else:
                 all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-                    filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                    filter_archived=False, filter_ref_ids=filter_inbox_task_ref_ids,
+                    filter_project_ref_ids=[project.ref_id])
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks instances for '{project.name}'")
@@ -129,6 +139,9 @@ class SyncLocalAndNotionController:
                     if inbox_task.status.is_completed:
                         continue
                     if inbox_task.recurring_task_ref_id is None:
+                        continue
+                    if filter_recurring_task_ref_ids_set is not None \
+                            and inbox_task.recurring_task_ref_id not in filter_recurring_task_ref_ids_set:
                         continue
                     LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
                     recurring_task = all_recurring_tasks_set[inbox_task.recurring_task_ref_id]

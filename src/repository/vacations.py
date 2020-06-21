@@ -100,10 +100,15 @@ class VacationsRepository:
 
         raise RepositoryError(f"Vacation with id='{ref_id}' does not exist")
 
-    def load_all_vacations(self, filter_archived: bool = True) -> Iterable[Vacation]:
+    def load_all_vacations(
+            self, filter_archived: bool = True,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[Vacation]:
         """Retrieve all the vacations defined."""
+        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else []
         _, vacations = self._structured_storage.load()
-        return [v for v in vacations if (filter_archived is False or v.archived is False)]
+        return [v for v in vacations
+                if (filter_archived is False or v.archived is False)
+                and (len(filter_ref_ids_set) == 0 or v.ref_id in filter_ref_ids_set)]
 
     def load_vacation(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Retrieve a particular vacation by its id."""

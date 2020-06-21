@@ -1,6 +1,6 @@
 """The service class for dealing with vacations."""
 import logging
-from typing import Final, Iterable, Dict
+from typing import Final, Iterable, Dict, Optional
 
 import pendulum
 
@@ -168,9 +168,13 @@ class VacationsService:
         """Retrieve all vacations."""
         return self._repository.load_all_vacations(filter_archived=not show_archived)
 
-    def vacations_sync(self, drop_all_notion_side: bool, sync_prefer: SyncPrefer) -> Iterable[Vacation]:
+    def vacations_sync(
+            self, drop_all_notion_side: bool, filter_ref_ids: Optional[Iterable[EntityId]],
+            sync_prefer: SyncPrefer) -> Iterable[Vacation]:
         """Synchronise vacations between Notion and local storage."""
-        all_vacations = self._repository.load_all_vacations(filter_archived=False)
+        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
+
+        all_vacations = self._repository.load_all_vacations(filter_archived=False, filter_ref_ids=filter_ref_ids)
         all_vacations_set: Dict[EntityId, Vacation] = {v.ref_id: v for v in all_vacations}
 
         if not drop_all_notion_side:
@@ -184,7 +188,12 @@ class VacationsService:
 
         # Explore Notion and apply to local
         for vacation_row in all_vacations_rows:
-            LOGGER.info(f"Processing {vacation_row.name}")
+            if filter_ref_ids_set is not None and vacation_row.ref_id not in filter_ref_ids_set:
+                LOGGER.info(f"Skipping '{vacation_row.name}' (id={vacation_row.notion_id}) because of filtering")
+                continue
+
+            LOGGER.info(f"Syncing '{vacation_row.name}' (id={vacation_row.notion_id})")
+
             if vacation_row.ref_id is None or vacation_row.ref_id == "":
                 # If the vacation doesn't exist locally, we create it:
                 try:

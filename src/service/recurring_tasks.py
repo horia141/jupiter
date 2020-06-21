@@ -288,11 +288,13 @@ class RecurringTasksService:
 
     def recurring_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
-            sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
+            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
         """Synchronise recurring tasks between Notion and local storage."""
+        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
+
         # Load local storage
         all_recurring_tasks = self._repository.load_all_recurring_tasks(
-            filter_archived=False, filter_project_ref_ids=[project_ref_id])
+            filter_archived=False, filter_ref_ids=filter_ref_ids, filter_project_ref_ids=[project_ref_id])
         all_recurring_tasks_set = {rt.ref_id: rt for rt in all_recurring_tasks}
 
         if not drop_all_notion_side:
@@ -308,7 +310,13 @@ class RecurringTasksService:
         # Then look at each recurring task in Notion and try to match it with one in the local storage
 
         for recurring_task_row in all_recurring_tasks_rows:
-            LOGGER.info(f"Processing {recurring_task_row}")
+            # Skip this step when asking only for particular entities to be synced.
+            if filter_ref_ids_set is not None and recurring_task_row.ref_id not in filter_ref_ids_set:
+                LOGGER.info(
+                    f"Skipping '{recurring_task_row.name}' (id={recurring_task_row.notion_id}) because of filtering")
+                continue
+
+            LOGGER.info(f"Syncing '{recurring_task_row.name}' (id={recurring_task_row.notion_id})")
 
             if recurring_task_row.ref_id is None or recurring_task_row.ref_id == "":
                 # If the recurring task doesn't exist locally, we create it!

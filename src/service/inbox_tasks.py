@@ -366,10 +366,12 @@ class InboxTasksService:
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,
             all_big_plans: Iterable[BigPlan], all_recurring_tasks: Iterable[RecurringTask],
-            sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
+            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
+        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
+
         all_inbox_tasks = self._repository.load_all_inbox_task(
-            filter_archived=False, filter_project_ref_ids=[project_ref_id])
+            filter_archived=False, filter_ref_ids=filter_ref_ids, filter_project_ref_ids=[project_ref_id])
         all_inbox_tasks_set = {rt.ref_id: rt for rt in all_inbox_tasks}
 
         if not drop_all_notion_side:
@@ -392,7 +394,12 @@ class InboxTasksService:
         # Prepare Notion connection
 
         for inbox_task_row in all_inbox_tasks_rows:
-            LOGGER.info(f"Processing {inbox_task_row}")
+            # Skip this step when asking only for particular entities to be synced.
+            if filter_ref_ids_set is not None and inbox_task_row.ref_id not in filter_ref_ids_set:
+                LOGGER.info(f"Skipping '{inbox_task_row.name}' (id={inbox_task_row.notion_id}) because of filtering")
+                continue
+
+            LOGGER.info(f"Syncing '{inbox_task_row.name}' (id={inbox_task_row.notion_id})")
 
             if inbox_task_row.ref_id is None or inbox_task_row.ref_id == "":
                 # If the big plan doesn't exist locally, we create it!

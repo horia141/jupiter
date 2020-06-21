@@ -178,10 +178,12 @@ class BigPlansService:
 
     def big_plans_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
-            sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
+            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
         """Synchronise big plans between Notion and local storage."""
+        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
+
         all_big_plans = self._repository.load_all_big_plans(
-            filter_archived=False, filter_project_ref_ids=[project_ref_id])
+            filter_archived=False, filter_ref_ids=filter_ref_ids, filter_project_ref_ids=[project_ref_id])
         all_big_plans_set: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
 
         if not drop_all_notion_side:
@@ -197,7 +199,12 @@ class BigPlansService:
         # Then look at each big plan in Notion and try to match it with the one in the local stash
 
         for big_plan_row in all_big_plans_rows:
-            LOGGER.info(f"Processing {big_plan_row}")
+            # Skip this step when asking only for particular entities to be synced.
+            if filter_ref_ids_set is not None and big_plan_row.ref_id not in filter_ref_ids_set:
+                LOGGER.info(f"Skipping '{big_plan_row.name}' (id={big_plan_row.notion_id}) because of filtering")
+                continue
+
+            LOGGER.info(f"Syncing '{big_plan_row.name}' (id={big_plan_row.notion_id})")
             if big_plan_row.ref_id is None or big_plan_row.ref_id == "":
                 # If the big plan doesn't exist locally, we create it!
                 try:
@@ -228,7 +235,7 @@ class BigPlansService:
 
                 all_big_plans_set[big_plan_row.ref_id] = new_big_plan
                 all_big_plans_rows_set[big_plan_row.ref_id] = big_plan_row
-            elif big_plan_row.ref_id in all_big_plans_set and\
+            elif big_plan_row.ref_id in all_big_plans_set and \
                     big_plan_row.notion_id in all_big_plans_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
                 big_plan = all_big_plans_set[EntityId(big_plan_row.ref_id)]

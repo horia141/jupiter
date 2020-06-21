@@ -116,22 +116,25 @@ class ReportProgressController:
         self._recurring_tasks_service = recurring_tasks_service
 
     def run_report(
-            self, right_now: pendulum.DateTime, project_keys: Optional[Iterable[ProjectKey]],
-            big_plan_ref_ids: Optional[Iterable[EntityId]], recurring_task_ref_ids: Optional[Iterable[EntityId]],
+            self, right_now: pendulum.DateTime, filter_project_keys: Optional[Iterable[ProjectKey]],
+            filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
+            filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             period: RecurringTaskPeriod, breakdown_period: Optional[RecurringTaskPeriod] = None) -> RunReportResponse:
         """Run a progress report."""
-        projects = self._projects_service.load_all_projects(filter_keys=project_keys)
+        projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
         projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
         schedule = schedules.get_schedule(period, "Helper", right_now, None, None, None, None)
 
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_project_ref_ids=[p.ref_id for p in projects],
-            filter_big_plan_ref_ids=big_plan_ref_ids, filter_recurring_task_ref_ids=recurring_task_ref_ids)
+            filter_big_plan_ref_ids=filter_big_plan_ref_ids,
+            filter_recurring_task_ref_ids=filter_recurring_task_ref_ids)
         all_big_plans = self._big_plans_service.load_all_big_plans(
-            filter_archived=False, filter_ref_ids=big_plan_ref_ids, filter_project_ref_ids=[p.ref_id for p in projects])
+            filter_archived=False, filter_ref_ids=filter_big_plan_ref_ids,
+            filter_project_ref_ids=[p.ref_id for p in projects])
         big_plans_by_ref_id: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
         all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-            filter_archived=False, filter_ref_ids=recurring_task_ref_ids,
+            filter_archived=False, filter_ref_ids=filter_recurring_task_ref_ids,
             filter_project_ref_ids=[p.ref_id for p in projects])
         all_recurring_tasks_by_ref_id: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
 
