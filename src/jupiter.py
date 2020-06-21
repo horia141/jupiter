@@ -1,8 +1,9 @@
 """The CLI entry-point for Jupiter."""
 
 import argparse
-import coloredlogs
 import logging
+
+import coloredlogs
 
 from command.big_plans_archive import BigPlansArchive
 from command.big_plans_create import BigPlansCreate
