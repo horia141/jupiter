@@ -194,6 +194,9 @@ def main() -> None:
             "--min-log-level", dest="min_log_level", default="info",
             choices=["debug", "info", "warning", "error", "critical"],
             help="The logging level to use")
+        parser.add_argument(
+            "--verbose", dest="verbose_logging", action="store_const", default=False, const=True,
+            help="Show more log messages")
 
         subparsers = parser.add_subparsers(dest="subparser_name", help="Sub-command help")
 
@@ -209,6 +212,10 @@ def main() -> None:
             fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S")
 
+        if not args.verbose_logging:
+            for handler in logging.root.handlers:
+                handler.addFilter(CommandsAndControllersLoggerFilter())
+
         try:
             for command in commands:
                 if args.subparser_name != command.name():
@@ -219,6 +226,16 @@ def main() -> None:
             print("The Notion connection isn't setup, please run 'ws-init' to create a workspace!")
         except OldTokenForNotionConnectionError:
             print("The Notion connection's token has expired, please refresh it with 'ws-set-token'")
+
+
+class CommandsAndControllersLoggerFilter(logging.Filter):
+    """A filter for commands and controllers."""
+
+    def filter(self, record: logging.LogRecord) -> int:
+        """Filtering the log records for commands and controllers."""
+        if record.name.startswith("command.") or record.name.startswith("controllers."):
+            return 1
+        return 0
 
 
 def _map_log_level_to_log_class(log_level: str) -> int:
