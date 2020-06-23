@@ -205,22 +205,36 @@ class ReportProgress(command.Command):
 
             for big_plan_item in response.per_big_plan_breakdown:
                 print(f"    {big_plan_item.name}:")
+                print(f"      Total: {big_plan_item.summary.total_cnt}")
                 print(f"      Created: {big_plan_item.summary.created_cnt}")
                 print(f"      Accepted: {big_plan_item.summary.accepted_cnt}")
                 print(f"      Working: {big_plan_item.summary.working_cnt}")
-                print(f"      Not Done: {big_plan_item.summary.not_done_cnt}")
-                print(f"      Done: {big_plan_item.summary.done_cnt}")
+                print(f"      Not Done: {big_plan_item.summary.not_done_cnt}", end=" ")
+                print(f"({big_plan_item.summary.not_done_ratio * 100:.0f}%)")
+                print(f"      Done: {big_plan_item.summary.done_cnt}", end=" ")
+                print(f"({big_plan_item.summary.done_ratio * 100:.0f}%)")
+                print(f"      Completed Ratio: {big_plan_item.summary.completed_ratio * 100:.0f}%")
 
         if "recurring-tasks" in breakdowns:
             print(f"  By Recurring Task:")
 
             for recurring_task_item in response.per_recurring_task_breakdown:
                 print(f"    {recurring_task_item.name}:")
+                print(f"      Total: {recurring_task_item.summary.total_cnt}")
                 print(f"      Created: {recurring_task_item.summary.created_cnt}")
                 print(f"      In Progress: {recurring_task_item.summary.accepted_cnt}")
                 print(f"      Working: {recurring_task_item.summary.working_cnt}")
-                print(f"      Not Done: {recurring_task_item.summary.not_done_cnt}")
-                print(f"      Done: {recurring_task_item.summary.done_cnt}")
+                print(f"      Not Done: {recurring_task_item.summary.not_done_cnt}", end=" ")
+                print(f"({recurring_task_item.summary.not_done_ratio * 100:.0f}%)")
+                print(f"      Done: {recurring_task_item.summary.done_cnt}", end=" ")
+                print(f"({recurring_task_item.summary.done_ratio * 100:.0f}%)")
+                print(f"      Completed Ratio: {recurring_task_item.summary.completed_ratio * 100:.0f}%")
+                print(f"      Longest Streak: {recurring_task_item.summary.longest_streak_size}")
+                if recurring_task_item.summary.one_streak_size_histogram:
+                    print(f"      Streak Sizes (Max 1 Skip):")
+                    for streak_size in sorted(recurring_task_item.summary.one_streak_size_histogram.keys()):
+                        print(f"        {streak_size} =>", end=" ")
+                        print(f"{recurring_task_item.summary.one_streak_size_histogram[streak_size]}")
 
     @staticmethod
     def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:

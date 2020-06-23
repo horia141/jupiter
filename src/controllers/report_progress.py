@@ -1,5 +1,5 @@
 """The controller for computing progress reports."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
 from typing import Optional, Iterable, Final, Dict, List
@@ -54,6 +54,39 @@ class WorkableSummary:
 
 @nested()
 @dataclass()
+class BigPlanSummary:
+    """The report for a big plan."""
+    total_cnt: int
+    created_cnt: int
+    accepted_cnt: int
+    working_cnt: int
+    not_done_cnt: int
+    not_done_ratio: float
+    done_cnt: int
+    done_ratio: float
+    completed_ratio: float
+
+
+@nested()
+@dataclass()
+class RecurringTaskSummary:
+    """The reporting summary."""
+    total_cnt: int
+    created_cnt: int
+    accepted_cnt: int
+    working_cnt: int
+    not_done_cnt: int
+    not_done_ratio: float
+    done_cnt: int
+    done_ratio: float
+    completed_ratio: float
+    longest_streak_size: int
+    zero_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
+    one_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
+
+
+@nested()
+@dataclass()
 class PerProjectBreakdownItem:
     """The report for a particular project."""
     name: str
@@ -75,7 +108,7 @@ class PerPeriodBreakdownItem:
 class PerBigPlanBreakdownItem:
     """The report for a particular big plan."""
     name: str
-    summary: WorkableSummary
+    summary: BigPlanSummary
 
 
 @nested()
@@ -83,7 +116,7 @@ class PerBigPlanBreakdownItem:
 class PerRecurringTaskBreakdownItem:
     """The report for a particular recurring task."""
     name: str
-    summary: WorkableSummary
+    summary: RecurringTaskSummary
 
 
 @nested()
@@ -190,7 +223,8 @@ class ReportProgressController:
 
         # all_inbox_tasks.groupBy(it -> it.bigPlan.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_big_plan_breakdown = [
-            PerBigPlanBreakdownItem(k, self._run_report_for_inbox_tasks_quick(schedule, (vx[1] for vx in v)))
+            PerBigPlanBreakdownItem(
+                k, self._run_report_for_inbox_tasks_for_big_plan(schedule, (vx[1] for vx in v)))
             for (k, v) in
             groupby(sorted(
                 [(big_plans_by_ref_id[it.big_plan_ref_id].name, it) for it in all_inbox_tasks if it.big_plan_ref_id],
@@ -201,7 +235,8 @@ class ReportProgressController:
 
         # all_inbox_tasks.groupBy(it -> it.recurringTask.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_recurring_task_breakdown = [
-            PerRecurringTaskBreakdownItem(k, self._run_report_for_inbox_tasks_quick(schedule, (vx[1] for vx in v)))
+            PerRecurringTaskBreakdownItem(
+                k, self._run_report_for_inbox_for_recurring_tasks(schedule, [vx[1] for vx in v]))
             for (k, v) in
             groupby(sorted(
                 [(all_recurring_tasks_by_ref_id[it.recurring_task_ref_id].name, it)
@@ -312,7 +347,9 @@ class ReportProgressController:
                 from_recurring_task_cnt=done_cnt_from_recurring_task))
 
     @staticmethod
-    def _run_report_for_inbox_tasks_quick(schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> WorkableSummary:
+    def _run_report_for_inbox_tasks_for_big_plan(
+            schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> BigPlanSummary:
+        total_cnt = 0
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -320,6 +357,8 @@ class ReportProgressController:
         not_done_cnt = 0
 
         for inbox_task in inbox_tasks:
+            total_cnt += 1
+
             if schedule.contains(inbox_task.created_time):
                 created_cnt += 1
 
@@ -333,12 +372,92 @@ class ReportProgressController:
             elif inbox_task.status.is_accepted and schedule.contains(inbox_task.accepted_time):
                 accepted_cnt += 1
 
-        return WorkableSummary(
+        return BigPlanSummary(
+            total_cnt=total_cnt,
             created_cnt=created_cnt,
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            done_cnt=done_cnt)
+            not_done_ratio=not_done_cnt / float(total_cnt),
+            done_cnt=done_cnt,
+            done_ratio=done_cnt / float(total_cnt),
+            completed_ratio=(done_cnt + not_done_cnt) / float(total_cnt))
+
+    @staticmethod
+    def _run_report_for_inbox_for_recurring_tasks(
+            schedule: Schedule, inbox_tasks: List[InboxTask]) -> RecurringTaskSummary:
+        total_cnt = 0
+        created_cnt = 0
+        accepted_cnt = 0
+        working_cnt = 0
+        done_cnt = 0
+        not_done_cnt = 0
+
+        for inbox_task in inbox_tasks:
+            total_cnt += 1
+
+            if schedule.contains(inbox_task.created_time):
+                created_cnt += 1
+
+            if inbox_task.status.is_completed and schedule.contains(inbox_task.completed_time):
+                if inbox_task.status == InboxTaskStatus.DONE:
+                    done_cnt += 1
+                else:
+                    not_done_cnt += 1
+            elif inbox_task.status.is_working and schedule.contains(inbox_task.working_time):
+                working_cnt += 1
+            elif inbox_task.status.is_accepted and schedule.contains(inbox_task.accepted_time):
+                accepted_cnt += 1
+
+        longest_streak_size = 0
+        zero_current_streak_size = 0
+        zero_streak_size_histogram: Dict[int, int] = {}
+        one_current_streak_size = 0
+        one_streak_size_histogram: Dict[int, int] = {}
+        sorted_inbox_tasks = sorted(
+            (it for it in inbox_tasks if schedule.contains(it.created_time)), key=lambda it: it.created_time)
+        for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
+            if inbox_task.status == InboxTaskStatus.DONE:
+                zero_current_streak_size += 1
+                one_current_streak_size += 1
+            else:
+                longest_streak_size = max(zero_current_streak_size, longest_streak_size)
+                if zero_current_streak_size > 0:
+                    zero_streak_size_histogram[zero_current_streak_size] = \
+                        zero_streak_size_histogram.get(zero_current_streak_size, 0) + 1
+                zero_current_streak_size = 0
+
+                if inbox_task_idx != 0 \
+                        and inbox_task_idx != len(sorted_inbox_tasks) - 1 \
+                        and sorted_inbox_tasks[inbox_task_idx - 1].status == InboxTaskStatus.DONE \
+                        and sorted_inbox_tasks[inbox_task_idx + 1].status == InboxTaskStatus.DONE:
+                    one_current_streak_size += 1
+                else:
+                    if one_current_streak_size > 0:
+                        one_streak_size_histogram[one_current_streak_size] = \
+                            one_streak_size_histogram.get(one_current_streak_size, 0) + 1
+                    one_current_streak_size = 0
+        longest_streak_size = max(zero_current_streak_size, longest_streak_size)
+        if zero_current_streak_size > 0:
+            zero_streak_size_histogram[zero_current_streak_size] = \
+                zero_streak_size_histogram.get(zero_current_streak_size, 0) + 1
+        if one_current_streak_size > 0:
+            one_streak_size_histogram[one_current_streak_size] = \
+                one_streak_size_histogram.get(one_current_streak_size, 0) + 1
+
+        return RecurringTaskSummary(
+            total_cnt=total_cnt,
+            created_cnt=created_cnt,
+            accepted_cnt=accepted_cnt,
+            working_cnt=working_cnt,
+            not_done_cnt=not_done_cnt,
+            not_done_ratio=not_done_cnt / float(total_cnt),
+            done_cnt=done_cnt,
+            done_ratio=done_cnt / float(total_cnt),
+            completed_ratio=(done_cnt + not_done_cnt) / float(total_cnt),
+            longest_streak_size=longest_streak_size,
+            zero_streak_size_histogram=zero_streak_size_histogram,
+            one_streak_size_histogram=one_streak_size_histogram)
 
     @staticmethod
     def _run_report_for_big_plan(schedule: Schedule, big_plans: Iterable[BigPlan]) -> WorkableSummary:
