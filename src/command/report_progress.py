@@ -205,7 +205,6 @@ class ReportProgress(command.Command):
 
             for big_plan_item in response.per_big_plan_breakdown:
                 print(f"    {big_plan_item.name}:")
-                print(f"      Total: {big_plan_item.summary.total_cnt}")
                 print(f"      Created: {big_plan_item.summary.created_cnt}")
                 print(f"      Accepted: {big_plan_item.summary.accepted_cnt}")
                 print(f"      Working: {big_plan_item.summary.working_cnt}")
@@ -220,7 +219,6 @@ class ReportProgress(command.Command):
 
             for recurring_task_item in response.per_recurring_task_breakdown:
                 print(f"    {recurring_task_item.name}:")
-                print(f"      Total: {recurring_task_item.summary.total_cnt}")
                 print(f"      Created: {recurring_task_item.summary.created_cnt}")
                 print(f"      In Progress: {recurring_task_item.summary.accepted_cnt}")
                 print(f"      Working: {recurring_task_item.summary.working_cnt}")

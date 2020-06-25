@@ -56,7 +56,6 @@ class WorkableSummary:
 @dataclass()
 class BigPlanSummary:
     """The report for a big plan."""
-    total_cnt: int
     created_cnt: int
     accepted_cnt: int
     working_cnt: int
@@ -71,7 +70,6 @@ class BigPlanSummary:
 @dataclass()
 class RecurringTaskSummary:
     """The reporting summary."""
-    total_cnt: int
     created_cnt: int
     accepted_cnt: int
     working_cnt: int
@@ -349,7 +347,6 @@ class ReportProgressController:
     @staticmethod
     def _run_report_for_inbox_tasks_for_big_plan(
             schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> BigPlanSummary:
-        total_cnt = 0
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -357,8 +354,6 @@ class ReportProgressController:
         not_done_cnt = 0
 
         for inbox_task in inbox_tasks:
-            total_cnt += 1
-
             if schedule.contains(inbox_task.created_time):
                 created_cnt += 1
 
@@ -373,20 +368,18 @@ class ReportProgressController:
                 accepted_cnt += 1
 
         return BigPlanSummary(
-            total_cnt=total_cnt,
             created_cnt=created_cnt,
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(total_cnt),
+            not_done_ratio=not_done_cnt / float(created_cnt),
             done_cnt=done_cnt,
-            done_ratio=done_cnt / float(total_cnt),
-            completed_ratio=(done_cnt + not_done_cnt) / float(total_cnt))
+            done_ratio=done_cnt / float(created_cnt),
+            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt))
 
     @staticmethod
     def _run_report_for_inbox_for_recurring_tasks(
             schedule: Schedule, inbox_tasks: List[InboxTask]) -> RecurringTaskSummary:
-        total_cnt = 0
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -394,8 +387,6 @@ class ReportProgressController:
         not_done_cnt = 0
 
         for inbox_task in inbox_tasks:
-            total_cnt += 1
-
             if schedule.contains(inbox_task.created_time):
                 created_cnt += 1
 
@@ -446,15 +437,14 @@ class ReportProgressController:
                 one_streak_size_histogram.get(one_current_streak_size, 0) + 1
 
         return RecurringTaskSummary(
-            total_cnt=total_cnt,
             created_cnt=created_cnt,
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(total_cnt),
+            not_done_ratio=not_done_cnt / float(created_cnt),
             done_cnt=done_cnt,
-            done_ratio=done_cnt / float(total_cnt),
-            completed_ratio=(done_cnt + not_done_cnt) / float(total_cnt),
+            done_ratio=done_cnt / float(created_cnt),
+            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt),
             longest_streak_size=longest_streak_size,
             zero_streak_size_histogram=zero_streak_size_histogram,
             one_streak_size_histogram=one_streak_size_histogram)
