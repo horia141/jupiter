@@ -39,6 +39,7 @@ from command.recurring_tasks_set_must_do import RecurringTasksSetMustDo
 from command.recurring_tasks_set_name import RecurringTasksSetName
 from command.recurring_tasks_set_period import RecurringTasksSetPeriod
 from command.recurring_tasks_set_skip_rule import RecurringTasksSetSkipRule
+from command.recurring_tasks_set_type import RecurringTasksSetType
 from command.recurring_tasks_show import RecurringTasksShow
 from command.recurring_tasks_suspend import RecurringTasksSuspend
 from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
@@ -167,6 +168,7 @@ def main() -> None:
             RecurringTasksArchive(basic_validator, recurring_tasks_controller),
             RecurringTasksSetName(basic_validator, recurring_tasks_controller),
             RecurringTasksSetPeriod(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetType(basic_validator, recurring_tasks_controller),
             RecurringTasksSetGroup(basic_validator, recurring_tasks_controller),
             RecurringTasksSetEisen(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDifficulty(basic_validator, recurring_tasks_controller),

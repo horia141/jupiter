@@ -6,7 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
-from models.basic import BasicValidator, RecurringTaskPeriod
+from models.basic import BasicValidator, RecurringTaskType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,8 +37,11 @@ class RecurringTasksCreate(command.Command):
         parser.add_argument("--project", dest="project_key", required=True, help="The project key to add the task to")
         parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
         parser.add_argument("--group", dest="group", required=True, help="The group for the recurring task")
-        parser.add_argument("--period", dest="period", choices=[tp.value for tp in RecurringTaskPeriod], required=True,
-                            help="The period for the recurring task")
+        parser.add_argument("--period", dest="period", choices=BasicValidator.recurring_task_period_values(),
+                            required=True, help="The period for the recurring task")
+        parser.add_argument("--type", dest="the_type", choices=BasicValidator.recurring_task_type_values(),
+                            default=RecurringTaskType.CHORE.value, required=True,
+                            help="The type of the recurring task")
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
                             choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
         parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
@@ -58,6 +61,7 @@ class RecurringTasksCreate(command.Command):
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
         group = self._basic_validator.entity_name_validate_and_clean(args.group)
         period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
+        the_type = self._basic_validator.recurring_task_type_validate_and_clean(args.the_type)
         eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
         difficulty = self._basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
         due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time)\
@@ -74,6 +78,7 @@ class RecurringTasksCreate(command.Command):
             name=name,
             group=group,
             period=period,
+            the_type=the_type,
             eisen=eisen,
             difficulty=difficulty,
             due_at_time=due_at_time,

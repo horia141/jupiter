@@ -9,7 +9,7 @@ from typing import Final, ClassVar, Iterable, List, Optional
 
 import pendulum
 
-from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus
+from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus, RecurringTaskType
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -33,6 +33,7 @@ class InboxTask:
     difficulty: Optional[Difficulty]
     due_date: Optional[pendulum.DateTime]
     recurring_task_timeline: Optional[str]
+    recurring_task_type: Optional[RecurringTaskType]
     created_time: pendulum.DateTime
     last_modified_time: pendulum.DateTime
     archived_time: Optional[pendulum.DateTime]
@@ -72,7 +73,7 @@ class InboxTasksRepository:
             self, project_ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
             recurring_task_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
             eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_date: Optional[pendulum.DateTime],
-            recurring_task_timeline: Optional[str]) -> InboxTask:
+            recurring_task_timeline: Optional[str], recurring_task_type: Optional[RecurringTaskType]) -> InboxTask:
         """Create a recurring task."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
@@ -88,6 +89,7 @@ class InboxTasksRepository:
             difficulty=difficulty,
             due_date=due_date,
             recurring_task_timeline=recurring_task_timeline,
+            recurring_task_type=recurring_task_type,
             created_time=self._time_provider.get_current_time(),
             last_modified_time=self._time_provider.get_current_time(),
             archived_time=self._time_provider.get_current_time() if archived else None,
@@ -207,6 +209,7 @@ class InboxTasksRepository:
                 "difficulty": {"type": ["string", "null"]},
                 "due_date": {"type": ["string", "null"]},
                 "recurring_task_timeline": {"type": ["string", "null"]},
+                "recurring_task_type": {"type": ["string", "null"]},
                 "created_time": {"type": "string"},
                 "last_modified_time": {"type": "string"},
                 "archived_time": {"type": ["string", "null"]},
@@ -236,6 +239,8 @@ class InboxTasksRepository:
             if storage_form["due_date"] else None,
             recurring_task_timeline=typing.cast(str, storage_form["recurring_task_timeline"])
             if storage_form["recurring_task_timeline"] else None,
+            recurring_task_type=RecurringTaskType(typing.cast(str, storage_form["recurring_task_type"]))
+            if storage_form["recurring_task_type"] else None,
             created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
             last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
@@ -262,6 +267,7 @@ class InboxTasksRepository:
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
             "due_date": live_form.due_date.to_datetime_string() if live_form.due_date else None,
             "recurring_task_timeline": live_form.recurring_task_timeline,
+            "recurring_task_type": live_form.recurring_task_type.value if live_form.recurring_task_type else None,
             "created_time": live_form.created_time.to_datetime_string(),
             "last_modified_time": live_form.last_modified_time.to_datetime_string(),
             "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None,

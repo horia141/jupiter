@@ -9,7 +9,7 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod
+from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType
 from remote.notion import common
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
@@ -27,6 +27,7 @@ class RecurringTaskRow(BasicRowType):
     name: str
     archived: bool
     period: Optional[str]
+    the_type: Optional[str]
     group: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
@@ -73,6 +74,19 @@ class RecurringTasksCollection:
         }
     }
 
+    _TYPE: ClassVar[JSONDictType] = {
+        "Chore": {
+            "name": RecurringTaskType.CHORE.for_notion(),
+            "color": "green",
+            "in_board": True
+        },
+        "Habit": {
+            "name": RecurringTaskType.HABIT.for_notion(),
+            "color": "blue",
+            "in_board": True
+        }
+    }
+
     _EISENHOWER: ClassVar[JSONDictType] = {
         "Urgent": {
             "name": Eisen.URGENT.for_notion(),
@@ -112,6 +126,15 @@ class RecurringTasksCollection:
                 "id": str(uuid.uuid4()),
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _PERIOD.values()]
+        },
+        "the-type": {
+            "name": "The Type",
+            "type": "select",
+            "options": [{
+                "color": cast(Dict[str, str], v)["color"],
+                "id": str(uuid.uuid4()),
+                "value": cast(Dict[str, str], v)["name"]
+            } for v in _TYPE.values()]
         },
         "group": {
             "name": "Group",
@@ -233,6 +256,9 @@ class RecurringTasksCollection:
                 "property": "period",
                 "visible": False
             }, {
+                "property": "the-type",
+                "visible": True
+            }, {
                 "property": "group",
                 "visible": True
             }, {
@@ -285,6 +311,10 @@ class RecurringTasksCollection:
             }, {
                 "width": 100,
                 "property": "period",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "the-type",
                 "visible": True
             }, {
                 "width": 100,
@@ -360,15 +390,16 @@ class RecurringTasksCollection:
 
     def create_recurring_task(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool, name: str,
-            period: str, group: str, eisen: List[str], difficulty: Optional[str], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
-            must_do: bool, ref_id: EntityId) -> RecurringTaskRow:
+            period: str, the_type: str, group: str, eisen: List[str], difficulty: Optional[str],
+            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
+            skip_rule: Optional[str], must_do: bool, ref_id: EntityId) -> RecurringTaskRow:
         """Create a recurring task."""
         new_recurring_task_row = RecurringTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
             name=name,
             archived=archived,
             period=period,
+            the_type=the_type,
             group=group,
             eisen=eisen,
             difficulty=difficulty,
@@ -498,6 +529,7 @@ class RecurringTasksCollection:
         notion_row.title = row.name
         notion_row.archived = row.archived
         notion_row.period = row.period
+        notion_row.the_type = row.the_type
         notion_row.group = row.group
         notion_row.eisenhower = row.eisen
         notion_row.difficulty = row.difficulty
@@ -526,6 +558,7 @@ class RecurringTasksCollection:
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,
             period=inbox_task_notion_row.period,
+            the_type=inbox_task_notion_row.the_type,
             group=inbox_task_notion_row.group,
             eisen=common.clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,

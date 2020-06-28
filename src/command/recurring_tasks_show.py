@@ -53,6 +53,7 @@ class RecurringTasksShow(command.Command):
             inbox_tasks = recurring_task_entry.inbox_tasks
             print(f'id={recurring_task.ref_id} {recurring_task.name}' +
                   f' period={recurring_task.period.value}' +
+                  f' type={recurring_task.the_type.value}' +
                   f' group="{recurring_task.group}"' +
                   f'\n    eisen="{(",".join(e.value for e in recurring_task.eisen)) if recurring_task.eisen else ""}"' +
                   f' difficulty={recurring_task.difficulty.value if recurring_task.difficulty else "none"}' +

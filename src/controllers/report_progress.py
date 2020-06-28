@@ -8,7 +8,7 @@ import pendulum
 from nested_dataclasses import nested
 
 from models import schedules
-from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus
+from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType
 from models.schedules import Schedule
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
@@ -114,6 +114,7 @@ class PerBigPlanBreakdownItem:
 class PerRecurringTaskBreakdownItem:
     """The report for a particular recurring task."""
     name: str
+    the_type: RecurringTaskType
     summary: RecurringTaskSummary
 
 
@@ -234,10 +235,12 @@ class ReportProgressController:
         # all_inbox_tasks.groupBy(it -> it.recurringTask.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_recurring_task_breakdown = [
             PerRecurringTaskBreakdownItem(
-                k, self._run_report_for_inbox_for_recurring_tasks(schedule, [vx[1] for vx in v]))
+                name=all_recurring_tasks_by_ref_id[k].name,
+                the_type=all_recurring_tasks_by_ref_id[k].the_type,
+                summary=self._run_report_for_inbox_for_recurring_tasks(schedule, [vx[1] for vx in v]))
             for (k, v) in
             groupby(sorted(
-                [(all_recurring_tasks_by_ref_id[it.recurring_task_ref_id].name, it)
+                [(it.recurring_task_ref_id, it)
                  for it in all_inbox_tasks if it.recurring_task_ref_id],
                 key=itemgetter(0)),
                     key=itemgetter(0))]
@@ -372,10 +375,10 @@ class ReportProgressController:
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(created_cnt),
+            not_done_ratio=not_done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
             done_cnt=done_cnt,
-            done_ratio=done_cnt / float(created_cnt),
-            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt))
+            done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0,
+            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt) if created_cnt > 0 else 0.0)
 
     @staticmethod
     def _run_report_for_inbox_for_recurring_tasks(
@@ -441,10 +444,10 @@ class ReportProgressController:
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_ratio=not_done_cnt / float(created_cnt),
+            not_done_ratio=not_done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
             done_cnt=done_cnt,
-            done_ratio=done_cnt / float(created_cnt),
-            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt),
+            done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
+            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt) if created_cnt > 0 else 0.0,
             longest_streak_size=longest_streak_size,
             zero_streak_size_histogram=zero_streak_size_histogram,
             one_streak_size_histogram=one_streak_size_histogram)

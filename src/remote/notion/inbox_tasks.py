@@ -12,7 +12,7 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 import pendulum
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod
+from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType
 from remote.notion import common
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
@@ -38,8 +38,9 @@ class InboxTaskRow(BasicRowType):
     difficulty: Optional[str]
     due_date: Optional[pendulum.DateTime]
     from_script: bool
-    recurring_period: Optional[str]
     recurring_timeline: Optional[str]
+    recurring_period: Optional[str]
+    recurring_task_type: Optional[str]
 
 
 class InboxTasksCollection:
@@ -112,7 +113,7 @@ class InboxTasksCollection:
         }
     }
 
-    _TASK_PERIOD: ClassVar[JSONDictType] = {
+    _RECURRING_TASK_PERIOD: ClassVar[JSONDictType] = {
         "Daily": {
             "name": RecurringTaskPeriod.DAILY.for_notion(),
             "color": "orange"
@@ -132,6 +133,19 @@ class InboxTasksCollection:
         "Yearly": {
             "name": RecurringTaskPeriod.YEARLY.for_notion(),
             "color": "yellow"
+        }
+    }
+
+    _RECURRING_TASK_TYPE: ClassVar[JSONDictType] = {
+        "Chore": {
+            "name": RecurringTaskType.CHORE.for_notion(),
+            "color": "green",
+            "in_board": True
+        },
+        "Habit": {
+            "name": RecurringTaskType.HABIT.for_notion(),
+            "color": "blue",
+            "in_board": True
         }
     }
 
@@ -196,6 +210,10 @@ class InboxTasksCollection:
             "name": "From Script",
             "type": "checkbox"
         },
+        "timeline": {
+            "name": "Recurring Timeline",
+            "type": "text"
+        },
         "period": {
             "name": "Recurring Period",
             "type": "select",
@@ -203,11 +221,16 @@ class InboxTasksCollection:
                 "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
                 "value": cast(Dict[str, str], v)["name"]
-            } for v in _TASK_PERIOD.values()]
+            } for v in _RECURRING_TASK_PERIOD.values()]
         },
-        "timeline": {
-            "name": "Recurring Timeline",
-            "type": "text"
+        "recurring-task-type": {
+            "name": "Recurring Type",
+            "type": "select",
+            "options": [{
+                "color": cast(Dict[str, str], v)["color"],
+                "id": str(uuid.uuid4()),
+                "value": cast(Dict[str, str], v)["name"]
+            } for v in _RECURRING_TASK_TYPE.values()]
         }
     }
 
@@ -267,11 +290,14 @@ class InboxTasksCollection:
             "property": "fromscript",
             "visible": False
         }, {
+            "property": "timeline",
+            "visible": False
+        }, {
             "property": "period",
             "visible": True
         }, {
-            "property": "timeline",
-            "visible": False
+            "property": "recurring-task-type",
+            "visible": True
         }],
         "board_cover_size": "small"
     }
@@ -618,11 +644,14 @@ class InboxTasksCollection:
                 "property": "fromscript",
                 "visible": False
             }, {
+                "property": "timeline",
+                "visible": False
+            }, {
                 "property": "period",
                 "visible": True
             }, {
-                "property": "timeline",
-                "visible": False
+                "property": "recurring-task-type",
+                "visible": True
             }]
         }
     }
@@ -677,11 +706,15 @@ class InboxTasksCollection:
                 "visible": True
             }, {
                 "width": 100,
+                "property": "timeline",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "period",
                 "visible": True
             }, {
                 "width": 100,
-                "property": "timeline",
+                "property": "recurring-task-type",
                 "visible": True
             }, {
                 "width": 100,
@@ -739,10 +772,12 @@ class InboxTasksCollection:
         LOGGER.info("Updated the schema for the associated inbox")
 
     def create_inbox_task(
-            self, project_ref_id: EntityId, name: str, archived: bool, big_plan_ref_id: Optional[EntityId],
-            big_plan_name: Optional[str], recurring_task_ref_id: Optional[EntityId], status: str,
-            eisen: Optional[List[str]], difficulty: Optional[str], due_date: Optional[pendulum.DateTime],
-            recurring_period: Optional[str], recurring_timeline: Optional[str], ref_id: EntityId) -> InboxTaskRow:
+            self, project_ref_id: EntityId, name: str, archived: bool,
+            big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
+            recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
+            difficulty: Optional[str], due_date: Optional[pendulum.DateTime],
+            recurring_timeline: Optional[str], recurring_period: Optional[str], recurring_task_type: Optional[str],
+            ref_id: EntityId) -> InboxTaskRow:
         """Create an inbox task."""
         new_inbox_task_row = InboxTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
@@ -756,8 +791,9 @@ class InboxTasksCollection:
             difficulty=difficulty,
             due_date=due_date,
             from_script=True,
-            recurring_period=recurring_period,
             recurring_timeline=recurring_timeline,
+            recurring_period=recurring_period,
+            recurring_task_type=recurring_task_type,
             ref_id=ref_id)
         return cast(InboxTaskRow, self._collection.create(project_ref_id, new_inbox_task_row))
 
@@ -882,8 +918,9 @@ class InboxTasksCollection:
         notion_row.difficulty = row.difficulty
         notion_row.due_date = row.due_date
         notion_row.from_script = row.from_script
-        notion_row.recurring_period = row.recurring_period
         notion_row.recurring_timeline = row.recurring_timeline
+        notion_row.recurring_period = row.recurring_period
+        notion_row.recurring_type = row.recurring_task_type
         notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -904,8 +941,9 @@ class InboxTasksCollection:
             due_date=pendulum.parse(str(inbox_task_notion_row.due_date.start))
             if inbox_task_notion_row.due_date else None,
             from_script=inbox_task_notion_row.from_script,
-            recurring_period=inbox_task_notion_row.recurring_period,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
+            recurring_period=inbox_task_notion_row.recurring_period,
+            recurring_task_type=inbox_task_notion_row.recurring_type,
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod

@@ -9,7 +9,7 @@ from typing import Final, ClassVar, Iterable, List, Optional
 
 import pendulum
 
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, EntityName
+from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, EntityName, RecurringTaskType
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -27,6 +27,7 @@ class RecurringTask:
     archived: bool
     name: str
     period: RecurringTaskPeriod
+    the_type: RecurringTaskType
     group: EntityName
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
@@ -69,10 +70,10 @@ class RecurringTasksRepository:
         self._structured_storage.exit_save()
 
     def create_recurring_task(
-            self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod, group: EntityName,
-            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
-            must_do: bool) -> RecurringTask:
+            self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod,
+            the_type: RecurringTaskType, group: EntityName, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
+            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
+            skip_rule: Optional[str], must_do: bool) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
@@ -82,6 +83,7 @@ class RecurringTasksRepository:
             archived=archived,
             name=name,
             period=period,
+            the_type=the_type,
             group=group,
             eisen=list(eisen),
             difficulty=difficulty,
@@ -185,6 +187,7 @@ class RecurringTasksRepository:
                 "archived": {"type": "boolean"},
                 "name": {"type": "string"},
                 "period": {"type": "string"},
+                "the_type": {"type": "string"},
                 "group": {"type": "string"},
                 "eisen": {
                     "type": "array",
@@ -212,6 +215,7 @@ class RecurringTasksRepository:
             archived=typing.cast(bool, storage_form["archived"]),
             name=typing.cast(str, storage_form["name"]),
             period=RecurringTaskPeriod(typing.cast(str, storage_form["period"])),
+            the_type=RecurringTaskType(typing.cast(str, storage_form["the_type"])),
             group=EntityName(typing.cast(str, storage_form["group"])),
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"])) if storage_form["difficulty"] else None,
@@ -235,6 +239,7 @@ class RecurringTasksRepository:
             "archived": live_form.archived,
             "name": live_form.name,
             "period": live_form.period.value,
+            "the_type": live_form.the_type.value,
             "group": live_form.group,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,

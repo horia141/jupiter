@@ -152,11 +152,12 @@ class SyncLocalAndNotionController:
                     self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                         ref_id=inbox_task.ref_id,
                         name=schedule.full_name,
-                        period=recurring_task.period,
                         due_time=schedule.due_time,
                         eisen=recurring_task.eisen,
                         difficulty=recurring_task.difficulty,
-                        timeline=schedule.timeline)
+                        timeline=schedule.timeline,
+                        period=recurring_task.period,
+                        the_type=recurring_task.the_type)
 
     def _do_anti_entropy_for_vacations(
             self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:

@@ -7,7 +7,7 @@ import pendulum
 
 from controllers.common import ControllerInputValidationError
 from models import schedules
-from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, EntityName
+from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, EntityName, RecurringTaskType
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
 from service.inbox_tasks import InboxTasksService
@@ -47,8 +47,8 @@ class RecurringTasksController:
         self._recurring_tasks_service = recurring_tasks_service
 
     def create_recurring_task(
-            self, project_key: ProjectKey, name: str, period: RecurringTaskPeriod, group: EntityName,
-            eisen: List[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
+            self, project_key: ProjectKey, name: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
+            group: EntityName, eisen: List[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
             due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
             skip_rule: Optional[str]) -> RecurringTask:
         """Create an recurring task."""
@@ -59,6 +59,7 @@ class RecurringTasksController:
             inbox_collection_link=inbox_collection_link,
             name=name,
             period=period,
+            the_type=the_type,
             group=group,
             eisen=eisen,
             difficulty=difficulty,
@@ -106,8 +107,25 @@ class RecurringTasksController:
                 recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                 recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
-                inbox_task.ref_id, schedule.full_name, schedule.period, schedule.timeline, schedule.due_time,
-                recurring_task.eisen, recurring_task.difficulty)
+                inbox_task.ref_id, schedule.full_name, schedule.timeline, schedule.period, recurring_task.the_type,
+                schedule.due_time, recurring_task.eisen, recurring_task.difficulty)
+        return recurring_task
+
+    def set_recurring_task_type(self, ref_id: EntityId, the_type: RecurringTaskType) -> RecurringTask:
+        """Change the group for a recurring task."""
+        recurring_task = self._recurring_tasks_service.set_recurring_task_type(ref_id, the_type)
+        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
+            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+        for inbox_task in all_inbox_tasks:
+            if inbox_task.status.is_completed:
+                continue
+            schedule = schedules.get_schedule(
+                recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
+                recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
+                recurring_task.due_at_month)
+            self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
+                inbox_task.ref_id, schedule.full_name, schedule.timeline, schedule.period, recurring_task.the_type,
+                schedule.due_time, recurring_task.eisen, recurring_task.difficulty)
         return recurring_task
 
     def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> RecurringTask:

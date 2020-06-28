@@ -128,6 +128,17 @@ class RecurringTaskPeriod(enum.Enum):
 
 
 @enum.unique
+class RecurringTaskType(enum.Enum):
+    """The type of recurring class."""
+    CHORE = "chore"
+    HABIT = "habit"
+
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return str(self.value).capitalize()
+
+
+@enum.unique
 class BigPlanStatus(enum.Enum):
     """The status of a big plan."""
     # Created
@@ -186,6 +197,7 @@ class BasicValidator:
     _difficulty_values: Final[FrozenSet[str]] = frozenset(d.value for d in Difficulty)
     _inbox_task_status_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskStatus)
     _recurring_task_period_values: Final[FrozenSet[str]] = frozenset(rtp.value for rtp in RecurringTaskPeriod)
+    _recurring_task_type_values: Final[FrozenSet[str]] = frozenset(rtt.value for rtt in RecurringTaskType)
     _recurring_task_due_at_time_re: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
     _recurring_task_due_at_day_bounds: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
         RecurringTaskPeriod.DAILY: (0, 0),
@@ -212,7 +224,7 @@ class BasicValidator:
 
         if sync_target_str not in self._sync_target_values:
             raise ModelValidationError(
-                f"Expected sync prefer '{sync_target_raw}' for be one of '{','.join(self._sync_target_values)}'")
+                f"Expected sync prefer '{sync_target_raw}' to be one of '{','.join(self._sync_target_values)}'")
 
         return SyncTarget(sync_target_str)
 
@@ -230,7 +242,7 @@ class BasicValidator:
 
         if sync_prefer_str not in self._sync_prefer_values:
             raise ModelValidationError(
-                f"Expected sync prefer '{sync_prefer_raw}' for be one of '{','.join(self._sync_prefer_values)}'")
+                f"Expected sync prefer '{sync_prefer_raw}' to be one of '{','.join(self._sync_prefer_values)}'")
 
         return SyncPrefer(sync_prefer_str)
 
@@ -357,7 +369,7 @@ class BasicValidator:
 
         if eisen_str not in self._eisen_values:
             raise ModelValidationError(
-                f"Expected Eisenhower status '{eisen_raw}' for be one of '{','.join(self._eisen_values)}'")
+                f"Expected Eisenhower status '{eisen_raw}' to be one of '{','.join(self._eisen_values)}'")
 
         return Eisen(eisen_str)
 
@@ -375,7 +387,7 @@ class BasicValidator:
 
         if difficulty_str not in self._difficulty_values:
             raise ModelValidationError(
-                f"Expected difficulty '{difficulty_raw}' for be one of '{','.join(self._difficulty_values)}'")
+                f"Expected difficulty '{difficulty_raw}' to be one of '{','.join(self._difficulty_values)}'")
 
         return Difficulty(difficulty_str)
 
@@ -393,7 +405,7 @@ class BasicValidator:
 
         if inbox_task_status_str not in self._inbox_task_status_values:
             raise ModelValidationError(
-                f"Expected inbox task status '{inbox_task_status_raw}' for be " +
+                f"Expected inbox task status '{inbox_task_status_raw}' to be " +
                 f"one of '{','.join(self._inbox_task_status_values)}'")
 
         return InboxTaskStatus(inbox_task_status_str)
@@ -404,7 +416,7 @@ class BasicValidator:
         return BasicValidator._inbox_task_status_values
 
     def recurring_task_period_validate_and_clean(self, recurring_task_period_raw: Optional[str]) -> RecurringTaskPeriod:
-        """Validate and clean the big plan status."""
+        """Validate and clean the recurring task period."""
         if not recurring_task_period_raw:
             raise ModelValidationError("Expected big plan status to be non-null")
 
@@ -412,15 +424,34 @@ class BasicValidator:
 
         if recurring_task_period_str not in self._recurring_task_period_values:
             raise ModelValidationError(
-                f"Expected big plan status '{recurring_task_period_raw}' for be " +
+                f"Expected recurring task period '{recurring_task_period_raw}' to be " +
                 f"one of '{','.join(self._recurring_task_period_values)}'")
 
         return RecurringTaskPeriod(recurring_task_period_str)
 
     @staticmethod
     def recurring_task_period_values() -> Iterable[str]:
-        """The possible values for big plan statues."""
+        """The possible values for recurring task periods."""
         return BasicValidator._recurring_task_period_values
+
+    def recurring_task_type_validate_and_clean(self, recurring_task_type_raw: Optional[str]) -> RecurringTaskType:
+        """Validate and clean the recurring task type."""
+        if not recurring_task_type_raw:
+            raise ModelValidationError("Expected big plan status to be non-null")
+
+        recurring_task_type_str: str = recurring_task_type_raw.strip().lower()
+
+        if recurring_task_type_str not in self._recurring_task_type_values:
+            raise ModelValidationError(
+                f"Expected recurring task type '{recurring_task_type_raw}' to be " +
+                f"one of '{','.join(self._recurring_task_type_values)}'")
+
+        return RecurringTaskType(recurring_task_type_str)
+
+    @staticmethod
+    def recurring_task_type_values() -> Iterable[str]:
+        """The possible values for recurring task types."""
+        return BasicValidator._recurring_task_type_values
 
     def recurring_task_due_at_time_validate_and_clean(self, recurring_task_due_at_time_raw: Optional[str]) -> str:
         """Validate and clean the due at time info."""
@@ -484,7 +515,7 @@ class BasicValidator:
 
         if big_plan_status_str not in self._big_plan_status_values:
             raise ModelValidationError(
-                f"Expected big plan status '{big_plan_status_raw}' for be " +
+                f"Expected big plan status '{big_plan_status_raw}' to be " +
                 f"one of '{','.join(self._big_plan_status_values)}'")
 
         return BigPlanStatus(big_plan_status_str)

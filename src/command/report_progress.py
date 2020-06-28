@@ -4,7 +4,7 @@ from typing import Final
 
 from command import command
 from controllers.report_progress import ReportProgressController
-from models.basic import BasicValidator, RecurringTaskPeriod, ModelValidationError
+from models.basic import BasicValidator, RecurringTaskPeriod, ModelValidationError, RecurringTaskType
 from utils.time_provider import TimeProvider
 
 
@@ -51,6 +51,9 @@ class ReportProgress(command.Command):
         parser.add_argument("--sub-period", dest="breakdown_period", default=None,
                             choices=BasicValidator.recurring_task_period_values(),
                             help="Specify subperiod to use when breaking down by period")
+        parser.add_argument("--recurring-task-type", dest="recurring_task_types", default=[], action="append",
+                            choices=BasicValidator.recurring_task_type_values(),
+                            help="Allow only recurring tasks of this type")
         parser.add_argument("--period", default=RecurringTaskPeriod.WEEKLY.value, dest="period",
                             choices=BasicValidator.recurring_task_period_values(),
                             help="The period to report on")
@@ -70,6 +73,9 @@ class ReportProgress(command.Command):
         breakdowns = args.breakdowns if len(args.breakdowns) > 0 else ["global"]
         breakdown_period_raw = self._basic_validator.recurring_task_period_validate_and_clean(args.breakdown_period) \
             if args.breakdown_period else None
+        recurring_task_types = [self._basic_validator.recurring_task_type_validate_and_clean(rtt)
+                                for rtt in args.recurring_task_types] \
+            if len(args.recurring_task_types) > 0 else list(rtt for rtt in RecurringTaskType)
         period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
 
         breakdown_period = None
@@ -218,6 +224,9 @@ class ReportProgress(command.Command):
             print(f"  By Recurring Task:")
 
             for recurring_task_item in response.per_recurring_task_breakdown:
+                if recurring_task_item.the_type not in recurring_task_types:
+                    continue
+
                 print(f"    {recurring_task_item.name}:")
                 print(f"      Created: {recurring_task_item.summary.created_cnt}")
                 print(f"      In Progress: {recurring_task_item.summary.accepted_cnt}")
@@ -226,13 +235,14 @@ class ReportProgress(command.Command):
                 print(f"({recurring_task_item.summary.not_done_ratio * 100:.0f}%)")
                 print(f"      Done: {recurring_task_item.summary.done_cnt}", end=" ")
                 print(f"({recurring_task_item.summary.done_ratio * 100:.0f}%)")
-                print(f"      Completed Ratio: {recurring_task_item.summary.completed_ratio * 100:.0f}%")
-                print(f"      Longest Streak: {recurring_task_item.summary.longest_streak_size}")
-                if recurring_task_item.summary.one_streak_size_histogram:
-                    print(f"      Streak Sizes (Max 1 Skip):")
-                    for streak_size in sorted(recurring_task_item.summary.one_streak_size_histogram.keys()):
-                        print(f"        {streak_size} =>", end=" ")
-                        print(f"{recurring_task_item.summary.one_streak_size_histogram[streak_size]}")
+                if recurring_task_item.the_type == RecurringTaskType.HABIT:
+                    print(f"      Completed Ratio: {recurring_task_item.summary.completed_ratio * 100:.0f}%")
+                    print(f"      Longest Streak: {recurring_task_item.summary.longest_streak_size}")
+                    if recurring_task_item.summary.one_streak_size_histogram:
+                        print(f"      Streak Sizes (Max 1 Skip):")
+                        for streak_size in sorted(recurring_task_item.summary.one_streak_size_histogram.keys()):
+                            print(f"        {streak_size} =>", end=" ")
+                            print(f"{recurring_task_item.summary.one_streak_size_histogram[streak_size]}")
 
     @staticmethod
     def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:

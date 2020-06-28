@@ -116,18 +116,20 @@ class GenerateInboxTasksController:
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                 ref_id=found_task.ref_id,
                 name=schedule.full_name,
-                period=recurring_task.period,
                 due_time=schedule.due_time,
                 eisen=recurring_task.eisen,
                 difficulty=recurring_task.difficulty,
-                timeline=schedule.timeline)
+                timeline=schedule.timeline,
+                period=recurring_task.period,
+                the_type=recurring_task.the_type)
         else:
             self._inbox_tasks_service.create_inbox_task_for_recurring_task(
                 project_ref_id=project.ref_id,
                 name=schedule.full_name,
                 recurring_task_ref_id=recurring_task.ref_id,
-                recurring_task_period=recurring_task.period,
                 recurring_task_timeline=schedule.timeline,
+                recurring_task_period=recurring_task.period,
+                recurring_task_type=recurring_task.the_type,
                 eisen=recurring_task.eisen,
                 difficulty=recurring_task.difficulty,
                 due_date=schedule.due_time)

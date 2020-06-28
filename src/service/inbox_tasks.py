@@ -6,7 +6,7 @@ import pendulum
 
 import remote.notion.common
 from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTaskStatus, Eisen, Difficulty, \
-    SyncPrefer, RecurringTaskPeriod
+    SyncPrefer, RecurringTaskPeriod, RecurringTaskType
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks import InboxTasksCollection
 from repository.big_plans import BigPlan
@@ -79,22 +79,25 @@ class InboxTasksService:
             eisen=eisen,
             difficulty=difficulty,
             due_date=due_date,
-            recurring_task_timeline=None)
+            recurring_task_timeline=None,
+            recurring_task_type=None)
         LOGGER.info("Applied local changes")
         # Apply Notion changes
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
-            archived=False,
             name=new_inbox_task.name,
+            archived=False,
             big_plan_ref_id=new_inbox_task.big_plan_ref_id,
-            big_plan_name=remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None,
+            big_plan_name=remote.notion.common.format_name_for_option(
+                big_plan_name) if big_plan_name else None,
             recurring_task_ref_id=None,
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
             difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
             due_date=new_inbox_task.due_date,
-            recurring_period=None,
             recurring_timeline=None,
+            recurring_period=None,
+            recurring_task_type=None,
             ref_id=new_inbox_task.ref_id)
         LOGGER.info("Applied Notion changes")
 
@@ -102,8 +105,9 @@ class InboxTasksService:
 
     def create_inbox_task_for_recurring_task(
             self, project_ref_id: EntityId, name: str, recurring_task_ref_id: EntityId,
-            recurring_task_period: RecurringTaskPeriod, recurring_task_timeline: str, eisen: List[Eisen],
-            difficulty: Optional[Difficulty], due_date: Optional[pendulum.DateTime]) -> InboxTask:
+            recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod,
+            recurring_task_type: RecurringTaskType, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            due_date: Optional[pendulum.DateTime]) -> InboxTask:
         """Create an inbox task."""
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
@@ -116,13 +120,14 @@ class InboxTasksService:
             eisen=eisen,
             difficulty=difficulty,
             due_date=due_date,
-            recurring_task_timeline=recurring_task_timeline)
+            recurring_task_timeline=recurring_task_timeline,
+            recurring_task_type=recurring_task_type)
         LOGGER.info("Applied local changes")
         # Apply Notion changes
         self._collection.create_inbox_task(
             project_ref_id=project_ref_id,
-            archived=False,
             name=new_inbox_task.name,
+            archived=False,
             big_plan_ref_id=None,
             big_plan_name=None,
             recurring_task_ref_id=new_inbox_task.recurring_task_ref_id,
@@ -130,8 +135,9 @@ class InboxTasksService:
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
             difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
             due_date=new_inbox_task.due_date,
-            recurring_period=recurring_task_period.value,
             recurring_timeline=new_inbox_task.recurring_task_timeline,
+            recurring_period=recurring_task_period.value,
+            recurring_task_type=recurring_task_type.value,
             ref_id=new_inbox_task.ref_id)
         LOGGER.info("Applied Notion changes")
 
@@ -201,7 +207,7 @@ class InboxTasksService:
         return inbox_task
 
     def set_inbox_task_to_recurring_task_link(
-            self, ref_id: EntityId, name: str, period: RecurringTaskPeriod, timeline: str,
+            self, ref_id: EntityId, name: str, timeline: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
             due_time: pendulum.DateTime, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:
         """Change the parameters of the link between the inbox task as an instance of a recurring task."""
         try:
@@ -212,21 +218,23 @@ class InboxTasksService:
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
         inbox_task.name = name
-        inbox_task.recurring_task_timeline = timeline
         inbox_task.due_date = due_time
         inbox_task.eisen = eisen
         inbox_task.difficulty = difficulty
+        inbox_task.recurring_task_timeline = timeline
+        inbox_task.recurring_task_type = the_type
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Modified inbox task locally")
 
         # Apply changes in Notion
         inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.name = name
-        inbox_task_row.recurring_period = period.value
-        inbox_task_row.recurring_timeline = timeline
         inbox_task_row.due_date = due_time
         inbox_task_row.eisen = [e.value for e in eisen]
         inbox_task_row.difficulty = difficulty.value if difficulty else None
+        inbox_task_row.recurring_timeline = timeline
+        inbox_task_row.recurring_period = period.value
+        inbox_task_row.recurring_task_type = the_type.value
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
 
@@ -424,6 +432,10 @@ class InboxTasksService:
                     inbox_task_difficulty = \
                         self._basic_validator.difficulty_validate_and_clean(inbox_task_row.difficulty)\
                         if inbox_task_row.difficulty else None
+                    inbox_task_recurring_task_type = \
+                        self._basic_validator.recurring_task_type_validate_and_clean(
+                            inbox_task_row.recurring_task_type) \
+                        if inbox_task_row.recurring_task_type else None
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
 
@@ -447,7 +459,8 @@ class InboxTasksService:
                     eisen=inbox_task_eisen,
                     difficulty=inbox_task_difficulty,
                     due_date=inbox_task_row.due_date,
-                    recurring_task_timeline=inbox_task_row.recurring_timeline)
+                    recurring_task_timeline=inbox_task_row.recurring_timeline,
+                    recurring_task_type=inbox_task_recurring_task_type)
                 LOGGER.info(f"Found new inbox task from Notion {inbox_task_row.name}")
 
                 self._collection.link_local_and_notion_entries(
@@ -490,6 +503,10 @@ class InboxTasksService:
                         inbox_task_difficulty = \
                             self._basic_validator.difficulty_validate_and_clean(inbox_task_row.difficulty) \
                                 if inbox_task_row.difficulty else None
+                        inbox_task_recurring_task_type = \
+                            self._basic_validator.recurring_task_type_validate_and_clean(
+                                inbox_task_row.recurring_task_type) \
+                            if inbox_task_row.recurring_task_type else None
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
 
@@ -530,6 +547,8 @@ class InboxTasksService:
                     inbox_task.eisen = inbox_task_eisen
                     inbox_task.difficulty = inbox_task_difficulty
                     inbox_task.due_date = inbox_task_row.due_date
+                    inbox_task.recurring_task_timeline = inbox_task_row.recurring_timeline
+                    inbox_task.recurring_task_type = inbox_task_recurring_task_type
                     self._repository.save_inbox_task(
                         inbox_task, archived_time_action=archived_time_action,
                         accepted_time_action=accepted_time_action, working_time_action=working_time_action,
@@ -554,8 +573,9 @@ class InboxTasksService:
                     inbox_task_row.eisen = [e.value for e in inbox_task.eisen]
                     inbox_task_row.difficulty = inbox_task.difficulty.value if inbox_task.difficulty else None
                     inbox_task_row.due_date = inbox_task.due_date
-                    inbox_task_row.recurring_period = recurring_task.period.value if recurring_task else None
                     inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
+                    inbox_task_row.recurring_period = recurring_task.period.value if recurring_task else None
+                    inbox_task_row.recurring_task_type = recurring_task.the_type.value if recurring_task else None
                     self._collection.save_inbox_task(project_ref_id, inbox_task_row)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from local")
                 else:
@@ -591,17 +611,19 @@ class InboxTasksService:
 
             self._collection.create_inbox_task(
                 project_ref_id=project_ref_id,
-                archived=inbox_task.archived,
                 name=inbox_task.name,
+                archived=inbox_task.archived,
                 big_plan_ref_id=big_plan.ref_id if big_plan else None,
-                big_plan_name=remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None,
+                big_plan_name=remote.notion.common.format_name_for_option(
+                    big_plan.name) if big_plan else None,
                 recurring_task_ref_id=recurring_task.ref_id if recurring_task else None,
                 status=inbox_task.status.for_notion(),
                 eisen=[e.value for e in inbox_task.eisen],
                 difficulty=inbox_task.difficulty.value if inbox_task.difficulty else None,
                 due_date=inbox_task.due_date,
-                recurring_period=recurring_task.period.value if recurring_task else None,
                 recurring_timeline=inbox_task.recurring_task_timeline,
+                recurring_period=recurring_task.period.value if recurring_task else None,
+                recurring_task_type=recurring_task.the_type.value if recurring_task else None,
                 ref_id=inbox_task.ref_id)
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
