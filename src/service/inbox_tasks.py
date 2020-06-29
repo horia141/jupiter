@@ -163,6 +163,9 @@ class InboxTasksService:
 
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        if inbox_task.recurring_task_ref_id is not None:
+            raise ServiceValidationError(
+                f"Cannot modify name of task created from recurring task '{inbox_task.name}'")
         inbox_task.name = name
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Modified inbox task locally")
@@ -192,7 +195,7 @@ class InboxTasksService:
         inbox_task = self._repository.load_inbox_task(ref_id)
         if inbox_task.recurring_task_ref_id is not None:
             raise ServiceValidationError(
-                f"Inbox task with id='{ref_id}' is a recurring one and cannot be assigned to a big plan")
+                f"Cannot associate with a big plan a task created from recurring task '{inbox_task.name}'")
         inbox_task.big_plan_ref_id = big_plan_ref_id
         self._repository.save_inbox_task(inbox_task)
 
@@ -217,6 +220,9 @@ class InboxTasksService:
 
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        if inbox_task.recurring_task_ref_id is None:
+            raise ServiceValidationError(
+                f"Cannot associate a task which is not recurring with a recurring one '{inbox_task.name}'")
         inbox_task.name = name
         inbox_task.due_date = due_time
         inbox_task.eisen = eisen
@@ -290,6 +296,9 @@ class InboxTasksService:
         """Change the Eisenhower status of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        if inbox_task.recurring_task_ref_id is None:
+            raise ServiceValidationError(
+                f"Cannot change the Eisenhower status of a task created from a recurring one '{inbox_task.name}'")
         inbox_task.eisen = eisen
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
@@ -306,6 +315,9 @@ class InboxTasksService:
         """Change the difficulty of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        if inbox_task.recurring_task_ref_id is None:
+            raise ServiceValidationError(
+                f"Cannot change the difficulty of a task created from a recurring one '{inbox_task.name}'")
         inbox_task.difficulty = difficulty
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
@@ -517,6 +529,8 @@ class InboxTasksService:
                     elif inbox_task_big_plan_name is not None:
                         big_plan = \
                             all_big_plans_by_name[remote.notion.common.format_name_for_option(inbox_task_big_plan_name)]
+                    elif inbox_task_recurring_task_ref_id is not None:
+                        recurring_task = all_recurring_tasks_map[inbox_task_recurring_task_ref_id]
 
                     archived_time_action = \
                         TimeFieldAction.SET if not inbox_task.archived and inbox_task_row.archived else \
@@ -541,11 +555,12 @@ class InboxTasksService:
                             (inbox_task.status.is_completed and not inbox_task_status.is_completed) else \
                         TimeFieldAction.DO_NOTHING
                     inbox_task.big_plan_ref_id = big_plan.ref_id if big_plan else None
-                    inbox_task.name = inbox_task_name
+                    if recurring_task is None:
+                        inbox_task.name = inbox_task_name
+                        inbox_task.eisen = inbox_task_eisen
+                        inbox_task.difficulty = inbox_task_difficulty
                     inbox_task.archived = inbox_task_row.archived
                     inbox_task.status = inbox_task_status
-                    inbox_task.eisen = inbox_task_eisen
-                    inbox_task.difficulty = inbox_task_difficulty
                     inbox_task.due_date = inbox_task_row.due_date
                     inbox_task.recurring_task_timeline = inbox_task_row.recurring_timeline
                     inbox_task.recurring_task_type = inbox_task_recurring_task_type
@@ -592,7 +607,7 @@ class InboxTasksService:
 
         LOGGER.info("Applied local changes")
 
-        # Now, go over each local big plan, and add it to Notion if it doesn't
+        # Now, go over each local recurring task, and add it to Notion if it doesn't
         # exist there!
 
         for inbox_task in all_inbox_tasks_set.values():
