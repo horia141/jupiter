@@ -71,7 +71,7 @@ class VacationsCollection:
             }, {
                 "width": 100,
                 "property": "archived",
-                "visible": False,
+                "visible": True,
             }, {
                 "width": 200,
                 "property": "start-date",

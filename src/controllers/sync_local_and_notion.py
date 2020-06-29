@@ -104,6 +104,7 @@ class SyncLocalAndNotionController:
                 all_big_plans = self._big_plans_service.load_all_big_plans(
                     filter_archived=False, filter_ref_ids=filter_big_plan_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
+            big_plans_by_ref_id = {bp.ref_id: bp for bp in all_big_plans}
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks for '{project.name}'")
@@ -117,7 +118,7 @@ class SyncLocalAndNotionController:
                 all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
                     filter_archived=False, filter_ref_ids=filter_recurring_task_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
-            all_recurring_tasks_set = {rt.ref_id: rt for rt in all_recurring_tasks}
+            recurring_tasks_by_ref_id = {rt.ref_id: rt for rt in all_recurring_tasks}
 
             if SyncTarget.INBOX_TASKS in sync_targets:
                 LOGGER.info(f"Syncing inbox tasks for '{project.name}'")
@@ -144,7 +145,7 @@ class SyncLocalAndNotionController:
                             and inbox_task.recurring_task_ref_id not in filter_recurring_task_ref_ids_set:
                         continue
                     LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
-                    recurring_task = all_recurring_tasks_set[inbox_task.recurring_task_ref_id]
+                    recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
                     schedule = schedules.get_schedule(
                         recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
                         recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
@@ -158,6 +159,28 @@ class SyncLocalAndNotionController:
                         timeline=schedule.timeline,
                         period=recurring_task.period,
                         the_type=recurring_task.the_type)
+
+            if SyncTarget.BIG_PLANS in sync_targets:
+                LOGGER.info(f"Archiving any inbox task whose big plan has been archived")
+                for inbox_task in all_inbox_tasks:
+                    if inbox_task.big_plan_ref_id is None:
+                        continue
+                    big_blan = big_plans_by_ref_id[inbox_task.big_plan_ref_id]
+                    if not (big_blan.archived and not inbox_task.archived):
+                        continue
+                    self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
+                    LOGGER.info(f"Archived inbox task {inbox_task.name}")
+
+            if SyncTarget.RECURRING_TASKS in sync_targets:
+                LOGGER.info(f"Archiving any inbox task whose recurring task has been archived")
+                for inbox_task in all_inbox_tasks:
+                    if inbox_task.recurring_task_ref_id is None:
+                        continue
+                    recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
+                    if not (recurring_task.archived and not inbox_task.archived):
+                        continue
+                    self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
+                    LOGGER.info(f"Archived inbox task {inbox_task.name}")
 
     def _do_anti_entropy_for_vacations(
             self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:

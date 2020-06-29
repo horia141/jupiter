@@ -683,7 +683,7 @@ class InboxTasksCollection:
             }, {
                 "width": 100,
                 "property": "archived",
-                "visible": False
+                "visible": True
             }, {
                 "width": 100,
                 "property": "status",

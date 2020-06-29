@@ -555,7 +555,7 @@ max-attributes=32
 max-bool-expr=5
 
 # Maximum number of branch for function / method body.
-max-branches=30
+max-branches=40
 
 # Maximum number of locals for function / method body.
 max-locals=40
