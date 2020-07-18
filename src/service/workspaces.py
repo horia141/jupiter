@@ -2,6 +2,8 @@
 import logging
 from typing import Final
 
+from pendulum.tz.timezone import Timezone
+
 from models.basic import BasicValidator, SyncPrefer, ModelValidationError
 from remote.notion.common import NotionPageLink
 from remote.notion.workspaces import WorkspaceSingleton
@@ -26,14 +28,14 @@ class WorkspacesService:
         self._repository = repository
         self._singleton = singleton
 
-    def create_workspace(self, name: str) -> NotionPageLink:
+    def create_workspace(self, name: str, timezone: Timezone) -> NotionPageLink:
         """Create a workspace."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
-        self._repository.create_workspace(name)
+        self._repository.create_workspace(name, timezone)
         LOGGER.info("Applied local changes")
 
         new_workspace_page = self._singleton.upsert_notion_structure(name)
@@ -59,6 +61,14 @@ class WorkspacesService:
         workspace_screen = self._singleton.load_workspace_screen()
         workspace_screen.name = name
         self._singleton.save_workspace_screen(workspace_screen)
+
+        return workspace
+
+    def set_workspace_timezone(self, timezone: Timezone) -> Workspace:
+        """Set the timezone of the workspace."""
+        workspace = self._repository.load_workspace()
+        workspace.timezone = timezone
+        self._repository.save_workspace(workspace)
 
         return workspace
 

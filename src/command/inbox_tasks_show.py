@@ -17,7 +17,8 @@ class InboxTasksShow(command.Command):
     _basic_validator: Final[BasicValidator]
     _inbox_tasks_controller: Final[InboxTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, inbox_tasks_controller: InboxTasksController) -> None:
+    def __init__(
+            self, basic_validator: BasicValidator, inbox_tasks_controller: InboxTasksController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._inbox_tasks_controller = inbox_tasks_controller
@@ -58,7 +59,7 @@ class InboxTasksShow(command.Command):
                   f' archived="{inbox_task.archived}"' +
                   (f' big_plan="{big_plan.name}"' if big_plan else "") +
                   (f' recurring_task="{recurring_task.name}"' if recurring_task else "") +
-                  f' due_date="{inbox_task.due_date.to_datetime_string() if inbox_task.due_date else ""}"' +
+                  f' due_date="{self._basic_validator.adate_to_user(inbox_task.due_date)}"' +
                   f'\n    created_time="{inbox_task.created_time.to_datetime_string()}"' +
                   f' eisen={",".join(e.for_notion() for e in inbox_task.eisen)}' +
                   f' difficulty={inbox_task.difficulty.for_notion() if inbox_task.difficulty else ""}')

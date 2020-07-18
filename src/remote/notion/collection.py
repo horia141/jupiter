@@ -8,7 +8,8 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
 from remote.notion.client import NotionClient
-from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError
+from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError, \
+    CollectionEntityNotFound
 from remote.notion.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -50,17 +51,18 @@ class NotionCollectionProtocol(Protocol[NotionCollectionRowType]):
         """Get the Notion view schemas for the collection."""
         ...
 
-    @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, row: NotionCollectionRowType, notion_row: CollectionRowBlock,
+            self, client: NotionClient, row: NotionCollectionRowType, notion_row: CollectionRowBlock,
             **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         # pylint: disable=unused-argument
+        # pylint: disable=no-self-use
         ...
 
-    @staticmethod
-    def copy_notion_row_to_row(_notion_row: CollectionRowBlock) -> NotionCollectionRowType:
+    def copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> NotionCollectionRowType:
         """Transform the live system data to something suitable for basic storage."""
+        # pylint: disable=unused-argument
+        # pylint: disable=no-self-use
         ...
 
 
@@ -346,16 +348,21 @@ class NotionCollection(Generic[NotionCollectionRowType]):
     def _find_notion_row(
             client: NotionClient, lock: NotionCollectionLock, ref_id: EntityId) -> CollectionRowBlock:
         collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
-        if ref_id in lock.ref_id_to_notion_id_map:
-            notion_row = client.get_collection_row(collection, lock.ref_id_to_notion_id_map[ref_id])
-            LOGGER.info(f"Finding by stored id")
-        else:
-            all_notion_rows = client.get_collection_all_rows(collection, lock.view_ids["database_view_id"])
-            notion_row = next((vnr.ref_id == ref_id for vnr in all_notion_rows), None)
-            LOGGER.info(f"Finding by ref_id search")
 
-        if not notion_row:
-            raise CollectionError(f"Could not find Notion row with ref_id={ref_id}")
+        if ref_id in lock.ref_id_to_notion_id_map:
+            try:
+                LOGGER.info(f"Finding by stored id")
+                notion_row = client.get_collection_row(collection, lock.ref_id_to_notion_id_map[ref_id])
+                return notion_row
+            except IOError:
+                pass
+
+        LOGGER.info(f"Finding by ref_id search")
+        all_notion_rows = client.get_collection_all_rows(collection, lock.view_ids["database_view_id"])
+        notion_row = next((vnr for vnr in all_notion_rows if vnr.ref_id == ref_id), None)
+
+        if notion_row is None:
+            raise CollectionEntityNotFound(f"Could not find Notion row with ref_id={ref_id}")
 
         return notion_row
 

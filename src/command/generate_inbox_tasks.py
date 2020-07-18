@@ -6,7 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.generate_inbox_tasks import GenerateInboxTasksController
-from models.basic import BasicValidator
+from models.basic import BasicValidator, RecurringTaskPeriod
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -46,13 +46,13 @@ class GenerateInboxTasks(command.Command):
                             help="The groups for which the upsert should happen. Defaults to all")
         parser.add_argument("--id", dest="ref_ids", default=[], action="append",
                             help="Allow only tasks with this id")
-        parser.add_argument("--period", default=[], action="append",
+        parser.add_argument("--period", default=[RecurringTaskPeriod.DAILY.value], action="append",
                             choices=BasicValidator.recurring_task_period_values(),
                             help="The period for which the upsert should happen. Defaults to all")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        right_now = self._basic_validator.datetime_validate_and_clean(args.date) \
+        right_now = self._basic_validator.timestamp_validate_and_clean(args.date) \
             if args.date else self._time_provider.get_current_time()
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
             if len(args.project_keys) > 0 else None
@@ -60,7 +60,8 @@ class GenerateInboxTasks(command.Command):
             if len(args.group) > 0 else None
         ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids] \
             if len(args.ref_ids) > 0 else None
-        period_filter = [self._basic_validator.recurring_task_period_validate_and_clean(p) for p in args.period] \
+        period_filter = frozenset(self._basic_validator.recurring_task_period_validate_and_clean(p)
+                                  for p in args.period) \
             if len(args.period) > 0 else None
         self._generate_inbox_tasks_controller.recurring_tasks_gen(
             right_now, project_keys, group_filter, ref_ids, period_filter)

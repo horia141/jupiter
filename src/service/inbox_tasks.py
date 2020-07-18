@@ -2,11 +2,9 @@
 import logging
 from typing import Final, Optional, List, Iterable
 
-import pendulum
-
 import remote.notion.common
 from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTaskStatus, Eisen, Difficulty, \
-    SyncPrefer, RecurringTaskPeriod, RecurringTaskType
+    SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks import InboxTasksCollection
 from repository.big_plans import BigPlan
@@ -56,7 +54,7 @@ class InboxTasksService:
     def create_inbox_task(
             self, project_ref_id: EntityId, name: str, big_plan_ref_id: Optional[EntityId],
             big_plan_name: Optional[str], eisen: List[Eisen], difficulty: Optional[Difficulty],
-            due_date: Optional[pendulum.DateTime]) -> InboxTask:
+            due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         if big_plan_ref_id is None and big_plan_name is not None:
             raise ServiceValidationError(f"Should have null name for null big plan for task")
@@ -107,7 +105,7 @@ class InboxTasksService:
             self, project_ref_id: EntityId, name: str, recurring_task_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod,
             recurring_task_type: RecurringTaskType, eisen: List[Eisen], difficulty: Optional[Difficulty],
-            due_date: Optional[pendulum.DateTime]) -> InboxTask:
+            due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
@@ -149,8 +147,11 @@ class InboxTasksService:
         inbox_task = self._repository.archive_inbox_task(ref_id)
         LOGGER.info("Applied local changes")
         # Apply Notion changes
-        self._collection.archive_inbox_task(inbox_task.project_ref_id, ref_id)
-        LOGGER.info("Applied Notion changes")
+        try:
+            self._collection.archive_inbox_task(inbox_task.project_ref_id, ref_id)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionEntityNotFound:
+            LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")
 
         return inbox_task
 
@@ -211,7 +212,7 @@ class InboxTasksService:
 
     def set_inbox_task_to_recurring_task_link(
             self, ref_id: EntityId, name: str, timeline: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
-            due_time: pendulum.DateTime, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:
+            due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:
         """Change the parameters of the link between the inbox task as an instance of a recurring task."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -219,7 +220,7 @@ class InboxTasksService:
             raise ServiceValidationError("Invalid inputs") from error
 
         # Apply changes locally
-        inbox_task = self._repository.load_inbox_task(ref_id)
+        inbox_task = self._repository.load_inbox_task(ref_id, allow_archived=True)
         if inbox_task.recurring_task_ref_id is None:
             raise ServiceValidationError(
                 f"Cannot associate a task which is not recurring with a recurring one '{inbox_task.name}'")
@@ -276,7 +277,7 @@ class InboxTasksService:
 
         return inbox_task
 
-    def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> InboxTask:
+    def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> InboxTask:
         """Change the due date of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
@@ -335,9 +336,12 @@ class InboxTasksService:
         # Apply changes locally
         inbox_task = self._repository.hard_remove_inbox_task(ref_id)
         LOGGER.info("Applied local changes")
-        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
-        self._collection.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task_row)
-        LOGGER.info("Applied Notion changes")
+        try:
+            inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+            self._collection.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionEntityNotFound:
+            LOGGER.info("Skipping hard removal on Notion side since inbox task could not be found")
 
         return inbox_task
 
@@ -348,9 +352,9 @@ class InboxTasksService:
             inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
             self._collection.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task_row)
             LOGGER.info("Applied Notion changes")
-        except remote.notion.common.CollectionError:
+        except remote.notion.common.CollectionEntityNotFound:
             # If we can't find this locally it means it's already gone
-            pass
+            LOGGER.info("Skipping removal on Notion side because inbox task was not found")
 
         return inbox_task
 
@@ -368,7 +372,11 @@ class InboxTasksService:
 
             LOGGER.info(f"Removing task '{inbox_task.name}'")
             self._repository.archive_inbox_task(inbox_task.ref_id)
-            self._collection.archive_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+            try:
+                self._collection.archive_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+            except remote.notion.common.CollectionEntityNotFound:
+                # If we can't find this locally it means it's already gone
+                LOGGER.info("Skipping archival on Notion side because inbox task was not found")
 
     def load_all_inbox_tasks(
             self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,

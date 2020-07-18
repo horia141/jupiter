@@ -516,11 +516,11 @@ class RecurringTasksCollection:
 
         return combined_schema
 
-    @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, row: RecurringTaskRow, notion_row: CollectionRowBlock,
+            self, client: NotionClient, row: RecurringTaskRow, notion_row: CollectionRowBlock,
             **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
+        # pylint: disable=no-self-use
         if row.ref_id is None:
             raise Exception(f"Recurring task row '{row.name}' which is synced must have a ref id")
 
@@ -550,9 +550,9 @@ class RecurringTasksCollection:
 
         return notion_row
 
-    @staticmethod
-    def copy_notion_row_to_row(inbox_task_notion_row: CollectionRowBlock) -> RecurringTaskRow:
+    def copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> RecurringTaskRow:
         """Transform the live system data to something suitable for basic storage."""
+        # pylint: disable=no-self-use
         return RecurringTaskRow(
             notion_id=inbox_task_notion_row.id,
             name=inbox_task_notion_row.title,

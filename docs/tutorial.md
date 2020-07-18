@@ -38,7 +38,7 @@ $ mkdir my-workspaces
 $ cd my-workspace
 $ git init
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest ws-init \
     --name "Plans" \
     --space-id="YOUR_SPACE_ID_HERE" \
@@ -65,7 +65,7 @@ To create a project you need to run the `project-create` command, like so:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest project-create \
         my-work \
         --name "My Work"
@@ -105,21 +105,21 @@ automatically. So you have to instruct it like so:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-sync \
     --project my-work
 [ Some output here ]
 $ git add .
 $ git commit -a -m "Synced some remote tasks"
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-show \
     --project my-work
 [ Some output here ]
 Army maintenance:
   id=0 Clean Drogon's lair period=monthly group=Army maintenance
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-show \
     --project my-work \
     --id 0
@@ -136,7 +136,7 @@ To generate the tasks, you can run:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-gen \
     my-work
 [ Some output here ]
@@ -150,7 +150,7 @@ You can set another date to run the generation for, like so:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-gen \
     my-work \
     --date=2020-05-01

@@ -7,12 +7,10 @@ from types import TracebackType
 import typing
 from typing import Final, Optional, Dict, ClassVar, Iterable, cast
 
-import pendulum
-
 from notion.collection import CollectionRowBlock
 
 import remote.notion.common
-from models.basic import EntityId, BigPlanStatus
+from models.basic import EntityId, BigPlanStatus, ADate, BasicValidator
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
@@ -29,7 +27,7 @@ class BigPlanRow(BasicRowType):
     name: str
     archived: bool
     status: Optional[str]
-    due_date: Optional[pendulum.DateTime]
+    due_date: Optional[ADate]
 
 
 class BigPlansCollection:
@@ -196,10 +194,12 @@ class BigPlansCollection:
         }
     }
 
+    _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[BigPlanRow]]
 
-    def __init__(self, connection: NotionConnection) -> None:
+    def __init__(self, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._basic_validator = basic_validator
         self._collection = NotionCollection[BigPlanRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'BigPlansCollection':
@@ -226,7 +226,7 @@ class BigPlansCollection:
 
     def create_big_plan(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
-            archived: bool, due_date: Optional[pendulum.DateTime], status: str, ref_id: EntityId) -> BigPlanRow:
+            archived: bool, due_date: Optional[ADate], status: str, ref_id: EntityId) -> BigPlanRow:
         """Create a big plan."""
         new_big_plan_row = BigPlanRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
@@ -335,18 +335,18 @@ class BigPlansCollection:
 
         return combined_schema
 
-    @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, row: BigPlanRow, notion_row: CollectionRowBlock,
+            self, client: NotionClient, row: BigPlanRow, notion_row: CollectionRowBlock,
             **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
+        # pylint: disable=no-self-use
         inbox_collection_link = cast(NotionCollectionLink, kwargs.get("inbox_collection_link", None))
 
         # Create fields of the big plan row.
         notion_row.title = row.name
         notion_row.archived = row.archived
         notion_row.status = row.status
-        notion_row.due_date = row.due_date
+        notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
         notion_row.ref_id = row.ref_id
 
         # Create structure for the big plan.
@@ -361,15 +361,15 @@ class BigPlansCollection:
 
         return notion_row
 
-    @staticmethod
-    def copy_notion_row_to_row(inbox_task_notion_row: CollectionRowBlock) -> BigPlanRow:
+    def copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> BigPlanRow:
         """Transform the live system data to something suitable for basic storage."""
+        # pylint: disable=no-self-use
         return BigPlanRow(
             notion_id=inbox_task_notion_row.id,
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,
             status=inbox_task_notion_row.status,
-            due_date=pendulum.parse(str(inbox_task_notion_row.due_date.start))
+            due_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.due_date)
             if inbox_task_notion_row.due_date else None,
             ref_id=inbox_task_notion_row.ref_id)
 

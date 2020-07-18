@@ -9,10 +9,10 @@ from types import TracebackType
 import typing
 from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 
-import pendulum
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType
+from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, ADate, \
+    BasicValidator
 from remote.notion import common
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
@@ -36,7 +36,7 @@ class InboxTaskRow(BasicRowType):
     status: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
-    due_date: Optional[pendulum.DateTime]
+    due_date: Optional[ADate]
     from_script: bool
     recurring_timeline: Optional[str]
     recurring_period: Optional[str]
@@ -724,10 +724,12 @@ class InboxTasksCollection:
         }
     }
 
+    _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[InboxTaskRow]]
 
-    def __init__(self, connection: NotionConnection) -> None:
+    def __init__(self, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._basic_validator = basic_validator
         self._collection = NotionCollection[InboxTaskRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'InboxTasksCollection':
@@ -775,7 +777,7 @@ class InboxTasksCollection:
             self, project_ref_id: EntityId, name: str, archived: bool,
             big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
             recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
-            difficulty: Optional[str], due_date: Optional[pendulum.DateTime],
+            difficulty: Optional[str], due_date: Optional[ADate],
             recurring_timeline: Optional[str], recurring_period: Optional[str], recurring_task_type: Optional[str],
             ref_id: EntityId) -> InboxTaskRow:
         """Create an inbox task."""
@@ -901,9 +903,8 @@ class InboxTasksCollection:
 
         return combined_schema
 
-    @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, row: InboxTaskRow, notion_row: CollectionRowBlock,
+            self, client: NotionClient, row: InboxTaskRow, notion_row: CollectionRowBlock,
             **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         # pylint: disable=unused-argument
@@ -916,7 +917,7 @@ class InboxTasksCollection:
         notion_row.status = row.status
         notion_row.eisenhower = row.eisen
         notion_row.difficulty = row.difficulty
-        notion_row.due_date = row.due_date
+        notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
         notion_row.from_script = row.from_script
         notion_row.recurring_timeline = row.recurring_timeline
         notion_row.recurring_period = row.recurring_period
@@ -925,8 +926,7 @@ class InboxTasksCollection:
 
         return notion_row
 
-    @staticmethod
-    def copy_notion_row_to_row(inbox_task_notion_row: CollectionRowBlock) -> InboxTaskRow:
+    def copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> InboxTaskRow:
         """Transform the live system data to something suitable for basic storage."""
         return InboxTaskRow(
             notion_id=inbox_task_notion_row.id,
@@ -938,7 +938,7 @@ class InboxTasksCollection:
             status=inbox_task_notion_row.status,
             eisen=common.clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,
-            due_date=pendulum.parse(str(inbox_task_notion_row.due_date.start))
+            due_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.due_date)
             if inbox_task_notion_row.due_date else None,
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,

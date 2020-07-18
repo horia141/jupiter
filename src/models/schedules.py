@@ -4,21 +4,22 @@ import typing
 from typing import Optional
 
 import pendulum
+from pendulum import UTC
 
-from models.basic import RecurringTaskPeriod
+from models.basic import RecurringTaskPeriod, ADate, Timestamp
 
 
 class Schedule(abc.ABC):
     """The base class for the schedule descriptors class."""
 
     _should_skip: bool
-    _due_date: pendulum.DateTime
+    _due_date: pendulum.Date
     _due_time: Optional[pendulum.DateTime]
     _full_name: str
     _timeline: str
 
     @staticmethod
-    def month_to_quarter_num(date: pendulum.DateTime) -> int:
+    def month_to_quarter_num(date: ADate) -> int:
         """Map a date to one of the four quarters from the year."""
         month_to_quarter_num = {
             1: 1,
@@ -38,7 +39,7 @@ class Schedule(abc.ABC):
         return month_to_quarter_num[date.month]
 
     @staticmethod
-    def month_to_quarter(date: pendulum.DateTime) -> str:
+    def month_to_quarter(date: ADate) -> str:
         """Map a date to the name of four quarters from the year."""
         month_to_quarter = {
             1: "Q1",
@@ -58,7 +59,7 @@ class Schedule(abc.ABC):
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_quarter_start(date: pendulum.DateTime) -> int:
+    def month_to_quarter_start(date: ADate) -> int:
         """Map a month in a date to the first month of a quarter of which the date belongs."""
         month_to_quarter = {
             1: 1,
@@ -78,7 +79,7 @@ class Schedule(abc.ABC):
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_quarter_end(date: pendulum.DateTime) -> int:
+    def month_to_quarter_end(date: ADate) -> int:
         """Map a month in a date to the last month of a quarter of which the date belongs."""
         month_to_quarter = {
             1: 3,
@@ -98,7 +99,7 @@ class Schedule(abc.ABC):
         return month_to_quarter[date.month]
 
     @staticmethod
-    def month_to_month(date: pendulum.DateTime) -> str:
+    def month_to_month(date: ADate) -> str:
         """Map a month to the name it has."""
         month_to_month = {
             1: "Jan",
@@ -123,22 +124,12 @@ class Schedule(abc.ABC):
         return self._should_skip
 
     @property
-    def due_time(self) -> pendulum.DateTime:
+    def due_time(self) -> ADate:
         """The due time of an event according to the schedule."""
         if self._due_time:
-            return pendulum.DateTime(year=self._due_time.year,
-                                     month=self._due_time.month,
-                                     day=self._due_time.day,
-                                     hour=self._due_time.hour,
-                                     minute=self._due_time.minute,
-                                     second=self._due_time.second)
+            return self._due_time
         else:
-            return pendulum.DateTime(year=self._due_date.year,
-                                     month=self._due_date.month,
-                                     day=self._due_date.day,
-                                     hour=23,
-                                     minute=59,
-                                     second=59)
+            return self._due_date
 
     @property
     def full_name(self) -> str:
@@ -167,36 +158,38 @@ class Schedule(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def first_day(self) -> pendulum.DateTime:
+    def first_day(self) -> pendulum.Date:
         """The first day of the interval represented by the schedule block."""
 
     @property
     @abc.abstractmethod
-    def end_day(self) -> pendulum.DateTime:
+    def end_day(self) -> pendulum.Date:
         """The end day of the interval represented by the schedule block."""
-        return self._due_date
 
-    def contains(self, datetime: pendulum.DateTime) -> bool:
+    def contains(self, timestamp: Timestamp) -> bool:
         """Tests whether a particular datetime is in the schedule block."""
-        return typing.cast(bool, self.first_day.start_of("day") <= datetime) \
-               and typing.cast(bool, datetime <= self.end_day.end_of("day"))
+        first_day_dt = pendulum.DateTime(self.first_day.year, self.first_day.month, self.first_day.day, tzinfo=UTC)
+        end_day_dt = \
+            pendulum.DateTime(self.end_day.year, self.end_day.month, self.end_day.day, tzinfo=UTC).end_of("day")
+        return typing.cast(bool, first_day_dt <= timestamp) and typing.cast(bool, timestamp <= end_day_dt)
 
 
 class DailySchedule(Schedule):
     """A daily schedule."""
 
-    def __init__(self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+    def __init__(self, name: str, right_now: Timestamp, skip_rule: Optional[str] = None,
                  due_at_time: Optional[str] = None) -> None:
         """Construct a schedule."""
-        self._date = date
-        self._due_date = date.end_of("day")
+        self._date = right_now.date()
+        self._due_date = right_now.date()
         if due_at_time:
             self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tzinfo=UTC)
         else:
             self._due_time = None
-        self._full_name = "{name} {month}{day}".format(name=name, month=self.month_to_month(date), day=date.day)
-        self._timeline = self._generate_timeline(date)
+        self._full_name = "{name} {month}{day}".format(
+            name=name, month=self.month_to_month(right_now), day=right_now.day)
+        self._timeline = self._generate_timeline(right_now)
         self._should_skip = self._skip_helper(skip_rule, self._due_date.day_of_week) if skip_rule else False
 
     @property
@@ -205,21 +198,21 @@ class DailySchedule(Schedule):
         return RecurringTaskPeriod.DAILY
 
     @property
-    def first_day(self) -> pendulum.DateTime:
+    def first_day(self) -> pendulum.Date:
         """The first day of the interval represented by the schedule block."""
         return self._due_date
 
     @property
-    def end_day(self) -> pendulum.DateTime:
+    def end_day(self) -> pendulum.Date:
         """The end day of the interval represented by the schedule block."""
         return self._due_date
 
-    def _generate_timeline(self, date: pendulum.DateTime) -> str:
-        year = "{year}".format(year=date.year)
-        quarter = self.month_to_quarter(date)
-        month = self.month_to_month(date)
-        week = "W{week}".format(week=date.week_of_year)
-        day = "D{day}".format(day=date.day_of_week)
+    def _generate_timeline(self, right_now: Timestamp) -> str:
+        year = "{year}".format(year=right_now.year)
+        quarter = self.month_to_quarter(right_now)
+        month = self.month_to_month(right_now)
+        week = "W{week}".format(week=right_now.week_of_year)
+        day = "D{day}".format(day=right_now.day_of_week)
 
         return "{year},{quarter},{month},{week},{day}".format(year=year, quarter=quarter, month=month, week=week,
                                                               day=day)
@@ -229,19 +222,19 @@ class WeeklySchedule(Schedule):
     """A monthly schedule."""
 
     def __init__(
-            self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+            self, name: str, right_now: Timestamp, skip_rule: Optional[str] = None,
             due_at_time: Optional[str] = None, due_at_day: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
-        start_of_week = date.start_of("week")
-        self._date = date
+        start_of_week = right_now.start_of("week")
+        self._date = right_now.date()
         if due_at_day:
             self._due_date = start_of_week.add(days=due_at_day - 1).end_of("day")
         else:
             self._due_date = start_of_week.end_of("week").end_of("day")
         if due_at_time:
             self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tzinfo=UTC)
         else:
             self._due_time = None
         self._full_name = "{name} W{week}".format(name=name, week=start_of_week.week_of_year)
@@ -254,20 +247,20 @@ class WeeklySchedule(Schedule):
         return RecurringTaskPeriod.WEEKLY
 
     @property
-    def first_day(self) -> pendulum.DateTime:
+    def first_day(self) -> pendulum.Date:
         """The first day of the interval represented by the schedule block."""
         return self._date.start_of("week")
 
     @property
-    def end_day(self) -> pendulum.DateTime:
+    def end_day(self) -> pendulum.Date:
         """The end day of the interval represented by the schedule block."""
         return self._date.end_of("week")
 
-    def _generate_timeline(self, date: pendulum.DateTime) -> str:
-        year = "{year}".format(year=date.year)
-        quarter = self.month_to_quarter(date)
-        month = self.month_to_month(date)
-        week = "W{week}".format(week=date.week_of_year)
+    def _generate_timeline(self, right_now: Timestamp) -> str:
+        year = "{year}".format(year=right_now.year)
+        quarter = self.month_to_quarter(right_now)
+        month = self.month_to_month(right_now)
+        week = "W{week}".format(week=right_now.week_of_year)
 
         return "{year},{quarter},{month},{week}".format(year=year, quarter=quarter, month=month, week=week)
 
@@ -276,23 +269,23 @@ class MonthlySchedule(Schedule):
     """A monthly schedule."""
 
     def __init__(
-            self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+            self, name: str, right_now: Timestamp, skip_rule: Optional[str] = None,
             due_at_time: Optional[str] = None, due_at_day: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
-        start_of_month = date.start_of("month")
-        self._date = date
+        start_of_month = right_now.start_of("month")
+        self._date = right_now.date()
         if due_at_day:
             self._due_date = start_of_month.add(days=due_at_day - 1).end_of("day")
         else:
             self._due_date = start_of_month.end_of("month").end_of("day")
         if due_at_time:
             self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tzinfo=UTC)
         else:
             self._due_time = None
-        self._full_name = "{name} {month}".format(name=name, month=self.month_to_month(date))
-        self._timeline = self._generate_timeline(start_of_month)
+        self._full_name = "{name} {month}".format(name=name, month=self.month_to_month(right_now))
+        self._timeline = self._generate_timeline(Timestamp(start_of_month))
         self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
 
     @property
@@ -310,10 +303,10 @@ class MonthlySchedule(Schedule):
         """The end day of the interval represented by the schedule block."""
         return self._date.end_of("month")
 
-    def _generate_timeline(self, date: pendulum.DateTime) -> str:
-        year = "{year}".format(year=date.year)
-        quarter = self.month_to_quarter(date)
-        month = self.month_to_month(date)
+    def _generate_timeline(self, right_now: Timestamp) -> str:
+        year = "{year}".format(year=right_now.year)
+        quarter = self.month_to_quarter(right_now)
+        month = self.month_to_month(right_now)
 
         return "{year},{quarter},{month}".format(year=year, quarter=quarter, month=month)
 
@@ -322,31 +315,45 @@ class QuarterlySchedule(Schedule):
     """A quarterly schedule."""
 
     def __init__(
-            self, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+            self, name: str, right_now: Timestamp, skip_rule: Optional[str] = None,
             due_at_time: Optional[str] = None, due_at_day: Optional[int] = None,
             due_at_month: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
-        self._date = date
+        self._date = right_now.date()
         if due_at_month:
             if due_at_day:
-                self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(
-                    months=due_at_month - 1).add(days=due_at_day - 1).end_of("day")
+                self._due_date = right_now\
+                    .on(right_now.year, self.month_to_quarter_start(right_now), right_now.day)\
+                    .start_of("month")\
+                    .add(months=due_at_month - 1)\
+                    .add(days=due_at_day - 1)\
+                    .end_of("day")
             else:
-                self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(
-                    months=due_at_month - 1).end_of("month").end_of("day")
+                self._due_date = right_now\
+                    .on(right_now.year, self.month_to_quarter_start(right_now), right_now.day)\
+                    .start_of("month")\
+                    .add(months=due_at_month - 1)\
+                    .end_of("month")\
+                    .end_of("day")
         elif due_at_day:
-            self._due_date = date.on(date.year, self.month_to_quarter_start(date), date.day).start_of("month").add(
-                days=due_at_day - 1).end_of("day")
+            self._due_date = right_now\
+                .on(right_now.year, self.month_to_quarter_start(right_now), right_now.day)\
+                .start_of("month")\
+                .add(days=due_at_day - 1)\
+                .end_of("day")
         else:
-            self._due_date = date.on(date.year, self.month_to_quarter_end(date), date.day).end_of("month").end_of("day")
+            self._due_date = right_now\
+                .on(right_now.year, self.month_to_quarter_end(right_now), right_now.day)\
+                .end_of("month")\
+                .end_of("day")
         if due_at_time:
             self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tzinfo=UTC)
         else:
             self._due_time = None
-        self._full_name = "{name} {quarter}".format(name=name, quarter=self.month_to_quarter(date))
-        self._timeline = self._generate_timeline(date)
+        self._full_name = "{name} {quarter}".format(name=name, quarter=self.month_to_quarter(right_now))
+        self._timeline = self._generate_timeline(right_now)
         self._should_skip = \
             self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date)) if skip_rule else False
 
@@ -365,9 +372,9 @@ class QuarterlySchedule(Schedule):
         """The end day of the interval represented by the scedule block."""
         return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).end_of("month")
 
-    def _generate_timeline(self, date: pendulum.DateTime) -> str:
-        year = "{year}".format(year=date.year)
-        quarter = self.month_to_quarter(date)
+    def _generate_timeline(self, right_now: Timestamp) -> str:
+        year = "{year}".format(year=right_now.year)
+        quarter = self.month_to_quarter(right_now)
 
         return "{year},{quarter}".format(year=year, quarter=quarter)
 
@@ -376,28 +383,35 @@ class YearlySchedule(Schedule):
     """A yearly schedule."""
 
     def __init__(
-            self, name: str, date: pendulum.DateTime, due_at_time: Optional[str] = None,
+            self, name: str, right_now: Timestamp, due_at_time: Optional[str] = None,
             due_at_day: Optional[int] = None, due_at_month: Optional[int] = None) -> None:
         """Construct a schedule."""
         super().__init__()
-        self._date = date
+        self._date = right_now.date()
         if due_at_month:
             if due_at_day:
-                self._due_date = date.start_of("year").add(months=due_at_month - 1).add(days=due_at_day - 1).end_of(
-                    "day")
+                self._due_date = right_now\
+                    .start_of("year")\
+                    .add(months=due_at_month - 1)\
+                    .add(days=due_at_day - 1)\
+                    .end_of("day")
             else:
-                self._due_date = date.start_of("year").add(months=due_at_month - 1).end_of("month").end_of("day")
+                self._due_date = right_now\
+                    .start_of("year")\
+                    .add(months=due_at_month - 1)\
+                    .end_of("month")\
+                    .end_of("day")
         elif due_at_day:
-            self._due_date = date.start_of("year").add(days=due_at_day - 1).end_of("day")
+            self._due_date = right_now.start_of("year").add(days=due_at_day - 1).end_of("day")
         else:
-            self._due_date = date.end_of("year").end_of("day")
+            self._due_date = right_now.end_of("year").end_of("day")
         if due_at_time:
             self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time))
+                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tzinfo=UTC)
         else:
             self._due_time = None
-        self._full_name = "{name} {year}".format(name=name, year=date.year)
-        self._timeline = self._generate_timeline(date)
+        self._full_name = "{name} {year}".format(name=name, year=right_now.year)
+        self._timeline = self._generate_timeline(right_now)
         self._should_skip = False
 
     @property
@@ -416,26 +430,26 @@ class YearlySchedule(Schedule):
         return self._date.end_of("year")
 
     @staticmethod
-    def _generate_timeline(date: pendulum.DateTime) -> str:
-        year = "{year}".format(year=date.year)
+    def _generate_timeline(right_now: Timestamp) -> str:
+        year = "{year}".format(year=right_now.year)
 
         return year
 
 
 def get_schedule(
-        period: RecurringTaskPeriod, name: str, date: pendulum.DateTime, skip_rule: Optional[str] = None,
+        period: RecurringTaskPeriod, name: str, right_now: Timestamp, skip_rule: Optional[str] = None,
         due_at_time: Optional[str] = None, due_at_day: Optional[int] = None,
         due_at_month: Optional[int] = None) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
     if period == RecurringTaskPeriod.DAILY:
-        return DailySchedule(name, date, skip_rule, due_at_time)
+        return DailySchedule(name, right_now, skip_rule, due_at_time)
     elif period == RecurringTaskPeriod.WEEKLY:
-        return WeeklySchedule(name, date, skip_rule, due_at_time, due_at_day)
+        return WeeklySchedule(name, right_now, skip_rule, due_at_time, due_at_day)
     elif period == RecurringTaskPeriod.MONTHLY:
-        return MonthlySchedule(name, date, skip_rule, due_at_time, due_at_day)
+        return MonthlySchedule(name, right_now, skip_rule, due_at_time, due_at_day)
     elif period == RecurringTaskPeriod.QUARTERLY:
-        return QuarterlySchedule(name, date, skip_rule, due_at_time, due_at_day, due_at_month)
+        return QuarterlySchedule(name, right_now, skip_rule, due_at_time, due_at_day, due_at_month)
     elif period == RecurringTaskPeriod.YEARLY:
-        return YearlySchedule(name, date, due_at_time, due_at_day, due_at_month)
+        return YearlySchedule(name, right_now, due_at_time, due_at_day, due_at_month)
     else:
         raise Exception(f"Invalid period {period}")

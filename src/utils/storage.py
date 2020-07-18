@@ -139,6 +139,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
     def save(self, new_storage: Tuple[int, List[LiveType]]) -> None:
         """Save the structured storage fully."""
         self._live_data = new_storage
+        self._save(self._live_data)
 
     def _load(self) -> Tuple[int, List[LiveType]]:
         try:

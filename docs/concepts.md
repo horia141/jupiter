@@ -27,7 +27,7 @@ As a quick reference, here is the list of the more important concepts:
 The rest of the document will cover each of these in greater detail.
 
 > Note: When referencing Jupiter commands, we’ll use `jupiter foo` instead of the current
-Docker based `docker run -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest jupiter foo`.
+Docker based `docker run -it --rm --name jupiter-app -v $(pwd):/data jupiter foo`.
 We’ll get there _sometime_ too, but for the sake of brevity it’s easier this way.
 
 As a general consideration, every action in Jupiter is done via a command in the `jupiter` CLI app. It will affect

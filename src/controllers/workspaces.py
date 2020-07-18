@@ -2,6 +2,8 @@
 import logging
 from typing import Final
 
+from pendulum.tz.timezone import Timezone
+
 from models.basic import WorkspaceSpaceId, WorkspaceToken
 from remote.notion.connection import NotionConnection
 from repository.workspace import Workspace
@@ -26,17 +28,22 @@ class WorkspacesController:
         self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
 
-    def create_workspace(self, name: str, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
+    def create_workspace(
+            self, name: str, timezone: Timezone, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
         """Create a workspace."""
         self._notion_connection.initialize(space_id, token)
         LOGGER.info("Initialised Notion connection")
 
-        new_workspace_page = self._workspaces_service.create_workspace(name)
+        new_workspace_page = self._workspaces_service.create_workspace(name, timezone)
         self._vacations_service.upsert_notion_structure(new_workspace_page)
 
     def set_workspace_name(self, name: str) -> Workspace:
         """Change the workspace name."""
         return self._workspaces_service.set_workspace_name(name)
+
+    def set_workspace_timezone(self, timezone: Timezone) -> Workspace:
+        """Change the workspace timezone."""
+        return self._workspaces_service.set_workspace_timezone(timezone)
 
     def set_workspace_token(self, token: WorkspaceToken) -> None:
         """Change the workspace token."""

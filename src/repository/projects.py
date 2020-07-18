@@ -7,9 +7,7 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
-import pendulum
-
-from models.basic import EntityId, ProjectKey
+from models.basic import EntityId, ProjectKey, Timestamp, BasicValidator
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_provider import TimeProvider
@@ -25,9 +23,9 @@ class Project:
     key: ProjectKey
     archived: bool
     name: str
-    created_time: pendulum.DateTime
-    last_modified_time: pendulum.DateTime
-    archived_time: Optional[pendulum.DateTime]
+    created_time: Timestamp
+    last_modified_time: Timestamp
+    archived_time: Optional[Timestamp]
 
 
 @typing.final
@@ -159,9 +157,9 @@ class ProjectsRepository:
             key=ProjectKey(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
             name=typing.cast(str, storage_form["name"]),
-            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
             if storage_form["archived_time"] is not None else None)
 
     @staticmethod
@@ -172,7 +170,8 @@ class ProjectsRepository:
             "key": live_form.key,
             "archived": live_form.archived,
             "name": live_form.name,
-            "created_time": live_form.created_time.to_datetime_string(),
-            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
-            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None
+            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
+            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
+                             if live_form.archived_time else None
         }

@@ -4,7 +4,7 @@ from typing import Final, Optional, Iterable, List
 
 from models.basic import EntityId, Difficulty, Eisen, BasicValidator, ModelValidationError, RecurringTaskPeriod, \
     EntityName, SyncPrefer, RecurringTaskType
-from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError
+from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError, CollectionEntityNotFound
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTask
 from service.errors import ServiceValidationError
@@ -97,8 +97,11 @@ class RecurringTasksService:
         """Archive a given recurring task."""
         recurring_task = self._repository.archive_recurring_task(ref_id)
         LOGGER.info("Applied local changes")
-        self._collection.archive_recurring_task(recurring_task.project_ref_id, ref_id)
-        LOGGER.info("Applied Notion changes")
+        try:
+            self._collection.archive_recurring_task(recurring_task.project_ref_id, ref_id)
+            LOGGER.info("Applied Notion changes")
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping archival on Notion side because recurring task was not found")
 
         return recurring_task
 
@@ -271,9 +274,13 @@ class RecurringTasksService:
         # Apply changes locally
         recurring_task = self._repository.hard_remove_recurring_task(ref_id)
         LOGGER.info("Applied local changes")
-        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
-        self._collection.hard_remove_recurring_task(recurring_task.project_ref_id, recurring_task_row)
-        LOGGER.info("Applied Notion changes")
+
+        try:
+            recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
+            self._collection.hard_remove_recurring_task(recurring_task.project_ref_id, recurring_task_row)
+            LOGGER.info("Applied Notion changes")
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping hard removal on Notion side because recurring task could not be found")
 
         return recurring_task
 
@@ -285,7 +292,7 @@ class RecurringTasksService:
             self._collection.hard_remove_recurring_task(recurring_task.project_ref_id, recurring_task_row)
             LOGGER.info("Applied Notion changes")
         except CollectionError:
-            pass
+            LOGGER.info("Skipping removal on Notion side because recurring task could not be found")
 
         return recurring_task
 
@@ -486,6 +493,8 @@ class RecurringTasksService:
         for recurring_task in all_recurring_tasks_set.values():
             # We've already processed this thing above
             if recurring_task.ref_id in all_recurring_tasks_row_set:
+                continue
+            if recurring_task.archived:
                 continue
 
             self._collection.create_recurring_task(

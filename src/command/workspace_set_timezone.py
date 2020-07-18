@@ -1,4 +1,4 @@
-"""Command for initialising a workspace."""
+"""Command for setting the timezone of a workspace."""
 
 import logging
 from argparse import ArgumentParser, Namespace
@@ -11,8 +11,8 @@ from models.basic import BasicValidator
 LOGGER = logging.getLogger(__name__)
 
 
-class WorkspaceInit(command.Command):
-    """Command class for initialising a workspace."""
+class WorkspaceSetTimezone(command.Command):
+    """Command class for setting the timezone of a workspace."""
 
     _basic_validator: Final[BasicValidator]
     _workspaces_controller: Final[WorkspacesController]
@@ -25,25 +25,18 @@ class WorkspaceInit(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "workspace-init"
+        return "workspace-set-timezone"
 
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Initialise a workspace"
+        return "Change the timezone of the workspace"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--name", required=True, help="The plan name to use")
-        parser.add_argument("--timezone", required=True, help="The timezone you're currently in")
-        parser.add_argument("--space-id", dest="workspace_space_id", required=True, help="The Notion space id to use")
-        parser.add_argument("--token", dest="workspace_token", required=True, help="The Notion access token to use")
+        parser.add_argument("--timezone", required=True, help="The timezone use")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
         timezone = self._basic_validator.timezone_validate_and_clean(args.timezone)
-        space_id = self._basic_validator.workspace_space_id_validate_and_clean(args.workspace_space_id)
-        token = self._basic_validator.workspace_token_validate_and_clean(args.workspace_token)
-
-        self._workspaces_controller.create_workspace(name, timezone, space_id, token)
+        self._workspaces_controller.set_workspace_timezone(timezone)

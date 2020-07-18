@@ -4,7 +4,7 @@ from typing import Final, Iterable, Dict, Optional
 
 import pendulum
 
-from models.basic import BasicValidator, EntityId, SyncPrefer, ModelValidationError
+from models.basic import BasicValidator, EntityId, SyncPrefer, ModelValidationError, ADate
 from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError
 from remote.notion.vacations import VacationsCollection
 from repository.vacations import VacationsRepository, Vacation
@@ -33,7 +33,7 @@ class VacationsService:
         """Upsert the Notion-side structure for vacations."""
         return self._collection.upsert_vacations_structure(parent_page)
 
-    def create_vacation(self, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> Vacation:
+    def create_vacation(self, name: str, start_date: ADate, end_date: ADate) -> Vacation:
         """Create a vacation."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -101,9 +101,11 @@ class VacationsService:
 
         return vacation
 
-    def set_vacation_start_date(self, ref_id: EntityId, start_date: pendulum.DateTime) -> Vacation:
+    def set_vacation_start_date(self, ref_id: EntityId, start_date: ADate) -> Vacation:
         """Change the start date of a vacation."""
         # Apply changes locally
+        if isinstance(start_date, pendulum.DateTime):
+            raise ServiceValidationError("Vacations can only start on a day")
 
         vacation = self._repository.load_vacation(ref_id)
         if start_date >= vacation.end_date:
@@ -121,9 +123,11 @@ class VacationsService:
 
         return vacation
 
-    def set_vacation_end_date(self, ref_id: EntityId, end_date: pendulum.DateTime) -> Vacation:
+    def set_vacation_end_date(self, ref_id: EntityId, end_date: ADate) -> Vacation:
         """Change the end date of a vacation."""
         # Apply changes locally
+        if isinstance(end_date, pendulum.DateTime):
+            raise ServiceValidationError("Vacations can only end on a day")
 
         vacation = self._repository.load_vacation(ref_id)
         if end_date <= vacation.start_date:
@@ -203,8 +207,12 @@ class VacationsService:
 
                 if not vacation_row.start_date:
                     raise ServiceValidationError(f"Vacation '{vacation_row.name}' should have a start date")
+                if isinstance(vacation_row.start_date, pendulum.DateTime):
+                    raise ServiceValidationError(f"Vacation '{vacation_row.name}' should just start on a day")
                 if not vacation_row.end_date:
                     raise ServiceValidationError(f"Vacation '{vacation_row.name}' should have an end date")
+                if isinstance(vacation_row.end_date, pendulum.DateTime):
+                    raise ServiceValidationError(f"Vacation '{vacation_row.name}' should just end on a day")
                 if vacation_row.start_date >= vacation_row.end_date:
                     raise ServiceValidationError(
                         f"Start date for vacation {vacation_row.name} is after end date")
@@ -212,8 +220,8 @@ class VacationsService:
                 new_vacation = self._repository.create_vacation(
                     archived=vacation_row.archived,
                     name=vacation_name,
-                    start_date=pendulum.instance(vacation_row.start_date),
-                    end_date=pendulum.instance(vacation_row.end_date))
+                    start_date=vacation_row.start_date,
+                    end_date=vacation_row.end_date)
                 LOGGER.info(f"Found new vacation from Notion {vacation_row.name}")
 
                 self._collection.link_local_and_notion_entries(new_vacation.ref_id, vacation_row.notion_id)
@@ -235,8 +243,12 @@ class VacationsService:
 
                     if not vacation_row.start_date:
                         raise ServiceValidationError(f"Vacation '{vacation_row.name}' should have a start date")
+                    if isinstance(vacation_row.start_date, pendulum.DateTime):
+                        raise ServiceValidationError(f"Vacation '{vacation_row.name}' should just start on a day")
                     if not vacation_row.end_date:
                         raise ServiceValidationError(f"Vacation '{vacation_row.name}' should have an end date")
+                    if isinstance(vacation_row.end_date, pendulum.DateTime):
+                        raise ServiceValidationError(f"Vacation '{vacation_row.name}' should just end on a day")
                     if vacation_row.start_date >= vacation_row.end_date:
                         raise ServiceValidationError(
                             f"Start date for vacation {vacation_row.name} is after end date")
@@ -275,7 +287,6 @@ class VacationsService:
             if vacation.ref_id in vacations_rows_set:
                 # The vacation already exists on Notion side, so it was handled by the above loop!
                 continue
-
             if vacation.archived:
                 continue
 

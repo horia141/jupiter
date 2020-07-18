@@ -2,8 +2,6 @@
 import logging
 from typing import Final, Optional, Iterable
 
-import pendulum
-
 from models import schedules
 from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId
 from repository.big_plans import BigPlan
@@ -94,7 +92,7 @@ class SyncLocalAndNotionController:
             if SyncTarget.BIG_PLANS in sync_targets:
                 LOGGER.info(f"Syncing big plans for '{project.name}'")
                 all_big_plans = self._big_plans_service.big_plans_sync(
-                    project.ref_id, False, inbox_collection_link, filter_big_plan_ref_ids, sync_prefer)
+                    project.ref_id, drop_all_notion, inbox_collection_link, filter_big_plan_ref_ids, sync_prefer)
                 if anti_entropy_by_name:
                     all_big_plans = self._do_anti_entropy_for_big_plans(all_big_plans)
                 if drop_all_notion_archived:
@@ -109,7 +107,7 @@ class SyncLocalAndNotionController:
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks for '{project.name}'")
                 all_recurring_tasks = self._recurring_tasks_service.recurring_tasks_sync(
-                    project.ref_id, False, inbox_collection_link, filter_recurring_task_ref_ids, sync_prefer)
+                    project.ref_id, drop_all_notion, inbox_collection_link, filter_recurring_task_ref_ids, sync_prefer)
                 if anti_entropy_by_name:
                     all_recurring_tasks = self._do_anti_entropy_for_recurring_tasks(all_recurring_tasks)
                 if drop_all_notion_archived:
@@ -137,6 +135,8 @@ class SyncLocalAndNotionController:
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks instances for '{project.name}'")
                 for inbox_task in all_inbox_tasks:
+                    if inbox_task.archived:
+                        continue
                     if inbox_task.status.is_completed:
                         continue
                     if inbox_task.recurring_task_ref_id is None:
@@ -147,7 +147,7 @@ class SyncLocalAndNotionController:
                     LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
                     recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
                     schedule = schedules.get_schedule(
-                        recurring_task.period, recurring_task.name, pendulum.instance(inbox_task.created_time),
+                        recurring_task.period, recurring_task.name, inbox_task.created_time,
                         recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
                         recurring_task.due_at_month)
                     self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(

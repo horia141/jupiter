@@ -17,7 +17,8 @@ class RecurringTasksShow(command.Command):
     _basic_validator: Final[BasicValidator]
     _recurring_tasks_controller: Final[RecurringTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+    def __init__(
+            self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._recurring_tasks_controller = recurring_tasks_controller
@@ -69,4 +70,4 @@ class RecurringTasksShow(command.Command):
                 print(f'   - id={inbox_task.ref_id} {inbox_task.name}' +
                       f' status={inbox_task.status.value}' +
                       f' archived="{inbox_task.archived}"' +
-                      f' due_date="{inbox_task.due_date.to_datetime_string() if inbox_task.due_date else ""}"')
+                      f' due_date="{self._basic_validator.adate_to_user(inbox_task.due_date)}"')

@@ -9,6 +9,10 @@ class CollectionError(Exception):
     """Exception for Notion interactions."""
 
 
+class CollectionEntityNotFound(CollectionError):
+    """Exception for when a particular entity is not found."""
+
+
 @dataclass()
 class NotionPageLink:
     """A descriptor for a Notion page."""

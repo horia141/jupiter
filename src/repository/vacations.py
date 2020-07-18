@@ -8,8 +8,9 @@ import typing
 from typing import ClassVar, List, Iterable, Optional, Final
 
 import pendulum
+from pendulum import UTC
 
-from models.basic import EntityId
+from models.basic import EntityId, ADate, BasicValidator, Timestamp
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -26,15 +27,26 @@ class Vacation:
     ref_id: EntityId
     archived: bool
     name: str
-    start_date: pendulum.DateTime
-    end_date: pendulum.DateTime
-    created_time: pendulum.DateTime
-    last_modified_time: pendulum.DateTime
-    archived_time: Optional[pendulum.DateTime]
+    start_date: pendulum.Date
+    end_date: pendulum.Date
+    created_time: Timestamp
+    last_modified_time: Timestamp
+    archived_time: Optional[Timestamp]
 
-    def is_in_vacation(self, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> bool:
+    def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this vacation."""
-        return typing.cast(bool, self.start_date <= start_date) and typing.cast(bool, end_date <= self.end_date)
+        if isinstance(start_date, pendulum.DateTime):
+            vacation_start_date = pendulum.DateTime(
+                self.start_date.year, self.start_date.month, self.start_date.day, tzinfo=UTC)
+        else:
+            vacation_start_date = self.start_date
+        if isinstance(end_date, pendulum.DateTime):
+            vacation_end_date = pendulum.DateTime(
+                self.end_date.year, self.end_date.month, self.end_date.day, tzinfo=UTC).end_of("day")
+        else:
+            vacation_end_date = self.end_date
+        return typing.cast(bool, vacation_start_date <= start_date) and \
+               typing.cast(bool, end_date <= vacation_end_date)
 
 
 @typing.final
@@ -65,7 +77,7 @@ class VacationsRepository:
         self._structured_storage.exit_save()
 
     def create_vacation(
-            self, archived: bool, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> Vacation:
+            self, archived: bool, name: str, start_date: ADate, end_date: ADate) -> Vacation:
         """Create a vacation."""
         vacations_next_idx, vacations = self._structured_storage.load()
 
@@ -175,11 +187,11 @@ class VacationsRepository:
             ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
             archived=typing.cast(bool, storage_form["archived"]),
             name=typing.cast(str, storage_form["name"]),
-            start_date=pendulum.parse(typing.cast(str, storage_form["start_date"])),
-            end_date=pendulum.parse(typing.cast(str, storage_form["end_date"])),
-            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            start_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["start_date"])),
+            end_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["end_date"])),
+            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
             if storage_form["archived_time"] is not None else None)
 
     @staticmethod
@@ -189,9 +201,10 @@ class VacationsRepository:
             "ref_id": live_form.ref_id,
             "archived": live_form.archived,
             "name": live_form.name,
-            "start_date": live_form.start_date.to_datetime_string(),
-            "end_date": live_form.end_date.to_datetime_string(),
-            "created_time": live_form.created_time.to_datetime_string(),
-            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
-            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None
+            "start_date": BasicValidator.adate_to_str(live_form.start_date),
+            "end_date": BasicValidator.adate_to_str(live_form.end_date),
+            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
+            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
+                             if live_form.archived_time else None
         }

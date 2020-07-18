@@ -17,7 +17,8 @@ class BigPlansShow(command.Command):
     _basic_validator: Final[BasicValidator]
     _big_plans_controller: Final[BigPlansController]
 
-    def __init__(self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
+    def __init__(
+            self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._big_plans_controller = big_plans_controller
@@ -54,10 +55,10 @@ class BigPlansShow(command.Command):
             print(f'id={big_plan.ref_id} {big_plan.name}' +
                   f' status={big_plan.status.value}' +
                   f' archived="{big_plan.archived}"' +
-                  f' due_date="{big_plan.due_date.to_datetime_string() if big_plan.due_date else ""}"')
+                  f' due_date="{self._basic_validator.adate_to_user(big_plan.due_date)}"')
             print("  Tasks:")
             for inbox_task in inbox_tasks:
                 print(f'   - id={inbox_task.ref_id} {inbox_task.name}' +
                       f' status={inbox_task.status.value}' +
                       f' archived="{inbox_task.archived}"' +
-                      f' due_date="{inbox_task.due_date.to_datetime_string() if inbox_task.due_date else ""}"')
+                      f' due_date="{self._basic_validator.adate_to_user(inbox_task.due_date)}"')

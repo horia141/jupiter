@@ -40,5 +40,5 @@ class BigPlansSetDueDate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        due_date = self._basic_validator.date_validate_and_clean(args.due_date) if args.due_date else None
+        due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
         self._big_plans_controller.set_big_plan_due_date(ref_id, due_date)

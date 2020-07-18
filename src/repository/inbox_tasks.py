@@ -7,9 +7,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
-import pendulum
-
-from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus, RecurringTaskType
+from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus, RecurringTaskType, ADate, BasicValidator, \
+    Timestamp
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -31,15 +30,15 @@ class InboxTask:
     status: InboxTaskStatus
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
-    due_date: Optional[pendulum.DateTime]
+    due_date: Optional[ADate]
     recurring_task_timeline: Optional[str]
     recurring_task_type: Optional[RecurringTaskType]
-    created_time: pendulum.DateTime
-    last_modified_time: pendulum.DateTime
-    archived_time: Optional[pendulum.DateTime]
-    accepted_time: Optional[pendulum.DateTime]
-    working_time: Optional[pendulum.DateTime]
-    completed_time: Optional[pendulum.DateTime]
+    created_time: Timestamp
+    last_modified_time: Timestamp
+    archived_time: Optional[Timestamp]
+    accepted_time: Optional[Timestamp]
+    working_time: Optional[Timestamp]
+    completed_time: Optional[Timestamp]
 
 
 @typing.final
@@ -72,7 +71,7 @@ class InboxTasksRepository:
     def create_inbox_task(
             self, project_ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
             recurring_task_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
-            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_date: Optional[pendulum.DateTime],
+            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_date: Optional[ADate],
             recurring_task_timeline: Optional[str], recurring_task_type: Optional[RecurringTaskType]) -> InboxTask:
         """Create a recurring task."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
@@ -235,21 +234,21 @@ class InboxTasksRepository:
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"]))
             if storage_form["difficulty"] else None,
-            due_date=pendulum.parse(typing.cast(str, storage_form["due_date"]))
+            due_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             recurring_task_timeline=typing.cast(str, storage_form["recurring_task_timeline"])
             if storage_form["recurring_task_timeline"] else None,
             recurring_task_type=RecurringTaskType(typing.cast(str, storage_form["recurring_task_type"]))
             if storage_form["recurring_task_type"] else None,
-            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
             if storage_form["archived_time"] else None,
-            accepted_time=pendulum.parse(typing.cast(str, storage_form["accepted_time"]))
+            accepted_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["accepted_time"]))
             if storage_form["accepted_time"] else None,
-            working_time=pendulum.parse(typing.cast(str, storage_form["working_time"]))
+            working_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["working_time"]))
             if storage_form["working_time"] else None,
-            completed_time=pendulum.parse(typing.cast(str, storage_form["completed_time"]))
+            completed_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["completed_time"]))
             if storage_form["completed_time"] else None)
 
     @staticmethod
@@ -265,13 +264,17 @@ class InboxTasksRepository:
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
-            "due_date": live_form.due_date.to_datetime_string() if live_form.due_date else None,
+            "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,
             "recurring_task_timeline": live_form.recurring_task_timeline,
             "recurring_task_type": live_form.recurring_task_type.value if live_form.recurring_task_type else None,
-            "created_time": live_form.created_time.to_datetime_string(),
-            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
-            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None,
-            "accepted_time": live_form.accepted_time.to_datetime_string() if live_form.accepted_time else None,
-            "working_time": live_form.working_time.to_datetime_string() if live_form.working_time else None,
-            "completed_time": live_form.completed_time.to_datetime_string() if live_form.completed_time else None
+            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
+            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
+                             if live_form.archived_time else None,
+            "accepted_time": BasicValidator.timestamp_to_str(live_form.accepted_time)
+                             if live_form.accepted_time else None,
+            "working_time": BasicValidator.timestamp_to_str(live_form.working_time)
+                            if live_form.working_time else None,
+            "completed_time": BasicValidator.timestamp_to_str(live_form.completed_time)
+                              if live_form.completed_time else None
         }

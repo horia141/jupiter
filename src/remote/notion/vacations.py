@@ -6,10 +6,9 @@ from types import TracebackType
 import typing
 from typing import Final, Optional, Dict, ClassVar, Iterable, cast, Type
 
-import pendulum
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId
+from models.basic import EntityId, ADate, BasicValidator
 from remote.notion.client import NotionClient
 from remote.notion.collection import BasicRowType, NotionCollection, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
@@ -26,8 +25,8 @@ class VacationRow(BasicRowType):
     notion_id: NotionId
     name: str
     archived: bool
-    start_date: Optional[pendulum.DateTime]
-    end_date: Optional[pendulum.DateTime]
+    start_date: Optional[ADate]
+    end_date: Optional[ADate]
     ref_id: Optional[str]
 
 
@@ -110,10 +109,12 @@ class VacationsCollection:
         }
     }
 
+    _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[VacationRow]]
 
-    def __init__(self, connection: NotionConnection) -> None:
+    def __init__(self, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._basic_validator = basic_validator
         self._collection = NotionCollection[VacationRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'VacationsCollection':
@@ -134,8 +135,7 @@ class VacationsCollection:
         return self._collection.upsert_structure(self._DISCRIMINANT, parent_page)
 
     def create_vacation(
-            self, archived: bool, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime,
-            ref_id: EntityId) -> VacationRow:
+            self, archived: bool, name: str, start_date: ADate, end_date: ADate, ref_id: EntityId) -> VacationRow:
         """Create a vacation."""
         new_vacation_row = VacationRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
@@ -239,29 +239,27 @@ class VacationsCollection:
 
         return combined_schema
 
-    @staticmethod
     def copy_row_to_notion_row(
-            client: NotionClient, row: VacationRow, notion_row: CollectionRowBlock,
+            self, client: NotionClient, row: VacationRow, notion_row: CollectionRowBlock,
             **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         # pylint: disable=unused-argument
         notion_row.title = row.name
         notion_row.archived = row.archived
-        notion_row.start_date = row.start_date
-        notion_row.end_date = row.end_date
+        notion_row.start_date = self._basic_validator.adate_to_notion(row.start_date)
+        notion_row.end_date = self._basic_validator.adate_to_notion(row.end_date)
         notion_row.ref_id = row.ref_id
 
         return notion_row
 
-    @staticmethod
-    def copy_notion_row_to_row(vacation_notion_row: CollectionRowBlock) -> VacationRow:
+    def copy_notion_row_to_row(self, vacation_notion_row: CollectionRowBlock) -> VacationRow:
         """Transform the live system data to something suitable for basic storage."""
         return VacationRow(
             notion_id=vacation_notion_row.id,
             name=vacation_notion_row.title,
             archived=vacation_notion_row.archived or False,
-            start_date=pendulum.parse(str(vacation_notion_row.start_date.start))
+            start_date=self._basic_validator.adate_from_notion(vacation_notion_row.start_date)
             if vacation_notion_row.start_date else None,
-            end_date=pendulum.parse(str(vacation_notion_row.end_date.start))
+            end_date=self._basic_validator.adate_from_notion(vacation_notion_row.end_date)
             if vacation_notion_row.end_date else None,
             ref_id=vacation_notion_row.ref_id)

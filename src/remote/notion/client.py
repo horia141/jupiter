@@ -139,7 +139,7 @@ class NotionClient:
     @staticmethod
     def create_collection_row(collection: Collection) -> CollectionRowBlock:
         """Create a new empty row in a collection."""
-        collection_row = collection.add_row()
+        collection_row = collection.add_row(update_views=False)
         return collection_row
 
     def get_collection_row(self, collection: Collection, row_id: NotionId) -> CollectionRowBlock:

@@ -3,11 +3,9 @@ import logging
 import uuid
 from typing import Final, Iterable, Optional, Dict
 
-import pendulum
-
-from models.basic import EntityId, BasicValidator, ModelValidationError, BigPlanStatus, SyncPrefer
+from models.basic import EntityId, BasicValidator, ModelValidationError, BigPlanStatus, SyncPrefer, ADate
 from remote.notion.big_plans import BigPlansCollection
-from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError
+from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionEntityNotFound
 from repository.big_plans import BigPlan, BigPlansRepository
 from service.errors import ServiceValidationError
 from utils.time_field_action import TimeFieldAction
@@ -43,7 +41,7 @@ class BigPlansService:
 
     def create_big_plan(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
-            due_date: Optional[pendulum.DateTime]) -> BigPlan:
+            due_date: Optional[ADate]) -> BigPlan:
         """Create a big plan."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -74,8 +72,11 @@ class BigPlansService:
         """Archive a big plan."""
         big_plan = self._repository.archive_big_plan(ref_id)
         LOGGER.info("Applied local changes")
-        self._collection.archive_big_plan(big_plan.project_ref_id, ref_id)
-        LOGGER.info("Applied Notion changes")
+        try:
+            self._collection.archive_big_plan(big_plan.project_ref_id, ref_id)
+            LOGGER.info("Applied Notion changes")
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping archival of Notion big plan because it could not be found")
 
         return big_plan
 
@@ -127,7 +128,7 @@ class BigPlansService:
 
         return big_plan
 
-    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> BigPlan:
+    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> BigPlan:
         """Change the due date of a big plan."""
         big_plan = self._repository.load_big_plan(ref_id)
         big_plan.due_date = due_date
@@ -146,9 +147,12 @@ class BigPlansService:
         # Apply changes locally
         big_plan = self._repository.hard_remove_big_plan(ref_id)
         LOGGER.info("Applied local changes")
-        big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, ref_id)
-        self._collection.hard_remove_big_plan(big_plan.project_ref_id, big_plan_row)
-        LOGGER.info("Applied Notion changes")
+        try:
+            big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, ref_id)
+            self._collection.hard_remove_big_plan(big_plan.project_ref_id, big_plan_row)
+            LOGGER.info("Applied Notion changes")
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping hard removal on Notion side since big plan could not be found")
 
         return big_plan
 
@@ -159,8 +163,8 @@ class BigPlansService:
             big_plan_row = self._collection.load_big_plan(big_plan.project_ref_id, ref_id)
             self._collection.hard_remove_big_plan(big_plan.project_ref_id, big_plan_row)
             LOGGER.info("Applied Notion changes")
-        except CollectionError:
-            pass
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping removal on Notion side because big plan was not found")
 
         return big_plan
 
@@ -309,6 +313,8 @@ class BigPlansService:
         for big_plan in all_big_plans_set.values():
             # We've already processed this thing above
             if big_plan.ref_id in all_big_plans_rows_set:
+                continue
+            if big_plan.archived:
                 continue
 
             self._collection.create_big_plan(

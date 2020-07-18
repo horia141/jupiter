@@ -2,8 +2,10 @@
 
 import argparse
 import logging
+import os
 
 import coloredlogs
+import pendulum
 
 from command.big_plans_archive import BigPlansArchive
 from command.big_plans_create import BigPlansCreate
@@ -54,6 +56,7 @@ from command.vacations_set_start_date import VacationsSetStartDate
 from command.vacations_show import VacationsShow
 from command.workspace_init import WorkspaceInit
 from command.workspace_set_name import WorkspaceSetName
+from command.workspace_set_timezone import WorkspaceSetTimezone
 from command.workspace_set_token import WorkspaceSetToken
 from command.workspace_show import WorkspaceShow
 from controllers.big_plans import BigPlansController
@@ -85,12 +88,12 @@ from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 
 def main() -> None:
     """Application main function."""
-    basic_validator = BasicValidator()
     time_provider = TimeProvider()
 
     notion_connection = NotionConnection()
@@ -98,16 +101,19 @@ def main() -> None:
     workspaces_repository = WorkspaceRepository(time_provider)
     workspaces_singleton = WorkspaceSingleton(notion_connection)
 
+    global_properties = _build_global_properties(workspaces_repository)
+    basic_validator = BasicValidator(global_properties)
+
     with VacationsRepository(time_provider) as vacations_repository,\
             ProjectsRepository(time_provider) as projects_repository,\
             InboxTasksRepository(time_provider) as inbox_tasks_repository,\
             RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
             BigPlansRepository(time_provider) as big_plans_repository, \
-            VacationsCollection(notion_connection) as vacations_collection, \
+            VacationsCollection(basic_validator, notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
-            InboxTasksCollection(notion_connection) as inbox_tasks_collection, \
+            InboxTasksCollection(basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(notion_connection) as recurring_tasks_collection, \
-            BigPlansCollection(notion_connection) as big_plans_collection:
+            BigPlansCollection(basic_validator, notion_connection) as big_plans_collection:
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
@@ -140,6 +146,7 @@ def main() -> None:
         commands = [
             WorkspaceInit(basic_validator, workspaces_controller),
             WorkspaceSetName(basic_validator, workspaces_controller),
+            WorkspaceSetTimezone(basic_validator, workspaces_controller),
             WorkspaceSetToken(basic_validator, workspaces_controller),
             WorkspaceShow(workspaces_controller),
             VacationsCreate(basic_validator, vacations_controller),
@@ -148,7 +155,7 @@ def main() -> None:
             VacationsSetStartDate(basic_validator, vacations_controller),
             VacationsSetEndDate(basic_validator, vacations_controller),
             VacationsHardRemove(basic_validator, vacations_controller),
-            VacationsShow(vacations_controller),
+            VacationsShow(basic_validator, vacations_controller),
             ProjectCreate(basic_validator, projects_controller),
             ProjectArchive(basic_validator, projects_controller),
             ProjectSetName(basic_validator, projects_controller),
@@ -238,6 +245,17 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
         if record.name.startswith("command.") or record.name.startswith("controllers."):
             return 1
         return 0
+
+
+def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:
+    try:
+        workspace = workspace_repository.load_workspace()
+        timezone = workspace.timezone
+    except MissingWorkspaceRepositoryError:
+        timezone = pendulum.timezone(os.getenv("TZ", "UTC"))
+
+    return GlobalProperties(
+        timezone=timezone)
 
 
 def _map_log_level_to_log_class(log_level: str) -> int:

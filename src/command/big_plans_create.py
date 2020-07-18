@@ -43,5 +43,5 @@ class BigPlansCreate(command.Command):
         """Callback to execute when the command is invoked."""
         project_key = self._basic_validator.project_key_validate_and_clean(args.project)
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        due_date = self._basic_validator.date_validate_and_clean(args.due_date) if args.due_date else None
+        due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
         self._big_plans_controller.create_big_plan(project_key, name, due_date)

@@ -15,7 +15,7 @@ This will get you the latest version of the code. After this you can:
 ```bash
 $ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest upsert-tasks \
     /data/tasks-work.yaml
 ```
@@ -45,7 +45,7 @@ This will chug for a while and produce a local image called `jupiter`. You can u
 ```bash
 $ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     jupiter upsert-tasks \
     /data/tasks-work.yaml
 ```

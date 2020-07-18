@@ -1,10 +1,8 @@
 """The controller for vacations."""
 from typing import Final, Iterable
 
-import pendulum
-
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId
+from models.basic import EntityId, ADate
 from repository.vacations import Vacation
 from service.vacations import VacationsService
 
@@ -18,7 +16,7 @@ class VacationsController:
         """Constructor."""
         self._vacations_service = vacations_service
 
-    def create_vacation(self, name: str, start_date: pendulum.DateTime, end_date: pendulum.DateTime) -> Vacation:
+    def create_vacation(self, name: str, start_date: ADate, end_date: ADate) -> Vacation:
         """Create a vacation."""
         return self._vacations_service.create_vacation(name, start_date, end_date)
 
@@ -30,11 +28,11 @@ class VacationsController:
         """Change the vacation name."""
         return self._vacations_service.set_vacation_name(ref_id, name)
 
-    def set_vacation_start_date(self, ref_id: EntityId, start_date: pendulum.DateTime) -> Vacation:
+    def set_vacation_start_date(self, ref_id: EntityId, start_date: ADate) -> Vacation:
         """Change the vacation start date."""
         return self._vacations_service.set_vacation_start_date(ref_id, start_date)
 
-    def set_vacation_end_date(self, ref_id: EntityId, end_date: pendulum.DateTime) -> Vacation:
+    def set_vacation_end_date(self, ref_id: EntityId, end_date: ADate) -> Vacation:
         """Change the vacation end date."""
         return self._vacations_service.set_vacation_end_date(ref_id, end_date)
 

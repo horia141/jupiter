@@ -41,6 +41,6 @@ class VacationsSetStartDate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        start_date = self._basic_validator.datetime_validate_and_clean(args.start_date)
+        start_date = self._basic_validator.adate_validate_and_clean(args.start_date)
 
         self._vacations_controller.set_vacation_start_date(ref_id, start_date)

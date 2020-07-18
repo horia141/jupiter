@@ -2,13 +2,13 @@
 from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
-from typing import Optional, Iterable, Final, Dict, List
+from typing import Optional, Iterable, Final, Dict, List, cast
 
-import pendulum
 from nested_dataclasses import nested
 
 from models import schedules
-from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType
+from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
+    Timestamp
 from models.schedules import Schedule
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
@@ -148,7 +148,7 @@ class ReportProgressController:
         self._recurring_tasks_service = recurring_tasks_service
 
     def run_report(
-            self, right_now: pendulum.DateTime, filter_project_keys: Optional[Iterable[ProjectKey]],
+            self, right_now: Timestamp, filter_project_keys: Optional[Iterable[ProjectKey]],
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             period: RecurringTaskPeriod, breakdown_period: Optional[RecurringTaskPeriod] = None) -> RunReportResponse:
@@ -286,7 +286,7 @@ class ReportProgressController:
                 else:
                     created_cnt_from_big_plan += 1
 
-            if inbox_task.status.is_completed and schedule.contains(inbox_task.completed_time):
+            if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt_total += 1
                     if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
@@ -303,7 +303,7 @@ class ReportProgressController:
                         not_done_cnt_from_recurring_task += 1
                     else:
                         not_done_cnt_from_big_plan += 1
-            elif inbox_task.status.is_working and schedule.contains(inbox_task.working_time):
+            elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
                 working_cnt_total += 1
                 if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
                     working_cnt_ad_hoc += 1
@@ -311,7 +311,7 @@ class ReportProgressController:
                     working_cnt_from_recurring_task += 1
                 else:
                     working_cnt_from_big_plan += 1
-            elif inbox_task.status.is_accepted and schedule.contains(inbox_task.accepted_time):
+            elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt_total += 1
                 if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
                     accepted_cnt_ad_hoc += 1
@@ -360,14 +360,14 @@ class ReportProgressController:
             if schedule.contains(inbox_task.created_time):
                 created_cnt += 1
 
-            if inbox_task.status.is_completed and schedule.contains(inbox_task.completed_time):
+            if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt += 1
                 else:
                     not_done_cnt += 1
-            elif inbox_task.status.is_working and schedule.contains(inbox_task.working_time):
+            elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
                 working_cnt += 1
-            elif inbox_task.status.is_accepted and schedule.contains(inbox_task.accepted_time):
+            elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
         return BigPlanSummary(
@@ -393,14 +393,14 @@ class ReportProgressController:
             if schedule.contains(inbox_task.created_time):
                 created_cnt += 1
 
-            if inbox_task.status.is_completed and schedule.contains(inbox_task.completed_time):
+            if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt += 1
                 else:
                     not_done_cnt += 1
-            elif inbox_task.status.is_working and schedule.contains(inbox_task.working_time):
+            elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
                 working_cnt += 1
-            elif inbox_task.status.is_accepted and schedule.contains(inbox_task.accepted_time):
+            elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
         longest_streak_size = 0
@@ -464,14 +464,14 @@ class ReportProgressController:
             if schedule.contains(big_plan.created_time):
                 created_cnt += 1
 
-            if big_plan.status.is_completed and schedule.contains(big_plan.completed_time):
+            if big_plan.status.is_completed and schedule.contains(cast(Timestamp, big_plan.completed_time)):
                 if big_plan.status == BigPlanStatus.DONE:
                     done_cnt += 1
                 else:
                     not_done_cnt += 1
-            elif big_plan.status.is_working and schedule.contains(big_plan.working_time):
+            elif big_plan.status.is_working and schedule.contains(cast(Timestamp, big_plan.working_time)):
                 working_cnt += 1
-            elif big_plan.status.is_accepted and schedule.contains(big_plan.accepted_time):
+            elif big_plan.status.is_accepted and schedule.contains(cast(Timestamp, big_plan.accepted_time)):
                 accepted_cnt += 1
 
         return WorkableSummary(

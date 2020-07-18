@@ -2,10 +2,8 @@
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
-import pendulum
-
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus
+from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
@@ -49,7 +47,7 @@ class InboxTasksController:
 
     def create_inbox_task(
             self, project_key: ProjectKey, name: str, big_plan_ref_id: Optional[EntityId], eisen: List[Eisen],
-            difficulty: Optional[Difficulty], due_date: Optional[pendulum.DateTime]) -> InboxTask:
+            difficulty: Optional[Difficulty], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         project = self._projects_service.load_project_by_key(project_key)
 
@@ -95,7 +93,7 @@ class InboxTasksController:
         """Change the difficulty of an inbox task."""
         return self._inbox_tasks_service.set_inbox_task_difficulty(ref_id, difficulty)
 
-    def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> InboxTask:
+    def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> InboxTask:
         """Change the due date of an inbox task."""
         return self._inbox_tasks_service.set_inbox_task_due_date(ref_id, due_date)
 

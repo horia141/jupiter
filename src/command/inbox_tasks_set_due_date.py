@@ -40,5 +40,5 @@ class InboxTasksSetDueDate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        due_date = self._basic_validator.datetime_validate_and_clean(args.due_date) if args.due_date else None
+        due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
         self._inbox_tasks_controller.set_inbox_task_due_date(ref_id, due_date)

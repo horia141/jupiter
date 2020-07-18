@@ -7,9 +7,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
-import pendulum
-
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, EntityName, RecurringTaskType
+from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, EntityName, RecurringTaskType, Timestamp, \
+    BasicValidator
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -37,9 +36,9 @@ class RecurringTask:
     suspended: bool
     skip_rule: Optional[str]
     must_do: bool
-    created_time: pendulum.DateTime
-    last_modified_time: pendulum.DateTime
-    archived_time: Optional[pendulum.DateTime]
+    created_time: Timestamp
+    last_modified_time: Timestamp
+    archived_time: Optional[Timestamp]
 
 
 @typing.final
@@ -225,9 +224,9 @@ class RecurringTasksRepository:
             suspended=typing.cast(bool, storage_form["suspended"]),
             skip_rule=typing.cast(str, storage_form["skip_rule"]) if storage_form["skip_rule"] else None,
             must_do=typing.cast(bool, storage_form["must_do"]),
-            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
             if storage_form["archived_time"] is not None else None)
 
     @staticmethod
@@ -249,7 +248,8 @@ class RecurringTasksRepository:
             "suspended": live_form.suspended,
             "skip_rule": live_form.skip_rule,
             "must_do": live_form.must_do,
-            "created_time": live_form.created_time.to_datetime_string(),
-            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
-            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None
+            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
+            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
+                             if live_form.archived_time else None
         }

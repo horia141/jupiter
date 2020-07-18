@@ -2,10 +2,8 @@
 import logging
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
-import pendulum
-
 from models import schedules
-from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, EntityName
+from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, EntityName, Timestamp
 from repository.inbox_tasks import InboxTask
 from repository.projects import Project
 from repository.recurring_tasks import RecurringTask
@@ -36,7 +34,7 @@ class GenerateInboxTasksController:
         self._recurring_tasks_service = recurring_tasks_service
 
     def recurring_tasks_gen(
-            self, right_now: pendulum.DateTime, project_keys: Optional[Iterable[ProjectKey]] = None,
+            self, right_now: Timestamp, project_keys: Optional[Iterable[ProjectKey]] = None,
             group_filter: Optional[Iterable[EntityName]] = None, ref_ids: Optional[Iterable[EntityId]] = None,
             period_filter: Optional[Iterable[RecurringTaskPeriod]] = None) -> None:
         """Generate recurring tasks to inbox tasks."""
@@ -74,7 +72,7 @@ class GenerateInboxTasksController:
     def _generate_inbox_tasks_for_recurring_task(
             self,
             project: Project,
-            right_now: pendulum.DateTime,
+            right_now: Timestamp,
             group_filter: Optional[FrozenSet[EntityName]],
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
             all_vacations: List[Vacation],

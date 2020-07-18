@@ -6,7 +6,7 @@ from types import TracebackType
 from typing import Final, ClassVar, List, Optional, Type, cast
 
 from models.basic import EntityId
-from remote.notion.common import NotionId, NotionPageLink, CollectionError
+from remote.notion.common import NotionId, NotionPageLink, CollectionError, CollectionEntityNotFound
 from remote.notion.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -95,7 +95,7 @@ class ProjectsCollection:
         lock = self._find_lock(locks, ref_id)
 
         if not lock:
-            raise CollectionError(f"Entity with id='{ref_id} does not exist")
+            raise CollectionEntityNotFound(f"Entity with id='{ref_id} does not exist")
 
         client = self._connection.get_notion_client()
 

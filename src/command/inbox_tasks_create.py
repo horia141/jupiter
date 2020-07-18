@@ -53,5 +53,5 @@ class InboxTasksCreate(command.Command):
             if args.big_plan_ref_id else None
         eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
         difficulty = self._basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
-        due_date = self._basic_validator.datetime_validate_and_clean(args.due_date) if args.due_date else None
+        due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
         self._inbox_tasks_controller.create_inbox_task(project_key, name, big_plan_ref_id, eisen, difficulty, due_date)

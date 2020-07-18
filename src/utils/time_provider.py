@@ -2,17 +2,20 @@
 from typing import Final
 
 import pendulum
+from pendulum import UTC
+
+from models.basic import Timestamp
 
 
 class TimeProvider:
     """A source of time, kept constant across each request."""
 
-    _right_now: Final[pendulum.DateTime]
+    _right_now: Final[Timestamp]
 
     def __init__(self) -> None:
         """Constructor."""
-        self._right_now = pendulum.now(tz="UTC")
+        self._right_now = Timestamp(pendulum.now(tz=UTC))
 
-    def get_current_time(self) -> pendulum.DateTime:
+    def get_current_time(self) -> Timestamp:
         """Get the current time."""
         return self._right_now

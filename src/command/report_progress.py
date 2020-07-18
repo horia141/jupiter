@@ -60,7 +60,7 @@ class ReportProgress(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        right_now = self._basic_validator.datetime_validate_and_clean(args.date) \
+        right_now = self._basic_validator.timestamp_validate_and_clean(args.date) \
             if args.date else self._time_provider.get_current_time()
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
             if len(args.project_keys) > 0 else None

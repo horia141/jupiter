@@ -1,10 +1,15 @@
 """Basic model types and validators for them."""
 import enum
 import re
-from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern
+from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern, Union, cast
 
 import pendulum
 import pendulum.parsing.exceptions
+from notion.collection import NotionDate
+from pendulum.tz.timezone import Timezone, UTC
+from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
+
+from utils.global_properties import GlobalProperties
 
 
 class ModelValidationError(Exception):
@@ -28,6 +33,12 @@ class SyncPrefer(enum.Enum):
     """The source of data to prefer for a sync operation."""
     LOCAL = "local"
     NOTION = "notion"
+
+
+Timestamp = NewType("Timestamp", pendulum.DateTime) # type: ignore
+
+
+ADate = Union[pendulum.Date, pendulum.DateTime]
 
 
 EntityId = NewType("EntityId", str)
@@ -192,7 +203,6 @@ class BasicValidator:
     _workspace_space_id_re: Final[Pattern[str]] = re.compile(r"^[0-9a-z-]{36}$")
     _workspace_token_re: Final[Pattern[str]] = re.compile(r"^[0-9a-f]+$")
     _project_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
-    _default_tz: Final[str] = "UTC"
     _eisen_values: Final[FrozenSet[str]] = frozenset(e.value for e in Eisen)
     _difficulty_values: Final[FrozenSet[str]] = frozenset(d.value for d in Difficulty)
     _inbox_task_status_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskStatus)
@@ -214,6 +224,12 @@ class BasicValidator:
         RecurringTaskPeriod.YEARLY: (0, 12)
     }
     _big_plan_status_values: Final[FrozenSet[str]] = frozenset(bps.value for bps in BigPlanStatus)
+
+    _global_properties: Final[GlobalProperties]
+
+    def __init__(self, global_properties: GlobalProperties) -> None:
+        """Constructor."""
+        self._global_properties = global_properties
 
     def sync_target_validate_and_clean(self, sync_target_raw: Optional[str]) -> SyncTarget:
         """Validate and clean the big plan status."""
@@ -330,35 +346,95 @@ class BasicValidator:
 
         return ProjectKey(project_key_str)
 
-    def datetime_validate_and_clean(self, datetime_raw: Optional[str]) -> pendulum.DateTime:
+    def timestamp_validate_and_clean(self, timestamp_raw: Optional[str]) -> Timestamp:
+        """Validate and clean an optional timestamp."""
+        if not timestamp_raw:
+            raise ModelValidationError("Expected timestamp to be non-null")
+
+        try:
+            timestamp = pendulum.parse(timestamp_raw, tz=self._global_properties.timezone, exact=True)
+
+            if isinstance(timestamp, pendulum.DateTime):
+                timestamp = timestamp.in_timezone(UTC)
+            elif isinstance(timestamp, pendulum.Date):
+                timestamp = pendulum.DateTime(timestamp.year, timestamp.month, timestamp.day, tzinfo=UTC)
+            else:
+                raise ModelValidationError(f"Expected datetime '{timestamp_raw}' to be in a proper datetime format")
+
+            return Timestamp(timestamp)
+        except pendulum.parsing.exceptions.ParserError as error:
+            raise ModelValidationError(f"Expected datetime '{timestamp_raw}' to be in a proper format") from error
+
+    @staticmethod
+    def timestamp_from_str(timestamp_raw: str) -> Timestamp:
+        """Parse a timestamp from a string."""
+        timestamp = pendulum.parse(timestamp_raw, tz=UTC, exact=True)
+        if not isinstance(timestamp, pendulum.DateTime):
+            raise ModelValidationError(f"Expected timestamp '{timestamp_raw}' to be in a proper timestamp format")
+        return Timestamp(timestamp)
+
+    @staticmethod
+    def timestamp_to_str(timestamp: Timestamp) -> str:
+        """Transform a timestamp to a string."""
+        return cast(str, timestamp.to_datetime_string())
+
+    def adate_validate_and_clean(self, datetime_raw: Optional[str]) -> ADate:
         """Validate and clean an optional datetime."""
         if not datetime_raw:
             raise ModelValidationError("Expected datetime to be non-null")
 
         try:
-            the_datetime = pendulum.parse(datetime_raw, tz=self._default_tz)
+            adate = pendulum.parse(datetime_raw, tz=self._global_properties.timezone, exact=True)
 
-            if not isinstance(the_datetime, pendulum.DateTime):
+            if isinstance(adate, pendulum.DateTime):
+                adate = adate.in_timezone(UTC)
+            elif isinstance(adate, pendulum.Date):
+                pass
+            else:
                 raise ModelValidationError(f"Expected datetime '{datetime_raw}' to be in a proper datetime format")
 
-            return the_datetime
+            return adate
         except pendulum.parsing.exceptions.ParserError as error:
             raise ModelValidationError(f"Expected datetime '{datetime_raw}' to be in a proper format") from error
 
-    def date_validate_and_clean(self, date_raw: Optional[str]) -> pendulum.DateTime:
-        """Validate and clean an optional date."""
-        if not date_raw:
-            raise ModelValidationError("Expected date to be non-null")
+    @staticmethod
+    def adate_from_str(adata_raw: str) -> ADate:
+        """Parse a date from string."""
+        return pendulum.parse(adata_raw.replace(" 00:00:00", ""), tz=UTC, exact=True)
 
-        try:
-            the_datetime = pendulum.parse(date_raw, tz=self._default_tz)
+    @staticmethod
+    def adate_to_str(adate: ADate) -> str:
+        """Transform a date to string."""
+        if isinstance(adate, pendulum.DateTime):
+            return cast(str, adate.to_datetime_string())
+        else:
+            return cast(str, adate.to_date_string())
 
-            if not isinstance(the_datetime, pendulum.DateTime):
-                raise ModelValidationError(f"Expected datetime '{date_raw}' to be in a proper datetime format")
+    def adate_from_notion(self, adate_raw: NotionDate) -> ADate:
+        """Parse a date from a Notion representation."""
+        adate_raw = pendulum.parse(
+            str(adate_raw.start), exact=True, tz=self._global_properties.timezone)
+        if isinstance(adate_raw, pendulum.DateTime):
+            return adate_raw.in_timezone(UTC)
+        else:
+            return adate_raw
 
-            return the_datetime.end_of("day")
-        except pendulum.parsing.exceptions.ParserError as error:
-            raise ModelValidationError(f"Expected datetime '{date_raw}' to be in a proper format") from error
+    def adate_to_notion(self, adate: ADate) -> NotionDate:
+        """Transform a date to a Notion representation."""
+        if isinstance(adate, pendulum.DateTime):
+            return NotionDate(
+                adate.in_timezone(self._global_properties.timezone), timezone=self._global_properties.timezone.name)
+        else:
+            return NotionDate(adate)
+
+    def adate_to_user(self, adate: Optional[ADate]) -> str:
+        """Transform a date to something meaningful to a user."""
+        if not adate:
+            return ""
+        if isinstance(adate, pendulum.DateTime):
+            return cast(str, adate.in_timezone(self._global_properties.timezone).to_datetime_string())
+        else:
+            return cast(str, adate.to_date_string())
 
     def eisen_validate_and_clean(self, eisen_raw: Optional[str]) -> Eisen:
         """Validate and clean the Eisenhower status."""
@@ -524,3 +600,16 @@ class BasicValidator:
     def big_plan_status_values() -> Iterable[str]:
         """The possible values for big plan statues."""
         return BasicValidator._big_plan_status_values
+
+    @staticmethod
+    def timezone_validate_and_clean(timezone_raw: Optional[str]) -> Timezone:
+        """Validate and clean a timezone."""
+        if not timezone_raw:
+            raise ModelValidationError("Expected timezone to be non-null")
+
+        timezone_str: str = timezone_raw.strip()
+
+        try:
+            return pendulum.timezone(timezone_str)
+        except InvalidTimezone as err:
+            raise ModelValidationError(f"Invalid timezone '{timezone_raw}'") from err

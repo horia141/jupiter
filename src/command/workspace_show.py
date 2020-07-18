@@ -35,4 +35,4 @@ class WorkspaceShow(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         workspace = self._workspaces_controller.load_workspace()
-        print(f'{workspace.name}')
+        print(f'{workspace.name} timezone={workspace.timezone}')

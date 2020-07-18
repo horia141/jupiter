@@ -8,9 +8,7 @@ import typing
 from typing import Final, ClassVar, Iterable, List, Optional, Type
 import uuid
 
-import pendulum
-
-from models.basic import EntityId, BigPlanStatus
+from models.basic import EntityId, BigPlanStatus, ADate, BasicValidator, Timestamp
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -28,14 +26,14 @@ class BigPlan:
     name: str
     archived: bool
     status: BigPlanStatus
-    due_date: Optional[pendulum.DateTime]
+    due_date: Optional[ADate]
     notion_link_uuid: uuid.UUID
-    created_time: pendulum.DateTime
-    last_modified_time: pendulum.DateTime
-    archived_time: Optional[pendulum.DateTime]
-    accepted_time: Optional[pendulum.DateTime]
-    working_time: Optional[pendulum.DateTime]
-    completed_time: Optional[pendulum.DateTime]
+    created_time: Timestamp
+    last_modified_time: Timestamp
+    archived_time: Optional[Timestamp]
+    accepted_time: Optional[Timestamp]
+    working_time: Optional[Timestamp]
+    completed_time: Optional[Timestamp]
 
 
 @typing.final
@@ -67,7 +65,7 @@ class BigPlansRepository:
 
     def create_big_plan(
             self, project_ref_id: EntityId, name: str, archived: bool, status: BigPlanStatus,
-            due_date: Optional[pendulum.DateTime], notion_link_uuid: uuid.UUID) -> BigPlan:
+            due_date: Optional[ADate], notion_link_uuid: uuid.UUID) -> BigPlan:
         """Create a big plan."""
         big_plans_next_idx, big_plans = self._structured_storage.load()
 
@@ -201,17 +199,18 @@ class BigPlansRepository:
             name=typing.cast(str, storage_form["name"]),
             archived=typing.cast(bool, storage_form["archived"]),
             status=BigPlanStatus(typing.cast(str, storage_form["status"])),
-            due_date=pendulum.parse(typing.cast(str, storage_form["due_date"])) if storage_form["due_date"] else None,
+            due_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["due_date"]))
+            if storage_form["due_date"] else None,
             notion_link_uuid=uuid.UUID(typing.cast(str, storage_form["notion_link_uuid"])),
-            created_time=pendulum.parse(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=pendulum.parse(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=pendulum.parse(typing.cast(str, storage_form["archived_time"]))
+            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
+            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
             if storage_form["archived_time"] is not None else None,
-            accepted_time=pendulum.parse(typing.cast(str, storage_form["accepted_time"]))
+            accepted_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["accepted_time"]))
             if storage_form["accepted_time"] else None,
-            working_time=pendulum.parse(typing.cast(str, storage_form["working_time"]))
+            working_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["working_time"]))
             if storage_form["working_time"] else None,
-            completed_time=pendulum.parse(typing.cast(str, storage_form["completed_time"]))
+            completed_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["completed_time"]))
             if storage_form["completed_time"] else None)
 
     @staticmethod
@@ -223,12 +222,16 @@ class BigPlansRepository:
             "name": live_form.name,
             "archived": live_form.archived,
             "status": live_form.status.value,
-            "due_date": live_form.due_date.to_datetime_string() if live_form.due_date else None,
+            "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,
             "notion_link_uuid": str(live_form.notion_link_uuid),
-            "created_time": live_form.created_time.to_datetime_string(),
-            "last_modified_time": live_form.last_modified_time.to_datetime_string(),
-            "archived_time": live_form.archived_time.to_datetime_string() if live_form.archived_time else None,
-            "accepted_time": live_form.accepted_time.to_datetime_string() if live_form.accepted_time else None,
-            "working_time": live_form.working_time.to_datetime_string() if live_form.working_time else None,
-            "completed_time": live_form.completed_time.to_datetime_string() if live_form.completed_time else None
+            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
+            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
+                             if live_form.archived_time else None,
+            "accepted_time": BasicValidator.timestamp_to_str(live_form.accepted_time)
+                             if live_form.accepted_time else None,
+            "working_time": BasicValidator.timestamp_to_str(live_form.working_time)
+                            if live_form.working_time else None,
+            "completed_time": BasicValidator.timestamp_to_str(live_form.completed_time)
+                              if live_form.completed_time else None
         }

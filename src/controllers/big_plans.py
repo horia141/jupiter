@@ -3,10 +3,8 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
-import pendulum
-
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId, ProjectKey, BigPlanStatus
+from models.basic import EntityId, ProjectKey, BigPlanStatus, ADate
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from service.big_plans import BigPlansService
@@ -45,7 +43,7 @@ class BigPlansController:
         self._inbox_tasks_service = inbox_tasks_service
         self._big_plans_service = big_plans_service
 
-    def create_big_plan(self, project_key: ProjectKey, name: str, due_date: Optional[pendulum.DateTime]) -> BigPlan:
+    def create_big_plan(self, project_key: ProjectKey, name: str, due_date: Optional[ADate]) -> BigPlan:
         """Create an big plan."""
         project = self._projects_service.load_project_by_key(project_key)
         inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
@@ -86,7 +84,7 @@ class BigPlansController:
         """Change the due date of a big plan."""
         return self._big_plans_service.set_big_plan_status(ref_id, status)
 
-    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[pendulum.DateTime]) -> BigPlan:
+    def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> BigPlan:
         """Change the due date of a big plan."""
         return self._big_plans_service.set_big_plan_due_date(ref_id, due_date)
 
