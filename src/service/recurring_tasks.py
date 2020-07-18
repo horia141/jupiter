@@ -3,7 +3,7 @@ import logging
 from typing import Final, Optional, Iterable, List
 
 from models.basic import EntityId, Difficulty, Eisen, BasicValidator, ModelValidationError, RecurringTaskPeriod, \
-    EntityName, SyncPrefer, RecurringTaskType
+    SyncPrefer, RecurringTaskType
 from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError, CollectionEntityNotFound
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTask
@@ -41,7 +41,7 @@ class RecurringTasksService:
 
     def create_recurring_task(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
-            period: RecurringTaskPeriod, the_type: RecurringTaskType, group: EntityName, eisen: List[Eisen],
+            period: RecurringTaskPeriod, the_type: RecurringTaskType, eisen: List[Eisen],
             difficulty: Optional[Difficulty], due_at_time: Optional[str], due_at_day: Optional[int],
             due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str]) -> RecurringTask:
         """Create a recurring task."""
@@ -62,7 +62,6 @@ class RecurringTasksService:
             name=name,
             period=period,
             the_type=the_type,
-            group=group,
             eisen=eisen,
             difficulty=difficulty,
             due_at_time=due_at_time,
@@ -79,7 +78,6 @@ class RecurringTasksService:
             name=new_recurring_task.name,
             period=new_recurring_task.period.value,
             the_type=new_recurring_task.the_type.value,
-            group=new_recurring_task.group,
             eisen=[e.value for e in new_recurring_task.eisen],
             difficulty=new_recurring_task.difficulty.value if new_recurring_task.difficulty else None,
             due_at_time=due_at_time,
@@ -213,20 +211,6 @@ class RecurringTasksService:
 
         return recurring_task
 
-    def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> RecurringTask:
-        """Change the group for a recurring task."""
-        recurring_task = self._repository.load_recurring_task(ref_id)
-        recurring_task.group = group
-        self._repository.save_recurring_task(recurring_task)
-        LOGGER.info("Applied local changes")
-
-        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
-        recurring_task_row.group = group
-        self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
-        LOGGER.info("Applied Notion changes")
-
-        return recurring_task
-
     def set_recurring_task_must_do_state(self, ref_id: EntityId, must_do: bool) -> RecurringTask:
         """Change the must do status for a recurring task."""
         recurring_task = self._repository.load_recurring_task(ref_id)
@@ -351,8 +335,6 @@ class RecurringTasksService:
                         recurring_task_row.period)
                     recurring_task_type = self._basic_validator.recurring_task_type_validate_and_clean(
                         recurring_task_row.the_type) if recurring_task_row.the_type else RecurringTaskType.CHORE
-                    recurring_task_group = self._basic_validator.entity_name_validate_and_clean(
-                        recurring_task_row.group)
                     recurring_task_eisen = \
                         [self._basic_validator.eisen_validate_and_clean(e) for e in recurring_task_row.eisen] \
                             if recurring_task_row.eisen else []
@@ -380,7 +362,6 @@ class RecurringTasksService:
                     name=recurring_task_name,
                     period=recurring_task_period,
                     the_type=recurring_task_type,
-                    group=recurring_task_group,
                     eisen=recurring_task_eisen,
                     difficulty=recurring_task_difficulty,
                     due_at_time=recurring_task_due_at_time,
@@ -415,8 +396,6 @@ class RecurringTasksService:
                             recurring_task_row.period)
                         recurring_task_type = self._basic_validator.recurring_task_type_validate_and_clean(
                             recurring_task_row.the_type) if recurring_task_row.the_type else RecurringTaskType.CHORE
-                        recurring_task_group = self._basic_validator.entity_name_validate_and_clean(
-                            recurring_task_row.group)
                         recurring_task_eisen = \
                             [self._basic_validator.eisen_validate_and_clean(e) for e in recurring_task_row.eisen] \
                                 if recurring_task_row.eisen else []
@@ -446,7 +425,6 @@ class RecurringTasksService:
                     recurring_task.period = recurring_task_period
                     recurring_task.the_type = recurring_task_type
                     recurring_task.archived = recurring_task_row.archived
-                    recurring_task.group = recurring_task_group
                     recurring_task.eisen = recurring_task_eisen
                     recurring_task.difficulty = recurring_task_difficulty
                     recurring_task.due_at_time = recurring_task_due_at_time
@@ -462,7 +440,6 @@ class RecurringTasksService:
                     recurring_task_row.name = recurring_task.name
                     recurring_task_row.period = recurring_task.period.value
                     recurring_task_row.the_type = recurring_task.the_type.value
-                    recurring_task_row.group = recurring_task.group
                     recurring_task_row.archived = recurring_task.archived
                     recurring_task_row.eisen = [e.value for e in recurring_task.eisen]
                     recurring_task_row.difficulty = \
@@ -504,7 +481,6 @@ class RecurringTasksService:
                 name=recurring_task.name,
                 period=recurring_task.period.value,
                 the_type=recurring_task.the_type.value,
-                group=recurring_task.group,
                 eisen=[e.value for e in recurring_task.eisen],
                 difficulty=recurring_task.difficulty.value if recurring_task.difficulty else None,
                 due_at_time=recurring_task.due_at_time,

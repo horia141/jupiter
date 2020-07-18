@@ -5,7 +5,7 @@ from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
 from models import schedules
-from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, EntityName, RecurringTaskType
+from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
 from service.inbox_tasks import InboxTasksService
@@ -46,7 +46,7 @@ class RecurringTasksController:
 
     def create_recurring_task(
             self, project_key: ProjectKey, name: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
-            group: EntityName, eisen: List[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
+            eisen: List[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
             due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
             skip_rule: Optional[str]) -> RecurringTask:
         """Create an recurring task."""
@@ -58,7 +58,6 @@ class RecurringTasksController:
             name=name,
             period=period,
             the_type=the_type,
-            group=group,
             eisen=eisen,
             difficulty=difficulty,
             due_at_time=due_at_time,
@@ -110,7 +109,7 @@ class RecurringTasksController:
         return recurring_task
 
     def set_recurring_task_type(self, ref_id: EntityId, the_type: RecurringTaskType) -> RecurringTask:
-        """Change the group for a recurring task."""
+        """Change the type for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_type(ref_id, the_type)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
@@ -125,10 +124,6 @@ class RecurringTasksController:
                 inbox_task.ref_id, schedule.full_name, schedule.timeline, schedule.period, recurring_task.the_type,
                 schedule.due_time, recurring_task.eisen, recurring_task.difficulty)
         return recurring_task
-
-    def set_recurring_task_group(self, ref_id: EntityId, group: EntityName) -> RecurringTask:
-        """Change the group for a recurring task."""
-        return self._recurring_tasks_service.set_recurring_task_group(ref_id, group)
 
     def set_recurring_task_eisen(self, ref_id: EntityId, eisen: List[Eisen]) -> RecurringTask:
         """Change the difficulty for a recurring task."""

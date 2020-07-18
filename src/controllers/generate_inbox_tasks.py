@@ -3,7 +3,7 @@ import logging
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
 from models import schedules
-from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, EntityName, Timestamp
+from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp
 from repository.inbox_tasks import InboxTask
 from repository.projects import Project
 from repository.recurring_tasks import RecurringTask
@@ -35,7 +35,7 @@ class GenerateInboxTasksController:
 
     def recurring_tasks_gen(
             self, right_now: Timestamp, project_keys: Optional[Iterable[ProjectKey]] = None,
-            group_filter: Optional[Iterable[EntityName]] = None, ref_ids: Optional[Iterable[EntityId]] = None,
+            ref_ids: Optional[Iterable[EntityId]] = None,
             period_filter: Optional[Iterable[RecurringTaskPeriod]] = None) -> None:
         """Generate recurring tasks to inbox tasks."""
         all_vacations = self._vacations_service.load_all_vacations()
@@ -62,7 +62,6 @@ class GenerateInboxTasksController:
                 self._generate_inbox_tasks_for_recurring_task(
                     project=project,
                     right_now=right_now,
-                    group_filter=frozenset(group_filter) if group_filter else None,
                     period_filter=frozenset(period_filter) if period_filter else None,
                     all_vacations=list(all_vacations),
                     recurring_task=recurring_task,
@@ -73,17 +72,12 @@ class GenerateInboxTasksController:
             self,
             project: Project,
             right_now: Timestamp,
-            group_filter: Optional[FrozenSet[EntityName]],
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
             all_vacations: List[Vacation],
             recurring_task: RecurringTask,
             all_inbox_tasks_by_recurring_task_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask]) -> None:
         if recurring_task.suspended:
             LOGGER.info(f"Skipping '{recurring_task.name}' because it is suspended")
-            return
-
-        if group_filter is not None and recurring_task.group not in group_filter:
-            LOGGER.info(f"Skipping '{recurring_task.name}' on account of group filtering")
             return
 
         if period_filter is not None and recurring_task.period not in period_filter:

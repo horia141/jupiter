@@ -36,7 +36,6 @@ class RecurringTasksCreate(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--project", dest="project_key", required=True, help="The project key to add the task to")
         parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
-        parser.add_argument("--group", dest="group", required=True, help="The group for the recurring task")
         parser.add_argument("--period", dest="period", choices=BasicValidator.recurring_task_period_values(),
                             required=True, help="The period for the recurring task")
         parser.add_argument("--type", dest="the_type", choices=BasicValidator.recurring_task_type_values(),
@@ -59,7 +58,6 @@ class RecurringTasksCreate(command.Command):
         """Callback to execute when the command is invoked."""
         project_key = self._basic_validator.project_key_validate_and_clean(args.project_key)
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        group = self._basic_validator.entity_name_validate_and_clean(args.group)
         period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
         the_type = self._basic_validator.recurring_task_type_validate_and_clean(args.the_type)
         eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
@@ -76,7 +74,6 @@ class RecurringTasksCreate(command.Command):
         self._recurring_tasks_controller.create_recurring_task(
             project_key=project_key,
             name=name,
-            group=group,
             period=period,
             the_type=the_type,
             eisen=eisen,

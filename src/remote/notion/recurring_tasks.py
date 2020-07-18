@@ -28,7 +28,6 @@ class RecurringTaskRow(BasicRowType):
     archived: bool
     period: Optional[str]
     the_type: Optional[str]
-    group: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
     due_at_time: Optional[str]
@@ -136,10 +135,6 @@ class RecurringTasksCollection:
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _TYPE.values()]
         },
-        "group": {
-            "name": "Group",
-            "type": "text"
-        },
         "archived": {
             "name": "Archived",
             "type": "checkbox"
@@ -205,9 +200,6 @@ class RecurringTasksCollection:
                 "property": "suspended",
                 "direction": "ascending"
             }, {
-                "property": "group",
-                "direction": "ascending"
-            }, {
                 "property": "eisen",
                 "direction": "ascending"
             }, {
@@ -257,9 +249,6 @@ class RecurringTasksCollection:
                 "visible": False
             }, {
                 "property": "the-type",
-                "visible": True
-            }, {
-                "property": "group",
                 "visible": True
             }, {
                 "property": "archived",
@@ -315,10 +304,6 @@ class RecurringTasksCollection:
             }, {
                 "width": 100,
                 "property": "the-type",
-                "visible": True
-            }, {
-                "width": 100,
-                "property": "group",
                 "visible": True
             }, {
                 "width": 100,
@@ -390,7 +375,7 @@ class RecurringTasksCollection:
 
     def create_recurring_task(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool, name: str,
-            period: str, the_type: str, group: str, eisen: List[str], difficulty: Optional[str],
+            period: str, the_type: str, eisen: List[str], difficulty: Optional[str],
             due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
             skip_rule: Optional[str], must_do: bool, ref_id: EntityId) -> RecurringTaskRow:
         """Create a recurring task."""
@@ -400,7 +385,6 @@ class RecurringTasksCollection:
             archived=archived,
             period=period,
             the_type=the_type,
-            group=group,
             eisen=eisen,
             difficulty=difficulty,
             due_at_time=due_at_time,
@@ -484,7 +468,7 @@ class RecurringTasksCollection:
         # As another special case, the recurring tasks group key is left to whatever value it had
         # before since this thing is managed by the other flows!
         for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name in ("bigplan2", "group"):
+            if schema_item_name == "bigplan2":
                 combined_schema[schema_item_name] = old_schema[schema_item_name] \
                     if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
                     else schema_item
@@ -530,7 +514,6 @@ class RecurringTasksCollection:
         notion_row.archived = row.archived
         notion_row.period = row.period
         notion_row.the_type = row.the_type
-        notion_row.group = row.group
         notion_row.eisenhower = row.eisen
         notion_row.difficulty = row.difficulty
         notion_row.due_at_time = row.due_at_time
@@ -559,7 +542,6 @@ class RecurringTasksCollection:
             archived=inbox_task_notion_row.archived,
             period=inbox_task_notion_row.period,
             the_type=inbox_task_notion_row.the_type,
-            group=inbox_task_notion_row.group,
             eisen=common.clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,
             due_at_time=inbox_task_notion_row.due_at_time,

@@ -36,7 +36,6 @@ from command.recurring_tasks_hard_remove import RecurringTasksHardRemove
 from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
 from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
 from command.recurring_tasks_set_eisen import RecurringTasksSetEisen
-from command.recurring_tasks_set_group import RecurringTasksSetGroup
 from command.recurring_tasks_set_must_do import RecurringTasksSetMustDo
 from command.recurring_tasks_set_name import RecurringTasksSetName
 from command.recurring_tasks_set_period import RecurringTasksSetPeriod
@@ -176,7 +175,6 @@ def main() -> None:
             RecurringTasksSetName(basic_validator, recurring_tasks_controller),
             RecurringTasksSetPeriod(basic_validator, recurring_tasks_controller),
             RecurringTasksSetType(basic_validator, recurring_tasks_controller),
-            RecurringTasksSetGroup(basic_validator, recurring_tasks_controller),
             RecurringTasksSetEisen(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDifficulty(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDeadlines(basic_validator, recurring_tasks_controller),
