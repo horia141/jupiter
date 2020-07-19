@@ -165,6 +165,9 @@ class SyncLocalAndNotionController:
                 for inbox_task in all_inbox_tasks:
                     if inbox_task.big_plan_ref_id is None:
                         continue
+                    if filter_big_plan_ref_ids is not None \
+                            and inbox_task.big_plan_ref_id not in filter_big_plan_ref_ids:
+                        continue
                     big_blan = big_plans_by_ref_id[inbox_task.big_plan_ref_id]
                     if not (big_blan.archived and not inbox_task.archived):
                         continue
@@ -175,6 +178,9 @@ class SyncLocalAndNotionController:
                 LOGGER.info(f"Archiving any inbox task whose recurring task has been archived")
                 for inbox_task in all_inbox_tasks:
                     if inbox_task.recurring_task_ref_id is None:
+                        continue
+                    if filter_recurring_task_ref_ids is not None \
+                            and inbox_task.recurring_task_ref_id not in filter_recurring_task_ref_ids:
                         continue
                     recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
                     if not (recurring_task.archived and not inbox_task.archived):

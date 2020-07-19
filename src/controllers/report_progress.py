@@ -78,6 +78,7 @@ class RecurringTaskSummary:
     done_cnt: int
     done_ratio: float
     completed_ratio: float
+    current_streak_size: int
     longest_streak_size: int
     zero_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
     one_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
@@ -448,6 +449,7 @@ class ReportProgressController:
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
             completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt) if created_cnt > 0 else 0.0,
+            current_streak_size=zero_current_streak_size,
             longest_streak_size=longest_streak_size,
             zero_streak_size_histogram=zero_streak_size_histogram,
             one_streak_size_histogram=one_streak_size_histogram)

@@ -237,6 +237,7 @@ class ReportProgress(command.Command):
                 print(f"({recurring_task_item.summary.done_ratio * 100:.0f}%)")
                 if recurring_task_item.the_type == RecurringTaskType.HABIT:
                     print(f"      Completed Ratio: {recurring_task_item.summary.completed_ratio * 100:.0f}%")
+                    print(f"      Current Streak: {recurring_task_item.summary.current_streak_size}")
                     print(f"      Longest Streak: {recurring_task_item.summary.longest_streak_size}")
                     if recurring_task_item.summary.one_streak_size_histogram:
                         print(f"      Streak Sizes (Max 1 Skip):")
