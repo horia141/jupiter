@@ -12,6 +12,7 @@ from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,15 +20,18 @@ LOGGER = logging.getLogger(__name__)
 class GenerateInboxTasksController:
     """The controller for generating inbox tasks."""
 
+    _global_properties: Final[GlobalProperties]
     _projects_service: Final[ProjectsService]
     _vacations_service: Final[VacationsService]
     _inbox_tasks_service: Final[InboxTasksService]
     _recurring_tasks_service: Final[RecurringTasksService]
 
     def __init__(
-            self, projects_service: ProjectsService, vacations_service: VacationsService,
-            inbox_tasks_service: InboxTasksService, recurring_tasks_service: RecurringTasksService) -> None:
+            self, global_properties: GlobalProperties, projects_service: ProjectsService,
+            vacations_service: VacationsService, inbox_tasks_service: InboxTasksService,
+            recurring_tasks_service: RecurringTasksService) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._projects_service = projects_service
         self._vacations_service = vacations_service
         self._inbox_tasks_service = inbox_tasks_service
@@ -85,8 +89,9 @@ class GenerateInboxTasksController:
             return
 
         schedule = schedules.get_schedule(
-            recurring_task.period, recurring_task.name, right_now, recurring_task.skip_rule,
-            recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
+            recurring_task.period, recurring_task.name, right_now, self._global_properties.timezone,
+            recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
+            recurring_task.due_at_month)
 
         if not recurring_task.must_do:
             for vacation in all_vacations:

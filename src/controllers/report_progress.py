@@ -18,6 +18,7 @@ from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
+from utils.global_properties import GlobalProperties
 
 
 @nested()
@@ -134,15 +135,18 @@ class RunReportResponse:
 class ReportProgressController:
     """The controller for computing progress reports."""
 
+    _global_properties = Final[GlobalProperties]
     _projects_service = Final[ProjectsService]
     _inbox_tasks_service = Final[InboxTasksService]
     _big_plans_service = Final[BigPlansService]
     _recurring_tasks_service: Final[RecurringTasksService]
 
     def __init__(
-            self, projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
-            big_plans_service: BigPlansService, recurring_tasks_service: RecurringTasksService) -> None:
+            self, global_properties: GlobalProperties, projects_service: ProjectsService,
+            inbox_tasks_service: InboxTasksService, big_plans_service: BigPlansService,
+            recurring_tasks_service: RecurringTasksService) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._projects_service = projects_service
         self._inbox_tasks_service = inbox_tasks_service
         self._big_plans_service = big_plans_service
@@ -156,7 +160,8 @@ class ReportProgressController:
         """Run a progress report."""
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
         projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
-        schedule = schedules.get_schedule(period, "Helper", right_now, None, None, None, None)
+        schedule = schedules.get_schedule(
+            period, "Helper", right_now, self._global_properties.timezone, None, None, None, None)
 
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_project_ref_ids=[p.ref_id for p in projects],
@@ -204,7 +209,8 @@ class ReportProgressController:
             curr_date = schedule.first_day.start_of("day")
             end_date = schedule.end_day.end_of("day")
             while curr_date < end_date and curr_date < right_now:
-                phase_schedule = schedules.get_schedule(breakdown_period, "Helper", curr_date, None, None, None, None)
+                phase_schedule = schedules.get_schedule(
+                    breakdown_period, "Helper", curr_date, self._global_properties.timezone, None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
                 curr_date = curr_date.add(days=1)
 

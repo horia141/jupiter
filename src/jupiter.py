@@ -132,15 +132,15 @@ def main() -> None:
         inbox_tasks_controller = InboxTasksController(
             projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         recurring_tasks_controller = RecurringTasksController(
-            projects_service, inbox_tasks_service, recurring_tasks_service)
+            global_properties, projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
-            workspaces_service, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
-            big_plans_service)
+            global_properties, workspaces_service, vacations_service, projects_service, inbox_tasks_service,
+            recurring_tasks_service, big_plans_service)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
-            projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
+            global_properties, projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         report_progress_controller = ReportProgressController(
-            projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
+            global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
 
         commands = [
             WorkspaceInit(basic_validator, workspaces_controller),

@@ -14,6 +14,7 @@ from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ LOGGER = logging.getLogger(__name__)
 class SyncLocalAndNotionController:
     """The controller for syncing the local and Notion data."""
 
+    _global_properties: Final[GlobalProperties]
     _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]
     _projects_service: Final[ProjectsService]
@@ -29,10 +31,12 @@ class SyncLocalAndNotionController:
     _big_plans_service: Final[BigPlansService]
 
     def __init__(
-            self, workspaces_service: WorkspacesService, vacations_service: VacationsService,
-            projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
-            recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService) -> None:
+            self, global_properties: GlobalProperties, workspaces_service: WorkspacesService,
+            vacations_service: VacationsService, projects_service: ProjectsService,
+            inbox_tasks_service: InboxTasksService, recurring_tasks_service: RecurringTasksService,
+            big_plans_service: BigPlansService) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
         self._projects_service = projects_service
@@ -148,8 +152,8 @@ class SyncLocalAndNotionController:
                     recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
                     schedule = schedules.get_schedule(
                         recurring_task.period, recurring_task.name, inbox_task.created_time,
-                        recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
-                        recurring_task.due_at_month)
+                        self._global_properties.timezone, recurring_task.skip_rule, recurring_task.due_at_time,
+                        recurring_task.due_at_day, recurring_task.due_at_month)
                     self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                         ref_id=inbox_task.ref_id,
                         name=schedule.full_name,
