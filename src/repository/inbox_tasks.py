@@ -33,6 +33,7 @@ class InboxTask:
     due_date: Optional[ADate]
     recurring_task_timeline: Optional[str]
     recurring_task_type: Optional[RecurringTaskType]
+    recurring_task_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
     created_time: Timestamp
     last_modified_time: Timestamp
     archived_time: Optional[Timestamp]
@@ -72,7 +73,8 @@ class InboxTasksRepository:
             self, project_ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
             recurring_task_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
             eisen: Iterable[Eisen], difficulty: Optional[Difficulty], due_date: Optional[ADate],
-            recurring_task_timeline: Optional[str], recurring_task_type: Optional[RecurringTaskType]) -> InboxTask:
+            recurring_task_timeline: Optional[str], recurring_task_type: Optional[RecurringTaskType],
+            recurring_task_gen_right_now: Optional[Timestamp]) -> InboxTask:
         """Create a recurring task."""
         inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
 
@@ -89,6 +91,7 @@ class InboxTasksRepository:
             due_date=due_date,
             recurring_task_timeline=recurring_task_timeline,
             recurring_task_type=recurring_task_type,
+            recurring_task_gen_right_now=recurring_task_gen_right_now,
             created_time=self._time_provider.get_current_time(),
             last_modified_time=self._time_provider.get_current_time(),
             archived_time=self._time_provider.get_current_time() if archived else None,
@@ -209,6 +212,7 @@ class InboxTasksRepository:
                 "due_date": {"type": ["string", "null"]},
                 "recurring_task_timeline": {"type": ["string", "null"]},
                 "recurring_task_type": {"type": ["string", "null"]},
+                "recurring_task_gen_right_now": {"type": ["string", "null"]},
                 "created_time": {"type": "string"},
                 "last_modified_time": {"type": "string"},
                 "archived_time": {"type": ["string", "null"]},
@@ -240,6 +244,9 @@ class InboxTasksRepository:
             if storage_form["recurring_task_timeline"] else None,
             recurring_task_type=RecurringTaskType(typing.cast(str, storage_form["recurring_task_type"]))
             if storage_form["recurring_task_type"] else None,
+            recurring_task_gen_right_now=BasicValidator.timestamp_from_str(
+                typing.cast(str, storage_form.get("recurring_task_gen_right_now", None)))
+            if storage_form.get("recurring_task_gen_right_now", None) else None,
             created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
             last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
@@ -267,6 +274,8 @@ class InboxTasksRepository:
             "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,
             "recurring_task_timeline": live_form.recurring_task_timeline,
             "recurring_task_type": live_form.recurring_task_type.value if live_form.recurring_task_type else None,
+            "recurring_task_gen_right_now": BasicValidator.timestamp_to_str(live_form.recurring_task_gen_right_now)
+                                            if live_form.recurring_task_gen_right_now else None,
             "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
             "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)

@@ -127,6 +127,7 @@ class GenerateInboxTasksController:
                 recurring_task_timeline=schedule.timeline,
                 recurring_task_period=recurring_task.period,
                 recurring_task_type=recurring_task.the_type,
+                recurring_task_gen_right_now=right_now,
                 eisen=recurring_task.eisen,
                 difficulty=recurring_task.difficulty,
                 due_date=schedule.due_time)

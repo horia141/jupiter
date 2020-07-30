@@ -41,6 +41,7 @@ class InboxTaskRow(BasicRowType):
     recurring_timeline: Optional[str]
     recurring_period: Optional[str]
     recurring_task_type: Optional[str]
+    recurring_task_gen_right_now: Optional[ADate]
 
 
 class InboxTasksCollection:
@@ -231,6 +232,10 @@ class InboxTasksCollection:
                 "id": str(uuid.uuid4()),
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _RECURRING_TASK_TYPE.values()]
+        },
+        "recurring-task-gen-right-now": {
+            "name": "Recurring Gen Right Now",
+            "type": "date"
         }
     }
 
@@ -298,6 +303,9 @@ class InboxTasksCollection:
         }, {
             "property": "recurring-task-type",
             "visible": True
+        }, {
+            "property": "recurring-task-gen-right-now",
+            "visible": False
         }],
         "board_cover_size": "small"
     }
@@ -652,6 +660,9 @@ class InboxTasksCollection:
             }, {
                 "property": "recurring-task-type",
                 "visible": True
+            }, {
+                "property": "recurring-task-gen-right-now",
+                "visible": False
             }]
         }
     }
@@ -667,11 +678,11 @@ class InboxTasksCollection:
             }, {
                 "width": 100,
                 "property": "ref-id",
-                "visible": False
+                "visible": True
             }, {
                 "width": 100,
                 "property": "big-plan-ref-id",
-                "visible": False
+                "visible": True
             }, {
                 "width": 100,
                 "property": "bigplan2",
@@ -715,6 +726,10 @@ class InboxTasksCollection:
             }, {
                 "width": 100,
                 "property": "recurring-task-type",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "recurring-task-gen-right-now",
                 "visible": True
             }, {
                 "width": 100,
@@ -779,7 +794,7 @@ class InboxTasksCollection:
             recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
             difficulty: Optional[str], due_date: Optional[ADate],
             recurring_timeline: Optional[str], recurring_period: Optional[str], recurring_task_type: Optional[str],
-            ref_id: EntityId) -> InboxTaskRow:
+            recurring_task_gen_right_now: Optional[ADate], ref_id: EntityId) -> InboxTaskRow:
         """Create an inbox task."""
         new_inbox_task_row = InboxTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
@@ -796,6 +811,7 @@ class InboxTasksCollection:
             recurring_timeline=recurring_timeline,
             recurring_period=recurring_period,
             recurring_task_type=recurring_task_type,
+            recurring_task_gen_right_now=recurring_task_gen_right_now,
             ref_id=ref_id)
         return cast(InboxTaskRow, self._collection.create(project_ref_id, new_inbox_task_row))
 
@@ -922,6 +938,8 @@ class InboxTasksCollection:
         notion_row.recurring_timeline = row.recurring_timeline
         notion_row.recurring_period = row.recurring_period
         notion_row.recurring_type = row.recurring_task_type
+        notion_row.recurring_gen_right_now = self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
+            if row.recurring_task_gen_right_now else None
         notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -944,6 +962,9 @@ class InboxTasksCollection:
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
             recurring_period=inbox_task_notion_row.recurring_period,
             recurring_task_type=inbox_task_notion_row.recurring_type,
+            recurring_task_gen_right_now=
+            self._basic_validator.adate_from_notion(inbox_task_notion_row.recurring_gen_right_now)
+            if inbox_task_notion_row.recurring_gen_right_now else None,
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod

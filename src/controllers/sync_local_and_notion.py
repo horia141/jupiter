@@ -2,8 +2,10 @@
 import logging
 from typing import Final, Optional, Iterable
 
+import typing
+
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
@@ -151,7 +153,8 @@ class SyncLocalAndNotionController:
                     LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
                     recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
                     schedule = schedules.get_schedule(
-                        recurring_task.period, recurring_task.name, inbox_task.created_time,
+                        recurring_task.period, recurring_task.name,
+                        typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now),
                         self._global_properties.timezone, recurring_task.skip_rule, recurring_task.due_at_time,
                         recurring_task.due_at_day, recurring_task.due_at_month)
                     self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
