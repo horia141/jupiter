@@ -6,7 +6,8 @@ from types import TracebackType
 from typing import Final, ClassVar, List, Optional, Type, cast
 
 from models.basic import EntityId
-from remote.notion.common import NotionId, NotionPageLink, CollectionError, CollectionEntityNotFound
+from remote.notion.common import NotionId, NotionPageLink, CollectionError, CollectionEntityNotFound, \
+    CollectionEntityAlreadyExists
 from remote.notion.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -61,7 +62,7 @@ class ProjectsCollection:
         lock = self._find_lock(locks, ref_id)
 
         if lock is None:
-            raise CollectionError(f"Entity with id='{ref_id}' already exists on Notion side")
+            raise CollectionEntityAlreadyExists(f"Entity with id='{ref_id}' already exists on Notion side")
 
         return NotionPageLink(page_id=lock.page_id)
 
@@ -71,7 +72,7 @@ class ProjectsCollection:
         lock = self._find_lock(locks, ref_id)
 
         if lock is not None:
-            raise CollectionError(f"Entity with id='{ref_id}' already exists on Notion side")
+            raise CollectionEntityAlreadyExists(f"Entity with id='{ref_id}' already exists on Notion side")
 
         client = self._connection.get_notion_client()
 

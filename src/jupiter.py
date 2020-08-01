@@ -3,8 +3,10 @@
 import argparse
 import logging
 import os
+from pathlib import Path
 
 import coloredlogs
+import dotenv
 import pendulum
 
 from command.big_plans_archive import BigPlansArchive
@@ -69,6 +71,7 @@ from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
 from models.basic import BasicValidator
 from remote.notion.big_plans import BigPlansCollection
+from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
 from remote.notion.connection import MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
 from remote.notion.inbox_tasks import InboxTasksCollection
 from remote.notion.projects import ProjectsCollection
@@ -230,9 +233,14 @@ def main() -> None:
                 command.run(args)
                 break
         except (MissingWorkspaceRepositoryError, MissingNotionConnectionError, MissingWorkspaceScreenError):
-            print("The Notion connection isn't setup, please run 'ws-init' to create a workspace!")
+            print(f"The Notion connection isn't setup, please run '{WorkspaceInit.name()}' to create a workspace!")
+            print(f"For more information checkout: {global_properties.docs_init_workspace_url}")
         except OldTokenForNotionConnectionError:
-            print("The Notion connection's token has expired, please refresh it with 'ws-set-token'")
+            print(f"The Notion connection's token has expired, please refresh it with '{WorkspaceSetToken.name()}'")
+            print(f"For more information checkout: {global_properties.docs_update_expired_token_url}")
+        except (CollectionEntityNotFound, CollectionEntityAlreadyExists) as err:
+            print(str(err))
+            print(f"For more information checkout: {global_properties.docs_fix_data_inconsistencies_url}")
 
 
 class CommandsAndControllersLoggerFilter(logging.Filter):
@@ -246,14 +254,31 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
 
 
 def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:
+    dotenv.load_dotenv(dotenv_path=Path(".") / "Config", verbose=True)
+
     try:
         workspace = workspace_repository.load_workspace()
         timezone = workspace.timezone
     except MissingWorkspaceRepositoryError:
         timezone = pendulum.timezone(os.getenv("TZ", "UTC"))
 
+    docs_init_workspace_url = os.getenv("DOCS_INIT_WORKSPACE_URL")
+    if docs_init_workspace_url is None:
+        raise Exception("Critical error - missing Config file")
+
+    docs_update_expired_token_url = os.getenv("DOCS_UPDATE_EXPIRED_TOKEN_URL")
+    if docs_update_expired_token_url is None:
+        raise Exception("Critical error - missing Config file")
+
+    docs_fix_data_inconsistencies_url = os.getenv("DOCS_FIX_DATA_INCONSISTENCIES_URL")
+    if docs_fix_data_inconsistencies_url is None:
+        raise Exception("Critical error - missing Config file")
+
     return GlobalProperties(
-        timezone=timezone)
+        timezone=timezone,
+        docs_init_workspace_url=docs_init_workspace_url,
+        docs_update_expired_token_url=docs_update_expired_token_url,
+        docs_fix_data_inconsistencies_url=docs_fix_data_inconsistencies_url)
 
 
 def _map_log_level_to_log_class(log_level: str) -> int:

@@ -20,6 +20,8 @@ nav:
     - 'How Tos':
           - Workspaces:
                 - 'Initialize A Workspace': 'how-tos/workspaces/init-a-workspace.md'
+                - 'Update An Expired Token': 'how-tos/workspaces/update-an-expired-token.md'
+          - 'Fix Data Inconsistencies': 'how-tos/fix-data-inconsistencies.md'
     - Releases:
           - 'Version 0.3.0': 'releases/version-0.3.0.md'
           - 'Version 0.2.0': 'releases/version-0.2.0.md'

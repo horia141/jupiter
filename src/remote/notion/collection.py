@@ -9,7 +9,7 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId
 from remote.notion.client import NotionClient
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError, \
-    CollectionEntityNotFound
+    CollectionEntityNotFound, CollectionEntityAlreadyExists
 from remote.notion.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -217,7 +217,8 @@ class NotionCollection(Generic[NotionCollectionRowType]):
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
 
         if new_row.ref_id in lock.ref_id_to_notion_id_map:
-            raise CollectionError(f"Entity already exists on Notion side for entty with id={new_row.ref_id}")
+            raise CollectionEntityAlreadyExists(
+                f"Entity already exists on Notion side for entty with id={new_row.ref_id}")
 
         client = self._connection.get_notion_client()
         collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
@@ -242,7 +243,7 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         if lock is None:
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
         if ref_id in lock.ref_id_to_notion_id_map:
-            raise CollectionError(f"Entity already exists on Notion side for id={ref_id}")
+            raise CollectionEntityAlreadyExists(f"Entity already exists on Notion side for id={ref_id}")
         lock.ref_id_to_notion_id_map[ref_id] = notion_id
         self._structured_storage.save((locks_next_idx, task_locks))
 

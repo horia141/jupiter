@@ -13,8 +13,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src src
-
-ENV TZ=UTC
+COPY Config Config
 
 # ENTRYPOINT ["python", "-m", "cProfile", "-s", "time", "src/jupiter.py"]
 ENTRYPOINT ["python", "src/jupiter.py"]

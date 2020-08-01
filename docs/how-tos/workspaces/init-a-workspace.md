@@ -1,7 +1,7 @@
-# Create a workspace
+# Create A Workspace
 
 You need to run the following command:
 
 ```bash
-$ jupiter ws-init
+$ jupiter workspace-init
 ```

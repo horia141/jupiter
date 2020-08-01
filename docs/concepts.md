@@ -38,7 +38,7 @@ sync.
 ## Workspace
 
 All the work for life planning takes place in a _workspace_. When you use
-`jupiter ws-init` in a local directory, you’re starting up your workspace. The local
+`jupiter workspace-init` in a local directory, you’re starting up your workspace. The local
 directory and its files, the Notion.so pages created, etc. are all part of the
 workspace.
 
@@ -46,8 +46,8 @@ You can have multiple workspaces, and they can even share the same Notion.so
 space/account, but realistically it makes sense to use just one. All further
 concepts we discuss are _relative_ to the workspace.
 
-Workspaces are created via the `jupiter ws-init` command. `jupiter ws-init` is idempotent, and is a good way to
-update workspaces as newer versions of the tool appear.
+Workspaces are created via the `jupiter workspace-init` command. `jupiter workspace-init` is idempotent, and is a good
+way to update workspaces as newer versions of the tool appear.
 
 After creating a workspace, you’ll see something like the following in the Notion
 left hand bar - here with a couple of projects too at the top-level under “Plans”,
@@ -63,23 +63,23 @@ The token is the secret used to access Notion. From time to time it expires, so 
 The token can be obtained as described in the [tutorial section](https://github.com/horia141/jupiter/blob/master/docs
 /tutorial.md).
 
-The space id is specified when calling `ws-init`. It identifies the Notion "space" where Jupiter will work. It
+The space id is specified when calling `workspace-init`. It identifies the Notion "space" where Jupiter will work. It
 can't be changed after creation though.
 
 ### Workspace Interactions Summary
 
 You can:
 
-* Create a workspace via `ws-init`
-* Set the name of the workspace via `ws-set-name` or editing the name in Notion directly
-* Set the token of the workspace via `ws-set-token`.
-* Synchronise changes between the local store and Notion via `ws-sync`.
-* See a summary of the workspace via `ws-show`.
+* Create a workspace via `workspace-init`
+* Set the name of the workspace via `workspace-set-name` or editing the name in Notion directly
+* Set the token of the workspace via `workspace-set-token`.
+* Synchronise changes between the local store and Notion via `workspace-sync`.
+* See a summary of the workspace via `workspace-show`.
 
 ### Workspace Syncing
 
 When you edit something in Notion, Jupiter does not see the changes immediately. Instead you need to run special
-syncing commands to make sure Notion and the local storage are in sync. The `ws-sync` command achieves this for
+syncing commands to make sure Notion and the local storage are in sync. The `workspace-sync` command achieves this for
 workspaces. Presently, just the name can be changed, by editing the root page's name.
 
 ## Vacations

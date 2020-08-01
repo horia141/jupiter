@@ -1,19 +1,14 @@
 """Command-level properties."""
-from typing import Final
+from dataclasses import dataclass
 
 from pendulum.tz.timezone import Timezone
 
 
+@dataclass(frozen=True)
 class GlobalProperties:
     """Command-level properties."""
 
-    _timezone: Final[Timezone]
-
-    def __init__(self, timezone: Timezone) -> None:
-        """Constructor."""
-        self._timezone = timezone
-
-    @property
-    def timezone(self) -> Timezone:
-        """The global timezone."""
-        return self._timezone
+    timezone: Timezone
+    docs_init_workspace_url: str
+    docs_update_expired_token_url: str
+    docs_fix_data_inconsistencies_url: str

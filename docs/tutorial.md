@@ -39,7 +39,7 @@ $ cd my-workspace
 $ git init
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data \
-    horia141/jupiter:latest ws-init \
+    horia141/jupiter:latest workspace-init \
     --name "Plans" \
     --space-id="YOUR_SPACE_ID_HERE" \
     --token="YOUR_TOKEN_HERE"
