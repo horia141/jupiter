@@ -367,12 +367,16 @@ class QuarterlySchedule(Schedule):
     @property
     def first_day(self) -> pendulum.DateTime:
         """The first day of the interval represented by the schedule block."""
-        return self._date.on(self._date.year, self.month_to_quarter_start(self._date), self._date.day).start_of("month")
+        return pendulum\
+            .DateTime(self._date.year, self.month_to_quarter_start(self._date), self._date.day, tzinfo=UTC)\
+            .start_of("month")
 
     @property
     def end_day(self) -> pendulum.DateTime:
         """The end day of the interval represented by the scedule block."""
-        return self._date.on(self._date.year, self.month_to_quarter_end(self._date), self._date.day).end_of("month")
+        return pendulum\
+            .DateTime(self._date.year, self.month_to_quarter_end(self._date), self._date.day, tzinfo=UTC)\
+            .end_of("month")
 
     def _generate_timeline(self, right_now: Timestamp) -> str:
         year = "{year}".format(year=right_now.year)

@@ -51,6 +51,8 @@ class WorkableSummary:
     working_cnt: int
     not_done_cnt: int
     done_cnt: int
+    not_done_projects: List[str]
+    done_projects: List[str]
 
 
 @nested()
@@ -199,7 +201,7 @@ class ReportProgressController:
             PerProjectBreakdownItem(
                 name=s,
                 inbox_tasks_summary=v,
-                big_plans_summary=per_project_big_plans_summary.get(s, WorkableSummary(0, 0, 0, 0, 0)))
+                big_plans_summary=per_project_big_plans_summary.get(s, WorkableSummary(0, 0, 0, 0, 0, [], [])))
             for (s, v) in per_project_inbox_tasks_summary.items()]
 
         # Build per period breakdown
@@ -222,7 +224,7 @@ class ReportProgressController:
                 PerPeriodBreakdownItem(
                     name=k,
                     inbox_tasks_summary=v,
-                    big_plans_summary=per_period_big_plans_summary.get(k, WorkableSummary(0, 0, 0, 0, 0)))
+                    big_plans_summary=per_period_big_plans_summary.get(k, WorkableSummary(0, 0, 0, 0, 0, [], [])))
                 for (k, v) in per_period_inbox_tasks_summary.items()]
 
         # Build per big plan breakdown
@@ -467,6 +469,8 @@ class ReportProgressController:
         working_cnt = 0
         not_done_cnt = 0
         done_cnt = 0
+        not_done_projects = []
+        done_projects = []
 
         for big_plan in big_plans:
             if schedule.contains(big_plan.created_time):
@@ -475,8 +479,10 @@ class ReportProgressController:
             if big_plan.status.is_completed and schedule.contains(cast(Timestamp, big_plan.completed_time)):
                 if big_plan.status == BigPlanStatus.DONE:
                     done_cnt += 1
+                    done_projects.append(big_plan.name)
                 else:
                     not_done_cnt += 1
+                    not_done_projects.append(big_plan.name)
             elif big_plan.status.is_working and schedule.contains(cast(Timestamp, big_plan.working_time)):
                 working_cnt += 1
             elif big_plan.status.is_accepted and schedule.contains(cast(Timestamp, big_plan.accepted_time)):
@@ -487,4 +493,6 @@ class ReportProgressController:
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
             done_cnt=done_cnt,
-            not_done_cnt=not_done_cnt)
+            not_done_cnt=not_done_cnt,
+            not_done_projects=not_done_projects,
+            done_projects=done_projects)

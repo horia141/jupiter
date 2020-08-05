@@ -125,7 +125,11 @@ class ReportProgress(command.Command):
                 print(f"      Accepted: {response.global_big_plans_summary.accepted_cnt}")
                 print(f"      Working: {response.global_big_plans_summary.working_cnt}")
                 print(f"      Not Done: {response.global_big_plans_summary.not_done_cnt}")
+                for big_plan_name in response.global_big_plans_summary.not_done_projects:
+                    print(f"      - {big_plan_name}")
                 print(f"      Done: {response.global_big_plans_summary.done_cnt}")
+                for big_plan_name in response.global_big_plans_summary.done_projects:
+                    print(f"      - {big_plan_name}")
 
         if "projects" in breakdowns:
             print(f"  By Project:")
@@ -163,7 +167,11 @@ class ReportProgress(command.Command):
                     print(f"        Accepted: {project_item.big_plans_summary.accepted_cnt}")
                     print(f"        Working: {project_item.big_plans_summary.working_cnt}")
                     print(f"        Not Done: {project_item.big_plans_summary.not_done_cnt}")
+                    for big_plan_name in project_item.big_plans_summary.not_done_projects:
+                        print(f"        - {big_plan_name}")
                     print(f"        Done: {project_item.big_plans_summary.done_cnt}")
+                    for big_plan_name in project_item.big_plans_summary.done_projects:
+                        print(f"        - {big_plan_name}")
 
         if "periods" in breakdowns:
             print(f"  By Period:")
@@ -204,7 +212,11 @@ class ReportProgress(command.Command):
                     print(f"        Accepted: {period_item.big_plans_summary.accepted_cnt}")
                     print(f"        Working: {period_item.big_plans_summary.working_cnt}")
                     print(f"        Not Done: {period_item.big_plans_summary.not_done_cnt}")
+                    for big_plan_name in period_item.big_plans_summary.not_done_projects:
+                        print(f"        - {big_plan_name}")
                     print(f"        Done: {period_item.big_plans_summary.done_cnt}")
+                    for big_plan_name in period_item.big_plans_summary.done_projects:
+                        print(f"        - {big_plan_name}")
 
         if "big-plans" in breakdowns:
             print(f"  By Big Plan:")
