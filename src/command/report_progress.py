@@ -256,6 +256,7 @@ class ReportProgress(command.Command):
                         for streak_size in sorted(recurring_task_item.summary.one_streak_size_histogram.keys()):
                             print(f"        {streak_size} =>", end=" ")
                             print(f"{recurring_task_item.summary.one_streak_size_histogram[streak_size]}")
+                    print(f"      Streak Plot: {recurring_task_item.summary.streak_plot}")
 
     @staticmethod
     def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:

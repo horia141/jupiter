@@ -85,6 +85,7 @@ class RecurringTaskSummary:
     longest_streak_size: int
     zero_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
     one_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
+    streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
 
 @nested()
@@ -419,10 +420,13 @@ class ReportProgressController:
         one_streak_size_histogram: Dict[int, int] = {}
         sorted_inbox_tasks = sorted(
             (it for it in inbox_tasks if schedule.contains(it.created_time)), key=lambda it: it.created_time)
+        used_skip_once = False
+        streak_plot = []
         for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
             if inbox_task.status == InboxTaskStatus.DONE:
                 zero_current_streak_size += 1
                 one_current_streak_size += 1
+                streak_plot.append("X")
             else:
                 longest_streak_size = max(zero_current_streak_size, longest_streak_size)
                 if zero_current_streak_size > 0:
@@ -433,13 +437,18 @@ class ReportProgressController:
                 if inbox_task_idx != 0 \
                         and inbox_task_idx != len(sorted_inbox_tasks) - 1 \
                         and sorted_inbox_tasks[inbox_task_idx - 1].status == InboxTaskStatus.DONE \
-                        and sorted_inbox_tasks[inbox_task_idx + 1].status == InboxTaskStatus.DONE:
+                        and sorted_inbox_tasks[inbox_task_idx + 1].status == InboxTaskStatus.DONE\
+                        and not used_skip_once:
                     one_current_streak_size += 1
+                    used_skip_once = True
+                    streak_plot.append("x")
                 else:
                     if one_current_streak_size > 0:
                         one_streak_size_histogram[one_current_streak_size] = \
                             one_streak_size_histogram.get(one_current_streak_size, 0) + 1
                     one_current_streak_size = 0
+                    used_skip_once = False
+                    streak_plot.append("." if inbox_task_idx < (len(sorted_inbox_tasks) - 1) else "?")
         longest_streak_size = max(zero_current_streak_size, longest_streak_size)
         if zero_current_streak_size > 0:
             zero_streak_size_histogram[zero_current_streak_size] = \
@@ -460,7 +469,8 @@ class ReportProgressController:
             current_streak_size=zero_current_streak_size,
             longest_streak_size=longest_streak_size,
             zero_streak_size_histogram=zero_streak_size_histogram,
-            one_streak_size_histogram=one_streak_size_histogram)
+            one_streak_size_histogram=one_streak_size_histogram,
+            streak_plot="".join(streak_plot))
 
     @staticmethod
     def _run_report_for_big_plan(schedule: Schedule, big_plans: Iterable[BigPlan]) -> WorkableSummary:
