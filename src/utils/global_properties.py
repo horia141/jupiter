@@ -8,6 +8,8 @@ from pendulum.tz.timezone import Timezone
 class GlobalProperties:
     """Command-level properties."""
 
+    description: str
+    version: str
     timezone: Timezone
     docs_init_workspace_url: str
     docs_update_expired_token_url: str

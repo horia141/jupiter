@@ -199,7 +199,7 @@ def main() -> None:
             ReportProgress(basic_validator, time_provider, report_progress_controller)
         ]
 
-        parser = argparse.ArgumentParser(description="The Jupiter goal management system")
+        parser = argparse.ArgumentParser(description=global_properties.description)
         parser.add_argument(
             "--min-log-level", dest="min_log_level", default="info",
             choices=["debug", "info", "warning", "error", "critical"],
@@ -207,6 +207,9 @@ def main() -> None:
         parser.add_argument(
             "--verbose", dest="verbose_logging", action="store_const", default=False, const=True,
             help="Show more log messages")
+        parser.add_argument(
+            "--version", dest="just_show_version", action="store_const", default=False, const=True,
+            help="Show the version of the application")
 
         subparsers = parser.add_subparsers(dest="subparser_name", help="Sub-command help")
 
@@ -221,6 +224,10 @@ def main() -> None:
             level=_map_log_level_to_log_class(args.min_log_level),
             fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S")
+
+        if args.just_show_version:
+            print(f"{global_properties.description} {global_properties.version}")
+            return
 
         if not args.verbose_logging:
             for handler in logging.root.handlers:
@@ -256,6 +263,14 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
 def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:
     dotenv.load_dotenv(dotenv_path=Path(".") / "Config", verbose=True)
 
+    description = os.getenv("DESCRIPTION")
+    if description is None:
+        raise Exception("Critical error - missing Config file")
+
+    version = os.getenv("VERSION")
+    if version is None:
+        raise Exception("Critical error - missing Config file")
+
     try:
         workspace = workspace_repository.load_workspace()
         timezone = workspace.timezone
@@ -275,6 +290,8 @@ def _build_global_properties(workspace_repository: WorkspaceRepository) -> Globa
         raise Exception("Critical error - missing Config file")
 
     return GlobalProperties(
+        description=description,
+        version=version,
         timezone=timezone,
         docs_init_workspace_url=docs_init_workspace_url,
         docs_update_expired_token_url=docs_update_expired_token_url,
