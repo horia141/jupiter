@@ -9,13 +9,14 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType
+from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, Timestamp, BasicValidator
 from remote.notion import common
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
 from remote.notion.connection import NotionConnection
 from utils.storage import JSONDictType
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class RecurringTaskRow(BasicRowType):
     suspended: bool
     skip_rule: Optional[str]
     must_do: bool
+    last_edited_time: Timestamp
 
 
 class RecurringTasksCollection:
@@ -181,6 +183,10 @@ class RecurringTasksCollection:
             "name": "Skip Rule",
             "type": "text"
         },
+        "last-edited-time": {
+            "name": "Last Edited Time",
+            "type": "last_edited_time"
+        },
         "ref-id": {
             "name": "Ref Id",
             "type": "text"
@@ -278,6 +284,9 @@ class RecurringTasksCollection:
                 "property": "skip-rule",
                 "visible": False
             }, {
+                "property": "last-edited-time",
+                "visible": False
+            }, {
                 "property": "ref-id",
                 "visible": False
             }],
@@ -339,16 +348,25 @@ class RecurringTasksCollection:
                 "visible": True
             }, {
                 "width": 100,
+                "property": "last-edited-time",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "ref-id",
                 "visible": False
             }]
         }
     }
 
+    _time_provider: Final[TimeProvider]
+    _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[RecurringTaskRow]]
 
-    def __init__(self, connection: NotionConnection):
+    def __init__(
+            self, time_provider: TimeProvider, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._time_provider = time_provider
+        self._basic_validator = basic_validator
         self._collection = NotionCollection[RecurringTaskRow](connection, self._LOCK_FILE_PATH, self)
 
     def __enter__(self) -> 'RecurringTasksCollection':
@@ -393,6 +411,7 @@ class RecurringTasksCollection:
             suspended=suspended,
             skip_rule=skip_rule,
             must_do=must_do,
+            last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id)
         return cast(RecurringTaskRow, self._collection.create(
             project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link))
@@ -522,6 +541,7 @@ class RecurringTasksCollection:
         notion_row.suspended = row.suspended
         notion_row.skip_rule = row.skip_rule
         notion_row.must_do = row.must_do
+        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 
         if inbox_collection_link:
@@ -533,24 +553,26 @@ class RecurringTasksCollection:
 
         return notion_row
 
-    def copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> RecurringTaskRow:
+    def copy_notion_row_to_row(self, recurring_task_notion_row: CollectionRowBlock) -> RecurringTaskRow:
         """Transform the live system data to something suitable for basic storage."""
         # pylint: disable=no-self-use
         return RecurringTaskRow(
-            notion_id=inbox_task_notion_row.id,
-            name=inbox_task_notion_row.title,
-            archived=inbox_task_notion_row.archived,
-            period=inbox_task_notion_row.period,
-            the_type=inbox_task_notion_row.the_type,
-            eisen=common.clean_eisenhower(inbox_task_notion_row.eisenhower),
-            difficulty=inbox_task_notion_row.difficulty,
-            due_at_time=inbox_task_notion_row.due_at_time,
-            due_at_day=inbox_task_notion_row.due_at_day,
-            due_at_month=inbox_task_notion_row.due_at_month,
-            suspended=inbox_task_notion_row.suspended,
-            skip_rule=inbox_task_notion_row.skip_rule,
-            must_do=inbox_task_notion_row.must_do,
-            ref_id=inbox_task_notion_row.ref_id)
+            notion_id=recurring_task_notion_row.id,
+            name=recurring_task_notion_row.title,
+            archived=recurring_task_notion_row.archived,
+            period=recurring_task_notion_row.period,
+            the_type=recurring_task_notion_row.the_type,
+            eisen=common.clean_eisenhower(recurring_task_notion_row.eisenhower),
+            difficulty=recurring_task_notion_row.difficulty,
+            due_at_time=recurring_task_notion_row.due_at_time,
+            due_at_day=recurring_task_notion_row.due_at_day,
+            due_at_month=recurring_task_notion_row.due_at_month,
+            suspended=recurring_task_notion_row.suspended,
+            skip_rule=recurring_task_notion_row.skip_rule,
+            must_do=recurring_task_notion_row.must_do,
+            last_edited_time=
+            self._basic_validator.timestamp_from_notion_timestamp(recurring_task_notion_row.last_edited_time),
+            ref_id=recurring_task_notion_row.ref_id)
 
     @staticmethod
     def _get_view_schema_for_recurring_task_desc(recurring_task_ref_id: str) -> JSONDictType:

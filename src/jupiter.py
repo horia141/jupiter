@@ -17,7 +17,7 @@ from command.big_plans_set_name import BigPlansSetName
 from command.big_plans_set_status import BigPlansSetStatus
 from command.big_plans_show import BigPlansShow
 from command.inbox_tasks_archive import InboxTasksArchive
-from command.inbox_tasks_archive_done import InboxTasksArchiveDone
+from command.garbage_collect import GarbageCollect
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
 from command.inbox_tasks_create import InboxTasksCreate
 from command.inbox_tasks_hard_remove import InboxTasksHardRemove
@@ -61,6 +61,7 @@ from command.workspace_set_timezone import WorkspaceSetTimezone
 from command.workspace_set_token import WorkspaceSetToken
 from command.workspace_show import WorkspaceShow
 from controllers.big_plans import BigPlansController
+from controllers.garbage_collect_notion import GarbageCollectNotionController
 from controllers.inbox_tasks import InboxTasksController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
@@ -111,11 +112,11 @@ def main() -> None:
             InboxTasksRepository(time_provider) as inbox_tasks_repository,\
             RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
             BigPlansRepository(time_provider) as big_plans_repository, \
-            VacationsCollection(basic_validator, notion_connection) as vacations_collection, \
+            VacationsCollection(time_provider, basic_validator, notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
-            InboxTasksCollection(basic_validator, notion_connection) as inbox_tasks_collection, \
-            RecurringTasksCollection(notion_connection) as recurring_tasks_collection, \
-            BigPlansCollection(basic_validator, notion_connection) as big_plans_collection:
+            InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
+            RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
+            BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection:
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
@@ -138,12 +139,14 @@ def main() -> None:
             global_properties, projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
-            global_properties, workspaces_service, vacations_service, projects_service, inbox_tasks_service,
-            recurring_tasks_service, big_plans_service)
+            time_provider, global_properties, workspaces_service, vacations_service, projects_service,
+            inbox_tasks_service, recurring_tasks_service, big_plans_service)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
             global_properties, projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         report_progress_controller = ReportProgressController(
             global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
+        garbage_collect_controller = GarbageCollectNotionController(
+            vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
 
         commands = [
             WorkspaceInit(basic_validator, workspaces_controller),
@@ -170,7 +173,6 @@ def main() -> None:
             InboxTasksSetEisen(basic_validator, inbox_tasks_controller),
             InboxTasksSetDifficulty(basic_validator, inbox_tasks_controller),
             InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
-            InboxTasksArchiveDone(basic_validator, inbox_tasks_controller),
             InboxTasksHardRemove(basic_validator, inbox_tasks_controller),
             InboxTasksShow(basic_validator, inbox_tasks_controller),
             RecurringTasksCreate(basic_validator, recurring_tasks_controller),
@@ -196,7 +198,8 @@ def main() -> None:
             BigPlansShow(basic_validator, big_plans_controller),
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),
-            ReportProgress(basic_validator, time_provider, report_progress_controller)
+            ReportProgress(basic_validator, time_provider, report_progress_controller),
+            GarbageCollect(basic_validator, garbage_collect_controller)
         ]
 
         parser = argparse.ArgumentParser(description=global_properties.description)
@@ -248,6 +251,7 @@ def main() -> None:
         except (CollectionEntityNotFound, CollectionEntityAlreadyExists) as err:
             print(str(err))
             print(f"For more information checkout: {global_properties.docs_fix_data_inconsistencies_url}")
+            raise err
 
 
 class CommandsAndControllersLoggerFilter(logging.Filter):

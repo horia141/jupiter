@@ -110,6 +110,10 @@ class GenerateInboxTasksController:
             (recurring_task.ref_id, schedule.timeline), None)
 
         if found_task:
+            if found_task.last_modified_time >= recurring_task.last_modified_time:
+                LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
+                return
+
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                 ref_id=found_task.ref_id,
                 name=schedule.full_name,

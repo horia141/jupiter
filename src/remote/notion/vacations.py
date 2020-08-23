@@ -8,12 +8,13 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, cast, Type
 
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, ADate, BasicValidator
+from models.basic import EntityId, ADate, BasicValidator, Timestamp
 from remote.notion.client import NotionClient
 from remote.notion.collection import BasicRowType, NotionCollection, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
 from remote.notion.connection import NotionConnection
 from utils.storage import JSONDictType
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class VacationRow(BasicRowType):
     archived: bool
     start_date: Optional[ADate]
     end_date: Optional[ADate]
-    ref_id: Optional[str]
+    last_edited_time: Timestamp
 
 
 class VacationsCollection:
@@ -54,6 +55,10 @@ class VacationsCollection:
             "name": "End Date",
             "type": "date"
         },
+        "last-edited-time": {
+            "name": "Last Edited Time",
+            "type": "last_edited_time"
+        },
         "ref-id": {
             "name": "Ref Id",
             "type": "text"
@@ -78,6 +83,10 @@ class VacationsCollection:
             }, {
                 "width": 200,
                 "property": "end-date",
+                "visible": True
+            }, {
+                "width": 200,
+                "property": "last-edited-time",
                 "visible": True
             }, {
                 "width": 100,
@@ -109,11 +118,14 @@ class VacationsCollection:
         }
     }
 
+    _time_provider: Final[TimeProvider]
     _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[VacationRow]]
 
-    def __init__(self, basic_validator: BasicValidator, connection: NotionConnection) -> None:
+    def __init__(
+            self, time_provider: TimeProvider, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._basic_validator = basic_validator
         self._collection = NotionCollection[VacationRow](connection, self._LOCK_FILE_PATH, self)
 
@@ -143,6 +155,7 @@ class VacationsCollection:
             archived=archived,
             start_date=start_date,
             end_date=end_date,
+            last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id)
         return cast(VacationRow, self._collection.create(self._DISCRIMINANT, new_vacation_row))
 
@@ -248,6 +261,7 @@ class VacationsCollection:
         notion_row.archived = row.archived
         notion_row.start_date = self._basic_validator.adate_to_notion(row.start_date)
         notion_row.end_date = self._basic_validator.adate_to_notion(row.end_date)
+        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -262,4 +276,6 @@ class VacationsCollection:
             if vacation_notion_row.start_date else None,
             end_date=self._basic_validator.adate_from_notion(vacation_notion_row.end_date)
             if vacation_notion_row.end_date else None,
+            last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(
+                vacation_notion_row.last_edited_time),
             ref_id=vacation_notion_row.ref_id)

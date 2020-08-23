@@ -398,7 +398,8 @@ class InboxTasksService:
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,
             all_big_plans: Iterable[BigPlan], all_recurring_tasks: Iterable[RecurringTask],
-            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
+            sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
+            sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
@@ -505,9 +506,15 @@ class InboxTasksService:
                     inbox_task_row.notion_id in all_inbox_tasks_saved_notion_ids_set:
                 # If the big plan exists locally, we sync it with the remote
                 inbox_task = all_inbox_tasks_set[EntityId(inbox_task_row.ref_id)]
+                all_inbox_tasks_row_set[EntityId(inbox_task_row.ref_id)] = inbox_task_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
+                    if not sync_even_if_not_modified \
+                            and inbox_task_row.last_edited_time <= inbox_task.last_modified_time:
+                        LOGGER.info(f"Skipping {inbox_task_row.name} because it was not modified")
+                        continue
+
                     try:
                         inbox_task_name = self._basic_validator.entity_name_validate_and_clean(inbox_task_row.name)
                         inbox_task_big_plan_ref_id = \
@@ -584,6 +591,11 @@ class InboxTasksService:
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
+                    if not sync_even_if_not_modified and\
+                            inbox_task.last_modified_time <= inbox_task_row.last_edited_time:
+                        LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
+                        continue
+
                     big_plan = None
                     recurring_task = None
                     if inbox_task.big_plan_ref_id is not None:
@@ -608,7 +620,6 @@ class InboxTasksService:
                     LOGGER.info(f"Changed inbox task with id={inbox_task_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
-                all_inbox_tasks_row_set[EntityId(inbox_task_row.ref_id)] = inbox_task_row
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random task added by someone, where they completed themselves a ref_id. It's a bad

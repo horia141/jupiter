@@ -50,12 +50,10 @@ class SyncLocalAndNotion(command.Command):
                             help="Sync only these recurring tasks")
         parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
-        parser.add_argument("--anti-entropy", dest="anti_entropy", action="store_true", default=False,
-                            help="Try to correct issues due to lack of local-to-Notion transactionality")
         parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
                             help="Drop all Notion-side entities before syncing and restore from local entirely")
-        parser.add_argument("--gc-notion", dest="drop_all_notion_archived", action="store_true", default=False,
-                            help="Drop all Notion-side archived")
+        parser.add_argument("--ignore-modified-times", dest="sync_even_if_not_modified", action="store_true",
+                            default=False, help="Drop all Notion-side archived")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -74,9 +72,8 @@ class SyncLocalAndNotion(command.Command):
                                   for rt in args.recurring_task_ref_ids] \
             if len(args.recurring_task_ref_ids) > 0 else None
         sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
-        anti_entropy = args.anti_entropy
         drop_all_notion = args.drop_all_notion
-        drop_all_notion_archived = args.drop_all_notion_archived
+        sync_even_if_not_modified = args.sync_even_if_not_modified
         self._sync_local_and_notion_controller.sync(
-            sync_targets, anti_entropy, drop_all_notion, drop_all_notion_archived, vacation_ref_ids, project_keys,
-            inbox_task_ref_ids, big_plan_ref_ids, recurring_task_ref_ids, sync_prefer)
+            sync_targets, drop_all_notion, sync_even_if_not_modified,
+            vacation_ref_ids, project_keys, inbox_task_ref_ids, big_plan_ref_ids, recurring_task_ref_ids, sync_prefer)

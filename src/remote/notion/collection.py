@@ -9,7 +9,7 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId
 from remote.notion.client import NotionClient
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError, \
-    CollectionEntityNotFound, CollectionEntityAlreadyExists
+    CollectionEntityNotFound
 from remote.notion.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -217,8 +217,7 @@ class NotionCollection(Generic[NotionCollectionRowType]):
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
 
         if new_row.ref_id in lock.ref_id_to_notion_id_map:
-            raise CollectionEntityAlreadyExists(
-                f"Entity already exists on Notion side for entty with id={new_row.ref_id}")
+            LOGGER.warning(f"Entity already exists on Notion side for entity with id={new_row.ref_id}")
 
         client = self._connection.get_notion_client()
         collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
@@ -243,7 +242,7 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         if lock is None:
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
         if ref_id in lock.ref_id_to_notion_id_map:
-            raise CollectionEntityAlreadyExists(f"Entity already exists on Notion side for id={ref_id}")
+            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
         lock.ref_id_to_notion_id_map[ref_id] = notion_id
         self._structured_storage.save((locks_next_idx, task_locks))
 
@@ -295,6 +294,7 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         client = self._connection.get_notion_client()
         notion_row = self._find_notion_row(client, lock, EntityId(row.ref_id))
 
+        # with client.with_transaction():
         self._protocol.copy_row_to_notion_row(client, row, notion_row, **kwargs)
 
         return row

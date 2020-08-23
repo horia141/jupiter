@@ -295,7 +295,8 @@ class RecurringTasksService:
 
     def recurring_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
-            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
+            sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
+            sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
         """Synchronise recurring tasks between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
@@ -387,8 +388,15 @@ class RecurringTasksService:
                     and recurring_task_row.notion_id in all_reccuring_tasks_saved_notion_ids:
                 # If the recurring task exists locally, we sync it with the remote
                 recurring_task = all_recurring_tasks_set[EntityId(recurring_task_row.ref_id)]
+                all_recurring_tasks_row_set[EntityId(recurring_task_row.ref_id)] = recurring_task_row
+
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
+                    if not sync_even_if_not_modified \
+                            and recurring_task_row.last_edited_time <= recurring_task.last_modified_time:
+                        LOGGER.info(f"Skipping {recurring_task_row.name} because it was not modified")
+                        continue
+
                     try:
                         recurring_task_name = self._basic_validator.entity_name_validate_and_clean(
                             recurring_task_row.name)
@@ -437,6 +445,11 @@ class RecurringTasksService:
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
+                    if not sync_even_if_not_modified and\
+                            recurring_task.last_modified_time <= recurring_task_row.last_edited_time:
+                        LOGGER.info(f"Skipping {recurring_task.name} because it was not modified")
+                        continue
+
                     recurring_task_row.name = recurring_task.name
                     recurring_task_row.period = recurring_task.period.value
                     recurring_task_row.the_type = recurring_task.the_type.value
@@ -452,7 +465,6 @@ class RecurringTasksService:
                     self._collection.save_recurring_task(
                         project_ref_id, recurring_task_row, inbox_collection_link=inbox_collection_link)
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from local")
-                all_recurring_tasks_row_set[EntityId(recurring_task_row.ref_id)] = recurring_task_row
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random task added by someone, where they completed themselves a ref_id. It's a bad

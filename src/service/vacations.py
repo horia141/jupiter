@@ -168,13 +168,13 @@ class VacationsService:
 
         return vacation
 
-    def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
+    def load_all_vacations(self, filter_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
-        return self._repository.load_all_vacations(filter_archived=not show_archived)
+        return self._repository.load_all_vacations(filter_archived=filter_archived)
 
     def vacations_sync(
-            self, drop_all_notion_side: bool, filter_ref_ids: Optional[Iterable[EntityId]],
-            sync_prefer: SyncPrefer) -> Iterable[Vacation]:
+            self, drop_all_notion_side: bool, sync_even_if_not_modified: bool,
+            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[Vacation]:
         """Synchronise vacations between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
@@ -234,8 +234,14 @@ class VacationsService:
                 vacations_rows_set[vacation_row.ref_id] = vacation_row
             elif vacation_row.ref_id in all_vacations_set and vacation_row.notion_id in all_vacations_notion_ids:
                 vacation = all_vacations_set[EntityId(vacation_row.ref_id)]
+                vacations_rows_set[EntityId(vacation_row.ref_id)] = vacation_row
+
                 # If the vacation exists locally, we sync it with the remote:
                 if sync_prefer == SyncPrefer.NOTION:
+                    if not sync_even_if_not_modified and vacation_row.last_edited_time <= vacation.last_modified_time:
+                        LOGGER.info(f"Skipping {vacation_row.name} because it was not modified")
+                        continue
+
                     try:
                         vacation_name = self._basic_validator.entity_name_validate_and_clean(vacation_row.name)
                     except ModelValidationError as error:
@@ -264,6 +270,10 @@ class VacationsService:
                     self._repository.save_vacation(vacation, archived_time_action=archived_time_action)
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
+                    if not sync_even_if_not_modified and vacation.last_modified_time <= vacation_row.last_edited_time:
+                        LOGGER.info(f"Skipping {vacation_row.name} because it was not modified")
+                        continue
+
                     vacation_row.archived = vacation.archived
                     vacation_row.name = vacation.name
                     vacation_row.start_date = vacation.start_date
@@ -272,7 +282,6 @@ class VacationsService:
                     LOGGER.info(f"Changed vacation with id={vacation_row.ref_id} from local")
                 else:
                     raise ServiceError(f"Invalid preference {sync_prefer}")
-                vacations_rows_set[EntityId(vacation_row.ref_id)] = vacation_row
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random vacation added by someone, where they completed themselves a ref_id. It's a bad

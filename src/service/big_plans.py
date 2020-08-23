@@ -3,6 +3,7 @@ import logging
 import uuid
 from typing import Final, Iterable, Optional, Dict
 
+import remote.notion.common
 from models.basic import EntityId, BasicValidator, ModelValidationError, BigPlanStatus, SyncPrefer, ADate
 from remote.notion.big_plans import BigPlansCollection
 from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionEntityNotFound
@@ -79,6 +80,26 @@ class BigPlansService:
             LOGGER.info("Skipping archival of Notion big plan because it could not be found")
 
         return big_plan
+
+    def archive_done_big_plans(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
+        """Archive the done big plans."""
+        big_plans = self._repository.load_all_big_plans(
+            filter_archived=False, filter_project_ref_ids=filter_project_ref_id)
+
+        for big_plan in big_plans:
+            if big_plan.archived:
+                continue
+
+            if not big_plan.status.is_completed:
+                continue
+
+            LOGGER.info(f"Removing task '{big_plan.name}'")
+            self._repository.archive_big_plan(big_plan.ref_id)
+            try:
+                self._collection.archive_big_plan(big_plan.project_ref_id, big_plan.ref_id)
+            except remote.notion.common.CollectionEntityNotFound:
+                # If we can't find this locally it means it's already gone
+                LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
     def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
         """Change the name of a big plan."""
@@ -182,7 +203,8 @@ class BigPlansService:
 
     def big_plans_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
-            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
+            sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
+            sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
         """Synchronise big plans between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
@@ -243,7 +265,14 @@ class BigPlansService:
                     big_plan_row.notion_id in all_big_plans_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
                 big_plan = all_big_plans_set[EntityId(big_plan_row.ref_id)]
+                all_big_plans_rows_set[EntityId(big_plan_row.ref_id)] = big_plan_row
+
                 if sync_prefer == SyncPrefer.NOTION:
+                    if not sync_even_if_not_modified \
+                            and big_plan_row.last_edited_time <= big_plan.last_modified_time:
+                        LOGGER.info(f"Skipping {big_plan_row.name} because it was not modified")
+                        continue
+
                     try:
                         big_plan_name = self._basic_validator.entity_name_validate_and_clean(big_plan_row.name)
                         big_plan_status = self._basic_validator.big_plan_status_validate_and_clean(
@@ -285,6 +314,11 @@ class BigPlansService:
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
+                    if not sync_even_if_not_modified and\
+                            big_plan.last_modified_time <= big_plan_row.last_edited_time:
+                        LOGGER.info(f"Skipping {big_plan.name} because it was not modified")
+                        continue
+
                     big_plan_row.name = big_plan.name
                     big_plan_row.archived = big_plan.archived
                     big_plan_row.status = big_plan.status.for_notion()
@@ -295,7 +329,6 @@ class BigPlansService:
                     LOGGER.info(f"Changed big plan with id={big_plan_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
-                all_big_plans_rows_set[EntityId(big_plan_row.ref_id)] = big_plan_row
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random big plan added by someone, where they completed themselves a ref_id. It's a bad

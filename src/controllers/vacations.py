@@ -36,9 +36,9 @@ class VacationsController:
         """Change the vacation end date."""
         return self._vacations_service.set_vacation_end_date(ref_id, end_date)
 
-    def load_all_vacations(self, show_archived: bool = False) -> Iterable[Vacation]:
+    def load_all_vacations(self, filter_archived: bool = True) -> Iterable[Vacation]:
         """Retrieve all vacations."""
-        return self._vacations_service.load_all_vacations(show_archived)
+        return self._vacations_service.load_all_vacations(filter_archived)
 
     def hard_remove_vacations(self, ref_ids: Iterable[EntityId]) -> None:
         """Hard remove a vacation."""

@@ -10,12 +10,13 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, cast
 from notion.collection import CollectionRowBlock
 
 import remote.notion.common
-from models.basic import EntityId, BigPlanStatus, ADate, BasicValidator
+from models.basic import EntityId, BigPlanStatus, ADate, BasicValidator, Timestamp
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
 from remote.notion.connection import NotionConnection
 from utils.storage import JSONDictType
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class BigPlanRow(BasicRowType):
     archived: bool
     status: Optional[str]
     due_date: Optional[ADate]
+    last_edited_time: Timestamp
 
 
 class BigPlansCollection:
@@ -84,10 +86,6 @@ class BigPlansCollection:
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _STATUS.values()]
         },
-        "ref-id": {
-            "name": "Ref Id",
-            "type": "text"
-        },
         "due-date": {
             "name": "Due Date",
             "type": "date"
@@ -95,6 +93,14 @@ class BigPlansCollection:
         "archived": {
             "name": "Archived",
             "type": "checkbox"
+        },
+        "last-edited-time": {
+            "name": "Last Edited Time",
+            "type": "last_edited_time"
+        },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
         }
     }
 
@@ -131,6 +137,9 @@ class BigPlansCollection:
             "visible": True
         }, {
             "property": "archived",
+            "visible": False
+        }, {
+            "property": "last-edited-time",
             "visible": False
         }],
         "board_cover_size": "small"
@@ -190,15 +199,22 @@ class BigPlansCollection:
                 "width": 100,
                 "property": "archived",
                 "visible": True
+            }, {
+                "width": 100,
+                "property": "last-edited-time",
+                "visible": True
             }]
         }
     }
 
+    _time_provider: Final[TimeProvider]
     _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[BigPlanRow]]
 
-    def __init__(self, basic_validator: BasicValidator, connection: NotionConnection) -> None:
+    def __init__(
+            self, time_provider: TimeProvider, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._basic_validator = basic_validator
         self._collection = NotionCollection[BigPlanRow](connection, self._LOCK_FILE_PATH, self)
 
@@ -234,6 +250,7 @@ class BigPlansCollection:
             archived=archived,
             status=status,
             due_date=due_date,
+            last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id)
         return cast(BigPlanRow, self._collection.create(
             project_ref_id, new_big_plan_row, inbox_collection_link=inbox_collection_link))
@@ -347,6 +364,7 @@ class BigPlansCollection:
         notion_row.archived = row.archived
         notion_row.status = row.status
         notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
+        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 
         # Create structure for the big plan.
@@ -361,17 +379,19 @@ class BigPlansCollection:
 
         return notion_row
 
-    def copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> BigPlanRow:
+    def copy_notion_row_to_row(self, big_plan_notion_row: CollectionRowBlock) -> BigPlanRow:
         """Transform the live system data to something suitable for basic storage."""
         # pylint: disable=no-self-use
         return BigPlanRow(
-            notion_id=inbox_task_notion_row.id,
-            name=inbox_task_notion_row.title,
-            archived=inbox_task_notion_row.archived,
-            status=inbox_task_notion_row.status,
-            due_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.due_date)
-            if inbox_task_notion_row.due_date else None,
-            ref_id=inbox_task_notion_row.ref_id)
+            notion_id=big_plan_notion_row.id,
+            name=big_plan_notion_row.title,
+            archived=big_plan_notion_row.archived,
+            status=big_plan_notion_row.status,
+            due_date=self._basic_validator.adate_from_notion(big_plan_notion_row.due_date)
+            if big_plan_notion_row.due_date else None,
+            last_edited_time=
+            self._basic_validator.timestamp_from_notion_timestamp(big_plan_notion_row.last_edited_time),
+            ref_id=big_plan_notion_row.ref_id)
 
     @staticmethod
     def _get_view_schema_for_big_plan_desc(big_plan_name: str) -> JSONDictType:

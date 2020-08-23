@@ -1,4 +1,5 @@
 """Basic model types and validators for them."""
+import datetime
 import enum
 import re
 from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern, Union, cast
@@ -426,6 +427,15 @@ class BasicValidator:
                 adate.in_timezone(self._global_properties.timezone), timezone=self._global_properties.timezone.name)
         else:
             return NotionDate(adate)
+
+    @staticmethod
+    def timestamp_from_notion_timestamp(timestamp_raw: datetime.datetime) -> Timestamp:
+        """Parse a timestamp from a Notion representation."""
+        return Timestamp(pendulum.instance(timestamp_raw).in_timezone(UTC))
+
+    def timestamp_to_notion_timestamp(self, timestamp: Timestamp) -> datetime.datetime:
+        """Transform a timestamp to a Notion representation."""
+        return cast(Timestamp, timestamp.in_timezone(self._global_properties.timezone))
 
     def adate_to_user(self, adate: Optional[ADate]) -> str:
         """Transform a date to something meaningful to a user."""

@@ -12,7 +12,7 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, ADate, \
-    BasicValidator
+    BasicValidator, Timestamp
 from remote.notion import common
 from remote.notion.client import NotionClient
 from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
@@ -20,6 +20,7 @@ from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink,
 from remote.notion.connection import NotionConnection
 from repository.big_plans import BigPlan
 from utils.storage import JSONDictType
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class InboxTaskRow(BasicRowType):
     recurring_period: Optional[str]
     recurring_task_type: Optional[str]
     recurring_task_gen_right_now: Optional[ADate]
+    last_edited_time: Timestamp
 
 
 class InboxTasksCollection:
@@ -236,7 +238,11 @@ class InboxTasksCollection:
         "recurring-task-gen-right-now": {
             "name": "Recurring Gen Right Now",
             "type": "date"
-        }
+        },
+        "last-edited-time": {
+            "name": "Last Edited Time",
+            "type": "last_edited_time"
+        },
     }
 
     _KANBAN_FORMAT: ClassVar[JSONDictType] = {
@@ -306,6 +312,9 @@ class InboxTasksCollection:
         }, {
             "property": "recurring-task-gen-right-now",
             "visible": False
+        }, {
+            "property": "last-edited-time",
+            "visible": True
         }],
         "board_cover_size": "small"
     }
@@ -663,6 +672,9 @@ class InboxTasksCollection:
             }, {
                 "property": "recurring-task-gen-right-now",
                 "visible": False
+            }, {
+                "property": "last-edited-time",
+                "visible": True
             }]
         }
     }
@@ -735,15 +747,21 @@ class InboxTasksCollection:
                 "width": 100,
                 "property": "archived",
                 "visible": True
+            }, {
+                "property": "last-edited-time",
+                "visible": True
             }]
         }
     }
 
+    _time_provider: Final[TimeProvider]
     _basic_validator: Final[BasicValidator]
     _collection: Final[NotionCollection[InboxTaskRow]]
 
-    def __init__(self, basic_validator: BasicValidator, connection: NotionConnection) -> None:
+    def __init__(
+            self, time_provider: TimeProvider, basic_validator: BasicValidator, connection: NotionConnection) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._basic_validator = basic_validator
         self._collection = NotionCollection[InboxTaskRow](connection, self._LOCK_FILE_PATH, self)
 
@@ -812,6 +830,7 @@ class InboxTasksCollection:
             recurring_period=recurring_period,
             recurring_task_type=recurring_task_type,
             recurring_task_gen_right_now=recurring_task_gen_right_now,
+            last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id)
         return cast(InboxTaskRow, self._collection.create(project_ref_id, new_inbox_task_row))
 
@@ -940,6 +959,7 @@ class InboxTasksCollection:
         notion_row.recurring_type = row.recurring_task_type
         notion_row.recurring_gen_right_now = self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
             if row.recurring_task_gen_right_now else None
+        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -965,6 +985,8 @@ class InboxTasksCollection:
             recurring_task_gen_right_now=
             self._basic_validator.adate_from_notion(inbox_task_notion_row.recurring_gen_right_now)
             if inbox_task_notion_row.recurring_gen_right_now else None,
+            last_edited_time=
+            self._basic_validator.timestamp_from_notion_timestamp(inbox_task_notion_row.last_edited_time),
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod

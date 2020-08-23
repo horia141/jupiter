@@ -72,11 +72,6 @@ class InboxTasksController:
 
         return self._inbox_tasks_service.associate_inbox_task_with_big_plan(ref_id, big_plan_ref_id, big_plan_name)
 
-    def archive_done_inbox_tasks(self, project_key: ProjectKey) -> None:
-        """Archive all the inbox tasks which are considered done."""
-        project = self._projects_service.load_project_by_key(project_key)
-        self._inbox_tasks_service.archive_done_inbox_tasks([project.ref_id])
-
     def set_inbox_task_name(self, ref_id: EntityId, name: str) -> InboxTask:
         """Change the difficulty of an inbox task."""
         return self._inbox_tasks_service.set_inbox_task_name(ref_id, name)
