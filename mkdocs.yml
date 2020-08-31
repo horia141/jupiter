@@ -14,14 +14,30 @@ theme:
     hljs_style: obsidian
 
 nav:
-    - Tutorial: 'tutorial.md'
-    - Concepts: 'concepts.md'
+    - Home: 'index.md'
     - Installation: 'install.md'
+    - Tutorial: 'tutorial.md'
+    - Concepts:
+          - 'Overview': 'concepts/overview.md'
+          - 'The Jupiter CLI': 'concepts/jupiter-cli.md'
+          - 'Local Storage': 'concepts/local-storage.md'
+          - 'Workspace': 'concepts/workspaces.md'
+          - 'Vacations': 'concepts/vacations.md'
+          - 'Projects': 'concepts/projects.md'
+          - 'Inbox Tasks': 'concepts/inbox-tasks.md'
+          - 'Recurring Tasks': 'concepts/recurring-tasks.md'
+          - 'Big Plans': 'concepts/big-plans.md'
+          - 'Reporting': 'concepts/reporting.md'
+          - 'Sync Notion And Local': 'concepts/notion-local-sync.md'
+          - 'Tasks Generation': 'concepts/tasks-generation.md'
+          - 'Garbage Collection': 'concepts/garbage-collection.md'
     - 'How Tos':
-          - Workspaces:
-                - 'Initialize A Workspace': 'how-tos/workspaces/init-a-workspace.md'
-                - 'Update An Expired Token': 'how-tos/workspaces/update-an-expired-token.md'
+          - 'Garbage Collection': 'how-tos/do-garbage-collection.md'
+          - 'Update An Expired Token': 'how-tos/update-an-expired-token.md'
           - 'Fix Data Inconsistencies': 'how-tos/fix-data-inconsistencies.md'
+          - 'Recreate A Missing Notion Entity': 'how-tos/recreate-a-missing-notion-entity.md'
+          - 'Sync From Local To Notion': 'how-tos/sync-from-local-to-notion.md'
+    - Roadmap: 'roadmap.md'
     - Releases:
           - 'Version 0.3.0': 'releases/version-0.3.0.md'
           - 'Version 0.2.0': 'releases/version-0.2.0.md'

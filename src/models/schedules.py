@@ -326,27 +326,27 @@ class QuarterlySchedule(Schedule):
         if due_at_month:
             if due_at_day:
                 self._due_date = right_now\
-                    .on(right_now.year, self.month_to_quarter_start(right_now), right_now.day)\
+                    .on(right_now.year, self.month_to_quarter_start(right_now), 1)\
                     .start_of("month")\
                     .add(months=due_at_month - 1)\
                     .add(days=due_at_day - 1)\
                     .end_of("day")
             else:
                 self._due_date = right_now\
-                    .on(right_now.year, self.month_to_quarter_start(right_now), right_now.day)\
+                    .on(right_now.year, self.month_to_quarter_start(right_now), 1)\
                     .start_of("month")\
                     .add(months=due_at_month - 1)\
                     .end_of("month")\
                     .end_of("day")
         elif due_at_day:
             self._due_date = right_now\
-                .on(right_now.year, self.month_to_quarter_start(right_now), right_now.day)\
+                .on(right_now.year, self.month_to_quarter_start(right_now), 1)\
                 .start_of("month")\
                 .add(days=due_at_day - 1)\
                 .end_of("day")
         else:
             self._due_date = right_now\
-                .on(right_now.year, self.month_to_quarter_end(right_now), right_now.day)\
+                .on(right_now.year, self.month_to_quarter_end(right_now), 1)\
                 .end_of("month")\
                 .end_of("day")
         if due_at_time:

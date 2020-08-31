@@ -4,7 +4,9 @@ from itertools import groupby
 from operator import itemgetter
 from typing import Optional, Iterable, Final, Dict, List, cast
 
+import pendulum
 from nested_dataclasses import nested
+from pendulum import UTC
 
 from models import schedules
 from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
@@ -161,6 +163,7 @@ class ReportProgressController:
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             period: RecurringTaskPeriod, breakdown_period: Optional[RecurringTaskPeriod] = None) -> RunReportResponse:
         """Run a progress report."""
+        today = right_now.date()
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
         projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
         schedule = schedules.get_schedule(
@@ -209,11 +212,14 @@ class ReportProgressController:
         per_period_breakdown = None
         if breakdown_period:
             all_schedules = {}
-            curr_date = schedule.first_day.start_of("day")
-            end_date = schedule.end_day.end_of("day")
-            while curr_date < end_date and curr_date < right_now:
+            curr_date: pendulum.Date = schedule.first_day.start_of("day")
+            end_date: pendulum.Date = schedule.end_day.end_of("day")
+            while curr_date < end_date and curr_date <= today:
+                curr_date_as_time = \
+                    Timestamp(pendulum.DateTime(curr_date.year, curr_date.month, curr_date.day, tzinfo=UTC))
                 phase_schedule = schedules.get_schedule(
-                    breakdown_period, "Helper", curr_date, self._global_properties.timezone, None, None, None, None)
+                    breakdown_period, "Sub-period", curr_date_as_time, self._global_properties.timezone,
+                    None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
                 curr_date = curr_date.add(days=1)
 
