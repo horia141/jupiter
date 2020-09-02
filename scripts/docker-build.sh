@@ -2,4 +2,4 @@
 
 set -ex
 
-docker build -t jupiter:test .
+docker build -t jupiter .
