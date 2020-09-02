@@ -2,13 +2,13 @@
 
 ## Installation
 
-Finally, follow the [installation instructions](https://github.com/horia141/jupiter/blob/master/docs/install.md) to get
+Finally, follow the [installation instructions](install.md) to get
 the Jupiter scripts locally. I'll assume you did the Docker installation presented there.
 
 ## Prerequisites
 
 To startup, you'll need a Notion account. It's free to setup, but you'll eventually need to sign up for the paid
-version if you want to use it properly. The first four months are free however, so you'll get a good feel for wether
+version if you want to use it properly. The first four months are free however, so you'll get a good feel for whether
 it's useful for you or not.
 
 Once that's done, you'll need two crucial pieces of information - your space id, and a token for accessing the API.
@@ -25,11 +25,15 @@ In order to do this, you'll need to:
 
 The painful part should have passed. You're ready for the proper part.
 
-## Creating A Workspace
+You'll also need a timezone in the `Continent/City` format, like those provided by the
+[tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). This needs to be specified at the start,
+and is used to properly configure task deadlines, etc.
+
+## Create A Workspace
 
 The _workspace_ is where all your work in Jupiter happens. You'll need to create one.
 
-Go over and create a directory somewhere on your local machine. It's a good idea to have this be managed by git too.
+Go over and create a directory somewhere on your local machine. It's a good idea to have this be managed by Git.
 Up to you though here - Dropbox, Google Drive, etc. or just regular storage on your machine might be enough. It
 should look something like this:
 
@@ -38,9 +42,10 @@ $ mkdir my-workspaces
 $ cd my-workspace
 $ git init
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest ws-init \
+    -it --rm --name jupiter-app -v $(pwd):/data \
+    horia141/jupiter:latest workspace-init \
     --name "Plans" \
+    --timezone "YOUR_TIMEZONE_HERE" \
     --space-id="YOUR_SPACE_ID_HERE" \
     --token="YOUR_TOKEN_HERE"
 $ git add . # Adds everything in the directory
@@ -56,18 +61,18 @@ and it's here where you'll  be doing most of the interacting with Jupiter.
 
 Work in Jupiter is organised around projects. These contain an "Inbox", which is where your day-to-day tasks live. Both
 the ones you create and the ones the system creates. This is essentially a Trello/Jira like board, with some fancier
-capabilities. Then there are "Recurring Tasks", which are templates for tasks that occur periodically - daily, weekly,
+capabilities. There are also "Recurring Tasks", which are templates for tasks that occur periodically - daily, weekly,
 monthly, quarterly, or yearly. Think chores and habits. Finally there are "Big Plans", which are longer-term projects,
-usually taking 1-6 months. They're made up of tasks too, and these tasks will appear in the Inbox too. There's
+usually taking 1-6 months. They're made up of tasks too, and these tasks will appear in the Inbox. There's
 more to say here, but as always, check the docs.
 
 To create a project you need to run the `project-create` command, like so:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest project-create \
-        my-work \
+        --key my-work \
         --name "My Work"
 [ Some output here ]
 $ git add .
@@ -95,9 +100,9 @@ to click the "New" button, or the "+" button under the "Monthly" column. Complet
 
 ![Jupiter Tutorial 4](assets/jupiter-tutorial-4.png)
 
-Notice that "Period" is set to "Monthly" (one of five valid choices) and group is set to "Army maintenance" (which
-is essentially a free-form label). The former determines the periodicity of the task, while the other helps with
-organising work.
+Notice that "Period" is set to "Monthly" (one of five valid choices). As expected this determines the "periodicity"
+of the recurring task, or _when_ a new task will appear in the Inbox. For the monthly choice, you'll get one
+"Clean Drogon's lair" task every month.
 
 Before we move on to generation, you need to synchronise Notion with the local state by running a `sync` command.
 This is needed because (at this moment), there's no way for Jupiter to know about changes that happen in Notion
@@ -105,26 +110,25 @@ automatically. So you have to instruct it like so:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest recurring-tasks-sync \
-    --project my-work
+    -it --rm --name jupiter-app -v $(pwd):/data \
+    horia141/jupiter:latest sync
 [ Some output here ]
 $ git add .
 $ git commit -a -m "Synced some remote tasks"
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-show \
     --project my-work
 [ Some output here ]
 Army maintenance:
-  id=0 Clean Drogon's lair period=monthly group=Army maintenance
+  id=0 Clean Drogon's lair period=monthly
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
+    -it --rm --name jupiter-app -v $(pwd):/data \
     horia141/jupiter:latest recurring-tasks-show \
     --project my-work \
     --id 0
 [ Some output here ]
-id=10 Clean Drogon's lair period=monthly group="Army maintenance"
+id=10 Clean Drogon's lair period=monthly
     eisen="" difficulty=none skip_rule=none suspended=False must_do=False
     due_at_time=none due_at_day=none due_at_month=none
 ```
@@ -136,9 +140,8 @@ To generate the tasks, you can run:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest recurring-tasks-gen \
-    my-work
+    -it --rm --name jupiter-app -v $(pwd):/data \
+    horia141/jupiter:latest gen --period monthly
 [ Some output here ]
 ```
 
@@ -150,9 +153,8 @@ You can set another date to run the generation for, like so:
 
 ```bash
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest recurring-tasks-gen \
-    my-work \
+    -it --rm --name jupiter-app -v $(pwd):/data \
+    horia141/jupiter:latest gen --period monthly \
     --date=2020-05-01
 [ Some output here ]
 ```
@@ -165,5 +167,6 @@ And get a final output of the sort:
 
 This concludes this short introduction to Jupiter.
 
-There's a lot more you can do with it, though. Checkout [concepts](concepts.md) and [how-tos](how-tos) for more in
+There's a lot more you can do with it, though. Checkout [concepts](concepts/overview.md) and [how-tos](how-tos) for
+ more in
 depth information.

@@ -1,9 +1,12 @@
 """Command for suspending of a recurring task."""
 
 import logging
+from argparse import ArgumentParser, Namespace
+from typing import Final
 
 import command.command as command
-import storage
+from controllers.recurring_tasks import RecurringTasksController
+from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -11,44 +14,30 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTasksSuspend(command.Command):
     """Command class for suspending a recurring task."""
 
+    _basic_validator: Final[BasicValidator]
+    _recurring_tasks_controller: Final[RecurringTasksController]
+
+    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+        """Constructor."""
+        self._basic_validator = basic_validator
+        self._recurring_tasks_controller = recurring_tasks_controller
+
     @staticmethod
-    def name():
+    def name() -> str:
         """The name of the command."""
         return "recurring-tasks-suspend"
 
     @staticmethod
-    def description():
+    def description() -> str:
         """The description of the command."""
         return "Suspend a recurring task"
 
-    def build_parser(self, parser):
+    def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="id", required=True, help="The id of the vacations to modify")
-        parser.add_argument("--project", type=str, dest="project", help="The key of the project")
+        parser.add_argument("--id", type=str, dest="ref_id", required=True,
+                            help="The id of the recurring task to modify")
 
-    def run(self, args):
+    def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = args.id
-        project_key = args.project
-
-        # Load local storage
-
-        _ = storage.load_lock_file()
-        LOGGER.info("Loaded the system lock")
-        _ = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-        project = storage.load_project(project_key)
-        LOGGER.info("Loaded the project data")
-
-        # Apply changes locally
-
-        try:
-            recurring_task = next(
-                v for group in project["recurring_tasks"]["entries"].values()
-                for v in group["tasks"] if v["ref_id"] == ref_id)
-            recurring_task["suspended"] = True
-            storage.save_project(project_key, project)
-            LOGGER.info("Modified recurring task")
-        except StopIteration:
-            LOGGER.error(f"Recurring task with id {ref_id} does not exist")
-            return
+        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        self._recurring_tasks_controller.set_recurring_task_suspended(ref_id, True)

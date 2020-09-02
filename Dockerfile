@@ -1,18 +1,19 @@
-FROM python:3.6-alpine
+FROM python:3.8.5-slim
 LABEL maintainer='horia141@gmail.com'
 
-RUN apk --no-cache --update add \
-    build-base=0.5-r1 \
-    libffi-dev=3.2.1-r6 \
-    openssl-dev=1.1.1d-r3
+RUN apt-get update && \
+    apt-get install -y git=1:2.20.1-2+deb10u3 --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
+RUN git --version
 WORKDIR /jupiter
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src src
+COPY Config Config
 
-ENV TZ=UTC
-
+# ENTRYPOINT ["python", "-m", "cProfile", "-s", "time", "src/jupiter.py"]
 ENTRYPOINT ["python", "src/jupiter.py"]

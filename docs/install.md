@@ -1,7 +1,5 @@
 # Installation
 
-There's just one way of installing jupiter right now, via GitHub, but more will come.
-
 ## Docker
 
 You need to make sure you have a recent Docker installed. After that it's straightforward:
@@ -15,14 +13,14 @@ This will get you the latest version of the code. After this you can:
 ```bash
 $ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    horia141/jupiter:latest upsert-tasks \
+    -it --rm --name jupiter-app -v $(pwd):/data \
+    horia141/jupiter:latest gen \
     /data/tasks-work.yaml
 ```
 
 ## GitHub
 
-You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.6. Docker is also
+You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.8. Docker is also
 useful to have on board.
 
 From GitHub you can just clone the repository like so:
@@ -45,8 +43,8 @@ This will chug for a while and produce a local image called `jupiter`. You can u
 ```bash
 $ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
 $ docker run \
-    -it --rm --name jupiter-app -v $(pwd):/data --env TZ=Europe/Bucharest \
-    jupiter upsert-tasks \
+    -it --rm --name jupiter-app -v $(pwd):/data \
+    jupiter gen \
     /data/tasks-work.yaml
 ```
 
@@ -63,5 +61,5 @@ Now, instead of running the Docker image, you can directly run the scripts, like
 
 ```bash
 $ cd ~/my-jupier-work-dir
-$ python ~/jupiter/src/jupiter.py upsert-tasks /data/user.yaml /data/tasks-work.yaml
+$ python ~/jupiter/src/jupiter.py gen
 ```

@@ -2,6 +2,7 @@
 
 set -ex
 
+mypy --config=./scripts/lint/mypy ./src
 pylint --jobs=8 --rcfile=./scripts/lint/pylint ./src
 pyflakes ./src
 bandit --configfile=./scripts/lint/bandit -r ./src

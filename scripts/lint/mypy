@@ -1,0 +1,34 @@
+[mypy]
+mypy_path = ./src
+namespace_packages = True
+disallow_any_decorated = False
+disallow_any_explicit = True
+disallow_any_generics = True
+disallow_subclassing_any = True
+disallow_untyped_calls = True
+disallow_untyped_defs = True
+disallow_incomplete_defs = True
+disallow_untyped_decorators = True
+no_implicit_optional = True
+strict_optional = True
+warn_no_return = True
+warn_return_any = True
+warn_unreachable = True
+implicit_reexport = False
+strict_equality = True
+pretty = True
+
+[mypy-jsonschema.*]
+ignore_missing_imports = True
+
+[mypy-notion.*]
+ignore_missing_imports = True
+
+[mypy-pendulum.*]
+ignore_missing_imports = True
+
+[mypy-coloredlogs.*]
+ignore_missing_imports = True
+
+[mypy-nested_dataclasses.*]
+ignore_missing_imports = True

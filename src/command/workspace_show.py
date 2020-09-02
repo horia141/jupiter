@@ -1,9 +1,11 @@
 """Command for showing the workspace."""
 
 import logging
+from argparse import ArgumentParser, Namespace
+from typing import Final
 
 import command.command as command
-import storage
+from controllers.workspaces import WorkspacesController
 
 LOGGER = logging.getLogger(__name__)
 
@@ -11,30 +13,26 @@ LOGGER = logging.getLogger(__name__)
 class WorkspaceShow(command.Command):
     """Command class for showing the workspace."""
 
-    @staticmethod
-    def name():
-        """The name of the command."""
-        return "ws-show"
+    _workspaces_controller: Final[WorkspacesController]
+
+    def __init__(self, workspaces_controller: WorkspacesController) -> None:
+        """Constructor."""
+        self._workspaces_controller = workspaces_controller
 
     @staticmethod
-    def description():
+    def name() -> str:
+        """The name of the command."""
+        return "workspace-show"
+
+    @staticmethod
+    def description() -> str:
         """The description of the command."""
         return "Show the current information about the workspace"
 
-    def build_parser(self, parser):
+    def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
 
-    def run(self, args):
+    def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        workspace = storage.load_workspace()
-        LOGGER.info("Loaded workspace data")
-
-        # Dump out contents of workspace
-
-        print(f'{workspace["name"]}:')
-
-        print("  Vacations:")
-
-        for vacation in workspace["vacations"]["entries"]:
-            print(f'    id={vacation["ref_id"]} {vacation["name"]} ' +
-                  f'start={vacation["start_date"]} end={vacation["end_date"]}')
+        workspace = self._workspaces_controller.load_workspace()
+        print(f'{workspace.name} timezone={workspace.timezone}')

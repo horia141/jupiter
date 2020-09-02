@@ -1,4 +1,8 @@
 BASENAME=jupiter
-VERSION=0.3.0
+DESCRIPTION=The Jupiter goal management system
+VERSION=0.4.0
 DOCKERHUB_USER=horia141
 DOCS_URL=https://jupiter-goals.readthedocs.io
+DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspace/
+DOCS_UPDATE_EXPIRED_TOKEN_URL=${DOCS_URL}/en/stable/how-tos/workspaces/update-an-expired-token/
+DOCS_FIX_DATA_INCONSISTENCIES_URL=${DOCS_URL}/en/stable/how-tos/fix-data-inconsistencies/

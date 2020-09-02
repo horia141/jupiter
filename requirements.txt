@@ -1,4 +1,9 @@
-notion==0.0.25
+git+https://github.com/horia141/notion-py@dont-update-views#egg=notion
 PyYAML==5.1
 pendulum==2.0.5
+python-dotenv==0.14.0
 pytz==2018.7
+jsonschema==3.2.0
+requests==2.23.0
+nested-dataclasses==0.1
+coloredlogs==14.0

@@ -9,9 +9,9 @@ Jira, and Confluence. The “magic” is just a bunch of conventions on how work
 organized. There is a growing set of CLI scripts for maintaining these conventions
 and automating such things like recurring task creation, task archival, etc.
 
-Here's a demo of it in action:
+Here's a picture from it:
 
-![Jupiter Demo](docs/assets/jupiter-demo-anim2.gif)
+![Inbox image](docs/assets/concepts-inbox.png)
 
 Follow the [tutorial](docs/tutorial.md) or go on to read the full [docs](https://jupiter-goals.readthedocs.io) to
 get a feeling for what the application can fully do!
