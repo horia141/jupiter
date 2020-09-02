@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.8.5-slim
 LABEL maintainer='horia141@gmail.com'
 
 RUN apt-get update && \
