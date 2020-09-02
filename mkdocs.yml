@@ -39,7 +39,7 @@ nav:
           - 'Sync From Local To Notion': 'how-tos/sync-from-local-to-notion.md'
     - Roadmap: 'roadmap.md'
     - Releases:
-          - 'Version 0.4.0': 'releases/version-0.4.0.md'
+          - 'Version 0.4.1': 'releases/version-0.4.1.md'
           - 'Version 0.3.0': 'releases/version-0.3.0.md'
           - 'Version 0.2.0': 'releases/version-0.2.0.md'
           - Older:
