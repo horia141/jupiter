@@ -1,5 +1,5 @@
 BASENAME=jupiter
-DESCRIPTION=The Jupiter goal management system
+DESCRIPTION="The Jupiter goal management system"
 VERSION=0.4.0
 DOCKERHUB_USER=horia141
 DOCS_URL=https://jupiter-goals.readthedocs.io
