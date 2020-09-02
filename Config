@@ -1,6 +1,6 @@
 BASENAME=jupiter
 DESCRIPTION="The Jupiter goal management system"
-VERSION=0.4.1
+VERSION=0.4.2
 DOCKERHUB_USER=horia141
 DOCS_URL=https://jupiter-goals.readthedocs.io
 DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspace/
