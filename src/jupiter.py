@@ -87,6 +87,7 @@ from repository.vacations import VacationsRepository
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
+from service.lists import ListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
@@ -128,8 +129,10 @@ def main() -> None:
         recurring_tasks_service = RecurringTasksService(
             basic_validator, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
+        lists_service = ListsService()
 
-        workspaces_controller = WorkspacesController(notion_connection, workspaces_service, vacations_service)
+        workspaces_controller = WorkspacesController(
+            notion_connection, workspaces_service, vacations_service, lists_service)
         vacations_controller = VacationsController(vacations_service)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
@@ -140,7 +143,7 @@ def main() -> None:
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
-            inbox_tasks_service, recurring_tasks_service, big_plans_service)
+            inbox_tasks_service, recurring_tasks_service, big_plans_service, lists_service)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
             global_properties, projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         report_progress_controller = ReportProgressController(
