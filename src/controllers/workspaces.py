@@ -7,7 +7,7 @@ from pendulum.tz.timezone import Timezone
 from models.basic import WorkspaceSpaceId, WorkspaceToken
 from remote.notion.connection import NotionConnection
 from repository.workspace import Workspace
-from service.lists import ListsService
+from service.smart_lists import SmartListsService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
 
@@ -20,16 +20,16 @@ class WorkspacesController:
     _notion_connection: Final[NotionConnection]
     _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]
-    _lists_service: Final[ListsService]
+    _smart_lists_service: Final[SmartListsService]
 
     def __init__(
             self, notion_connection: NotionConnection, workspaces_service: WorkspacesService,
-            vacations_service: VacationsService, lists_service: ListsService) -> None:
+            vacations_service: VacationsService, smart_lists_service: SmartListsService) -> None:
         """Constructor."""
         self._notion_connection = notion_connection
         self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
-        self._lists_service = lists_service
+        self._smart_lists_service = smart_lists_service
 
     def create_workspace(
             self, name: str, timezone: Timezone, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
@@ -42,7 +42,7 @@ class WorkspacesController:
         LOGGER.info("Creating vacations")
         self._vacations_service.upsert_notion_structure(new_workspace_page)
         LOGGER.info("Creating lists")
-        self._lists_service.upsert_root_notion_structure(new_workspace_page)
+        self._smart_lists_service.upsert_root_notion_structure(new_workspace_page)
 
     def set_workspace_name(self, name: str) -> Workspace:
         """Change the workspace name."""

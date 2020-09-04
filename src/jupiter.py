@@ -75,19 +75,21 @@ from remote.notion.big_plans import BigPlansCollection
 from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
 from remote.notion.connection import MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
 from remote.notion.inbox_tasks import InboxTasksCollection
+from remote.notion.smart_lists_manager import NotionSmartListsManager
 from remote.notion.projects import ProjectsCollection
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from remote.notion.vacations import VacationsCollection
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
+from repository.smart_lists import SmartListsRepository, SmartListItemsRepository
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
 from repository.vacations import VacationsRepository
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
-from service.lists import ListsService
+from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
@@ -113,11 +115,14 @@ def main() -> None:
             InboxTasksRepository(time_provider) as inbox_tasks_repository,\
             RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
             BigPlansRepository(time_provider) as big_plans_repository, \
+            SmartListsRepository() as smart_lists_repository, \
+            SmartListItemsRepository() as smart_list_items_repository, \
             VacationsCollection(time_provider, basic_validator, notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
-            BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection:
+            BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
+            NotionSmartListsManager() as notion_smart_lists_manager:
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
@@ -129,10 +134,11 @@ def main() -> None:
         recurring_tasks_service = RecurringTasksService(
             basic_validator, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
-        lists_service = ListsService()
+        smart_lists_service = SmartListsService(
+            smart_lists_repository, smart_list_items_repository, notion_smart_lists_manager)
 
         workspaces_controller = WorkspacesController(
-            notion_connection, workspaces_service, vacations_service, lists_service)
+            notion_connection, workspaces_service, vacations_service, smart_lists_service)
         vacations_controller = VacationsController(vacations_service)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
@@ -143,7 +149,7 @@ def main() -> None:
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
-            inbox_tasks_service, recurring_tasks_service, big_plans_service, lists_service)
+            inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
             global_properties, projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         report_progress_controller = ReportProgressController(

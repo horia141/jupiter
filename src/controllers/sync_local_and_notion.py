@@ -8,7 +8,7 @@ from models import schedules
 from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
-from service.lists import ListsService
+from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
@@ -30,14 +30,14 @@ class SyncLocalAndNotionController:
     _inbox_tasks_service: Final[InboxTasksService]
     _recurring_tasks_service: Final[RecurringTasksService]
     _big_plans_service: Final[BigPlansService]
-    _lists_service: Final[ListsService]
+    _smart_lists_service: Final[SmartListsService]
 
     def __init__(
             self, time_provider: TimeProvider, global_properties: GlobalProperties,
             workspaces_service: WorkspacesService, vacations_service: VacationsService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
-            lists_service: ListsService) -> None:
+            smart_lists_service: SmartListsService) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._global_properties = global_properties
@@ -47,7 +47,7 @@ class SyncLocalAndNotionController:
         self._inbox_tasks_service = inbox_tasks_service
         self._recurring_tasks_service = recurring_tasks_service
         self._big_plans_service = big_plans_service
-        self._lists_service = lists_service
+        self._smart_lists_service = smart_lists_service
 
     def sync(
             self, sync_targets: Iterable[SyncTarget], drop_all_notion: bool,
@@ -70,7 +70,7 @@ class SyncLocalAndNotionController:
             self._vacations_service.upsert_notion_structure(workspace_page)
 
             LOGGER.info("Recreating lists structure")
-            self._lists_service.upsert_root_notion_structure(workspace_page)
+            self._smart_lists_service.upsert_root_notion_structure(workspace_page)
 
         if SyncTarget.WORKSPACE in sync_targets:
             LOGGER.info("Syncing the workspace")
