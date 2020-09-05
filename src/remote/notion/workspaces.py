@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import ClassVar, Final, cast
 
 from remote.notion.common import NotionId, CollectionError, NotionPageLink
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredIndividualStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)

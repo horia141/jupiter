@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class SmartList:
+class SmartListRow:
     """A container for smart list items."""
     ref_id: EntityId
     name: str
@@ -35,24 +35,24 @@ class SmartListsRepository:
         if exc_type is not None:
             return
 
-    def create_smart_list(self) -> SmartList:
+    def create_smart_list(self, name: str) -> SmartListRow:
         """Create a list."""
 
-    def archive_smart_list(self) -> SmartList:
+    def archive_smart_list(self) -> SmartListRow:
         """Archive a list."""
 
-    def load_all_smart_lists(self) -> Iterable[SmartList]:
+    def load_all_smart_lists(self) -> Iterable[SmartListRow]:
         """Load all lists."""
 
-    def load_smart_list(self) -> SmartList:
+    def load_smart_list(self) -> SmartListRow:
         """Load a particular list by its id."""
 
-    def save_smart_list(self) -> SmartList:
+    def save_smart_list(self) -> SmartListRow:
         """Store a particular list."""
 
 
 @dataclass()
-class SmartListItem:
+class SmartListItemRow:
     """An item in a smart list."""
 
     ref_id: EntityId
@@ -79,20 +79,20 @@ class SmartListItemsRepository:
         if exc_type is not None:
             return
 
-    def create_smart_list_item(self) -> SmartListItem:
+    def create_smart_list_item(self) -> SmartListItemRow:
         """Create a list item."""
 
-    def archive_smart_list_item(self) -> SmartListItem:
+    def archive_smart_list_item(self) -> SmartListItemRow:
         """Archive a list item."""
 
-    def load_all_smart_list_items(self) -> Iterable[SmartList]:
+    def load_all_smart_list_items(self) -> Iterable[SmartListRow]:
         """Load all lists items."""
 
-    def load_smart_list_item(self) -> SmartList:
+    def load_smart_list_item(self) -> SmartListRow:
         """Load a particular list item by its id."""
 
-    def save_smart_list_item(self) -> SmartList:
+    def save_smart_list_item(self) -> SmartListRow:
         """Store a particular list item."""
 
-    def hard_remove_smart_list_item(self) -> SmartListItem:
+    def hard_remove_smart_list_item(self) -> SmartListItemRow:
         """Hard remove a list item."""

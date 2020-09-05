@@ -5,7 +5,7 @@ from typing import Final
 from pendulum.tz.timezone import Timezone
 
 from models.basic import WorkspaceSpaceId, WorkspaceToken
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from repository.workspace import Workspace
 from service.smart_lists import SmartListsService
 from service.vacations import VacationsService

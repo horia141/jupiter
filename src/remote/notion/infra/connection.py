@@ -6,7 +6,7 @@ from typing import ClassVar, Final, Optional, cast
 import requests
 
 from models.basic import WorkspaceSpaceId, WorkspaceToken
-from remote.notion.client import NotionClient, NotionClientConfig
+from remote.notion.infra.client import NotionClient, NotionClientConfig
 from utils.storage import StructuredIndividualStorage, JSONDictType
 
 

@@ -3,6 +3,7 @@ import datetime
 import enum
 import re
 from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern, Union, cast
+from urllib.parse import urlparse
 
 import pendulum
 import pendulum.parsing.exceptions
@@ -623,3 +624,16 @@ class BasicValidator:
             return pendulum.timezone(timezone_str)
         except InvalidTimezone as err:
             raise ModelValidationError(f"Invalid timezone '{timezone_raw}'") from err
+
+    @staticmethod
+    def url_validate_and_clean(url_raw: Optional[str]) -> str:
+        """Validate and clean a url."""
+        if not url_raw:
+            raise ModelValidationError("Expected url to be non-null")
+
+        url_str: str = url_raw.strip()
+
+        try:
+            return urlparse(url_str).geturl()
+        except ValueError as err:
+            raise ModelValidationError(f"Invalid URL '{url_raw}'") from err

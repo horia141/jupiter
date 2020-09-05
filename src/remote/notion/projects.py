@@ -8,7 +8,7 @@ from typing import Final, ClassVar, List, Optional, Type, cast
 from models.basic import EntityId
 from remote.notion.common import NotionId, NotionPageLink, CollectionError, CollectionEntityNotFound, \
     CollectionEntityAlreadyExists
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)

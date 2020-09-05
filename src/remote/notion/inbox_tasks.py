@@ -14,10 +14,10 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, ADate, \
     BasicValidator, Timestamp
 from remote.notion import common
-from remote.notion.client import NotionClient
-from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
+from remote.notion.infra.client import NotionClient
+from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, format_name_for_option
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from repository.big_plans import BigPlan
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
