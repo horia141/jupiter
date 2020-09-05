@@ -5,7 +5,7 @@ from typing import Optional, ClassVar, Final
 
 from models.basic import Timestamp, EntityId
 from remote.notion.infra.collection import BasicRowType
-from remote.notion.common import NotionPageLink
+from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
 
@@ -36,11 +36,11 @@ class NotionSmartListsManager:
 
     def upsert_root_page(self, parent_page_link: NotionPageLink) -> None:
         """Upsert the root page for the smart lists section."""
-        self._pages_manager.upsert_page(self._KEY, self._PAGE_NAME, parent_page_link)
+        self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, parent_page_link)
 
     def upsert_smart_list(self, ref_id: EntityId, name: str) -> None:
         """Upsert the Notion-side smart list."""
-        root_page = self._pages_manager.get_page(self._KEY)
+        root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         self._collections_manager.upsert_collection(f"{self._KEY}:{ref_id}", name, root_page)
 
     def upsert_smart_list_item(

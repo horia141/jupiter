@@ -2,7 +2,17 @@
 from dataclasses import dataclass
 from typing import NewType, List, Optional
 
+
+NotionLockKey = NewType("NotionLockKey", str)
 NotionId = NewType("NotionId", str)
+
+
+class PageError(Exception):
+    """Exception for Notion pages interaction."""
+
+
+class PageNotFoundError(PageError):
+    """Exception raised when a page wasn't found."""
 
 
 class CollectionError(Exception):

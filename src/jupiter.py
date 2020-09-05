@@ -129,7 +129,7 @@ def main() -> None:
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
             BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
-            PagesManager() as pages_manager, \
+            PagesManager(notion_connection) as pages_manager, \
             CollectionsManager() as collections_manager:
         notion_smart_lists_manager = NotionSmartListsManager(pages_manager, collections_manager)
 
