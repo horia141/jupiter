@@ -40,6 +40,12 @@ class NotionCollectionLink:
     collection_id: NotionId
 
 
+@dataclass()
+class NotionCollectionItemLink:
+    """A descriptor for a Notion collection item page."""
+    page_id: NotionId
+
+
 def format_name_for_option(option_name: str) -> str:
     """Nicely format the name of an option."""
     output = ""

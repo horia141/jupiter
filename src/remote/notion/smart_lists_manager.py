@@ -3,15 +3,20 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, ClassVar, Final
 
-from models.basic import Timestamp, EntityId
-from remote.notion.infra.collection import BasicRowType
-from remote.notion.common import NotionPageLink, NotionLockKey
-from remote.notion.infra.collections_manager import CollectionsManager
+import typing
+
+from models.basic import Timestamp, EntityId, BasicValidator
+from notion.client import NotionClient
+from notion.collection import CollectionRowBlock
+from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from remote.notion.infra.pages_manager import PagesManager
+from utils.storage import JSONDictType
+from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class SmartListItemRow(BasicRowType):
+class SmartListItemRow(BaseItem):
     """A smart list item on Notion side."""
 
     name: str
@@ -26,11 +31,59 @@ class NotionSmartListsManager:
     _PAGE_NAME: ClassVar[str] = "Smart Lists"
     _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/smart-lists.lock.yaml")
 
+    _SCHEMA: ClassVar[JSONDictType] = {
+        "title": {
+            "name": "Name",
+            "type": "title"
+        },
+        "ref-id": {
+            "name": "Ref Id",
+            "type": "text"
+        },
+        "archived": {
+            "name": "Archived",
+            "type": "checkbox"
+        },
+        "last-edited-time": {
+            "name": "Last Edited Time",
+            "type": "last_edited_time"
+        },
+    }
+
+    _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Database",
+        "type": "table",
+        "format": {
+            "table_properties": [{
+                "width": 300,
+                "property": "title",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "archived",
+                "visible": True
+            }, {
+                "property": "last-edited-time",
+                "visible": True
+            }]
+        }
+    }
+
+    _time_provider: Final[TimeProvider]
+    _basic_validator: Final[BasicValidator]
     _pages_manager: Final[PagesManager]
     _collections_manager: Final[CollectionsManager]
 
-    def __init__(self, pages_manager: PagesManager, collections_manager: CollectionsManager) -> None:
+    def __init__(
+            self, time_provider: TimeProvider, basic_validator: BasicValidator, pages_manager: PagesManager,
+            collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._time_provider = time_provider
+        self._basic_validator = basic_validator
         self._pages_manager = pages_manager
         self._collections_manager = collections_manager
 
@@ -41,11 +94,37 @@ class NotionSmartListsManager:
     def upsert_smart_list(self, ref_id: EntityId, name: str) -> None:
         """Upsert the Notion-side smart list."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
-        self._collections_manager.upsert_collection(f"{self._KEY}:{ref_id}", name, root_page)
+        self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{ref_id}"),
+            parent_page=root_page,
+            name=name,
+            schema=self._SCHEMA,
+            view_schemas={
+                "database_view_id": self._DATABASE_VIEW_SCHEMA
+            })
 
     def upsert_smart_list_item(
-            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, url: Optional[str]) -> None:
+            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, archived: bool, url: Optional[str]) -> None:
         """Upsert the Notion-side smart list item."""
-        collection = self._collections_manager.get_collection(f"{self._KEY}:{smart_list_ref_id}")
+        new_row = SmartListItemRow(
+            name=name,
+            archived=archived,
+            last_edited_time=self._time_provider.get_current_time(),
+            ref_id=ref_id,
+            notion_id=typing.cast(NotionId, None))
         self._collections_manager.upsert_collection_item(
-            collection, f"{self._KEY}:{smart_list_ref_id}:{ref_id}", name, url)
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            new_row=new_row,
+            copy_row_to_notion_row=self.copy_row_to_notion_row)
+
+    def copy_row_to_notion_row(
+            self, client: NotionClient, row: SmartListItemRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
+        """Copy the fields of the local row to the actual Notion structure."""
+        # pylint: disable=unused-argument
+        notion_row.title = row.name
+        notion_row.archived = row.archived
+        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+        notion_row.ref_id = row.ref_id
+
+        return notion_row

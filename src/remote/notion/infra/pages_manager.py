@@ -21,7 +21,7 @@ class _PageLockRow:
 class PagesManager:
     """The handler of ad-hoc pages on Notion side."""
 
-    _STORAGE_PATH: typing.ClassVar[Path] = Path("/data/pages.lock.yaml")
+    _STORAGE_PATH: typing.ClassVar[Path] = Path("/data/notion.pages.yaml")
 
     _connection: Final[NotionConnection]
     _structured_storage: Final[StructuredCollectionStorage[_PageLockRow]]

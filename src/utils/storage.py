@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union
+from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable
 
 import jsonschema as js
 import yaml
@@ -129,6 +129,120 @@ class StructuredCollectionStorage(Generic[LiveType]):
         if self._live_data is None:
             raise Exception("Called exit_save without a prior call to initialize!")
         self._save(self._live_data)
+
+    def insert(self, live: LiveType, set_ref_id: bool = False) -> None:
+        """Add a new element to the collection."""
+        storage_idx, storage = self.load()
+        storage.append(live)
+        if set_ref_id:
+            setattr(live, "ref_id", storage_idx)
+        self.save((storage_idx + 1, storage))
+
+    def update(self, live: LiveType, **kwargs: Any) -> None:  # type: ignore
+        """Update an existing element identified by the filtering expression."""
+        storage_idx, storage = self.load()
+
+        for elem_idx, elem in enumerate(storage):
+            for filter_key, filter_value in kwargs.items():
+                try:
+                    elem_value = getattr(elem, filter_key)
+                    if elem_value != filter_value:
+                        break
+                except AttributeError:
+                    break
+            else:
+                storage[elem_idx] = live
+                self.save((storage_idx, storage))
+                return
+
+        filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
+        raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
+
+    def remove(self, **kwargs: Any) -> None:  # type: ignore
+        """Remove the item identified by the filtering expression."""
+        storage_idx, storage = self.load()
+
+        for elem_idx, elem in enumerate(storage):
+            for filter_key, filter_value in kwargs.items():
+                try:
+                    elem_value = getattr(elem, filter_key)
+                    if elem_value != filter_value:
+                        break
+                except AttributeError:
+                    break
+            else:
+                del storage[elem_idx]
+                self.save((storage_idx, storage))
+                return
+
+        filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
+        raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
+
+    def remove_all(self, **kwargs: Any) -> None:  # type: ignore
+        """Remove the item identified by the filtering expression."""
+        storage_idx, storage = self.load()
+
+        def _build_new() -> Iterable[LiveType]:
+            for elem_idx, elem in enumerate(storage):
+                for filter_key, filter_value in kwargs.items():
+                    try:
+                        elem_value = getattr(elem, filter_key)
+                        if elem_value != filter_value:
+                            yield elem
+                            break
+                    except AttributeError:
+                        yield elem
+                        break
+
+        new_storage = list(_build_new())
+        self.save((storage_idx, new_storage))
+
+    def find_by_property(self, **kwargs: Any) -> Optional[LiveType]:  # type: ignore
+        """Find the first element in the collection matching all the properties."""
+        _, storage = self.load()
+        for elem in storage:
+            for filter_key, filter_value in kwargs.items():
+                try:
+                    elem_value = getattr(elem, filter_key)
+                    if elem_value != filter_value:
+                        break
+                except AttributeError:
+                    break
+            else:
+                return elem
+
+        return None
+
+    def find_by_property_strict(self, **kwargs: Any) -> LiveType:  # type: ignore
+        """Find the first element in the collection matching all the properties."""
+        _, storage = self.load()
+        for elem in storage:
+            for filter_key, filter_value in kwargs.items():
+                try:
+                    elem_value = getattr(elem, filter_key)
+                    if elem_value != filter_value:
+                        break
+                except AttributeError:
+                    break
+            else:
+                return elem
+
+        filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
+        raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
+
+    def find_all_by_property(self, **kwargs: Any) -> Iterable[LiveType]:  # type: ignore
+        """Find all the elements in the collection matching all the properties."""
+        _, storage = self.load()
+        for elem in storage:
+            for filter_key, filter_value in kwargs.items():
+                try:
+                    elem_value = getattr(elem, filter_key)
+                    if elem_value != filter_value:
+                        break
+                except AttributeError:
+                    break
+            else:
+                yield elem
 
     def load(self) -> Tuple[int, List[LiveType]]:
         """Load the structured storage fully."""

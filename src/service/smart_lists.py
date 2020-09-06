@@ -69,7 +69,7 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         self._notion_smart_lists_manager.upsert_smart_list_item(
-            smart_list_row.ref_id, new_smart_list_item_row.ref_id, name, url)
+            smart_list_row.ref_id, new_smart_list_item_row.ref_id, name, False, url)
         LOGGER.info("Applied remote changes")
 
         return SmartListItem(
