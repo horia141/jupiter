@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, ClassVar, Final
-
 import typing
 
-from models.basic import Timestamp, EntityId, BasicValidator
 from notion.client import NotionClient
 from notion.collection import CollectionRowBlock
+
+from models.basic import Timestamp, EntityId, BasicValidator
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from remote.notion.infra.pages_manager import PagesManager
@@ -21,6 +21,7 @@ class SmartListItemRow(BaseItem):
 
     name: str
     archived: bool
+    url: Optional[str]
     last_edited_time: Timestamp
 
 
@@ -44,6 +45,10 @@ class NotionSmartListsManager:
             "name": "Archived",
             "type": "checkbox"
         },
+        "url": {
+            "name": "URL",
+            "type": "text"
+        },
         "last-edited-time": {
             "name": "Last Edited Time",
             "type": "last_edited_time"
@@ -65,6 +70,10 @@ class NotionSmartListsManager:
             }, {
                 "width": 100,
                 "property": "archived",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "url",
                 "visible": True
             }, {
                 "property": "last-edited-time",
@@ -104,11 +113,12 @@ class NotionSmartListsManager:
             })
 
     def upsert_smart_list_item(
-            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, archived: bool, url: Optional[str]) -> None:
+            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, url: Optional[str], archived: bool) -> None:
         """Upsert the Notion-side smart list item."""
         new_row = SmartListItemRow(
             name=name,
             archived=archived,
+            url=url,
             last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id,
             notion_id=typing.cast(NotionId, None))
@@ -124,6 +134,7 @@ class NotionSmartListsManager:
         # pylint: disable=unused-argument
         notion_row.title = row.name
         notion_row.archived = row.archived
+        notion_row.url = row.url
         notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 

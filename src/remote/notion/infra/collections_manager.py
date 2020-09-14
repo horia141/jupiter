@@ -3,7 +3,7 @@ import logging
 from dataclasses import field, dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Callable, TypeVar, Final, Dict, Any, Protocol, List, Optional, Iterable, cast, ClassVar
+from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, ClassVar
 
 import typing
 
@@ -11,8 +11,7 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
 from remote.notion.infra.client import NotionClient
-from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError, \
-    CollectionEntityNotFound, NotionLockKey
+from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -220,7 +219,8 @@ class CollectionsManager:
         collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
         lock = self._collection_items_structured_storage.find_by_property_strict(key=key, collection_key=collection_key)
         client = self._connection.get_notion_client()
-        collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
         notion_row = client.get_collection_row(collection, lock.row_id)
         notion_row.archived = True
 
@@ -267,7 +267,8 @@ class CollectionsManager:
 
     def load_all_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids."""
-        return [r.row_id for r in self._collection_items_structured_storage.find_all_by_property(collection_key=collection_key)]
+        return [r.row_id for r
+                in self._collection_items_structured_storage.find_all_by_property(collection_key=collection_key)]
 
     def drop_all(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""

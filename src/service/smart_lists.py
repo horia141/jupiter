@@ -50,7 +50,7 @@ class SmartListsService:
 
     def create_smart_list(self, name: str) -> SmartList:
         """Create a new smart list."""
-        new_smart_list_row = self._smart_lists_repository.create_smart_list(name)
+        new_smart_list_row = self._smart_lists_repository.create_smart_list(name, archived=False)
         LOGGER.info("Applied local changes")
 
         self._notion_smart_lists_manager.upsert_smart_list(new_smart_list_row.ref_id, name)
@@ -61,15 +61,25 @@ class SmartListsService:
             name=new_smart_list_row.name,
             archived=new_smart_list_row.archived)
 
-    def create_smart_list_item(self, name: str, url: Optional[str]) -> SmartListItem:
+    def create_smart_list_item(self, smart_list_ref_id: EntityId, name: str, url: Optional[str]) -> SmartListItem:
         """Create a new list item."""
-        smart_list_row = self._smart_lists_repository.load_smart_list()
+        smart_list_row = self._smart_lists_repository.load_smart_list(ref_id=smart_list_ref_id)
 
-        new_smart_list_item_row = self._smart_list_items_repository.create_smart_list_item()
+        new_smart_list_item_row = self._smart_list_items_repository.create_smart_list_item(
+            smart_list_ref_id=smart_list_row.ref_id,
+            name=name,
+            url=url,
+            archived=False)
         LOGGER.info("Applied local changes")
 
+        LOGGER.error(f"HERE {new_smart_list_item_row.url}")
         self._notion_smart_lists_manager.upsert_smart_list_item(
-            smart_list_row.ref_id, new_smart_list_item_row.ref_id, name, False, url)
+            smart_list_ref_id=smart_list_row.ref_id,
+            ref_id=new_smart_list_item_row.ref_id,
+            name=new_smart_list_item_row.name,
+            url=new_smart_list_item_row.url,
+            archived=new_smart_list_item_row.archived)
+
         LOGGER.info("Applied remote changes")
 
         return SmartListItem(

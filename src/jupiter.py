@@ -122,8 +122,8 @@ def main() -> None:
             InboxTasksRepository(time_provider) as inbox_tasks_repository,\
             RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
             BigPlansRepository(time_provider) as big_plans_repository, \
-            SmartListsRepository() as smart_lists_repository, \
-            SmartListItemsRepository() as smart_list_items_repository, \
+            SmartListsRepository(time_provider) as smart_lists_repository, \
+            SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             VacationsCollection(time_provider, basic_validator, notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \

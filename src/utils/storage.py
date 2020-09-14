@@ -135,7 +135,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
         storage_idx, storage = self.load()
         storage.append(live)
         if set_ref_id:
-            setattr(live, "ref_id", storage_idx)
+            setattr(live, "ref_id", str(storage_idx))
         self.save((storage_idx + 1, storage))
 
     def update(self, live: LiveType, **kwargs: Any) -> None:  # type: ignore
@@ -183,7 +183,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
         storage_idx, storage = self.load()
 
         def _build_new() -> Iterable[LiveType]:
-            for elem_idx, elem in enumerate(storage):
+            for _, elem in enumerate(storage):
                 for filter_key, filter_value in kwargs.items():
                     try:
                         elem_value = getattr(elem, filter_key)
