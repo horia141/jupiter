@@ -5,27 +5,27 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.smart_list_items import SmartListItemsController
+from controllers.smart_lists import SmartListsController
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListItemsCreate(command.Command):
+class SmartListsItemCreate(command.Command):
     """Command for creating a smart list item."""
 
     _basic_validator: Final[BasicValidator]
-    _smart_list_items_controller: Final[SmartListItemsController]
+    _smart_list_controller: Final[SmartListsController]
 
-    def __init__(self, basic_validator: BasicValidator, smart_list_items_controller: SmartListItemsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, smart_lists_controller: SmartListsController) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._smart_list_items_controller = smart_list_items_controller
+        self._smart_list_controller = smart_lists_controller
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "smart-list-items-create"
+        return "smart-lists-item-create"
 
     @staticmethod
     def description() -> str:
@@ -44,5 +44,5 @@ class SmartListItemsCreate(command.Command):
         smart_list_ref_id = self._basic_validator.entity_id_validate_and_clean(args.smart_list_ref_id)
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
         url = self._basic_validator.url_validate_and_clean(args.url) if args.url else None
-        self._smart_list_items_controller.create_smart_list_item(
+        self._smart_list_controller.create_smart_list_item(
             smart_list_ref_id=smart_list_ref_id, name=name, url=url)

@@ -47,7 +47,7 @@ from command.recurring_tasks_show import RecurringTasksShow
 from command.recurring_tasks_suspend import RecurringTasksSuspend
 from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
 from command.report_progress import ReportProgress
-from command.smart_list_items_create import SmartListItemsCreate
+from command.smart_lists_item_create import SmartListsItemCreate
 from command.smart_lists_create import SmartListsCreate
 from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacations_archive import VacationsArchive
@@ -69,7 +69,6 @@ from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
 from controllers.generate_inbox_tasks import GenerateInboxTasksController
 from controllers.report_progress import ReportProgressController
-from controllers.smart_list_items import SmartListItemsController
 from controllers.smart_lists import SmartListsController
 from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.vacations import VacationsController
@@ -159,7 +158,6 @@ def main() -> None:
             global_properties, projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         smart_lists_controller = SmartListsController(smart_lists_service)
-        smart_list_items_controller = SmartListItemsController(smart_lists_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
             inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service)
@@ -220,7 +218,7 @@ def main() -> None:
             BigPlansHardRemove(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
             SmartListsCreate(basic_validator, smart_lists_controller),
-            SmartListItemsCreate(basic_validator, smart_list_items_controller),
+            SmartListsItemCreate(basic_validator, smart_lists_controller),
             # Complex commands.
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),
