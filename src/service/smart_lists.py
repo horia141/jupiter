@@ -120,11 +120,11 @@ class SmartListsService:
 
     def hard_remove_smart_list(self, ref_id: EntityId) -> SmartList:
         """Archive a smart list."""
-        smart_list = self._smart_lists_repository.hard_remove_smart_list(ref_id)
+        smart_list_row = self._smart_lists_repository.hard_remove_smart_list(ref_id)
 
         for smart_list_item in \
                 self._smart_list_items_repository.load_all_smart_list_items(
-                    filter_smart_list_ref_ids=[smart_list.ref_id]):
+                    filter_smart_list_ref_ids=[smart_list_row.ref_id]):
             self._smart_list_items_repository.hard_remove_smart_list_item(smart_list_item.ref_id)
 
         LOGGER.info("Applied local changes")
@@ -136,9 +136,24 @@ class SmartListsService:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
 
         return SmartList(
-            ref_id=smart_list.ref_id,
-            name=smart_list.name,
-            archived=smart_list.archived)
+            ref_id=smart_list_row.ref_id,
+            name=smart_list_row.name,
+            archived=smart_list_row.archived)
+
+    def remove_smart_list_on_notion_side(self, ref_id: EntityId) -> SmartList:
+        """Remove collection for a smart list Notion-side."""
+        smart_list_row = self._smart_lists_repository.load_smart_list(ref_id, allow_archived=True)
+
+        try:
+            self._notion_smart_lists_manager.hard_remove_smart_list(ref_id)
+            LOGGER.info("Applied Notion changes")
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping archival on Notion side because smart list was not found")
+
+        return SmartList(
+            ref_id=smart_list_row.ref_id,
+            name=smart_list_row.name,
+            archived=smart_list_row.archived)
 
     def create_smart_list_item(self, smart_list_ref_id: EntityId, name: str, url: Optional[str]) -> SmartListItem:
         """Create a new list item."""
@@ -263,6 +278,23 @@ class SmartListsService:
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
             LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
+
+        return SmartListItem(
+            ref_id=smart_list_item_row.ref_id,
+            smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
+            name=smart_list_item_row.name,
+            url=smart_list_item_row.url,
+            archived=smart_list_item_row.archived)
+
+    def remove_smart_list_item_on_notion_side(self, ref_id: EntityId) -> SmartListItem:
+        """Remove entry for a smart list item on Notion-side."""
+        smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id, allow_archived=True)
+
+        try:
+            self._notion_smart_lists_manager.hard_remove_smart_list_item(smart_list_item_row.smart_list_ref_id, ref_id)
+            LOGGER.info("Applied Notion changes")
+        except CollectionEntityNotFound:
+            LOGGER.info("Skipping archival on Notion side because smart list was not found")
 
         return SmartListItem(
             ref_id=smart_list_item_row.ref_id,

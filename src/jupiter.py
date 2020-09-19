@@ -175,7 +175,8 @@ def main() -> None:
         report_progress_controller = ReportProgressController(
             global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
         garbage_collect_controller = GarbageCollectNotionController(
-            vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+            vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
+            smart_lists_service)
 
         commands = [
             # CRUD Commands

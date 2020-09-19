@@ -28,6 +28,7 @@ class SyncTarget(enum.Enum):
     INBOX_TASKS = "inbox-tasks"
     RECURRING_TASKS = "recurring-tasks"
     BIG_PLANS = "big-plans"
+    SMART_LISTS = "smart-lists"
 
 
 @enum.unique
