@@ -16,7 +16,14 @@ from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class SmartListItemRow(BaseItem):
+class SmartListNotionCollection(BaseItem):
+    """A smart list collection on Notion side."""
+
+    name: str
+
+
+@dataclass()
+class SmartListNotionRow(BaseItem):
     """A smart list item on Notion side."""
 
     name: str
@@ -100,10 +107,10 @@ class NotionSmartListsManager:
         """Upsert the root page for the smart lists section."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, parent_page_link)
 
-    def upsert_smart_list(self, ref_id: EntityId, name: str) -> None:
+    def upsert_smart_list(self, ref_id: EntityId, name: str) -> SmartListNotionCollection:
         """Upsert the Notion-side smart list."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
-        self._collections_manager.upsert_collection(
+        collection_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{ref_id}"),
             parent_page=root_page,
             name=name,
@@ -112,10 +119,19 @@ class NotionSmartListsManager:
                 "database_view_id": self._DATABASE_VIEW_SCHEMA
             })
 
+        return SmartListNotionCollection(
+            name=name,
+            ref_id=ref_id,
+            notion_id=collection_link.collection_id)
+
+    def hard_remove_smart_list(self, ref_id: EntityId) -> None:
+        """Hard remove a smart list item."""
+        self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
+
     def upsert_smart_list_item(
             self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, url: Optional[str], archived: bool) -> None:
         """Upsert the Notion-side smart list item."""
-        new_row = SmartListItemRow(
+        new_row = SmartListNotionRow(
             name=name,
             archived=archived,
             url=url,
@@ -128,8 +144,37 @@ class NotionSmartListsManager:
             new_row=new_row,
             copy_row_to_notion_row=self.copy_row_to_notion_row)
 
+    def load_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> SmartListNotionRow:
+        """Retrieve the Notion-side smart list item associated with a particular entity."""
+        return self._collections_manager.load(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            copy_notion_row_to_row=self.copy_notion_row_to_row)
+
+    def save_smart_list_item(
+            self, smart_list_ref_id: EntityId, ref_id: EntityId,
+            new_smart_list_item_row: SmartListNotionRow) -> SmartListNotionRow:
+        """Update the Notion-side smart list with new data."""
+        return self._collections_manager.save(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            row=new_smart_list_item_row,
+            copy_row_to_notion_row=self.copy_row_to_notion_row)
+
+    def archive_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
+        """Remove a particular smart list item."""
+        self._collections_manager.quick_archive(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
+    def hard_remove_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
+        """Hard remove a particular smart list item."""
+        self._collections_manager.hard_remove(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
     def copy_row_to_notion_row(
-            self, client: NotionClient, row: SmartListItemRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
+            self, client: NotionClient, row: SmartListNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         # pylint: disable=unused-argument
         notion_row.title = row.name
@@ -139,3 +184,13 @@ class NotionSmartListsManager:
         notion_row.ref_id = row.ref_id
 
         return notion_row
+
+    def copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> SmartListNotionRow:
+        """Copy the fields of the local row to the actual Notion structure."""
+        return SmartListNotionRow(
+            name=notion_row.title,
+            archived=notion_row.archived,
+            url=notion_row.archived,
+            last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),
+            ref_id=notion_row.ref_id,
+            notion_id=notion_row.id)

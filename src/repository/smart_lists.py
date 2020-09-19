@@ -104,6 +104,10 @@ class SmartListsRepository:
 
         return new_smart_list
 
+    def hard_remove_smart_list(self, ref_id: EntityId) -> SmartListRow:
+        """Hard remove a smart list."""
+        return self._structured_storage.remove(ref_id=ref_id)
+
     @staticmethod
     def storage_schema() -> JSONDictType:
         """The schema for the data."""
@@ -243,9 +247,9 @@ class SmartListItemsRepository:
 
         return new_smart_list_item
 
-    def hard_remove_smart_list_item(self, ref_id: EntityId) -> None:
+    def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItemRow:
         """Hard remove a list item."""
-        self._structured_storage.remove(ref_id=ref_id)
+        return self._structured_storage.remove(ref_id=ref_id)
 
     @staticmethod
     def storage_schema() -> JSONDictType:

@@ -158,7 +158,7 @@ class StructuredCollectionStorage(Generic[LiveType]):
         filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
         raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
 
-    def remove(self, **kwargs: Any) -> None:  # type: ignore
+    def remove(self, **kwargs: Any) -> LiveType:  # type: ignore
         """Remove the item identified by the filtering expression."""
         storage_idx, storage = self.load()
 
@@ -171,9 +171,10 @@ class StructuredCollectionStorage(Generic[LiveType]):
                 except AttributeError:
                     break
             else:
+                found_elem = storage[elem_idx]
                 del storage[elem_idx]
                 self.save((storage_idx, storage))
-                return
+                return found_elem
 
         filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
         raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")

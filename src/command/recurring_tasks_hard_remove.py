@@ -1,4 +1,4 @@
-"""Command for hard remove recurring tasks."""
+"""Command for hard removing recurring tasks."""
 
 import logging
 from argparse import ArgumentParser, Namespace
