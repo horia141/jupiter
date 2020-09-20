@@ -50,12 +50,17 @@ class SyncLocalAndNotionController:
         self._smart_lists_service = smart_lists_service
 
     def sync(
-            self, sync_targets: Iterable[SyncTarget], drop_all_notion: bool,
-            sync_even_if_not_modified: bool, vacation_ref_ids: Optional[Iterable[EntityId]],
+            self,
+            sync_targets: Iterable[SyncTarget],
+            drop_all_notion: bool,
+            sync_even_if_not_modified: bool,
+            filter_vacation_ref_ids: Optional[Iterable[EntityId]],
             filter_project_keys: Optional[Iterable[ProjectKey]],
             filter_inbox_task_ref_ids: Optional[Iterable[EntityId]],
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
+            filter_smart_list_ref_ids: Optional[Iterable[EntityId]],
+            filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
         filter_recurring_task_ref_ids_set = \
@@ -79,7 +84,7 @@ class SyncLocalAndNotionController:
         if SyncTarget.VACATIONS in sync_targets:
             LOGGER.info("Syncing the vacations")
             _ = self._vacations_service.vacations_sync(
-                False, sync_even_if_not_modified, vacation_ref_ids, sync_prefer)
+                drop_all_notion, sync_even_if_not_modified, filter_vacation_ref_ids, sync_prefer)
 
         for project in self._projects_service.load_all_projects(filter_keys=filter_project_keys):
             if SyncTarget.STRUCTURE in sync_targets:
@@ -190,3 +195,14 @@ class SyncLocalAndNotionController:
                         continue
                     self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
                     LOGGER.info(f"Archived inbox task {inbox_task.name}")
+
+        for smart_list in self._smart_lists_service.load_all_smart_lists(filter_ref_ids=filter_smart_list_ref_ids):
+            if SyncTarget.STRUCTURE in sync_targets:
+                LOGGER.info(f"Recreating smart list '{smart_list.name}'")
+
+            if SyncTarget.SMART_LISTS in sync_targets:
+                LOGGER.info(f"Syncing small list '{smart_list.name}'")
+                self._smart_lists_service.sync_smart_list_and_smart_list_items(
+                    smart_list_ref_id=smart_list.ref_id, drop_all_notion_side=drop_all_notion,
+                    sync_even_if_not_modified=sync_even_if_not_modified,
+                    filter_smart_list_item_ref_ids=filter_smart_list_ref_ids, sync_prefer=sync_prefer)

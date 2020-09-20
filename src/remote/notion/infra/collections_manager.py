@@ -208,11 +208,17 @@ class CollectionsManager:
         return new_row
 
     def quick_link_local_and_notion_entries(
-            self, key: NotionLockKey, collection_key: NotionLockKey, notion_id: NotionId) -> None:
+            self, key: NotionLockKey, collection_key: NotionLockKey, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        lock = self._collection_items_structured_storage.find_by_property_strict(key=key, collection_key=collection_key)
-        lock.row_id = notion_id
-        self._collection_items_structured_storage.update(lock, key=key, collection_key=collection_key)
+        lock = self._collection_items_structured_storage.find_by_property(key=key, collection_key=collection_key)
+        if lock is not None:
+            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
+        new_lock = _CollectionItemLockRow(
+            key=key,
+            collection_key=collection_key,
+            row_id=notion_id,
+            ref_id=ref_id)
+        self._collection_items_structured_storage.insert(new_lock)
 
     def quick_archive(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Remove a particular entity."""

@@ -3,11 +3,13 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
-from models.basic import EntityId, ModelValidationError, BasicValidator
+from models.basic import EntityId, ModelValidationError, BasicValidator, SyncPrefer
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from repository.smart_lists import SmartListsRepository, SmartListItemsRepository
-from service.errors import ServiceValidationError
+from service.errors import ServiceValidationError, ServiceError
+from utils.storage import StructuredStorageError
+from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
 
@@ -276,7 +278,7 @@ class SmartListsService:
             self._notion_smart_lists_manager.hard_remove_smart_list_item(
                 smart_list_item_row.smart_list_ref_id, smart_list_item_row.ref_id)
             LOGGER.info("Applied Notion changes")
-        except CollectionEntityNotFound:
+        except StructuredStorageError:
             LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
 
         return SmartListItem(
@@ -293,7 +295,7 @@ class SmartListsService:
         try:
             self._notion_smart_lists_manager.hard_remove_smart_list_item(smart_list_item_row.smart_list_ref_id, ref_id)
             LOGGER.info("Applied Notion changes")
-        except CollectionEntityNotFound:
+        except StructuredStorageError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
 
         return SmartListItem(
@@ -302,3 +304,141 @@ class SmartListsService:
             name=smart_list_item_row.name,
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
+
+    def sync_smart_list_and_smart_list_items(
+            self, smart_list_ref_id: EntityId, drop_all_notion_side: bool, sync_even_if_not_modified: bool,
+            filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
+            sync_prefer: SyncPrefer) -> Iterable[SmartListItem]:
+        """Synchronise a smart list and its items between Notion and local storage."""
+        # TODO: actually synchronise the big smart list here
+
+        # Now synchronize the list items here.
+        filter_smart_list_item_ref_ids_set = frozenset(filter_smart_list_item_ref_ids) \
+            if filter_smart_list_item_ref_ids else None
+
+        all_smart_list_items_rows = self._smart_list_items_repository.load_all_smart_list_items(
+            filter_archived=False, filter_smart_list_ref_ids=filter_smart_list_item_ref_ids)
+        all_smart_list_items_rows_set = {sli.ref_id: sli for sli in all_smart_list_items_rows}
+
+        if not drop_all_notion_side:
+            all_smart_list_items_notion_rows = \
+                self._notion_smart_lists_manager.load_all_smart_list_items(smart_list_ref_id)
+            all_smart_list_items_notion_ids = \
+                set(self._notion_smart_lists_manager.load_all_saved_smart_list_items_notion_ids(smart_list_ref_id))
+        else:
+            self._notion_smart_lists_manager.drop_all_smart_list_items(smart_list_ref_id)
+            all_smart_list_items_notion_rows = []
+            all_smart_list_items_notion_ids = set()
+        smart_list_items_notion_rows_set = {}
+
+        # Explore Notion and apply to local
+        for smart_list_item_notion_row in all_smart_list_items_notion_rows:
+            if filter_smart_list_item_ref_ids_set is not None and \
+                    smart_list_item_notion_row.ref_id not in filter_smart_list_item_ref_ids_set:
+                LOGGER.info(f"Skipping '{smart_list_item_notion_row.name}' (id={smart_list_item_notion_row.notion_id})")
+                continue
+
+            LOGGER.info(f"Syncing '{smart_list_item_notion_row.name}' (id={smart_list_item_notion_row.notion_id})")
+
+            if smart_list_item_notion_row.ref_id is None or smart_list_item_notion_row.ref_id == "":
+                # If the smart list item doesn't exist locally, we create it.
+                try:
+                    smart_list_item_name = \
+                        self._basic_validator.entity_name_validate_and_clean(smart_list_item_notion_row.name)
+                    smart_list_item_url = \
+                        self._basic_validator.url_validate_and_clean(smart_list_item_notion_row.url) \
+                            if smart_list_item_notion_row.url else None
+                except ModelValidationError as error:
+                    raise ServiceValidationError("Invalid inputs") from error
+
+                new_smart_list_item_row = self._smart_list_items_repository.create_smart_list_item(
+                    smart_list_ref_id=smart_list_ref_id,
+                    name=smart_list_item_name,
+                    url=smart_list_item_url,
+                    archived=smart_list_item_notion_row.archived)
+                LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item_row.name}'")
+
+                self._notion_smart_lists_manager.link_local_and_notion_entries_for_smart_list(
+                    smart_list_ref_id, new_smart_list_item_row.ref_id, smart_list_item_notion_row.notion_id)
+                LOGGER.info(f"Linked the new smart list item with local entries")
+
+                smart_list_item_notion_row.ref_id = new_smart_list_item_row.ref_id
+                self._notion_smart_lists_manager.save_smart_list_item(
+                    smart_list_ref_id, new_smart_list_item_row.ref_id, smart_list_item_notion_row)
+                LOGGER.info(f"Applied changes on Notion side too")
+
+                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = smart_list_item_notion_row
+            elif smart_list_item_notion_row.ref_id in all_smart_list_items_rows_set and smart_list_item_notion_row.notion_id in all_smart_list_items_notion_ids:
+                smart_list_item_row = all_smart_list_items_rows_set[EntityId(smart_list_item_notion_row.ref_id)]
+                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = smart_list_item_notion_row
+
+                if sync_prefer == SyncPrefer.NOTION:
+                    if not sync_even_if_not_modified and \
+                            smart_list_item_notion_row.last_edited_time <= smart_list_item_row.last_modified_time:
+                        LOGGER.info(f"Skipping '{smart_list_item_notion_row.name}' because it was not modified")
+                        continue
+
+                    try:
+                        smart_list_item_name = \
+                            self._basic_validator.entity_name_validate_and_clean(smart_list_item_notion_row.name)
+                        smart_list_item_url = \
+                            self._basic_validator.url_validate_and_clean(smart_list_item_notion_row.url) \
+                                if smart_list_item_notion_row.url else None
+                    except ModelValidationError as error:
+                        raise ServiceValidationError("Invalid inputs") from error
+
+                    archived_time_action = \
+                        TimeFieldAction.SET if not smart_list_item_row.archived and smart_list_item_notion_row.archived else \
+                        TimeFieldAction.CLEAR if smart_list_item_row.archived and not smart_list_item_notion_row.archived else \
+                        TimeFieldAction.DO_NOTHING
+                    smart_list_item_row.archived = smart_list_item_notion_row.archived
+                    smart_list_item_row.name = smart_list_item_name
+                    smart_list_item_row.url = smart_list_item_url
+                    self._smart_list_items_repository.save_smart_list_item(smart_list_item_row, archived_time_action)
+                    LOGGER.info(f"Changed smart list item '{smart_list_item_row.name}' from Notion")
+                elif sync_prefer == SyncPrefer.LOCAL:
+                    if not sync_even_if_not_modified and \
+                            smart_list_item_row.last_modified_time <= smart_list_item_notion_row.last_edited_time:
+                        LOGGER.info(f"Skipping '{smart_list_item_notion_row.name}' because it was not modified")
+                        continue
+
+                    smart_list_item_notion_row.archived = smart_list_item_row.archived
+                    smart_list_item_notion_row.name = smart_list_item_row.name
+                    smart_list_item_notion_row.url = smart_list_item_row.url
+                    self._notion_smart_lists_manager.save_smart_list_item(
+                        smart_list_ref_id, smart_list_item_row.ref_id, smart_list_item_notion_row)
+                    LOGGER.info(f"Changed small list item with '{smart_list_item_notion_row.name}' from local")
+                else:
+                    raise ServiceError(f"Invalid preference {sync_prefer}")
+            else:
+                # If we're here, one of two cases have happened:
+                # 1. This is some random smart list item added by someone, where they completed themselves a ref_id.
+                #    It's a bad setup, and we remove it.
+                # 2. This is a smart list item added by the script, but which failed before local data could be saved.
+                #    We'll have duplicates in these cases, and they need to be removed.
+                self._notion_smart_lists_manager.hard_remove_smart_list_item(
+                    smart_list_ref_id, EntityId(smart_list_item_notion_row.ref_id))
+                LOGGER.info(f"Removed smart list item with id={smart_list_item_notion_row.ref_id} from Notion")
+
+        for smart_list_item_row in all_smart_list_items_rows:
+            if smart_list_item_row.ref_id in smart_list_items_notion_rows_set:
+                # The smart list item already exists on Notion side, so it was handled by the above loop!
+                continue
+            if smart_list_item_row.archived:
+                continue
+
+            # If the smart list item does not exist on Notion side, we create it.
+            self._notion_smart_lists_manager.upsert_smart_list_item(
+                smart_list_ref_id=smart_list_ref_id,
+                ref_id=smart_list_item_row.ref_id,
+                name=smart_list_item_row.name,
+                url=smart_list_item_row.url,
+                archived=smart_list_item_row.archived)
+            LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item_row.name}'")
+
+        return [SmartListItem(
+            ref_id=slir.ref_id,
+            smart_list_ref_id=slir.smart_list_ref_id,
+            name=slir.name,
+            url=slir.url,
+            archived=slir.archived) for slir in all_smart_list_items_rows_set.values()]

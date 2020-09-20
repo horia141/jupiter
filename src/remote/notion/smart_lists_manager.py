@@ -144,6 +144,12 @@ class NotionSmartListsManager:
             new_row=new_row,
             copy_row_to_notion_row=self.copy_row_to_notion_row)
 
+    def load_all_smart_list_items(self, smart_list_ref_id: EntityId) -> typing.Iterable[SmartListNotionRow]:
+        """Retrieve all the Notion-side smart list items."""
+        return self._collections_manager.load_all(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            copy_notion_row_to_row=self.copy_notion_row_to_row)
+
     def load_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> SmartListNotionRow:
         """Retrieve the Notion-side smart list item associated with a particular entity."""
         return self._collections_manager.load(
@@ -172,6 +178,24 @@ class NotionSmartListsManager:
         self._collections_manager.hard_remove(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
+    def load_all_saved_smart_list_items_notion_ids(self, smart_list_ref_id: EntityId) -> typing.Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these smart lists items."""
+        return self._collections_manager.load_all_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
+    def drop_all_smart_list_items(self, smart_list_ref_id: EntityId) -> None:
+        """Remove all smart list items Notion-side."""
+        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
+    def link_local_and_notion_entries_for_smart_list(
+            self, smart_list_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        self._collections_manager.quick_link_local_and_notion_entries(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            ref_id=ref_id,
+            notion_id=notion_id)
 
     def copy_row_to_notion_row(
             self, client: NotionClient, row: SmartListNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
