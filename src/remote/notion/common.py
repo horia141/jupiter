@@ -41,6 +41,14 @@ class NotionCollectionLink:
 
 
 @dataclass()
+class NotionCollectionLinkExtra:
+    """Glad we're going down the route of Windows."""
+    page_id: NotionId
+    collection_id: NotionId
+    name: str
+
+
+@dataclass()
 class NotionCollectionItemLink:
     """A descriptor for a Notion collection item page."""
     page_id: NotionId

@@ -204,7 +204,7 @@ class SmartListItemsRepository:
             archived_time=self._time_provider.get_current_time() if archived else None)
 
         self._structured_storage.insert(new_smart_list_item, set_ref_id=True)
-        
+
         return new_smart_list_item
 
     def archive_smart_list_item(self, ref_id: EntityId) -> SmartListItemRow:
@@ -280,8 +280,7 @@ class SmartListItemsRepository:
             created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
             last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
-            if storage_form["archived_time"] is not None else None
-        )
+            if storage_form["archived_time"] is not None else None)
 
     @staticmethod
     def live_to_storage(live_form: SmartListItemRow) -> JSONDictType:

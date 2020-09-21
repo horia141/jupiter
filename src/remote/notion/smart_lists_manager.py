@@ -124,6 +124,23 @@ class NotionSmartListsManager:
             ref_id=ref_id,
             notion_id=collection_link.collection_id)
 
+    def load_smart_list(self, smart_list_ref_id: EntityId) -> SmartListNotionCollection:
+        """Load a smart list collection."""
+        smart_list_link = self._collections_manager.get_collection(
+            key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
+        return SmartListNotionCollection(
+            name=smart_list_link.name,
+            ref_id=smart_list_ref_id,
+            notion_id=smart_list_link.collection_id)
+
+    def save_smart_list(self, smart_list: SmartListNotionCollection) -> None:
+        """Save a smart list collection."""
+        self._collections_manager.update_collection(
+            key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
+            new_name=smart_list.name,
+            new_schema=self._SCHEMA)
+
     def hard_remove_smart_list(self, ref_id: EntityId) -> None:
         """Hard remove a smart list item."""
         self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))

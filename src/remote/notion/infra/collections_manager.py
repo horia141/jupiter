@@ -11,7 +11,8 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
 from remote.notion.infra.client import NotionClient
-from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey
+from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
+    NotionCollectionLinkExtra
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
@@ -156,15 +157,24 @@ class CollectionsManager:
 
         self._collections_structured_storage.remove(key=key)
 
-    def get_collection(self, key: NotionLockKey) -> NotionCollectionLink:
+    def get_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
         """Retrive the Notion-side structure for this collection."""
         lock = self._collections_structured_storage.find_by_property_strict(key=key)
-        return NotionCollectionLink(page_id=lock.page_id, collection_id=lock.collection_id)
+        client = self._connection.get_notion_client()
+        page = client.get_collection_page_by_id(lock.page_id)
+        return NotionCollectionLinkExtra(
+            page_id=lock.page_id,
+            collection_id=lock.collection_id,
+            name=page.title)
 
-    def update_collection_schema(self, key: NotionLockKey, new_schema: JSONDictType) -> None:
-        """Just updates the schema for the collection and asks no questions."""
+    def update_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
+        """Just updates the name and schema for the collection and asks no questions."""
         lock = self._collections_structured_storage.find_by_property_strict(key=key)
         client = self._connection.get_notion_client()
+        page = client.get_collection_page_by_id(lock.page_id)
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+        page.title = new_name
+        collection.name = new_name
         client.update_collection_schema(lock.page_id, lock.collection_id, new_schema)
 
     def upsert_collection_item(

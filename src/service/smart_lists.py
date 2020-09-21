@@ -310,7 +310,20 @@ class SmartListsService:
             filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer) -> Iterable[SmartListItem]:
         """Synchronise a smart list and its items between Notion and local storage."""
-        # TODO: actually synchronise the big smart list here
+        # Synchronize the smart list.
+        smart_list_row = self._smart_lists_repository.load_smart_list(smart_list_ref_id)
+        smart_list_notion_collection = self._notion_smart_lists_manager.load_smart_list(smart_list_ref_id)
+
+        if sync_prefer == SyncPrefer.LOCAL:
+            smart_list_notion_collection.name = smart_list_row.name
+            self._notion_smart_lists_manager.save_smart_list(smart_list_notion_collection)
+            LOGGER.info("Applied changes to Notion")
+        elif sync_prefer == SyncPrefer.NOTION:
+            smart_list_row.name = smart_list_notion_collection.name
+            self._smart_lists_repository.save_smart_list(smart_list_row)
+            LOGGER.info("Applied local change")
+        else:
+            raise Exception(f"Invalid preference {sync_prefer}")
 
         # Now synchronize the list items here.
         filter_smart_list_item_ref_ids_set = frozenset(filter_smart_list_item_ref_ids) \
