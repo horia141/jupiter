@@ -395,9 +395,9 @@ class EntitiesStorage(Generic[EntityRowType]):
         self._protocol = protocol
 
         items_schema = {}
-        for k, v in self.BASE_ENTITY_ROW_PROPERTIES:
+        for k, v in self.BASE_ENTITY_ROW_PROPERTIES.items():
             items_schema[k] = v
-        for k, v in self._protocol.storage_schema():
+        for k, v in self._protocol.storage_schema().items():
             items_schema[k] = v
         self._full_entity_schema = {
             "type": "object",
@@ -582,6 +582,7 @@ class EntitiesStorage(Generic[EntityRowType]):
 
     def _full_storage_form_to_entity(self, full_storage_form: JSONDictType) -> EntityRowType:
         entity = self._protocol.storage_to_live(full_storage_form)
+        entity.ref_id = EntityId(typing.cast(str, full_storage_form["ref_id"]))
         entity.created_time = \
             BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["created_time"]))
         entity.last_modified_time = \
@@ -600,6 +601,6 @@ class EntitiesStorage(Generic[EntityRowType]):
             "archived_time": BasicValidator.timestamp_to_str(entity.archived_time)
             if entity.archived_time else None
         }
-        for k, v in self._protocol.live_to_storage(entity):
+        for k, v in self._protocol.live_to_storage(entity).items():
             full_storage_form[k] = v
         return full_storage_form

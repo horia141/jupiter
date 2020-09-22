@@ -71,7 +71,6 @@ class SmartListsController:
                 smart_list_items_by_smart_list_ref_ids[smart_list_item.smart_list_ref_id] = [smart_list_item]
             else:
                 smart_list_items_by_smart_list_ref_ids[smart_list_item.smart_list_ref_id].append(smart_list_item)
-        print(smart_list_items_by_smart_list_ref_ids)
         return LoadAllSmartListsResponse(
             smart_lists=[LoadAllSmartListsEntry(
                 smart_list=sl,
