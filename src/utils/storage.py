@@ -1,12 +1,14 @@
 """Some storage utils."""
-
+import abc
 import logging
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable
+from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
 
 import jsonschema as js
 import yaml
 
+from models.basic import EntityId, Timestamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -296,6 +298,200 @@ class StructuredCollectionStorage(Generic[LiveType]):
             "properties": {
                 "next_idx": {"type": "number"},
                 "entries": {
+                    "type": "array",
+                    "items": self._protocol.storage_schema()
+                }
+            }
+        }
+
+
+@dataclass()
+class BaseEntity:
+    """The base class for all entities."""
+
+    ref_id: EntityId
+    archived: bool
+    created_time: Timestamp
+    last_modified_time: Timestamp
+    archived_time: Optional[Timestamp]
+
+
+EntityType = TypeVar("EntityType", bound=BaseEntity)
+
+FindFilterType = Union[None, bool, int, float, str]
+
+
+class FindFilterPredicate(abc.ABC):
+    """A predicate for the find function."""
+
+    @abc.abstractmethod
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+
+
+class Eq(FindFilterPredicate):
+    """A filtering predicate for exact equality."""
+
+    _filter_val: Final[FindFilterType]
+
+    def __init__(self, filter_val: FindFilterType) -> None:
+        """Constructor."""
+        self._filter_val = filter_val
+
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+        return self._filter_val == val
+
+
+class In:
+    """A filtering predicate for membership in a set."""
+
+    _filter_set: Final[FrozenSet[FindFilterType]]
+
+    def __init__(self, *filter_set: FindFilterType) -> None:
+        """Constructor."""
+        self._filter_set = frozenset(filter_set)
+
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+        return val in self._filter_set
+
+
+class EntityCollectionStorage(Generic[EntityType]):
+    """A class for interacting with storage for a collection of entities which has a structure (schema, etc.)."""
+
+    _path: Final[Path]
+    _protocol: StructuredStorageProtocol[EntityType]
+
+    def __init__(self, path: Path, protocol: StructuredStorageProtocol[EntityType]) -> None:
+        """Constructor."""
+        self._path = path
+        self._protocol = protocol
+
+    def initialize(self) -> None:
+        """Initialize."""
+        if self._path.exists():
+            return
+        self._save(0, [])
+
+    def insert(self, entity: EntityType) -> EntityType:
+        """Add a new entity to the storage and assign an id for it."""
+        next_idx, entities = self._load()
+        entity.ref_id = EntityId(str(next_idx))
+        entities.append(entity)
+        self._save(next_idx + 1, entities)
+        return entity
+
+    def update(self, new_entity: EntityType) -> EntityType:
+        """Update an existing element."""
+        next_idx, entities = self._load()
+
+        for entity_idx, entity in enumerate(entities):
+            if entity.ref_id == new_entity.ref_id:
+                entities[entity_idx] = new_entity
+                self._save(next_idx, entities)
+                return new_entity
+
+        raise StructuredStorageError(f"Element identified by {new_entity.ref_id} does not exist")
+
+    def remove(self, ref_id: EntityId) -> EntityType:
+        """Remove the item identified by the ref id."""
+        next_idx, entities = self._load()
+
+        for entity_idx, entity in enumerate(entities):
+            if entity.ref_id == ref_id:
+                del entities[entity_idx]
+                self._save(next_idx, entities)
+                return entity
+
+        raise StructuredStorageError(f"Element identified by {ref_id} does not exist")
+
+    def load(self, ref_id: EntityId, allow_archived: bool = False) -> EntityType:
+        """Retrieve the item identified by the ref id."""
+        _, entities = self._load()
+
+        for entity_idx, entity in enumerate(entities):
+            if entity.ref_id != ref_id:
+                continue
+
+            if not allow_archived and entity.archived:
+                raise StructuredStorageError(f"Element identified by {ref_id} is archived")
+
+            return entity
+
+        raise StructuredStorageError(f"Element identified by {ref_id} does not exist")
+
+    def load_optional(self, ref_id: EntityId, allow_archived: bool = False) -> Optional[EntityType]:
+        """Retrieve the item identified by the ref id."""
+        _, entities = self._load()
+
+        for entity_idx, entity in enumerate(entities):
+            if entity.ref_id != ref_id:
+                continue
+
+            if not allow_archived and entity.archived:
+                raise StructuredStorageError(f"Element identified by {ref_id} is archived")
+
+            return entity
+
+        return None
+
+    def find_all(self, **kwargs: FindFilterPredicate) -> Iterable[EntityType]:
+        """Find all the elements in the collection matching all the properties."""
+        _, entities = self._load()
+
+        for entity in entities:
+            for filter_property_name, filter_predicate in kwargs.items():
+                try:
+                    property_value = getattr(entity, filter_property_name)
+                    if not filter_predicate.test(property_value):
+                        break
+                except AttributeError:
+                    raise StructuredStorageError(
+                        f"Element identified by {entity.ref_id} does not have property {filter_property_name}")
+            else:
+                yield entity
+
+    def _load(self) -> Tuple[int, List[EntityType]]:
+        try:
+            with self._path.open("r") as store_file:
+                data_store = yaml.safe_load(store_file)
+                LOGGER.info("Loaded storage")
+
+                js.Draft6Validator(self._get_full_schema()).validate(data_store)
+                LOGGER.info("Checked storage structure")
+
+                next_idx = data_store["next_idx"]
+                entities = [self._protocol.storage_to_live(entry) for entry in data_store["entities"]]
+                LOGGER.info("Transformed storage to live data")
+
+                return next_idx, entities
+        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
+            raise StructuredStorageError from error
+
+    def _save(self, new_next_idx: int, new_entities: List[EntityType]) -> None:
+        try:
+            with self._path.open("w") as store_file:
+                data_store = {
+                    "next_idx": new_next_idx,
+                    "entities": [self._protocol.live_to_storage(entry) for entry in new_entities]
+                }
+                LOGGER.info("Transformed live to storage data")
+
+                js.Draft6Validator(self._get_full_schema()).validate(data_store)
+                LOGGER.info("Checked new storage structure")
+
+                yaml.dump(data_store, store_file)
+                LOGGER.info("Saved storage")
+        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
+            raise StructuredStorageError from error
+
+    def _get_full_schema(self) -> JSONDictType:
+        return {
+            "type": "object",
+            "properties": {
+                "next_idx": {"type": "number"},
+                "entities": {
                     "type": "array",
                     "items": self._protocol.storage_schema()
                 }
