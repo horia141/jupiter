@@ -58,13 +58,13 @@ class SmartListsController:
         return self._smart_lists_service.set_smart_list_name(ref_id, name)
 
     def load_all_smart_lists(
-            self, show_archived: bool = False,
+            self, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None) -> LoadAllSmartListsResponse:
         """Retrieve all smart lists."""
         smart_lists = self._smart_lists_service.load_all_smart_lists(
-            filter_archived=not show_archived, filter_ref_ids=filter_ref_ids)
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids)
         smart_list_items = self._smart_lists_service.load_all_smart_list_items(
-            filter_archived=not show_archived, filter_smart_list_ref_ids=filter_ref_ids)
+            allow_archived=allow_archived, filter_smart_list_ref_ids=filter_ref_ids)
         smart_list_items_by_smart_list_ref_ids = {}
         for smart_list_item in smart_list_items:
             if smart_list_item.smart_list_ref_id not in smart_list_items_by_smart_list_ref_ids:
@@ -98,14 +98,14 @@ class SmartListsController:
         return self._smart_lists_service.set_smart_list_item_url(ref_id, url)
 
     def load_all_smart_list_items(
-            self, show_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None) -> LoadAllSmartListItemsResponse:
         """Retrieve all smart list items."""
         smart_lists = self._smart_lists_service.load_all_smart_lists(
-            filter_archived=not show_archived, filter_ref_ids=filter_smart_list_ref_ids)
+            allow_archived=allow_archived, filter_ref_ids=filter_smart_list_ref_ids)
         smart_lists_by_ref_id = {sl.ref_id: sl for sl in smart_lists}
         smart_list_items = self._smart_lists_service.load_all_smart_list_items(
-            filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
             filter_smart_list_ref_ids=filter_smart_list_ref_ids)
 
         return LoadAllSmartListItemsResponse(

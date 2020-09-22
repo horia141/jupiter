@@ -1,14 +1,18 @@
 """Some storage utils."""
 import abc
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
 
 import jsonschema as js
+import pendulum
+import typing
 import yaml
 
-from models.basic import EntityId, Timestamp
+from models.basic import EntityId, Timestamp, BasicValidator
+from utils.time_field_action import TimeFieldAction
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -305,18 +309,28 @@ class StructuredCollectionStorage(Generic[LiveType]):
         }
 
 
+BAD_REF_ID = EntityId("bad-entity-id")
+BAD_TIME = Timestamp(pendulum.datetime(2000, 1, 1))
+
+
 @dataclass()
-class BaseEntity:
+class BaseEntityRow:
     """The base class for all entities."""
 
-    ref_id: EntityId
+    ref_id: EntityId = field(init=False)
     archived: bool
-    created_time: Timestamp
-    last_modified_time: Timestamp
-    archived_time: Optional[Timestamp]
+    created_time: Timestamp = field(init=False)
+    last_modified_time: Timestamp = field(init=False)
+    archived_time: Optional[Timestamp] = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.ref_id = BAD_REF_ID
+        self.created_time = BAD_TIME
+        self.last_modified_time = BAD_TIME
+        self.archived_time = None
 
 
-EntityType = TypeVar("EntityType", bound=BaseEntity)
+EntityRowType = TypeVar("EntityRowType", bound=BaseEntityRow)
 
 FindFilterType = Union[None, bool, int, float, str]
 
@@ -343,7 +357,7 @@ class Eq(FindFilterPredicate):
         return self._filter_val == val
 
 
-class In:
+class In(FindFilterPredicate):
     """A filtering predicate for membership in a set."""
 
     _filter_set: Final[FrozenSet[FindFilterType]]
@@ -357,16 +371,47 @@ class In:
         return val in self._filter_set
 
 
-class EntityCollectionStorage(Generic[EntityType]):
+class EntitiesStorage(Generic[EntityRowType]):
     """A class for interacting with storage for a collection of entities which has a structure (schema, etc.)."""
 
-    _path: Final[Path]
-    _protocol: StructuredStorageProtocol[EntityType]
+    BASE_ENTITY_ROW_PROPERTIES = {
+        "ref_id": {"type": "string"},
+        "archived": {"type": "boolean"},
+        "created_time": {"type": "string"},
+        "last_modified_time": {"type": "string"},
+        "archived_time": {"type": ["string", "null"]}
+    }
 
-    def __init__(self, path: Path, protocol: StructuredStorageProtocol[EntityType]) -> None:
+    _path: Final[Path]
+    _time_provider: Final[TimeProvider]
+    _protocol: StructuredStorageProtocol[EntityRowType]
+    _full_entity_schema: Final[JSONDictType]
+
+    def __init__(
+            self, path: Path, time_provider: TimeProvider, protocol: StructuredStorageProtocol[EntityRowType]) -> None:
         """Constructor."""
         self._path = path
+        self._time_provider = time_provider
         self._protocol = protocol
+
+        items_schema = {}
+        for k, v in self.BASE_ENTITY_ROW_PROPERTIES:
+            items_schema[k] = v
+        for k, v in self._protocol.storage_schema():
+            items_schema[k] = v
+        self._full_entity_schema = {
+            "type": "object",
+            "properties": {
+                "next_idx": {"type": "number"},
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": items_schema
+                    }
+                }
+            }
+        }
 
     def initialize(self) -> None:
         """Initialize."""
@@ -374,28 +419,45 @@ class EntityCollectionStorage(Generic[EntityType]):
             return
         self._save(0, [])
 
-    def insert(self, entity: EntityType) -> EntityType:
+    def create(self, entity: EntityRowType) -> EntityRowType:
         """Add a new entity to the storage and assign an id for it."""
+        if entity.ref_id != BAD_REF_ID:
+            raise RuntimeError(f"Cannot insert entity with preassigned id {entity.ref_id}")
+
         next_idx, entities = self._load()
+
         entity.ref_id = EntityId(str(next_idx))
+        entity.created_time = self._time_provider.get_current_time()
+        entity.last_modified_time = self._time_provider.get_current_time()
+        entity.archived_time = self._time_provider.get_current_time() if entity.archived else None
+
         entities.append(entity)
         self._save(next_idx + 1, entities)
+
         return entity
 
-    def update(self, new_entity: EntityType) -> EntityType:
-        """Update an existing element."""
+    def archive(self, ref_id: EntityId) -> EntityRowType:
+        """Archive an entity identified by the ref id."""
+        if ref_id == BAD_REF_ID:
+            raise RuntimeError(f"Cannot archive entity without a good id")
+
         next_idx, entities = self._load()
 
-        for entity_idx, entity in enumerate(entities):
-            if entity.ref_id == new_entity.ref_id:
-                entities[entity_idx] = new_entity
+        for entity in entities:
+            if entity.ref_id == ref_id:
+                entity.archived = True
+                entity.last_modified_time = self._time_provider.get_current_time()
+                entity.archived_time = self._time_provider.get_current_time()
                 self._save(next_idx, entities)
-                return new_entity
+                return entity
 
-        raise StructuredStorageError(f"Element identified by {new_entity.ref_id} does not exist")
+        raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
 
-    def remove(self, ref_id: EntityId) -> EntityType:
-        """Remove the item identified by the ref id."""
+    def remove(self, ref_id: EntityId) -> EntityRowType:
+        """Remove the entity identified by the ref id."""
+        if ref_id == BAD_REF_ID:
+            raise RuntimeError(f"Cannot remove entity without a good id")
+
         next_idx, entities = self._load()
 
         for entity_idx, entity in enumerate(entities):
@@ -404,81 +466,113 @@ class EntityCollectionStorage(Generic[EntityType]):
                 self._save(next_idx, entities)
                 return entity
 
-        raise StructuredStorageError(f"Element identified by {ref_id} does not exist")
+        raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
 
-    def load(self, ref_id: EntityId, allow_archived: bool = False) -> EntityType:
-        """Retrieve the item identified by the ref id."""
-        _, entities = self._load()
+    def update(
+            self, new_entity: EntityRowType,
+            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> EntityRowType:
+        """Update an existing entity."""
+        if new_entity.ref_id == BAD_REF_ID:
+            raise RuntimeError(f"Cannot update entity without a good id")
+
+        next_idx, entities = self._load()
 
         for entity_idx, entity in enumerate(entities):
+            if entity.ref_id == new_entity.ref_id:
+                new_entity.last_modified_time = self._time_provider.get_current_time()
+                archived_time_action.act(new_entity, "archived_time", self._time_provider.get_current_time())
+                entities[entity_idx] = new_entity
+                self._save(next_idx, entities)
+                return new_entity
+
+        raise StructuredStorageError(f"Entity identified by {new_entity.ref_id} does not exist")
+
+    def load(self, ref_id: EntityId, allow_archived: bool = False) -> EntityRowType:
+        """Retrieve the entity identified by the ref id."""
+        if ref_id == BAD_REF_ID:
+            raise RuntimeError(f"Cannot remove entity without a good id")
+
+        _, entities = self._load()
+
+        for entity in entities:
             if entity.ref_id != ref_id:
                 continue
 
             if not allow_archived and entity.archived:
-                raise StructuredStorageError(f"Element identified by {ref_id} is archived")
+                raise StructuredStorageError(f"Entity identified by {ref_id} is archived")
 
             return entity
 
         raise StructuredStorageError(f"Element identified by {ref_id} does not exist")
 
-    def load_optional(self, ref_id: EntityId, allow_archived: bool = False) -> Optional[EntityType]:
-        """Retrieve the item identified by the ref id."""
+    def load_optional(self, ref_id: EntityId, allow_archived: bool = False) -> Optional[EntityRowType]:
+        """Retrieve the entity identified by the ref id."""
+        if ref_id == BAD_REF_ID:
+            raise RuntimeError(f"Cannot remove entity without a good id")
+
         _, entities = self._load()
 
-        for entity_idx, entity in enumerate(entities):
+        for entity in entities:
             if entity.ref_id != ref_id:
                 continue
 
             if not allow_archived and entity.archived:
-                raise StructuredStorageError(f"Element identified by {ref_id} is archived")
+                raise StructuredStorageError(f"Entity identified by {ref_id} is archived")
 
             return entity
 
         return None
 
-    def find_all(self, **kwargs: FindFilterPredicate) -> Iterable[EntityType]:
-        """Find all the elements in the collection matching all the properties."""
+    def find_all(
+            self, allow_archived: bool = False, **kwargs: Optional[FindFilterPredicate]) -> Iterable[EntityRowType]:
+        """Find all the entities in the collection matching all the properties."""
         _, entities = self._load()
 
         for entity in entities:
             for filter_property_name, filter_predicate in kwargs.items():
+                if filter_predicate is None:
+                    continue
+
                 try:
                     property_value = getattr(entity, filter_property_name)
                     if not filter_predicate.test(property_value):
                         break
                 except AttributeError:
                     raise StructuredStorageError(
-                        f"Element identified by {entity.ref_id} does not have property {filter_property_name}")
+                        f"Entity identified by {entity.ref_id} does not have property {filter_property_name}")
             else:
+                if not allow_archived and entity.archived:
+                    continue
+
                 yield entity
 
-    def _load(self) -> Tuple[int, List[EntityType]]:
+    def _load(self) -> Tuple[int, List[EntityRowType]]:
         try:
             with self._path.open("r") as store_file:
                 data_store = yaml.safe_load(store_file)
                 LOGGER.info("Loaded storage")
 
-                js.Draft6Validator(self._get_full_schema()).validate(data_store)
+                js.Draft6Validator(self._full_entity_schema).validate(data_store)
                 LOGGER.info("Checked storage structure")
 
                 next_idx = data_store["next_idx"]
-                entities = [self._protocol.storage_to_live(entry) for entry in data_store["entities"]]
+                entities = [self._full_storage_form_to_entity(entity) for entity in data_store["entities"]]
                 LOGGER.info("Transformed storage to live data")
 
                 return next_idx, entities
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
             raise StructuredStorageError from error
 
-    def _save(self, new_next_idx: int, new_entities: List[EntityType]) -> None:
+    def _save(self, new_next_idx: int, new_entities: List[EntityRowType]) -> None:
         try:
             with self._path.open("w") as store_file:
                 data_store = {
                     "next_idx": new_next_idx,
-                    "entities": [self._protocol.live_to_storage(entry) for entry in new_entities]
+                    "entities": [self._entity_to_full_storage_form(entity) for entity in new_entities]
                 }
                 LOGGER.info("Transformed live to storage data")
 
-                js.Draft6Validator(self._get_full_schema()).validate(data_store)
+                js.Draft6Validator(self._full_entity_schema).validate(data_store)
                 LOGGER.info("Checked new storage structure")
 
                 yaml.dump(data_store, store_file)
@@ -486,14 +580,26 @@ class EntityCollectionStorage(Generic[EntityType]):
         except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
             raise StructuredStorageError from error
 
-    def _get_full_schema(self) -> JSONDictType:
-        return {
-            "type": "object",
-            "properties": {
-                "next_idx": {"type": "number"},
-                "entities": {
-                    "type": "array",
-                    "items": self._protocol.storage_schema()
-                }
-            }
+    def _full_storage_form_to_entity(self, full_storage_form: JSONDictType) -> EntityRowType:
+        entity = self._protocol.storage_to_live(full_storage_form)
+        entity.created_time = \
+            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["created_time"]))
+        entity.last_modified_time = \
+            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["last_modified_time"]))
+        entity.archived_time = \
+            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["archived_time"])) \
+                if full_storage_form["archived_time"] is not None else None
+        return entity
+
+    def _entity_to_full_storage_form(self, entity: EntityRowType) -> JSONDictType:
+        full_storage_form: JSONDictType = {
+            "ref_id": entity.ref_id,
+            "archived": entity.archived,
+            "created_time": BasicValidator.timestamp_to_str(entity.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(entity.last_modified_time),
+            "archived_time": BasicValidator.timestamp_to_str(entity.archived_time)
+            if entity.archived_time else None
         }
+        for k, v in self._protocol.live_to_storage(entity):
+            full_storage_form[k] = v
+        return full_storage_form

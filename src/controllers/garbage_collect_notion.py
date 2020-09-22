@@ -106,21 +106,21 @@ class GarbageCollectNotionController:
             smart_lists: Iterable[SmartList] = []
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for smart lists")
-                smart_lists = self._smart_lists_service.load_all_smart_lists(filter_archived=False)
+                smart_lists = self._smart_lists_service.load_all_smart_lists(allow_archived=True)
                 smart_lists = self._do_anti_entropy_for_smart_lists(smart_lists)
             if do_notion_cleanup:
                 LOGGER.info(f"Garbage collecting smart lists which were archived")
-                smart_lists = smart_lists or self._smart_lists_service.load_all_smart_lists(filter_archived=False)
+                smart_lists = smart_lists or self._smart_lists_service.load_all_smart_lists(allow_archived=True)
                 self._do_drop_all_archived_smart_lists(smart_lists)
             smart_list_items: Iterable[SmartListItem] = []
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for smart list items")
-                smart_list_items = self._smart_lists_service.load_all_smart_list_items(filter_archived=False)
+                smart_list_items = self._smart_lists_service.load_all_smart_list_items(allow_archived=True)
                 smart_list_items = self._do_anti_entropy_for_smart_list_items(smart_list_items)
             if do_notion_cleanup:
                 LOGGER.info(f"Garbage collecting smart list items which were archived")
                 smart_list_items = smart_list_items or self._smart_lists_service.load_all_smart_list_items(
-                    filter_archived=False)
+                    allow_archived=True)
                 self._do_drop_all_archived_smart_list_items(smart_list_items)
 
     def _do_anti_entropy_for_vacations(

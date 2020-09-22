@@ -72,7 +72,7 @@ class SmartListsService:
         smart_list = self._smart_lists_repository.archive_smart_list(ref_id)
 
         for smart_list_item in \
-                self._smart_list_items_repository.load_all_smart_list_items(
+                self._smart_list_items_repository.find_all_smart_list_items(
                     filter_smart_list_ref_ids=[smart_list.ref_id]):
             self._smart_list_items_repository.archive_smart_list_item(smart_list_item.ref_id)
 
@@ -98,7 +98,7 @@ class SmartListsService:
 
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id)
         smart_list_row.name = name
-        self._smart_lists_repository.save_smart_list(smart_list_row)
+        self._smart_lists_repository.update_smart_list(smart_list_row)
         LOGGER.info("Applied local changes")
 
         self._notion_smart_lists_manager.upsert_smart_list(ref_id, name)
@@ -110,11 +110,11 @@ class SmartListsService:
             archived=smart_list_row.archived)
 
     def load_all_smart_lists(
-        self, filter_archived: bool = True,
+        self, allow_archived: bool = False,
         filter_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartList]:
         """Retrieve all the smart list items."""
-        smart_list_rows = self._smart_lists_repository.load_all_smart_lists(
-            filter_archived=filter_archived, filter_ref_ids=filter_ref_ids)
+        smart_list_rows = self._smart_lists_repository.find_all_smart_lists(
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids)
 
         return [SmartList(ref_id=slr.ref_id,
                           name=slr.name,
@@ -122,12 +122,12 @@ class SmartListsService:
 
     def hard_remove_smart_list(self, ref_id: EntityId) -> SmartList:
         """Archive a smart list."""
-        smart_list_row = self._smart_lists_repository.hard_remove_smart_list(ref_id)
+        smart_list_row = self._smart_lists_repository.remove_smart_list(ref_id)
 
         for smart_list_item in \
-                self._smart_list_items_repository.load_all_smart_list_items(
+                self._smart_list_items_repository.find_all_smart_list_items(
                     filter_smart_list_ref_ids=[smart_list_row.ref_id]):
-            self._smart_list_items_repository.hard_remove_smart_list_item(smart_list_item.ref_id)
+            self._smart_list_items_repository.remove_smart_list_item(smart_list_item.ref_id)
 
         LOGGER.info("Applied local changes")
 
@@ -212,7 +212,7 @@ class SmartListsService:
 
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
         smart_list_item_row.name = name
-        self._smart_list_items_repository.save_smart_list_item(smart_list_item_row)
+        self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
 
         smart_list_item_notion_row = self._notion_smart_lists_manager.load_smart_list_item(
@@ -238,7 +238,7 @@ class SmartListsService:
 
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
         smart_list_item_row.url = url
-        self._smart_list_items_repository.save_smart_list_item(smart_list_item_row)
+        self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
 
         smart_list_item_notion_row = self._notion_smart_lists_manager.load_smart_list_item(
@@ -256,11 +256,11 @@ class SmartListsService:
             archived=smart_list_item_row.archived)
 
     def load_all_smart_list_items(
-            self, filter_archived: bool = True, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListItem]:
         """Retrieve all the smart list items."""
-        smart_list_item_rows = self._smart_list_items_repository.load_all_smart_list_items(
-            filter_archived=filter_archived, filter_ref_ids=filter_ref_ids,
+        smart_list_item_rows = self._smart_list_items_repository.find_all_smart_list_items(
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
             filter_smart_list_ref_ids=filter_smart_list_ref_ids)
 
         return [SmartListItem(ref_id=slir.ref_id,
@@ -271,7 +271,7 @@ class SmartListsService:
 
     def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Hard remove a list item."""
-        smart_list_item_row = self._smart_list_items_repository.hard_remove_smart_list_item(ref_id)
+        smart_list_item_row = self._smart_list_items_repository.remove_smart_list_item(ref_id)
         LOGGER.info("Applied local changes")
 
         try:
@@ -320,7 +320,7 @@ class SmartListsService:
             LOGGER.info("Applied changes to Notion")
         elif sync_prefer == SyncPrefer.NOTION:
             smart_list_row.name = smart_list_notion_collection.name
-            self._smart_lists_repository.save_smart_list(smart_list_row)
+            self._smart_lists_repository.update_smart_list(smart_list_row)
             LOGGER.info("Applied local change")
         else:
             raise Exception(f"Invalid preference {sync_prefer}")
@@ -329,8 +329,8 @@ class SmartListsService:
         filter_smart_list_item_ref_ids_set = frozenset(filter_smart_list_item_ref_ids) \
             if filter_smart_list_item_ref_ids else None
 
-        all_smart_list_items_rows = self._smart_list_items_repository.load_all_smart_list_items(
-            filter_archived=False, filter_smart_list_ref_ids=filter_smart_list_item_ref_ids)
+        all_smart_list_items_rows = self._smart_list_items_repository.find_all_smart_list_items(
+            allow_archived=True, filter_smart_list_ref_ids=filter_smart_list_item_ref_ids)
         all_smart_list_items_rows_set = {sli.ref_id: sli for sli in all_smart_list_items_rows}
 
         if not drop_all_notion_side:
@@ -407,7 +407,7 @@ class SmartListsService:
                     smart_list_item_row.archived = smart_list_item_notion_row.archived
                     smart_list_item_row.name = smart_list_item_name
                     smart_list_item_row.url = smart_list_item_url
-                    self._smart_list_items_repository.save_smart_list_item(smart_list_item_row, archived_time_action)
+                    self._smart_list_items_repository.update_smart_list_item(smart_list_item_row, archived_time_action)
                     LOGGER.info(f"Changed smart list item '{smart_list_item_row.name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and \
