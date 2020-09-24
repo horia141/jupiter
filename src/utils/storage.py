@@ -27,6 +27,45 @@ JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  #
 JSONDictType = Dict[str, JSONValueType]
 
 
+FindFilterType = Union[None, bool, int, float, str]
+
+
+class FindFilterPredicate(abc.ABC):
+    """A predicate for the find function."""
+
+    @abc.abstractmethod
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+
+
+class Eq(FindFilterPredicate):
+    """A filtering predicate for exact equality."""
+
+    _filter_val: Final[FindFilterType]
+
+    def __init__(self, filter_val: FindFilterType) -> None:
+        """Constructor."""
+        self._filter_val = filter_val
+
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+        return self._filter_val == val
+
+
+class In(FindFilterPredicate):
+    """A filtering predicate for membership in a set."""
+
+    _filter_set: Final[FrozenSet[FindFilterType]]
+
+    def __init__(self, *filter_set: FindFilterType) -> None:
+        """Constructor."""
+        self._filter_set = frozenset(filter_set)
+
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+        return val in self._filter_set
+
+
 class StructuredStorageProtocol(Protocol[LiveType]):
     """Protocol for clients of StructuredIndividualStorage to expose."""
 
@@ -314,6 +353,204 @@ BAD_TIME = Timestamp(pendulum.datetime(2000, 1, 1))
 
 
 @dataclass()
+class BaseRecordRow:
+    """The base class for all records."""
+    key: str
+    created_time: Timestamp = field(init=False)
+    last_modified_time: Timestamp = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.created_time = BAD_TIME
+        self.last_modified_time = BAD_TIME
+
+
+RecordRowType = TypeVar("RecordRowType", bound=BaseRecordRow)
+
+
+class RecordsStorage(Generic[RecordRowType]):
+    """A class for interacting with storage for a collection of records which has a structure (schema, etc.)."""
+
+    BASE_RECORD_ROW_PROPERTIES = {
+        "key": {"type": "string"},
+        "created_time": {"type": "string"},
+        "last_modified_time": {"type": "string"}
+    }
+
+    _path: Final[Path]
+    _time_provider: Final[TimeProvider]
+    _protocol: StructuredStorageProtocol[RecordRowType]
+    _full_entity_schema: Final[JSONDictType]
+
+    def __init__(
+            self, path: Path, time_provider: TimeProvider, protocol: StructuredStorageProtocol[RecordRowType]) -> None:
+        """Constructor."""
+        self._path = path
+        self._time_provider = time_provider
+        self._protocol = protocol
+
+        items_schema: JSONDictType = {}
+        for k0, v0 in self.BASE_RECORD_ROW_PROPERTIES.items():
+            items_schema[k0] = v0
+        for k1, v1 in self._protocol.storage_schema().items():
+            items_schema[k1] = v1
+        self._full_entity_schema = {
+            "type": "object",
+            "properties": {
+                "next_idx": {"type": "number"},
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": items_schema
+                    }
+                }
+            }
+        }
+
+    def initialize(self) -> None:
+        """Initialize."""
+        if self._path.exists():
+            return
+        self._save(0, [])
+
+    def create(self, record: RecordRowType) -> RecordRowType:
+        """Add a new record to the storage."""
+        next_idx, records = self._load()
+
+        record.created_time = self._time_provider.get_current_time()
+        record.last_modified_time = self._time_provider.get_current_time()
+
+        records.append(record)
+        self._save(next_idx + 1, records)
+
+        return record
+
+    def remove(self, key: str) -> RecordRowType:
+        """Remove the record identified by the key."""
+
+        next_idx, records = self._load()
+
+        for record_idx, record in enumerate(records):
+            if record.key == key:
+                del records[record_idx]
+                self._save(next_idx, records)
+                return record
+
+        raise StructuredStorageError(f"Record identified by {key} does not exist")
+
+    def update(self, new_record: RecordRowType) -> RecordRowType:
+        """Update an existing record."""
+        next_idx, records = self._load()
+
+        for record_idx, record in enumerate(records):
+            if record.key == new_record.key:
+                new_record.last_modified_time = self._time_provider.get_current_time()
+                records[record_idx] = new_record
+                self._save(next_idx, records)
+                return new_record
+
+        raise StructuredStorageError(f"Record identified by {new_record.key} does not exist")
+
+    def load(self, key: str) -> RecordRowType:
+        """Retrieve the record identified by the key."""
+        _, records = self._load()
+
+        for record in records:
+            if record.key != key:
+                continue
+
+            return record
+
+        raise StructuredStorageError(f"Record identified by {key} does not exist")
+
+    def load_optional(self, key: str) -> Optional[RecordRowType]:
+        """Retrieve the record identified by the ref id."""
+        _, records = self._load()
+
+        for record in records:
+            if record.key != key:
+                continue
+
+            return record
+
+        return None
+
+    def find_all(
+            self, **kwargs: Optional[FindFilterPredicate]) -> Iterable[RecordRowType]:
+        """Find all the records in the collection matching all the properties."""
+        _, records = self._load()
+
+        for record in records:
+            for filter_property_name, filter_predicate in kwargs.items():
+                if filter_predicate is None:
+                    continue
+
+                try:
+                    property_value = getattr(record, filter_property_name)
+                    if not filter_predicate.test(property_value):
+                        break
+                except AttributeError:
+                    raise StructuredStorageError(
+                        f"Record identified by {record.key} does not have property {filter_property_name}")
+            else:
+                yield record
+
+    def _load(self) -> Tuple[int, List[RecordRowType]]:
+        try:
+            with self._path.open("r") as store_file:
+                data_store = yaml.safe_load(store_file)
+                LOGGER.info("Loaded storage")
+
+                js.Draft6Validator(self._full_entity_schema).validate(data_store)
+                LOGGER.info("Checked storage structure")
+
+                next_idx = data_store["next_idx"]
+                records = [self._full_storage_form_to_record(record) for record in data_store["records"]]
+                LOGGER.info("Transformed storage to live data")
+
+                return next_idx, records
+        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
+            raise StructuredStorageError from error
+
+    def _save(self, new_next_idx: int, new_records: List[RecordRowType]) -> None:
+        try:
+            with self._path.open("w") as store_file:
+                data_store = {
+                    "next_idx": new_next_idx,
+                    "records": [self._entity_to_full_storage_form(entity) for entity in new_records]
+                }
+                LOGGER.info("Transformed live to storage data")
+
+                js.Draft6Validator(self._full_entity_schema).validate(data_store)
+                LOGGER.info("Checked new storage structure")
+
+                yaml.dump(data_store, store_file)
+                LOGGER.info("Saved storage")
+        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
+            raise StructuredStorageError from error
+
+    def _full_storage_form_to_record(self, full_storage_form: JSONDictType) -> RecordRowType:
+        record = self._protocol.storage_to_live(full_storage_form)
+        record.created_time = \
+            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["created_time"])) \
+                if full_storage_form.get("created_time", None) else self._time_provider.get_current_time()
+        record.last_modified_time = \
+            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["last_modified_time"])) \
+                if full_storage_form.get("created_time", None) else self._time_provider.get_current_time()
+        return record
+
+    def _entity_to_full_storage_form(self, record: RecordRowType) -> JSONDictType:
+        full_storage_form: JSONDictType = {
+            "key": record.key,
+            "created_time": BasicValidator.timestamp_to_str(record.created_time),
+            "last_modified_time": BasicValidator.timestamp_to_str(record.last_modified_time)
+        }
+        for k, v in self._protocol.live_to_storage(record).items():
+            full_storage_form[k] = v
+        return full_storage_form
+
+
+@dataclass()
 class BaseEntityRow:
     """The base class for all entities."""
 
@@ -331,44 +568,6 @@ class BaseEntityRow:
 
 
 EntityRowType = TypeVar("EntityRowType", bound=BaseEntityRow)
-
-FindFilterType = Union[None, bool, int, float, str]
-
-
-class FindFilterPredicate(abc.ABC):
-    """A predicate for the find function."""
-
-    @abc.abstractmethod
-    def test(self, val: FindFilterType) -> bool:
-        """Test whether the predicate is matched against a value."""
-
-
-class Eq(FindFilterPredicate):
-    """A filtering predicate for exact equality."""
-
-    _filter_val: Final[FindFilterType]
-
-    def __init__(self, filter_val: FindFilterType) -> None:
-        """Constructor."""
-        self._filter_val = filter_val
-
-    def test(self, val: FindFilterType) -> bool:
-        """Test whether the predicate is matched against a value."""
-        return self._filter_val == val
-
-
-class In(FindFilterPredicate):
-    """A filtering predicate for membership in a set."""
-
-    _filter_set: Final[FrozenSet[FindFilterType]]
-
-    def __init__(self, *filter_set: FindFilterType) -> None:
-        """Constructor."""
-        self._filter_set = frozenset(filter_set)
-
-    def test(self, val: FindFilterType) -> bool:
-        """Test whether the predicate is matched against a value."""
-        return val in self._filter_set
 
 
 class EntitiesStorage(Generic[EntityRowType]):
@@ -395,10 +594,10 @@ class EntitiesStorage(Generic[EntityRowType]):
         self._protocol = protocol
 
         items_schema = {}
-        for k, v in self.BASE_ENTITY_ROW_PROPERTIES.items():
-            items_schema[k] = v
-        for k, v in self._protocol.storage_schema().items():
-            items_schema[k] = v
+        for k0, v0 in self.BASE_ENTITY_ROW_PROPERTIES.items():
+            items_schema[k0] = v0
+        for k1, v1 in self._protocol.storage_schema().items():
+            items_schema[k1] = v1
         self._full_entity_schema = {
             "type": "object",
             "properties": {
@@ -503,7 +702,7 @@ class EntitiesStorage(Generic[EntityRowType]):
 
             return entity
 
-        raise StructuredStorageError(f"Element identified by {ref_id} does not exist")
+        raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
 
     def load_optional(self, ref_id: EntityId, allow_archived: bool = False) -> Optional[EntityRowType]:
         """Retrieve the entity identified by the ref id."""

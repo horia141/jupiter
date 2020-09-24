@@ -14,7 +14,8 @@ from remote.notion.infra.client import NotionClient
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage, Eq
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,18 +34,16 @@ CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
 
 
 @dataclass()
-class _CollectionLockRow:
+class _CollectionLockRow(BaseRecordRow):
     """Information about a Notion-side collection."""
-    key: NotionLockKey
     page_id: NotionId
     collection_id: NotionId
     view_ids: Dict[str, NotionId] = field(default_factory=dict, compare=False)
 
 
 @dataclass()
-class _CollectionItemLockRow:
+class _CollectionItemLockRow(BaseRecordRow):
     """Information about a Notion-side collection item."""
-    key: NotionLockKey
     collection_key: NotionLockKey
     ref_id: EntityId
     row_id: NotionId
@@ -57,24 +56,23 @@ class CollectionsManager:
     _COLLECTION_ITEMS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collection-items.yaml")
 
     _connection: Final[NotionConnection]
-    _collections_structured_storage: Final[StructuredCollectionStorage[_CollectionLockRow]]
-    _collection_items_structured_storage: Final[StructuredCollectionStorage[_CollectionItemLockRow]]
+    _collections_storage: Final[RecordsStorage[_CollectionLockRow]]
+    _collection_items_storage: Final[RecordsStorage[_CollectionItemLockRow]]
 
-    def __init__(
-            self, connection: NotionConnection) -> None:
+    def __init__(self, time_provider: TimeProvider, connection: NotionConnection) -> None:
         """Constructor."""
         self._connection = connection
-        self._collections_structured_storage = \
-            StructuredCollectionStorage(
-                self._COLLECTIONS_STORAGE_PATH, CollectionsManager._CollectionsStorageProtocol())
-        self._collection_items_structured_storage = \
-            StructuredCollectionStorage(
-                self._COLLECTION_ITEMS_STORAGE_PATH, CollectionsManager._CollectionItemsStorageProtocol())
+        self._collections_storage = \
+            RecordsStorage[_CollectionLockRow](
+                self._COLLECTIONS_STORAGE_PATH, time_provider, CollectionsManager._CollectionsStorageProtocol())
+        self._collection_items_storage = \
+            RecordsStorage[_CollectionItemLockRow](
+                self._COLLECTION_ITEMS_STORAGE_PATH, time_provider, CollectionsManager._CollectionItemsStorageProtocol())
 
     def __enter__(self) -> 'CollectionsManager':
         """Enter context."""
-        self._collections_structured_storage.initialize()
-        self._collection_items_structured_storage.initialize()
+        self._collections_storage.initialize()
+        self._collection_items_storage.initialize()
         return self
 
     def __exit__(
@@ -83,14 +81,12 @@ class CollectionsManager:
         """Exit context."""
         if exc_type is not None:
             return
-        self._collections_structured_storage.exit_save()
-        self._collection_items_structured_storage.exit_save()
 
     def upsert_collection(
             self, key: NotionLockKey, parent_page: NotionPageLink, name: str, schema: JSONDictType,
             view_schemas: Dict[str, JSONDictType]) -> NotionCollectionLink:
         """Create the Notion-side structure for this collection."""
-        lock = self._collections_structured_storage.find_by_property(key=key)
+        lock = self._collections_storage.load_optional(key)
 
         client = self._connection.get_notion_client()
 
@@ -139,27 +135,26 @@ class CollectionsManager:
             view_ids=view_ids)
 
         if lock:
-            self._collections_structured_storage.update(new_lock, key=key)
+            self._collections_storage.update(new_lock)
         else:
-            self._collections_structured_storage.insert(new_lock)
+            self._collections_storage.create(new_lock)
         LOGGER.info("Saved lock structure")
 
         return NotionCollectionLink(page_id=page.id, collection_id=collection.id)
 
     def remove_collection(self, key: NotionLockKey) -> None:
         """Remove the Notion-side structure for this collection."""
-        lock = self._collections_structured_storage.find_by_property_strict(key=key)
-
+        lock = self._collections_storage.load(key)
         client = self._connection.get_notion_client()
 
         page = client.get_collection_page_by_id(lock.page_id)
         page.remove()
 
-        self._collections_structured_storage.remove(key=key)
+        self._collections_storage.remove(key)
 
     def get_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
         """Retrive the Notion-side structure for this collection."""
-        lock = self._collections_structured_storage.find_by_property_strict(key=key)
+        lock = self._collections_storage.load(key)
         client = self._connection.get_notion_client()
         page = client.get_collection_page_by_id(lock.page_id)
         return NotionCollectionLinkExtra(
@@ -169,13 +164,17 @@ class CollectionsManager:
 
     def update_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
         """Just updates the name and schema for the collection and asks no questions."""
-        lock = self._collections_structured_storage.find_by_property_strict(key=key)
+        lock = self._collections_storage.load(key)
         client = self._connection.get_notion_client()
         page = client.get_collection_page_by_id(lock.page_id)
         collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
         page.title = new_name
         collection.name = new_name
         client.update_collection_schema(lock.page_id, lock.collection_id, new_schema)
+
+    @staticmethod
+    def _build_item_key(collection_key: str, key: str) -> str:
+        return f"{collection_key}:{key}"
 
     def upsert_collection_item(
             self, collection_key: NotionLockKey, key: NotionLockKey, new_row: ItemType,
@@ -184,8 +183,9 @@ class CollectionsManager:
         if new_row.ref_id is None:
             raise Exception("Can only create over an entity which has a ref_id")
 
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
-        lock = self._collection_items_structured_storage.find_by_property(key=key, collection_key=collection_key)
+        collection_lock = self._collections_storage.load(collection_key)
+        item_key = self._build_item_key(collection_key, key)
+        lock = self._collection_items_storage.load_optional(item_key)
 
         client = self._connection.get_notion_client()
         collection = client.get_collection(
@@ -201,15 +201,15 @@ class CollectionsManager:
         new_row.notion_id = notion_row.id
 
         new_lock = _CollectionItemLockRow(
-            key=key,
+            key=item_key,
             collection_key=collection_key,
             row_id=notion_row.id,
             ref_id=EntityId(new_row.ref_id))
 
         if lock:
-            self._collection_items_structured_storage.update(new_lock, key=key, collection_key=collection_key)
+            self._collection_items_storage.update(new_lock)
         else:
-            self._collection_items_structured_storage.insert(new_lock)
+            self._collection_items_storage.create(new_lock)
         LOGGER.info("Saved local locks")
 
         copy_row_to_notion_row(client, new_row, notion_row)
@@ -220,20 +220,24 @@ class CollectionsManager:
     def quick_link_local_and_notion_entries(
             self, key: NotionLockKey, collection_key: NotionLockKey, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        lock = self._collection_items_structured_storage.find_by_property(key=key, collection_key=collection_key)
-        if lock is not None:
-            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
+        item_key = self._build_item_key(collection_key, key)
+        lock = self._collection_items_storage.load_optional(item_key)
         new_lock = _CollectionItemLockRow(
-            key=key,
+            key=item_key,
             collection_key=collection_key,
             row_id=notion_id,
             ref_id=ref_id)
-        self._collection_items_structured_storage.insert(new_lock)
+        if lock is not None:
+            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
+            self._collection_items_storage.update(new_lock)
+        else:
+            self._collection_items_storage.create(new_lock)
 
     def quick_archive(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Remove a particular entity."""
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
-        lock = self._collection_items_structured_storage.find_by_property_strict(key=key, collection_key=collection_key)
+        item_key = self._build_item_key(collection_key, key)
+        collection_lock = self._collections_storage.load(collection_key)
+        lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(
             collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
@@ -244,7 +248,7 @@ class CollectionsManager:
             self, collection_key: NotionLockKey,
             copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> Iterable[ItemType]:
         """Retrieve all the Notion-side entitys."""
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
+        collection_lock = self._collections_storage.load(collection_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(
             collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
@@ -256,8 +260,9 @@ class CollectionsManager:
             self, key: NotionLockKey, collection_key: NotionLockKey,
             copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> ItemType:
         """Retrieve the Notion-side entity associated with a particular entity."""
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
-        lock = self._collection_items_structured_storage.find_by_property_strict(key=key, collection_key=collection_key)
+        item_key = self._build_item_key(collection_key, key)
+        collection_lock = self._collections_storage.load(collection_key)
+        lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
                                            collection_lock.view_ids.values())
@@ -271,8 +276,9 @@ class CollectionsManager:
         if row.ref_id is None:
             raise Exception("Can only save over an entity which has a ref_id")
 
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
-        lock = self._collection_items_structured_storage.find_by_property_strict(key=key, collection_key=collection_key)
+        item_key = self._build_item_key(collection_key, key)
+        collection_lock = self._collections_storage.load(collection_key)
+        lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
                                            collection_lock.view_ids.values())
@@ -284,11 +290,11 @@ class CollectionsManager:
     def load_all_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids."""
         return [r.row_id for r
-                in self._collection_items_structured_storage.find_all_by_property(collection_key=collection_key)]
+                in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
 
     def drop_all(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
+        collection_lock = self._collections_storage.load(collection_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(
             collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
@@ -298,18 +304,21 @@ class CollectionsManager:
         for notion_row in all_notion_rows:
             notion_row.remove()
 
-        self._collection_items_structured_storage.remove_all(collection_key=collection_key)
+        for item in self._collection_items_storage.find_all(collection_key=Eq(collection_key)):
+            item_key = self._build_item_key(collection_key, item.key)
+            self._collection_items_storage.remove(item_key)
 
     def hard_remove(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        collection_lock = self._collections_structured_storage.find_by_property_strict(key=collection_key)
-        lock = self._collection_items_structured_storage.find_by_property_strict(key=key, collection_key=collection_key)
+        item_key = self._build_item_key(collection_key, key)
+        collection_lock = self._collections_storage.load(collection_key)
+        lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
                                            collection_lock.view_ids.values())
         notion_row = client.get_collection_row(collection, lock.row_id)
         notion_row.remove()
-        self._collection_items_structured_storage.remove(key=key, collection_key=collection_key)
+        self._collection_items_storage.remove(item_key)
 
     @staticmethod
     @typing.no_type_check
@@ -363,15 +372,11 @@ class CollectionsManager:
         def storage_schema() -> JSONDictType:
             """The schema for the data."""
             return {
-                "type": "object",
-                "properties": {
-                    "key": {"type": "string"},
-                    "page_id": {"type": "string"},
-                    "collection_id": {"type": "string"},
-                    "view_ids": {
-                        "type": "object",
-                        "additionalProperties": {"type": "string"}
-                    }
+                "page_id": {"type": "string"},
+                "collection_id": {"type": "string"},
+                "view_ids": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string"}
                 }
             }
 
@@ -388,7 +393,6 @@ class CollectionsManager:
         def live_to_storage(live_form: _CollectionLockRow) -> JSONDictType:
             """Transform the live system data to something suitable for basic storage."""
             return {
-                "key": live_form.key,
                 "page_id": live_form.page_id,
                 "collection_id": live_form.collection_id,
                 "view_ids": live_form.view_ids,
@@ -399,13 +403,10 @@ class CollectionsManager:
         def storage_schema() -> JSONDictType:
             """The schema for the data."""
             return {
-                "type": "object",
-                "properties": {
-                    "key": {"type": "string"},
-                    "collection_key": {"type": "string"},
-                    "ref_id": {"type": "string"},
-                    "row_id": {"type": "string"}
-                }
+                "key": {"type": "string"},
+                "collection_key": {"type": "string"},
+                "ref_id": {"type": "string"},
+                "row_id": {"type": "string"}
             }
 
         @staticmethod
@@ -421,7 +422,6 @@ class CollectionsManager:
         def live_to_storage(live_form: _CollectionItemLockRow) -> JSONDictType:
             """Transform the live system data to something suitable for basic storage."""
             return {
-                "key": live_form.key,
                 "collection_key": live_form.collection_key,
                 "ref_id": live_form.ref_id,
                 "row_id": live_form.row_id

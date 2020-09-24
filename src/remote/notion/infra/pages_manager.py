@@ -8,13 +8,13 @@ import typing
 
 from remote.notion.common import NotionPageLink, NotionId, NotionLockKey, PageNotFoundError
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage
+from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class _PageLockRow:
+class _PageLockRow(BaseRecordRow):
     """Information about a Notion-side page."""
-    key: NotionLockKey
     page_id: NotionId
 
 
@@ -24,16 +24,16 @@ class PagesManager:
     _STORAGE_PATH: typing.ClassVar[Path] = Path("/data/notion.pages.yaml")
 
     _connection: Final[NotionConnection]
-    _structured_storage: Final[StructuredCollectionStorage[_PageLockRow]]
+    _storage: Final[RecordsStorage[_PageLockRow]]
 
-    def __init__(self, connection: NotionConnection) -> None:
+    def __init__(self, time_provider: TimeProvider, connection: NotionConnection) -> None:
         """Constructor."""
         self._connection = connection
-        self._structured_storage = StructuredCollectionStorage(self._STORAGE_PATH, self)
+        self._storage = RecordsStorage[_PageLockRow](self._STORAGE_PATH, time_provider, self)
 
     def __enter__(self) -> 'PagesManager':
         """Enter context."""
-        self._structured_storage.initialize()
+        self._storage.initialize()
         return self
 
     def __exit__(
@@ -42,19 +42,18 @@ class PagesManager:
         """Exit context."""
         if exc_type is not None:
             return
-        self._structured_storage.exit_save()
 
     def upsert_page(self, key: NotionLockKey, name: str, parent_page: Optional[NotionPageLink]) -> NotionPageLink:
         """Create a page with a given name."""
-        page_lock_rows_next_idx, page_lock_rows = self._structured_storage.load()
-
-        found_page_lock_row = self._find_lock_by_key(key, page_lock_rows)
+        found_page_lock_row = self._storage.load_optional(key)
 
         notion_client = self._connection.get_notion_client()
 
         if found_page_lock_row:
             page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
             page_block.title = name
+
+            self._storage.update(found_page_lock_row)
 
             return NotionPageLink(page_id=page_block.id)
         else:
@@ -64,38 +63,20 @@ class PagesManager:
             else:
                 new_page_block = notion_client.create_regular_page(name)
 
-            page_lock_rows.append(_PageLockRow(key=key, page_id=new_page_block.id))
-            self._structured_storage.save((page_lock_rows_next_idx + 1, page_lock_rows))
+            self._storage.create(_PageLockRow(key=key, page_id=new_page_block.id))
 
             return NotionPageLink(page_id=new_page_block.id)
 
     def get_page(self, key: NotionLockKey) -> NotionPageLink:
         """Get a page with a given key."""
-        _, page_lock_rows = self._structured_storage.load()
-
-        found_page_lock_row = self._find_lock_by_key(key, page_lock_rows)
-
-        if not found_page_lock_row:
-            raise PageNotFoundError(f"Could not find page for key '{key}'")
-
+        found_page_lock_row = self._storage.load(key)
         return NotionPageLink(page_id=found_page_lock_row.page_id)
-
-    @staticmethod
-    def _find_lock_by_key(key: NotionLockKey, page_lock_rows: typing.List[_PageLockRow]) -> Optional[_PageLockRow]:
-        try:
-            return next(plr for plr in page_lock_rows if plr.key == key)
-        except StopIteration:
-            return None
 
     @staticmethod
     def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
-            "type": "object",
-            "properties": {
-                "key": {"type": "string"},
-                "page_id": {"type": "string"}
-            }
+            "page_id": {"type": "string"}
         }
 
     @staticmethod
@@ -109,6 +90,5 @@ class PagesManager:
     def live_to_storage(live_form: _PageLockRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "key": live_form.key,
             "page_id": live_form.page_id
         }
