@@ -59,6 +59,9 @@ WorkspaceToken = NewType("WorkspaceToken", str)
 ProjectKey = NewType("ProjectKey", str)
 
 
+SmartListKey = NewType("SmartListKey", str)
+
+
 @enum.unique
 class Eisen(enum.Enum):
     """The Eisenhower status of a particular task."""
@@ -206,6 +209,7 @@ class BasicValidator:
     _workspace_space_id_re: Final[Pattern[str]] = re.compile(r"^[0-9a-z-]{36}$")
     _workspace_token_re: Final[Pattern[str]] = re.compile(r"^[0-9a-f]+$")
     _project_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
+    _smart_list_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
     _eisen_values: Final[FrozenSet[str]] = frozenset(e.value for e in Eisen)
     _difficulty_values: Final[FrozenSet[str]] = frozenset(d.value for d in Difficulty)
     _inbox_task_status_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskStatus)
@@ -348,6 +352,22 @@ class BasicValidator:
                 f"Expected project key '{project_key_raw}' to match '{self._project_key_re.pattern}'")
 
         return ProjectKey(project_key_str)
+
+    def smart_list_key_validate_and_clean(self, smart_list_key_raw: Optional[str]) -> SmartListKey:
+        """Validate and clean a smart list key."""
+        if not smart_list_key_raw:
+            raise ModelValidationError("Expected smart list key to be non-null")
+
+        smart_list_key_str: str = smart_list_key_raw.strip().lower()
+
+        if len(smart_list_key_str) == 0:
+            raise ModelValidationError("Expected smart list key to be non-empty")
+
+        if not self._smart_list_key_re.match(smart_list_key_str):
+            raise ModelValidationError(
+                f"Expected smart list key '{smart_list_key_raw}' to match '{self._smart_list_key_re.pattern}'")
+
+        return SmartListKey(smart_list_key_str)
 
     def timestamp_validate_and_clean(self, timestamp_raw: Optional[str]) -> Timestamp:
         """Validate and clean an optional timestamp."""

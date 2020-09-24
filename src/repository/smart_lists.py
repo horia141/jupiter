@@ -6,8 +6,8 @@ from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final
 import typing
 
-from models.basic import EntityId
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
+from models.basic import EntityId, SmartListKey
+from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -17,6 +17,7 @@ LOGGER = logging.getLogger(__name__)
 @dataclass()
 class SmartListRow(BaseEntityRow):
     """A container for smart list items."""
+    key: SmartListKey
     name: str
 
 
@@ -43,9 +44,9 @@ class SmartListsRepository:
         if exc_type is not None:
             return
 
-    def create_smart_list(self, name: str, archived: bool) -> SmartListRow:
+    def create_smart_list(self, key: SmartListKey, name: str, archived: bool) -> SmartListRow:
         """Create a list."""
-        new_smart_list = SmartListRow(name=name, archived=archived)
+        new_smart_list = SmartListRow(key=key, name=name, archived=archived)
         return self._storage.create(new_smart_list)
 
     def archive_smart_list(self, ref_id: EntityId) -> SmartListRow:
@@ -66,18 +67,25 @@ class SmartListsRepository:
         """Load a particular list by its id."""
         return self._storage.load(ref_id, allow_archived=allow_archived)
 
+    def load_smart_list_by_key(self, key: SmartListKey, allow_archived: bool = False) -> SmartListRow:
+        """Load a particular list by its id."""
+        return self._storage.find_first(allow_archived=allow_archived, key=Eq(key))
+
     def find_all_smart_lists(
             self, allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListRow]:
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_keys: Optional[Iterable[SmartListKey]] = None) -> Iterable[SmartListRow]:
         """Load all lists."""
         return self._storage.find_all(
-            allow_archived=allow_archived, ref_id=In(*filter_ref_ids) if filter_ref_ids else None)
+            allow_archived=allow_archived, ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
+            key=In(*filter_keys) if filter_keys else None)
 
     @staticmethod
     def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
-            "name": {"type": "string"}
+            "name": {"type": "string"},
+            "key": {"type": "string"}
         }
 
     @staticmethod
@@ -85,13 +93,15 @@ class SmartListsRepository:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return SmartListRow(
             name=typing.cast(str, storage_form["name"]),
+            key=SmartListKey(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]))
 
     @staticmethod
     def live_to_storage(live_form: SmartListRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "name": live_form.name
+            "name": live_form.name,
+            "key": live_form.key
         }
 
 

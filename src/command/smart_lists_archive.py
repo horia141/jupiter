@@ -34,10 +34,10 @@ class SmartListsArchive(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True,
-                            help="The id of the smart list to archive")
+        parser.add_argument("--smart-list", dest="smart_list_key", required=True,
+                            help="The key of the smart list to archive")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        self._smart_list_controller.archive_smart_list(ref_id)
+        smart_list_key = self._basic_validator.smart_list_key_validate_and_clean(args.smart_list_key)
+        self._smart_list_controller.archive_smart_list(smart_list_key)

@@ -34,12 +34,12 @@ class SmartListsSetName(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True,
-                            help="The id of the smart list to set the name for")
+        parser.add_argument("--smart-list", dest="smart_list_key", required=True,
+                            help="The key of the smart list")
         parser.add_argument("--name", dest="name", required=True, help="The name of the smart list")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        smart_list_key = self._basic_validator.smart_list_key_validate_and_clean(args.smart_list_key)
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        self._smart_lists_controller.set_smart_list_name(ref_id, name)
+        self._smart_lists_controller.set_smart_list_name(smart_list_key, name)

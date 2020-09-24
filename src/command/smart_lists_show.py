@@ -34,18 +34,18 @@ class SmartListsShow(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_ids", default=[], action="append",
-                            help="The id of the smart list to show")
+        parser.add_argument("--smart-list", dest="smart_list_keys", default=[], action="append",
+                            help="Allow only smart list items from this smart list")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids] \
-            if len(args.ref_ids) > 0 else None
-        response = self._smart_list_controller.load_all_smart_lists(filter_ref_ids=ref_ids)
+        keys = [self._basic_validator.smart_list_key_validate_and_clean(rid) for rid in args.smart_list_keys] \
+            if len(args.smart_list_keys) > 0 else None
+        response = self._smart_list_controller.load_all_smart_lists(filter_keys=keys)
 
         for smart_list_entry in response.smart_lists:
             smart_list = smart_list_entry.smart_list
-            print(f'id={smart_list.ref_id} {smart_list.name}:')
+            print(f'{smart_list.key}: {smart_list.name}')
 
             for smart_list_item in smart_list_entry.smart_list_items:
                 print(f'  - id={smart_list_item.ref_id} {smart_list_item.name}' +

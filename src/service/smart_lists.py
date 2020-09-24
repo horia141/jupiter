@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
-from models.basic import EntityId, ModelValidationError, BasicValidator, SyncPrefer
+from models.basic import EntityId, ModelValidationError, BasicValidator, SyncPrefer, SmartListKey
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from repository.smart_lists import SmartListsRepository, SmartListItemsRepository
@@ -18,6 +18,7 @@ LOGGER = logging.getLogger(__name__)
 class SmartList:
     """A smart list."""
     ref_id: EntityId
+    key: SmartListKey
     name: str
     archived: bool
 
@@ -54,9 +55,9 @@ class SmartListsService:
         """Create the root page where all lists will be linked to."""
         self._notion_smart_lists_manager.upsert_root_page(parent_page)
 
-    def create_smart_list(self, name: str) -> SmartList:
+    def create_smart_list(self, key: SmartListKey, name: str) -> SmartList:
         """Create a new smart list."""
-        new_smart_list_row = self._smart_lists_repository.create_smart_list(name, archived=False)
+        new_smart_list_row = self._smart_lists_repository.create_smart_list(key=key, name=name, archived=False)
         LOGGER.info("Applied local changes")
 
         self._notion_smart_lists_manager.upsert_smart_list(new_smart_list_row.ref_id, name)
@@ -64,16 +65,17 @@ class SmartListsService:
 
         return SmartList(
             ref_id=new_smart_list_row.ref_id,
+            key=new_smart_list_row.key,
             name=new_smart_list_row.name,
             archived=new_smart_list_row.archived)
 
     def archive_smart_list(self, ref_id: EntityId) -> SmartList:
         """Archive a smart list."""
-        smart_list = self._smart_lists_repository.archive_smart_list(ref_id)
+        smart_list_row = self._smart_lists_repository.archive_smart_list(ref_id)
 
         for smart_list_item in \
                 self._smart_list_items_repository.find_all_smart_list_items(
-                    filter_smart_list_ref_ids=[smart_list.ref_id]):
+                    filter_smart_list_ref_ids=[smart_list_row.ref_id]):
             self._smart_list_items_repository.archive_smart_list_item(smart_list_item.ref_id)
 
         LOGGER.info("Applied local changes")
@@ -85,9 +87,10 @@ class SmartListsService:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
 
         return SmartList(
-            ref_id=smart_list.ref_id,
-            name=smart_list.name,
-            archived=smart_list.archived)
+            ref_id=smart_list_row.ref_id,
+            key=smart_list_row.key,
+            name=smart_list_row.name,
+            archived=smart_list_row.archived)
 
     def set_smart_list_name(self, ref_id: EntityId, name: str) -> SmartList:
         """Change the name of a smart list."""
@@ -106,17 +109,29 @@ class SmartListsService:
 
         return SmartList(
             ref_id=smart_list_row.ref_id,
+            key=smart_list_row.key,
+            name=smart_list_row.name,
+            archived=smart_list_row.archived)
+
+    def load_smart_list_by_key(self, key: SmartListKey, allow_archived: bool = False) -> SmartList:
+        """Retrieve a smart list by key."""
+        smart_list_row = self._smart_lists_repository.load_smart_list_by_key(key=key, allow_archived=allow_archived)
+        return SmartList(
+            ref_id=smart_list_row.ref_id,
+            key=smart_list_row.key,
             name=smart_list_row.name,
             archived=smart_list_row.archived)
 
     def load_all_smart_lists(
-        self, allow_archived: bool = False,
-        filter_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartList]:
+            self, allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_keys: Optional[Iterable[SmartListKey]] = None) -> Iterable[SmartList]:
         """Retrieve all the smart list items."""
         smart_list_rows = self._smart_lists_repository.find_all_smart_lists(
-            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids)
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids, filter_keys=filter_keys)
 
         return [SmartList(ref_id=slr.ref_id,
+                          key=slr.key,
                           name=slr.name,
                           archived=slr.archived) for slr in smart_list_rows]
 
@@ -139,6 +154,7 @@ class SmartListsService:
 
         return SmartList(
             ref_id=smart_list_row.ref_id,
+            key=smart_list_row.key,
             name=smart_list_row.name,
             archived=smart_list_row.archived)
 
@@ -154,6 +170,7 @@ class SmartListsService:
 
         return SmartList(
             ref_id=smart_list_row.ref_id,
+            key=smart_list_row.key,
             name=smart_list_row.name,
             archived=smart_list_row.archived)
 

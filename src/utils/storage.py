@@ -37,6 +37,10 @@ class FindFilterPredicate(abc.ABC):
     def test(self, val: FindFilterType) -> bool:
         """Test whether the predicate is matched against a value."""
 
+    @abc.abstractmethod
+    def as_operator_str(self, val: FindFilterType) -> str:
+        """Represent what this predicate is doing."""
+
 
 class Eq(FindFilterPredicate):
     """A filtering predicate for exact equality."""
@@ -51,6 +55,10 @@ class Eq(FindFilterPredicate):
         """Test whether the predicate is matched against a value."""
         return self._filter_val == val
 
+    def as_operator_str(self, val: FindFilterType) -> str:
+        """Represent what this predicate is doing."""
+        return f"{val} == {self._filter_val}"
+
 
 class In(FindFilterPredicate):
     """A filtering predicate for membership in a set."""
@@ -64,6 +72,10 @@ class In(FindFilterPredicate):
     def test(self, val: FindFilterType) -> bool:
         """Test whether the predicate is matched against a value."""
         return val in self._filter_set
+
+    def as_operator_str(self, val: FindFilterType) -> str:
+        """Represent what this predicate is doing."""
+        return f"{val} in ({','.join(str(s) for s in self._filter_set)})"
 
 
 class StructuredStorageProtocol(Protocol[LiveType]):
@@ -721,6 +733,32 @@ class EntitiesStorage(Generic[EntityRowType]):
             return entity
 
         return None
+
+    def find_first(
+            self, allow_archived: bool = False, **kwargs: Optional[FindFilterPredicate]) -> EntityRowType:
+        """Find all the entities in the collection matching all the properties."""
+        _, entities = self._load()
+
+        for entity in entities:
+            for filter_property_name, filter_predicate in kwargs.items():
+                if filter_predicate is None:
+                    continue
+
+                try:
+                    property_value = getattr(entity, filter_property_name)
+                    if not filter_predicate.test(property_value):
+                        break
+                except AttributeError:
+                    raise StructuredStorageError(
+                        f"Entity identified by {entity.ref_id} does not have property {filter_property_name}")
+            else:
+                if not allow_archived and entity.archived:
+                    continue
+
+                return entity
+
+        filter_expr = " & ".join(f"{v.as_operator_str(k)}" for k, v in kwargs.items() if v is not None)
+        raise StructuredStorageError(f"Entity identified by {filter_expr} is archived")
 
     def find_all(
             self, allow_archived: bool = False, **kwargs: Optional[FindFilterPredicate]) -> Iterable[EntityRowType]:
