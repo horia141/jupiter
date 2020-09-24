@@ -67,7 +67,8 @@ class CollectionsManager:
                 self._COLLECTIONS_STORAGE_PATH, time_provider, CollectionsManager._CollectionsStorageProtocol())
         self._collection_items_storage = \
             RecordsStorage[_CollectionItemLockRow](
-                self._COLLECTION_ITEMS_STORAGE_PATH, time_provider, CollectionsManager._CollectionItemsStorageProtocol())
+                self._COLLECTION_ITEMS_STORAGE_PATH, time_provider,
+                CollectionsManager._CollectionItemsStorageProtocol())
 
     def __enter__(self) -> 'CollectionsManager':
         """Enter context."""

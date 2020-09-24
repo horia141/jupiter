@@ -7,14 +7,6 @@ NotionLockKey = NewType("NotionLockKey", str)
 NotionId = NewType("NotionId", str)
 
 
-class PageError(Exception):
-    """Exception for Notion pages interaction."""
-
-
-class PageNotFoundError(PageError):
-    """Exception raised when a page wasn't found."""
-
-
 class CollectionError(Exception):
     """Exception for Notion interactions."""
 
@@ -46,12 +38,6 @@ class NotionCollectionLinkExtra:
     page_id: NotionId
     collection_id: NotionId
     name: str
-
-
-@dataclass()
-class NotionCollectionItemLink:
-    """A descriptor for a Notion collection item page."""
-    page_id: NotionId
 
 
 def format_name_for_option(option_name: str) -> str:

@@ -5,7 +5,7 @@ from typing import Final, Optional, Iterable
 import typing
 
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
 from service.smart_lists import SmartListsService
@@ -59,7 +59,7 @@ class SyncLocalAndNotionController:
             filter_inbox_task_ref_ids: Optional[Iterable[EntityId]],
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]],
+            filter_smart_list_keys: Optional[Iterable[SmartListKey]],
             filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
@@ -196,7 +196,7 @@ class SyncLocalAndNotionController:
                     self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
                     LOGGER.info(f"Archived inbox task {inbox_task.name}")
 
-        for smart_list in self._smart_lists_service.load_all_smart_lists(filter_ref_ids=filter_smart_list_ref_ids):
+        for smart_list in self._smart_lists_service.load_all_smart_lists(filter_keys=filter_smart_list_keys):
             if SyncTarget.STRUCTURE in sync_targets:
                 LOGGER.info(f"Recreating smart list '{smart_list.name}'")
 
@@ -205,4 +205,4 @@ class SyncLocalAndNotionController:
                 self._smart_lists_service.sync_smart_list_and_smart_list_items(
                     smart_list_ref_id=smart_list.ref_id, drop_all_notion_side=drop_all_notion,
                     sync_even_if_not_modified=sync_even_if_not_modified,
-                    filter_smart_list_item_ref_ids=filter_smart_list_ref_ids, sync_prefer=sync_prefer)
+                    filter_smart_list_item_ref_ids=filter_smart_list_item_ref_ids, sync_prefer=sync_prefer)

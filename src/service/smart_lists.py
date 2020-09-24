@@ -75,7 +75,7 @@ class SmartListsService:
 
         for smart_list_item in \
                 self._smart_list_items_repository.find_all_smart_list_items(
-                    filter_smart_list_ref_ids=[smart_list_row.ref_id]):
+                        filter_smart_list_ref_ids=[smart_list_row.ref_id]):
             self._smart_list_items_repository.archive_smart_list_item(smart_list_item.ref_id)
 
         LOGGER.info("Applied local changes")
@@ -141,7 +141,7 @@ class SmartListsService:
 
         for smart_list_item in \
                 self._smart_list_items_repository.find_all_smart_list_items(
-                    filter_smart_list_ref_ids=[smart_list_row.ref_id]):
+                        filter_smart_list_ref_ids=[smart_list_row.ref_id]):
             self._smart_list_items_repository.remove_smart_list_item(smart_list_item.ref_id)
 
         LOGGER.info("Applied local changes")
@@ -397,10 +397,13 @@ class SmartListsService:
                     smart_list_ref_id, new_smart_list_item_row.ref_id, smart_list_item_notion_row)
                 LOGGER.info(f"Applied changes on Notion side too")
 
-                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = smart_list_item_notion_row
-            elif smart_list_item_notion_row.ref_id in all_smart_list_items_rows_set and smart_list_item_notion_row.notion_id in all_smart_list_items_notion_ids:
+                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = \
+                    smart_list_item_notion_row
+            elif smart_list_item_notion_row.ref_id in all_smart_list_items_rows_set and \
+                    smart_list_item_notion_row.notion_id in all_smart_list_items_notion_ids:
                 smart_list_item_row = all_smart_list_items_rows_set[EntityId(smart_list_item_notion_row.ref_id)]
-                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = smart_list_item_notion_row
+                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = \
+                    smart_list_item_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified and \
@@ -418,8 +421,10 @@ class SmartListsService:
                         raise ServiceValidationError("Invalid inputs") from error
 
                     archived_time_action = \
-                        TimeFieldAction.SET if not smart_list_item_row.archived and smart_list_item_notion_row.archived else \
-                        TimeFieldAction.CLEAR if smart_list_item_row.archived and not smart_list_item_notion_row.archived else \
+                        TimeFieldAction.SET if not smart_list_item_row.archived \
+                                               and smart_list_item_notion_row.archived else \
+                        TimeFieldAction.CLEAR if smart_list_item_row.archived \
+                                                 and not smart_list_item_notion_row.archived else \
                         TimeFieldAction.DO_NOTHING
                     smart_list_item_row.archived = smart_list_item_notion_row.archived
                     smart_list_item_row.name = smart_list_item_name

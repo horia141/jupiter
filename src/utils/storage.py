@@ -4,10 +4,10 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
+import typing
 
 import jsonschema as js
 import pendulum
-import typing
 import yaml
 
 from models.basic import EntityId, Timestamp, BasicValidator
@@ -187,121 +187,6 @@ class StructuredCollectionStorage(Generic[LiveType]):
             raise Exception("Called exit_save without a prior call to initialize!")
         self._save(self._live_data)
 
-    def insert(self, live: LiveType, set_ref_id: bool = False) -> None:
-        """Add a new element to the collection."""
-        storage_idx, storage = self.load()
-        storage.append(live)
-        if set_ref_id:
-            setattr(live, "ref_id", str(storage_idx))
-        self.save((storage_idx + 1, storage))
-
-    def update(self, live: LiveType, **kwargs: Any) -> None:  # type: ignore
-        """Update an existing element identified by the filtering expression."""
-        storage_idx, storage = self.load()
-
-        for elem_idx, elem in enumerate(storage):
-            for filter_key, filter_value in kwargs.items():
-                try:
-                    elem_value = getattr(elem, filter_key)
-                    if elem_value != filter_value:
-                        break
-                except AttributeError:
-                    break
-            else:
-                storage[elem_idx] = live
-                self.save((storage_idx, storage))
-                return
-
-        filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
-        raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
-
-    def remove(self, **kwargs: Any) -> LiveType:  # type: ignore
-        """Remove the item identified by the filtering expression."""
-        storage_idx, storage = self.load()
-
-        for elem_idx, elem in enumerate(storage):
-            for filter_key, filter_value in kwargs.items():
-                try:
-                    elem_value = getattr(elem, filter_key)
-                    if elem_value != filter_value:
-                        break
-                except AttributeError:
-                    break
-            else:
-                found_elem = storage[elem_idx]
-                del storage[elem_idx]
-                self.save((storage_idx, storage))
-                return found_elem
-
-        filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
-        raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
-
-    def remove_all(self, **kwargs: Any) -> None:  # type: ignore
-        """Remove the item identified by the filtering expression."""
-        storage_idx, storage = self.load()
-
-        def _build_new() -> Iterable[LiveType]:
-            for _, elem in enumerate(storage):
-                for filter_key, filter_value in kwargs.items():
-                    try:
-                        elem_value = getattr(elem, filter_key)
-                        if elem_value != filter_value:
-                            yield elem
-                            break
-                    except AttributeError:
-                        yield elem
-                        break
-
-        new_storage = list(_build_new())
-        self.save((storage_idx, new_storage))
-
-    def find_by_property(self, **kwargs: Any) -> Optional[LiveType]:  # type: ignore
-        """Find the first element in the collection matching all the properties."""
-        _, storage = self.load()
-        for elem in storage:
-            for filter_key, filter_value in kwargs.items():
-                try:
-                    elem_value = getattr(elem, filter_key)
-                    if elem_value != filter_value:
-                        break
-                except AttributeError:
-                    break
-            else:
-                return elem
-
-        return None
-
-    def find_by_property_strict(self, **kwargs: Any) -> LiveType:  # type: ignore
-        """Find the first element in the collection matching all the properties."""
-        _, storage = self.load()
-        for elem in storage:
-            for filter_key, filter_value in kwargs.items():
-                try:
-                    elem_value = getattr(elem, filter_key)
-                    if elem_value != filter_value:
-                        break
-                except AttributeError:
-                    break
-            else:
-                return elem
-
-        filter_expr_str = " ".join(f"{k}={v}" for (k, v) in kwargs.items())
-        raise StructuredStorageError(f"Element identified by '{filter_expr_str}' does not exist")
-
-    def find_all_by_property(self, **kwargs: Any) -> Iterable[LiveType]:  # type: ignore
-        """Find all the elements in the collection matching all the properties."""
-        _, storage = self.load()
-        for elem in storage:
-            for filter_key, filter_value in kwargs.items():
-                try:
-                    elem_value = getattr(elem, filter_key)
-                    if elem_value != filter_value:
-                        break
-                except AttributeError:
-                    break
-            else:
-                yield elem
-
     def load(self) -> Tuple[int, List[LiveType]]:
         """Load the structured storage fully."""
         if self._live_data is None:
@@ -372,6 +257,7 @@ class BaseRecordRow:
     last_modified_time: Timestamp = field(init=False)
 
     def __post_init__(self) -> None:
+        """Init the base record with some invalid data."""
         self.created_time = BAD_TIME
         self.last_modified_time = BAD_TIME
 
@@ -401,10 +287,10 @@ class RecordsStorage(Generic[RecordRowType]):
         self._protocol = protocol
 
         items_schema: JSONDictType = {}
-        for k0, v0 in self.BASE_RECORD_ROW_PROPERTIES.items():
-            items_schema[k0] = v0
-        for k1, v1 in self._protocol.storage_schema().items():
-            items_schema[k1] = v1
+        for key0, val0 in self.BASE_RECORD_ROW_PROPERTIES.items():
+            items_schema[key0] = val0
+        for key1, val1 in self._protocol.storage_schema().items():
+            items_schema[key1] = val1
         self._full_entity_schema = {
             "type": "object",
             "properties": {
@@ -439,7 +325,6 @@ class RecordsStorage(Generic[RecordRowType]):
 
     def remove(self, key: str) -> RecordRowType:
         """Remove the record identified by the key."""
-
         next_idx, records = self._load()
 
         for record_idx, record in enumerate(records):
@@ -557,8 +442,8 @@ class RecordsStorage(Generic[RecordRowType]):
             "created_time": BasicValidator.timestamp_to_str(record.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(record.last_modified_time)
         }
-        for k, v in self._protocol.live_to_storage(record).items():
-            full_storage_form[k] = v
+        for key, val in self._protocol.live_to_storage(record).items():
+            full_storage_form[key] = val
         return full_storage_form
 
 
@@ -573,6 +458,7 @@ class BaseEntityRow:
     archived_time: Optional[Timestamp] = field(init=False)
 
     def __post_init__(self) -> None:
+        """Init the base entity with some invalid data."""
         self.ref_id = BAD_REF_ID
         self.created_time = BAD_TIME
         self.last_modified_time = BAD_TIME
@@ -606,10 +492,10 @@ class EntitiesStorage(Generic[EntityRowType]):
         self._protocol = protocol
 
         items_schema = {}
-        for k0, v0 in self.BASE_ENTITY_ROW_PROPERTIES.items():
-            items_schema[k0] = v0
-        for k1, v1 in self._protocol.storage_schema().items():
-            items_schema[k1] = v1
+        for key0, val0 in self.BASE_ENTITY_ROW_PROPERTIES.items():
+            items_schema[key0] = val0
+        for key1, val1 in self._protocol.storage_schema().items():
+            items_schema[key1] = val1
         self._full_entity_schema = {
             "type": "object",
             "properties": {
@@ -836,8 +722,8 @@ class EntitiesStorage(Generic[EntityRowType]):
             "created_time": BasicValidator.timestamp_to_str(entity.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(entity.last_modified_time),
             "archived_time": BasicValidator.timestamp_to_str(entity.archived_time)
-            if entity.archived_time else None
+                             if entity.archived_time else None
         }
-        for k, v in self._protocol.live_to_storage(entity).items():
-            full_storage_form[k] = v
+        for key, val in self._protocol.live_to_storage(entity).items():
+            full_storage_form[key] = val
         return full_storage_form

@@ -6,7 +6,7 @@ from typing import Optional, Final
 
 import typing
 
-from remote.notion.common import NotionPageLink, NotionId, NotionLockKey, PageNotFoundError
+from remote.notion.common import NotionPageLink, NotionId, NotionLockKey
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage
 from utils.time_provider import TimeProvider
