@@ -186,7 +186,7 @@ class VacationsService:
             all_vacations_notion_ids = set(self._collection.load_all_saved_vacation_notion_ids())
         else:
             self._collection.drop_all_vacations()
-            all_vacations_rows = {}
+            all_vacations_rows = []
             all_vacations_notion_ids = set()
         vacations_rows_set = {}
 

@@ -5,7 +5,6 @@ be stable and fast, and have sufficient supporting infrastructure (website, docs
 
 New features:
 
-* Support lists
 * Support metrics
 * Support a journal
 * Support habits as separated from chores
@@ -36,5 +35,5 @@ Beyond this the plans get _ambitious_. Here's some product-wise plans:
 * Allow task creation via email or chatbots
 * Build a Slack app and allow control via Slack commands
 * Integrate with Google calendar / iCal for task source, as well as to export a calendar with all the tasks
-* Integrate with YouTube, Spotify, Apple Music, Amazon, etc for rich lists support, playlists creation, etc
+* Integrate with YouTube, Spotify, Apple Music, Amazon, etc for smart lists support, playlists creation, etc
 * Build a hosting/SaaS setup for all of the above

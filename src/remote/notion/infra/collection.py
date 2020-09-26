@@ -7,10 +7,10 @@ from typing import TypeVar, Generic, Final, Dict, Any, Protocol, List, Optional,
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
-from remote.notion.client import NotionClient
+from remote.notion.infra.client import NotionClient
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError, \
     CollectionEntityNotFound
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredCollectionStorage, JSONDictType
 
 LOGGER = logging.getLogger(__name__)

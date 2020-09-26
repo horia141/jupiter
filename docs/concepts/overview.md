@@ -23,6 +23,8 @@ As a quick reference, here is the list of the more important concepts:
   "Walk 10K steps".
 * _Big plan_: a larger unit of work, consisting of multiple tasks. This is normally
   something like "Plan a family vacation", or "Get a talk accepted to a conference".
+* _Smart list_: a list of things! It can record books to read, visited restaurants,
+  movies to watch, etc.
 
 The rest of the document will cover each of these in greater detail.
 

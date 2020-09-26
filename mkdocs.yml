@@ -27,6 +27,7 @@ nav:
           - 'Inbox Tasks': 'concepts/inbox-tasks.md'
           - 'Recurring Tasks': 'concepts/recurring-tasks.md'
           - 'Big Plans': 'concepts/big-plans.md'
+          - 'Smart Lists': 'concepts/smart-lists.md'
           - 'Reporting': 'concepts/reporting.md'
           - 'Sync Notion And Local': 'concepts/notion-local-sync.md'
           - 'Tasks Generation': 'concepts/tasks-generation.md'
