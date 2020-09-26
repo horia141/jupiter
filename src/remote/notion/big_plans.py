@@ -11,10 +11,10 @@ from notion.collection import CollectionRowBlock
 
 import remote.notion.common
 from models.basic import EntityId, BigPlanStatus, ADate, BasicValidator, Timestamp
-from remote.notion.client import NotionClient
-from remote.notion.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
+from remote.notion.infra.client import NotionClient
+from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 

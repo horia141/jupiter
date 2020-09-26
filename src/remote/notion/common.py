@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import NewType, List, Optional
 
+
+NotionLockKey = NewType("NotionLockKey", str)
 NotionId = NewType("NotionId", str)
 
 
@@ -28,6 +30,14 @@ class NotionCollectionLink:
     """A descriptor for a Notion collection page."""
     page_id: NotionId
     collection_id: NotionId
+
+
+@dataclass()
+class NotionCollectionLinkExtra:
+    """Glad we're going down the route of Windows."""
+    page_id: NotionId
+    collection_id: NotionId
+    name: str
 
 
 def format_name_for_option(option_name: str) -> str:

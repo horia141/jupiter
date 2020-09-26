@@ -48,6 +48,10 @@ class SyncLocalAndNotion(command.Command):
                             help="Sync only these particular big plans")
         parser.add_argument("--recurring-task-id", dest="recurring_task_ref_ids", default=[], action="append",
                             help="Sync only these recurring tasks")
+        parser.add_argument("--smart-list", dest="smart_list_keys", default=[], action="append",
+                            help="Sync only these smart lists")
+        parser.add_argument("--smart-list-item-id", dest="smart_list_item_ref_ids", default=[], action="append",
+                            help="Sync only these smart list items")
         parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
         parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
@@ -71,9 +75,24 @@ class SyncLocalAndNotion(command.Command):
         recurring_task_ref_ids = [self._basic_validator.entity_id_validate_and_clean(rt)
                                   for rt in args.recurring_task_ref_ids] \
             if len(args.recurring_task_ref_ids) > 0 else None
+        smart_list_keys = [self._basic_validator.smart_list_key_validate_and_clean(sl)
+                           for sl in args.smart_list_ref_ids] \
+            if len(args.smart_list_ref_ids) > 0 else None
+        smart_list_item_ref_ids = [self._basic_validator.entity_id_validate_and_clean(sli)
+                                   for sli in args.smart_list_item_ref_ids] \
+            if len(args.smart_list_item_ref_ids) > 0 else None
         sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
         self._sync_local_and_notion_controller.sync(
-            sync_targets, drop_all_notion, sync_even_if_not_modified,
-            vacation_ref_ids, project_keys, inbox_task_ref_ids, big_plan_ref_ids, recurring_task_ref_ids, sync_prefer)
+            sync_targets=sync_targets,
+            drop_all_notion=drop_all_notion,
+            sync_even_if_not_modified=sync_even_if_not_modified,
+            filter_vacation_ref_ids=vacation_ref_ids,
+            filter_project_keys=project_keys,
+            filter_inbox_task_ref_ids=inbox_task_ref_ids,
+            filter_big_plan_ref_ids=big_plan_ref_ids,
+            filter_recurring_task_ref_ids=recurring_task_ref_ids,
+            filter_smart_list_keys=smart_list_keys,
+            filter_smart_list_item_ref_ids=smart_list_item_ref_ids,
+            sync_prefer=sync_prefer)

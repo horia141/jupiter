@@ -43,7 +43,7 @@ class NotionClient:
 
     # 1.For big pages.
 
-    def create_regular_page(self, name: str, parent_page: Optional[PageBlock] = None) -> PageBlock:
+    def  create_regular_page(self, name: str, parent_page: Optional[PageBlock] = None) -> PageBlock:
         """Create a page in a space."""
         if parent_page is not None:
             new_page = parent_page.children.add_new(PageBlock)

@@ -9,10 +9,10 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, cast, Type
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId, ADate, BasicValidator, Timestamp
-from remote.notion.client import NotionClient
-from remote.notion.collection import BasicRowType, NotionCollection, NotionCollectionKWArgsType
+from remote.notion.infra.client import NotionClient
+from remote.notion.infra.collection import BasicRowType, NotionCollection, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
-from remote.notion.connection import NotionConnection
+from remote.notion.infra.connection import NotionConnection
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
