@@ -128,7 +128,8 @@ will take care to update the instance too. Only archived and removed tasks are r
 You can:
 
 * Create a recurring task via `recurring-tasks-create`, or by creating a new entry in the "Recurring Tasks" view.
-* Remove a recurring task via `recurring-tasks-remove`, or by removing the entry in the "Recurring Tasks" view.
+* Remove a recurring task via `recurring-tasks-remove`, or by clicking the archive checkbox the entry in the "Recurring
+ Tasks" view.
 * Change the name of a recurring task via `recurring-tasks-set-name`, or by changing the name of the task in Notion.
 * Change the deadline of a recurring task via `recurring-tasks-set-deadline`, or by changing the deadline of the task
   in Notion.
