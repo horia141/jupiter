@@ -20,6 +20,11 @@ class Schedule(abc.ABC):
     _timeline: str
 
     @staticmethod
+    def year_two_digits(date: ADate) -> str:
+        """Get the last two digits (decade and year) from a date."""
+        return str(date.year % 100)
+
+    @staticmethod
     def month_to_quarter_num(date: ADate) -> int:
         """Map a date to one of the four quarters from the year."""
         month_to_quarter_num = {
@@ -189,8 +194,8 @@ class DailySchedule(Schedule):
                 tz=timezone)
         else:
             self._due_time = None
-        self._full_name = "{name} {month}{day}".format(
-            name=name, month=self.month_to_month(right_now), day=right_now.day)
+        self._full_name = "{name} {year}:{month}{day}".format(
+            name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now), day=right_now.day)
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = self._skip_helper(skip_rule, self._due_date.day_of_week) if skip_rule else False
 
@@ -239,7 +244,8 @@ class WeeklySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = "{name} W{week}".format(name=name, week=start_of_week.week_of_year)
+        self._full_name = "{name} {year}:W{week}".format(
+            name=name, year=self.year_two_digits(right_now), week=start_of_week.week_of_year)
         self._timeline = self._generate_timeline(start_of_week)
         self._should_skip = self._skip_helper(skip_rule, self._due_date.week_of_year) if skip_rule else False
 
@@ -286,7 +292,8 @@ class MonthlySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = "{name} {month}".format(name=name, month=self.month_to_month(right_now))
+        self._full_name = "{name} {year}:{month}".format(
+            name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now))
         self._timeline = self._generate_timeline(Timestamp(start_of_month))
         self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
 
@@ -354,7 +361,8 @@ class QuarterlySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = "{name} {quarter}".format(name=name, quarter=self.month_to_quarter(right_now))
+        self._full_name = "{name} {year}:{quarter}".format(
+            name=name, year=self.year_two_digits(right_now), quarter=self.month_to_quarter(right_now))
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = \
             self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date)) if skip_rule else False
@@ -416,7 +424,7 @@ class YearlySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = "{name} {year}".format(name=name, year=right_now.year)
+        self._full_name = "{name} {year}".format(name=name, year=self.year_two_digits(right_now))
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = False
 
