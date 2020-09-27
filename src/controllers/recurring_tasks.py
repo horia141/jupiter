@@ -7,7 +7,8 @@ import typing
 
 from controllers.common import ControllerInputValidationError
 from models import schedules
-from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp
+from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
+    ADate
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
 from service.inbox_tasks import InboxTasksService
@@ -53,7 +54,7 @@ class RecurringTasksController:
             self, project_key: ProjectKey, name: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
             eisen: List[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
             due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
-            skip_rule: Optional[str]) -> RecurringTask:
+            skip_rule: Optional[str], start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
         """Create an recurring task."""
         project = self._projects_service.load_project_by_key(project_key)
         inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
@@ -69,7 +70,9 @@ class RecurringTasksController:
             due_at_day=due_at_day,
             due_at_month=due_at_month,
             must_do=must_do,
-            skip_rule=skip_rule)
+            skip_rule=skip_rule,
+            start_at_date=start_at_date,
+            end_at_date=end_at_date)
 
         return recurring_task
 
@@ -178,6 +181,11 @@ class RecurringTasksController:
     def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> RecurringTask:
         """Change the suspended state for a recurring task."""
         return self._recurring_tasks_service.set_recurring_task_suspended(ref_id, suspended)
+
+    def set_recurring_task_active_interval(
+            self, ref_id: EntityId, start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
+        """Change the suspended state for a recurring task."""
+        return self._recurring_tasks_service.set_recurring_task_active_interval(ref_id, start_at_date, end_at_date)
 
     def load_all_recurring_tasks(
             self, show_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,

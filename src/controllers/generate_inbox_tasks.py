@@ -100,6 +100,10 @@ class GenerateInboxTasksController:
                         f"Skipping '{recurring_task.name}' on account of being fully withing vacation {vacation}")
                     return
 
+        if not recurring_task.is_in_active_interval(schedule.first_day, schedule.end_day):
+            LOGGER.info(f"Skipping '{recurring_task.name}' on account of being outside the active interval")
+            return
+
         if schedule.should_skip:
             LOGGER.info(f"Skipping '{recurring_task.name}' on account of rule")
             return

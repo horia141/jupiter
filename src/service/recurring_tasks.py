@@ -3,7 +3,7 @@ import logging
 from typing import Final, Optional, Iterable, List
 
 from models.basic import EntityId, Difficulty, Eisen, BasicValidator, ModelValidationError, RecurringTaskPeriod, \
-    SyncPrefer, RecurringTaskType
+    SyncPrefer, RecurringTaskType, ADate
 from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError, CollectionEntityNotFound
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTask
@@ -43,7 +43,8 @@ class RecurringTasksService:
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
             period: RecurringTaskPeriod, the_type: RecurringTaskType, eisen: List[Eisen],
             difficulty: Optional[Difficulty], due_at_time: Optional[str], due_at_day: Optional[int],
-            due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str]) -> RecurringTask:
+            due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str], start_at_date: Optional[ADate],
+            end_at_date: Optional[ADate]) -> RecurringTask:
         """Create a recurring task."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -53,6 +54,9 @@ class RecurringTasksService:
                 if due_at_day else None
             due_at_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(period, due_at_month)\
                 if due_at_month else None
+
+            if start_at_date is not None and end_at_date is not None and start_at_date >= end_at_date:
+                raise ServiceValidationError(f"Start date {start_at_date} is after {end_at_date}")
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
@@ -69,6 +73,8 @@ class RecurringTasksService:
             due_at_month=due_at_month,
             must_do=must_do,
             skip_rule=skip_rule,
+            start_at_date=start_at_date,
+            end_at_date=end_at_date,
             suspended=False)
         LOGGER.info("Applied local changes")
         self._collection.create_recurring_task(
@@ -83,8 +89,10 @@ class RecurringTasksService:
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
-            must_do=must_do,
             skip_rule=skip_rule,
+            must_do=must_do,
+            start_at_date=start_at_date,
+            end_at_date=end_at_date,
             suspended=False,
             ref_id=new_recurring_task.ref_id)
         LOGGER.info("Applied Notion changes")
@@ -239,6 +247,26 @@ class RecurringTasksService:
 
         return recurring_task
 
+    def set_recurring_task_active_interval(
+            self, ref_id: EntityId, start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
+        """Change the active interval for a recurring task."""
+        if start_at_date is not None and end_at_date is not None and start_at_date >= end_at_date:
+            raise ModelValidationError(f"Start date {start_at_date} is after end date {end_at_date}")
+
+        recurring_task = self._repository.load_recurring_task(ref_id)
+        recurring_task.start_at_date = start_at_date
+        recurring_task.end_at_date = end_at_date
+        self._repository.save_recurring_task(recurring_task)
+        LOGGER.info("Applied local changes")
+
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
+        recurring_task_row.start_at_date = start_at_date
+        recurring_task_row.end_at_date = end_at_date
+        self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
+        LOGGER.info("Applied Notion changes")
+
+        return recurring_task
+
     def set_recurring_task_suspended(self, ref_id: EntityId, suspended: bool) -> RecurringTask:
         """Change the suspended state for a recurring task."""
         recurring_task = self._repository.load_recurring_task(ref_id)
@@ -307,12 +335,12 @@ class RecurringTasksService:
 
         if not drop_all_notion_side:
             all_recurring_tasks_rows = self._collection.load_all_recurring_tasks(project_ref_id)
-            all_reccuring_tasks_saved_notion_ids = \
+            all_recurring_tasks_saved_notion_ids = \
                 set(self._collection.load_all_saved_recurring_tasks_notion_ids(project_ref_id))
         else:
             self._collection.drop_all_recurring_tasks(project_ref_id)
             all_recurring_tasks_rows = {}
-            all_reccuring_tasks_saved_notion_ids = set()
+            all_recurring_tasks_saved_notion_ids = set()
         all_recurring_tasks_row_set = {}
 
         # Then look at each recurring task in Notion and try to match it with one in the local storage
@@ -370,7 +398,9 @@ class RecurringTasksService:
                     due_at_month=recurring_task_due_at_month,
                     suspended=recurring_task_row.suspended,
                     skip_rule=recurring_task_row.skip_rule,
-                    must_do=recurring_task_row.must_do)
+                    must_do=recurring_task_row.must_do,
+                    start_at_date=recurring_task_row.start_at_date,
+                    end_at_date=recurring_task_row.end_at_date)
                 LOGGER.info(f"Found new recurring task from Notion {recurring_task_row.name}")
 
                 self._collection.link_local_and_notion_entries(
@@ -385,7 +415,7 @@ class RecurringTasksService:
                 all_recurring_tasks_set[recurring_task_row.ref_id] = new_recurring_task
                 all_recurring_tasks_row_set[recurring_task_row.ref_id] = recurring_task_row
             elif recurring_task_row.ref_id in all_recurring_tasks_set \
-                    and recurring_task_row.notion_id in all_reccuring_tasks_saved_notion_ids:
+                    and recurring_task_row.notion_id in all_recurring_tasks_saved_notion_ids:
                 # If the recurring task exists locally, we sync it with the remote
                 recurring_task = all_recurring_tasks_set[EntityId(recurring_task_row.ref_id)]
                 all_recurring_tasks_row_set[EntityId(recurring_task_row.ref_id)] = recurring_task_row
@@ -441,6 +471,8 @@ class RecurringTasksService:
                     recurring_task.suspended = recurring_task_row.suspended
                     recurring_task.skip_rule = recurring_task_row.skip_rule
                     recurring_task.must_do = recurring_task_row.must_do
+                    recurring_task.start_at_date = recurring_task_row.start_at_date
+                    recurring_task.end_at_date = recurring_task_row.end_at_date
                     self._repository.save_recurring_task(recurring_task, archived_time_action=archived_time_action)
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
@@ -462,6 +494,8 @@ class RecurringTasksService:
                     recurring_task_row.due_at_month = recurring_task.due_at_month
                     recurring_task_row.must_do = recurring_task.must_do
                     recurring_task_row.skip_rule = recurring_task.skip_rule
+                    recurring_task_row.start_at_date = recurring_task.start_at_date
+                    recurring_task_row.end_at_date = recurring_task.end_at_date
                     self._collection.save_recurring_task(
                         project_ref_id, recurring_task_row, inbox_collection_link=inbox_collection_link)
                     LOGGER.info(f"Changed recurring task with id={recurring_task_row.ref_id} from local")
@@ -498,8 +532,10 @@ class RecurringTasksService:
                 due_at_time=recurring_task.due_at_time,
                 due_at_day=recurring_task.due_at_day,
                 due_at_month=recurring_task.due_at_month,
-                must_do=recurring_task.must_do,
                 skip_rule=recurring_task.skip_rule,
+                must_do=recurring_task.must_do,
+                start_at_date=recurring_task.start_at_date,
+                end_at_date=recurring_task.end_at_date,
                 suspended=recurring_task.suspended,
                 ref_id=recurring_task.ref_id)
             LOGGER.info(f'Created Notion task for {recurring_task.name}')

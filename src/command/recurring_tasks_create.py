@@ -52,6 +52,10 @@ class RecurringTasksCreate(command.Command):
                             help="The day of the interval the task will be due on")
         parser.add_argument("--must-do", dest="must_do", default=False, action="store_true",
                             help="Whether to treat this task as must do or not")
+        parser.add_argument("--start-at-date", dest="start_at_date",
+                            help="The date from which tasks should be generated")
+        parser.add_argument("--end-at-date", dest="end_at_date",
+                            help="The date until which tasks should be generated")
         parser.add_argument("--skip-rule", dest="skip_rule", help="The skip rule for the task")
 
     def run(self, args: Namespace) -> None:
@@ -71,6 +75,10 @@ class RecurringTasksCreate(command.Command):
         must_do = args.must_do
         skip_rule = self._basic_validator.recurring_task_skip_rule_validate_and_clean(args.skip_rule) \
             if args.skip_rule else None
+        start_at_date = self._basic_validator.adate_validate_and_clean(args.start_at_date) \
+            if args.start_at_date else None
+        end_at_date = self._basic_validator.adate_validate_and_clean(args.end_at_date) \
+            if args.end_at_date else None
         self._recurring_tasks_controller.create_recurring_task(
             project_key=project_key,
             name=name,
@@ -82,4 +90,6 @@ class RecurringTasksCreate(command.Command):
             due_at_day=due_at_day,
             due_at_month=due_at_month,
             must_do=must_do,
-            skip_rule=skip_rule)
+            skip_rule=skip_rule,
+            start_at_date=start_at_date,
+            end_at_date=end_at_date)

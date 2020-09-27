@@ -35,6 +35,7 @@ from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
 from command.generate_inbox_tasks import GenerateInboxTasks
 from command.recurring_tasks_hard_remove import RecurringTasksHardRemove
+from command.recurring_tasks_set_active_interval import RecurringTasksSetActiveInterval
 from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
 from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
 from command.recurring_tasks_set_eisen import RecurringTasksSetEisen
@@ -216,6 +217,7 @@ def main() -> None:
             RecurringTasksSetDeadlines(basic_validator, recurring_tasks_controller),
             RecurringTasksSetSkipRule(basic_validator, recurring_tasks_controller),
             RecurringTasksSetMustDo(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetActiveInterval(basic_validator, recurring_tasks_controller),
             RecurringTasksSuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksUnsuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksHardRemove(basic_validator, recurring_tasks_controller),

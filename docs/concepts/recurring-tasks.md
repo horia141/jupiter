@@ -88,6 +88,12 @@ A recurring task can be mark as "must do", via the `Must Do` property. Being mar
 as such that will cause it to ignore vacations. For example, paying rent or taking some medicine
 can't be interrupted by a vacation.
 
+A recurring task can also have an _active interval_. This is a time interval in which tasks
+should be generated. By default the interval is "empty", so inbox tasks are always generated.
+But by specifying either a start or an end to this interval, you can control when exactly
+tasks are generated. The rule is that the period interval for an inbox tasks intersects successfully
+the active interval.
+
 A recurring task can be suspended, via the `Suspended` property. Being marked as such means
 that the task won't be generated at all. For example, going to the gym might be suspended while
 you're recovering from an illness.
@@ -140,6 +146,8 @@ You can:
 * Change the period of a recurring task via `recurring-tasks-set-period`, or by changing it in Notion, by dragging the
   task to another column.
 * Change the skip rule of a recurring task via `recurring-tasks-set-skip-rule`, or by changing it in Notion.
+* Change the active interval for a recurring task via `recurring-tasks-set-active-interval`, or by changing the start
+  and end dates in Notion.
 * Suspend a recurring task via `recurring-tasks-suspend`, or by checking the attribute in Notion.
 * Unsuspend a recurring task via `recurring-tasks-unsuspend`, or by checking the attribute in Notion.
 * Show info about the recurring task via `recurring-tasks-show`.

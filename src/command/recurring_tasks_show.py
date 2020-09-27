@@ -60,6 +60,8 @@ class RecurringTasksShow(command.Command):
                   f' skip_rule={recurring_task.skip_rule or "none"}' +
                   f' suspended={recurring_task.suspended}' +
                   f' must_do={recurring_task.must_do}' +
+                  (f' start_at_date={recurring_task.start_at_date}' if recurring_task.start_at_date else '') +
+                  (f' end_at_date={recurring_task.end_at_date}' if recurring_task.end_at_date else '') +
                   f'\n    due_at_time={recurring_task.due_at_time or "none"}' +
                   f' due_at_day={recurring_task.due_at_day or "none"}' +
                   f' due_at_month={recurring_task.due_at_month or "none"}')
