@@ -19,6 +19,14 @@ class Schedule(abc.ABC):
     _full_name: str
     _timeline: str
 
+    def __str__(self) -> str:
+        """String representation."""
+        return f"Schedule({self.period} {self.first_day} {self.end_day} {self.timeline})"
+
+    def __repr__(self) -> str:
+        """String representation."""
+        return f"Schedule({self.period} {self.first_day} {self.end_day} {self.timeline})"
+
     @staticmethod
     def year_two_digits(date: ADate) -> str:
         """Get the last two digits (decade and year) from a date."""
@@ -172,12 +180,16 @@ class Schedule(abc.ABC):
     def end_day(self) -> pendulum.Date:
         """The end day of the interval represented by the schedule block."""
 
-    def contains(self, timestamp: Timestamp) -> bool:
+    def contains(self, adate: ADate) -> bool:
         """Tests whether a particular datetime is in the schedule block."""
         first_day_dt = pendulum.DateTime(self.first_day.year, self.first_day.month, self.first_day.day, tzinfo=UTC)
         end_day_dt = \
             pendulum.DateTime(self.end_day.year, self.end_day.month, self.end_day.day, tzinfo=UTC).end_of("day")
-        return typing.cast(bool, first_day_dt <= timestamp) and typing.cast(bool, timestamp <= end_day_dt)
+        if isinstance(adate, pendulum.DateTime):
+            adate_ts = adate
+        else:
+            adate_ts = pendulum.DateTime(adate.year, adate.month, adate.day, tzinfo=UTC).end_of("day")
+        return typing.cast(bool, first_day_dt <= adate_ts) and typing.cast(bool, adate_ts <= end_day_dt)
 
 
 class DailySchedule(Schedule):
