@@ -1,6 +1,5 @@
 """The centralised point for interacting with Notion smart lists."""
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional, ClassVar, Final
 import typing
 
@@ -37,7 +36,6 @@ class NotionSmartListsManager:
 
     _KEY: ClassVar[str] = "smart-lists"
     _PAGE_NAME: ClassVar[str] = "Smart Lists"
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/smart-lists.lock.yaml")
 
     _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
@@ -146,7 +144,8 @@ class NotionSmartListsManager:
         self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
 
     def upsert_smart_list_item(
-            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, url: Optional[str], archived: bool) -> None:
+            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, url: Optional[str],
+            archived: bool) -> SmartListNotionRow:
         """Upsert the Notion-side smart list item."""
         new_row = SmartListNotionRow(
             name=name,
@@ -160,6 +159,7 @@ class NotionSmartListsManager:
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             new_row=new_row,
             copy_row_to_notion_row=self.copy_row_to_notion_row)
+        return new_row
 
     def load_all_smart_list_items(self, smart_list_ref_id: EntityId) -> typing.Iterable[SmartListNotionRow]:
         """Retrieve all the Notion-side smart list items."""

@@ -94,7 +94,7 @@ from remote.notion.infra.pages_manager import PagesManager
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from remote.notion.projects import ProjectsCollection
 from remote.notion.recurring_tasks import RecurringTasksCollection
-from remote.notion.vacations import VacationsCollection
+from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
@@ -133,20 +133,21 @@ def main() -> None:
             BigPlansRepository(time_provider) as big_plans_repository, \
             SmartListsRepository(time_provider) as smart_lists_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
-            VacationsCollection(time_provider, basic_validator, notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
             BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
+        notion_vacations_manager = NotionVacationsManager(
+            time_provider, basic_validator, collections_manager)
         notion_smart_lists_manager = NotionSmartListsManager(
             time_provider, basic_validator, pages_manager, collections_manager)
 
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
-            basic_validator, vacations_repository, vacations_collection)
+            basic_validator, vacations_repository, notion_vacations_manager)
         projects_service = ProjectsService(
             basic_validator, projects_repository, projects_collection)
         inbox_tasks_service = InboxTasksService(

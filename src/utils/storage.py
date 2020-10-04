@@ -372,25 +372,27 @@ class RecordsStorage(Generic[RecordRowType]):
 
         return None
 
-    def find_all(
-            self, **kwargs: Optional[FindFilterPredicate]) -> Iterable[RecordRowType]:
+    def find_all(self, **kwargs: Optional[FindFilterPredicate]) -> List[RecordRowType]:
         """Find all the records in the collection matching all the properties."""
         _, records = self._load()
 
-        for record in records:
-            for filter_property_name, filter_predicate in kwargs.items():
-                if filter_predicate is None:
-                    continue
+        def _find_all() -> Iterable[RecordRowType]:
+            for record in records:
+                for filter_property_name, filter_predicate in kwargs.items():
+                    if filter_predicate is None:
+                        continue
 
-                try:
-                    property_value = getattr(record, filter_property_name)
-                    if not filter_predicate.test(property_value):
-                        break
-                except AttributeError:
-                    raise StructuredStorageError(
-                        f"Record identified by {record.key} does not have property {filter_property_name}")
-            else:
-                yield record
+                    try:
+                        property_value = getattr(record, filter_property_name)
+                        if not filter_predicate.test(property_value):
+                            break
+                    except AttributeError:
+                        raise StructuredStorageError(
+                            f"Record identified by {record.key} does not have property {filter_property_name}")
+                else:
+                    yield record
+
+        return list(_find_all())
 
     def _load(self) -> Tuple[int, List[RecordRowType]]:
         try:
@@ -647,27 +649,30 @@ class EntitiesStorage(Generic[EntityRowType]):
         raise StructuredStorageError(f"Entity identified by {filter_expr} is archived")
 
     def find_all(
-            self, allow_archived: bool = False, **kwargs: Optional[FindFilterPredicate]) -> Iterable[EntityRowType]:
+            self, allow_archived: bool = False, **kwargs: Optional[FindFilterPredicate]) -> List[EntityRowType]:
         """Find all the entities in the collection matching all the properties."""
         _, entities = self._load()
 
-        for entity in entities:
-            for filter_property_name, filter_predicate in kwargs.items():
-                if filter_predicate is None:
-                    continue
+        def _find_all() -> Iterable[EntityRowType]:
+            for entity in entities:
+                for filter_property_name, filter_predicate in kwargs.items():
+                    if filter_predicate is None:
+                        continue
 
-                try:
-                    property_value = getattr(entity, filter_property_name)
-                    if not filter_predicate.test(property_value):
-                        break
-                except AttributeError:
-                    raise StructuredStorageError(
-                        f"Entity identified by {entity.ref_id} does not have property {filter_property_name}")
-            else:
-                if not allow_archived and entity.archived:
-                    continue
+                    try:
+                        property_value = getattr(entity, filter_property_name)
+                        if not filter_predicate.test(property_value):
+                            break
+                    except AttributeError:
+                        raise StructuredStorageError(
+                            f"Entity identified by {entity.ref_id} does not have property {filter_property_name}")
+                else:
+                    if not allow_archived and entity.archived:
+                        continue
 
-                yield entity
+                    yield entity
+
+        return list(_find_all())
 
     def _load(self) -> Tuple[int, List[EntityRowType]]:
         try:

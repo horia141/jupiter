@@ -72,7 +72,7 @@ class SyncLocalAndNotionController:
             workspace_page = self._workspaces_service.get_workspace_notion_structure()
 
             LOGGER.info("Recreating vacations structure")
-            self._vacations_service.upsert_notion_structure(workspace_page)
+            self._vacations_service.upsert_root_notion_structure(workspace_page)
 
             LOGGER.info("Recreating lists structure")
             self._smart_lists_service.upsert_root_notion_structure(workspace_page)
