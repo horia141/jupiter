@@ -200,12 +200,14 @@ class DailySchedule(Schedule):
         """Construct a schedule."""
         self._date = right_now.date()
         self._due_date = right_now.date()
+        print(f"DEBUG: {self._date} {self._due_date} {timezone} {due_at_time}")
         if due_at_time:
             self._due_time = pendulum.parse(
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time),
                 tz=timezone)
         else:
             self._due_time = None
+        print(f"DEBUG: {self._date} {self._due_date} {timezone} {due_at_time} {self._due_time}")
         self._full_name = "{name} {year}:{month}{day}".format(
             name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now), day=right_now.day)
         self._timeline = self._generate_timeline(right_now)

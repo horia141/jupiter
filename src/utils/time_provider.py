@@ -18,7 +18,7 @@ class TimeProvider:
 
     def get_current_date(self) -> pendulum.Date:
         """Get the current date."""
-        return Date(self._right_now.year, self._right_now.month, self._right_now.day)
+        return Date(self._right_now.year, self._right_now.month, self._right_now.day)  # pylint: disable=no-member
 
     def get_current_time(self) -> Timestamp:
         """Get the current time."""

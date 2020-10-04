@@ -445,8 +445,7 @@ class BasicValidator:
     def adate_to_notion(self, adate: ADate) -> NotionDate:
         """Transform a date to a Notion representation."""
         if isinstance(adate, pendulum.DateTime):
-            return NotionDate(
-                adate.in_timezone(self._global_properties.timezone), timezone=self._global_properties.timezone.name)
+            return NotionDate(adate, timezone=self._global_properties.timezone.name)
         else:
             return NotionDate(adate)
 
