@@ -7,11 +7,10 @@ from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp
 from repository.inbox_tasks import InboxTask
 from repository.projects import Project
 from repository.recurring_tasks import RecurringTask
-from repository.vacations import VacationRow
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
-from service.vacations import VacationsService
+from service.vacations import VacationsService, Vacation
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
@@ -67,7 +66,7 @@ class GenerateInboxTasksController:
                     project=project,
                     right_now=right_now,
                     period_filter=frozenset(period_filter) if period_filter else None,
-                    all_vacations=list(all_vacations),
+                    all_vacations=all_vacations,
                     recurring_task=recurring_task,
                     all_inbox_tasks_by_recurring_task_ref_id_and_timeline=
                     all_inbox_tasks_by_recurring_task_ref_id_and_timeline)
@@ -77,7 +76,7 @@ class GenerateInboxTasksController:
             project: Project,
             right_now: Timestamp,
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
-            all_vacations: List[VacationRow],
+            all_vacations: List[Vacation],
             recurring_task: RecurringTask,
             all_inbox_tasks_by_recurring_task_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask]) -> None:
         if recurring_task.suspended:

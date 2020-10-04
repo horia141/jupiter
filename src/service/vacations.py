@@ -1,8 +1,11 @@
 """The service class for dealing with vacations."""
 import logging
+from dataclasses import dataclass
 from typing import Final, Iterable, Dict, Optional
+import typing
 
 import pendulum
+from pendulum import UTC
 
 from models.basic import BasicValidator, EntityId, SyncPrefer, ModelValidationError, ADate
 from remote.notion.common import NotionPageLink, CollectionError, CollectionEntityNotFound
@@ -12,6 +15,32 @@ from service.errors import ServiceError, ServiceValidationError
 from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass()
+class Vacation:
+    """A vacation."""
+
+    ref_id: EntityId
+    name: str
+    start_date: pendulum.Date
+    end_date: pendulum.Date
+    archived: bool
+
+    def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
+        """Checks whether a particular date range is in this vacation."""
+        if isinstance(start_date, pendulum.DateTime):
+            vacation_start_date = pendulum.DateTime(
+                self.start_date.year, self.start_date.month, self.start_date.day, tzinfo=UTC)
+        else:
+            vacation_start_date = self.start_date
+        if isinstance(end_date, pendulum.DateTime):
+            vacation_end_date = pendulum.DateTime(
+                self.end_date.year, self.end_date.month, self.end_date.day, tzinfo=UTC).end_of("day")
+        else:
+            vacation_end_date = self.end_date
+        return typing.cast(bool, vacation_start_date <= start_date) and \
+               typing.cast(bool, end_date <= vacation_end_date)
 
 
 class VacationsService:
@@ -33,7 +62,7 @@ class VacationsService:
         """Upsert the Notion-side structure for vacations."""
         self._notion_manager.upsert_root_page(parent_page)
 
-    def create_vacation(self, name: str, start_date: ADate, end_date: ADate) -> VacationRow:
+    def create_vacation(self, name: str, start_date: ADate, end_date: ADate) -> Vacation:
         """Create a vacation."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -45,7 +74,7 @@ class VacationsService:
 
         # Apply changes locally
 
-        new_vacation = self._repository.create_vacation(
+        new_vacation_row = self._repository.create_vacation(
             archived=False,
             name=name,
             start_date=start_date,
@@ -59,16 +88,21 @@ class VacationsService:
             name=name,
             start_date=start_date,
             end_date=end_date,
-            ref_id=new_vacation.ref_id)
+            ref_id=new_vacation_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
-        return new_vacation
+        return Vacation(
+            ref_id=new_vacation_row.ref_id,
+            name=new_vacation_row.name,
+            start_date=new_vacation_row.start_date,
+            end_date=new_vacation_row.end_date,
+            archived=new_vacation_row.archived)
 
-    def archive_vacation(self, ref_id: EntityId) -> VacationRow:
+    def archive_vacation(self, ref_id: EntityId) -> Vacation:
         """Archive a given vacation."""
         # Apply changes locally
 
-        vacation = self._repository.archive_vacation(ref_id)
+        vacation_row = self._repository.archive_vacation(ref_id)
         LOGGER.info("Applied local changes")
 
         # Apply changes in Notion
@@ -79,9 +113,14 @@ class VacationsService:
         except CollectionEntityNotFound:
             LOGGER.info("Skipping archival on Notion side because vacation was not found")
 
-        return vacation
+        return Vacation(
+            ref_id=vacation_row.ref_id,
+            name=vacation_row.name,
+            start_date=vacation_row.start_date,
+            end_date=vacation_row.end_date,
+            archived=vacation_row.archived)
 
-    def set_vacation_name(self, ref_id: EntityId, name: str) -> VacationRow:
+    def set_vacation_name(self, ref_id: EntityId, name: str) -> Vacation:
         """Change the name of a vacation."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -90,72 +129,92 @@ class VacationsService:
 
         # Apply changes locally
 
-        vacation = self._repository.load_vacation(ref_id)
-        vacation.name = name
-        self._repository.update_vacation(vacation)
+        vacation_row = self._repository.load_vacation(ref_id)
+        vacation_row.name = name
+        self._repository.update_vacation(vacation_row)
         LOGGER.info("Modified vacation")
 
         # Apply changes in Notion
 
-        vacation_row = self._notion_manager.load_vacation(vacation.ref_id)
-        vacation_row.name = name
-        self._notion_manager.save_vacation(ref_id, vacation_row)
+        vacation_notion_row = self._notion_manager.load_vacation(vacation_row.ref_id)
+        vacation_notion_row.name = name
+        self._notion_manager.save_vacation(ref_id, vacation_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return vacation
+        return Vacation(
+            ref_id=vacation_row.ref_id,
+            name=vacation_row.name,
+            start_date=vacation_row.start_date,
+            end_date=vacation_row.end_date,
+            archived=vacation_row.archived)
 
-    def set_vacation_start_date(self, ref_id: EntityId, start_date: ADate) -> VacationRow:
+    def set_vacation_start_date(self, ref_id: EntityId, start_date: ADate) -> Vacation:
         """Change the start date of a vacation."""
         # Apply changes locally
         if isinstance(start_date, pendulum.DateTime):
             raise ServiceValidationError("Vacations can only start on a day")
 
-        vacation = self._repository.load_vacation(ref_id)
-        if start_date >= vacation.end_date:
+        vacation_row = self._repository.load_vacation(ref_id)
+        if start_date >= vacation_row.end_date:
             raise ServiceValidationError("Cannot set a start date after the end date")
-        vacation.start_date = start_date
-        self._repository.update_vacation(vacation)
+        vacation_row.start_date = start_date
+        self._repository.update_vacation(vacation_row)
         LOGGER.info("Modified vacation")
 
         # Apply changes in Notion
 
-        vacation_row = self._notion_manager.load_vacation(vacation.ref_id)
-        vacation_row.start_date = start_date
-        self._notion_manager.save_vacation(ref_id, vacation_row)
+        vacation_notion_row = self._notion_manager.load_vacation(vacation_row.ref_id)
+        vacation_notion_row.start_date = start_date
+        self._notion_manager.save_vacation(ref_id, vacation_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return vacation
+        return Vacation(
+            ref_id=vacation_row.ref_id,
+            name=vacation_row.name,
+            start_date=vacation_row.start_date,
+            end_date=vacation_row.end_date,
+            archived=vacation_row.archived)
 
-    def set_vacation_end_date(self, ref_id: EntityId, end_date: ADate) -> VacationRow:
+    def set_vacation_end_date(self, ref_id: EntityId, end_date: ADate) -> Vacation:
         """Change the end date of a vacation."""
         # Apply changes locally
         if isinstance(end_date, pendulum.DateTime):
             raise ServiceValidationError("Vacations can only end on a day")
 
-        vacation = self._repository.load_vacation(ref_id)
-        if end_date <= vacation.start_date:
+        vacation_row = self._repository.load_vacation(ref_id)
+        if end_date <= vacation_row.start_date:
             raise ServiceValidationError("Cannot set an end date before the start date")
-        vacation.end_date = end_date
-        self._repository.update_vacation(vacation)
+        vacation_row.end_date = end_date
+        self._repository.update_vacation(vacation_row)
         LOGGER.info("Modified vacation")
 
         # Apply changes in Notion
 
-        vacation_row = self._notion_manager.load_vacation(vacation.ref_id)
-        vacation_row.end_date = end_date
-        self._notion_manager.save_vacation(ref_id, vacation_row)
+        vacation_notion_row = self._notion_manager.load_vacation(vacation_row.ref_id)
+        vacation_notion_row.end_date = end_date
+        self._notion_manager.save_vacation(ref_id, vacation_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return vacation
+        return Vacation(
+            ref_id=vacation_row.ref_id,
+            name=vacation_row.name,
+            start_date=vacation_row.start_date,
+            end_date=vacation_row.end_date,
+            archived=vacation_row.archived)
 
-    def load_all_vacations(self, allow_archived: bool = False) -> Iterable[VacationRow]:
+    def load_all_vacations(self, allow_archived: bool = False) -> typing.List[Vacation]:
         """Retrieve all vacations."""
-        return self._repository.load_all_vacations(allow_archived=allow_archived)
+        return [Vacation(
+            ref_id=v.ref_id,
+            name=v.name,
+            start_date=v.start_date,
+            end_date=v.end_date,
+            archived=v.archived) for v in self._repository.load_all_vacations(allow_archived=allow_archived)]
 
-    def hard_remove_vacation(self, ref_id: EntityId) -> VacationRow:
+    def hard_remove_vacation(self, ref_id: EntityId) -> Vacation:
         """Hard remove an big plan."""
         # Apply changes locally
-        vacation = self._repository.remove_vacation(ref_id)
+        vacation_row = self._repository.remove_vacation(ref_id)
         LOGGER.info("Applied local changes")
 
         try:
@@ -164,18 +223,28 @@ class VacationsService:
         except CollectionEntityNotFound:
             LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
-        return vacation
+        return Vacation(
+            ref_id=vacation_row.ref_id,
+            name=vacation_row.name,
+            start_date=vacation_row.start_date,
+            end_date=vacation_row.end_date,
+            archived=vacation_row.archived)
 
-    def remove_vacation_on_notion_side(self, ref_id: EntityId) -> VacationRow:
+    def remove_vacation_on_notion_side(self, ref_id: EntityId) -> Vacation:
         """Remove entries for a vacation on Notion-side."""
-        vacation = self._repository.load_vacation(ref_id, allow_archived=True)
+        vacation_row = self._repository.load_vacation(ref_id, allow_archived=True)
         try:
             self._notion_manager.hard_remove_vacation(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionError:
             LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
-        return vacation
+        return Vacation(
+            ref_id=vacation_row.ref_id,
+            name=vacation_row.name,
+            start_date=vacation_row.start_date,
+            end_date=vacation_row.end_date,
+            archived=vacation_row.archived)
 
     def vacations_sync(
             self, drop_all_notion_side: bool, sync_even_if_not_modified: bool,

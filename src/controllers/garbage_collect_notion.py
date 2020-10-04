@@ -6,13 +6,12 @@ from models.basic import ProjectKey, SyncTarget
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
-from repository.vacations import VacationRow
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.smart_lists import SmartListsService, SmartList, SmartListItem
-from service.vacations import VacationsService
+from service.vacations import VacationsService, Vacation
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class GarbageCollectNotionController:
             do_archival: bool, do_anti_entropy: bool, do_notion_cleanup: bool) -> None:
         """Garbage collect everything."""
         if SyncTarget.VACATIONS in sync_targets:
-            vacations: Iterable[VacationRow] = []
+            vacations: Iterable[Vacation] = []
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for vacations")
                 vacations = self._vacations_service.load_all_vacations(allow_archived=True)
@@ -124,7 +123,7 @@ class GarbageCollectNotionController:
                 self._do_drop_all_archived_smart_list_items(smart_list_items)
 
     def _do_anti_entropy_for_vacations(
-            self, all_vacation: Iterable[VacationRow]) -> Iterable[VacationRow]:
+            self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:
         vacations_names_set = {}
         for vacation in all_vacation:
             if vacation.name in vacations_names_set:
@@ -186,7 +185,7 @@ class GarbageCollectNotionController:
             smart_list_items_name_set[smart_list_item.name] = smart_list_item
         return smart_list_items_name_set.values()
 
-    def _do_drop_all_archived_vacations(self, all_vacations: Iterable[VacationRow]) -> None:
+    def _do_drop_all_archived_vacations(self, all_vacations: Iterable[Vacation]) -> None:
         for vacation in all_vacations:
             if not vacation.archived:
                 continue

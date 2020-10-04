@@ -8,7 +8,6 @@ import typing
 from typing import ClassVar, Iterable, Optional, Final
 
 import pendulum
-from pendulum import UTC
 
 from models.basic import EntityId, ADate, BasicValidator
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
@@ -25,21 +24,6 @@ class VacationRow(BaseEntityRow):
     name: str
     start_date: pendulum.Date
     end_date: pendulum.Date
-
-    def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
-        """Checks whether a particular date range is in this vacation."""
-        if isinstance(start_date, pendulum.DateTime):
-            vacation_start_date = pendulum.DateTime(
-                self.start_date.year, self.start_date.month, self.start_date.day, tzinfo=UTC)
-        else:
-            vacation_start_date = self.start_date
-        if isinstance(end_date, pendulum.DateTime):
-            vacation_end_date = pendulum.DateTime(
-                self.end_date.year, self.end_date.month, self.end_date.day, tzinfo=UTC).end_of("day")
-        else:
-            vacation_end_date = self.end_date
-        return typing.cast(bool, vacation_start_date <= start_date) and \
-               typing.cast(bool, end_date <= vacation_end_date)
 
 
 class VacationsRepository:
