@@ -38,7 +38,7 @@ class SyncPrefer(enum.Enum):
     NOTION = "notion"
 
 
-Timestamp = NewType("Timestamp", pendulum.DateTime) # type: ignore
+Timestamp = NewType("Timestamp", pendulum.DateTime)  # type: ignore
 
 
 ADate = Union[pendulum.Date, pendulum.DateTime]

@@ -2,7 +2,7 @@
 from typing import Final
 
 import pendulum
-from pendulum import UTC
+from pendulum import UTC, Date
 
 from models.basic import Timestamp
 
@@ -15,6 +15,10 @@ class TimeProvider:
     def __init__(self) -> None:
         """Constructor."""
         self._right_now = Timestamp(pendulum.now(tz=UTC))
+
+    def get_current_date(self) -> pendulum.Date:
+        """Get the current date."""
+        return Date(self._right_now.year, self._right_now.month, self._right_now.day)
 
     def get_current_time(self) -> Timestamp:
         """Get the current time."""

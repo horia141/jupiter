@@ -38,7 +38,7 @@ class RecurringTask:
     suspended: bool
     skip_rule: Optional[str]
     must_do: bool
-    start_at_date: Optional[ADate]
+    start_at_date: ADate
     end_at_date: Optional[ADate]
     created_time: Timestamp
     last_modified_time: Timestamp
@@ -106,7 +106,7 @@ class RecurringTasksRepository:
             self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod,
             the_type: RecurringTaskType, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
             due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
-            skip_rule: Optional[str], must_do: bool, start_at_date: Optional[ADate],
+            skip_rule: Optional[str], must_do: bool, start_at_date: ADate,
             end_at_date: Optional[ADate]) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
@@ -245,6 +245,7 @@ class RecurringTasksRepository:
     @staticmethod
     def storage_to_live(storage_form: JSONDictType) -> RecurringTask:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
+        today_hack = pendulum.today().date()
         return RecurringTask(
             ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
             project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
@@ -261,9 +262,9 @@ class RecurringTasksRepository:
             skip_rule=typing.cast(str, storage_form["skip_rule"]) if storage_form["skip_rule"] else None,
             must_do=typing.cast(bool, storage_form["must_do"]),
             start_at_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["start_at_date"]))
-            if storage_form.get("start_at_date", None) else None,
+            if storage_form["start_at_date"] else today_hack,
             end_at_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["end_at_date"]))
-            if storage_form.get("end_at_date", None) else None,
+            if storage_form["end_at_date"] else None,
             created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
             last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
@@ -287,7 +288,7 @@ class RecurringTasksRepository:
             "suspended": live_form.suspended,
             "skip_rule": live_form.skip_rule,
             "must_do": live_form.must_do,
-            "start_at_date": BasicValidator.adate_to_str(live_form.start_at_date) if live_form.start_at_date else None,
+            "start_at_date": BasicValidator.adate_to_str(live_form.start_at_date),
             "end_at_date": BasicValidator.adate_to_str(live_form.end_at_date) if live_form.end_at_date else None,
             "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),

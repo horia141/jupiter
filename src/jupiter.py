@@ -153,7 +153,7 @@ def main() -> None:
         inbox_tasks_service = InboxTasksService(
             basic_validator, inbox_tasks_repository, inbox_tasks_collection)
         recurring_tasks_service = RecurringTasksService(
-            basic_validator, recurring_tasks_repository, recurring_tasks_collection)
+            basic_validator, time_provider, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
         smart_lists_service = SmartListsService(
             basic_validator, smart_lists_repository, smart_list_items_repository, notion_smart_lists_manager)
