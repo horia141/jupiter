@@ -54,7 +54,7 @@ class InboxTasksService:
     def create_inbox_task(
             self, project_ref_id: EntityId, name: str, big_plan_ref_id: Optional[EntityId],
             big_plan_name: Optional[str], eisen: List[Eisen], difficulty: Optional[Difficulty],
-            due_date: Optional[ADate]) -> InboxTask:
+            active_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         if big_plan_ref_id is None and big_plan_name is not None:
             raise ServiceValidationError(f"Should have null name for null big plan for task")
@@ -76,6 +76,7 @@ class InboxTasksService:
             status=InboxTaskStatus.ACCEPTED,
             eisen=eisen,
             difficulty=difficulty,
+            active_date=active_date,
             due_date=due_date,
             recurring_task_timeline=None,
             recurring_task_type=None,
@@ -93,6 +94,7 @@ class InboxTasksService:
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
             difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
+            active_date=new_inbox_task.active_date,
             due_date=new_inbox_task.due_date,
             recurring_timeline=None,
             recurring_period=None,
@@ -119,6 +121,7 @@ class InboxTasksService:
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
+            active_date=None,
             due_date=due_date,
             recurring_task_timeline=recurring_task_timeline,
             recurring_task_type=recurring_task_type,
@@ -135,6 +138,7 @@ class InboxTasksService:
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
             difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
+            active_date=new_inbox_task.active_date,
             due_date=new_inbox_task.due_date,
             recurring_timeline=new_inbox_task.recurring_task_timeline,
             recurring_period=recurring_task_period.value,
@@ -276,6 +280,22 @@ class InboxTasksService:
         # Apply changes in Notion
         inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
         inbox_task_row.status = status.for_notion()
+        self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+        LOGGER.info("Applied Notion changes")
+
+        return inbox_task
+
+    def set_inbox_task_active_date(self, ref_id: EntityId, active_date: Optional[ADate]) -> InboxTask:
+        """Change the due date of an inbox task."""
+        # Apply changes locally
+        inbox_task = self._repository.load_inbox_task(ref_id)
+        inbox_task.active_date = active_date
+        self._repository.save_inbox_task(inbox_task)
+        LOGGER.info("Applied local changes")
+
+        # Apply changes in Notion
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+        inbox_task_row.active_date = active_date
         self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
         LOGGER.info("Applied Notion changes")
 
@@ -483,6 +503,7 @@ class InboxTasksService:
                     status=inbox_task_status,
                     eisen=inbox_task_eisen,
                     difficulty=inbox_task_difficulty,
+                    active_date=inbox_task_row.active_date,
                     due_date=inbox_task_row.due_date,
                     recurring_task_timeline=inbox_task_row.recurring_timeline,
                     recurring_task_type=inbox_task_recurring_task_type,
@@ -581,6 +602,7 @@ class InboxTasksService:
                         inbox_task.difficulty = inbox_task_difficulty
                     inbox_task.archived = inbox_task_row.archived
                     inbox_task.status = inbox_task_status
+                    inbox_task.active_date = inbox_task_row.active_date
                     inbox_task.due_date = inbox_task_row.due_date
                     inbox_task.recurring_task_timeline = inbox_task_row.recurring_timeline
                     inbox_task.recurring_task_type = inbox_task_recurring_task_type
@@ -612,6 +634,7 @@ class InboxTasksService:
                     inbox_task_row.status = inbox_task.status.for_notion()
                     inbox_task_row.eisen = [e.value for e in inbox_task.eisen]
                     inbox_task_row.difficulty = inbox_task.difficulty.value if inbox_task.difficulty else None
+                    inbox_task_row.active_date = inbox_task.active_date
                     inbox_task_row.due_date = inbox_task.due_date
                     inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
                     inbox_task_row.recurring_period = recurring_task.period.value if recurring_task else None
@@ -659,6 +682,7 @@ class InboxTasksService:
                 status=inbox_task.status.for_notion(),
                 eisen=[e.value for e in inbox_task.eisen],
                 difficulty=inbox_task.difficulty.value if inbox_task.difficulty else None,
+                active_date=inbox_task.active_date,
                 due_date=inbox_task.due_date,
                 recurring_timeline=inbox_task.recurring_task_timeline,
                 recurring_period=recurring_task.period.value if recurring_task else None,

@@ -21,6 +21,7 @@ from command.garbage_collect import GarbageCollect
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
 from command.inbox_tasks_create import InboxTasksCreate
 from command.inbox_tasks_hard_remove import InboxTasksHardRemove
+from command.inbox_tasks_set_active_date import InboxTasksSetActiveDate
 from command.inbox_tasks_set_difficulty import InboxTasksSetDifficulty
 from command.inbox_tasks_set_due_date import InboxTasksSetDueDate
 from command.inbox_tasks_set_eisen import InboxTasksSetEisen
@@ -205,6 +206,7 @@ def main() -> None:
             InboxTasksSetStatus(basic_validator, inbox_tasks_controller),
             InboxTasksSetEisen(basic_validator, inbox_tasks_controller),
             InboxTasksSetDifficulty(basic_validator, inbox_tasks_controller),
+            InboxTasksSetActiveDate(basic_validator, inbox_tasks_controller),
             InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
             InboxTasksHardRemove(basic_validator, inbox_tasks_controller),
             InboxTasksShow(basic_validator, inbox_tasks_controller),
