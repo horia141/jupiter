@@ -363,6 +363,23 @@ class InboxTasksCollection:
                             "value": "True"
                         }
                     }
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "one_week_from_now"
+                            }
+                        }
+                    }, {
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
                 }]
             }
         },
@@ -475,14 +492,39 @@ class InboxTasksCollection:
                         }
                     }
                 }, {
-                    "property": "due-date",
-                    "filter": {
-                        "operator": "date_is_on_or_before",
-                        "value": {
-                            "type": "relative",
-                            "value": "tomorrow"
+                    "operator": "or",
+                    "filters": [{
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "one_week_from_now"
+                            }
                         }
-                    }
+                    }, {
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "due-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "tomorrow"
+                            }
+                        }
+                    }, {
+                        "property": "due-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
                 }]
             }
         },
@@ -526,14 +568,39 @@ class InboxTasksCollection:
                         }
                     }
                 }, {
-                    "property": "due-date",
-                    "filter": {
-                        "operator": "date_is_on_or_before",
-                        "value": {
-                            "type": "relative",
-                            "value": "one_week_from_now"
+                    "operator": "or",
+                    "filters": [{
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "one_week_from_now"
+                            }
                         }
-                    }
+                    }, {
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "due-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "one_week_from_now"
+                            }
+                        }
+                    }, {
+                        "property": "due-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
                 }]
             }
         },
@@ -577,14 +644,39 @@ class InboxTasksCollection:
                         }
                     }
                 }, {
-                    "property": "due-date",
-                    "filter": {
-                        "operator": "date_is_on_or_before",
-                        "value": {
-                            "type": "relative",
-                            "value": "one_month_from_now"
+                    "operator": "or",
+                    "filters": [{
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "one_week_from_now"
+                            }
                         }
-                    }
+                    }, {
+                        "property": "active-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "due-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "one_month_from_now"
+                            }
+                        }
+                    }, {
+                        "property": "due-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
                 }]
             }
         },

@@ -243,7 +243,7 @@ class InboxTasksRepository:
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"]))
             if storage_form["difficulty"] else None,
             active_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["active_date"]))
-            if storage_form.get("active_date", None) else None,
+            if storage_form["active_date"] else None,
             due_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             recurring_task_timeline=typing.cast(str, storage_form["recurring_task_timeline"])
@@ -251,8 +251,8 @@ class InboxTasksRepository:
             recurring_task_type=RecurringTaskType(typing.cast(str, storage_form["recurring_task_type"]))
             if storage_form["recurring_task_type"] else None,
             recurring_task_gen_right_now=BasicValidator.timestamp_from_str(
-                typing.cast(str, storage_form.get("recurring_task_gen_right_now", None)))
-            if storage_form.get("recurring_task_gen_right_now", None) else None,
+                typing.cast(str, storage_form["recurring_task_gen_right_now"]))
+            if storage_form["recurring_task_gen_right_now"] else None,
             created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
             last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
