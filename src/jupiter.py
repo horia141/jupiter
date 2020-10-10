@@ -21,7 +21,7 @@ from command.garbage_collect import GarbageCollect
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
 from command.inbox_tasks_create import InboxTasksCreate
 from command.inbox_tasks_hard_remove import InboxTasksHardRemove
-from command.inbox_tasks_set_active_date import InboxTasksSetActiveDate
+from command.inbox_tasks_set_actionable_date import InboxTasksSetActiveDate
 from command.inbox_tasks_set_difficulty import InboxTasksSetDifficulty
 from command.inbox_tasks_set_due_date import InboxTasksSetDueDate
 from command.inbox_tasks_set_eisen import InboxTasksSetEisen

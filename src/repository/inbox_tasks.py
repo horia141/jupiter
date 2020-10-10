@@ -30,7 +30,7 @@ class InboxTask:
     status: InboxTaskStatus
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
-    active_date: Optional[ADate]
+    actionable_date: Optional[ADate]
     due_date: Optional[ADate]
     recurring_task_timeline: Optional[str]
     recurring_task_type: Optional[RecurringTaskType]
@@ -73,7 +73,7 @@ class InboxTasksRepository:
     def create_inbox_task(
             self, project_ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
             recurring_task_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
-            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], active_date: Optional[ADate],
+            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
             due_date: Optional[ADate], recurring_task_timeline: Optional[str],
             recurring_task_type: Optional[RecurringTaskType],
             recurring_task_gen_right_now: Optional[Timestamp]) -> InboxTask:
@@ -90,7 +90,7 @@ class InboxTasksRepository:
             status=status,
             eisen=list(eisen),
             difficulty=difficulty,
-            active_date=active_date,
+            actionable_date=actionable_date,
             due_date=due_date,
             recurring_task_timeline=recurring_task_timeline,
             recurring_task_type=recurring_task_type,
@@ -212,7 +212,7 @@ class InboxTasksRepository:
                     "entries": {"type": "string"}
                 },
                 "difficulty": {"type": ["string", "null"]},
-                "active_date": {"type": ["string", "null"]},
+                "actionable_date": {"type": ["string", "null"]},
                 "due_date": {"type": ["string", "null"]},
                 "recurring_task_timeline": {"type": ["string", "null"]},
                 "recurring_task_type": {"type": ["string", "null"]},
@@ -242,8 +242,8 @@ class InboxTasksRepository:
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"]))
             if storage_form["difficulty"] else None,
-            active_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["active_date"]))
-            if storage_form["active_date"] else None,
+            actionable_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["actionable_date"]))
+            if storage_form["actionable_date"] else None,
             due_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             recurring_task_timeline=typing.cast(str, storage_form["recurring_task_timeline"])
@@ -277,7 +277,7 @@ class InboxTasksRepository:
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
-            "active_date": BasicValidator.adate_to_str(live_form.active_date) if live_form.active_date else None,
+            "actionable_date": BasicValidator.adate_to_str(live_form.actionable_date) if live_form.actionable_date else None,
             "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,
             "recurring_task_timeline": live_form.recurring_task_timeline,
             "recurring_task_type": live_form.recurring_task_type.value if live_form.recurring_task_type else None,

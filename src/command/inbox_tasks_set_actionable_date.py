@@ -35,10 +35,10 @@ class InboxTasksSetActiveDate(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The if of the inbox task")
-        parser.add_argument("--active-date", dest="active_date", help="The active date of the inbox task")
+        parser.add_argument("--actionable-date", dest="actionable_date", help="The active date of the inbox task")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        active_date = self._basic_validator.adate_validate_and_clean(args.active_date) if args.due_date else None
-        self._inbox_tasks_controller.set_inbox_task_active_date(ref_id, active_date)
+        actionable_date = self._basic_validator.adate_validate_and_clean(args.actionable_date) if args.due_date else None
+        self._inbox_tasks_controller.set_inbox_task_actionable_date(ref_id, actionable_date)

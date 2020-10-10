@@ -37,7 +37,7 @@ class InboxTaskRow(BasicRowType):
     status: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
-    active_date: Optional[ADate]
+    actionable_date: Optional[ADate]
     due_date: Optional[ADate]
     from_script: bool
     recurring_timeline: Optional[str]
@@ -917,7 +917,7 @@ class InboxTasksCollection:
             self, project_ref_id: EntityId, name: str, archived: bool,
             big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
             recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
-            difficulty: Optional[str], active_date: Optional[ADate], due_date: Optional[ADate],
+            difficulty: Optional[str], actionable_date: Optional[ADate], due_date: Optional[ADate],
             recurring_timeline: Optional[str], recurring_period: Optional[str], recurring_task_type: Optional[str],
             recurring_task_gen_right_now: Optional[ADate], ref_id: EntityId) -> InboxTaskRow:
         """Create an inbox task."""
@@ -931,7 +931,7 @@ class InboxTasksCollection:
             status=status,
             eisen=eisen,
             difficulty=difficulty,
-            active_date=active_date,
+            actionable_date=actionable_date,
             due_date=due_date,
             from_script=True,
             recurring_timeline=recurring_timeline,
@@ -1060,7 +1060,7 @@ class InboxTasksCollection:
         notion_row.status = row.status
         notion_row.eisenhower = row.eisen
         notion_row.difficulty = row.difficulty
-        notion_row.active_date = self._basic_validator.adate_to_notion(row.due_date) if row.active_date else None
+        notion_row.actionable_date = self._basic_validator.adate_to_notion(row.due_date) if row.actionable_date else None
         notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
         notion_row.from_script = row.from_script
         notion_row.recurring_timeline = row.recurring_timeline
@@ -1085,8 +1085,8 @@ class InboxTasksCollection:
             status=inbox_task_notion_row.status,
             eisen=common.clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,
-            active_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.active_date)
-            if inbox_task_notion_row.active_date else None,
+            actionable_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.actionable_date)
+            if inbox_task_notion_row.actionable_date else None,
             due_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.due_date)
             if inbox_task_notion_row.due_date else None,
             from_script=inbox_task_notion_row.from_script,
