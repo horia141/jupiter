@@ -52,9 +52,10 @@ class RecurringTasksController:
 
     def create_recurring_task(
             self, project_key: ProjectKey, name: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
-            eisen: List[Eisen], difficulty: Optional[Difficulty], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
-            skip_rule: Optional[str], start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
+            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_from_day: Optional[int],
+            actionable_from_month: Optional[int], due_at_time: Optional[str], due_at_day: Optional[int],
+            due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str], start_at_date: Optional[ADate],
+            end_at_date: Optional[ADate]) -> RecurringTask:
         """Create an recurring task."""
         project = self._projects_service.load_project_by_key(project_key)
         inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
@@ -66,6 +67,8 @@ class RecurringTasksController:
             the_type=the_type,
             eisen=eisen,
             difficulty=difficulty,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
@@ -152,6 +155,23 @@ class RecurringTasksController:
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.set_inbox_task_difficulty(inbox_task.ref_id, difficulty)
+        return recurring_task
+
+    def set_recurring_task_actionable_config(
+            self, ref_id: EntityId, actionable_from_day: Optional[int], actionable_from_month: Optional[int]) -> RecurringTask:
+        """Change the actionable date config for a recurring task."""
+        recurring_task = self._recurring_tasks_service.set_recurring_task_actionable_config(
+            ref_id, actionable_from_day, actionable_from_month)
+        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
+            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+        # TODO(horia141): update generation here!
+        for inbox_task in all_inbox_tasks:
+            schedule = schedules.get_schedule(
+                recurring_task.period, recurring_task.name,
+                typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now), self._global_properties.timezone,
+                recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
+                recurring_task.due_at_month)
+            self._inbox_tasks_service.set_inbox_task_due_date(inbox_task.ref_id, schedule.due_time)
         return recurring_task
 
     def set_recurring_task_deadlines(

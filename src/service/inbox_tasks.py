@@ -2,6 +2,9 @@
 import logging
 from typing import Final, Optional, List, Iterable
 
+import pendulum
+from pendulum import UTC
+
 import remote.notion.common
 from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTaskStatus, Eisen, Difficulty, \
     SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp
@@ -65,6 +68,8 @@ class InboxTasksService:
             name = self._basic_validator.entity_name_validate_and_clean(name)
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
+
+        self._check_actionable_and_due_dates(actionable_date, due_date)
 
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
@@ -289,6 +294,7 @@ class InboxTasksService:
         """Change the due date of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        self._check_actionable_and_due_dates(actionable_date, inbox_task.due_date)
         inbox_task.actionable_date = actionable_date
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
@@ -305,6 +311,7 @@ class InboxTasksService:
         """Change the due date of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        self._check_actionable_and_due_dates(inbox_task.actionable_date, due_date)
         inbox_task.due_date = due_date
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
@@ -481,6 +488,7 @@ class InboxTasksService:
                         self._basic_validator.recurring_task_type_validate_and_clean(
                             inbox_task_row.recurring_task_type) \
                         if inbox_task_row.recurring_task_type else None
+                    self._check_actionable_and_due_dates(inbox_task_row.actionable_date, inbox_task_row.due_date)
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
 
@@ -560,6 +568,7 @@ class InboxTasksService:
                             self._basic_validator.recurring_task_type_validate_and_clean(
                                 inbox_task_row.recurring_task_type) \
                             if inbox_task_row.recurring_task_type else None
+                        self._check_actionable_and_due_dates(inbox_task_row.actionable_date, inbox_task_row.due_date)
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
 
@@ -692,3 +701,17 @@ class InboxTasksService:
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
         return all_inbox_tasks_set.values()
+
+    @staticmethod
+    def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:
+        if actionable_date is None or due_date is None:
+            return
+
+        actionable_date_ts = actionable_date if isinstance(actionable_date, pendulum.DateTime) else \
+            pendulum.DateTime(actionable_date.year, actionable_date.month, actionable_date.day, tzinfo=UTC)
+        due_date_ts = due_date if isinstance(due_date, pendulum.DateTime) else \
+            pendulum.DateTime(due_date.year, due_date.month, due_date.day, tzinfo=UTC)
+
+        if actionable_date_ts > due_date_ts:
+            raise ServiceValidationError(
+                f"The actionable date {actionable_date} should be before the due date {due_date}")
