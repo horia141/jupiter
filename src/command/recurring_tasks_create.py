@@ -45,11 +45,15 @@ class RecurringTasksCreate(command.Command):
                             choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
         parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
                             help="The difficulty to use for tasks")
+        parser.add_argument("--actionable-from-day", type=int, dest="actionable_from_day", metavar="DAY",
+                            help="The day of the interval the task will be actionable from")
+        parser.add_argument("--actionable-from-month", type=int, dest="actionable_from_month", metavar="MONTH",
+                            help="The month of the interval the task will be actionable from")
         parser.add_argument("--due-at-time", dest="due_at_time", metavar="HH:MM", help="The time a task will be due on")
         parser.add_argument("--due-at-day", type=int, dest="due_at_day", metavar="DAY",
                             help="The day of the interval the task will be due on")
         parser.add_argument("--due-at-month", type=int, dest="due_at_month", metavar="MONTH",
-                            help="The day of the interval the task will be due on")
+                            help="The month of the interval the task will be due on")
         parser.add_argument("--must-do", dest="must_do", default=False, action="store_true",
                             help="Whether to treat this task as must do or not")
         parser.add_argument("--start-at-date", dest="start_at_date",
@@ -66,6 +70,12 @@ class RecurringTasksCreate(command.Command):
         the_type = self._basic_validator.recurring_task_type_validate_and_clean(args.the_type)
         eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
         difficulty = self._basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
+        actionable_from_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(
+            period, args.actionable_from_day) \
+            if args.actionable_from_day else None
+        actionable_from_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+            period, args.actionable_from_month) \
+            if args.actionable_from_month else None
         due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time)\
             if args.due_at_time else None
         due_at_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(period, args.due_at_day) \
@@ -86,6 +96,8 @@ class RecurringTasksCreate(command.Command):
             the_type=the_type,
             eisen=eisen,
             difficulty=difficulty,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,

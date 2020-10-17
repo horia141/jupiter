@@ -47,6 +47,8 @@ class GenerateInboxTasks(command.Command):
         parser.add_argument("--period", default=[RecurringTaskPeriod.DAILY.value], action="append",
                             choices=BasicValidator.recurring_task_period_values(),
                             help="The period for which the upsert should happen. Defaults to all")
+        parser.add_argument("--ignore-modified-times", dest="sync_even_if_not_modified", action="store_true",
+                            default=False, help="Drop all Notion-side archived")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -59,5 +61,6 @@ class GenerateInboxTasks(command.Command):
         period_filter = frozenset(self._basic_validator.recurring_task_period_validate_and_clean(p)
                                   for p in args.period) \
             if len(args.period) > 0 else None
+        sync_even_if_not_modified: bool = args.sync_even_if_not_modified
         self._generate_inbox_tasks_controller.recurring_tasks_gen(
-            right_now, project_keys, ref_ids, period_filter)
+            right_now, project_keys, ref_ids, period_filter, sync_even_if_not_modified)

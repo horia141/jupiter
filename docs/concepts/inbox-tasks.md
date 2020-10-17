@@ -43,6 +43,10 @@ You can create a task via regular Notion mechanisms (pressing the various "New" 
 or Jupiter can create one for you from the recurring tasks templates via
 `jupiter gen`. You can remove a task by simply removing the Notion record of it.
 
+Tasks have an optional _actionable date_. Sometimes, it does not make sense to work
+on a task before a certain date. Think paying a bill which will be provided in a week. If a task
+has an actionable date, it won't be visible in the boards until a week before it.
+
 Tasks have a deadline. It’s optional, but it’s strongly recommended you add one
 as a goal setting rule.
 

@@ -14,6 +14,7 @@ class Schedule(abc.ABC):
     """The base class for the schedule descriptors class."""
 
     _should_skip: bool
+    _actionable_date: Optional[pendulum.Date]
     _due_date: pendulum.Date
     _due_time: Optional[pendulum.DateTime]
     _full_name: str
@@ -138,6 +139,11 @@ class Schedule(abc.ABC):
         return self._should_skip
 
     @property
+    def actionable_date(self) -> Optional[pendulum.Date]:
+        """The actionable date for the schedule, if any."""
+        return self._actionable_date
+
+    @property
     def due_time(self) -> ADate:
         """The due time of an event according to the schedule."""
         if self._due_time:
@@ -200,14 +206,13 @@ class DailySchedule(Schedule):
         """Construct a schedule."""
         self._date = right_now.date()
         self._due_date = right_now.date()
-        print(f"DEBUG: {self._date} {self._due_date} {timezone} {due_at_time}")
+        self._actionable_date = None
         if due_at_time:
             self._due_time = pendulum.parse(
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time),
                 tz=timezone)
         else:
             self._due_time = None
-        print(f"DEBUG: {self._date} {self._due_date} {timezone} {due_at_time} {self._due_time}")
         self._full_name = "{name} {year}:{month}{day}".format(
             name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now), day=right_now.day)
         self._timeline = self._generate_timeline(right_now)
@@ -243,12 +248,16 @@ class WeeklySchedule(Schedule):
     """A monthly schedule."""
 
     def __init__(
-            self, name: str, right_now: Timestamp, timezone: Timezone, skip_rule: Optional[str] = None,
-            due_at_time: Optional[str] = None, due_at_day: Optional[int] = None) -> None:
+            self, name: str, right_now: Timestamp, timezone: Timezone, skip_rule: Optional[str],
+            actionable_from_day: Optional[int], due_at_time: Optional[str], due_at_day: Optional[int]) -> None:
         """Construct a schedule."""
         super().__init__()
         start_of_week = right_now.start_of("week")
         self._date = right_now.date()
+        if actionable_from_day:
+            self._actionable_date = typing.cast(pendulum.Date, start_of_week.add(days=actionable_from_day - 1).date())
+        else:
+            self._actionable_date = None
         if due_at_day:
             self._due_date = start_of_week.add(days=due_at_day - 1).end_of("day")
         else:
@@ -291,12 +300,16 @@ class MonthlySchedule(Schedule):
     """A monthly schedule."""
 
     def __init__(
-            self, name: str, right_now: Timestamp, timezone: Timezone, skip_rule: Optional[str] = None,
-            due_at_time: Optional[str] = None, due_at_day: Optional[int] = None) -> None:
+            self, name: str, right_now: Timestamp, timezone: Timezone, skip_rule: Optional[str],
+            actionable_from_day: Optional[int], due_at_time: Optional[str], due_at_day: Optional[int]) -> None:
         """Construct a schedule."""
         super().__init__()
         start_of_month = right_now.start_of("month")
         self._date = right_now.date()
+        if actionable_from_day:
+            self._actionable_date = typing.cast(pendulum.Date, start_of_month.add(days=actionable_from_day - 1).date())
+        else:
+            self._actionable_date = None
         if due_at_day:
             self._due_date = start_of_month.add(days=due_at_day - 1).end_of("day")
         else:
@@ -338,12 +351,34 @@ class QuarterlySchedule(Schedule):
     """A quarterly schedule."""
 
     def __init__(
-            self, name: str, right_now: Timestamp, timezone: Timezone, skip_rule: Optional[str] = None,
-            due_at_time: Optional[str] = None, due_at_day: Optional[int] = None,
-            due_at_month: Optional[int] = None) -> None:
+            self, name: str, right_now: Timestamp, timezone: Timezone, skip_rule: Optional[str],
+            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int]) -> None:
         """Construct a schedule."""
         super().__init__()
         self._date = right_now.date()
+        if actionable_from_month:
+            if actionable_from_day:
+                self._actionable_date = typing.cast(pendulum.Date, right_now
+                                                    .on(right_now.year, self.month_to_quarter_start(right_now), 1)
+                                                    .start_of("month")
+                                                    .add(months=actionable_from_month - 1)
+                                                    .add(days=actionable_from_day - 1)
+                                                    .date())
+            else:
+                self._actionable_date = typing.cast(pendulum.Date, right_now
+                                                    .on(right_now.year, self.month_to_quarter_start(right_now), 1)
+                                                    .start_of("month")
+                                                    .add(months=actionable_from_month - 1)
+                                                    .date())
+        elif actionable_from_day:
+            self._actionable_date = typing.cast(pendulum.Date, right_now
+                                                .on(right_now.year, self.month_to_quarter_start(right_now), 1)
+                                                .start_of("month")
+                                                .add(days=actionable_from_day - 1)
+                                                .date())
+        else:
+            self._actionable_date = None
         if due_at_month:
             if due_at_day:
                 self._due_date = right_now\
@@ -411,11 +446,29 @@ class YearlySchedule(Schedule):
     """A yearly schedule."""
 
     def __init__(
-            self, name: str, right_now: Timestamp, timezone: Timezone, due_at_time: Optional[str] = None,
-            due_at_day: Optional[int] = None, due_at_month: Optional[int] = None) -> None:
+            self, name: str, right_now: Timestamp, timezone: Timezone, actionable_from_day: Optional[int],
+            actionable_from_month: Optional[int], due_at_time: Optional[str], due_at_day: Optional[int],
+            due_at_month: Optional[int]) -> None:
         """Construct a schedule."""
         super().__init__()
         self._date = right_now.date()
+        if actionable_from_month:
+            if actionable_from_day:
+                self._actionable_date = typing.cast(pendulum.Date, right_now
+                                                    .start_of("year")
+                                                    .add(months=actionable_from_month - 1)
+                                                    .add(days=actionable_from_day - 1)
+                                                    .date())
+            else:
+                self._actionable_date = typing.cast(pendulum.Date, right_now
+                                                    .start_of("year")
+                                                    .add(months=actionable_from_month - 1)
+                                                    .date())
+        elif actionable_from_day:
+            self._actionable_date = typing.cast(
+                pendulum.Date, right_now.start_of("year").add(days=actionable_from_day - 1).date())
+        else:
+            self._actionable_date = None
         if due_at_month:
             if due_at_day:
                 self._due_date = right_now\
@@ -466,18 +519,22 @@ class YearlySchedule(Schedule):
 
 def get_schedule(
         period: RecurringTaskPeriod, name: str, right_now: Timestamp, timezone: Timezone,
-        skip_rule: Optional[str] = None, due_at_time: Optional[str] = None, due_at_day: Optional[int] = None,
-        due_at_month: Optional[int] = None) -> Schedule:
+        skip_rule: Optional[str], actionable_from_day: Optional[int], actionable_from_month: Optional[int],
+        due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int]) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
     if period == RecurringTaskPeriod.DAILY:
         return DailySchedule(name, right_now, timezone, skip_rule, due_at_time)
     elif period == RecurringTaskPeriod.WEEKLY:
-        return WeeklySchedule(name, right_now, timezone, skip_rule, due_at_time, due_at_day)
+        return WeeklySchedule(name, right_now, timezone, skip_rule, actionable_from_day, due_at_time, due_at_day)
     elif period == RecurringTaskPeriod.MONTHLY:
-        return MonthlySchedule(name, right_now, timezone, skip_rule, due_at_time, due_at_day)
+        return MonthlySchedule(name, right_now, timezone, skip_rule, actionable_from_day, due_at_time, due_at_day)
     elif period == RecurringTaskPeriod.QUARTERLY:
-        return QuarterlySchedule(name, right_now, timezone, skip_rule, due_at_time, due_at_day, due_at_month)
+        return QuarterlySchedule(
+            name, right_now, timezone, skip_rule, actionable_from_day, actionable_from_month, due_at_time, due_at_day,
+            due_at_month)
     elif period == RecurringTaskPeriod.YEARLY:
-        return YearlySchedule(name, right_now, timezone, due_at_time, due_at_day, due_at_month)
+        return YearlySchedule(
+            name, right_now, timezone, actionable_from_day, actionable_from_month, due_at_time, due_at_day,
+            due_at_month)
     else:
         raise Exception(f"Invalid period {period}")

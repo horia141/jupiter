@@ -37,9 +37,9 @@ class GenerateInboxTasksController:
         self._recurring_tasks_service = recurring_tasks_service
 
     def recurring_tasks_gen(
-            self, right_now: Timestamp, project_keys: Optional[Iterable[ProjectKey]] = None,
-            ref_ids: Optional[Iterable[EntityId]] = None,
-            period_filter: Optional[Iterable[RecurringTaskPeriod]] = None) -> None:
+            self, right_now: Timestamp, project_keys: Optional[Iterable[ProjectKey]],
+            ref_ids: Optional[Iterable[EntityId]],
+            period_filter: Optional[Iterable[RecurringTaskPeriod]], sync_even_if_not_modified: bool) -> None:
         """Generate recurring tasks to inbox tasks."""
         all_vacations = self._vacations_service.load_all_vacations()
 
@@ -69,7 +69,8 @@ class GenerateInboxTasksController:
                     all_vacations=all_vacations,
                     recurring_task=recurring_task,
                     all_inbox_tasks_by_recurring_task_ref_id_and_timeline=
-                    all_inbox_tasks_by_recurring_task_ref_id_and_timeline)
+                    all_inbox_tasks_by_recurring_task_ref_id_and_timeline,
+                    sync_even_if_not_modified=sync_even_if_not_modified)
 
     def _generate_inbox_tasks_for_recurring_task(
             self,
@@ -78,7 +79,8 @@ class GenerateInboxTasksController:
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
             all_vacations: List[Vacation],
             recurring_task: RecurringTask,
-            all_inbox_tasks_by_recurring_task_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask]) -> None:
+            all_inbox_tasks_by_recurring_task_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask],
+            sync_even_if_not_modified: bool) -> None:
         if recurring_task.suspended:
             LOGGER.info(f"Skipping '{recurring_task.name}' because it is suspended")
             return
@@ -89,8 +91,8 @@ class GenerateInboxTasksController:
 
         schedule = schedules.get_schedule(
             recurring_task.period, recurring_task.name, right_now, self._global_properties.timezone,
-            recurring_task.skip_rule, recurring_task.due_at_time, recurring_task.due_at_day,
-            recurring_task.due_at_month)
+            recurring_task.skip_rule, recurring_task.actionable_from_day, recurring_task.actionable_from_month,
+            recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
 
         if not recurring_task.must_do:
             for vacation in all_vacations:
@@ -113,13 +115,14 @@ class GenerateInboxTasksController:
             (recurring_task.ref_id, schedule.timeline), None)
 
         if found_task:
-            if found_task.last_modified_time >= recurring_task.last_modified_time:
+            if not sync_even_if_not_modified and found_task.last_modified_time >= recurring_task.last_modified_time:
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                 ref_id=found_task.ref_id,
                 name=schedule.full_name,
+                actionable_date=schedule.actionable_date,
                 due_time=schedule.due_time,
                 eisen=recurring_task.eisen,
                 difficulty=recurring_task.difficulty,
@@ -137,4 +140,5 @@ class GenerateInboxTasksController:
                 recurring_task_gen_right_now=right_now,
                 eisen=recurring_task.eisen,
                 difficulty=recurring_task.difficulty,
+                actionable_date=schedule.actionable_date,
                 due_date=schedule.due_time)

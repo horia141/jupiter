@@ -52,6 +52,18 @@ it also changes in the following way:
 * The "From Script", "Recurring Period" and "Recurring Timeline" fields are populated. But
   they are rather implementation details.
 
+Recurring tasks can also have an actionable date. By default there is none, and the generated
+inbox task won't have an actionable date. If you specify an `actionable_from_day` and/or
+`actionable_from_month` properties, they will determine the inbox tasks to have one. They work like
+so:
+
+* For tasks with weekly and monthly periods, the `actionable_from_day` property can be set. This
+  will set the actionable date to be that many days into the period interval.
+* For tasks with quarterly and yearly periods, the `actionable_from_month` and `actionable_from_day`
+  properties can be set. The first parameter will specify the month in the period interval to
+  set the actionable date to. If `actionable_from_day` is not set, the first day of the month is
+  used, otherwise the specified day is used.
+
 Recurring tasks also have a deadline. By default the deadline is the end day of the period
 interval, at midnight. You can override it however to specify, via the `due_at_day` and
 `due_at_time` properties. They work like so:

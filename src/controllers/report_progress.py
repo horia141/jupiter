@@ -170,7 +170,7 @@ class ReportProgressController:
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
         projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
         schedule = schedules.get_schedule(
-            period, "Helper", right_now, self._global_properties.timezone, None, None, None, None)
+            period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
 
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_project_ref_ids=[p.ref_id for p in projects],
@@ -222,7 +222,7 @@ class ReportProgressController:
                     Timestamp(pendulum.DateTime(curr_date.year, curr_date.month, curr_date.day, tzinfo=UTC))
                 phase_schedule = schedules.get_schedule(
                     breakdown_period, "Sub-period", curr_date_as_time, self._global_properties.timezone,
-                    None, None, None, None)
+                    None, None, None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
                 curr_date = curr_date.add(days=1)
 
@@ -411,7 +411,8 @@ class ReportProgressController:
 
             while the_current_period != the_bigger_period:
                 the_bigger_schedule = schedules.get_schedule(
-                    the_bigger_period, "Helper", right_now, self._global_properties.timezone, None, None, None, None)
+                    the_bigger_period, "Helper", right_now, self._global_properties.timezone,
+                    None, None, None, None, None, None)
 
                 the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))
                 the_current_period = the_bigger_period

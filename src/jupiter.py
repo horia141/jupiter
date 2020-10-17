@@ -21,6 +21,7 @@ from command.garbage_collect import GarbageCollect
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
 from command.inbox_tasks_create import InboxTasksCreate
 from command.inbox_tasks_hard_remove import InboxTasksHardRemove
+from command.inbox_tasks_set_actionable_date import InboxTasksSetActiveDate
 from command.inbox_tasks_set_difficulty import InboxTasksSetDifficulty
 from command.inbox_tasks_set_due_date import InboxTasksSetDueDate
 from command.inbox_tasks_set_eisen import InboxTasksSetEisen
@@ -35,6 +36,7 @@ from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
 from command.generate_inbox_tasks import GenerateInboxTasks
 from command.recurring_tasks_hard_remove import RecurringTasksHardRemove
+from command.recurring_tasks_set_actionable_config import RecurringTasksSetActionableConfig
 from command.recurring_tasks_set_active_interval import RecurringTasksSetActiveInterval
 from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
 from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
@@ -205,6 +207,7 @@ def main() -> None:
             InboxTasksSetStatus(basic_validator, inbox_tasks_controller),
             InboxTasksSetEisen(basic_validator, inbox_tasks_controller),
             InboxTasksSetDifficulty(basic_validator, inbox_tasks_controller),
+            InboxTasksSetActiveDate(basic_validator, inbox_tasks_controller),
             InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
             InboxTasksHardRemove(basic_validator, inbox_tasks_controller),
             InboxTasksShow(basic_validator, inbox_tasks_controller),
@@ -215,6 +218,7 @@ def main() -> None:
             RecurringTasksSetType(basic_validator, recurring_tasks_controller),
             RecurringTasksSetEisen(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDifficulty(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetActionableConfig(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDeadlines(basic_validator, recurring_tasks_controller),
             RecurringTasksSetSkipRule(basic_validator, recurring_tasks_controller),
             RecurringTasksSetMustDo(basic_validator, recurring_tasks_controller),

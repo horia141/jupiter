@@ -436,6 +436,10 @@ class BigPlansCollection:
                     "visible": False
                 }, {
                     "width": 100,
+                    "property": "actionable-date",
+                    "visible": True
+                }, {
+                    "width": 100,
                     "property": "due-date",
                     "visible": True
                 }, {

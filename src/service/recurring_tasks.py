@@ -42,22 +42,46 @@ class RecurringTasksService:
             self._repository.archive_recurring_task(recurring_task.ref_id)
         self._collection.remove_recurring_tasks_structure(project_ref_id)
 
+    @staticmethod
+    def _check_actionable_and_due_date_configs(
+            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_day: Optional[int],
+            due_at_month: Optional[int]) -> None:
+        actionable_from_day = actionable_from_day or 0
+        actionable_from_month = actionable_from_month or 0
+        due_at_day = due_at_day or 1000
+        due_at_month = due_at_month or 1000
+        if actionable_from_month > due_at_month:
+            raise ServiceValidationError(
+                f"Actionable month {actionable_from_month} should be before due month {due_at_month}")
+        if actionable_from_month == due_at_month and actionable_from_day > due_at_day:
+            raise ServiceValidationError(
+                f"Actionable day {actionable_from_day} should be before due day {due_at_day}")
+
     def create_recurring_task(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
             period: RecurringTaskPeriod, the_type: RecurringTaskType, eisen: List[Eisen],
-            difficulty: Optional[Difficulty], due_at_time: Optional[str], due_at_day: Optional[int],
-            due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str], start_at_date: Optional[ADate],
-            end_at_date: Optional[ADate]) -> RecurringTask:
+            difficulty: Optional[Difficulty], actionable_from_day: Optional[int], actionable_from_month: Optional[int],
+            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
+            skip_rule: Optional[str], start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
         """Create a recurring task."""
         today = self._time_provider.get_current_date()
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
+            actionable_from_day = \
+                self._basic_validator.recurring_task_due_at_day_validate_and_clean(period, actionable_from_day)\
+                if actionable_from_day else None
+            actionable_from_month = \
+                self._basic_validator.recurring_task_due_at_month_validate_and_clean(period, actionable_from_month) \
+                if actionable_from_month else None
             due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(due_at_time)\
                 if due_at_time else None
             due_at_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(period, due_at_day)\
                 if due_at_day else None
             due_at_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(period, due_at_month)\
                 if due_at_month else None
+
+            self._check_actionable_and_due_date_configs(
+                actionable_from_day, actionable_from_month, due_at_day, due_at_month)
 
             if start_at_date is not None and end_at_date is not None and start_at_date >= end_at_date:
                 raise ServiceValidationError(f"Start date {start_at_date} is after {end_at_date}")
@@ -74,6 +98,8 @@ class RecurringTasksService:
             the_type=the_type,
             eisen=eisen,
             difficulty=difficulty,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
@@ -92,6 +118,8 @@ class RecurringTasksService:
             the_type=new_recurring_task.the_type.value,
             eisen=[e.value for e in new_recurring_task.eisen],
             difficulty=new_recurring_task.difficulty.value if new_recurring_task.difficulty else None,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
@@ -164,6 +192,39 @@ class RecurringTasksService:
 
         return recurring_task
 
+    def set_recurring_task_actionable_config(
+            self, ref_id: EntityId, actionable_from_day: Optional[int],
+            actionable_from_month: Optional[int]) -> RecurringTask:
+        """Change the actionable date config of a recurring task."""
+        recurring_task = self._repository.load_recurring_task(ref_id)
+
+        try:
+            actionable_from_day = \
+                self._basic_validator.recurring_task_due_at_day_validate_and_clean(
+                    recurring_task.period, actionable_from_day) \
+                    if actionable_from_day else None
+            actionable_from_month = \
+                self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                    recurring_task.period, actionable_from_month) \
+                    if actionable_from_month else None
+            self._check_actionable_and_due_date_configs(
+                actionable_from_day, actionable_from_month, recurring_task.due_at_day, recurring_task.due_at_month)
+        except ModelValidationError as error:
+            raise ServiceValidationError("Invalid inputs") from error
+
+        recurring_task.actionable_from_day = actionable_from_day
+        recurring_task.actionable_from_month = actionable_from_month
+        self._repository.save_recurring_task(recurring_task)
+        LOGGER.info("Applied local changes")
+
+        recurring_task_row = self._collection.load_recurring_task(recurring_task.project_ref_id, ref_id)
+        recurring_task_row.actionable_from_day = actionable_from_day
+        recurring_task_row.actionable_from_month = actionable_from_month
+        self._collection.save_recurring_task(recurring_task.project_ref_id, recurring_task_row)
+        LOGGER.info("Applied Notion changes")
+
+        return recurring_task
+
     def set_recurring_task_deadlines(
             self, ref_id: EntityId, due_at_time: Optional[str], due_at_day: Optional[int],
             due_at_month: Optional[int]) -> RecurringTask:
@@ -179,6 +240,8 @@ class RecurringTasksService:
             due_at_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(
                 recurring_task.period, due_at_month)\
                 if due_at_month else None
+            self._check_actionable_and_due_date_configs(
+                recurring_task.actionable_from_day, recurring_task.actionable_from_month, due_at_day, due_at_month)
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
@@ -380,6 +443,14 @@ class RecurringTasksService:
                     recurring_task_difficulty = \
                         self._basic_validator.difficulty_validate_and_clean(recurring_task_row.difficulty) \
                             if recurring_task_row.difficulty else None
+                    recurring_task_actionable_from_day = \
+                        self._basic_validator.recurring_task_due_at_day_validate_and_clean(
+                            recurring_task_period, recurring_task_row.actionable_from_day) \
+                            if recurring_task_row.actionable_from_day else None
+                    recurring_task_actionable_from_month = \
+                        self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                            recurring_task_period, recurring_task_row.actionable_from_month) \
+                            if recurring_task_row.actionable_from_month else None
                     recurring_task_due_at_time = \
                         self._basic_validator.recurring_task_due_at_time_validate_and_clean(
                             recurring_task_row.due_at_time) \
@@ -392,6 +463,10 @@ class RecurringTasksService:
                         self._basic_validator.recurring_task_due_at_month_validate_and_clean(
                             recurring_task_period, recurring_task_row.due_at_month) \
                             if recurring_task_row.due_at_month else None
+
+                    self._check_actionable_and_due_date_configs(
+                        recurring_task_actionable_from_day, recurring_task_actionable_from_month,
+                        recurring_task_due_at_day, recurring_task_due_at_month)
 
                     if recurring_task_row.start_at_date is not None and recurring_task_row.end_at_date is not None \
                             and recurring_task_row.start_at_date >= recurring_task_row.end_at_date:
@@ -413,6 +488,8 @@ class RecurringTasksService:
                     the_type=recurring_task_type,
                     eisen=recurring_task_eisen,
                     difficulty=recurring_task_difficulty,
+                    actionable_from_day=recurring_task_actionable_from_day,
+                    actionable_from_month=recurring_task_actionable_from_month,
                     due_at_time=recurring_task_due_at_time,
                     due_at_day=recurring_task_due_at_day,
                     due_at_month=recurring_task_due_at_month,
@@ -461,6 +538,14 @@ class RecurringTasksService:
                         recurring_task_difficulty = \
                             self._basic_validator.difficulty_validate_and_clean(recurring_task_row.difficulty) \
                                 if recurring_task_row.difficulty else None
+                        recurring_task_actionable_from_day = \
+                            self._basic_validator.recurring_task_due_at_day_validate_and_clean(
+                                recurring_task_period, recurring_task_row.actionable_from_day) \
+                                if recurring_task_row.actionable_from_day else None
+                        recurring_task_actionable_from_month = \
+                            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                                recurring_task_period, recurring_task_row.actionable_from_month) \
+                                if recurring_task_row.actionable_from_month else None
                         recurring_task_due_at_time = \
                             self._basic_validator.recurring_task_due_at_time_validate_and_clean(
                                 recurring_task_row.due_at_time) \
@@ -473,6 +558,10 @@ class RecurringTasksService:
                             self._basic_validator.recurring_task_due_at_month_validate_and_clean(
                                 recurring_task_period, recurring_task_row.due_at_month) \
                                 if recurring_task_row.due_at_month else None
+
+                        self._check_actionable_and_due_date_configs(
+                            recurring_task_actionable_from_day, recurring_task_actionable_from_month,
+                            recurring_task_due_at_day, recurring_task_due_at_month)
 
                         if recurring_task_row.start_at_date is not None and recurring_task_row.end_at_date is not None \
                                 and recurring_task_row.start_at_date >= recurring_task_row.end_at_date:
@@ -496,6 +585,8 @@ class RecurringTasksService:
                     recurring_task.archived = recurring_task_row.archived
                     recurring_task.eisen = recurring_task_eisen
                     recurring_task.difficulty = recurring_task_difficulty
+                    recurring_task.actionable_from_day = recurring_task_actionable_from_day
+                    recurring_task.actionable_from_month = recurring_task_actionable_from_month
                     recurring_task.due_at_time = recurring_task_due_at_time
                     recurring_task.due_at_day = recurring_task_due_at_day
                     recurring_task.due_at_month = recurring_task_due_at_month
@@ -527,6 +618,8 @@ class RecurringTasksService:
                     recurring_task_row.eisen = [e.value for e in recurring_task.eisen]
                     recurring_task_row.difficulty = \
                         recurring_task.difficulty.value if recurring_task.difficulty else None
+                    recurring_task_row.actionable_from_day = recurring_task.actionable_from_day
+                    recurring_task_row.actionable_from_month = recurring_task.actionable_from_month
                     recurring_task_row.due_at_time = recurring_task.due_at_time
                     recurring_task_row.due_at_day = recurring_task.due_at_day
                     recurring_task_row.due_at_month = recurring_task.due_at_month
@@ -567,6 +660,8 @@ class RecurringTasksService:
                 the_type=recurring_task.the_type.value,
                 eisen=[e.value for e in recurring_task.eisen],
                 difficulty=recurring_task.difficulty.value if recurring_task.difficulty else None,
+                actionable_from_day=recurring_task.actionable_from_day,
+                actionable_from_month=recurring_task.actionable_from_month,
                 due_at_time=recurring_task.due_at_time,
                 due_at_day=recurring_task.due_at_day,
                 due_at_month=recurring_task.due_at_month,

@@ -32,6 +32,8 @@ class RecurringTask:
     the_type: RecurringTaskType
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
+    actionable_from_day: Optional[int]
+    actionable_from_month: Optional[int]
     due_at_time: Optional[str]
     due_at_day: Optional[int]
     due_at_month: Optional[int]
@@ -105,9 +107,9 @@ class RecurringTasksRepository:
     def create_recurring_task(
             self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod,
             the_type: RecurringTaskType, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
-            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
-            skip_rule: Optional[str], must_do: bool, start_at_date: ADate,
-            end_at_date: Optional[ADate]) -> RecurringTask:
+            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
+            must_do: bool, start_at_date: ADate, end_at_date: Optional[ADate]) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
@@ -120,6 +122,8 @@ class RecurringTasksRepository:
             the_type=the_type,
             eisen=list(eisen),
             difficulty=difficulty,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
@@ -228,6 +232,8 @@ class RecurringTasksRepository:
                     "entries": {"type": "string"}
                 },
                 "difficulty": {"type": ["string", "null"]},
+                "actionable_from_day": {"type": ["number", "null"]},
+                "actionable_from_month": {"type": ["number", "null"]},
                 "due_at_time": {"type": ["string", "null"]},
                 "due_at_day": {"type": ["number", "null"]},
                 "due_at_month": {"type": ["number", "null"]},
@@ -255,6 +261,10 @@ class RecurringTasksRepository:
             the_type=RecurringTaskType(typing.cast(str, storage_form["the_type"])),
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"])) if storage_form["difficulty"] else None,
+            actionable_from_day=typing.cast(int, storage_form["actionable_from_day"])
+            if storage_form.get("actionable_from_day", None) else None,
+            actionable_from_month=typing.cast(int, storage_form["actionable_from_month"])
+            if storage_form.get("actionable_from_month", None) else None,
             due_at_time=typing.cast(str, storage_form["due_at_time"]) if storage_form["due_at_time"] else None,
             due_at_day=typing.cast(int, storage_form["due_at_day"]) if storage_form["due_at_day"] else None,
             due_at_month=typing.cast(int, storage_form["due_at_month"]) if storage_form["due_at_month"] else None,
@@ -282,6 +292,8 @@ class RecurringTasksRepository:
             "the_type": live_form.the_type.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
+            "actionable_from_day": live_form.actionable_from_day,
+            "actionable_from_month": live_form.actionable_from_month,
             "due_at_time": live_form.due_at_time,
             "due_at_day": live_form.due_at_day,
             "due_at_month": live_form.due_at_month,
