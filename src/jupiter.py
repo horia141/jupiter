@@ -21,6 +21,7 @@ from command.garbage_collect import GarbageCollect
 from command.inbox_tasks_associate_big_plan import InboxTasksAssociateBigPlan
 from command.inbox_tasks_create import InboxTasksCreate
 from command.inbox_tasks_hard_remove import InboxTasksHardRemove
+from command.inbox_tasks_set_actionable_date import InboxTasksSetActiveDate
 from command.inbox_tasks_set_difficulty import InboxTasksSetDifficulty
 from command.inbox_tasks_set_due_date import InboxTasksSetDueDate
 from command.inbox_tasks_set_eisen import InboxTasksSetEisen
@@ -35,6 +36,8 @@ from command.recurring_tasks_archive import RecurringTasksArchive
 from command.recurring_tasks_create import RecurringTasksCreate
 from command.generate_inbox_tasks import GenerateInboxTasks
 from command.recurring_tasks_hard_remove import RecurringTasksHardRemove
+from command.recurring_tasks_set_actionable_config import RecurringTasksSetActionableConfig
+from command.recurring_tasks_set_active_interval import RecurringTasksSetActiveInterval
 from command.recurring_tasks_set_deadlines import RecurringTasksSetDeadlines
 from command.recurring_tasks_set_difficulty import RecurringTasksSetDifficulty
 from command.recurring_tasks_set_eisen import RecurringTasksSetEisen
@@ -93,7 +96,7 @@ from remote.notion.infra.pages_manager import PagesManager
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from remote.notion.projects import ProjectsCollection
 from remote.notion.recurring_tasks import RecurringTasksCollection
-from remote.notion.vacations import VacationsCollection
+from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
@@ -132,26 +135,27 @@ def main() -> None:
             BigPlansRepository(time_provider) as big_plans_repository, \
             SmartListsRepository(time_provider) as smart_lists_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
-            VacationsCollection(time_provider, basic_validator, notion_connection) as vacations_collection, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
             BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
+        notion_vacations_manager = NotionVacationsManager(
+            time_provider, basic_validator, collections_manager)
         notion_smart_lists_manager = NotionSmartListsManager(
             time_provider, basic_validator, pages_manager, collections_manager)
 
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
-            basic_validator, vacations_repository, vacations_collection)
+            basic_validator, vacations_repository, notion_vacations_manager)
         projects_service = ProjectsService(
             basic_validator, projects_repository, projects_collection)
         inbox_tasks_service = InboxTasksService(
             basic_validator, inbox_tasks_repository, inbox_tasks_collection)
         recurring_tasks_service = RecurringTasksService(
-            basic_validator, recurring_tasks_repository, recurring_tasks_collection)
+            basic_validator, time_provider, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
         smart_lists_service = SmartListsService(
             basic_validator, smart_lists_repository, smart_list_items_repository, notion_smart_lists_manager)
@@ -203,6 +207,7 @@ def main() -> None:
             InboxTasksSetStatus(basic_validator, inbox_tasks_controller),
             InboxTasksSetEisen(basic_validator, inbox_tasks_controller),
             InboxTasksSetDifficulty(basic_validator, inbox_tasks_controller),
+            InboxTasksSetActiveDate(basic_validator, inbox_tasks_controller),
             InboxTasksSetDueDate(basic_validator, inbox_tasks_controller),
             InboxTasksHardRemove(basic_validator, inbox_tasks_controller),
             InboxTasksShow(basic_validator, inbox_tasks_controller),
@@ -213,9 +218,11 @@ def main() -> None:
             RecurringTasksSetType(basic_validator, recurring_tasks_controller),
             RecurringTasksSetEisen(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDifficulty(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetActionableConfig(basic_validator, recurring_tasks_controller),
             RecurringTasksSetDeadlines(basic_validator, recurring_tasks_controller),
             RecurringTasksSetSkipRule(basic_validator, recurring_tasks_controller),
             RecurringTasksSetMustDo(basic_validator, recurring_tasks_controller),
+            RecurringTasksSetActiveInterval(basic_validator, recurring_tasks_controller),
             RecurringTasksSuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksUnsuspend(basic_validator, recurring_tasks_controller),
             RecurringTasksHardRemove(basic_validator, recurring_tasks_controller),

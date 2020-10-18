@@ -7,8 +7,11 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
+import pendulum
+from pendulum import UTC
+
 from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, Timestamp, \
-    BasicValidator
+    BasicValidator, ADate
 from repository.common import RepositoryError
 from utils.storage import StructuredCollectionStorage, JSONDictType
 from utils.time_field_action import TimeFieldAction
@@ -29,15 +32,49 @@ class RecurringTask:
     the_type: RecurringTaskType
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
+    actionable_from_day: Optional[int]
+    actionable_from_month: Optional[int]
     due_at_time: Optional[str]
     due_at_day: Optional[int]
     due_at_month: Optional[int]
     suspended: bool
     skip_rule: Optional[str]
     must_do: bool
+    start_at_date: ADate
+    end_at_date: Optional[ADate]
     created_time: Timestamp
     last_modified_time: Timestamp
     archived_time: Optional[Timestamp]
+
+    def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:
+        """Checks whether a particular date range is in this vacation."""
+        if isinstance(start_date, pendulum.DateTime):
+            recurring_task_start_date = pendulum.DateTime(
+                self.start_at_date.year, self.start_at_date.month, self.start_at_date.day, tzinfo=UTC) \
+                if self.start_at_date else None
+        else:
+            recurring_task_start_date = self.start_at_date
+        if isinstance(end_date, pendulum.DateTime):
+            recurring_task_end_date = pendulum.DateTime(
+                self.end_at_date.year, self.end_at_date.month, self.end_at_date.day, tzinfo=UTC).end_of("day") \
+                if self.end_at_date else None
+        else:
+            recurring_task_end_date = self.end_at_date
+
+        if recurring_task_start_date is None and recurring_task_end_date is None:
+            # No explicit active interval so we're always active
+            return True
+        elif recurring_task_start_date is not None and recurring_task_end_date is None:
+            # Just a start date interval, so at least the end date should be in it
+            return typing.cast(bool, end_date >= recurring_task_start_date)
+        elif recurring_task_start_date is None and recurring_task_end_date is not None:
+            # Just an end date interval, so at least the start date should be in it
+            return typing.cast(bool, start_date <= recurring_task_end_date)
+        else:
+            # Both a start date and an end date are present. At least one of the start date or end date of
+            # the interval we're comparing against should be in this interval.
+            return typing.cast(bool, recurring_task_start_date <= start_date <= recurring_task_end_date) or \
+                typing.cast(bool, recurring_task_start_date <= end_date <= recurring_task_end_date)
 
 
 @typing.final
@@ -70,8 +107,9 @@ class RecurringTasksRepository:
     def create_recurring_task(
             self, project_ref_id: EntityId, archived: bool, name: str, period: RecurringTaskPeriod,
             the_type: RecurringTaskType, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
-            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
-            skip_rule: Optional[str], must_do: bool) -> RecurringTask:
+            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
+            must_do: bool, start_at_date: ADate, end_at_date: Optional[ADate]) -> RecurringTask:
         """Create a recurring task."""
         recurring_tasks_next_idx, recurring_tasks = self._structured_storage.load()
 
@@ -84,12 +122,16 @@ class RecurringTasksRepository:
             the_type=the_type,
             eisen=list(eisen),
             difficulty=difficulty,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
             suspended=suspended,
             skip_rule=skip_rule,
             must_do=must_do,
+            start_at_date=start_at_date,
+            end_at_date=end_at_date,
             created_time=self._time_provider.get_current_time(),
             last_modified_time=self._time_provider.get_current_time(),
             archived_time=self._time_provider.get_current_time() if archived else None)
@@ -190,12 +232,16 @@ class RecurringTasksRepository:
                     "entries": {"type": "string"}
                 },
                 "difficulty": {"type": ["string", "null"]},
+                "actionable_from_day": {"type": ["number", "null"]},
+                "actionable_from_month": {"type": ["number", "null"]},
                 "due_at_time": {"type": ["string", "null"]},
                 "due_at_day": {"type": ["number", "null"]},
                 "due_at_month": {"type": ["number", "null"]},
                 "suspended": {"type": "boolean"},
                 "skip_rule": {"type": ["string", "null"]},
                 "must_do": {"type": "boolean"},
+                "start_at_date": {"type": ["string", "null"]},
+                "end_at_date": {"type": ["string", "null"]},
                 "created_time": {"type": "string"},
                 "last_modified_time": {"type": "string"},
                 "archived_time": {"type": ["string", "null"]}
@@ -205,6 +251,7 @@ class RecurringTasksRepository:
     @staticmethod
     def storage_to_live(storage_form: JSONDictType) -> RecurringTask:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
+        today_hack = pendulum.today().date()
         return RecurringTask(
             ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
             project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
@@ -214,12 +261,20 @@ class RecurringTasksRepository:
             the_type=RecurringTaskType(typing.cast(str, storage_form["the_type"])),
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"])) if storage_form["difficulty"] else None,
+            actionable_from_day=typing.cast(int, storage_form["actionable_from_day"])
+            if storage_form.get("actionable_from_day", None) else None,
+            actionable_from_month=typing.cast(int, storage_form["actionable_from_month"])
+            if storage_form.get("actionable_from_month", None) else None,
             due_at_time=typing.cast(str, storage_form["due_at_time"]) if storage_form["due_at_time"] else None,
             due_at_day=typing.cast(int, storage_form["due_at_day"]) if storage_form["due_at_day"] else None,
             due_at_month=typing.cast(int, storage_form["due_at_month"]) if storage_form["due_at_month"] else None,
             suspended=typing.cast(bool, storage_form["suspended"]),
             skip_rule=typing.cast(str, storage_form["skip_rule"]) if storage_form["skip_rule"] else None,
             must_do=typing.cast(bool, storage_form["must_do"]),
+            start_at_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["start_at_date"]))
+            if storage_form["start_at_date"] else today_hack,
+            end_at_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["end_at_date"]))
+            if storage_form["end_at_date"] else None,
             created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
             last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
             archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
@@ -237,12 +292,16 @@ class RecurringTasksRepository:
             "the_type": live_form.the_type.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
+            "actionable_from_day": live_form.actionable_from_day,
+            "actionable_from_month": live_form.actionable_from_month,
             "due_at_time": live_form.due_at_time,
             "due_at_day": live_form.due_at_day,
             "due_at_month": live_form.due_at_month,
             "suspended": live_form.suspended,
             "skip_rule": live_form.skip_rule,
             "must_do": live_form.must_do,
+            "start_at_date": BasicValidator.adate_to_str(live_form.start_at_date),
+            "end_at_date": BasicValidator.adate_to_str(live_form.end_at_date) if live_form.end_at_date else None,
             "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
             "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)

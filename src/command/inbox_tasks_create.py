@@ -43,6 +43,7 @@ class InboxTasksCreate(command.Command):
                             choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
         parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
                             help="The difficulty to use for tasks")
+        parser.add_argument("--actionable-date", dest="actionable_date", help="The active date of the inbox task")
         parser.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
 
     def run(self, args: Namespace) -> None:
@@ -53,5 +54,14 @@ class InboxTasksCreate(command.Command):
             if args.big_plan_ref_id else None
         eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
         difficulty = self._basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
+        actionable_date = self._basic_validator.adate_validate_and_clean(args.actionable_date) \
+            if args.due_date else None
         due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
-        self._inbox_tasks_controller.create_inbox_task(project_key, name, big_plan_ref_id, eisen, difficulty, due_date)
+        self._inbox_tasks_controller.create_inbox_task(
+            project_key=project_key,
+            name=name,
+            big_plan_ref_id=big_plan_ref_id,
+            eisen=eisen,
+            difficulty=difficulty,
+            actionable_date=actionable_date,
+            due_date=due_date)

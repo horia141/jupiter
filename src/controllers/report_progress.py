@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
-from typing import Optional, Iterable, Final, Dict, List, cast
+from typing import Optional, Iterable, Final, Dict, List, cast, Tuple
 
 import pendulum
 from nested_dataclasses import nested
@@ -87,6 +87,9 @@ class RecurringTaskSummary:
     longest_streak_size: int
     zero_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
     one_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
+    avg_done_total: float = field(hash=False, compare=False, repr=False, default=0)
+    avg_done_last_period: Dict[RecurringTaskPeriod, float] = \
+        field(hash=False, compare=False, repr=False, default_factory=dict)
     streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
 
@@ -167,7 +170,7 @@ class ReportProgressController:
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
         projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
         schedule = schedules.get_schedule(
-            period, "Helper", right_now, self._global_properties.timezone, None, None, None, None)
+            period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
 
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_project_ref_ids=[p.ref_id for p in projects],
@@ -219,7 +222,7 @@ class ReportProgressController:
                     Timestamp(pendulum.DateTime(curr_date.year, curr_date.month, curr_date.day, tzinfo=UTC))
                 phase_schedule = schedules.get_schedule(
                     breakdown_period, "Sub-period", curr_date_as_time, self._global_properties.timezone,
-                    None, None, None, None)
+                    None, None, None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
                 curr_date = curr_date.add(days=1)
 
@@ -253,7 +256,8 @@ class ReportProgressController:
             PerRecurringTaskBreakdownItem(
                 name=all_recurring_tasks_by_ref_id[k].name,
                 the_type=all_recurring_tasks_by_ref_id[k].the_type,
-                summary=self._run_report_for_inbox_for_recurring_tasks(schedule, [vx[1] for vx in v]))
+                summary=self._run_report_for_inbox_for_recurring_tasks(
+                    all_recurring_tasks_by_ref_id[k].period, right_now, schedule, [vx[1] for vx in v]))
             for (k, v) in
             groupby(sorted(
                 [(it.recurring_task_ref_id, it)
@@ -396,9 +400,26 @@ class ReportProgressController:
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0,
             completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt) if created_cnt > 0 else 0.0)
 
-    @staticmethod
     def _run_report_for_inbox_for_recurring_tasks(
-            schedule: Schedule, inbox_tasks: List[InboxTask]) -> RecurringTaskSummary:
+            self, recurring_task_period: RecurringTaskPeriod, right_now: Timestamp, schedule: Schedule,
+            inbox_tasks: List[InboxTask]) -> RecurringTaskSummary:
+
+        def _build_bigger_periods_and_schedules() -> List[Tuple[RecurringTaskPeriod, Schedule]]:
+            the_bigger_periods_and_schedules = []
+            the_current_period = recurring_task_period
+            the_bigger_period = ReportProgressController._one_bigger_than_period(the_current_period)
+
+            while the_current_period != the_bigger_period:
+                the_bigger_schedule = schedules.get_schedule(
+                    the_bigger_period, "Helper", right_now, self._global_properties.timezone,
+                    None, None, None, None, None, None)
+
+                the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))
+                the_current_period = the_bigger_period
+                the_bigger_period = ReportProgressController._one_bigger_than_period(the_current_period)
+
+            return the_bigger_periods_and_schedules
+
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -419,6 +440,8 @@ class ReportProgressController:
             elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
+        bigger_periods_and_schedules = _build_bigger_periods_and_schedules()
+
         longest_streak_size = 0
         zero_current_streak_size = 0
         zero_streak_size_histogram: Dict[int, int] = {}
@@ -427,11 +450,24 @@ class ReportProgressController:
         sorted_inbox_tasks = sorted(
             (it for it in inbox_tasks if schedule.contains(it.created_time)), key=lambda it: it.created_time)
         used_skip_once = False
+        done_cnt_with_one_streak = 0
+        done_cnt_with_one_streak_per_last_period: Dict[RecurringTaskPeriod, int] = \
+            {bp: 0 for bp, _ in bigger_periods_and_schedules}
+        total_cnt_per_last_period: Dict[RecurringTaskPeriod, int] = \
+            {bp: 0 for bp, _ in bigger_periods_and_schedules}
         streak_plot = []
+
         for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
+            for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
+                if bigger_period_schedule.contains(inbox_task.due_date):
+                    total_cnt_per_last_period[bigger_period] += 1
             if inbox_task.status == InboxTaskStatus.DONE:
                 zero_current_streak_size += 1
                 one_current_streak_size += 1
+                done_cnt_with_one_streak += 1
+                for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
+                    if bigger_period_schedule.contains(inbox_task.due_date):
+                        done_cnt_with_one_streak_per_last_period[bigger_period] += 1
                 streak_plot.append("X")
             else:
                 longest_streak_size = max(zero_current_streak_size, longest_streak_size)
@@ -443,10 +479,14 @@ class ReportProgressController:
                 if inbox_task_idx != 0 \
                         and inbox_task_idx != len(sorted_inbox_tasks) - 1 \
                         and sorted_inbox_tasks[inbox_task_idx - 1].status == InboxTaskStatus.DONE \
-                        and sorted_inbox_tasks[inbox_task_idx + 1].status == InboxTaskStatus.DONE\
+                        and sorted_inbox_tasks[inbox_task_idx + 1].status == InboxTaskStatus.DONE \
                         and not used_skip_once:
                     one_current_streak_size += 1
                     used_skip_once = True
+                    done_cnt_with_one_streak += 1
+                    for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
+                        if bigger_period_schedule.contains(inbox_task.due_date):
+                            done_cnt_with_one_streak_per_last_period[bigger_period] += 1
                     streak_plot.append("x")
                 else:
                     if one_current_streak_size > 0:
@@ -476,6 +516,13 @@ class ReportProgressController:
             longest_streak_size=longest_streak_size,
             zero_streak_size_histogram=zero_streak_size_histogram,
             one_streak_size_histogram=one_streak_size_histogram,
+            avg_done_total=float(done_cnt_with_one_streak) / len(sorted_inbox_tasks)
+            if len(sorted_inbox_tasks) > 0 else 0,
+            avg_done_last_period={
+                bigger_period: float(done_cnt_with_one_streak_per_last_period[bigger_period]) /
+                               total_cnt_per_last_period[bigger_period]
+                               if total_cnt_per_last_period[bigger_period] else 0
+                for bigger_period, _ in bigger_periods_and_schedules},
             streak_plot="".join(streak_plot))
 
     @staticmethod
@@ -512,3 +559,18 @@ class ReportProgressController:
             not_done_cnt=not_done_cnt,
             not_done_projects=not_done_projects,
             done_projects=done_projects)
+
+    @staticmethod
+    def _one_bigger_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:
+        if period == RecurringTaskPeriod.YEARLY:
+            return RecurringTaskPeriod.YEARLY
+        elif period == RecurringTaskPeriod.QUARTERLY:
+            return RecurringTaskPeriod.YEARLY
+        elif period == RecurringTaskPeriod.MONTHLY:
+            return RecurringTaskPeriod.QUARTERLY
+        elif period == RecurringTaskPeriod.WEEKLY:
+            return RecurringTaskPeriod.MONTHLY
+        elif period == RecurringTaskPeriod.DAILY:
+            return RecurringTaskPeriod.WEEKLY
+        else:
+            raise RuntimeError(f"Invalid period {period}")

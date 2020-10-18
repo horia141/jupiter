@@ -39,28 +39,27 @@ class SmartListsService:
     _basic_validator: Final[BasicValidator]
     _smart_lists_repository: Final[SmartListsRepository]
     _smart_list_items_repository: Final[SmartListItemsRepository]
-    _notion_smart_lists_manager: Final[NotionSmartListsManager]
+    _notion_manager: Final[NotionSmartListsManager]
 
     def __init__(
             self, basic_validator: BasicValidator, smart_lists_repository: SmartListsRepository,
-            smart_list_items_repository: SmartListItemsRepository,
-            notion_smart_lists_manager: NotionSmartListsManager) -> None:
+            smart_list_items_repository: SmartListItemsRepository, notion_manager: NotionSmartListsManager) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._smart_lists_repository = smart_lists_repository
         self._smart_list_items_repository = smart_list_items_repository
-        self._notion_smart_lists_manager = notion_smart_lists_manager
+        self._notion_manager = notion_manager
 
     def upsert_root_notion_structure(self, parent_page: NotionPageLink) -> None:
         """Create the root page where all lists will be linked to."""
-        self._notion_smart_lists_manager.upsert_root_page(parent_page)
+        self._notion_manager.upsert_root_page(parent_page)
 
     def create_smart_list(self, key: SmartListKey, name: str) -> SmartList:
         """Create a new smart list."""
         new_smart_list_row = self._smart_lists_repository.create_smart_list(key=key, name=name, archived=False)
         LOGGER.info("Applied local changes")
 
-        self._notion_smart_lists_manager.upsert_smart_list(new_smart_list_row.ref_id, name)
+        self._notion_manager.upsert_smart_list(new_smart_list_row.ref_id, name)
         LOGGER.info("Applied remote changes")
 
         return SmartList(
@@ -81,7 +80,7 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         try:
-            self._notion_smart_lists_manager.hard_remove_smart_list(ref_id)
+            self._notion_manager.hard_remove_smart_list(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
@@ -104,7 +103,7 @@ class SmartListsService:
         self._smart_lists_repository.update_smart_list(smart_list_row)
         LOGGER.info("Applied local changes")
 
-        self._notion_smart_lists_manager.upsert_smart_list(ref_id, name)
+        self._notion_manager.upsert_smart_list(ref_id, name)
         LOGGER.info("Applied remote changes")
 
         return SmartList(
@@ -147,10 +146,10 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         try:
-            self._notion_smart_lists_manager.hard_remove_smart_list(ref_id)
+            self._notion_manager.hard_remove_smart_list(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
-            LOGGER.info("Skipping archival on Notion side because smart list was not found")
+            LOGGER.info("Skipping removal on Notion side because smart list was not found")
 
         return SmartList(
             ref_id=smart_list_row.ref_id,
@@ -163,10 +162,10 @@ class SmartListsService:
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id, allow_archived=True)
 
         try:
-            self._notion_smart_lists_manager.hard_remove_smart_list(ref_id)
+            self._notion_manager.hard_remove_smart_list(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
-            LOGGER.info("Skipping archival on Notion side because smart list was not found")
+            LOGGER.info("Skipping removal on Notion side because smart list was not found")
 
         return SmartList(
             ref_id=smart_list_row.ref_id,
@@ -185,7 +184,7 @@ class SmartListsService:
             archived=False)
         LOGGER.info("Applied local changes")
 
-        self._notion_smart_lists_manager.upsert_smart_list_item(
+        self._notion_manager.upsert_smart_list_item(
             smart_list_ref_id=smart_list_row.ref_id,
             ref_id=new_smart_list_item_row.ref_id,
             name=new_smart_list_item_row.name,
@@ -207,7 +206,7 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         try:
-            self._notion_smart_lists_manager.archive_smart_list_item(
+            self._notion_manager.archive_smart_list_item(
                 smart_list_item_row.smart_list_ref_id, smart_list_item_row.ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
@@ -232,10 +231,10 @@ class SmartListsService:
         self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
 
-        smart_list_item_notion_row = self._notion_smart_lists_manager.load_smart_list_item(
+        smart_list_item_notion_row = self._notion_manager.load_smart_list_item(
             smart_list_item_row.smart_list_ref_id, ref_id)
         smart_list_item_notion_row.name = name
-        self._notion_smart_lists_manager.save_smart_list_item(
+        self._notion_manager.save_smart_list_item(
             smart_list_item_row.smart_list_ref_id, ref_id, smart_list_item_notion_row)
         LOGGER.info("Applied Notion changes")
 
@@ -258,10 +257,10 @@ class SmartListsService:
         self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
 
-        smart_list_item_notion_row = self._notion_smart_lists_manager.load_smart_list_item(
+        smart_list_item_notion_row = self._notion_manager.load_smart_list_item(
             smart_list_item_row.smart_list_ref_id, ref_id)
         smart_list_item_notion_row.url = url
-        self._notion_smart_lists_manager.save_smart_list_item(
+        self._notion_manager.save_smart_list_item(
             smart_list_item_row.smart_list_ref_id, ref_id, smart_list_item_notion_row)
         LOGGER.info("Applied Notion changes")
 
@@ -292,7 +291,7 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         try:
-            self._notion_smart_lists_manager.hard_remove_smart_list_item(
+            self._notion_manager.hard_remove_smart_list_item(
                 smart_list_item_row.smart_list_ref_id, smart_list_item_row.ref_id)
             LOGGER.info("Applied Notion changes")
         except StructuredStorageError:
@@ -310,7 +309,7 @@ class SmartListsService:
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id, allow_archived=True)
 
         try:
-            self._notion_smart_lists_manager.hard_remove_smart_list_item(smart_list_item_row.smart_list_ref_id, ref_id)
+            self._notion_manager.hard_remove_smart_list_item(smart_list_item_row.smart_list_ref_id, ref_id)
             LOGGER.info("Applied Notion changes")
         except StructuredStorageError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
@@ -329,11 +328,11 @@ class SmartListsService:
         """Synchronise a smart list and its items between Notion and local storage."""
         # Synchronize the smart list.
         smart_list_row = self._smart_lists_repository.load_smart_list(smart_list_ref_id)
-        smart_list_notion_collection = self._notion_smart_lists_manager.load_smart_list(smart_list_ref_id)
+        smart_list_notion_collection = self._notion_manager.load_smart_list(smart_list_ref_id)
 
         if sync_prefer == SyncPrefer.LOCAL:
             smart_list_notion_collection.name = smart_list_row.name
-            self._notion_smart_lists_manager.save_smart_list(smart_list_notion_collection)
+            self._notion_manager.save_smart_list(smart_list_notion_collection)
             LOGGER.info("Applied changes to Notion")
         elif sync_prefer == SyncPrefer.NOTION:
             smart_list_row.name = smart_list_notion_collection.name
@@ -347,16 +346,17 @@ class SmartListsService:
             if filter_smart_list_item_ref_ids else None
 
         all_smart_list_items_rows = self._smart_list_items_repository.find_all_smart_list_items(
-            allow_archived=True, filter_smart_list_ref_ids=filter_smart_list_item_ref_ids)
+            allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id],
+            filter_ref_ids=filter_smart_list_item_ref_ids)
         all_smart_list_items_rows_set = {sli.ref_id: sli for sli in all_smart_list_items_rows}
 
         if not drop_all_notion_side:
             all_smart_list_items_notion_rows = \
-                self._notion_smart_lists_manager.load_all_smart_list_items(smart_list_ref_id)
+                self._notion_manager.load_all_smart_list_items(smart_list_ref_id)
             all_smart_list_items_notion_ids = \
-                set(self._notion_smart_lists_manager.load_all_saved_smart_list_items_notion_ids(smart_list_ref_id))
+                set(self._notion_manager.load_all_saved_smart_list_items_notion_ids(smart_list_ref_id))
         else:
-            self._notion_smart_lists_manager.drop_all_smart_list_items(smart_list_ref_id)
+            self._notion_manager.drop_all_smart_list_items(smart_list_ref_id)
             all_smart_list_items_notion_rows = []
             all_smart_list_items_notion_ids = set()
         smart_list_items_notion_rows_set = {}
@@ -388,12 +388,12 @@ class SmartListsService:
                     archived=smart_list_item_notion_row.archived)
                 LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item_row.name}'")
 
-                self._notion_smart_lists_manager.link_local_and_notion_entries_for_smart_list(
+                self._notion_manager.link_local_and_notion_entries_for_smart_list(
                     smart_list_ref_id, new_smart_list_item_row.ref_id, smart_list_item_notion_row.notion_id)
                 LOGGER.info(f"Linked the new smart list item with local entries")
 
                 smart_list_item_notion_row.ref_id = new_smart_list_item_row.ref_id
-                self._notion_smart_lists_manager.save_smart_list_item(
+                self._notion_manager.save_smart_list_item(
                     smart_list_ref_id, new_smart_list_item_row.ref_id, smart_list_item_notion_row)
                 LOGGER.info(f"Applied changes on Notion side too")
 
@@ -440,7 +440,7 @@ class SmartListsService:
                     smart_list_item_notion_row.archived = smart_list_item_row.archived
                     smart_list_item_notion_row.name = smart_list_item_row.name
                     smart_list_item_notion_row.url = smart_list_item_row.url
-                    self._notion_smart_lists_manager.save_smart_list_item(
+                    self._notion_manager.save_smart_list_item(
                         smart_list_ref_id, smart_list_item_row.ref_id, smart_list_item_notion_row)
                     LOGGER.info(f"Changed small list item with '{smart_list_item_notion_row.name}' from local")
                 else:
@@ -451,7 +451,7 @@ class SmartListsService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a smart list item added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_smart_lists_manager.hard_remove_smart_list_item(
+                self._notion_manager.hard_remove_smart_list_item(
                     smart_list_ref_id, EntityId(smart_list_item_notion_row.ref_id))
                 LOGGER.info(f"Removed smart list item with id={smart_list_item_notion_row.ref_id} from Notion")
 
@@ -463,7 +463,7 @@ class SmartListsService:
                 continue
 
             # If the smart list item does not exist on Notion side, we create it.
-            self._notion_smart_lists_manager.upsert_smart_list_item(
+            self._notion_manager.upsert_smart_list_item(
                 smart_list_ref_id=smart_list_ref_id,
                 ref_id=smart_list_item_row.ref_id,
                 name=smart_list_item_row.name,

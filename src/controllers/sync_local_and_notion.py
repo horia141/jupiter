@@ -72,7 +72,7 @@ class SyncLocalAndNotionController:
             workspace_page = self._workspaces_service.get_workspace_notion_structure()
 
             LOGGER.info("Recreating vacations structure")
-            self._vacations_service.upsert_notion_structure(workspace_page)
+            self._vacations_service.upsert_root_notion_structure(workspace_page)
 
             LOGGER.info("Recreating lists structure")
             self._smart_lists_service.upsert_root_notion_structure(workspace_page)
@@ -156,11 +156,13 @@ class SyncLocalAndNotionController:
                     schedule = schedules.get_schedule(
                         recurring_task.period, recurring_task.name,
                         typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now or inbox_task.created_time),
-                        self._global_properties.timezone, recurring_task.skip_rule, recurring_task.due_at_time,
-                        recurring_task.due_at_day, recurring_task.due_at_month)
+                        self._global_properties.timezone, recurring_task.skip_rule, recurring_task.actionable_from_day,
+                        recurring_task.actionable_from_month, recurring_task.due_at_time, recurring_task.due_at_day,
+                        recurring_task.due_at_month)
                     self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
                         ref_id=inbox_task.ref_id,
                         name=schedule.full_name,
+                        actionable_date=schedule.actionable_date,
                         due_time=schedule.due_time,
                         eisen=recurring_task.eisen,
                         difficulty=recurring_task.difficulty,

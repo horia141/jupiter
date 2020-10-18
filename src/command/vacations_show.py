@@ -40,7 +40,7 @@ class VacationsShow(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
-        for vacation in self._vacations_controller.load_all_vacations(filter_archived=not show_archived):
+        for vacation in self._vacations_controller.load_all_vacations(allow_archived=show_archived):
             print(f'id={vacation.ref_id} {vacation.name} ' +
                   f'start={self._basic_validator.adate_to_user(vacation.start_date)} ' +
                   f'end={self._basic_validator.adate_to_user(vacation.end_date)} ' +

@@ -40,7 +40,7 @@ class WorkspacesController:
         LOGGER.info("Creating workspace")
         new_workspace_page = self._workspaces_service.create_workspace(name, timezone)
         LOGGER.info("Creating vacations")
-        self._vacations_service.upsert_notion_structure(new_workspace_page)
+        self._vacations_service.upsert_root_notion_structure(new_workspace_page)
         LOGGER.info("Creating lists")
         self._smart_lists_service.upsert_root_notion_structure(new_workspace_page)
 

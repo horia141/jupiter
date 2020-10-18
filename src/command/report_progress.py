@@ -256,6 +256,10 @@ class ReportProgress(command.Command):
                         for streak_size in sorted(recurring_task_item.summary.one_streak_size_histogram.keys()):
                             print(f"        {streak_size} =>", end=" ")
                             print(f"{recurring_task_item.summary.one_streak_size_histogram[streak_size]}")
+                    print(f"      Avg Done:")
+                    print(f"        Overall: {recurring_task_item.summary.avg_done_total * 100:2.1f}%")
+                    for bigger_period, bigger_result in recurring_task_item.summary.avg_done_last_period.items():
+                        print(f"        {bigger_period.for_notion()}: {bigger_result * 100:2.1f}%")
                     print(f"      Streak Plot: {recurring_task_item.summary.streak_plot}")
 
     @staticmethod

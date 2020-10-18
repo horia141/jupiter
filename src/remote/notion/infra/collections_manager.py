@@ -306,8 +306,7 @@ class CollectionsManager:
             notion_row.remove()
 
         for item in self._collection_items_storage.find_all(collection_key=Eq(collection_key)):
-            item_key = self._build_item_key(collection_key, item.key)
-            self._collection_items_storage.remove(item_key)
+            self._collection_items_storage.remove(item.key)
 
     def hard_remove(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Hard remove the Notion entity associated with a local entity."""

@@ -6,13 +6,12 @@ from models.basic import ProjectKey, SyncTarget
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
-from repository.vacations import Vacation
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.smart_lists import SmartListsService, SmartList, SmartListItem
-from service.vacations import VacationsService
+from service.vacations import VacationsService, Vacation
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,11 +46,11 @@ class GarbageCollectNotionController:
             vacations: Iterable[Vacation] = []
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for vacations")
-                vacations = self._vacations_service.load_all_vacations(filter_archived=False)
+                vacations = self._vacations_service.load_all_vacations(allow_archived=True)
                 vacations = self._do_anti_entropy_for_vacations(vacations)
             if do_notion_cleanup:
                 LOGGER.info(f"Garbage collecting vacations whichwere archived")
-                vacations = vacations or self._vacations_service.load_all_vacations(filter_archived=False)
+                vacations = vacations or self._vacations_service.load_all_vacations(allow_archived=True)
                 self._do_drop_all_archived_vacations(vacations)
 
         for project in self._projects_service.load_all_projects(filter_keys=project_keys):

@@ -47,7 +47,7 @@ class InboxTasksController:
 
     def create_inbox_task(
             self, project_key: ProjectKey, name: str, big_plan_ref_id: Optional[EntityId], eisen: List[Eisen],
-            difficulty: Optional[Difficulty], due_date: Optional[ADate]) -> InboxTask:
+            difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         project = self._projects_service.load_project_by_key(project_key)
 
@@ -57,7 +57,7 @@ class InboxTasksController:
             big_plan_name = big_plan.name
 
         return self._inbox_tasks_service.create_inbox_task(
-            project.ref_id, name, big_plan_ref_id, big_plan_name, eisen, difficulty, due_date)
+            project.ref_id, name, big_plan_ref_id, big_plan_name, eisen, difficulty, actionable_date, due_date)
 
     def archive_inbox_task(self, ref_id: EntityId) -> InboxTask:
         """Archive an inbox task."""
@@ -87,6 +87,10 @@ class InboxTasksController:
     def set_inbox_task_difficulty(self, ref_id: EntityId, difficulty: Optional[Difficulty]) -> InboxTask:
         """Change the difficulty of an inbox task."""
         return self._inbox_tasks_service.set_inbox_task_difficulty(ref_id, difficulty)
+
+    def set_inbox_task_actionable_date(self, ref_id: EntityId, actionable_date: Optional[ADate]) -> InboxTask:
+        """Change the due date of an inbox task."""
+        return self._inbox_tasks_service.set_inbox_task_actionable_date(ref_id, actionable_date)
 
     def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> InboxTask:
         """Change the due date of an inbox task."""

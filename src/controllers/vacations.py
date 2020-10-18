@@ -3,8 +3,7 @@ from typing import Final, Iterable
 
 from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ADate
-from repository.vacations import Vacation
-from service.vacations import VacationsService
+from service.vacations import VacationsService, Vacation
 
 
 class VacationsController:
@@ -36,9 +35,9 @@ class VacationsController:
         """Change the vacation end date."""
         return self._vacations_service.set_vacation_end_date(ref_id, end_date)
 
-    def load_all_vacations(self, filter_archived: bool = True) -> Iterable[Vacation]:
+    def load_all_vacations(self, allow_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
-        return self._vacations_service.load_all_vacations(filter_archived)
+        return self._vacations_service.load_all_vacations(allow_archived=allow_archived)
 
     def hard_remove_vacations(self, ref_ids: Iterable[EntityId]) -> None:
         """Hard remove a vacation."""

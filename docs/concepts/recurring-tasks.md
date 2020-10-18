@@ -52,6 +52,18 @@ it also changes in the following way:
 * The "From Script", "Recurring Period" and "Recurring Timeline" fields are populated. But
   they are rather implementation details.
 
+Recurring tasks can also have an actionable date. By default there is none, and the generated
+inbox task won't have an actionable date. If you specify an `actionable_from_day` and/or
+`actionable_from_month` properties, they will determine the inbox tasks to have one. They work like
+so:
+
+* For tasks with weekly and monthly periods, the `actionable_from_day` property can be set. This
+  will set the actionable date to be that many days into the period interval.
+* For tasks with quarterly and yearly periods, the `actionable_from_month` and `actionable_from_day`
+  properties can be set. The first parameter will specify the month in the period interval to
+  set the actionable date to. If `actionable_from_day` is not set, the first day of the month is
+  used, otherwise the specified day is used.
+
 Recurring tasks also have a deadline. By default the deadline is the end day of the period
 interval, at midnight. You can override it however to specify, via the `due_at_day` and
 `due_at_time` properties. They work like so:
@@ -87,6 +99,12 @@ specified via the `skip_rule` property, which can be one of:
 A recurring task can be mark as "must do", via the `Must Do` property. Being marked
 as such that will cause it to ignore vacations. For example, paying rent or taking some medicine
 can't be interrupted by a vacation.
+
+A recurring task can also have an _active interval_. This is a time interval in which tasks
+should be generated. By default the interval is "empty", so inbox tasks are always generated.
+But by specifying either a start or an end to this interval, you can control when exactly
+tasks are generated. The rule is that the period interval for an inbox tasks intersects successfully
+the active interval.
 
 A recurring task can be suspended, via the `Suspended` property. Being marked as such means
 that the task won't be generated at all. For example, going to the gym might be suspended while
@@ -140,6 +158,8 @@ You can:
 * Change the period of a recurring task via `recurring-tasks-set-period`, or by changing it in Notion, by dragging the
   task to another column.
 * Change the skip rule of a recurring task via `recurring-tasks-set-skip-rule`, or by changing it in Notion.
+* Change the active interval for a recurring task via `recurring-tasks-set-active-interval`, or by changing the start
+  and end dates in Notion.
 * Suspend a recurring task via `recurring-tasks-suspend`, or by checking the attribute in Notion.
 * Unsuspend a recurring task via `recurring-tasks-unsuspend`, or by checking the attribute in Notion.
 * Show info about the recurring task via `recurring-tasks-show`.

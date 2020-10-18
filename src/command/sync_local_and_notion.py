@@ -77,7 +77,7 @@ class SyncLocalAndNotion(command.Command):
             if len(args.recurring_task_ref_ids) > 0 else None
         smart_list_keys = [self._basic_validator.smart_list_key_validate_and_clean(sl)
                            for sl in args.smart_list_ref_ids] \
-            if len(args.smart_list_ref_ids) > 0 else None
+            if len(args.smart_list_keys) > 0 else None
         smart_list_item_ref_ids = [self._basic_validator.entity_id_validate_and_clean(sli)
                                    for sli in args.smart_list_item_ref_ids] \
             if len(args.smart_list_item_ref_ids) > 0 else None

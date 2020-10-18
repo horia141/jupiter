@@ -2,6 +2,9 @@
 import logging
 from typing import Final, Optional, List, Iterable
 
+import pendulum
+from pendulum import UTC
+
 import remote.notion.common
 from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTaskStatus, Eisen, Difficulty, \
     SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp
@@ -54,7 +57,7 @@ class InboxTasksService:
     def create_inbox_task(
             self, project_ref_id: EntityId, name: str, big_plan_ref_id: Optional[EntityId],
             big_plan_name: Optional[str], eisen: List[Eisen], difficulty: Optional[Difficulty],
-            due_date: Optional[ADate]) -> InboxTask:
+            actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         if big_plan_ref_id is None and big_plan_name is not None:
             raise ServiceValidationError(f"Should have null name for null big plan for task")
@@ -66,6 +69,8 @@ class InboxTasksService:
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
+        self._check_actionable_and_due_dates(actionable_date, due_date)
+
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
             project_ref_id=project_ref_id,
@@ -76,6 +81,7 @@ class InboxTasksService:
             status=InboxTaskStatus.ACCEPTED,
             eisen=eisen,
             difficulty=difficulty,
+            actionable_date=actionable_date,
             due_date=due_date,
             recurring_task_timeline=None,
             recurring_task_type=None,
@@ -93,6 +99,7 @@ class InboxTasksService:
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
             difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
+            actionable_date=new_inbox_task.actionable_date,
             due_date=new_inbox_task.due_date,
             recurring_timeline=None,
             recurring_period=None,
@@ -107,7 +114,7 @@ class InboxTasksService:
             self, project_ref_id: EntityId, name: str, recurring_task_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod,
             recurring_task_type: RecurringTaskType, recurring_task_gen_right_now: Timestamp, eisen: List[Eisen],
-            difficulty: Optional[Difficulty], due_date: Optional[ADate]) -> InboxTask:
+            difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         # Apply changes locally
         new_inbox_task = self._repository.create_inbox_task(
@@ -119,6 +126,7 @@ class InboxTasksService:
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
+            actionable_date=actionable_date,
             due_date=due_date,
             recurring_task_timeline=recurring_task_timeline,
             recurring_task_type=recurring_task_type,
@@ -135,6 +143,7 @@ class InboxTasksService:
             status=new_inbox_task.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task.eisen],
             difficulty=new_inbox_task.difficulty.for_notion() if new_inbox_task.difficulty else None,
+            actionable_date=new_inbox_task.actionable_date,
             due_date=new_inbox_task.due_date,
             recurring_timeline=new_inbox_task.recurring_task_timeline,
             recurring_period=recurring_task_period.value,
@@ -216,7 +225,7 @@ class InboxTasksService:
 
     def set_inbox_task_to_recurring_task_link(
             self, ref_id: EntityId, name: str, timeline: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
-            due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:
+            actionable_date: ADate, due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:
         """Change the parameters of the link between the inbox task as an instance of a recurring task."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -229,6 +238,7 @@ class InboxTasksService:
             raise ServiceValidationError(
                 f"Cannot associate a task which is not recurring with a recurring one '{inbox_task.name}'")
         inbox_task.name = name
+        inbox_task.actionable_date = actionable_date
         inbox_task.due_date = due_time
         inbox_task.eisen = eisen
         inbox_task.difficulty = difficulty
@@ -238,16 +248,21 @@ class InboxTasksService:
         LOGGER.info("Modified inbox task locally")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
-        inbox_task_row.name = name
-        inbox_task_row.due_date = due_time
-        inbox_task_row.eisen = [e.value for e in eisen]
-        inbox_task_row.difficulty = difficulty.value if difficulty else None
-        inbox_task_row.recurring_timeline = timeline
-        inbox_task_row.recurring_period = period.value
-        inbox_task_row.recurring_task_type = the_type.value
-        self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
-        LOGGER.info("Applied Notion changes")
+        try:
+            inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+            inbox_task_row.name = name
+            inbox_task_row.actionable_date = actionable_date
+            inbox_task_row.due_date = due_time
+            inbox_task_row.eisen = [e.value for e in eisen]
+            inbox_task_row.difficulty = difficulty.value if difficulty else None
+            inbox_task_row.recurring_timeline = timeline
+            inbox_task_row.recurring_period = period.value
+            inbox_task_row.recurring_task_type = the_type.value
+            self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionEntityNotFound:
+            LOGGER.info(
+                f"Skipping updating link of ref_id='{inbox_task.ref_id}' because it could not be found")
 
         return inbox_task
 
@@ -281,10 +296,28 @@ class InboxTasksService:
 
         return inbox_task
 
+    def set_inbox_task_actionable_date(self, ref_id: EntityId, actionable_date: Optional[ADate]) -> InboxTask:
+        """Change the due date of an inbox task."""
+        # Apply changes locally
+        inbox_task = self._repository.load_inbox_task(ref_id)
+        self._check_actionable_and_due_dates(actionable_date, inbox_task.due_date)
+        inbox_task.actionable_date = actionable_date
+        self._repository.save_inbox_task(inbox_task)
+        LOGGER.info("Applied local changes")
+
+        # Apply changes in Notion
+        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+        inbox_task_row.actionable_date = actionable_date
+        self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+        LOGGER.info("Applied Notion changes")
+
+        return inbox_task
+
     def set_inbox_task_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> InboxTask:
         """Change the due date of an inbox task."""
         # Apply changes locally
         inbox_task = self._repository.load_inbox_task(ref_id)
+        self._check_actionable_and_due_dates(inbox_task.actionable_date, due_date)
         inbox_task.due_date = due_date
         self._repository.save_inbox_task(inbox_task)
         LOGGER.info("Applied local changes")
@@ -461,6 +494,7 @@ class InboxTasksService:
                         self._basic_validator.recurring_task_type_validate_and_clean(
                             inbox_task_row.recurring_task_type) \
                         if inbox_task_row.recurring_task_type else None
+                    self._check_actionable_and_due_dates(inbox_task_row.actionable_date, inbox_task_row.due_date)
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
 
@@ -483,6 +517,7 @@ class InboxTasksService:
                     status=inbox_task_status,
                     eisen=inbox_task_eisen,
                     difficulty=inbox_task_difficulty,
+                    actionable_date=inbox_task_row.actionable_date,
                     due_date=inbox_task_row.due_date,
                     recurring_task_timeline=inbox_task_row.recurring_timeline,
                     recurring_task_type=inbox_task_recurring_task_type,
@@ -539,6 +574,7 @@ class InboxTasksService:
                             self._basic_validator.recurring_task_type_validate_and_clean(
                                 inbox_task_row.recurring_task_type) \
                             if inbox_task_row.recurring_task_type else None
+                        self._check_actionable_and_due_dates(inbox_task_row.actionable_date, inbox_task_row.due_date)
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
 
@@ -581,6 +617,7 @@ class InboxTasksService:
                         inbox_task.difficulty = inbox_task_difficulty
                     inbox_task.archived = inbox_task_row.archived
                     inbox_task.status = inbox_task_status
+                    inbox_task.actionable_date = inbox_task_row.actionable_date
                     inbox_task.due_date = inbox_task_row.due_date
                     inbox_task.recurring_task_timeline = inbox_task_row.recurring_timeline
                     inbox_task.recurring_task_type = inbox_task_recurring_task_type
@@ -612,6 +649,7 @@ class InboxTasksService:
                     inbox_task_row.status = inbox_task.status.for_notion()
                     inbox_task_row.eisen = [e.value for e in inbox_task.eisen]
                     inbox_task_row.difficulty = inbox_task.difficulty.value if inbox_task.difficulty else None
+                    inbox_task_row.actionable_date = inbox_task.actionable_date
                     inbox_task_row.due_date = inbox_task.due_date
                     inbox_task_row.recurring_timeline = inbox_task.recurring_task_timeline
                     inbox_task_row.recurring_period = recurring_task.period.value if recurring_task else None
@@ -659,6 +697,7 @@ class InboxTasksService:
                 status=inbox_task.status.for_notion(),
                 eisen=[e.value for e in inbox_task.eisen],
                 difficulty=inbox_task.difficulty.value if inbox_task.difficulty else None,
+                actionable_date=inbox_task.actionable_date,
                 due_date=inbox_task.due_date,
                 recurring_timeline=inbox_task.recurring_task_timeline,
                 recurring_period=recurring_task.period.value if recurring_task else None,
@@ -668,3 +707,17 @@ class InboxTasksService:
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
         return all_inbox_tasks_set.values()
+
+    @staticmethod
+    def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:
+        if actionable_date is None or due_date is None:
+            return
+
+        actionable_date_ts = actionable_date if isinstance(actionable_date, pendulum.DateTime) else \
+            pendulum.DateTime(actionable_date.year, actionable_date.month, actionable_date.day, tzinfo=UTC)
+        due_date_ts = due_date if isinstance(due_date, pendulum.DateTime) else \
+            pendulum.DateTime(due_date.year, due_date.month, due_date.day, tzinfo=UTC)
+
+        if actionable_date_ts > due_date_ts:
+            raise ServiceValidationError(
+                f"The actionable date {actionable_date} should be before the due date {due_date}")

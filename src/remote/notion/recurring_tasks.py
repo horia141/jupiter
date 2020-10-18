@@ -9,7 +9,8 @@ from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
 
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, Timestamp, BasicValidator
+from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, Timestamp, \
+    BasicValidator, ADate
 from remote.notion import common
 from remote.notion.infra.client import NotionClient
 from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
@@ -31,12 +32,16 @@ class RecurringTaskRow(BasicRowType):
     the_type: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
+    actionable_from_day: Optional[int]
+    actionable_from_month: Optional[int]
     due_at_time: Optional[str]
     due_at_day: Optional[int]
     due_at_month: Optional[int]
     suspended: bool
     skip_rule: Optional[str]
     must_do: bool
+    start_at_date: Optional[ADate]
+    end_at_date: Optional[ADate]
     last_edited_time: Timestamp
 
 
@@ -159,6 +164,14 @@ class RecurringTasksCollection:
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _DIFFICULTY.values()]
         },
+        "actionable-from-day": {
+            "name": "Actionable From Day",
+            "type": "number",
+        },
+        "actionable-from-month": {
+            "name": "Actionable From Month",
+            "type": "number",
+        },
         "due-at-time": {
             "name": "Due At Time",
             "type": "text",
@@ -182,6 +195,14 @@ class RecurringTasksCollection:
         "skip-rule": {
             "name": "Skip Rule",
             "type": "text"
+        },
+        "start-at-date": {
+            "name": "Start At Date",
+            "type": "date"
+        },
+        "end-at-date": {
+            "name": "End At Date",
+            "type": "date"
         },
         "last-edited-time": {
             "name": "Last Edited Time",
@@ -266,6 +287,12 @@ class RecurringTasksCollection:
                 "property": "difficulty",
                 "visible": True
             }, {
+                "property": "actionable-from-day",
+                "visible": True
+            }, {
+                "property": "actionable-from-month",
+                "visible": True
+            }, {
                 "property": "due-at-time",
                 "visible": True
             }, {
@@ -282,6 +309,12 @@ class RecurringTasksCollection:
                 "visible": False
             }, {
                 "property": "skip-rule",
+                "visible": False
+            }, {
+                "property": "start-at-date",
+                "visible": False
+            }, {
+                "property": "end-at-date",
                 "visible": False
             }, {
                 "property": "last-edited-time",
@@ -324,6 +357,14 @@ class RecurringTasksCollection:
                 "visible": True
             }, {
                 "width": 100,
+                "property": "actionable-from-day",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "actionable-from-month",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "due-at-time",
                 "visible": True
             }, {
@@ -345,6 +386,14 @@ class RecurringTasksCollection:
             }, {
                 "width": 100,
                 "property": "skip-rule",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "start-at-date",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "end-at-date",
                 "visible": True
             }, {
                 "width": 100,
@@ -394,8 +443,10 @@ class RecurringTasksCollection:
     def create_recurring_task(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool, name: str,
             period: str, the_type: str, eisen: List[str], difficulty: Optional[str],
-            due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool,
-            skip_rule: Optional[str], must_do: bool, ref_id: EntityId) -> RecurringTaskRow:
+            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
+            must_do: bool, start_at_date: Optional[ADate], end_at_date: Optional[ADate],
+            ref_id: EntityId) -> RecurringTaskRow:
         """Create a recurring task."""
         new_recurring_task_row = RecurringTaskRow(
             notion_id=NotionId("FAKE-FAKE-FAKE"),
@@ -405,12 +456,16 @@ class RecurringTasksCollection:
             the_type=the_type,
             eisen=eisen,
             difficulty=difficulty,
+            actionable_from_day=actionable_from_day,
+            actionable_from_month=actionable_from_month,
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
             suspended=suspended,
             skip_rule=skip_rule,
             must_do=must_do,
+            start_at_date=start_at_date,
+            end_at_date=end_at_date,
             last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id)
         return cast(RecurringTaskRow, self._collection.create(
@@ -535,12 +590,17 @@ class RecurringTasksCollection:
         notion_row.the_type = row.the_type
         notion_row.eisenhower = row.eisen
         notion_row.difficulty = row.difficulty
+        notion_row.actionable_from_day = row.actionable_from_day
+        notion_row.actionable_from_month = row.actionable_from_month
         notion_row.due_at_time = row.due_at_time
         notion_row.due_at_day = row.due_at_day
         notion_row.due_at_month = row.due_at_month
         notion_row.suspended = row.suspended
         notion_row.skip_rule = row.skip_rule
         notion_row.must_do = row.must_do
+        notion_row.start_at_date = self._basic_validator.adate_to_notion(row.start_at_date) \
+                                   if row.start_at_date else None
+        notion_row.end_at_date = self._basic_validator.adate_to_notion(row.end_at_date) if row.end_at_date else None
         notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 
@@ -564,12 +624,18 @@ class RecurringTasksCollection:
             the_type=recurring_task_notion_row.the_type,
             eisen=common.clean_eisenhower(recurring_task_notion_row.eisenhower),
             difficulty=recurring_task_notion_row.difficulty,
+            actionable_from_day=recurring_task_notion_row.actionable_from_day,
+            actionable_from_month=recurring_task_notion_row.actionable_from_month,
             due_at_time=recurring_task_notion_row.due_at_time,
             due_at_day=recurring_task_notion_row.due_at_day,
             due_at_month=recurring_task_notion_row.due_at_month,
             suspended=recurring_task_notion_row.suspended,
             skip_rule=recurring_task_notion_row.skip_rule,
             must_do=recurring_task_notion_row.must_do,
+            start_at_date=self._basic_validator.adate_from_notion(recurring_task_notion_row.start_at_date)
+            if recurring_task_notion_row.start_at_date else None,
+            end_at_date=self._basic_validator.adate_from_notion(recurring_task_notion_row.end_at_date)
+            if recurring_task_notion_row.end_at_date else None,
             last_edited_time=
             self._basic_validator.timestamp_from_notion_timestamp(recurring_task_notion_row.last_edited_time),
             ref_id=recurring_task_notion_row.ref_id)
@@ -615,6 +681,10 @@ class RecurringTasksCollection:
                     "width": 100,
                     "property": "bigplan2",
                     "visible": False
+                }, {
+                    "width": 100,
+                    "property": "actionable-date",
+                    "visible": True
                 }, {
                     "width": 100,
                     "property": "due-date",

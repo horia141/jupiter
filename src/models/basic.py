@@ -38,7 +38,7 @@ class SyncPrefer(enum.Enum):
     NOTION = "notion"
 
 
-Timestamp = NewType("Timestamp", pendulum.DateTime) # type: ignore
+Timestamp = NewType("Timestamp", pendulum.DateTime)  # type: ignore
 
 
 ADate = Union[pendulum.Date, pendulum.DateTime]
@@ -218,17 +218,17 @@ class BasicValidator:
     _recurring_task_due_at_time_re: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
     _recurring_task_due_at_day_bounds: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
         RecurringTaskPeriod.DAILY: (0, 0),
-        RecurringTaskPeriod.WEEKLY: (0, 6),
-        RecurringTaskPeriod.MONTHLY: (0, 31),
-        RecurringTaskPeriod.QUARTERLY: (0, 31),
-        RecurringTaskPeriod.YEARLY: (0, 31)
+        RecurringTaskPeriod.WEEKLY: (1, 6),
+        RecurringTaskPeriod.MONTHLY: (1, 31),
+        RecurringTaskPeriod.QUARTERLY: (1, 31),
+        RecurringTaskPeriod.YEARLY: (1, 31)
     }
     _recurring_task_due_at_month_bounds: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
         RecurringTaskPeriod.DAILY: (0, 0),
         RecurringTaskPeriod.WEEKLY: (0, 0),
         RecurringTaskPeriod.MONTHLY: (0, 0),
-        RecurringTaskPeriod.QUARTERLY: (0, 2),
-        RecurringTaskPeriod.YEARLY: (0, 12)
+        RecurringTaskPeriod.QUARTERLY: (1, 3),
+        RecurringTaskPeriod.YEARLY: (1, 12)
     }
     _big_plan_status_values: Final[FrozenSet[str]] = frozenset(bps.value for bps in BigPlanStatus)
 
@@ -445,8 +445,7 @@ class BasicValidator:
     def adate_to_notion(self, adate: ADate) -> NotionDate:
         """Transform a date to a Notion representation."""
         if isinstance(adate, pendulum.DateTime):
-            return NotionDate(
-                adate.in_timezone(self._global_properties.timezone), timezone=self._global_properties.timezone.name)
+            return NotionDate(adate, timezone=self._global_properties.timezone.name)
         else:
             return NotionDate(adate)
 
