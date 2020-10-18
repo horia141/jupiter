@@ -248,17 +248,21 @@ class InboxTasksService:
         LOGGER.info("Modified inbox task locally")
 
         # Apply changes in Notion
-        inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
-        inbox_task_row.name = name
-        inbox_task_row.actionable_date = actionable_date
-        inbox_task_row.due_date = due_time
-        inbox_task_row.eisen = [e.value for e in eisen]
-        inbox_task_row.difficulty = difficulty.value if difficulty else None
-        inbox_task_row.recurring_timeline = timeline
-        inbox_task_row.recurring_period = period.value
-        inbox_task_row.recurring_task_type = the_type.value
-        self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
-        LOGGER.info("Applied Notion changes")
+        try:
+            inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+            inbox_task_row.name = name
+            inbox_task_row.actionable_date = actionable_date
+            inbox_task_row.due_date = due_time
+            inbox_task_row.eisen = [e.value for e in eisen]
+            inbox_task_row.difficulty = difficulty.value if difficulty else None
+            inbox_task_row.recurring_timeline = timeline
+            inbox_task_row.recurring_period = period.value
+            inbox_task_row.recurring_task_type = the_type.value
+            self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionEntityNotFound:
+            LOGGER.info(
+                f"Skipping updating link of ref_id='{inbox_task.ref_id}' because it could not be found")
 
         return inbox_task
 

@@ -88,7 +88,7 @@ class RecurringTasksService:
             if start_at_date is None and end_at_date is not None and end_at_date < today:
                 raise ServiceValidationError(f"End date {end_at_date} is before {today}")
         except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
+            raise ServiceValidationError(f"Invalid inputs for '{name}'") from error
 
         new_recurring_task = self._repository.create_recurring_task(
             project_ref_id=project_ref_id,
@@ -150,7 +150,7 @@ class RecurringTasksService:
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
         except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
+            raise ServiceValidationError(f"Invalid inputs for ref_id={ref_id}") from error
 
         recurring_task = self._repository.load_recurring_task(ref_id)
         recurring_task.name = name
@@ -210,7 +210,7 @@ class RecurringTasksService:
             self._check_actionable_and_due_date_configs(
                 actionable_from_day, actionable_from_month, recurring_task.due_at_day, recurring_task.due_at_month)
         except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
+            raise ServiceValidationError(f"Invalid inputs for ref_id={ref_id}") from error
 
         recurring_task.actionable_from_day = actionable_from_day
         recurring_task.actionable_from_month = actionable_from_month
@@ -243,7 +243,7 @@ class RecurringTasksService:
             self._check_actionable_and_due_date_configs(
                 recurring_task.actionable_from_day, recurring_task.actionable_from_month, due_at_day, due_at_month)
         except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
+            raise ServiceValidationError(f"Invalid inputs for ref_id={ref_id}") from error
 
         recurring_task.due_at_time = due_at_time
         recurring_task.due_at_day = due_at_day
@@ -478,7 +478,7 @@ class RecurringTasksService:
                         raise ModelValidationError(
                             f"End date {recurring_task_row.end_at_date} is before start date {today}")
                 except ModelValidationError as error:
-                    raise ServiceValidationError("Invalid inputs") from error
+                    raise ServiceValidationError(f"Invalid inputs for '{recurring_task_name}'") from error
 
                 new_recurring_task = self._repository.create_recurring_task(
                     project_ref_id=project_ref_id,
@@ -573,7 +573,8 @@ class RecurringTasksService:
                             raise ModelValidationError(
                                 f"End date {recurring_task_row.end_at_date} is before start date {today}")
                     except ModelValidationError as error:
-                        raise ServiceValidationError("Invalid inputs") from error
+                        raise ServiceValidationError(
+                            f"Invalid inputs for ref_id={recurring_task_row.ref_id}") from error
 
                     archived_time_action = \
                         TimeFieldAction.SET if not recurring_task.archived and recurring_task_row.archived else \
