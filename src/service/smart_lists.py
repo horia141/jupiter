@@ -346,7 +346,8 @@ class SmartListsService:
             if filter_smart_list_item_ref_ids else None
 
         all_smart_list_items_rows = self._smart_list_items_repository.find_all_smart_list_items(
-            allow_archived=True, filter_smart_list_ref_ids=filter_smart_list_item_ref_ids)
+            allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id],
+            filter_ref_ids=filter_smart_list_item_ref_ids)
         all_smart_list_items_rows_set = {sli.ref_id: sli for sli in all_smart_list_items_rows}
 
         if not drop_all_notion_side:
