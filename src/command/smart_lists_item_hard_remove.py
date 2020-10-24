@@ -34,10 +34,10 @@ class SmartListsItemHardRemove(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True,
-                            help="The id of the smart list item to hard remove")
+        parser.add_argument("--id", type=str, dest="ref_ids", default=[], action="append",
+                            required=True, help="Show only tasks selected by this id")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        self._smart_list_controller.hard_remove_smart_list_item(ref_id)
+        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
+        self._smart_list_controller.hard_remove_smart_list_item(ref_ids)
