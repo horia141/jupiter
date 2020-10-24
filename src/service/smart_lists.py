@@ -1,12 +1,13 @@
 """The service for dealing with smart lists."""
+import itertools
 import logging
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
-from models.basic import EntityId, ModelValidationError, BasicValidator, SyncPrefer, SmartListKey
+from models.basic import EntityId, ModelValidationError, BasicValidator, SyncPrefer, SmartListKey, Tag
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.smart_lists_manager import NotionSmartListsManager
-from repository.smart_lists import SmartListsRepository, SmartListItemsRepository
+from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
 from service.errors import ServiceValidationError, ServiceError
 from utils.storage import StructuredStorageError
 from utils.time_field_action import TimeFieldAction
@@ -30,6 +31,7 @@ class SmartListItem:
     smart_list_ref_id: EntityId
     name: str
     is_done: bool
+    tags: Iterable[Tag]
     url: Optional[str]
     archived: bool
 
@@ -39,15 +41,18 @@ class SmartListsService:
 
     _basic_validator: Final[BasicValidator]
     _smart_lists_repository: Final[SmartListsRepository]
+    _smart_list_tags_repository: Final[SmartListTagsRepository]
     _smart_list_items_repository: Final[SmartListItemsRepository]
     _notion_manager: Final[NotionSmartListsManager]
 
     def __init__(
             self, basic_validator: BasicValidator, smart_lists_repository: SmartListsRepository,
-            smart_list_items_repository: SmartListItemsRepository, notion_manager: NotionSmartListsManager) -> None:
+            smart_list_tags_repository: SmartListTagsRepository, smart_list_items_repository: SmartListItemsRepository,
+            notion_manager: NotionSmartListsManager) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._smart_lists_repository = smart_lists_repository
+        self._smart_list_tags_repository = smart_list_tags_repository
         self._smart_list_items_repository = smart_list_items_repository
         self._notion_manager = notion_manager
 
@@ -180,15 +185,26 @@ class SmartListsService:
             archived=smart_list_row.archived)
 
     def create_smart_list_item(
-            self, smart_list_ref_id: EntityId, name: str, is_done: bool, url: Optional[str]) -> SmartListItem:
+            self, smart_list_ref_id: EntityId, name: str, is_done: bool, tags: Iterable[Tag],
+            url: Optional[str]) -> SmartListItem:
         """Create a new list item."""
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id=smart_list_ref_id)
+
+        smart_list_tag_rows = {t.name: t for t in self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_names=tags, filter_smart_list_ref_ids=[smart_list_ref_id])}
+        for tag in tags:
+            if tag in smart_list_tag_rows:
+                continue
+            new_smart_list_tag_row = self._smart_list_tags_repository.create_smart_list_tag(
+                smart_list_ref_id=smart_list_ref_id, name=tag, archived=False)
+            smart_list_tag_rows[new_smart_list_tag_row.name] = new_smart_list_tag_row
 
         new_smart_list_item_row = self._smart_list_items_repository.create_smart_list_item(
             smart_list_ref_id=smart_list_row.ref_id,
             name=name,
             is_done=is_done,
             url=url,
+            tag_ids=set(t.ref_id for t in smart_list_tag_rows.values()),
             archived=False)
         LOGGER.info("Applied local changes")
 
@@ -207,12 +223,16 @@ class SmartListsService:
             smart_list_ref_id=smart_list_ref_id,
             name=new_smart_list_item_row.name,
             is_done=new_smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows.values()],
             url=new_smart_list_item_row.url,
             archived=new_smart_list_item_row.archived)
 
     def archive_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Archive a list item."""
         smart_list_item_row = self._smart_list_items_repository.archive_smart_list_item(ref_id)
+        smart_list_tag_rows = self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_ref_ids=smart_list_item_row.tag_ids,
+            filter_smart_list_ref_ids=[smart_list_item_row.ref_id])
         LOGGER.info("Applied local changes")
 
         try:
@@ -227,6 +247,7 @@ class SmartListsService:
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -238,6 +259,10 @@ class SmartListsService:
             raise ServiceValidationError("Invalid inputs") from error
 
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
+        smart_list_tag_rows = self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_ref_ids=smart_list_item_row.tag_ids,
+            filter_smart_list_ref_ids=[smart_list_item_row.ref_id])
+
         smart_list_item_row.name = name
         self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
@@ -254,12 +279,17 @@ class SmartListsService:
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
     def set_smart_list_item_is_done(self, ref_id: EntityId, is_done: bool) -> SmartListItem:
         """Change the doneness status of a smart list item."""
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
+        smart_list_tag_rows = self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_ref_ids=smart_list_item_row.tag_ids,
+            filter_smart_list_ref_ids=[smart_list_item_row.ref_id])
+
         smart_list_item_row.is_done = is_done
         self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
@@ -276,6 +306,7 @@ class SmartListsService:
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -287,6 +318,10 @@ class SmartListsService:
             raise ServiceValidationError("Invalid inputs") from error
 
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
+        smart_list_tag_rows = self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_ref_ids=smart_list_item_row.tag_ids,
+            filter_smart_list_ref_ids=[smart_list_item_row.ref_id])
+
         smart_list_item_row.url = url
         self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
         LOGGER.info("Applied local changes")
@@ -303,6 +338,7 @@ class SmartListsService:
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -313,12 +349,17 @@ class SmartListsService:
         smart_list_item_rows = self._smart_list_items_repository.find_all_smart_list_items(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
             filter_smart_list_ref_ids=filter_smart_list_ref_ids)
+        smart_list_tag_rows = {sltr.ref_id: sltr for sltr in self._smart_list_tags_repository.find_all_smart_list_tags(
+            allow_archived=allow_archived,
+            filter_ref_ids=itertools.chain(*[slir.tag_ids for slir in smart_list_item_rows]),
+            filter_smart_list_ref_ids=filter_smart_list_ref_ids)}
 
         return [SmartListItem(ref_id=slir.ref_id,
                               smart_list_ref_id=slir.smart_list_ref_id,
                               name=slir.name,
                               is_done=slir.is_done,
                               url=slir.url,
+                              tags=[smart_list_tag_rows[tag_id].name for tag_id in slir.tag_ids],
                               archived=slir.archived) for slir in smart_list_item_rows]
 
     def load_all_smart_list_items_not_notion_gced(self, smart_list_ref_id: EntityId) -> Iterable[SmartListItem]:
@@ -338,6 +379,9 @@ class SmartListsService:
     def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Hard remove a list item."""
         smart_list_item_row = self._smart_list_items_repository.remove_smart_list_item(ref_id)
+        smart_list_tag_rows = self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_ref_ids=smart_list_item_row.tag_ids,
+            filter_smart_list_ref_ids=[smart_list_item_row.ref_id])
         LOGGER.info("Applied local changes")
 
         try:
@@ -352,12 +396,16 @@ class SmartListsService:
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
     def remove_smart_list_item_on_notion_side(self, ref_id: EntityId) -> SmartListItem:
         """Remove entry for a smart list item on Notion-side."""
         smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id, allow_archived=True)
+        smart_list_tag_rows = self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_ref_ids=smart_list_item_row.tag_ids,
+            filter_smart_list_ref_ids=[smart_list_item_row.ref_id])
 
         try:
             self._notion_manager.hard_remove_smart_list_item(smart_list_item_row.smart_list_ref_id, ref_id)
@@ -370,6 +418,7 @@ class SmartListsService:
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -438,6 +487,7 @@ class SmartListsService:
                     smart_list_ref_id=smart_list_ref_id,
                     name=smart_list_item_name,
                     is_done=smart_list_item_notion_row.is_done,
+                    tag_ids=set(),
                     url=smart_list_item_url,
                     archived=smart_list_item_notion_row.archived)
                 LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item_row.name}'")
@@ -528,10 +578,16 @@ class SmartListsService:
                 archived=smart_list_item_row.archived)
             LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item_row.name}'")
 
+        smart_list_tag_rows = {sltr.ref_id: sltr for sltr in self._smart_list_tags_repository.find_all_smart_list_tags(
+            allow_archived=True,
+            filter_ref_ids=itertools.chain(*[slir.tag_ids for slir in all_smart_list_items_rows_set.values()]),
+            filter_smart_list_ref_ids=[smart_list_ref_id])}
+
         return [SmartListItem(
             ref_id=slir.ref_id,
             smart_list_ref_id=slir.smart_list_ref_id,
             name=slir.name,
             is_done=slir.is_done,
+            tags=[smart_list_tag_rows[tag_id].name for tag_id in slir.tag_ids],
             url=slir.url,
             archived=slir.archived) for slir in all_smart_list_items_rows_set.values()]

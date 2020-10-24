@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId, SmartListKey
+from models.basic import EntityId, SmartListKey, Tag
 from service.smart_lists import SmartListsService, SmartList, SmartListItem
 
 
@@ -91,11 +91,12 @@ class SmartListsController:
             self._smart_lists_service.hard_remove_smart_list(smart_list.ref_id)
 
     def create_smart_list_item(
-            self, smart_list_key: SmartListKey, name: str, is_done: bool, url: Optional[str]) -> SmartListItem:
+            self, smart_list_key: SmartListKey, name: str, is_done: bool, tags: Iterable[Tag],
+            url: Optional[str]) -> SmartListItem:
         """Create a smart list item."""
         smart_list = self._smart_lists_service.load_smart_list_by_key(smart_list_key)
         return self._smart_lists_service.create_smart_list_item(
-            smart_list_ref_id=smart_list.ref_id, name=name, is_done=is_done, url=url)
+            smart_list_ref_id=smart_list.ref_id, name=name, is_done=is_done, tags=tags, url=url)
 
     def archive_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Archive smart list item."""

@@ -694,6 +694,11 @@ class EntitiesStorage(Generic[EntityRowType]):
     def _save(self, new_next_idx: int, new_entities: List[EntityRowType]) -> None:
         try:
             with self._path.open("w") as store_file:
+                try:
+                    for entity in new_entities:
+                        self._entity_to_full_storage_form(entity)
+                except TypeError:
+                    LOGGER.error(entity)
                 data_store = {
                     "next_idx": new_next_idx,
                     "entities": [self._entity_to_full_storage_form(entity) for entity in new_entities]

@@ -102,7 +102,7 @@ from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
-from repository.smart_lists import SmartListsRepository, SmartListItemsRepository
+from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
 from repository.vacations import VacationsRepository
@@ -136,6 +136,7 @@ def main() -> None:
             RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
             BigPlansRepository(time_provider) as big_plans_repository, \
             SmartListsRepository(time_provider) as smart_lists_repository, \
+            SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
@@ -160,7 +161,8 @@ def main() -> None:
             basic_validator, time_provider, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
         smart_lists_service = SmartListsService(
-            basic_validator, smart_lists_repository, smart_list_items_repository, notion_smart_lists_manager)
+            basic_validator, smart_lists_repository, smart_list_tags_repository, smart_list_items_repository,
+            notion_smart_lists_manager)
 
         workspaces_controller = WorkspacesController(
             notion_connection, workspaces_service, vacations_service, smart_lists_service)
