@@ -111,6 +111,7 @@ class SmartListItemRow(BaseEntityRow):
 
     smart_list_ref_id: EntityId
     name: str
+    is_done: bool
     url: Optional[str]
 
 
@@ -139,10 +140,11 @@ class SmartListItemsRepository:
             return
 
     def create_smart_list_item(
-            self, smart_list_ref_id: EntityId, name: str, url: Optional[str], archived: bool) -> SmartListItemRow:
+            self, smart_list_ref_id: EntityId, name: str, is_done: bool, url: Optional[str],
+            archived: bool) -> SmartListItemRow:
         """Create a list item."""
         new_smart_list_item = SmartListItemRow(
-            smart_list_ref_id=smart_list_ref_id, name=name, url=url, archived=archived)
+            smart_list_ref_id=smart_list_ref_id, name=name, is_done=is_done, url=url, archived=archived)
         return self._storage.create(new_smart_list_item)
 
     def archive_smart_list_item(self, ref_id: EntityId) -> SmartListItemRow:
@@ -179,6 +181,7 @@ class SmartListItemsRepository:
         return {
             "smart_list_ref_id": {"type": "string"},
             "name": {"type": "string"},
+            "is_done": {"type": "boolean"},
             "url": {"type": ["string", "null"]}
         }
 
@@ -188,6 +191,7 @@ class SmartListItemsRepository:
         return SmartListItemRow(
             smart_list_ref_id=EntityId(typing.cast(str, storage_form["smart_list_ref_id"])),
             name=typing.cast(str, storage_form["name"]),
+            is_done=typing.cast(bool, storage_form["is_done"]),
             url=typing.cast(str, storage_form["url"]) if storage_form["url"] is not None else None,
             archived=typing.cast(bool, storage_form["archived"]))
 
@@ -197,5 +201,6 @@ class SmartListItemsRepository:
         return {
             "smart_list_ref_id": live_form.smart_list_ref_id,
             "name": live_form.name,
+            "is_done": live_form.is_done,
             "url": live_form.url
         }

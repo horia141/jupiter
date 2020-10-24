@@ -56,6 +56,8 @@ from command.smart_lists_item_archive import SmartListsItemArchive
 from command.smart_lists_item_create import SmartListsItemCreate
 from command.smart_lists_create import SmartListsCreate
 from command.smart_lists_item_hard_remove import SmartListsItemHardRemove
+from command.smart_lists_item_mark_done import SmartListsItemMarkDone
+from command.smart_lists_item_mark_undone import SmartListsItemMarkUndone
 from command.smart_lists_item_set_name import SmartListsItemSetName
 from command.smart_lists_item_set_url import SmartListsItemSetUrl
 from command.smart_lists_item_show import SmartListsItemShow
@@ -242,6 +244,8 @@ def main() -> None:
             SmartListsItemCreate(basic_validator, smart_lists_controller),
             SmartListsItemArchive(basic_validator, smart_lists_controller),
             SmartListsItemSetName(basic_validator, smart_lists_controller),
+            SmartListsItemMarkDone(basic_validator, smart_lists_controller),
+            SmartListsItemMarkUndone(basic_validator, smart_lists_controller),
             SmartListsItemSetUrl(basic_validator, smart_lists_controller),
             SmartListsItemShow(basic_validator, smart_lists_controller),
             SmartListsItemHardRemove(basic_validator, smart_lists_controller),

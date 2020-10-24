@@ -29,6 +29,7 @@ class SmartListItem:
     ref_id: EntityId
     smart_list_ref_id: EntityId
     name: str
+    is_done: bool
     url: Optional[str]
     archived: bool
 
@@ -67,6 +68,11 @@ class SmartListsService:
             key=new_smart_list_row.key,
             name=new_smart_list_row.name,
             archived=new_smart_list_row.archived)
+
+    def upsert_smart_list_structure(self, ref_id: EntityId) -> None:
+        """Upsert the structure around a smart list."""
+        smart_list_row = self._smart_lists_repository.load_smart_list(ref_id)
+        self._notion_manager.upsert_smart_list(ref_id, smart_list_row.name)
 
     def archive_smart_list(self, ref_id: EntityId) -> SmartList:
         """Archive a smart list."""
@@ -173,13 +179,15 @@ class SmartListsService:
             name=smart_list_row.name,
             archived=smart_list_row.archived)
 
-    def create_smart_list_item(self, smart_list_ref_id: EntityId, name: str, url: Optional[str]) -> SmartListItem:
+    def create_smart_list_item(
+            self, smart_list_ref_id: EntityId, name: str, is_done: bool, url: Optional[str]) -> SmartListItem:
         """Create a new list item."""
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id=smart_list_ref_id)
 
         new_smart_list_item_row = self._smart_list_items_repository.create_smart_list_item(
             smart_list_ref_id=smart_list_row.ref_id,
             name=name,
+            is_done=is_done,
             url=url,
             archived=False)
         LOGGER.info("Applied local changes")
@@ -188,6 +196,7 @@ class SmartListsService:
             smart_list_ref_id=smart_list_row.ref_id,
             ref_id=new_smart_list_item_row.ref_id,
             name=new_smart_list_item_row.name,
+            is_done=is_done,
             url=new_smart_list_item_row.url,
             archived=new_smart_list_item_row.archived)
 
@@ -197,6 +206,7 @@ class SmartListsService:
             ref_id=new_smart_list_item_row.ref_id,
             smart_list_ref_id=smart_list_ref_id,
             name=new_smart_list_item_row.name,
+            is_done=new_smart_list_item_row.is_done,
             url=new_smart_list_item_row.url,
             archived=new_smart_list_item_row.archived)
 
@@ -216,6 +226,7 @@ class SmartListsService:
             ref_id=smart_list_item_row.ref_id,
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -242,6 +253,29 @@ class SmartListsService:
             ref_id=smart_list_item_row.ref_id,
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
+            url=smart_list_item_row.url,
+            archived=smart_list_item_row.archived)
+
+    def set_smart_list_item_is_done(self, ref_id: EntityId, is_done: bool) -> SmartListItem:
+        """Change the doneness status of a smart list item."""
+        smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
+        smart_list_item_row.is_done = is_done
+        self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
+        LOGGER.info("Applied local changes")
+
+        smart_list_item_notion_row = self._notion_manager.load_smart_list_item(
+            smart_list_item_row.smart_list_ref_id, ref_id)
+        smart_list_item_notion_row.is_done = is_done
+        self._notion_manager.save_smart_list_item(
+            smart_list_item_row.smart_list_ref_id, ref_id, smart_list_item_notion_row)
+        LOGGER.info("Applied Notion changes")
+
+        return SmartListItem(
+            ref_id=smart_list_item_row.ref_id,
+            smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
+            name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -268,6 +302,7 @@ class SmartListsService:
             ref_id=smart_list_item_row.ref_id,
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -282,6 +317,7 @@ class SmartListsService:
         return [SmartListItem(ref_id=slir.ref_id,
                               smart_list_ref_id=slir.smart_list_ref_id,
                               name=slir.name,
+                              is_done=slir.is_done,
                               url=slir.url,
                               archived=slir.archived) for slir in smart_list_item_rows]
 
@@ -301,6 +337,7 @@ class SmartListsService:
             ref_id=smart_list_item_row.ref_id,
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -318,6 +355,7 @@ class SmartListsService:
             ref_id=smart_list_item_row.ref_id,
             smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
             name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -337,6 +375,7 @@ class SmartListsService:
         elif sync_prefer == SyncPrefer.NOTION:
             smart_list_row.name = smart_list_notion_collection.name
             self._smart_lists_repository.update_smart_list(smart_list_row)
+            self._notion_manager.upsert_smart_list(smart_list_row.ref_id, smart_list_row.name)
             LOGGER.info("Applied local change")
         else:
             raise Exception(f"Invalid preference {sync_prefer}")
@@ -384,6 +423,7 @@ class SmartListsService:
                 new_smart_list_item_row = self._smart_list_items_repository.create_smart_list_item(
                     smart_list_ref_id=smart_list_ref_id,
                     name=smart_list_item_name,
+                    is_done=smart_list_item_notion_row.is_done,
                     url=smart_list_item_url,
                     archived=smart_list_item_notion_row.archived)
                 LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item_row.name}'")
@@ -426,9 +466,10 @@ class SmartListsService:
                         TimeFieldAction.CLEAR if smart_list_item_row.archived \
                                                  and not smart_list_item_notion_row.archived else \
                         TimeFieldAction.DO_NOTHING
-                    smart_list_item_row.archived = smart_list_item_notion_row.archived
                     smart_list_item_row.name = smart_list_item_name
+                    smart_list_item_row.is_done = smart_list_item_notion_row.is_done
                     smart_list_item_row.url = smart_list_item_url
+                    smart_list_item_row.archived = smart_list_item_notion_row.archived
                     self._smart_list_items_repository.update_smart_list_item(smart_list_item_row, archived_time_action)
                     LOGGER.info(f"Changed smart list item '{smart_list_item_row.name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
@@ -437,9 +478,10 @@ class SmartListsService:
                         LOGGER.info(f"Skipping '{smart_list_item_notion_row.name}' because it was not modified")
                         continue
 
-                    smart_list_item_notion_row.archived = smart_list_item_row.archived
                     smart_list_item_notion_row.name = smart_list_item_row.name
+                    smart_list_item_notion_row.is_done = smart_list_item_row.is_done
                     smart_list_item_notion_row.url = smart_list_item_row.url
+                    smart_list_item_notion_row.archived = smart_list_item_row.archived
                     self._notion_manager.save_smart_list_item(
                         smart_list_ref_id, smart_list_item_row.ref_id, smart_list_item_notion_row)
                     LOGGER.info(f"Changed small list item with '{smart_list_item_notion_row.name}' from local")
@@ -467,6 +509,7 @@ class SmartListsService:
                 smart_list_ref_id=smart_list_ref_id,
                 ref_id=smart_list_item_row.ref_id,
                 name=smart_list_item_row.name,
+                is_done=smart_list_item_row.is_done,
                 url=smart_list_item_row.url,
                 archived=smart_list_item_row.archived)
             LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item_row.name}'")
@@ -475,5 +518,6 @@ class SmartListsService:
             ref_id=slir.ref_id,
             smart_list_ref_id=slir.smart_list_ref_id,
             name=slir.name,
+            is_done=slir.is_done,
             url=slir.url,
             archived=slir.archived) for slir in all_smart_list_items_rows_set.values()]

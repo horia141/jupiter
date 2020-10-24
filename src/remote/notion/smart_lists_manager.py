@@ -26,8 +26,9 @@ class SmartListNotionRow(BaseItem):
     """A smart list item on Notion side."""
 
     name: str
-    archived: bool
+    is_done: bool
     url: Optional[str]
+    archived: bool
     last_edited_time: Timestamp
 
 
@@ -46,13 +47,17 @@ class NotionSmartListsManager:
             "name": "Ref Id",
             "type": "text"
         },
-        "archived": {
-            "name": "Archived",
+        "is-done": {
+            "name": "Is Done",
             "type": "checkbox"
         },
         "url": {
             "name": "URL",
             "type": "text"
+        },
+        "archived": {
+            "name": "Archived",
+            "type": "checkbox"
         },
         "last-edited-time": {
             "name": "Last Edited Time",
@@ -74,13 +79,18 @@ class NotionSmartListsManager:
                 "visible": True
             }, {
                 "width": 100,
-                "property": "archived",
+                "property": "is-done",
                 "visible": True
             }, {
                 "width": 100,
                 "property": "url",
                 "visible": True
             }, {
+                "width": 100,
+                "property": "archived",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "last-edited-time",
                 "visible": True
             }]
@@ -144,13 +154,14 @@ class NotionSmartListsManager:
         self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
 
     def upsert_smart_list_item(
-            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, url: Optional[str],
+            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, is_done: bool, url: Optional[str],
             archived: bool) -> SmartListNotionRow:
         """Upsert the Notion-side smart list item."""
         new_row = SmartListNotionRow(
             name=name,
-            archived=archived,
             url=url,
+            is_done=is_done,
+            archived=archived,
             last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id,
             notion_id=typing.cast(NotionId, None))
@@ -219,8 +230,9 @@ class NotionSmartListsManager:
         """Copy the fields of the local row to the actual Notion structure."""
         # pylint: disable=unused-argument
         notion_row.title = row.name
-        notion_row.archived = row.archived
+        notion_row.is_done = row.is_done
         notion_row.url = row.url
+        notion_row.archived = row.archived
         notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
 
@@ -230,8 +242,9 @@ class NotionSmartListsManager:
         """Copy the fields of the local row to the actual Notion structure."""
         return SmartListNotionRow(
             name=notion_row.title,
+            is_done=notion_row.is_done,
+            url=notion_row.url,
             archived=notion_row.archived,
-            url=notion_row.archived,
             last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),
             ref_id=notion_row.ref_id,
             notion_id=notion_row.id)

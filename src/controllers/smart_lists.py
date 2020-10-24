@@ -83,10 +83,12 @@ class SmartListsController:
         """Archive smart list item."""
         return self._smart_lists_service.hard_remove_smart_list(ref_id)
 
-    def create_smart_list_item(self, smart_list_key: SmartListKey, name: str, url: Optional[str]) -> SmartListItem:
+    def create_smart_list_item(
+            self, smart_list_key: SmartListKey, name: str, is_done: bool, url: Optional[str]) -> SmartListItem:
         """Create a smart list item."""
         smart_list = self._smart_lists_service.load_smart_list_by_key(smart_list_key)
-        return self._smart_lists_service.create_smart_list_item(smart_list.ref_id, name, url)
+        return self._smart_lists_service.create_smart_list_item(
+            smart_list_ref_id=smart_list.ref_id, name=name, is_done=is_done, url=url)
 
     def archive_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Archive smart list item."""
@@ -95,6 +97,10 @@ class SmartListsController:
     def set_smart_list_item_name(self, ref_id: EntityId, name: str) -> SmartListItem:
         """Change the name of a smart list item."""
         return self._smart_lists_service.set_smart_list_item_name(ref_id, name)
+
+    def set_smart_list_item_is_done(self, ref_id: EntityId, is_done: bool) -> SmartListItem:
+        """Change the doneness status of a smart list item."""
+        return self._smart_lists_service.set_smart_list_item_is_done(ref_id, is_done)
 
     def set_smart_list_item_url(self, ref_id: EntityId, url: Optional[str]) -> SmartListItem:
         """Change the url of a smart list item."""

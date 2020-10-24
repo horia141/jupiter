@@ -35,7 +35,7 @@ class SmartListsItemSetUrl(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", dest="ref_id", required=True,
-                            help="The id of the smart list item to add this item to")
+                            help="The id of the smart list item to change the url of")
         parser.add_argument("--url", dest="url", help="An url for the smart list item")
 
     def run(self, args: Namespace) -> None:
