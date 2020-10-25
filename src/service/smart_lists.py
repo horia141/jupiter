@@ -65,6 +65,7 @@ class SmartListsService:
         new_smart_list_row = self._smart_lists_repository.create_smart_list(key=key, name=name, archived=False)
         LOGGER.info("Applied local changes")
 
+        # TODO(tags): here do something with tags
         self._notion_manager.upsert_smart_list(new_smart_list_row.ref_id, name)
         LOGGER.info("Applied remote changes")
 
@@ -76,6 +77,7 @@ class SmartListsService:
 
     def upsert_smart_list_structure(self, ref_id: EntityId) -> None:
         """Upsert the structure around a smart list."""
+        # TODO(tags): here as well do something with tags
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id)
         self._notion_manager.upsert_smart_list(ref_id, smart_list_row.name)
 
@@ -208,6 +210,8 @@ class SmartListsService:
             archived=False)
         LOGGER.info("Applied local changes")
 
+        # TODO(tags): update the set of tags here
+
         self._notion_manager.upsert_smart_list_item(
             smart_list_ref_id=smart_list_row.ref_id,
             ref_id=new_smart_list_item_row.ref_id,
@@ -307,6 +311,41 @@ class SmartListsService:
             name=smart_list_item_row.name,
             is_done=smart_list_item_row.is_done,
             tags=[t.name for t in smart_list_tag_rows],
+            url=smart_list_item_row.url,
+            archived=smart_list_item_row.archived)
+
+    def set_smart_list_item_tags(self, ref_id: EntityId, tags: Iterable[Tag]) -> SmartListItem:
+        """Change the tags of a smart list item."""
+        smart_list_item_row = self._smart_list_items_repository.load_smart_list_item(ref_id)
+
+        smart_list_tag_rows = {t.name: t for t in self._smart_list_tags_repository.find_all_smart_list_tags(
+            filter_names=tags, filter_smart_list_ref_ids=[smart_list_item_row.smart_list_ref_id])}
+        for tag in tags:
+            if tag in smart_list_tag_rows:
+                continue
+            new_smart_list_tag_row = self._smart_list_tags_repository.create_smart_list_tag(
+                smart_list_ref_id=smart_list_item_row.smart_list_ref_id, name=tag, archived=False)
+            smart_list_tag_rows[new_smart_list_tag_row.name] = new_smart_list_tag_row
+
+        smart_list_item_row.tag_ids = set(sltr.ref_id for sltr in smart_list_tag_rows.values())
+        self._smart_list_items_repository.update_smart_list_item(smart_list_item_row)
+        LOGGER.info("Applied local changes")
+
+        # TODO(tags) upgrade global set of tags
+
+        smart_list_item_notion_row = self._notion_manager.load_smart_list_item(
+            smart_list_item_row.smart_list_ref_id, ref_id)
+        # TODO(tags) set this ones tags
+        self._notion_manager.save_smart_list_item(
+            smart_list_item_row.smart_list_ref_id, ref_id, smart_list_item_notion_row)
+        LOGGER.info("Applied Notion changes")
+
+        return SmartListItem(
+            ref_id=smart_list_item_row.ref_id,
+            smart_list_ref_id=smart_list_item_row.smart_list_ref_id,
+            name=smart_list_item_row.name,
+            is_done=smart_list_item_row.is_done,
+            tags=[t.name for t in smart_list_tag_rows.values()],
             url=smart_list_item_row.url,
             archived=smart_list_item_row.archived)
 
@@ -443,6 +482,9 @@ class SmartListsService:
         else:
             raise Exception(f"Invalid preference {sync_prefer}")
 
+        # Synchronise the tags here.
+        # TODO(tags): add the tags sync code here too
+
         # Now synchronize the list items here.
         filter_smart_list_item_ref_ids_set = frozenset(filter_smart_list_item_ref_ids) \
             if filter_smart_list_item_ref_ids else None
@@ -487,7 +529,7 @@ class SmartListsService:
                     smart_list_ref_id=smart_list_ref_id,
                     name=smart_list_item_name,
                     is_done=smart_list_item_notion_row.is_done,
-                    tag_ids=set(),
+                    tag_ids=set(), # TODO(tags): the tags sets are synced so just look them up
                     url=smart_list_item_url,
                     archived=smart_list_item_notion_row.archived)
                 LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item_row.name}'")
@@ -533,6 +575,7 @@ class SmartListsService:
                     smart_list_item_row.name = smart_list_item_name
                     smart_list_item_row.is_done = smart_list_item_notion_row.is_done
                     smart_list_item_row.url = smart_list_item_url
+                    # TODO(tags): update the tag set over here
                     smart_list_item_row.archived = smart_list_item_notion_row.archived
                     self._smart_list_items_repository.update_smart_list_item(smart_list_item_row, archived_time_action)
                     LOGGER.info(f"Changed smart list item '{smart_list_item_row.name}' from Notion")
@@ -545,6 +588,7 @@ class SmartListsService:
                     smart_list_item_notion_row.name = smart_list_item_row.name
                     smart_list_item_notion_row.is_done = smart_list_item_row.is_done
                     smart_list_item_notion_row.url = smart_list_item_row.url
+                    # TODO(tags): update the tag set over here too
                     smart_list_item_notion_row.archived = smart_list_item_row.archived
                     self._notion_manager.save_smart_list_item(
                         smart_list_ref_id, smart_list_item_row.ref_id, smart_list_item_notion_row)
@@ -574,6 +618,7 @@ class SmartListsService:
                 ref_id=smart_list_item_row.ref_id,
                 name=smart_list_item_row.name,
                 is_done=smart_list_item_row.is_done,
+                # TODO(tags): do something with tags too
                 url=smart_list_item_row.url,
                 archived=smart_list_item_row.archived)
             LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item_row.name}'")

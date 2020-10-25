@@ -51,6 +51,11 @@ class NotionSmartListsManager:
             "name": "Is Done",
             "type": "checkbox"
         },
+        "tags": {
+            "name": "Tags",
+            "type": "multi_select",
+            "options": [{}]
+        },
         "url": {
             "name": "URL",
             "type": "text"

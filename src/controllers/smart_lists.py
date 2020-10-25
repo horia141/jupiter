@@ -110,6 +110,10 @@ class SmartListsController:
         """Change the doneness status of a smart list item."""
         return self._smart_lists_service.set_smart_list_item_is_done(ref_id, is_done)
 
+    def set_smart_list_item_tags(self, ref_id: EntityId, tags: Iterable[Tag]) -> SmartListItem:
+        """Change the tags of a smart list item."""
+        return self._smart_lists_service.set_smart_list_item_tags(ref_id, tags)
+
     def set_smart_list_item_url(self, ref_id: EntityId, url: Optional[str]) -> SmartListItem:
         """Change the url of a smart list item."""
         return self._smart_lists_service.set_smart_list_item_url(ref_id, url)
