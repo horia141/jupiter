@@ -25,6 +25,15 @@ class SmartList:
 
 
 @dataclass()
+class SmartListTag:
+    """A smart list tag."""
+    ref_id: EntityId
+    smart_list_ref_id: EntityId
+    name: Tag
+    archived: bool
+
+
+@dataclass()
 class SmartListItem:
     """A smart list item."""
     ref_id: EntityId
@@ -185,6 +194,28 @@ class SmartListsService:
             key=smart_list_row.key,
             name=smart_list_row.name,
             archived=smart_list_row.archived)
+
+    def create_smart_list_tag(self, smart_list_ref_id: EntityId, name: Tag) -> SmartListTag:
+        """Create a new list tag."""
+        # TODO(tags): fill in
+
+    def archive_smart_list_tag(self, ref_id: EntityId) -> SmartListTag:
+        """Archive a list tag."""
+        # TODO(tags): fill in
+
+    def set_smart_list_tag_name(self, ref_id: EntityId, name: Tag) -> SmartListTag:
+        """Change the name of a list tag."""
+        # TODO(tags): fill in
+
+    def load_all_smart_list_tags(
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListTag]:
+        """Retrieve all the smart list tags."""
+        # TODO(tags): fill in
+
+    def hard_remove_smart_list_tag(self, ref_id: EntityId) -> SmartListTag:
+        """Hard remove a list tag."""
+        # TODO(tags): fill in
 
     def create_smart_list_item(
             self, smart_list_ref_id: EntityId, name: str, is_done: bool, tags: Iterable[Tag],

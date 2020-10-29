@@ -4,7 +4,7 @@ from typing import Final, Optional, Iterable
 
 from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, SmartListKey, Tag
-from service.smart_lists import SmartListsService, SmartList, SmartListItem
+from service.smart_lists import SmartListsService, SmartList, SmartListItem, SmartListTag
 
 
 @dataclass()
@@ -89,6 +89,33 @@ class SmartListsController:
         for key in keys:
             smart_list = self._smart_lists_service.load_smart_list_by_key(key)
             self._smart_lists_service.hard_remove_smart_list(smart_list.ref_id)
+
+    def create_smart_list_tag(self, smart_list_key: SmartListKey, name: Tag) -> SmartListTag:
+        """Create a smart list tag."""
+        # TODO(tags): fill this in
+
+    def archive_smart_list_tag(self, ref_id: EntityId) -> SmartListTag:
+        """Archive a smart list tag."""
+        # TODO(tags): fill this in
+
+    def set_smart_list_tag_name(self, ref_id: EntityId) -> SmartListTag:
+        """Change the smart list tag name."""
+        # TODO(tags): fill this in
+
+    def load_all_smart_list_tag(
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]],
+            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListTagsReponse:
+        """Retrieve all smart list tags."""
+        # TODO(tags): fill this in
+
+    def hard_remove_smart_list_tag(self, ref_ids: Iterable[EntityId]) -> None:
+        """Archive smart list tags."""
+        ref_ids = list(ref_ids)
+        if len(ref_ids) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
+
+        for ref_id in ref_ids:
+            self._smart_lists_service.hard_remove_smart_list_tag(ref_id)
 
     def create_smart_list_item(
             self, smart_list_key: SmartListKey, name: str, is_done: bool, tags: Iterable[Tag],
