@@ -23,6 +23,21 @@ class LoadAllSmartListsResponse:
 
 
 @dataclass()
+class LoadAllSmartListTagsEntry:
+    """A single entry in the LoadALlSmartListTagsResponse."""
+
+    smart_list_tag: SmartListTag
+    smart_list: SmartList
+
+
+@dataclass()
+class LoadAllSmartListTagsResponse:
+    """Response object for the load_all_smart_list_tags controller method."""
+
+    smart_list_tags: Iterable[LoadAllSmartListTagsEntry]
+
+
+@dataclass()
 class LoadAllSmartListItemsEntry:
     """A single entry in the LoadALlSmartListItemsResponse."""
 
@@ -98,13 +113,13 @@ class SmartListsController:
         """Archive a smart list tag."""
         # TODO(tags): fill this in
 
-    def set_smart_list_tag_name(self, ref_id: EntityId) -> SmartListTag:
+    def set_smart_list_tag_name(self, ref_id: EntityId, name: str) -> SmartListTag:
         """Change the smart list tag name."""
         # TODO(tags): fill this in
 
     def load_all_smart_list_tag(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]],
-            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListTagsReponse:
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListTagsResponse:
         """Retrieve all smart list tags."""
         # TODO(tags): fill this in
 

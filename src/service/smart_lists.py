@@ -430,20 +430,27 @@ class SmartListsService:
                               is_done=slir.is_done,
                               url=slir.url,
                               tags=[smart_list_tag_rows[tag_id].name for tag_id in slir.tag_ids],
-                              archived=slir.archived) for slir in smart_list_item_rows]
+                              archived=slir.archived)
+                for slir in smart_list_item_rows]
 
     def load_all_smart_list_items_not_notion_gced(self, smart_list_ref_id: EntityId) -> Iterable[SmartListItem]:
         """Retrieve all smart list items which haven't been gced on Notion side."""
         allowed_ref_ids = self._notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list_ref_id)
+        smart_list_item_rows = self._smart_list_items_repository.find_all_smart_list_items(
+            allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id])
+        smart_list_tag_rows = {sltr.ref_id: sltr for sltr in self._smart_list_tags_repository.find_all_smart_list_tags(
+            allow_archived=False,
+            filter_ref_ids=itertools.chain(*[slir.tag_ids for slir in smart_list_item_rows]),
+            filter_smart_list_ref_ids=[smart_list_ref_id])}
 
         return [SmartListItem(ref_id=slir.ref_id,
                               smart_list_ref_id=slir.smart_list_ref_id,
                               name=slir.name,
                               is_done=slir.is_done,
                               url=slir.url,
+                              tags=[smart_list_tag_rows[tag_id].name for tag_id in slir.tag_ids],
                               archived=slir.archived)
-                for slir in self._smart_list_items_repository.find_all_smart_list_items(
-                    allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id])
+                for slir in smart_list_item_rows
                 if slir.ref_id in allowed_ref_ids]
 
     def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItem:

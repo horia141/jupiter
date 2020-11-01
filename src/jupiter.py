@@ -64,6 +64,11 @@ from command.smart_lists_item_set_url import SmartListsItemSetUrl
 from command.smart_lists_item_show import SmartListsItemShow
 from command.smart_lists_set_name import SmartListsSetName
 from command.smart_lists_show import SmartListsShow
+from command.smart_lists_tag_archive import SmartListsTagArchive
+from command.smart_lists_tag_create import SmartListsTagCreate
+from command.smart_lists_tag_hard_remove import SmartListsTagHardRemove
+from command.smart_lists_tag_set_name import SmartListsTagSetName
+from command.smart_lists_tag_show import SmartListsTagShow
 from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacations_archive import VacationsArchive
 from command.vacations_create import VacationsCreate
@@ -244,6 +249,11 @@ def main() -> None:
             SmartListsSetName(basic_validator, smart_lists_controller),
             SmartListsShow(basic_validator, smart_lists_controller),
             SmartListsHardRemove(basic_validator, smart_lists_controller),
+            SmartListsTagCreate(basic_validator, smart_lists_controller),
+            SmartListsTagArchive(basic_validator, smart_lists_controller),
+            SmartListsTagSetName(basic_validator, smart_lists_controller),
+            SmartListsTagShow(basic_validator, smart_lists_controller),
+            SmartListsTagHardRemove(basic_validator, smart_lists_controller),
             SmartListsItemCreate(basic_validator, smart_lists_controller),
             SmartListsItemArchive(basic_validator, smart_lists_controller),
             SmartListsItemSetName(basic_validator, smart_lists_controller),
