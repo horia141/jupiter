@@ -193,6 +193,11 @@ class NotionVacationsManager:
         return self._collections_manager.load_all_saved_notion_ids(
             collection_key=NotionLockKey(self._KEY))
 
+    def load_all_saved_vacation_ref_ids(self) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the vacations."""
+        return self._collections_manager.load_all_saved_ref_ids(
+            collection_key=NotionLockKey(self._KEY))
+
     def drop_all_vacations(self) -> None:
         """Remove all vacations Notion-side."""
         self._collections_manager.drop_all(

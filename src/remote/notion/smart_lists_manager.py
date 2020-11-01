@@ -212,6 +212,11 @@ class NotionSmartListsManager:
         return self._collections_manager.load_all_saved_notion_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
 
+    def load_all_saved_smart_list_items_ref_ids(self, smart_list_ref_id: EntityId) -> typing.Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the smart list items."""
+        return self._collections_manager.load_all_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
+
     def drop_all_smart_list_items(self, smart_list_ref_id: EntityId) -> None:
         """Remove all smart list items Notion-side."""
         self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))

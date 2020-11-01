@@ -293,6 +293,11 @@ class CollectionsManager:
         return [r.row_id for r
                 in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
 
+    def load_all_saved_ref_ids(self, collection_key: NotionLockKey) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids."""
+        return [r.ref_id for r
+                in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
+
     def drop_all(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""
         collection_lock = self._collections_storage.load(collection_key)

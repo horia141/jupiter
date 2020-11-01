@@ -197,6 +197,14 @@ class BigPlansService:
             filter_archived=filter_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
 
+    def load_all_recurring_tasks_not_notion_gced(self, project_ref_ids: EntityId) -> Iterable[BigPlan]:
+        """Retrieve all big plans which have not been gc-ed on Notion side."""
+        allowed_ref_ids = self._collection.load_all_saved_big_plans_ref_ids(project_ref_ids)
+        return [it
+                for it in self._repository.load_all_big_plans(
+                    filter_archived=True, filter_project_ref_ids=[project_ref_ids])
+                if it.ref_id in allowed_ref_ids]
+
     def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a big plan by id."""
         return self._repository.load_big_plan(ref_id)

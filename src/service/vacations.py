@@ -8,10 +8,11 @@ import pendulum
 from pendulum import UTC
 
 from models.basic import BasicValidator, EntityId, SyncPrefer, ModelValidationError, ADate
-from remote.notion.common import NotionPageLink, CollectionError, CollectionEntityNotFound
+from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.vacations_manager import NotionVacationsManager
 from repository.vacations import VacationsRepository, VacationRow
 from service.errors import ServiceError, ServiceValidationError
+from utils.storage import StructuredStorageError
 from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
@@ -202,14 +203,27 @@ class VacationsService:
             end_date=vacation_row.end_date,
             archived=vacation_row.archived)
 
-    def load_all_vacations(self, allow_archived: bool = False) -> typing.List[Vacation]:
+    def load_all_vacations(self, allow_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
+        return [Vacation(ref_id=v.ref_id,
+                         name=v.name,
+                         start_date=v.start_date,
+                         end_date=v.end_date,
+                         archived=v.archived)
+                for v in self._repository.load_all_vacations(allow_archived=allow_archived)]
+
+    def load_all_vacations_not_notion_gced(self) -> Iterable[Vacation]:
+        """Retrieve all vacation which haven't been gced on Notion side."""
+        allowed_ref_ids = self._notion_manager.load_all_saved_vacation_ref_ids()
+
         return [Vacation(
             ref_id=v.ref_id,
             name=v.name,
             start_date=v.start_date,
             end_date=v.end_date,
-            archived=v.archived) for v in self._repository.load_all_vacations(allow_archived=allow_archived)]
+            archived=v.archived)
+                for v in self._repository.load_all_vacations(allow_archived=True)
+                if v.ref_id in allowed_ref_ids]
 
     def hard_remove_vacation(self, ref_id: EntityId) -> Vacation:
         """Hard remove an big plan."""
@@ -220,7 +234,7 @@ class VacationsService:
         try:
             self._notion_manager.hard_remove_vacation(ref_id)
             LOGGER.info("Applied Notion changes")
-        except CollectionEntityNotFound:
+        except StructuredStorageError:
             LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
         return Vacation(
@@ -236,7 +250,7 @@ class VacationsService:
         try:
             self._notion_manager.hard_remove_vacation(ref_id)
             LOGGER.info("Applied Notion changes")
-        except CollectionError:
+        except StructuredStorageError:
             LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
         return Vacation(

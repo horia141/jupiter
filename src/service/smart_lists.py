@@ -321,6 +321,20 @@ class SmartListsService:
                               url=slir.url,
                               archived=slir.archived) for slir in smart_list_item_rows]
 
+    def load_all_smart_list_items_not_notion_gced(self, smart_list_ref_id: EntityId) -> Iterable[SmartListItem]:
+        """Retrieve all smart list items which haven't been gced on Notion side."""
+        allowed_ref_ids = self._notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list_ref_id)
+
+        return [SmartListItem(ref_id=slir.ref_id,
+                              smart_list_ref_id=slir.smart_list_ref_id,
+                              name=slir.name,
+                              is_done=slir.is_done,
+                              url=slir.url,
+                              archived=slir.archived)
+                for slir in self._smart_list_items_repository.find_all_smart_list_items(
+                    allow_archived=False, filter_smart_list_ref_ids=[smart_list_ref_id])
+                if slir.ref_id in allowed_ref_ids]
+
     def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Hard remove a list item."""
         smart_list_item_row = self._smart_list_items_repository.remove_smart_list_item(ref_id)

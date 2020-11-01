@@ -41,7 +41,7 @@ class GenerateInboxTasksController:
             ref_ids: Optional[Iterable[EntityId]],
             period_filter: Optional[Iterable[RecurringTaskPeriod]], sync_even_if_not_modified: bool) -> None:
         """Generate recurring tasks to inbox tasks."""
-        all_vacations = self._vacations_service.load_all_vacations()
+        all_vacations = list(self._vacations_service.load_all_vacations())
 
         for project in self._projects_service.load_all_projects(filter_keys=project_keys):
             LOGGER.info(f"Generating tasks for project '{project.name}'")
