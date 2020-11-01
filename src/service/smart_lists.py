@@ -332,7 +332,7 @@ class SmartListsService:
                               url=slir.url,
                               archived=slir.archived)
                 for slir in self._smart_list_items_repository.find_all_smart_list_items(
-                    allow_archived=False, filter_smart_list_ref_ids=[smart_list_ref_id])
+                    allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id])
                 if slir.ref_id in allowed_ref_ids]
 
     def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItem:

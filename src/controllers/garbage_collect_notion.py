@@ -57,7 +57,6 @@ class GarbageCollectNotionController:
             LOGGER.info(f"Garbage collecting project '{project.name}'")
 
             if SyncTarget.INBOX_TASKS in sync_targets:
-                inbox_tasks: Iterable[InboxTask] = []
                 if do_archival:
                     LOGGER.info(f"Archiving all done inbox tasks")
                     self._inbox_tasks_service.archive_done_inbox_tasks([project.ref_id])
@@ -72,7 +71,6 @@ class GarbageCollectNotionController:
                     self._do_drop_all_archived_inbox_tasks(inbox_tasks)
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
-                recurring_tasks: Iterable[RecurringTask] = []
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for recurring tasks")
                     recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
@@ -85,7 +83,6 @@ class GarbageCollectNotionController:
                     self._do_drop_all_archived_recurring_tasks(recurring_tasks)
 
             if SyncTarget.BIG_PLANS in sync_targets:
-                big_plans: Iterable[BigPlan] = []
                 if do_archival:
                     LOGGER.info(f"Archiving all done big plans")
                     self._big_plans_service.archive_done_big_plans([project.ref_id])

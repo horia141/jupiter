@@ -202,7 +202,7 @@ class BigPlansService:
         allowed_ref_ids = self._collection.load_all_saved_big_plans_ref_ids(project_ref_ids)
         return [it
                 for it in self._repository.load_all_big_plans(
-                    filter_archived=True, filter_project_ref_ids=[project_ref_ids])
+                    filter_archived=False, filter_project_ref_ids=[project_ref_ids])
                 if it.ref_id in allowed_ref_ids]
 
     def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:

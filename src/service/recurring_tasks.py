@@ -394,7 +394,7 @@ class RecurringTasksService:
         allowed_ref_ids = self._collection.load_all_saved_recurring_tasks_ref_ids(project_ref_ids)
         return [it
                 for it in self._repository.load_all_recurring_tasks(
-                    filter_archived=True, filter_project_ref_ids=[project_ref_ids])
+                    filter_archived=False, filter_project_ref_ids=[project_ref_ids])
                 if it.ref_id in allowed_ref_ids]
 
     def load_recurring_task_by_id(self, ref_id: EntityId) -> RecurringTask:
