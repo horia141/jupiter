@@ -107,15 +107,16 @@ class SmartListsController:
 
     def create_smart_list_tag(self, smart_list_key: SmartListKey, name: Tag) -> SmartListTag:
         """Create a smart list tag."""
-        # TODO(tags): fill this in
+        smart_list = self._smart_lists_service.load_smart_list_by_key(smart_list_key)
+        return self._smart_lists_service.create_smart_list_tag(smart_list.ref_id, name)
 
     def archive_smart_list_tag(self, ref_id: EntityId) -> SmartListTag:
         """Archive a smart list tag."""
-        # TODO(tags): fill this in
+        return self._smart_lists_service.archive_smart_list_tag(ref_id)
 
     def set_smart_list_tag_name(self, ref_id: EntityId, name: str) -> SmartListTag:
         """Change the smart list tag name."""
-        # TODO(tags): fill this in
+        return self._smart_lists_service.set_smart_list_tag_name(ref_id, name)
 
     def load_all_smart_list_tag(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
