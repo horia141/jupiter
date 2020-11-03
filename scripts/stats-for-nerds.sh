@@ -18,3 +18,5 @@ cloc \
   requirements-dev.txt \
   scripts/ \
   src/
+
+libyear -r requirements.txt

@@ -122,7 +122,7 @@ class SmartListsController:
         smart_lists_by_ref_id = {sl.ref_id: sl for sl in smart_lists}
         smart_list_items = self._smart_lists_service.load_all_smart_list_items(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
-            filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists])
+        e    filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists])
 
         return LoadAllSmartListItemsResponse(
             smart_list_items=[LoadAllSmartListItemsEntry(
