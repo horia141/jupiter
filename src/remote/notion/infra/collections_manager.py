@@ -355,8 +355,9 @@ class CollectionsManager:
                     }
 
                     for option in schema_item["options"]:
-                        old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
-                                          None)
+                        old_option = next(
+                            (old_o for old_o in old_v.get("options", []) if old_o["value"] == option["value"]),
+                            None)
                         if old_option is not None:
                             combined_schema[schema_item_name]["options"].append({
                                 "color": option["color"],

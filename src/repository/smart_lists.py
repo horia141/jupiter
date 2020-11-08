@@ -7,7 +7,7 @@ from typing import Optional, Iterable, ClassVar, Final, Set, List
 import typing
 
 from models.basic import EntityId, SmartListKey, Tag
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq
+from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -264,12 +264,14 @@ class SmartListItemsRepository:
     def find_all_smart_list_items(
             self, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListItemRow]:
+            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_smart_list_tag_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListItemRow]:
         """Load all lists items."""
         return self._storage.find_all(
             allow_archived=allow_archived,
             ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-            smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None)
+            smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None,
+            tag_id=Intersect(*filter_smart_list_tag_ref_ids) if filter_smart_list_tag_ref_ids else None)
 
     @staticmethod
     def storage_schema() -> JSONDictType:

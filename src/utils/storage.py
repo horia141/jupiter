@@ -27,7 +27,7 @@ JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  #
 JSONDictType = Dict[str, JSONValueType]
 
 
-FindFilterType = Union[None, bool, int, float, str]
+FindFilterType = Union[None, bool, int, float, str, List[int]]
 
 
 class FindFilterPredicate(abc.ABC):
@@ -76,6 +76,30 @@ class In(FindFilterPredicate):
     def as_operator_str(self, val: FindFilterType) -> str:
         """Represent what this predicate is doing."""
         return f"{val} in ({','.join(str(s) for s in self._filter_set)})"
+
+
+class Intersect(FindFilterPredicate):
+    """A filtering predicate for intersection with a set."""
+
+    _filter_set: Final[FrozenSet[FindFilterType]]
+
+    def __init__(self, *filter_set: FindFilterType) -> None:
+        """Constructor."""
+        self._filter_set = frozenset(filter_set)
+
+    def test(self, val: FindFilterType) -> bool:
+        """Test whether the predicate is matched against a value."""
+        if isinstance(val, list):
+            return len(self._filter_set.intersection(val)) > 0
+        else:
+            return val in self._filter_set
+
+    def as_operator_str(self, val: FindFilterType) -> str:
+        """Represent what this predicate is doing."""
+        if isinstance(val, list):
+            return f"({','.join(str(u) for u in val)}) intersect ({','.join(str(s) for s in self._filter_set)})"
+        else:
+            return f"({val}) intersect ({','.join(str(s) for s in self._filter_set)})"
 
 
 class StructuredStorageProtocol(Protocol[LiveType]):
