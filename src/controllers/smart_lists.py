@@ -114,7 +114,7 @@ class SmartListsController:
         """Archive a smart list tag."""
         return self._smart_lists_service.archive_smart_list_tag(ref_id)
 
-    def set_smart_list_tag_name(self, ref_id: EntityId, name: str) -> SmartListTag:
+    def set_smart_list_tag_name(self, ref_id: EntityId, name: Tag) -> SmartListTag:
         """Change the smart list tag name."""
         return self._smart_lists_service.set_smart_list_tag_name(ref_id, name)
 
@@ -122,7 +122,19 @@ class SmartListsController:
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListTagsResponse:
         """Retrieve all smart list tags."""
-        # TODO(tags): fill this in
+        smart_lists = self._smart_lists_service.load_all_smart_lists(
+            allow_archived=allow_archived, filter_keys=filter_smart_list_keys)
+        smart_lists_by_ref_id = {sm.ref_id: sm for sm in smart_lists}
+        smart_list_tags = self._smart_lists_service.load_all_smart_list_tags(
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
+            filter_smart_list_ref_ids=[sm.ref_id for sm in smart_lists])
+
+        return LoadAllSmartListTagsResponse(
+            smart_list_tags=[
+                LoadAllSmartListTagsEntry(
+                    smart_list_tag=smt,
+                    smart_list=smart_lists_by_ref_id[smt.smart_list_ref_id])
+                for smt in smart_list_tags])
 
     def hard_remove_smart_list_tag(self, ref_ids: Iterable[EntityId]) -> None:
         """Archive smart list tags."""

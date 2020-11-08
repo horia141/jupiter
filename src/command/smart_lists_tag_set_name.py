@@ -40,5 +40,5 @@ class SmartListsTagSetName(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
+        name = self._basic_validator.tag_validate_and_clean(args.name)
         self._smart_lists_controller.set_smart_list_tag_name(ref_id, name)
