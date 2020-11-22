@@ -234,7 +234,7 @@ class BasicValidator:
         RecurringTaskPeriod.YEARLY: (1, 12)
     }
     _big_plan_status_values: Final[FrozenSet[str]] = frozenset(bps.value for bps in BigPlanStatus)
-    _tag_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
+    _tag_re: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
     _global_properties: Final[GlobalProperties]
 
@@ -674,6 +674,6 @@ class BasicValidator:
 
         if not self._tag_re.match(tag):
             raise ModelValidationError(
-                f"Expected entity id '{tag_raw}' to match '{self._entity_name_re.pattern}")
+                f"Expected entity id '{tag_raw}' to match '{self._tag_re.pattern}'")
 
         return Tag(tag)

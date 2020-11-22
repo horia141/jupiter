@@ -62,7 +62,7 @@ class NotionSmartListsManager:
         "tags": {
             "name": "Tags",
             "type": "multi_select",
-            "options": [{}]
+            "options": []
         },
         "url": {
             "name": "URL",
@@ -172,34 +172,61 @@ class NotionSmartListsManager:
 
     def upsert_smart_list_tag(self, smart_list_ref_id: EntityId, ref_id: EntityId, name: Tag) -> SmartListNotionTag:
         """Upsert a smart list tag."""
-        # TODO(tags): do it here
+        smart_list_tag_link = self._collections_manager.upsert_collection_field_tag(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            field="tags",
+            key=NotionLockKey(f"{ref_id}"),
+            ref_id=ref_id,
+            tag=name)
+        return SmartListNotionTag(notion_id=smart_list_tag_link.notion_id, ref_id=ref_id, name=name)
 
     def load_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> typing.Iterable[SmartListNotionTag]:
         """Retrieve all the Notion-side smart list tags."""
-        # TODO(tags): do it here
+        return [SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=s.ref_id)
+                for s in self._collections_manager.load_all_collection_field_tags(
+                    collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+                    field="tags")]
 
     def save_smart_list_tag(
             self, smart_list_ref_id: EntityId, ref_id: EntityId,
             new_smart_list_item_tag: SmartListNotionTag) -> SmartListNotionTag:
         """Update the Notion-side smart list tag with new data."""
-        # TODO(tags): do it here
-
-    def hard_remove_smart_list_tag(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
-        """Hard remove a smart list tag."""
-        # TODO(tags): do it here
+        smart_list_tag_link = self._collections_manager.save_collection_field_tag(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            field="tags",
+            key=NotionLockKey(f"{ref_id}"),
+            ref_id=ref_id,
+            tag=new_smart_list_item_tag.name)
+        return SmartListNotionTag(
+            notion_id=smart_list_tag_link.notion_id, ref_id=ref_id, name=new_smart_list_item_tag.name)
 
     def load_all_saved_smart_list_tags_notion_ids(self, smart_list_ref_id: EntityId) -> typing.Iterable[NotionId]:
         """Retrieve all the Notion ids for the smart list tags."""
-        # TODO(tags): do it here
+        return self._collections_manager.load_all_saved_collection_field_tag_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            field="tags")
 
     def drop_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> None:
         """Remove all smart list tags Notion-side."""
-        # TODO(tags): do it here
+        self._collections_manager.drop_all_collection_field_tags(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            field="tags")
 
     def link_local_and_notion_tag_for_smart_list(
             self, smart_list_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local tag with the Notion one, useful in syncing processes."""
-        # TODO(tags): do it here
+        self._collections_manager.quick_link_local_and_notion_collection_field_tags(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"),
+            field="tags",
+            ref_id=ref_id,
+            notion_id=notion_id)
+
+    def hard_remove_smart_list_tag(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
+        """Hard remove a smart list tag."""
+        self._collections_manager.hard_remove_collection_field_tag(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"))
 
     def upsert_smart_list_item(
             self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, is_done: bool, tags: List[str],

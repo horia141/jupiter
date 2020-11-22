@@ -40,6 +40,15 @@ class NotionCollectionLinkExtra:
     name: str
 
 
+@dataclass()
+class NotionCollectionTagLink:
+    """Info about a particular tag in a collection."""
+    notion_id: NotionId
+    collection_id: NotionId
+    name: str
+    ref_id: Optional[str]
+
+
 def format_name_for_option(option_name: str) -> str:
     """Nicely format the name of an option."""
     output = ""
