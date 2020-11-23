@@ -1,4 +1,5 @@
 """The centralised point for interacting with Notion smart lists."""
+import uuid
 from dataclasses import dataclass
 from typing import Optional, ClassVar, Final, List
 import typing
@@ -62,7 +63,11 @@ class NotionSmartListsManager:
         "tags": {
             "name": "Tags",
             "type": "multi_select",
-            "options": []
+            "options": [{
+                "id": str(uuid.uuid4()),
+                "color": "gray",
+                "value": "Default"
+            }]
         },
         "url": {
             "name": "URL",
@@ -322,10 +327,17 @@ class NotionSmartListsManager:
 
     def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> SmartListNotionRow:
         """Copy the fields of the local row to the actual Notion structure."""
+        tags: List[str] = []
+        if len(notion_row.tags) == 0:
+            tags = []
+        elif len(notion_row.tags) == 1 and notion_row.tags[0] == "":
+            tags = []
+        else:
+            tags = notion_row.tags
         return SmartListNotionRow(
             name=notion_row.title,
             is_done=notion_row.is_done,
-            tags=notion_row.tags,
+            tags=tags,
             url=notion_row.url,
             archived=notion_row.archived,
             last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),

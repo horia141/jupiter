@@ -271,7 +271,7 @@ class SmartListItemsRepository:
             allow_archived=allow_archived,
             ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
             smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None,
-            tag_id=Intersect(*filter_smart_list_tag_ref_ids) if filter_smart_list_tag_ref_ids else None)
+            tag_ids=Intersect(*filter_smart_list_tag_ref_ids) if filter_smart_list_tag_ref_ids else None)
 
     @staticmethod
     def storage_schema() -> JSONDictType:

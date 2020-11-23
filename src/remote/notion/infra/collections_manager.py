@@ -244,7 +244,7 @@ class CollectionsManager:
         collection.set("schema", schema)
 
         new_lock = _CollectionFieldTagLockRow(
-            key=key,
+            key=tag_key,
             collection_key=collection_key,
             tag_id=tag_id,
             field=field,
@@ -332,7 +332,7 @@ class CollectionsManager:
         collection.set("schema", schema)
 
         new_lock = _CollectionFieldTagLockRow(
-            key=key,
+            key=tag_key,
             collection_key=collection_key,
             tag_id=tag_id,
             field=field,
@@ -378,11 +378,11 @@ class CollectionsManager:
             self, key: NotionLockKey, collection_key: NotionLockKey, field: str, ref_id: EntityId,
             notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        item_key = self._build_compound_key(collection_key, key)
-        lock = self._collection_field_tags_storage.load_optional(item_key)
+        tag_key = self._build_compound_key(collection_key, key)
+        lock = self._collection_field_tags_storage.load_optional(tag_key)
 
         new_lock = _CollectionFieldTagLockRow(
-            key=key,
+            key=tag_key,
             collection_key=collection_key,
             tag_id=notion_id,
             field=field,
@@ -610,8 +610,6 @@ class CollectionsManager:
                             (old_o for old_o in old_v.get("options", []) if old_o["value"] == option["value"]),
                             None)
                         if old_option is not None:
-                            print(option)
-                            print(schema_item)
                             combined_schema[schema_item_name]["options"].append({
                                 "color": option["color"],
                                 "value": option["value"],
