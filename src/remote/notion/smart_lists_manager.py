@@ -84,8 +84,136 @@ class NotionSmartListsManager:
     }
 
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
-        "name": "Database",
+        "name": "All",
         "type": "table",
+        "format": {
+            "table_properties": [{
+                "width": 300,
+                "property": "title",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "is-done",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "tags",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "url",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "archived",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "last-edited-time",
+                "visible": True
+            }]
+        }
+    }
+
+    _DATABASE_VIEW_DONE_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Done",
+        "type": "table",
+        "query2": {
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "filter": {
+                "operator": "and",
+                    "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": "True"
+                        }
+                    }
+                }, {
+                    "property": "is-done",
+                    "filter": {
+                        "operator": "checkbox_is",
+                        "value": {
+                            "type": "exact",
+                            "value": "True"
+                        }
+                    }
+                }]
+            }
+        },
+        "format": {
+            "table_properties": [{
+                "width": 300,
+                "property": "title",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "is-done",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "tags",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "url",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "archived",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "last-edited-time",
+                "visible": True
+            }]
+        }
+    }
+
+    _DATABASE_VIEW_NOT_DONE_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Not Done",
+        "type": "table",
+        "query2": {
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": "True"
+                        }
+                    }
+                }, {
+                    "property": "is-done",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": "True"
+                        }
+                    }
+                }]
+            }
+        },
         "format": {
             "table_properties": [{
                 "width": 300,
@@ -146,7 +274,9 @@ class NotionSmartListsManager:
             name=name,
             schema=self._SCHEMA,
             view_schemas={
-                "database_view_id": self._DATABASE_VIEW_SCHEMA
+                "database_view_id": self._DATABASE_VIEW_SCHEMA,
+                "database_done_view_id": self._DATABASE_VIEW_DONE_SCHEMA,
+                "database_not_done_view_id": self._DATABASE_VIEW_NOT_DONE_SCHEMA
             })
 
         return SmartListNotionCollection(
