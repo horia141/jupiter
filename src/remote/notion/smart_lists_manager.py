@@ -129,7 +129,7 @@ class NotionSmartListsManager:
             }],
             "filter": {
                 "operator": "and",
-                    "filters": [{
+                "filters": [{
                     "property": "archived",
                     "filter": {
                         "operator": "checkbox_is_not",

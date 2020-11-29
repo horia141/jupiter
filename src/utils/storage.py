@@ -1,5 +1,6 @@
 """Some storage utils."""
 import abc
+import collections
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -89,7 +90,7 @@ class Intersect(FindFilterPredicate):
 
     def test(self, val: FindFilterType) -> bool:
         """Test whether the predicate is matched against a value."""
-        if isinstance(val, list):
+        if isinstance(val, collections.Iterable):
             return len(self._filter_set.intersection(val)) > 0
         else:
             return val in self._filter_set

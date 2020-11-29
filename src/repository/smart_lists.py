@@ -265,12 +265,14 @@ class SmartListItemsRepository:
             self, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_is_done: Optional[bool] = None,
             filter_smart_list_tag_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListItemRow]:
         """Load all lists items."""
         return self._storage.find_all(
             allow_archived=allow_archived,
             ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
             smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None,
+            is_done=Eq(filter_is_done) if filter_is_done else None,
             tag_ids=Intersect(*filter_smart_list_tag_ref_ids) if filter_smart_list_tag_ref_ids else None)
 
     @staticmethod

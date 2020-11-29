@@ -175,14 +175,17 @@ class SmartListsController:
 
     def load_all_smart_list_items(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListItemsResponse:
+            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None,
+            filter_is_done: Optional[bool] = None,
+            filter_tags: Optional[Iterable[Tag]] = None) -> LoadAllSmartListItemsResponse:
         """Retrieve all smart list items."""
         smart_lists = self._smart_lists_service.load_all_smart_lists(
             allow_archived=allow_archived, filter_keys=filter_smart_list_keys)
         smart_lists_by_ref_id = {sl.ref_id: sl for sl in smart_lists}
         smart_list_items = self._smart_lists_service.load_all_smart_list_items(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
-            filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists])
+            filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists],
+            filter_is_done=filter_is_done, filter_tags=filter_tags)
 
         return LoadAllSmartListItemsResponse(
             smart_list_items=[LoadAllSmartListItemsEntry(

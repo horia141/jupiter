@@ -501,15 +501,20 @@ class SmartListsService:
 
     def load_all_smart_list_items(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[SmartListItem]:
+            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_is_done: Optional[bool] = None,
+            filter_tags: Optional[Iterable[Tag]] = None) -> Iterable[SmartListItem]:
         """Retrieve all the smart list items."""
-        smart_list_item_rows = self._smart_list_items_repository.find_all_smart_list_items(
-            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
-            filter_smart_list_ref_ids=filter_smart_list_ref_ids)
         smart_list_tag_rows = {sltr.ref_id: sltr for sltr in self._smart_list_tags_repository.find_all_smart_list_tags(
             allow_archived=allow_archived,
-            filter_ref_ids=itertools.chain(*[slir.tag_ids for slir in smart_list_item_rows]),
             filter_smart_list_ref_ids=filter_smart_list_ref_ids)}
+        filter_tags_set = frozenset(filter_tags) if filter_tags \
+            else frozenset([sltr.name for sltr in smart_list_tag_rows.values()])
+        smart_list_item_rows = self._smart_list_items_repository.find_all_smart_list_items(
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
+            filter_smart_list_ref_ids=filter_smart_list_ref_ids, filter_is_done=filter_is_done,
+            filter_smart_list_tag_ref_ids=
+            [sltr.ref_id for sltr in smart_list_tag_rows.values() if sltr.name in filter_tags_set])
 
         return [SmartListItem(ref_id=slir.ref_id,
                               smart_list_ref_id=slir.smart_list_ref_id,
