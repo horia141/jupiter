@@ -50,6 +50,9 @@ EntityId = NewType("EntityId", str)
 EntityName = NewType("EntityName", str)
 
 
+Tag = NewType("Tag", str)
+
+
 WorkspaceSpaceId = NewType("WorkspaceSpaceId", str)
 
 
@@ -231,6 +234,7 @@ class BasicValidator:
         RecurringTaskPeriod.YEARLY: (1, 12)
     }
     _big_plan_status_values: Final[FrozenSet[str]] = frozenset(bps.value for bps in BigPlanStatus)
+    _tag_re: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
     _global_properties: Final[GlobalProperties]
 
@@ -657,3 +661,19 @@ class BasicValidator:
             return urlparse(url_str).geturl()
         except ValueError as err:
             raise ModelValidationError(f"Invalid URL '{url_raw}'") from err
+
+    def tag_validate_and_clean(self, tag_raw: Optional[str]) -> Tag:
+        """Validate and clean an tag."""
+        if not tag_raw:
+            raise ModelValidationError("Expected tag to be non-null")
+
+        tag: str = " ".join(word for word in tag_raw.strip().split(" ") if len(word) > 0)
+
+        if len(tag) == 0:
+            raise ModelValidationError("Expected tag to be non-empty")
+
+        if not self._tag_re.match(tag):
+            raise ModelValidationError(
+                f"Expected entity id '{tag_raw}' to match '{self._tag_re.pattern}'")
+
+        return Tag(tag)

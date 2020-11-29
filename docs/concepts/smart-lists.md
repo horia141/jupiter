@@ -43,6 +43,9 @@ Smart list items have a name.
 Smart list items also have a notion of doneness. Many many times lists are built in order to act somehow on
 them - go to a place, read a book, etc. To support this out of the box, items can be marked as "done".
 
+Smart list items also have tags. You can use them to classify them or to keep track of info you otherwise can't
+right now (author, year of publication, etc).
+
 Smart list items also have an optional url. It can be used to provide extra information about the particular item,
 such as an Amazon link where it can be bought, or the actual link of the actual interesting article you want to
 read.
@@ -58,6 +61,8 @@ You can:
 * Remove a smart list item via `smart-lists-item-archive`, or by clicking the archive checkbox in Notion.
 * Change the doneness status via `smart-lists-item-mark-done` or `smart-lists-item-mark-undone`, or by clicking on
   the checkbox in Notion.
-* Change the name of a smart list item via `smart-list-item-set-name`, or by changing the name from the Notion row.
-* Change the url of a smart list item via `smart-list-item-set-url`, or by changing the URL field from the Notion row.
-* Show info about the smart list items via `smart-list-item-show`.
+* Change the name of a smart list item via `smart-lists-item-set-name`, or by changing the name from the Notion row.
+* Change the tags of a smart list item via `smart-lists-item-set-tags`, or by changing the tags from the Notion row.
+* Change the url of a smart list item via `smart-lists-item-set-url`, or by changing the URL field from the Notion row.
+* Show info about the smart list items via `smart-lists-item-show`.
+* There is a whole suite of `smart-lists-tag-*` commands for create/update/archival of tags.
