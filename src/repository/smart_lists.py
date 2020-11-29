@@ -6,7 +6,7 @@ from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final, Set, List
 import typing
 
-from models.basic import EntityId, SmartListKey, Tag
+from models.basic import EntityId, SmartListKey, Tag, ModelValidationError
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
@@ -140,6 +140,13 @@ class SmartListTagsRepository:
     def create_smart_list_tag(
             self, smart_list_ref_id: EntityId, name: Tag, archived: bool) -> SmartListTagRow:
         """Create a list tag."""
+        all_smart_list_tags_rows_names = frozenset(
+            sltr.name.lower()
+            for sltr in self._storage.find_all(
+                allow_archived=True,
+                smart_list_ref_id=In(*smart_list_ref_id) if smart_list_ref_id else None))
+        if name.lower() in all_smart_list_tags_rows_names:
+            raise ModelValidationError(f'Tag with name "{name}" already exists for smart list')
         new_smart_list_tag = SmartListTagRow(
             smart_list_ref_id=smart_list_ref_id, name=name, archived=archived)
         return self._storage.create(new_smart_list_tag)
