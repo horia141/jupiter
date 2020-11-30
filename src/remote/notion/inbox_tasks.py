@@ -371,7 +371,7 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
@@ -499,13 +499,13 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
                         "property": "actionable-date",
                         "filter": {
-                            "operator": "is_empty"
+                            "operator": "today"
                         }
                     }]
                 }, {
@@ -575,7 +575,7 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
@@ -651,7 +651,7 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
