@@ -753,7 +753,8 @@ class SmartListsService:
                     name=smart_list_item_name,
                     is_done=smart_list_item_notion_row.is_done,
                     tag_ids=
-                    set(all_smart_list_tags_rows_by_name[Tag(t)].ref_id for t in smart_list_item_notion_row.tags),
+                    set(all_smart_list_tags_rows_by_name[Tag(t)].ref_id for t in smart_list_item_notion_row.tags
+                        if Tag(t) in all_smart_list_tags_rows_by_name),
                     url=smart_list_item_url,
                     archived=smart_list_item_notion_row.archived)
                 LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item_row.name}'")

@@ -1,4 +1,5 @@
 """The controller for computing progress reports."""
+import logging
 from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
@@ -21,6 +22,9 @@ from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from utils.global_properties import GlobalProperties
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 @nested()
@@ -459,6 +463,9 @@ class ReportProgressController:
 
         for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
             for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
+                if inbox_task.due_date is None:
+                    LOGGER.warning(f'There is an inbox task here without a due date "{inbox_task.name}"')
+                    continue
                 if bigger_period_schedule.contains(inbox_task.due_date):
                     total_cnt_per_last_period[bigger_period] += 1
             if inbox_task.status == InboxTaskStatus.DONE:

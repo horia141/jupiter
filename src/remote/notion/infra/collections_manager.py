@@ -190,7 +190,10 @@ class CollectionsManager:
         collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
         page.title = new_name
         collection.name = new_name
-        client.update_collection_schema(lock.page_id, lock.collection_id, new_schema)
+        old_schema = collection.get("schema")
+        final_schema = self._merge_notion_schemas(old_schema, new_schema)
+        collection.set("schema", final_schema)
+        LOGGER.info("Applied the most current schema to the collection")
 
     @staticmethod
     def _build_compound_key(collection_key: str, key: str) -> str:

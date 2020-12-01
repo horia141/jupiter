@@ -1,5 +1,4 @@
 """The centralised point for interacting with Notion smart lists."""
-import uuid
 from dataclasses import dataclass
 from typing import Optional, ClassVar, Final, List
 import typing
@@ -63,11 +62,7 @@ class NotionSmartListsManager:
         "tags": {
             "name": "Tags",
             "type": "multi_select",
-            "options": [{
-                "id": str(uuid.uuid4()),
-                "color": "gray",
-                "value": "Default"
-            }]
+            "options": []
         },
         "url": {
             "name": "URL",
