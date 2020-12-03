@@ -42,7 +42,7 @@ class GarbageCollect(command.Command):
                             help="Allow only tasks from this project")
         parser.add_argument("--no-archival", dest="do_archival", default=True, action="store_const", const=False,
                             help="Skip the archival phase")
-        parser.add_argument("--no-anti-entropuy", dest="do_anti_entropy", default=True, action="store_const",
+        parser.add_argument("--no-anti-entropy", dest="do_anti_entropy", default=True, action="store_const",
                             const=False, help="Skip the anti-entropy fixing phase")
         parser.add_argument("--no-notion-cleanup", dest="do_notion_cleanup", default=True, action="store_const",
                             const=False, help="Skip the Notion cleanup phase")

@@ -371,7 +371,7 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
@@ -499,13 +499,13 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
                         "property": "actionable-date",
                         "filter": {
-                            "operator": "is_empty"
+                            "operator": "today"
                         }
                     }]
                 }, {
@@ -575,7 +575,7 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
@@ -651,7 +651,7 @@ class InboxTasksCollection:
                             "operator": "date_is_on_or_before",
                             "value": {
                                 "type": "relative",
-                                "value": "one_week_from_now"
+                                "value": "today"
                             }
                         }
                     }, {
@@ -965,6 +965,10 @@ class InboxTasksCollection:
     def load_all_saved_inbox_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these tasks."""
         return self._collection.load_all_saved_notion_ids(project_ref_id)
+
+    def load_all_saved_inbox_tasks_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the inbox tasks."""
+        return self._collection.load_all_saved_ref_ids(project_ref_id)
 
     def drop_all_inbox_tasks(self, project_ref_id: EntityId) -> None:
         """Hard remove all the Notion-side inbox tasks."""

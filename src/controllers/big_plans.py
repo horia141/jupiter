@@ -114,5 +114,14 @@ class BigPlansController:
         ref_ids = list(ref_ids)
         if len(ref_ids) == 0:
             raise ControllerInputValidationError("Expected at least one entity to remove")
+
+        inbox_tasks_for_big_plan = self._inbox_tasks_service.load_all_inbox_tasks(
+            filter_big_plan_ref_ids=ref_ids)
+
+        for inbox_task in inbox_tasks_for_big_plan:
+            LOGGER.info(f"Hard removing task {inbox_task.name} for plan")
+            self._inbox_tasks_service.hard_remove_inbox_task(inbox_task.ref_id)
+        LOGGER.info("Hard removed all tasks")
+
         for ref_id in ref_ids:
             self._big_plans_service.hard_remove_big_plan(ref_id)

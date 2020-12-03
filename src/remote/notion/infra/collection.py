@@ -307,6 +307,14 @@ class NotionCollection(Generic[NotionCollectionRowType]):
             raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
         return lock.ref_id_to_notion_id_map.values()
 
+    def load_all_saved_ref_ids(self, discriminant: str) -> Iterable[EntityId]:
+        """Retrieve all the saved Notion-ids."""
+        _, locks = self._structured_storage.load()
+        lock = self._find_lock(locks, discriminant)
+        if lock is None:
+            raise CollectionError(f"Notion collection for discriminant '{discriminant}' does not exist")
+        return lock.ref_id_to_notion_id_map.keys()
+
     def drop_all(self, discriminant: str) -> None:
         """Hard remove all the Notion-side entities."""
         locks_next_idx, locks = self._structured_storage.load()

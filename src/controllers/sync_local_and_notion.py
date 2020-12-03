@@ -201,6 +201,7 @@ class SyncLocalAndNotionController:
         for smart_list in self._smart_lists_service.load_all_smart_lists(filter_keys=filter_smart_list_keys):
             if SyncTarget.STRUCTURE in sync_targets:
                 LOGGER.info(f"Recreating smart list '{smart_list.name}'")
+                self._smart_lists_service.upsert_smart_list_structure(smart_list.ref_id)
 
             if SyncTarget.SMART_LISTS in sync_targets:
                 LOGGER.info(f"Syncing small list '{smart_list.name}'")

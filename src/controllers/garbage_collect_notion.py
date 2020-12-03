@@ -47,17 +47,16 @@ class GarbageCollectNotionController:
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for vacations")
                 vacations = self._vacations_service.load_all_vacations(allow_archived=True)
-                vacations = self._do_anti_entropy_for_vacations(vacations)
+                self._do_anti_entropy_for_vacations(vacations)
             if do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting vacations whichwere archived")
-                vacations = vacations or self._vacations_service.load_all_vacations(allow_archived=True)
+                LOGGER.info(f"Garbage collecting vacations which were archived")
+                vacations = self._vacations_service.load_all_vacations_not_notion_gced()
                 self._do_drop_all_archived_vacations(vacations)
 
         for project in self._projects_service.load_all_projects(filter_keys=project_keys):
             LOGGER.info(f"Garbage collecting project '{project.name}'")
 
             if SyncTarget.INBOX_TASKS in sync_targets:
-                inbox_tasks: Iterable[InboxTask] = []
                 if do_archival:
                     LOGGER.info(f"Archiving all done inbox tasks")
                     self._inbox_tasks_service.archive_done_inbox_tasks([project.ref_id])
@@ -65,28 +64,25 @@ class GarbageCollectNotionController:
                     LOGGER.info(f"Performing anti-entropy adjustments for inbox tasks")
                     inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
                         filter_archived=False, filter_project_ref_ids=[project.ref_id])
-                    inbox_tasks = self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
+                    self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting inbox tasks which were archived")
-                    inbox_tasks = inbox_tasks or self._inbox_tasks_service.load_all_inbox_tasks(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                    inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks_not_notion_gced(project.ref_id)
                     self._do_drop_all_archived_inbox_tasks(inbox_tasks)
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
-                recurring_tasks: Iterable[RecurringTask] = []
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for recurring tasks")
                     recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
                         filter_archived=False, filter_project_ref_ids=[project.ref_id])
-                    recurring_tasks = self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
+                    self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting recurring tasks which were archived")
-                    recurring_tasks = recurring_tasks or self._recurring_tasks_service.load_all_recurring_tasks(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                    recurring_tasks = \
+                        self._recurring_tasks_service.load_all_recurring_tasks_not_notion_gced(project.ref_id)
                     self._do_drop_all_archived_recurring_tasks(recurring_tasks)
 
             if SyncTarget.BIG_PLANS in sync_targets:
-                big_plans: Iterable[BigPlan] = []
                 if do_archival:
                     LOGGER.info(f"Archiving all done big plans")
                     self._big_plans_service.archive_done_big_plans([project.ref_id])
@@ -94,11 +90,10 @@ class GarbageCollectNotionController:
                     LOGGER.info(f"Performing anti-entropy adjustments for big plans")
                     big_plans = self._big_plans_service.load_all_big_plans(
                         filter_archived=False, filter_project_ref_ids=[project.ref_id])
-                    big_plans = self._do_anti_entropy_for_big_plans(big_plans)
+                    self._do_anti_entropy_for_big_plans(big_plans)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting big plans which were archived")
-                    big_plans = big_plans or self._big_plans_service.load_all_big_plans(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                    big_plans = self._big_plans_service.load_all_recurring_tasks_not_notion_gced(project.ref_id)
                     self._do_drop_all_archived_big_plans(big_plans)
 
         if SyncTarget.SMART_LISTS in sync_targets:
@@ -111,16 +106,16 @@ class GarbageCollectNotionController:
                 LOGGER.info(f"Garbage collecting smart lists which were archived")
                 smart_lists = smart_lists or self._smart_lists_service.load_all_smart_lists(allow_archived=True)
                 self._do_drop_all_archived_smart_lists(smart_lists)
-            smart_list_items: Iterable[SmartListItem] = []
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for smart list items")
                 smart_list_items = self._smart_lists_service.load_all_smart_list_items(allow_archived=True)
-                smart_list_items = self._do_anti_entropy_for_smart_list_items(smart_list_items)
+                self._do_anti_entropy_for_smart_list_items(smart_list_items)
             if do_notion_cleanup:
                 LOGGER.info(f"Garbage collecting smart list items which were archived")
-                smart_list_items = smart_list_items or self._smart_lists_service.load_all_smart_list_items(
-                    allow_archived=True)
-                self._do_drop_all_archived_smart_list_items(smart_list_items)
+                for smart_list in smart_lists:
+                    smart_list_items = \
+                        self._smart_lists_service.load_all_smart_list_items_not_notion_gced(smart_list.ref_id)
+                    self._do_drop_all_archived_smart_list_items(smart_list_items)
 
     def _do_anti_entropy_for_vacations(
             self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:

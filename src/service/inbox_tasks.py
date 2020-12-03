@@ -398,12 +398,9 @@ class InboxTasksService:
     def archive_done_inbox_tasks(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
         """Archive the done inbox tasks."""
         inbox_tasks = self._repository.load_all_inbox_task(
-            filter_archived=False, filter_project_ref_ids=filter_project_ref_id)
+            filter_archived=True, filter_project_ref_ids=filter_project_ref_id)
 
         for inbox_task in inbox_tasks:
-            if inbox_task.archived:
-                continue
-
             if not inbox_task.status.is_completed:
                 continue
 
@@ -427,6 +424,14 @@ class InboxTasksService:
             filter_project_ref_ids=filter_project_ref_ids,
             filter_big_plan_ref_ids=filter_big_plan_ref_ids,
             filter_recurring_task_ref_ids=filter_recurring_task_ref_ids)
+
+    def load_all_inbox_tasks_not_notion_gced(self, project_ref_ids: EntityId) -> Iterable[InboxTask]:
+        """Retrieve all inbox tasks which have not been gc-ed on Notion side."""
+        allowed_ref_ids = self._collection.load_all_saved_inbox_tasks_ref_ids(project_ref_ids)
+        return [it
+                for it in self._repository.load_all_inbox_task(
+                    filter_archived=False, filter_project_ref_ids=[project_ref_ids])
+                if it.ref_id in allowed_ref_ids]
 
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,

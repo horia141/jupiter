@@ -56,11 +56,19 @@ from command.smart_lists_item_archive import SmartListsItemArchive
 from command.smart_lists_item_create import SmartListsItemCreate
 from command.smart_lists_create import SmartListsCreate
 from command.smart_lists_item_hard_remove import SmartListsItemHardRemove
+from command.smart_lists_item_mark_done import SmartListsItemMarkDone
+from command.smart_lists_item_mark_undone import SmartListsItemMarkUndone
 from command.smart_lists_item_set_name import SmartListsItemSetName
+from command.smart_lists_item_set_tags import SmartListsItemSetTags
 from command.smart_lists_item_set_url import SmartListsItemSetUrl
 from command.smart_lists_item_show import SmartListsItemShow
 from command.smart_lists_set_name import SmartListsSetName
 from command.smart_lists_show import SmartListsShow
+from command.smart_lists_tag_archive import SmartListsTagArchive
+from command.smart_lists_tag_create import SmartListsTagCreate
+from command.smart_lists_tag_hard_remove import SmartListsTagHardRemove
+from command.smart_lists_tag_set_name import SmartListsTagSetName
+from command.smart_lists_tag_show import SmartListsTagShow
 from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacations_archive import VacationsArchive
 from command.vacations_create import VacationsCreate
@@ -100,7 +108,7 @@ from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
-from repository.smart_lists import SmartListsRepository, SmartListItemsRepository
+from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
 from repository.vacations import VacationsRepository
@@ -134,6 +142,7 @@ def main() -> None:
             RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
             BigPlansRepository(time_provider) as big_plans_repository, \
             SmartListsRepository(time_provider) as smart_lists_repository, \
+            SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
@@ -158,7 +167,8 @@ def main() -> None:
             basic_validator, time_provider, recurring_tasks_repository, recurring_tasks_collection)
         big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
         smart_lists_service = SmartListsService(
-            basic_validator, smart_lists_repository, smart_list_items_repository, notion_smart_lists_manager)
+            basic_validator, smart_lists_repository, smart_list_tags_repository, smart_list_items_repository,
+            notion_smart_lists_manager)
 
         workspaces_controller = WorkspacesController(
             notion_connection, workspaces_service, vacations_service, smart_lists_service)
@@ -239,9 +249,17 @@ def main() -> None:
             SmartListsSetName(basic_validator, smart_lists_controller),
             SmartListsShow(basic_validator, smart_lists_controller),
             SmartListsHardRemove(basic_validator, smart_lists_controller),
+            SmartListsTagCreate(basic_validator, smart_lists_controller),
+            SmartListsTagArchive(basic_validator, smart_lists_controller),
+            SmartListsTagSetName(basic_validator, smart_lists_controller),
+            SmartListsTagShow(basic_validator, smart_lists_controller),
+            SmartListsTagHardRemove(basic_validator, smart_lists_controller),
             SmartListsItemCreate(basic_validator, smart_lists_controller),
             SmartListsItemArchive(basic_validator, smart_lists_controller),
             SmartListsItemSetName(basic_validator, smart_lists_controller),
+            SmartListsItemMarkDone(basic_validator, smart_lists_controller),
+            SmartListsItemMarkUndone(basic_validator, smart_lists_controller),
+            SmartListsItemSetTags(basic_validator, smart_lists_controller),
             SmartListsItemSetUrl(basic_validator, smart_lists_controller),
             SmartListsItemShow(basic_validator, smart_lists_controller),
             SmartListsItemHardRemove(basic_validator, smart_lists_controller),

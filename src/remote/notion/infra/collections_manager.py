@@ -1,6 +1,9 @@
 """The handler of collections on Notion side."""
+import dataclasses
+import hashlib
 import logging
-from dataclasses import field, dataclass
+import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, ClassVar
@@ -12,7 +15,7 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId
 from remote.notion.infra.client import NotionClient
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
-    NotionCollectionLinkExtra
+    NotionCollectionLinkExtra, NotionCollectionTagLink
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage, Eq
 from utils.time_provider import TimeProvider
@@ -38,7 +41,16 @@ class _CollectionLockRow(BaseRecordRow):
     """Information about a Notion-side collection."""
     page_id: NotionId
     collection_id: NotionId
-    view_ids: Dict[str, NotionId] = field(default_factory=dict, compare=False)
+    view_ids: Dict[str, NotionId] = dataclasses.field(default_factory=dict, compare=False)
+
+
+@dataclass()
+class _CollectionFieldTagLockRow(BaseRecordRow):
+    """Information about a Notion-side collection field tag."""
+    collection_key: NotionLockKey
+    ref_id: EntityId
+    field: str
+    tag_id: NotionId
 
 
 @dataclass()
@@ -53,10 +65,12 @@ class CollectionsManager:
     """The handler for collections on Notion side."""
 
     _COLLECTIONS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collections.yaml")
+    _COLLECTION_FIELD_TAGS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collection-field-tags.yaml")
     _COLLECTION_ITEMS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collection-items.yaml")
 
     _connection: Final[NotionConnection]
     _collections_storage: Final[RecordsStorage[_CollectionLockRow]]
+    _collection_field_tags_storage: Final[RecordsStorage[_CollectionFieldTagLockRow]]
     _collection_items_storage: Final[RecordsStorage[_CollectionItemLockRow]]
 
     def __init__(self, time_provider: TimeProvider, connection: NotionConnection) -> None:
@@ -65,6 +79,10 @@ class CollectionsManager:
         self._collections_storage = \
             RecordsStorage[_CollectionLockRow](
                 self._COLLECTIONS_STORAGE_PATH, time_provider, CollectionsManager._CollectionsStorageProtocol())
+        self._collection_field_tags_storage = \
+            RecordsStorage[_CollectionFieldTagLockRow](
+                self._COLLECTION_FIELD_TAGS_STORAGE_PATH, time_provider,
+                CollectionsManager._CollectionFieldTagsStorageProtocol())
         self._collection_items_storage = \
             RecordsStorage[_CollectionItemLockRow](
                 self._COLLECTION_ITEMS_STORAGE_PATH, time_provider,
@@ -73,6 +91,7 @@ class CollectionsManager:
     def __enter__(self) -> 'CollectionsManager':
         """Enter context."""
         self._collections_storage.initialize()
+        self._collection_field_tags_storage.initialize()
         self._collection_items_storage.initialize()
         return self
 
@@ -171,11 +190,246 @@ class CollectionsManager:
         collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
         page.title = new_name
         collection.name = new_name
-        client.update_collection_schema(lock.page_id, lock.collection_id, new_schema)
+        old_schema = collection.get("schema")
+        final_schema = self._merge_notion_schemas(old_schema, new_schema)
+        collection.set("schema", final_schema)
+        LOGGER.info("Applied the most current schema to the collection")
 
     @staticmethod
-    def _build_item_key(collection_key: str, key: str) -> str:
+    def _build_compound_key(collection_key: str, key: str) -> str:
         return f"{collection_key}:{key}"
+
+    def upsert_collection_field_tag(
+            self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
+            field: str, tag: str) -> NotionCollectionTagLink:
+        """Create a new tag for a Collection's field which has tags support."""
+        collection_lock = self._collections_storage.load(collection_key)
+        tag_key = self._build_compound_key(collection_key, key)
+        lock = self._collection_field_tags_storage.load_optional(tag_key)
+
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        schema = collection.get("schema")
+
+        if field not in schema:
+            raise Exception(f'Field "{field}" not in schema')
+
+        field_schema = schema[field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{field}" is not appropriate for tags')
+
+        if "options" not in field_schema:
+            field_schema["options"] = []
+
+        tag_id = None
+        if lock:
+            for option in field_schema["options"]:
+                if option["id"] == lock.tag_id:
+                    option["value"] = tag
+                    option["color"] = self._get_stable_color(tag_key)
+                    tag_id = lock.tag_id
+                    LOGGER.info(f'Found tag "{tag}" ({lock.tag_id}) for field "{field}"')
+                    break
+            else:
+                LOGGER.info(f'Could not find "{tag}" ({lock.tag_id})')
+
+        if tag_id is None:
+            tag_id = NotionId(str(uuid.uuid4()))
+            field_schema["options"].append({
+                "id": tag_id,
+                "value": tag,
+                "color": self._get_stable_color(tag_key)
+            })
+            LOGGER.info(f"Added new item for collection schema")
+
+        collection.set("schema", schema)
+
+        new_lock = _CollectionFieldTagLockRow(
+            key=tag_key,
+            collection_key=collection_key,
+            tag_id=tag_id,
+            field=field,
+            ref_id=ref_id)
+
+        if lock:
+            self._collection_field_tags_storage.update(new_lock)
+        else:
+            self._collection_field_tags_storage.create(new_lock)
+        LOGGER.info("Saved lock structure")
+
+        return NotionCollectionTagLink(
+            notion_id=tag_id,
+            collection_id=collection.id,
+            name=tag,
+            ref_id=ref_id)
+
+    def load_all_collection_field_tags(
+            self, collection_key: NotionLockKey, field: str) -> Iterable[NotionCollectionTagLink]:
+        """Load all tags for a field in a collection."""
+        collection_lock = self._collections_storage.load(collection_key)
+
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        schema = collection.get("schema")
+
+        if field not in schema:
+            raise Exception(f'Field "{field}" not in schema')
+
+        field_schema = schema[field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{field}" is not appropriate for tags')
+
+        if "options" not in field_schema:
+            return []
+
+        tag_links_lock_by_tag_id = {
+            s.tag_id: s.ref_id
+            for s in self._collection_field_tags_storage.find_all(collection_key=Eq(collection_key), field=Eq(field))}
+
+        return [
+            NotionCollectionTagLink(
+                collection_id=collection.id,
+                notion_id=NotionId(option["id"]),
+                name=option["value"],
+                ref_id=tag_links_lock_by_tag_id.get(NotionId(option["id"]), None))
+            for option in field_schema["options"]]
+
+    def save_collection_field_tag(
+            self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
+            field: str, tag: str) -> NotionCollectionTagLink:
+        """Create a new tag for a Collection's field which has tags support."""
+        collection_lock = self._collections_storage.load(collection_key)
+        tag_key = self._build_compound_key(collection_key, key)
+        lock = self._collection_field_tags_storage.load(tag_key)
+
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        schema = collection.get("schema")
+
+        if field not in schema:
+            raise Exception(f'Field "{field}" not in schema')
+
+        field_schema = schema[field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{field}" is not appropriate for tags')
+
+        if "options" not in field_schema:
+            field_schema["options"] = []
+
+        for option in field_schema["options"]:
+            if option["id"] == lock.tag_id:
+                option["value"] = tag
+                option["color"] = self._get_stable_color(tag_key)
+                tag_id = lock.tag_id
+                LOGGER.info(f'Found tag "{tag}" ({lock.tag_id}) for field "{field}"')
+                break
+        else:
+            raise Exception(f'Could not find "{tag}" ({lock.tag_id})')
+
+        collection.set("schema", schema)
+
+        new_lock = _CollectionFieldTagLockRow(
+            key=tag_key,
+            collection_key=collection_key,
+            tag_id=tag_id,
+            field=field,
+            ref_id=ref_id)
+
+        self._collection_field_tags_storage.update(new_lock)
+        LOGGER.info("Saved lock structure")
+
+        return NotionCollectionTagLink(
+            notion_id=tag_id,
+            collection_id=collection.id,
+            name=tag,
+            ref_id=ref_id)
+
+    def load_all_saved_collection_field_tag_notion_ids(
+            self, collection_key: NotionLockKey, field: str) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids."""
+        return [r.tag_id for r
+                in self._collection_field_tags_storage.find_all(collection_key=Eq(collection_key), field=Eq(field))]
+
+    def drop_all_collection_field_tags(self, collection_key: NotionLockKey, field: str) -> None:
+        """Hard remove all the Notion-side entities."""
+        collection_lock = self._collections_storage.load(collection_key)
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+
+        schema = collection.get("schema")
+
+        if field not in schema:
+            raise Exception(f'Field "{field}" not in schema')
+
+        field_schema = schema[field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{field}" is not appropriate for tags')
+
+        field_schema["options"] = []
+
+        collection.set("schema", schema)
+
+    def quick_link_local_and_notion_collection_field_tags(
+            self, key: NotionLockKey, collection_key: NotionLockKey, field: str, ref_id: EntityId,
+            notion_id: NotionId) -> None:
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        tag_key = self._build_compound_key(collection_key, key)
+        lock = self._collection_field_tags_storage.load_optional(tag_key)
+
+        new_lock = _CollectionFieldTagLockRow(
+            key=tag_key,
+            collection_key=collection_key,
+            tag_id=notion_id,
+            field=field,
+            ref_id=ref_id)
+
+        if lock is not None:
+            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
+            self._collection_field_tags_storage.update(new_lock)
+        else:
+            self._collection_field_tags_storage.create(new_lock)
+
+    def hard_remove_collection_field_tag(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
+        """Hard remove the Notion entity associated with a local entity."""
+        tag_key = self._build_compound_key(collection_key, key)
+        collection_lock = self._collections_storage.load(collection_key)
+        lock = self._collection_field_tags_storage.load(tag_key)
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+
+        schema = collection.get("schema")
+
+        if lock.field not in schema:
+            raise Exception(f'Field "{lock.field}" not in schema')
+
+        field_schema = schema[lock.field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{lock.field}" is not appropriate for tags')
+
+        if "options" not in field_schema:
+            field_schema["options"] = []
+
+        for option_idx, option in enumerate(field_schema["options"]):
+            if option["id"] == lock.tag_id:
+                del field_schema["options"][option_idx]
+                LOGGER.info(f'Found tag {lock.tag_id} for field "{lock.field}"')
+                break
+        else:
+            LOGGER.info(f'Could not find tag for {lock.tag_id}')
+
+        collection.set("schema", schema)
+
+        self._collection_field_tags_storage.remove(tag_key)
 
     def upsert_collection_item(
             self, collection_key: NotionLockKey, key: NotionLockKey, new_row: ItemType,
@@ -185,7 +439,7 @@ class CollectionsManager:
             raise Exception("Can only create over an entity which has a ref_id")
 
         collection_lock = self._collections_storage.load(collection_key)
-        item_key = self._build_item_key(collection_key, key)
+        item_key = self._build_compound_key(collection_key, key)
         lock = self._collection_items_storage.load_optional(item_key)
 
         client = self._connection.get_notion_client()
@@ -221,7 +475,7 @@ class CollectionsManager:
     def quick_link_local_and_notion_entries(
             self, key: NotionLockKey, collection_key: NotionLockKey, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        item_key = self._build_item_key(collection_key, key)
+        item_key = self._build_compound_key(collection_key, key)
         lock = self._collection_items_storage.load_optional(item_key)
         new_lock = _CollectionItemLockRow(
             key=item_key,
@@ -236,7 +490,7 @@ class CollectionsManager:
 
     def quick_archive(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Remove a particular entity."""
-        item_key = self._build_item_key(collection_key, key)
+        item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
         lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
@@ -261,7 +515,7 @@ class CollectionsManager:
             self, key: NotionLockKey, collection_key: NotionLockKey,
             copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> ItemType:
         """Retrieve the Notion-side entity associated with a particular entity."""
-        item_key = self._build_item_key(collection_key, key)
+        item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
         lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
@@ -277,7 +531,7 @@ class CollectionsManager:
         if row.ref_id is None:
             raise Exception("Can only save over an entity which has a ref_id")
 
-        item_key = self._build_item_key(collection_key, key)
+        item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
         lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
@@ -291,6 +545,11 @@ class CollectionsManager:
     def load_all_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids."""
         return [r.row_id for r
+                in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
+
+    def load_all_saved_ref_ids(self, collection_key: NotionLockKey) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids."""
+        return [r.ref_id for r
                 in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
 
     def drop_all(self, collection_key: NotionLockKey) -> None:
@@ -310,7 +569,7 @@ class CollectionsManager:
 
     def hard_remove(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        item_key = self._build_item_key(collection_key, key)
+        item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
         lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
@@ -350,8 +609,9 @@ class CollectionsManager:
                     }
 
                     for option in schema_item["options"]:
-                        old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
-                                          None)
+                        old_option = next(
+                            (old_o for old_o in old_v.get("options", []) if old_o["value"] == option["value"]),
+                            None)
                         if old_option is not None:
                             combined_schema[schema_item_name]["options"].append({
                                 "color": option["color"],
@@ -398,6 +658,38 @@ class CollectionsManager:
                 "view_ids": live_form.view_ids,
             }
 
+    class _CollectionFieldTagsStorageProtocol:
+        @staticmethod
+        def storage_schema() -> JSONDictType:
+            """The schema for the data."""
+            return {
+                "key": {"type": "string"},
+                "collection_key": {"type": "string"},
+                "ref_id": {"type": "string"},
+                "field": {"type": "string"},
+                "tag_id": {"type": "string"}
+            }
+
+        @staticmethod
+        def storage_to_live(storage_form: JSONDictType) -> _CollectionFieldTagLockRow:
+            """Transform the data reconstructed from basic storage into something useful for the live system."""
+            return _CollectionFieldTagLockRow(
+                key=NotionLockKey(typing.cast(str, storage_form["key"])),
+                collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
+                ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+                field=typing.cast(str, storage_form["field"]),
+                tag_id=NotionId(typing.cast(str, storage_form["tag_id"])))
+
+        @staticmethod
+        def live_to_storage(live_form: _CollectionFieldTagLockRow) -> JSONDictType:
+            """Transform the live system data to something suitable for basic storage."""
+            return {
+                "collection_key": live_form.collection_key,
+                "ref_id": live_form.ref_id,
+                "tag_id": live_form.tag_id,
+                "field": live_form.field
+            }
+
     class _CollectionItemsStorageProtocol:
         @staticmethod
         def storage_schema() -> JSONDictType:
@@ -426,3 +718,19 @@ class CollectionsManager:
                 "ref_id": live_form.ref_id,
                 "row_id": live_form.row_id
             }
+
+    @staticmethod
+    def _get_stable_color(option_id: str) -> str:
+        """Return a random-ish yet stable color for a given name."""
+        colors = [
+            "gray",
+            "brown",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "pink",
+            "red"
+        ]
+        return colors[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(colors)]

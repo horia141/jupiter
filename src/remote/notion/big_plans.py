@@ -283,6 +283,10 @@ class BigPlansCollection:
         """Retrieve all the saved Notion-ids for these tasks."""
         return self._collection.load_all_saved_notion_ids(project_ref_id)
 
+    def load_all_saved_big_plans_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the big plans tasks."""
+        return self._collection.load_all_saved_ref_ids(project_ref_id)
+
     def drop_all_big_plans(self, project_ref_id: EntityId) -> None:
         """Remove all big plans Notion-side."""
         self._collection.drop_all(project_ref_id)

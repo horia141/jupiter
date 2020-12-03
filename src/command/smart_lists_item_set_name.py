@@ -30,12 +30,12 @@ class SmartListsItemSetName(command.Command):
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Chane the name of a smart list item"
+        return "Change the name of a smart list item"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", dest="ref_id", required=True,
-                            help="The id of the smart list item to add this item to")
+                            help="The id of the smart list item to change the name of")
         parser.add_argument("--name", dest="name", required=True, help="The name of the smart list item")
 
     def run(self, args: Namespace) -> None:

@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
-from models.basic import EntityId, SmartListKey
-from service.smart_lists import SmartListsService, SmartList, SmartListItem
+from controllers.common import ControllerInputValidationError
+from models.basic import EntityId, SmartListKey, Tag
+from service.smart_lists import SmartListsService, SmartList, SmartListItem, SmartListTag
 
 
 @dataclass()
@@ -19,6 +20,21 @@ class LoadAllSmartListsResponse:
     """Response object for the load_all_smart_lists controller method."""
 
     smart_lists: Iterable[LoadAllSmartListsEntry]
+
+
+@dataclass()
+class LoadAllSmartListTagsEntry:
+    """A single entry in the LoadALlSmartListTagsResponse."""
+
+    smart_list_tag: SmartListTag
+    smart_list: SmartList
+
+
+@dataclass()
+class LoadAllSmartListTagsResponse:
+    """Response object for the load_all_smart_list_tags controller method."""
+
+    smart_list_tags: Iterable[LoadAllSmartListTagsEntry]
 
 
 @dataclass()
@@ -79,14 +95,63 @@ class SmartListsController:
                 smart_list=sl,
                 smart_list_items=smart_list_items_by_smart_list_ref_ids.get(sl.ref_id, [])) for sl in smart_lists])
 
-    def hard_remove_smart_list(self, ref_id: EntityId) -> SmartList:
-        """Archive smart list item."""
-        return self._smart_lists_service.hard_remove_smart_list(ref_id)
+    def hard_remove_smart_list(self, keys: Iterable[SmartListKey]) -> None:
+        """Hard remove smart list item."""
+        keys = list(keys)
+        if len(keys) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
 
-    def create_smart_list_item(self, smart_list_key: SmartListKey, name: str, url: Optional[str]) -> SmartListItem:
+        for key in keys:
+            smart_list = self._smart_lists_service.load_smart_list_by_key(key)
+            self._smart_lists_service.hard_remove_smart_list(smart_list.ref_id)
+
+    def create_smart_list_tag(self, smart_list_key: SmartListKey, name: Tag) -> SmartListTag:
+        """Create a smart list tag."""
+        smart_list = self._smart_lists_service.load_smart_list_by_key(smart_list_key)
+        return self._smart_lists_service.create_smart_list_tag(smart_list.ref_id, name)
+
+    def archive_smart_list_tag(self, ref_id: EntityId) -> SmartListTag:
+        """Archive a smart list tag."""
+        return self._smart_lists_service.archive_smart_list_tag(ref_id)
+
+    def set_smart_list_tag_name(self, ref_id: EntityId, name: Tag) -> SmartListTag:
+        """Change the smart list tag name."""
+        return self._smart_lists_service.set_smart_list_tag_name(ref_id, name)
+
+    def load_all_smart_list_tag(
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListTagsResponse:
+        """Retrieve all smart list tags."""
+        smart_lists = self._smart_lists_service.load_all_smart_lists(
+            allow_archived=allow_archived, filter_keys=filter_smart_list_keys)
+        smart_lists_by_ref_id = {sm.ref_id: sm for sm in smart_lists}
+        smart_list_tags = self._smart_lists_service.load_all_smart_list_tags(
+            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
+            filter_smart_list_ref_ids=[sm.ref_id for sm in smart_lists])
+
+        return LoadAllSmartListTagsResponse(
+            smart_list_tags=[
+                LoadAllSmartListTagsEntry(
+                    smart_list_tag=smt,
+                    smart_list=smart_lists_by_ref_id[smt.smart_list_ref_id])
+                for smt in smart_list_tags])
+
+    def hard_remove_smart_list_tag(self, ref_ids: Iterable[EntityId]) -> None:
+        """Archive smart list tags."""
+        ref_ids = list(ref_ids)
+        if len(ref_ids) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
+
+        for ref_id in ref_ids:
+            self._smart_lists_service.hard_remove_smart_list_tag(ref_id)
+
+    def create_smart_list_item(
+            self, smart_list_key: SmartListKey, name: str, is_done: bool, tags: Iterable[Tag],
+            url: Optional[str]) -> SmartListItem:
         """Create a smart list item."""
         smart_list = self._smart_lists_service.load_smart_list_by_key(smart_list_key)
-        return self._smart_lists_service.create_smart_list_item(smart_list.ref_id, name, url)
+        return self._smart_lists_service.create_smart_list_item(
+            smart_list_ref_id=smart_list.ref_id, name=name, is_done=is_done, tags=tags, url=url)
 
     def archive_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
         """Archive smart list item."""
@@ -96,26 +161,42 @@ class SmartListsController:
         """Change the name of a smart list item."""
         return self._smart_lists_service.set_smart_list_item_name(ref_id, name)
 
+    def set_smart_list_item_is_done(self, ref_id: EntityId, is_done: bool) -> SmartListItem:
+        """Change the doneness status of a smart list item."""
+        return self._smart_lists_service.set_smart_list_item_is_done(ref_id, is_done)
+
+    def set_smart_list_item_tags(self, ref_id: EntityId, tags: Iterable[Tag]) -> SmartListItem:
+        """Change the tags of a smart list item."""
+        return self._smart_lists_service.set_smart_list_item_tags(ref_id, tags)
+
     def set_smart_list_item_url(self, ref_id: EntityId, url: Optional[str]) -> SmartListItem:
         """Change the url of a smart list item."""
         return self._smart_lists_service.set_smart_list_item_url(ref_id, url)
 
     def load_all_smart_list_items(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListItemsResponse:
+            filter_smart_list_keys: Optional[Iterable[SmartListKey]] = None,
+            filter_is_done: Optional[bool] = None,
+            filter_tags: Optional[Iterable[Tag]] = None) -> LoadAllSmartListItemsResponse:
         """Retrieve all smart list items."""
         smart_lists = self._smart_lists_service.load_all_smart_lists(
             allow_archived=allow_archived, filter_keys=filter_smart_list_keys)
         smart_lists_by_ref_id = {sl.ref_id: sl for sl in smart_lists}
         smart_list_items = self._smart_lists_service.load_all_smart_list_items(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
-            filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists])
+            filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists],
+            filter_is_done=filter_is_done, filter_tags=filter_tags)
 
         return LoadAllSmartListItemsResponse(
             smart_list_items=[LoadAllSmartListItemsEntry(
                 smart_list_item=sl,
                 smart_list=smart_lists_by_ref_id[sl.smart_list_ref_id]) for sl in smart_list_items])
 
-    def hard_remove_smart_list_item(self, ref_id: EntityId) -> SmartListItem:
+    def hard_remove_smart_list_item(self, ref_ids: Iterable[EntityId]) -> None:
         """Archive smart list item."""
-        return self._smart_lists_service.hard_remove_smart_list_item(ref_id)
+        ref_ids = list(ref_ids)
+        if len(ref_ids) == 0:
+            raise ControllerInputValidationError("Expected at least one entity to remove")
+
+        for ref_id in ref_ids:
+            self._smart_lists_service.hard_remove_smart_list_item(ref_id)

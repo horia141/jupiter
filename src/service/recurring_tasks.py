@@ -389,6 +389,14 @@ class RecurringTasksService:
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
 
+    def load_all_recurring_tasks_not_notion_gced(self, project_ref_ids: EntityId) -> Iterable[RecurringTask]:
+        """Retrieve all recurring tasks which have not been gc-ed on Notion side."""
+        allowed_ref_ids = self._collection.load_all_saved_recurring_tasks_ref_ids(project_ref_ids)
+        return [it
+                for it in self._repository.load_all_recurring_tasks(
+                    filter_archived=False, filter_project_ref_ids=[project_ref_ids])
+                if it.ref_id in allowed_ref_ids]
+
     def load_recurring_task_by_id(self, ref_id: EntityId) -> RecurringTask:
         """Retrieve a particular recurring task by it's id."""
         return self._repository.load_recurring_task(ref_id)

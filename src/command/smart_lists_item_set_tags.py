@@ -1,4 +1,4 @@
-"""Command for hard removing a smart list item."""
+"""Command for changing the tags of a smart list item."""
 
 import logging
 from argparse import Namespace, ArgumentParser
@@ -11,8 +11,8 @@ from models.basic import BasicValidator
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListsItemHardRemove(command.Command):
-    """Command for hard removing of a smart list item."""
+class SmartListsItemSetTags(command.Command):
+    """Command for changing the tags of a smart list item."""
 
     _basic_validator: Final[BasicValidator]
     _smart_list_controller: Final[SmartListsController]
@@ -25,19 +25,22 @@ class SmartListsItemHardRemove(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "smart-lists-item-hard-remove"
+        return "smart-lists-item-set-tags"
 
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Hard remove a smart list item"
+        return "Change the tags of a smart list item"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_ids", default=[], action="append",
-                            required=True, help="The if of the smart list item to hard remove")
+        parser.add_argument("--id", dest="ref_id", required=True,
+                            help="The id of the smart list item to change the name of")
+        parser.add_argument("--tag", dest="tags", default=[], action="append",
+                            help="Tags for the smart list item")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
-        self._smart_list_controller.hard_remove_smart_list_item(ref_ids)
+        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        tags = [self._basic_validator.tag_validate_and_clean(t) for t in args.tags]
+        self._smart_list_controller.set_smart_list_item_tags(ref_id, tags)
