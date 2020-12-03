@@ -1,8 +1,10 @@
 # Installation
 
-## Docker
+## Docker (Preferred)
 
-You need to make sure you have a recent Docker installed. After that it's straightforward:
+The simplest way to install Jupiter is via Docker.
+
+You first need to make sure you have a recent Docker installed. After that it's straightforward:
 
 ```bash
 $ docker pull horia141/jupiter:latest
@@ -11,14 +13,16 @@ $ docker pull horia141/jupiter:latest
 This will get you the latest version of the code. After this you can:
 
 ```bash
-$ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
+$ mkdir my-jupiter-work-dir # A dir where you manage local Jupiter data.
+$ cd my-jupiter-work-dir
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data \
-    horia141/jupiter:latest gen \
-    /data/tasks-work.yaml
+    horia141/jupiter:latest --help
 ```
 
 ## GitHub
+
+Another way to install it is from "sources" on GitHub.
 
 You need to make sure you have a recent Python3 installed. Jupiter has been tested on Python 3.8. Docker is also
 useful to have on board.
@@ -41,11 +45,11 @@ $ make docker-build
 This will chug for a while and produce a local image called `jupiter`. You can use this to run commands like so:
 
 ```bash
-$ cd ~/my-jupiter-work-dir # A dir where you manage your Jupiter tasks.
+$ mkdir my-jupiter-work-dir # A dir where you manage local Jupiter data.
+$ cd my-jupiter-work-dir
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data \
-    jupiter gen \
-    /data/tasks-work.yaml
+    horia141/jupiter:latest --help
 ```
 
 Alternatively, you can use the scripts locally, like so:
@@ -61,5 +65,5 @@ Now, instead of running the Docker image, you can directly run the scripts, like
 
 ```bash
 $ cd ~/my-jupier-work-dir
-$ python ~/jupiter/src/jupiter.py gen
+$ python ~/jupiter/src/jupiter.py --help
 ```
