@@ -32,7 +32,7 @@ class WorkspaceLock:
 class WorkspaceSingleton:
     """A single structure on Notion side for vacations."""
 
-    _WORKSPACES_LOCK_FILE_PATH: ClassVar[Path] = Path("/data/workspaces.lock.yaml")
+    _WORKSPACES_LOCK_FILE_PATH: ClassVar[Path] = Path("./workspaces.lock.yaml")
 
     _connection: Final[NotionConnection]
     _structured_storage: Final[StructuredIndividualStorage[WorkspaceLock]]

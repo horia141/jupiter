@@ -35,7 +35,7 @@ class BigPlanRow(BasicRowType):
 class BigPlansCollection:
     """A collection on Notion side for big plans."""
 
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/big-plans.lock.yaml")
+    _LOCK_FILE_PATH: ClassVar[Path] = Path("./big-plans.lock.yaml")
 
     _PAGE_NAME: ClassVar[str] = "Big Plans"
 

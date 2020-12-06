@@ -47,7 +47,7 @@ class InboxTask:
 class InboxTasksRepository:
     """A repository of the inbox tasks."""
 
-    _INBOX_TASKS_FILE_PATH: ClassVar[Path] = Path("/data/inbox-tasks.yaml")
+    _INBOX_TASKS_FILE_PATH: ClassVar[Path] = Path("./inbox-tasks.yaml")
 
     _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[InboxTask]]

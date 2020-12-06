@@ -48,7 +48,7 @@ class RecurringTaskRow(BasicRowType):
 class RecurringTasksCollection:
     """A collection on Notion side for recurring tasks."""
 
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/recurring-tasks.lock.yaml")
+    _LOCK_FILE_PATH: ClassVar[Path] = Path("./recurring-tasks.lock.yaml")
 
     _PAGE_NAME: ClassVar[str] = "Recurring Tasks"
 

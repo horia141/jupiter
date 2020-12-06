@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 from pathlib import Path
+from typing import cast
 
 import coloredlogs
 import dotenv
@@ -136,10 +137,10 @@ def main() -> None:
     global_properties = _build_global_properties(workspaces_repository)
     basic_validator = BasicValidator(global_properties)
 
-    with VacationsRepository(time_provider) as vacations_repository,\
-            ProjectsRepository(time_provider) as projects_repository,\
-            InboxTasksRepository(time_provider) as inbox_tasks_repository,\
-            RecurringTasksRepository(time_provider) as recurring_tasks_repository,\
+    with VacationsRepository(time_provider) as vacations_repository, \
+            ProjectsRepository(time_provider) as projects_repository, \
+            InboxTasksRepository(time_provider) as inbox_tasks_repository, \
+            RecurringTasksRepository(time_provider) as recurring_tasks_repository, \
             BigPlansRepository(time_provider) as big_plans_repository, \
             SmartListsRepository(time_provider) as smart_lists_repository, \
             SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
@@ -333,33 +334,24 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
 
 
 def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:
-    dotenv.load_dotenv(dotenv_path=Path(".") / "Config", verbose=True)
+    config_path = Path(os.path.realpath(Path(os.path.realpath(__file__)).parent / ".." / "Config"))
 
-    description = os.getenv("DESCRIPTION")
-    if description is None:
+    if not config_path.exists():
         raise Exception("Critical error - missing Config file")
 
-    version = os.getenv("VERSION")
-    if version is None:
-        raise Exception("Critical error - missing Config file")
+    dotenv.load_dotenv(dotenv_path=config_path, verbose=True)
+
+    description = cast(str, os.getenv("DESCRIPTION"))
+    version = cast(str, os.getenv("VERSION"))
+    docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
+    docs_update_expired_token_url = cast(str, os.getenv("DOCS_UPDATE_EXPIRED_TOKEN_URL"))
+    docs_fix_data_inconsistencies_url = cast(str, os.getenv("DOCS_FIX_DATA_INCONSISTENCIES_URL"))
 
     try:
         workspace = workspace_repository.load_workspace()
         timezone = workspace.timezone
     except MissingWorkspaceRepositoryError:
         timezone = pendulum.timezone(os.getenv("TZ", "UTC"))
-
-    docs_init_workspace_url = os.getenv("DOCS_INIT_WORKSPACE_URL")
-    if docs_init_workspace_url is None:
-        raise Exception("Critical error - missing Config file")
-
-    docs_update_expired_token_url = os.getenv("DOCS_UPDATE_EXPIRED_TOKEN_URL")
-    if docs_update_expired_token_url is None:
-        raise Exception("Critical error - missing Config file")
-
-    docs_fix_data_inconsistencies_url = os.getenv("DOCS_FIX_DATA_INCONSISTENCIES_URL")
-    if docs_fix_data_inconsistencies_url is None:
-        raise Exception("Critical error - missing Config file")
 
     return GlobalProperties(
         description=description,

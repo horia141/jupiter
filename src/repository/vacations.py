@@ -29,7 +29,7 @@ class VacationRow(BaseEntityRow):
 class VacationsRepository:
     """A repository for vacations."""
 
-    _VACATIONS_FILE_PATH: ClassVar[Path] = Path("/data/vacations.yaml")
+    _VACATIONS_FILE_PATH: ClassVar[Path] = Path("./vacations.yaml")
 
     _storage: Final[EntitiesStorage[VacationRow]]
 

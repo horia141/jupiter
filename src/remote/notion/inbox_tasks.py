@@ -50,7 +50,7 @@ class InboxTaskRow(BasicRowType):
 class InboxTasksCollection:
     """A collection on Notion side for inbox tasks."""
 
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/inbox-tasks.lock.yaml")
+    _LOCK_FILE_PATH: ClassVar[Path] = Path("./inbox-tasks.lock.yaml")
 
     _PAGE_NAME: ClassVar[str] = "Inbox Tasks"
     _STATUS: ClassVar[JSONDictType] = {

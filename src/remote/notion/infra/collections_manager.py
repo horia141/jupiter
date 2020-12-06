@@ -64,9 +64,9 @@ class _CollectionItemLockRow(BaseRecordRow):
 class CollectionsManager:
     """The handler for collections on Notion side."""
 
-    _COLLECTIONS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collections.yaml")
-    _COLLECTION_FIELD_TAGS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collection-field-tags.yaml")
-    _COLLECTION_ITEMS_STORAGE_PATH: ClassVar[Path] = Path("/data/notion.collection-items.yaml")
+    _COLLECTIONS_STORAGE_PATH: ClassVar[Path] = Path("./notion.collections.yaml")
+    _COLLECTION_FIELD_TAGS_STORAGE_PATH: ClassVar[Path] = Path("./notion.collection-field-tags.yaml")
+    _COLLECTION_ITEMS_STORAGE_PATH: ClassVar[Path] = Path("./notion.collection-items.yaml")
 
     _connection: Final[NotionConnection]
     _collections_storage: Final[RecordsStorage[_CollectionLockRow]]
