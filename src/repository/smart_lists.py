@@ -24,7 +24,7 @@ class SmartListRow(BaseEntityRow):
 class SmartListsRepository:
     """A repository for lists."""
 
-    _SMART_LISTS_FILE_PATH: ClassVar[Path] = Path("/data/smart-lists.yaml")
+    _SMART_LISTS_FILE_PATH: ClassVar[Path] = Path("./smart-lists.yaml")
 
     _storage: Final[EntitiesStorage[SmartListRow]]
 
@@ -116,7 +116,7 @@ class SmartListTagRow(BaseEntityRow):
 class SmartListTagsRepository:
     """A repository for smart list tags."""
 
-    _SMART_LIST_TAGS_FILE_PATH: ClassVar[Path] = Path("/data/smart-list-tags.yaml")
+    _SMART_LIST_TAGS_FILE_PATH: ClassVar[Path] = Path("./smart-list-tags.yaml")
 
     _storage: Final[EntitiesStorage[SmartListTagRow]]
 
@@ -220,7 +220,7 @@ class SmartListItemRow(BaseEntityRow):
 class SmartListItemsRepository:
     """A repository for smart list items."""
 
-    _SMART_LIST_ITEMS_FILE_PATH: ClassVar[Path] = Path("/data/smart-list-items.yaml")
+    _SMART_LIST_ITEMS_FILE_PATH: ClassVar[Path] = Path("./smart-list-items.yaml")
 
     _storage: Final[EntitiesStorage[SmartListItemRow]]
 

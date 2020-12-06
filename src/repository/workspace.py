@@ -35,7 +35,7 @@ class Workspace:
 class WorkspaceRepository:
     """A repository for workspaces."""
 
-    _WORKSPACE_FILE_PATH: ClassVar[Path] = Path("/data/workspaces.yaml")
+    _WORKSPACE_FILE_PATH: ClassVar[Path] = Path("./workspaces.yaml")
 
     _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredIndividualStorage[Workspace]]

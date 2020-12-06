@@ -16,4 +16,5 @@ COPY src src
 COPY Config Config
 
 # ENTRYPOINT ["python", "-m", "cProfile", "-s", "time", "src/jupiter.py"]
-ENTRYPOINT ["python", "src/jupiter.py"]
+WORKDIR /data
+ENTRYPOINT ["python", "/jupiter/src/jupiter.py"]

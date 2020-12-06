@@ -81,7 +81,7 @@ class RecurringTask:
 class RecurringTasksRepository:
     """A repository for recurring tasks."""
 
-    _RECURRING_TASKS_FILE_PATH: ClassVar[Path] = Path("/data/recurring-tasks.yaml")
+    _RECURRING_TASKS_FILE_PATH: ClassVar[Path] = Path("./recurring-tasks.yaml")
 
     _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[RecurringTask]]

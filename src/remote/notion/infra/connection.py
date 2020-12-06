@@ -29,7 +29,7 @@ class NotionConnectionData:
 class NotionConnection:
     """The connection handles the lifetime of the interaction with Notion."""
 
-    _NOTION_LINK_FILE_PATH: ClassVar[Path] = Path("/data/notion-connection.yaml")
+    _NOTION_LINK_FILE_PATH: ClassVar[Path] = Path("./notion-connection.yaml")
 
     _structured_storage: Final[StructuredIndividualStorage[NotionConnectionData]]
     _cached_client: Optional[NotionClient]

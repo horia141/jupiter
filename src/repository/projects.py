@@ -32,7 +32,7 @@ class Project:
 class ProjectsRepository:
     """A repository for projects."""
 
-    _PROJECTS_FILE_PATH: ClassVar[Path] = Path("/data/projects.yaml")
+    _PROJECTS_FILE_PATH: ClassVar[Path] = Path("./projects.yaml")
 
     _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[Project]]

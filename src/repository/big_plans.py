@@ -40,7 +40,7 @@ class BigPlan:
 class BigPlansRepository:
     """A repository for big plans."""
 
-    _BIG_PLANS_FILE_PATH: ClassVar[Path] = Path("/data/big-plans.yaml")
+    _BIG_PLANS_FILE_PATH: ClassVar[Path] = Path("./big-plans.yaml")
 
     _time_provider: Final[TimeProvider]
     _structured_storage: Final[StructuredCollectionStorage[BigPlan]]

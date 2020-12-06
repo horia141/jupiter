@@ -33,7 +33,7 @@ class ProjectLock:
 class ProjectsCollection:
     """A collection on Notion side for projects."""
 
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("/data/projects.lock.yaml")
+    _LOCK_FILE_PATH: ClassVar[Path] = Path("./projects.lock.yaml")
 
     _connection: Final[NotionConnection]
     _structured_storage: Final[StructuredCollectionStorage[ProjectLock]]
