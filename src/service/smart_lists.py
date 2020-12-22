@@ -77,8 +77,10 @@ class SmartListsService:
         LOGGER.info("Applied remote changes")
 
         # Workaround due to bug in Notion client always assuming there's a set of values for multi_select fields.
-        self._smart_list_tags_repository.create_smart_list_tag(
+        new_smart_list_tag_row = self._smart_list_tags_repository.create_smart_list_tag(
             new_smart_list_row.ref_id, Tag("Default"), archived=False)
+        self._notion_manager.upsert_smart_list_tag(
+            new_smart_list_row.ref_id, new_smart_list_tag_row.ref_id, Tag("Default"))
 
         return SmartList(
             ref_id=new_smart_list_row.ref_id,

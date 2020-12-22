@@ -144,7 +144,7 @@ class SmartListTagsRepository:
             sltr.name.lower()
             for sltr in self._storage.find_all(
                 allow_archived=True,
-                smart_list_ref_id=In(*smart_list_ref_id) if smart_list_ref_id else None))
+                smart_list_ref_id=Eq(smart_list_ref_id)))
         if name.lower() in all_smart_list_tags_rows_names:
             raise ModelValidationError(f'Tag with name "{name}" already exists for smart list')
         new_smart_list_tag = SmartListTagRow(
