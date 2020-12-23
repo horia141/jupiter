@@ -283,7 +283,6 @@ class CollectionsManager:
         if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
             raise Exception(f'Field "{field}" is not appropriate for tags')
 
-        LOGGER.error(field_schema)
         if "options" not in field_schema:
             return []
 
@@ -586,9 +585,6 @@ class CollectionsManager:
         """Merge an old and new schema for the collection."""
         combined_schema = {}
 
-        LOGGER.error(f"old: {old_schema}")
-        LOGGER.error(f"new: {new_schema}")
-
         # Merging schema is limited right now. Basically we assume the new schema takes
         # precedence over the old one, except for select and multi_select, which have a set
         # of options for them which are identified by "id"s. We wanna keep these stable
@@ -622,12 +618,10 @@ class CollectionsManager:
                             old_option["color"] = option["color"]
                         else:
                             combined_schema[schema_item_name]["options"].append(option)
-                    LOGGER.error(combined_schema[schema_item_name])
                 else:
                     combined_schema[schema_item_name] = schema_item
             else:
                 combined_schema[schema_item_name] = schema_item
-        LOGGER.error(f"combined: {combined_schema}")
 
         return combined_schema
 
