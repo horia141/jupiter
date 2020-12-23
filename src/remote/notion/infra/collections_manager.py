@@ -283,6 +283,7 @@ class CollectionsManager:
         if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
             raise Exception(f'Field "{field}" is not appropriate for tags')
 
+        LOGGER.error(field_schema)
         if "options" not in field_schema:
             return []
 
@@ -585,6 +586,9 @@ class CollectionsManager:
         """Merge an old and new schema for the collection."""
         combined_schema = {}
 
+        LOGGER.error(f"old: {old_schema}")
+        LOGGER.error(f"new: {new_schema}")
+
         # Merging schema is limited right now. Basically we assume the new schema takes
         # precedence over the old one, except for select and multi_select, which have a set
         # of options for them which are identified by "id"s. We wanna keep these stable
@@ -605,25 +609,25 @@ class CollectionsManager:
                     combined_schema[schema_item_name] = {
                         "name": schema_item["name"],
                         "type": schema_item["type"],
-                        "options": []
+                        "options": typing.cast(typing.List[Dict[str, str]], old_v.get("options", []))
                     }
 
                     for option in schema_item["options"]:
                         old_option = next(
-                            (old_o for old_o in old_v.get("options", []) if old_o["value"] == option["value"]),
+                            (old_o
+                             for old_o in combined_schema[schema_item_name]["options"]
+                             if old_o["value"] == option["value"]),
                             None)
                         if old_option is not None:
-                            combined_schema[schema_item_name]["options"].append({
-                                "color": option["color"],
-                                "value": option["value"],
-                                "id": old_option["id"]
-                            })
+                            old_option["color"] = option["color"]
                         else:
                             combined_schema[schema_item_name]["options"].append(option)
+                    LOGGER.error(combined_schema[schema_item_name])
                 else:
                     combined_schema[schema_item_name] = schema_item
             else:
                 combined_schema[schema_item_name] = schema_item
+        LOGGER.error(f"combined: {combined_schema}")
 
         return combined_schema
 
