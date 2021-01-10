@@ -15,7 +15,7 @@ from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskSta
 from models.schedules import Schedule
 from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
-from repository.projects import Project
+from repository.projects import ProjectRow
 from repository.recurring_tasks import RecurringTask
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
@@ -172,7 +172,7 @@ class ReportProgressController:
         """Run a progress report."""
         today = right_now.date()
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
-        projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
+        projects_by_ref_id: Dict[EntityId, ProjectRow] = {p.ref_id: p for p in projects}
         schedule = schedules.get_schedule(
             period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
 

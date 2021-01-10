@@ -6,7 +6,7 @@ from typing import Optional, Final
 
 import typing
 
-from remote.notion.common import NotionPageLink, NotionId, NotionLockKey
+from remote.notion.common import NotionPageLink, NotionId, NotionLockKey, NotionPageLinkExtra
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage
 from utils.time_provider import TimeProvider
@@ -43,7 +43,7 @@ class PagesManager:
         if exc_type is not None:
             return
 
-    def upsert_page(self, key: NotionLockKey, name: str, parent_page: Optional[NotionPageLink]) -> NotionPageLink:
+    def upsert_page(self, key: NotionLockKey, name: str, parent_page: NotionPageLink) -> NotionPageLink:
         """Create a page with a given name."""
         found_page_lock_row = self._storage.load_optional(key)
 
@@ -53,24 +53,43 @@ class PagesManager:
             page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
             page_block.title = name
 
+            if page_block.get("parent_id") != parent_page.page_id:
+                # Kind of expensive operation here!
+                page_block.move_to(notion_client.get_regular_page(parent_page.page_id))
+
             self._storage.update(found_page_lock_row)
 
             return NotionPageLink(page_id=page_block.id)
         else:
-            if parent_page:
-                parent_page_block = notion_client.get_regular_page(parent_page.page_id)
-                new_page_block = notion_client.create_regular_page(name, parent_page_block)
-            else:
-                new_page_block = notion_client.create_regular_page(name)
+            parent_page_block = notion_client.get_regular_page(parent_page.page_id)
+            new_page_block = notion_client.create_regular_page(name, parent_page_block)
 
             self._storage.create(_PageLockRow(key=key, page_id=new_page_block.id))
 
             return NotionPageLink(page_id=new_page_block.id)
 
+    def remove_page(self, key: NotionLockKey) -> NotionPageLink:
+        """Remove a page with a given key."""
+        found_page_lock_row = self._storage.load(key)
+        notion_client = self._connection.get_notion_client()
+
+        page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        page_block.remove()
+
+        return NotionPageLink(page_id=found_page_lock_row.page_id)
+
     def get_page(self, key: NotionLockKey) -> NotionPageLink:
         """Get a page with a given key."""
         found_page_lock_row = self._storage.load(key)
         return NotionPageLink(page_id=found_page_lock_row.page_id)
+
+    def get_page_extra(self, key: NotionLockKey) -> NotionPageLinkExtra:
+        """Get a page with a given key."""
+        found_page_lock_row = self._storage.load(key)
+        notion_client = self._connection.get_notion_client()
+
+        page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        return NotionPageLinkExtra(page_id=found_page_lock_row.page_id, name=page_block.title)
 
     @staticmethod
     def storage_schema() -> JSONDictType:

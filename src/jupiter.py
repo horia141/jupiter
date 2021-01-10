@@ -102,8 +102,8 @@ from remote.notion.infra.connection import \
     MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
 from remote.notion.inbox_tasks import InboxTasksCollection
 from remote.notion.infra.pages_manager import PagesManager
+from remote.notion.projects_manager import NotionProjectsManager
 from remote.notion.smart_lists_manager import NotionSmartListsManager
-from remote.notion.projects import ProjectsCollection
 from remote.notion.recurring_tasks import RecurringTasksCollection
 from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
@@ -145,7 +145,6 @@ def main() -> None:
             SmartListsRepository(time_provider) as smart_lists_repository, \
             SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
-            ProjectsCollection(notion_connection) as projects_collection, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
             BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
@@ -153,6 +152,7 @@ def main() -> None:
             CollectionsManager(time_provider, notion_connection) as collections_manager:
         notion_vacations_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
+        notion_projects_manager = NotionProjectsManager(pages_manager)
         notion_smart_lists_manager = NotionSmartListsManager(
             time_provider, basic_validator, pages_manager, collections_manager)
 
@@ -161,7 +161,7 @@ def main() -> None:
         vacations_service = VacationsService(
             basic_validator, vacations_repository, notion_vacations_manager)
         projects_service = ProjectsService(
-            basic_validator, projects_repository, projects_collection)
+            basic_validator, projects_repository, notion_projects_manager)
         inbox_tasks_service = InboxTasksService(
             basic_validator, inbox_tasks_repository, inbox_tasks_collection)
         recurring_tasks_service = RecurringTasksService(
@@ -172,10 +172,10 @@ def main() -> None:
             notion_smart_lists_manager)
 
         workspaces_controller = WorkspacesController(
-            notion_connection, workspaces_service, vacations_service, smart_lists_service)
+            notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service)
         vacations_controller = VacationsController(vacations_service)
         projects_controller = ProjectsController(
-            workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+            projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         inbox_tasks_controller = InboxTasksController(
             projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         recurring_tasks_controller = RecurringTasksController(

@@ -116,7 +116,7 @@ class BigPlansController:
             raise ControllerInputValidationError("Expected at least one entity to remove")
 
         inbox_tasks_for_big_plan = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_big_plan_ref_ids=ref_ids)
+            filter_archived=False, filter_big_plan_ref_ids=ref_ids)
 
         for inbox_task in inbox_tasks_for_big_plan:
             LOGGER.info(f"Hard removing task {inbox_task.name} for plan")

@@ -170,12 +170,12 @@ class SmartListsService:
 
         for smart_list_item in \
                 self._smart_list_items_repository.find_all_smart_list_items(
-                        filter_smart_list_ref_ids=[smart_list_row.ref_id]):
+                        allow_archived=True, filter_smart_list_ref_ids=[smart_list_row.ref_id]):
             self._smart_list_items_repository.remove_smart_list_item(smart_list_item.ref_id)
 
         for smart_list_tag in \
                 self._smart_list_tags_repository.find_all_smart_list_tags(
-                        filter_smart_list_ref_ids=[smart_list_row.ref_id]):
+                        allow_archived=True, filter_smart_list_ref_ids=[smart_list_row.ref_id]):
             self._smart_list_tags_repository.remove_smart_list_tag(smart_list_tag.ref_id)
 
         LOGGER.info("Applied local changes")

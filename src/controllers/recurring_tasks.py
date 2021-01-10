@@ -236,7 +236,7 @@ class RecurringTasksController:
             raise ControllerInputValidationError("Expected at least one entity to remove")
 
         inbox_tasks_for_recurring_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_big_plan_ref_ids=ref_ids)
+            filter_archived=False, filter_big_plan_ref_ids=ref_ids)
 
         for inbox_task in inbox_tasks_for_recurring_tasks:
             LOGGER.info(f"Hard removing task {inbox_task.name} for recurring task")

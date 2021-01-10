@@ -26,6 +26,13 @@ class NotionPageLink:
 
 
 @dataclass()
+class NotionPageLinkExtra:
+    """A descriptor for a Notion page like in Windows."""
+    page_id: NotionId
+    name: str
+
+
+@dataclass()
 class NotionCollectionLink:
     """A descriptor for a Notion collection page."""
     page_id: NotionId

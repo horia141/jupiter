@@ -74,6 +74,9 @@ class SyncLocalAndNotionController:
             LOGGER.info("Recreating vacations structure")
             self._vacations_service.upsert_root_notion_structure(workspace_page)
 
+            LOGGER.info("Recreating projects structure")
+            self._projects_service.upsert_root_notion_structure(workspace_page)
+
             LOGGER.info("Recreating lists structure")
             self._smart_lists_service.upsert_root_notion_structure(workspace_page)
 
@@ -88,20 +91,20 @@ class SyncLocalAndNotionController:
 
         for project in self._projects_service.load_all_projects(filter_keys=filter_project_keys):
             if SyncTarget.STRUCTURE in sync_targets:
-                LOGGER.info(f"Recreating project {project.name}")
-                project_page = self._projects_service.get_project_notion_structure(project.ref_id)
+                LOGGER.info(f"Recreating project {project.name} structure")
+                project_page = self._projects_service.upsert_project_structure(project.ref_id)
                 LOGGER.info("Recreating inbox tasks")
-                self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page)
+                self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating recurring tasks")
-                self._recurring_tasks_service.upsert_notion_structure(project.ref_id, project_page)
+                self._recurring_tasks_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating big plans")
-                self._big_plans_service.upsert_notion_structure(project.ref_id, project_page)
+                self._big_plans_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
 
             inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
 
             if SyncTarget.PROJECTS in sync_targets:
                 LOGGER.info(f"Syncing project '{project.name}'")
-                self._projects_service.sync_projects(project.key, sync_prefer)
+                self._projects_service.sync_projects(project.ref_id, sync_prefer)
 
             if SyncTarget.BIG_PLANS in sync_targets:
                 LOGGER.info(f"Syncing big plans for '{project.name}'")

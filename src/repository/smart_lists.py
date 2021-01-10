@@ -7,6 +7,7 @@ from typing import Optional, Iterable, ClassVar, Final, Set, List
 import typing
 
 from models.basic import EntityId, SmartListKey, Tag, ModelValidationError
+from repository.common import RepositoryError
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
@@ -46,8 +47,13 @@ class SmartListsRepository:
 
     def create_smart_list(self, key: SmartListKey, name: str, archived: bool) -> SmartListRow:
         """Create a list."""
-        new_smart_list = SmartListRow(key=key, name=name, archived=archived)
-        return self._storage.create(new_smart_list)
+        smart_list_rows = self._storage.find_all(allow_archived=True, key=Eq(key))
+
+        if len(smart_list_rows) > 0:
+            raise RepositoryError(f"Smart list with key='{key}' already exists")
+
+        new_smart_list_row = SmartListRow(key=key, name=name, archived=archived)
+        return self._storage.create(new_smart_list_row)
 
     def archive_smart_list(self, ref_id: EntityId) -> SmartListRow:
         """Archive a list."""
