@@ -6,6 +6,7 @@ import typing
 
 from models import schedules
 from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey
+from remote.notion.inbox_tasks import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
 from service.smart_lists import SmartListsService
@@ -98,7 +99,8 @@ class SyncLocalAndNotionController:
                 LOGGER.info("Recreating recurring tasks")
                 self._recurring_tasks_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating big plans")
-                self._big_plans_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
+                self._big_plans_service.upsert_big_plans_collection_structure(
+                    project.ref_id, project_page.notion_page_link)
 
             inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
 
@@ -111,10 +113,12 @@ class SyncLocalAndNotionController:
                 all_big_plans = self._big_plans_service.big_plans_sync(
                     project.ref_id, drop_all_notion, inbox_collection_link, sync_even_if_not_modified,
                     filter_big_plan_ref_ids, sync_prefer)
-                self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
+                self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+                    project.ref_id,
+                    [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
             else:
                 all_big_plans = self._big_plans_service.load_all_big_plans(
-                    filter_archived=False, filter_ref_ids=filter_big_plan_ref_ids,
+                    allow_archived=True, filter_ref_ids=filter_big_plan_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
             big_plans_by_ref_id = {bp.ref_id: bp for bp in all_big_plans}
 

@@ -73,7 +73,7 @@ class SmartListsService:
         """Create a new smart list."""
         new_smart_list_row = self._smart_lists_repository.create_smart_list(key=key, name=name, archived=False)
         LOGGER.info("Applied local changes")
-        self._notion_manager.upsert_smart_list(new_smart_list_row.ref_id, name)
+        self._notion_manager.upsert_smart_list_collection(new_smart_list_row.ref_id, name)
         LOGGER.info("Applied remote changes")
 
         # Workaround due to bug in Notion client always assuming there's a set of values for multi_select fields.
@@ -91,7 +91,7 @@ class SmartListsService:
     def upsert_smart_list_structure(self, ref_id: EntityId) -> None:
         """Upsert the structure around a smart list."""
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id)
-        self._notion_manager.upsert_smart_list(ref_id, smart_list_row.name)
+        self._notion_manager.upsert_smart_list_collection(ref_id, smart_list_row.name)
 
     def archive_smart_list(self, ref_id: EntityId) -> SmartList:
         """Archive a smart list."""
@@ -110,7 +110,7 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         try:
-            self._notion_manager.hard_remove_smart_list(ref_id)
+            self._notion_manager.hard_remove_smart_list_collection(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
@@ -133,7 +133,7 @@ class SmartListsService:
         self._smart_lists_repository.update_smart_list(smart_list_row)
         LOGGER.info("Applied local changes")
 
-        self._notion_manager.upsert_smart_list(ref_id, name)
+        self._notion_manager.upsert_smart_list_collection(ref_id, name)
         LOGGER.info("Applied remote changes")
 
         return SmartList(
@@ -181,7 +181,7 @@ class SmartListsService:
         LOGGER.info("Applied local changes")
 
         try:
-            self._notion_manager.hard_remove_smart_list(ref_id)
+            self._notion_manager.hard_remove_smart_list_collection(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
             LOGGER.info("Skipping removal on Notion side because smart list was not found")
@@ -197,7 +197,7 @@ class SmartListsService:
         smart_list_row = self._smart_lists_repository.load_smart_list(ref_id, allow_archived=True)
 
         try:
-            self._notion_manager.hard_remove_smart_list(ref_id)
+            self._notion_manager.hard_remove_smart_list_collection(ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
             LOGGER.info("Skipping removal on Notion side because smart list was not found")
@@ -602,11 +602,11 @@ class SmartListsService:
         smart_list_row = self._smart_lists_repository.load_smart_list(smart_list_ref_id)
 
         try:
-            smart_list_notion_collection = self._notion_manager.load_smart_list(smart_list_ref_id)
+            smart_list_notion_collection = self._notion_manager.load_smart_list_collection(smart_list_ref_id)
 
             if sync_prefer == SyncPrefer.LOCAL:
                 smart_list_notion_collection.name = smart_list_row.name
-                self._notion_manager.save_smart_list(smart_list_notion_collection)
+                self._notion_manager.save_smart_list_collection(smart_list_notion_collection)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
                 smart_list_row.name = smart_list_notion_collection.name
@@ -616,7 +616,7 @@ class SmartListsService:
                 raise Exception(f"Invalid preference {sync_prefer}")
         except StructuredStorageError:
             LOGGER.info("Trying to recreate the smart list")
-            self._notion_manager.upsert_smart_list(smart_list_ref_id, smart_list_row.name)
+            self._notion_manager.upsert_smart_list_collection(smart_list_ref_id, smart_list_row.name)
 
         # Synchronise the tags here.
         all_smart_list_tags_rows = list(self._smart_list_tags_repository.find_all_smart_list_tags(

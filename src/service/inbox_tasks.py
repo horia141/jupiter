@@ -9,10 +9,10 @@ import remote.notion.common
 from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTaskStatus, Eisen, Difficulty, \
     SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp
 from remote.notion.common import NotionPageLink, NotionCollectionLink
-from remote.notion.inbox_tasks import InboxTasksCollection
-from repository.big_plans import BigPlan
+from remote.notion.inbox_tasks import InboxTasksCollection, InboxTaskBigPlanLabel
 from repository.inbox_tasks import InboxTasksRepository, InboxTask
 from repository.recurring_tasks import RecurringTask
+from service.big_plans import BigPlan
 from service.errors import ServiceValidationError
 from utils.time_field_action import TimeFieldAction
 
@@ -50,9 +50,9 @@ class InboxTasksService:
         return self._collection.get_inbox_tasks_structure(project_ref_id)
 
     def upsert_notion_big_plan_ref_options(
-            self, project_ref_id: EntityId, big_plans: Iterable[BigPlan]) -> None:
+            self, project_ref_id: EntityId, big_plan_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
         """Upsert the Notion-side structure for the 'big plan' field options."""
-        self._collection.upsert_inbox_tasks_big_plan_field_options(project_ref_id, big_plans)
+        self._collection.upsert_inbox_tasks_big_plan_field_options(project_ref_id, big_plan_labels)
 
     def create_inbox_task(
             self, project_ref_id: EntityId, name: str, big_plan_ref_id: Optional[EntityId],

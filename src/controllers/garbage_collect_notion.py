@@ -3,10 +3,9 @@ import logging
 from typing import Final, Optional, Iterable
 
 from models.basic import ProjectKey, SyncTarget
-from repository.big_plans import BigPlan
 from repository.inbox_tasks import InboxTask
 from repository.recurring_tasks import RecurringTask
-from service.big_plans import BigPlansService
+from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
@@ -89,7 +88,7 @@ class GarbageCollectNotionController:
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for big plans")
                     big_plans = self._big_plans_service.load_all_big_plans(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                        allow_archived=True, filter_project_ref_ids=[project.ref_id])
                     self._do_anti_entropy_for_big_plans(big_plans)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting big plans which were archived")

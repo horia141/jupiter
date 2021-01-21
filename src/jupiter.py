@@ -95,7 +95,7 @@ from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
 from models.basic import BasicValidator
-from remote.notion.big_plans import BigPlansCollection
+from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.connection import \
@@ -147,12 +147,12 @@ def main() -> None:
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
-            BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
         notion_vacations_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
         notion_projects_manager = NotionProjectsManager(pages_manager)
+        notion_big_plans_manager = NotionBigPlansManager(time_provider, basic_validator, collections_manager)
         notion_smart_lists_manager = NotionSmartListsManager(
             time_provider, basic_validator, pages_manager, collections_manager)
 
@@ -166,7 +166,8 @@ def main() -> None:
             basic_validator, inbox_tasks_repository, inbox_tasks_collection)
         recurring_tasks_service = RecurringTasksService(
             basic_validator, time_provider, recurring_tasks_repository, recurring_tasks_collection)
-        big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
+        big_plans_service = BigPlansService(
+            basic_validator, big_plans_repository, notion_big_plans_manager)
         smart_lists_service = SmartListsService(
             basic_validator, smart_lists_repository, smart_list_tags_repository, smart_list_items_repository,
             notion_smart_lists_manager)

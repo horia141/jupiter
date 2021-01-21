@@ -5,9 +5,9 @@ from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, BigPlanStatus, ADate
-from repository.big_plans import BigPlan
+from remote.notion.inbox_tasks import InboxTaskBigPlanLabel
 from repository.inbox_tasks import InboxTask
-from service.big_plans import BigPlansService
+from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
 
@@ -49,7 +49,9 @@ class BigPlansController:
         inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
         big_plan = self._big_plans_service.create_big_plan(project.ref_id, inbox_collection_link, name, due_date)
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[project.ref_id])
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
+        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+            project.ref_id,
+            [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
 
         return big_plan
 
@@ -67,7 +69,9 @@ class BigPlansController:
         LOGGER.info(f"Archived the big plan")
 
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(big_plan.project_ref_id, all_big_plans)
+        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+            big_plan.project_ref_id,
+            [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
         LOGGER.info(f"Updated the schema for the associated inbox")
 
         return big_plan
@@ -76,7 +80,9 @@ class BigPlansController:
         """Change the due date of a big plan."""
         big_plan = self._big_plans_service.set_big_plan_name(ref_id, name)
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(big_plan.project_ref_id, all_big_plans)
+        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+            big_plan.project_ref_id,
+            [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
 
         return big_plan
 
@@ -98,7 +104,7 @@ class BigPlansController:
             filter_project_ref_ids = [p.ref_id for p in projects]
 
         big_plans = self._big_plans_service.load_all_big_plans(
-            filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,
+            allow_archived=show_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
         inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_big_plan_ref_ids=(bp.ref_id for bp in big_plans))

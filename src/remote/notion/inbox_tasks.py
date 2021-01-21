@@ -18,7 +18,6 @@ from remote.notion.infra.client import NotionClient
 from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, format_name_for_option
 from remote.notion.infra.connection import NotionConnection
-from repository.big_plans import BigPlan
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -45,6 +44,13 @@ class InboxTaskRow(BasicRowType):
     recurring_task_type: Optional[str]
     recurring_task_gen_right_now: Optional[ADate]
     last_edited_time: Timestamp
+
+
+@dataclass()
+class InboxTaskBigPlanLabel:
+    """A value for an inbox task big plan label."""
+    notion_link_uuid: uuid.UUID
+    name: str
 
 
 class InboxTasksCollection:
@@ -899,13 +905,13 @@ class InboxTasksCollection:
         return self._collection.get_structure(project_ref_id)
 
     def upsert_inbox_tasks_big_plan_field_options(
-            self, project_ref_id: EntityId, big_plans: Iterable[BigPlan]) -> None:
+            self, project_ref_id: EntityId, big_plans_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
         """Upsert the Notion-side structure for the 'big plan' select field."""
         inbox_big_plan_options = [{
             "color": self._get_stable_color(str(bp.notion_link_uuid)),
             "id": str(bp.notion_link_uuid),
             "value": format_name_for_option(bp.name)
-        } for bp in big_plans]
+        } for bp in big_plans_labels]
 
         new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
         new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
