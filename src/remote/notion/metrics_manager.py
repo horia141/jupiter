@@ -259,7 +259,7 @@ class NotionMetricsManager:
         # pylint: disable=unused-argument
         notion_row.collection_time = self._basic_validator.adate_to_notion(row.collection_time)
         notion_row.value = row.value
-        notion_row.notes = row.notes if row.notes else ""
+        notion_row.title = row.notes if row.notes else ""
         notion_row.archived = row.archived
         notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
@@ -271,7 +271,7 @@ class NotionMetricsManager:
         return MetricNotionRow(
             collection_time=self._basic_validator.adate_from_notion(notion_row.collection_time),
             value=notion_row.value,
-            notes=notion_row.notes if typing.cast(str, notion_row.notes).strip() != "" else None,
+            notes=notion_row.title if typing.cast(str, notion_row.title).strip() != "" else None,
             archived=notion_row.archived,
             last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),
             ref_id=notion_row.ref_id,

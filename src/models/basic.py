@@ -211,6 +211,7 @@ class MetricUnit(enum.Enum):
     """The unit for a metric."""
     COUNT = "count"
     MONETARY_AMOUNT = "money"
+    WEIGHT = "weight"
 
     def for_notion(self) -> str:
         """A prettier version of the value for Notion."""
