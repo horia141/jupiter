@@ -223,6 +223,28 @@ class InboxTasksService:
 
         return inbox_task
 
+    def set_inbox_task_to_big_plan_link(
+            self, ref_id: EntityId, big_plan_ref_id: EntityId, big_plan_name: str) -> InboxTask:
+        """Change the parameters of the link between the big plan and the inbox task."""
+        # Apply changes locally
+        inbox_task = self._repository.load_inbox_task(ref_id, allow_archived=True)
+        if inbox_task.big_plan_ref_id != big_plan_ref_id:
+            raise ServiceValidationError(
+                f"Cannot reassociate a task which is not with the big plan '{inbox_task.name}'")
+
+        # Apply changes in Notion
+        try:
+            inbox_task_row = self._collection.load_inbox_task(inbox_task.project_ref_id, ref_id)
+            inbox_task_row.big_plan_ref_id = big_plan_ref_id
+            inbox_task_row.big_plan_name = remote.notion.common.format_name_for_option(big_plan_name)
+            self._collection.save_inbox_task(inbox_task.project_ref_id, inbox_task_row)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionEntityNotFound:
+            LOGGER.info(
+                f"Skipping updating link of ref_id='{inbox_task.ref_id}' because it could not be found")
+
+        return inbox_task
+
     def set_inbox_task_to_recurring_task_link(
             self, ref_id: EntityId, name: str, timeline: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
             actionable_date: ADate, due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:

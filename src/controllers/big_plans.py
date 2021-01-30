@@ -78,11 +78,19 @@ class BigPlansController:
 
     def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
         """Change the due date of a big plan."""
-        big_plan = self._big_plans_service.set_big_plan_name(ref_id, name)
+        big_plan = self._big_plans_service.load_big_plan_by_id(ref_id)
+        inbox_collection_link = self._inbox_tasks_service.get_notion_structure(big_plan.project_ref_id)
+        big_plan = self._big_plans_service.set_big_plan_name(ref_id, name, inbox_collection_link)
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
         self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
             big_plan.project_ref_id,
             [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
+        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
+            filter_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id])
+
+        for inbox_task in all_inbox_tasks:
+            LOGGER.info(f'Updating the associated inbox task "{inbox_task.name}"')
+            self._inbox_tasks_service.set_inbox_task_to_big_plan_link(inbox_task.ref_id, big_plan.ref_id, big_plan.name)
 
         return big_plan
 

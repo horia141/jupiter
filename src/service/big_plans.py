@@ -154,7 +154,7 @@ class BigPlansService:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
-    def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
+    def set_big_plan_name(self, ref_id: EntityId, name: str, inbox_collection_link: NotionCollectionLink) -> BigPlan:
         """Change the name of a big plan."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -168,7 +168,8 @@ class BigPlansService:
 
         big_plan_notion_row = self._notion_manager.load_big_plan(big_plan_row.project_ref_id, big_plan_row.ref_id)
         big_plan_notion_row.name = name
-        self._notion_manager.save_big_plan(big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row)
+        self._notion_manager.save_big_plan(
+            big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row, inbox_collection_link)
         LOGGER.info("Applied Notion changes")
 
         return BigPlan(

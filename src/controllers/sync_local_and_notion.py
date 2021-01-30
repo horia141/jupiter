@@ -5,10 +5,11 @@ from typing import Final, Optional, Iterable
 import typing
 
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey
 from remote.notion.inbox_tasks import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
+from service.metrics import MetricsService
 from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
@@ -32,13 +33,14 @@ class SyncLocalAndNotionController:
     _recurring_tasks_service: Final[RecurringTasksService]
     _big_plans_service: Final[BigPlansService]
     _smart_lists_service: Final[SmartListsService]
+    _metrics_service: Final[MetricsService]
 
     def __init__(
             self, time_provider: TimeProvider, global_properties: GlobalProperties,
             workspaces_service: WorkspacesService, vacations_service: VacationsService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
-            smart_lists_service: SmartListsService) -> None:
+            smart_lists_service: SmartListsService, metrics_service: MetricsService) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._global_properties = global_properties
@@ -49,6 +51,7 @@ class SyncLocalAndNotionController:
         self._recurring_tasks_service = recurring_tasks_service
         self._big_plans_service = big_plans_service
         self._smart_lists_service = smart_lists_service
+        self._metrics_service = metrics_service
 
     def sync(
             self,
@@ -62,6 +65,8 @@ class SyncLocalAndNotionController:
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             filter_smart_list_keys: Optional[Iterable[SmartListKey]],
             filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
+            filter_metric_keys: Optional[Iterable[MetricKey]],
+            filter_metric_entry_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
         filter_recurring_task_ref_ids_set = \
@@ -80,6 +85,9 @@ class SyncLocalAndNotionController:
 
             LOGGER.info("Recreating lists structure")
             self._smart_lists_service.upsert_root_notion_structure(workspace_page)
+
+            LOGGER.info("Recreating metrics structure")
+            self._metrics_service.upsert_root_notion_structure(workspace_page)
 
         if SyncTarget.WORKSPACE in sync_targets:
             LOGGER.info("Syncing the workspace")
@@ -211,8 +219,20 @@ class SyncLocalAndNotionController:
                 self._smart_lists_service.upsert_smart_list_structure(smart_list.ref_id)
 
             if SyncTarget.SMART_LISTS in sync_targets:
-                LOGGER.info(f"Syncing small list '{smart_list.name}'")
+                LOGGER.info(f"Syncing smart list '{smart_list.name}'")
                 self._smart_lists_service.sync_smart_list_and_smart_list_items(
                     smart_list_ref_id=smart_list.ref_id, drop_all_notion_side=drop_all_notion,
                     sync_even_if_not_modified=sync_even_if_not_modified,
                     filter_smart_list_item_ref_ids=filter_smart_list_item_ref_ids, sync_prefer=sync_prefer)
+
+        for metric in self._metrics_service.load_all_metrics(filter_keys=filter_metric_keys):
+            if SyncTarget.STRUCTURE in sync_targets:
+                LOGGER.info(f"Recreating metric '{metric.name}'")
+                self._metrics_service.upsert_metric_structure(metric.ref_id)
+
+            if SyncTarget.METRICS in sync_targets:
+                LOGGER.info(f"Syncing metric '{metric.name}'")
+                self._metrics_service.sync_metric_and_metric_entries(
+                    metric_ref_id=metric.ref_id, drop_all_notion_side=drop_all_notion,
+                    sync_even_if_not_modified=sync_even_if_not_modified,
+                    filter_metric_entry_ref_ids=filter_metric_entry_ref_ids, sync_prefer=sync_prefer)

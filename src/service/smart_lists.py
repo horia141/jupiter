@@ -155,7 +155,7 @@ class SmartListsService:
             self, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[SmartListKey]] = None) -> Iterable[SmartList]:
-        """Retrieve all the smart list items."""
+        """Retrieve all the smart lists."""
         smart_list_rows = self._smart_lists_repository.find_all_smart_lists(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids, filter_keys=filter_keys)
 
@@ -529,7 +529,7 @@ class SmartListsService:
 
     def load_all_smart_list_items_not_notion_gced(self, smart_list_ref_id: EntityId) -> Iterable[SmartListItem]:
         """Retrieve all smart list items which haven't been gced on Notion side."""
-        allowed_ref_ids = self._notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list_ref_id)
+        allowed_ref_ids = set(self._notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list_ref_id))
         smart_list_item_rows = self._smart_list_items_repository.find_all_smart_list_items(
             allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id])
         smart_list_tag_rows = {sltr.ref_id: sltr for sltr in self._smart_list_tags_repository.find_all_smart_list_tags(
