@@ -8,6 +8,7 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import Timestamp, EntityId, BasicValidator, ADate
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
 from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from remote.notion.infra.pages_manager import PagesManager
 from utils.storage import JSONDictType
@@ -64,6 +65,15 @@ class NotionMetricsManager:
             "type": "last_edited_time"
         },
     }
+
+    _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
+        NotionFieldProps("collection-time", NotionFieldShow.SHOW),
+        NotionFieldProps("value", NotionFieldShow.SHOW),
+        NotionFieldProps("title", NotionFieldShow.SHOW),
+        NotionFieldProps("archived", NotionFieldShow.SHOW),
+        NotionFieldProps("ref-id", NotionFieldShow.SHOW),
+        NotionFieldProps("last-edited-time", NotionFieldShow.HIDE),
+    ]
 
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "All",
@@ -146,6 +156,7 @@ class NotionMetricsManager:
             parent_page=root_page,
             name=name,
             schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "database_view_id": self._DATABASE_VIEW_SCHEMA
             })

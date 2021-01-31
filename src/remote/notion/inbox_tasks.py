@@ -14,7 +14,7 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, ADate, \
     BasicValidator, Timestamp
 from remote.notion import common
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow, NotionCollectionSchemaProperties
 from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, format_name_for_option
 from remote.notion.infra.connection import NotionConnection
@@ -255,6 +255,26 @@ class InboxTasksCollection:
             "type": "last_edited_time"
         },
     }
+
+    _SCHEMA_PROPERTIES = [
+        NotionFieldProps(name="title", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="status", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="eisen", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="difficulty", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="actionable-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="archived", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="ref-id", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="big-plan-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="bigplan2", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="recurring-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="recurring-task-type", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="recurring-task-gen-right-now", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="last-edited-time", show=NotionFieldShow.HIDE)
+    ]
 
     _KANBAN_FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
@@ -995,6 +1015,11 @@ class InboxTasksCollection:
     def get_notion_schema() -> JSONDictType:
         """Get the Notion schema for the collection."""
         return InboxTasksCollection._SCHEMA
+
+    @staticmethod
+    def get_notion_schema_properties() -> NotionCollectionSchemaProperties:
+        """Get the Notion schema field order."""
+        return InboxTasksCollection._SCHEMA_PROPERTIES
 
     @staticmethod
     def get_view_schemas() -> Dict[str, JSONDictType]:

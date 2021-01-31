@@ -12,7 +12,7 @@ from notion.collection import CollectionRowBlock
 from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, Timestamp, \
     BasicValidator, ADate
 from remote.notion import common
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionFieldShow, NotionFieldProps, NotionCollectionSchemaProperties
 from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
 from remote.notion.infra.connection import NotionConnection
@@ -213,6 +213,27 @@ class RecurringTasksCollection:
             "type": "text"
         }
     }
+
+    _SCHEMA_PROPERTIES = [
+        NotionFieldProps(name="title", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="period", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="the-type", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="eisen", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="difficulty", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="actionable-from-month", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="actionable-from-day", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-at-month", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-at-day", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-at-time", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="skip-rule", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="start-at-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="end-at-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="suspended", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="must-do", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="archived", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="ref-id", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="last-edited-time", show=NotionFieldShow.SHOW)
+    ]
 
     _KANBAN_ALL_VIEW_SCHEMA: JSONDictType = {
         "name": "Kanban",
@@ -522,6 +543,11 @@ class RecurringTasksCollection:
     def get_notion_schema() -> JSONDictType:
         """Get the Notion schema for the collection."""
         return RecurringTasksCollection._SCHEMA
+
+    @staticmethod
+    def get_notion_schema_properties() -> NotionCollectionSchemaProperties:
+        """Get the Notion schema field order."""
+        return RecurringTasksCollection._SCHEMA_PROPERTIES
 
     @staticmethod
     def get_view_schemas() -> Dict[str, JSONDictType]:

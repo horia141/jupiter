@@ -8,7 +8,7 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import BasicValidator, BigPlanStatus, EntityId, ADate, Timestamp
 from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, format_name_for_option
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
@@ -103,6 +103,15 @@ class NotionBigPlansManager:
             "type": "text"
         }
     }
+
+    _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
+        NotionFieldProps("title", NotionFieldShow.SHOW),
+        NotionFieldProps("status", NotionFieldShow.SHOW),
+        NotionFieldProps("due-date", NotionFieldShow.SHOW),
+        NotionFieldProps("archived", NotionFieldShow.SHOW),
+        NotionFieldProps("ref-id", NotionFieldShow.SHOW),
+        NotionFieldProps("last-edited-time", NotionFieldShow.HIDE),
+    ]
 
     _FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
@@ -227,6 +236,7 @@ class NotionBigPlansManager:
             parent_page=parent_page_link,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "kanban_all_view_id": NotionBigPlansManager._KANBAN_ALL_VIEW_SCHEMA,
                 "database_view_id": NotionBigPlansManager._DATABASE_VIEW_SCHEMA

@@ -1,8 +1,8 @@
 """A client for tailored interactions with Notion."""
-
+import enum
 import logging
 from dataclasses import dataclass
-from typing import Final, Optional, Iterable
+from typing import Final, Optional, Iterable, List
 
 from notion.block import PageBlock, CollectionViewPageBlock, Block, CollectionViewBlock
 from notion.client import NotionClient as BaseNotionClient
@@ -25,6 +25,25 @@ class NotionClientConfig:
     """Configuration for the notion client."""
     space_id: WorkspaceSpaceId
     token: WorkspaceToken
+
+
+@enum.unique
+class NotionFieldShow(enum.Enum):
+    """How to show a field in the details view in Notion."""
+    SHOW = "show"
+    HIDE = "hide"
+    HIDE_IF_EMPTY = "hide_if_empty"
+
+
+@dataclass()
+class NotionFieldProps:
+    """Properties of a field in a schema."""
+
+    name: str
+    show: NotionFieldShow
+
+
+NotionCollectionSchemaProperties = List[NotionFieldProps]
 
 
 class NotionClient:
@@ -158,6 +177,31 @@ class NotionClient:
             .get_collection_view(view_id, collection=collection) \
             .build_query() \
             .execute()
+
+    def assign_collection_schema_properties(
+            self, collection: Collection, schema_properties: NotionCollectionSchemaProperties) -> None:
+        """Assign a particular field order to the collection."""
+        self._client.submit_transaction([{
+            "table": "collection",
+            "id": collection.id,
+            "path": ["format"],
+            "command": "update",
+            "args": {
+                "collection_page_properties": [
+                    {"property": fo.name, "visible": False} for fo in schema_properties]
+            }
+        }])
+
+        self._client.submit_transaction([{
+            "table": "collection",
+            "id": collection.id,
+            "path": ["format"],
+            "command": "update",
+            "args": {
+                "property_visibility": [
+                    {"property": fo.name, "visibility": fo.show.value} for fo in schema_properties]
+            }
+        }])
 
     # Block operations.
 

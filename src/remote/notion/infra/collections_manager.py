@@ -13,7 +13,7 @@ import typing
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra, NotionCollectionTagLink
 from remote.notion.infra.connection import NotionConnection
@@ -104,8 +104,14 @@ class CollectionsManager:
 
     def upsert_collection(
             self, key: NotionLockKey, parent_page: NotionPageLink, name: str, schema: JSONDictType,
+            schema_properties: NotionCollectionSchemaProperties,
             view_schemas: Dict[str, JSONDictType]) -> NotionCollectionLink:
         """Create the Notion-side structure for this collection."""
+        simdif_fields = set(schema.keys()).symmetric_difference(m.name for m in schema_properties)
+
+        if len(simdif_fields) > 0:
+            raise Exception(f"Schema params are off: {','.join(simdif_fields)}")
+
         lock = self._collections_storage.load_optional(key)
 
         client = self._connection.get_notion_client()
@@ -146,6 +152,11 @@ class CollectionsManager:
         page.title = name
         collection.name = name
         LOGGER.info("Changed the name")
+
+        # Arrange the fields.
+
+        client.assign_collection_schema_properties(collection, schema_properties)
+        LOGGER.info("Changed the field order")
 
         # Save local locks.
         new_lock = _CollectionLockRow(

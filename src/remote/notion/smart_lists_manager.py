@@ -8,6 +8,7 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import Timestamp, EntityId, BasicValidator, Tag
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from remote.notion.infra.pages_manager import PagesManager
 from utils.storage import JSONDictType
@@ -77,6 +78,16 @@ class NotionSmartListsManager:
             "type": "last_edited_time"
         },
     }
+
+    _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
+        NotionFieldProps("title", NotionFieldShow.SHOW),
+        NotionFieldProps("is-done", NotionFieldShow.SHOW),
+        NotionFieldProps("tags", NotionFieldShow.SHOW),
+        NotionFieldProps("url", NotionFieldShow.SHOW),
+        NotionFieldProps("archived", NotionFieldShow.SHOW),
+        NotionFieldProps("ref-id", NotionFieldShow.SHOW),
+        NotionFieldProps("last-edited-time", NotionFieldShow.HIDE),
+    ]
 
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "All",
@@ -268,6 +279,7 @@ class NotionSmartListsManager:
             parent_page=root_page,
             name=name,
             schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "database_view_id": self._DATABASE_VIEW_SCHEMA,
                 "database_done_view_id": self._DATABASE_VIEW_DONE_SCHEMA,

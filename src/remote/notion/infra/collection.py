@@ -7,7 +7,7 @@ from typing import TypeVar, Generic, Final, Dict, Any, Protocol, List, Optional,
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, CollectionError, \
     CollectionEntityNotFound
 from remote.notion.infra.connection import NotionConnection
@@ -39,6 +39,11 @@ class NotionCollectionProtocol(Protocol[NotionCollectionRowType]):
     @staticmethod
     def get_notion_schema() -> JSONDictType:
         """Get the Notion schema for the collection."""
+        ...
+
+    @staticmethod
+    def get_notion_schema_properties() -> NotionCollectionSchemaProperties:
+        """Get the Notion schema properties."""
         ...
 
     @staticmethod
@@ -103,6 +108,13 @@ class NotionCollection(Generic[NotionCollectionRowType]):
 
     def upsert_structure(self, discriminant: str, parent_page: NotionPageLink) -> NotionCollectionLink:
         """Create the Notion-side structure for this collection."""
+        schema = self._protocol.get_notion_schema()
+        schema_properties = self._protocol.get_notion_schema_properties()
+        simdif_fields = set(schema.keys()).symmetric_difference(m.name for m in schema_properties)
+
+        if len(simdif_fields) > 0:
+            raise Exception(f"Schema params are off: {','.join(simdif_fields)}")
+
         locks_next_idx, locks = self._structured_storage.load()
         lock = self._find_lock(locks, discriminant)
 
@@ -116,14 +128,13 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         else:
             page = client.create_collection_page(parent_page=client.get_regular_page(parent_page.page_id))
             LOGGER.info(f"Created the page as {page.id}")
-            collection = client.create_collection(page, self._protocol.get_notion_schema())
+            collection = client.create_collection(page, schema)
             LOGGER.info(f"Created the collection as {collection}")
 
         # Change the schema.
 
         old_collection_schema = collection.get("schema")
-        collection_schema = self._protocol.merge_notion_schemas(
-            old_collection_schema, self._protocol.get_notion_schema())
+        collection_schema = self._protocol.merge_notion_schemas(old_collection_schema, schema)
         collection.set("schema", collection_schema)
         LOGGER.info("Applied the most current schema to the collection")
 
@@ -145,6 +156,10 @@ class NotionCollection(Generic[NotionCollectionRowType]):
         page.title = self._protocol.get_page_name()
         collection.name = self._protocol.get_page_name()
         LOGGER.info("Changed the name")
+
+        # Arrange the fields.
+        client.assign_collection_schema_properties(collection, schema_properties)
+        LOGGER.info("Changed the field order")
 
         # Save local locks.
         new_lock = NotionCollectionLock(
