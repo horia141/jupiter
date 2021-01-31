@@ -25,6 +25,8 @@ As a quick reference, here is the list of the more important concepts:
   something like "Plan a family vacation", or "Get a talk accepted to a conference".
 * _Smart list_: a list of things! It can record books to read, visited restaurants,
   movies to watch, etc.
+* _Metric_: a measure of the evolution in time of some aspect of your life. Think
+  weight, days gone to the gym, or marathons ran!
 
 The rest of the document will cover each of these in greater detail.
 

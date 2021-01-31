@@ -1,7 +1,7 @@
 # Local Storage
 
 Local storage is the name given to what is essentially the _master_ version of the data Jupiter manages - all the
-inbox tasks, the big plans, the recurring tasks, stats about them, links to Notion etc.
+inbox tasks, the big plans, the recurring tasks, the smart lists, metrics, stats about them, links to Notion etc.
 
 It is managed by the [Jupiter CLI](jupiter-cli.md).
 

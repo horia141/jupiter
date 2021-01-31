@@ -5,7 +5,6 @@ be stable and fast, and have sufficient supporting infrastructure (website, docs
 
 New features:
 
-* Support metrics
 * Support a journal
 * Support habits as separated from chores
 * Support a Rolodex
