@@ -66,7 +66,7 @@ class SyncLocalAndNotion(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         sync_targets = [self._basic_validator.sync_target_validate_and_clean(st) for st in args.sync_targets]\
-            if len(args.sync_targets) > 0 else list(st for st in SyncTarget)
+            if len(args.sync_targets) > 0 else list(st for st in SyncTarget if st is not SyncTarget.STRUCTURE)
         vacation_ref_ids = [self._basic_validator.entity_id_validate_and_clean(v) for v in args.vacation_ref_ids] \
             if len(args.vacation_ref_ids) > 0 else None
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys]\

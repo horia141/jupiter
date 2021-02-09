@@ -98,18 +98,7 @@ class BigPlansService:
             ref_id=new_big_plan_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
-        return BigPlan(
-            ref_id=new_big_plan_row.ref_id,
-            project_ref_id=new_big_plan_row.project_ref_id,
-            archived=new_big_plan_row.archived,
-            name=new_big_plan_row.name,
-            status=new_big_plan_row.status,
-            due_date=new_big_plan_row.due_date,
-            notion_link_uuid=new_big_plan_row.notion_link_uuid,
-            created_time=new_big_plan_row.created_time,
-            accepted_time=new_big_plan_row.accepted_time,
-            working_time=new_big_plan_row.working_time,
-            completed_time=new_big_plan_row.completed_time)
+        return self._row_to_entity(new_big_plan_row)
 
     def archive_big_plan(self, ref_id: EntityId) -> BigPlan:
         """Archive a big plan."""
@@ -121,18 +110,7 @@ class BigPlansService:
         except CollectionEntityNotFound:
             LOGGER.info("Skipping archival of Notion big plan because it could not be found")
 
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def archive_done_big_plans(self, filter_project_ref_id: Optional[Iterable[EntityId]] = None) -> None:
         """Archive the done big plans."""
@@ -172,18 +150,7 @@ class BigPlansService:
             big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row, inbox_collection_link)
         LOGGER.info("Applied Notion changes")
 
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def set_big_plan_status(
             self, ref_id: EntityId, status: BigPlanStatus) -> BigPlan:
@@ -212,18 +179,7 @@ class BigPlansService:
         self._notion_manager.save_big_plan(big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def set_big_plan_due_date(self, ref_id: EntityId, due_date: Optional[ADate]) -> BigPlan:
         """Change the due date of a big plan."""
@@ -237,18 +193,7 @@ class BigPlansService:
         self._notion_manager.save_big_plan(big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def hard_remove_big_plan(self, ref_id: EntityId) -> BigPlan:
         """Hard remove an big plan."""
@@ -261,18 +206,7 @@ class BigPlansService:
         except CollectionEntityNotFound:
             LOGGER.info("Skipping hard removal on Notion side since big plan could not be found")
 
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def remove_big_plan_on_notion_side(self, ref_id: EntityId) -> BigPlan:
         """Remove entries for a big plan on Notion-side."""
@@ -283,18 +217,7 @@ class BigPlansService:
         except CollectionEntityNotFound:
             LOGGER.info("Skipping removal on Notion side because big plan was not found")
 
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def load_all_big_plans(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -303,18 +226,7 @@ class BigPlansService:
         big_plan_rows = self._repository.find_all_big_plans(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
-        return [BigPlan(
-            ref_id=bp.ref_id,
-            project_ref_id=bp.project_ref_id,
-            archived=bp.archived,
-            name=bp.name,
-            status=bp.status,
-            due_date=bp.due_date,
-            notion_link_uuid=bp.notion_link_uuid,
-            created_time=bp.created_time,
-            accepted_time=bp.accepted_time,
-            working_time=bp.working_time,
-            completed_time=bp.completed_time) for bp in big_plan_rows]
+        return [self._row_to_entity(bp) for bp in big_plan_rows]
 
     def load_all_recurring_tasks_not_notion_gced(self, project_ref_ids: EntityId) -> Iterable[BigPlan]:
         """Retrieve all big plans which have not been gc-ed on Notion side."""
@@ -323,34 +235,12 @@ class BigPlansService:
             [it for it in self._repository.find_all_big_plans(
                 allow_archived=True, filter_project_ref_ids=[project_ref_ids])
              if it.ref_id in allowed_ref_ids]
-        return [BigPlan(
-            ref_id=bp.ref_id,
-            project_ref_id=bp.project_ref_id,
-            archived=bp.archived,
-            name=bp.name,
-            status=bp.status,
-            due_date=bp.due_date,
-            notion_link_uuid=bp.notion_link_uuid,
-            created_time=bp.created_time,
-            accepted_time=bp.accepted_time,
-            working_time=bp.working_time,
-            completed_time=bp.completed_time) for bp in big_plan_rows]
+        return [self._row_to_entity(bp) for bp in big_plan_rows]
 
     def load_big_plan_by_id(self, ref_id: EntityId) -> BigPlan:
         """Retrieve a big plan by id."""
         big_plan_row = self._repository.load_big_plan(ref_id)
-        return BigPlan(
-            ref_id=big_plan_row.ref_id,
-            project_ref_id=big_plan_row.project_ref_id,
-            archived=big_plan_row.archived,
-            name=big_plan_row.name,
-            status=big_plan_row.status,
-            due_date=big_plan_row.due_date,
-            notion_link_uuid=big_plan_row.notion_link_uuid,
-            created_time=big_plan_row.created_time,
-            accepted_time=big_plan_row.accepted_time,
-            working_time=big_plan_row.working_time,
-            completed_time=big_plan_row.completed_time)
+        return self._row_to_entity(big_plan_row)
 
     def big_plans_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
@@ -393,7 +283,7 @@ class BigPlansService:
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
 
-                new_big_plan = self._repository.create_big_plan(
+                new_big_plan_row = self._repository.create_big_plan(
                     project_ref_id=project_ref_id,
                     name=big_plan_name,
                     archived=big_plan_notion_row.archived,
@@ -403,26 +293,26 @@ class BigPlansService:
                 LOGGER.info(f"Found new big plan from Notion {big_plan_notion_row.name}")
 
                 self._notion_manager.link_local_and_notion_entries(
-                    project_ref_id, new_big_plan.ref_id, big_plan_notion_row.notion_id)
+                    project_ref_id, new_big_plan_row.ref_id, big_plan_notion_row.notion_id)
                 LOGGER.info(f"Linked the new big plan with local entries")
 
-                big_plan_notion_row.ref_id = new_big_plan.ref_id
-                big_plan_notion_row.status = new_big_plan.status.for_notion()
+                big_plan_notion_row.ref_id = new_big_plan_row.ref_id
+                big_plan_notion_row.status = new_big_plan_row.status.for_notion()
                 self._notion_manager.save_big_plan(
                     project_ref_id, big_plan_notion_row.ref_id, big_plan_notion_row, inbox_collection_link)
                 LOGGER.info(f"Applies changes on Notion side too as {big_plan_notion_row}")
 
-                all_big_plans_set[big_plan_notion_row.ref_id] = new_big_plan
+                all_big_plans_set[big_plan_notion_row.ref_id] = new_big_plan_row
                 all_big_plans_rows_set[big_plan_notion_row.ref_id] = big_plan_notion_row
             elif big_plan_notion_row.ref_id in all_big_plans_set and \
                     big_plan_notion_row.notion_id in all_big_plans_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
-                big_plan = all_big_plans_set[EntityId(big_plan_notion_row.ref_id)]
+                big_plan_row = all_big_plans_set[EntityId(big_plan_notion_row.ref_id)]
                 all_big_plans_rows_set[EntityId(big_plan_notion_row.ref_id)] = big_plan_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified \
-                            and big_plan_notion_row.last_edited_time <= big_plan.last_modified_time:
+                            and big_plan_notion_row.last_edited_time <= big_plan_row.last_modified_time:
                         LOGGER.info(f"Skipping {big_plan_notion_row.name} because it was not modified")
                         continue
 
@@ -435,50 +325,50 @@ class BigPlansService:
                         raise ServiceValidationError("Invalid inputs") from error
 
                     archived_time_action = \
-                        TimeFieldAction.SET if not big_plan.archived and big_plan_notion_row.archived else \
-                        TimeFieldAction.CLEAR if big_plan.archived and not big_plan_notion_row.archived else \
+                        TimeFieldAction.SET if not big_plan_row.archived and big_plan_notion_row.archived else \
+                        TimeFieldAction.CLEAR if big_plan_row.archived and not big_plan_notion_row.archived else \
                         TimeFieldAction.DO_NOTHING
                     accepted_time_action = \
                         TimeFieldAction.SET if \
-                            (not big_plan.status.is_accepted_or_more and big_plan_status.is_accepted_or_more) else \
+                            (not big_plan_row.status.is_accepted_or_more and big_plan_status.is_accepted_or_more) else \
                         TimeFieldAction.CLEAR if \
-                            (big_plan.status.is_accepted_or_more and not big_plan_status.is_accepted_or_more) else \
+                            (big_plan_row.status.is_accepted_or_more and not big_plan_status.is_accepted_or_more) else \
                         TimeFieldAction.DO_NOTHING
                     working_time_action = \
                         TimeFieldAction.SET if \
-                            (not big_plan.status.is_working_or_more and big_plan_status.is_working_or_more) else \
+                            (not big_plan_row.status.is_working_or_more and big_plan_status.is_working_or_more) else \
                         TimeFieldAction.CLEAR if \
-                            (big_plan.status.is_working_or_more and not big_plan_status.is_working_or_more) else \
+                            (big_plan_row.status.is_working_or_more and not big_plan_status.is_working_or_more) else \
                         TimeFieldAction.DO_NOTHING
                     completed_time_action = \
                         TimeFieldAction.SET if \
-                            (not big_plan.status.is_completed and big_plan_status.is_completed) else \
+                            (not big_plan_row.status.is_completed and big_plan_status.is_completed) else \
                         TimeFieldAction.CLEAR if \
-                            (big_plan.status.is_completed and not big_plan_status.is_completed) else \
+                            (big_plan_row.status.is_completed and not big_plan_status.is_completed) else \
                         TimeFieldAction.DO_NOTHING
-                    big_plan.name = big_plan_name
-                    big_plan.archived = big_plan_notion_row.archived
-                    big_plan.status = big_plan_status
-                    big_plan.due_date = big_plan.due_date
+                    big_plan_row.name = big_plan_name
+                    big_plan_row.archived = big_plan_notion_row.archived
+                    big_plan_row.status = big_plan_status
+                    big_plan_row.due_date = big_plan_row.due_date
                     self._repository.update_big_plan(
-                        big_plan, archived_time_action=archived_time_action,
+                        big_plan_row, archived_time_action=archived_time_action,
                         accepted_time_action=accepted_time_action, working_time_action=working_time_action,
                         completed_time_action=completed_time_action)
                     LOGGER.info(f"Changed big plan with id={big_plan_notion_row.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
                     if not sync_even_if_not_modified and\
-                            big_plan.last_modified_time <= big_plan_notion_row.last_edited_time:
-                        LOGGER.info(f"Skipping {big_plan.name} because it was not modified")
+                            big_plan_row.last_modified_time <= big_plan_notion_row.last_edited_time:
+                        LOGGER.info(f"Skipping {big_plan_row.name} because it was not modified")
                         continue
 
-                    big_plan_notion_row.name = big_plan.name
-                    big_plan_notion_row.archived = big_plan.archived
-                    big_plan_notion_row.status = big_plan.status.for_notion()
-                    big_plan_notion_row.due_date = big_plan.due_date
-                    big_plan_notion_row.ref_id = big_plan.ref_id
+                    big_plan_notion_row.name = big_plan_row.name
+                    big_plan_notion_row.archived = big_plan_row.archived
+                    big_plan_notion_row.status = big_plan_row.status.for_notion()
+                    big_plan_notion_row.due_date = big_plan_row.due_date
+                    big_plan_notion_row.ref_id = big_plan_row.ref_id
                     self._notion_manager.save_big_plan(
-                        project_ref_id, big_plan.ref_id, big_plan_notion_row, inbox_collection_link)
+                        project_ref_id, big_plan_row.ref_id, big_plan_notion_row, inbox_collection_link)
                     LOGGER.info(f"Changed big plan with id={big_plan_notion_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -496,32 +386,37 @@ class BigPlansService:
         # Now, go over each local big plan, and add it to Notion if it doesn't
         # exist there!
 
-        for big_plan in all_big_plans_set.values():
+        for big_plan_row in all_big_plans_set.values():
             # We've already processed this thing above
-            if big_plan.ref_id in all_big_plans_rows_set:
+            if big_plan_row.ref_id in all_big_plans_rows_set:
                 continue
-            if big_plan.archived:
+            if big_plan_row.archived:
                 continue
 
             self._notion_manager.upsert_big_plan(
                 project_ref_id=project_ref_id,
                 inbox_collection_link=inbox_collection_link,
-                name=big_plan.name,
-                archived=big_plan.archived,
-                status=big_plan.status.for_notion(),
-                due_date=big_plan.due_date,
-                ref_id=big_plan.ref_id)
-            LOGGER.info(f'Created Notion task for {big_plan.name}')
+                name=big_plan_row.name,
+                archived=big_plan_row.archived,
+                status=big_plan_row.status.for_notion(),
+                due_date=big_plan_row.due_date,
+                ref_id=big_plan_row.ref_id)
+            LOGGER.info(f'Created Notion task for {big_plan_row.name}')
 
-        return [BigPlan(
-            ref_id=bp.ref_id,
-            project_ref_id=bp.project_ref_id,
-            archived=bp.archived,
-            name=bp.name,
-            status=bp.status,
-            due_date=bp.due_date,
-            notion_link_uuid=bp.notion_link_uuid,
-            created_time=bp.created_time,
-            accepted_time=bp.accepted_time,
-            working_time=bp.working_time,
-            completed_time=bp.completed_time) for bp in all_big_plans_set.values()]
+        return [self._row_to_entity(bp)
+                for bp in all_big_plans_set.values()]
+
+    @staticmethod
+    def _row_to_entity(row: BigPlanRow) -> BigPlan:
+        return BigPlan(
+            ref_id=row.ref_id,
+            project_ref_id=row.project_ref_id,
+            archived=row.archived,
+            name=row.name,
+            status=row.status,
+            due_date=row.due_date,
+            notion_link_uuid=row.notion_link_uuid,
+            created_time=row.created_time,
+            accepted_time=row.accepted_time,
+            working_time=row.working_time,
+            completed_time=row.completed_time)

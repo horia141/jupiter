@@ -15,11 +15,10 @@ from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskSta
 from models.schedules import Schedule
 from repository.inbox_tasks import InboxTask
 from repository.projects import ProjectRow
-from repository.recurring_tasks import RecurringTask
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
-from service.recurring_tasks import RecurringTasksService
+from service.recurring_tasks import RecurringTasksService, RecurringTask
 from utils.global_properties import GlobalProperties
 
 
@@ -184,7 +183,7 @@ class ReportProgressController:
             filter_project_ref_ids=[p.ref_id for p in projects])
         big_plans_by_ref_id: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
         all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-            filter_archived=False, filter_ref_ids=filter_recurring_task_ref_ids,
+            allow_archived=True, filter_ref_ids=filter_recurring_task_ref_ids,
             filter_project_ref_ids=[p.ref_id for p in projects])
         all_recurring_tasks_by_ref_id: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
 

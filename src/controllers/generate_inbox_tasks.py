@@ -5,10 +5,9 @@ from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 from models import schedules
 from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp
 from repository.inbox_tasks import InboxTask
-from repository.recurring_tasks import RecurringTask
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService, Project
-from service.recurring_tasks import RecurringTasksService
+from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.vacations import VacationsService, Vacation
 from utils.global_properties import GlobalProperties
 

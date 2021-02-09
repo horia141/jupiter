@@ -11,9 +11,9 @@ from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTa
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks import InboxTasksCollection, InboxTaskBigPlanLabel
 from repository.inbox_tasks import InboxTasksRepository, InboxTask
-from repository.recurring_tasks import RecurringTask
 from service.big_plans import BigPlan
 from service.errors import ServiceValidationError
+from service.recurring_tasks import RecurringTask
 from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)

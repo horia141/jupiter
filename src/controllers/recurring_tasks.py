@@ -10,10 +10,9 @@ from models import schedules
 from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
     ADate
 from repository.inbox_tasks import InboxTask
-from repository.recurring_tasks import RecurringTask
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService
-from service.recurring_tasks import RecurringTasksService
+from service.recurring_tasks import RecurringTasksService, RecurringTask
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
@@ -91,7 +90,9 @@ class RecurringTasksController:
 
     def set_recurring_task_name(self, ref_id: EntityId, name: str) -> RecurringTask:
         """Change the name for a recurring task."""
-        recurring_task = self._recurring_tasks_service.set_recurring_task_name(ref_id, name)
+        recurring_task = self._recurring_tasks_service.load_recurring_task_by_id(ref_id)
+        inbox_collection_link = self._inbox_tasks_service.get_notion_structure(recurring_task.project_ref_id)
+        recurring_task = self._recurring_tasks_service.set_recurring_task_name(ref_id, name, inbox_collection_link)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
@@ -218,7 +219,7 @@ class RecurringTasksController:
             filter_project_ref_ids = [p.ref_id for p in projects]
 
         recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-            filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,
+            allow_archived=show_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
         inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             filter_archived=False, filter_recurring_task_ref_ids=(bp.ref_id for bp in recurring_tasks))

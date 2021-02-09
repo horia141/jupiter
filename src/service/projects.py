@@ -6,7 +6,7 @@ from typing import Final, Iterable, Optional
 from models.basic import ProjectKey, BasicValidator, ModelValidationError, SyncPrefer, EntityId
 from remote.notion.common import NotionPageLink
 from remote.notion.projects_manager import NotionProjectsManager
-from repository.projects import ProjectsRepository
+from repository.projects import ProjectsRepository, ProjectRow
 from service.errors import ServiceValidationError
 
 LOGGER = logging.getLogger(__name__)
@@ -89,11 +89,7 @@ class ProjectsService:
         LOGGER.info("Applied local changes")
         self._notion_manager.archive_project(project_row.ref_id)
         LOGGER.info("Applied Notion changes")
-
-        return Project(
-            ref_id=project_row.ref_id,
-            key=project_row.key,
-            name=project_row.name)
+        return self._row_to_entity(project_row)
 
     def set_project_name(self, ref_id: EntityId, name: str) -> Project:
         """Change the name of a project."""
@@ -112,39 +108,41 @@ class ProjectsService:
         self._notion_manager.save_project(project_page)
         LOGGER.info("Applied Notion changes")
 
-        return Project(
-            ref_id=project_row.ref_id,
-            key=project_row.key,
-            name=project_row.name)
+        return self._row_to_entity(project_row)
 
     def load_project_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project, by key."""
         project_row = self._repository.load_project_by_key(key)
-
-        return Project(
-            ref_id=project_row.ref_id,
-            key=project_row.key,
-            name=project_row.name)
+        return self._row_to_entity(project_row)
 
     def load_all_projects(
             self, allow_archived: bool = False,
             filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
         """Retrieve all projects."""
         project_rows = self._repository.find_all_projects(allow_archived=allow_archived, filter_keys=filter_keys)
-        return [Project(ref_id=p.ref_id, key=p.key, name=p.name) for p in project_rows]
+        return [self._row_to_entity(p) for p in project_rows]
 
-    def sync_projects(self, ref_id: EntityId, sync_prefer: SyncPrefer) -> None:
+    def sync_projects(self, ref_id: EntityId, sync_prefer: SyncPrefer) -> Project:
         """Synchronise projects between Notion and local storage."""
-        project = self._repository.load_project(ref_id, allow_archived=True)
-        project_page = self._notion_manager.load_project(project.ref_id)
+        project_row = self._repository.load_project(ref_id, allow_archived=True)
+        project_page = self._notion_manager.load_project(project_row.ref_id)
 
         if sync_prefer == SyncPrefer.LOCAL:
-            project_page.name = project.name
+            project_page.name = project_row.name
             self._notion_manager.save_project(project_page)
             LOGGER.info("Applied changes to Notion")
         elif sync_prefer == SyncPrefer.NOTION:
-            project.name = project_page.name
-            self._repository.update_project(project)
+            project_row.name = project_page.name
+            self._repository.update_project(project_row)
             LOGGER.info("Applied local change")
         else:
             raise Exception(f"Invalid preference {sync_prefer}")
+
+        return self._row_to_entity(project_row)
+
+    @staticmethod
+    def _row_to_entity(row: ProjectRow) -> Project:
+        return Project(
+            ref_id=row.ref_id,
+            key=row.key,
+            name=row.name)

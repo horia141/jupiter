@@ -4,12 +4,11 @@ from typing import Final, Optional, Iterable
 
 from models.basic import ProjectKey, SyncTarget
 from repository.inbox_tasks import InboxTask
-from repository.recurring_tasks import RecurringTask
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService
 from service.metrics import MetricsService, Metric, MetricEntry
 from service.projects import ProjectsService
-from service.recurring_tasks import RecurringTasksService
+from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.smart_lists import SmartListsService, SmartList, SmartListItem
 from service.vacations import VacationsService, Vacation
 
@@ -77,7 +76,7 @@ class GarbageCollectNotionController:
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for recurring tasks")
                     recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                        allow_archived=True, filter_project_ref_ids=[project.ref_id])
                     self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting recurring tasks which were archived")

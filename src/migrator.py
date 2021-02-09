@@ -9,9 +9,9 @@ import dotenv
 import pendulum
 
 from models.basic import BasicValidator, EntityId
-from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.connection import NotionConnection
+from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from repository.projects import ProjectsRepository
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
 from utils.global_properties import GlobalProperties
@@ -38,19 +38,20 @@ def main() -> None:
 
     with ProjectsRepository(time_provider) as projects_repository, \
         CollectionsManager(time_provider, notion_connection) as collections_manager:
-        notion_big_plans_manager = NotionBigPlansManager(time_provider, basic_validator, collections_manager)
+        notion_manager = NotionRecurringTasksManager(time_provider, basic_validator, collections_manager)
 
         for project_row in projects_repository.find_all_projects():
             LOGGER.info(f'Processing project "{project_row.name}"')
-            all_big_plan_notion_rows = notion_big_plans_manager.load_all_big_plans(project_row.ref_id)
+            all_recurring_tasks_notion_rows = notion_manager.load_all_recurring_tasks(project_row.ref_id)
 
-            for big_plan_notion_row in all_big_plan_notion_rows:
-                LOGGER.info(f'Processing big plan "{big_plan_notion_row.name}"')
-                if big_plan_notion_row.ref_id is None:
+            for recurring_tasks_notion_row in all_recurring_tasks_notion_rows:
+                LOGGER.info(f'Processing big plan "{recurring_tasks_notion_row.name}"')
+                if recurring_tasks_notion_row.ref_id is None:
                     LOGGER.info(f'Empty ... skipping')
                     continue
-                notion_big_plans_manager.link_local_and_notion_entries(
-                    project_row.ref_id, EntityId(big_plan_notion_row.ref_id), big_plan_notion_row.notion_id)
+                notion_manager.link_local_and_notion_entries(
+                    project_row.ref_id, EntityId(recurring_tasks_notion_row.ref_id),
+                    recurring_tasks_notion_row.notion_id)
 
 
 def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:

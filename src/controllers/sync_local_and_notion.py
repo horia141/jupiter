@@ -105,7 +105,8 @@ class SyncLocalAndNotionController:
                 LOGGER.info("Recreating inbox tasks")
                 self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating recurring tasks")
-                self._recurring_tasks_service.upsert_notion_structure(project.ref_id, project_page.notion_page_link)
+                self._recurring_tasks_service.upsert_recurring_tasks_collection_structure(
+                    project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating big plans")
                 self._big_plans_service.upsert_big_plans_collection_structure(
                     project.ref_id, project_page.notion_page_link)
@@ -137,7 +138,7 @@ class SyncLocalAndNotionController:
                     filter_recurring_task_ref_ids, sync_prefer)
             else:
                 all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-                    filter_archived=False, filter_ref_ids=filter_recurring_task_ref_ids,
+                    allow_archived=True, filter_ref_ids=filter_recurring_task_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
             recurring_tasks_by_ref_id = {rt.ref_id: rt for rt in all_recurring_tasks}
 
