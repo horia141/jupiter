@@ -13,7 +13,7 @@ from models import schedules
 from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
     Timestamp
 from models.schedules import Schedule
-from repository.inbox_tasks import InboxTask
+from repository.inbox_tasks import InboxTaskRow
 from repository.projects import ProjectRow
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService
@@ -175,7 +175,7 @@ class ReportProgressController:
             period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
 
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_project_ref_ids=[p.ref_id for p in projects],
+            allow_archived=True, filter_project_ref_ids=[p.ref_id for p in projects],
             filter_big_plan_ref_ids=filter_big_plan_ref_ids,
             filter_recurring_task_ref_ids=filter_recurring_task_ref_ids)
         all_big_plans = self._big_plans_service.load_all_big_plans(
@@ -276,7 +276,7 @@ class ReportProgressController:
             per_recurring_task_breakdown=per_recurring_task_breakdown)
 
     @staticmethod
-    def _run_report_for_inbox_tasks(schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> InboxTasksSummary:
+    def _run_report_for_inbox_tasks(schedule: Schedule, inbox_tasks: Iterable[InboxTaskRow]) -> InboxTasksSummary:
         created_cnt_total = 0
         created_cnt_ad_hoc = 0
         created_cnt_from_big_plan = 0
@@ -371,7 +371,7 @@ class ReportProgressController:
 
     @staticmethod
     def _run_report_for_inbox_tasks_for_big_plan(
-            schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> BigPlanSummary:
+            schedule: Schedule, inbox_tasks: Iterable[InboxTaskRow]) -> BigPlanSummary:
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -404,7 +404,7 @@ class ReportProgressController:
 
     def _run_report_for_inbox_for_recurring_tasks(
             self, recurring_task_period: RecurringTaskPeriod, right_now: Timestamp, schedule: Schedule,
-            inbox_tasks: List[InboxTask]) -> RecurringTaskSummary:
+            inbox_tasks: List[InboxTaskRow]) -> RecurringTaskSummary:
 
         def _build_bigger_periods_and_schedules() -> List[Tuple[RecurringTaskPeriod, Schedule]]:
             the_bigger_periods_and_schedules = []

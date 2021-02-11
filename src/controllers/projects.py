@@ -43,7 +43,7 @@ class ProjectsController:
     def create_project(self, key: ProjectKey, name: str) -> None:
         """Create a project."""
         response = self._projects_service.create_project(key, name)
-        self._inbox_tasks_service.upsert_notion_structure(response.ref_id, response.notion_page_link)
+        self._inbox_tasks_service.create_inbox_tasks_collection(response.ref_id, response.notion_page_link)
         self._recurring_tasks_service.create_recurring_tasks_collection(response.ref_id, response.notion_page_link)
         self._big_plans_service.create_big_plans_collection(response.ref_id, response.notion_page_link)
 
@@ -51,7 +51,7 @@ class ProjectsController:
         """Archive a project."""
         project = self._projects_service.load_project_by_key(key)
 
-        self._inbox_tasks_service.remove_notion_structure(project.ref_id)
+        self._inbox_tasks_service.archive_inbox_tasks_collection(project.ref_id)
         self._recurring_tasks_service.archive_recurring_tasks_collection_structure(project.ref_id)
         self._big_plans_service.archive_big_plans_collection(project.ref_id)
 

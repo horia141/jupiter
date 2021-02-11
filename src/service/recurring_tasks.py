@@ -9,10 +9,11 @@ from pendulum import UTC
 
 from models.basic import EntityId, Difficulty, Eisen, BasicValidator, ModelValidationError, RecurringTaskPeriod, \
     SyncPrefer, RecurringTaskType, ADate, Timestamp
-from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionError, CollectionEntityNotFound
+from remote.notion.common import NotionPageLink, CollectionError, CollectionEntityNotFound
 from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTaskRow
 from service.errors import ServiceValidationError
+from service.inbox_tasks import InboxTasksCollectionX
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -132,7 +133,7 @@ class RecurringTasksService:
                 f"Actionable day {actionable_from_day} should be before due day {due_at_day}")
 
     def create_recurring_task(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
+            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollectionX, name: str,
             period: RecurringTaskPeriod, the_type: RecurringTaskType, eisen: List[Eisen],
             difficulty: Optional[Difficulty], actionable_from_day: Optional[int], actionable_from_month: Optional[int],
             due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
@@ -186,7 +187,7 @@ class RecurringTasksService:
         self._notion_manager.upsert_recurring_task(
             project_ref_id=project_ref_id,
             archived=False,
-            inbox_collection_link=inbox_collection_link,
+            inbox_collection_link=inbox_tasks_collection.notion_collection,
             name=new_recurring_task_row.name,
             period=new_recurring_task_row.period.value,
             the_type=new_recurring_task_row.the_type.value,
@@ -220,7 +221,7 @@ class RecurringTasksService:
         return self._row_to_entity(recurring_task_row)
 
     def set_recurring_task_name(
-            self, ref_id: EntityId, name: str, inbox_collection_link: NotionCollectionLink) -> RecurringTask:
+            self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollectionX) -> RecurringTask:
         """Change the name of a recurring task."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -236,7 +237,7 @@ class RecurringTasksService:
         recurring_task_notion_row.name = name
         self._notion_manager.save_recurring_task(
             recurring_task_row.project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row,
-            inbox_collection_link)
+            inbox_tasks_collection.notion_collection)
         LOGGER.info("Applied Notion changes")
 
         return self._row_to_entity(recurring_task_row)
@@ -496,7 +497,7 @@ class RecurringTasksService:
         return self._row_to_entity(self._repository.load_recurring_task(ref_id))
 
     def recurring_tasks_sync(
-            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_tasks_collection: InboxTasksCollectionX,
             sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
         """Synchronise recurring tasks between Notion and local storage."""
@@ -615,7 +616,8 @@ class RecurringTasksService:
                 recurring_task_notion_row.ref_id = new_recurring_task_row.ref_id
                 recurring_task_notion_row.start_at_date = new_recurring_task_row.start_at_date
                 self._notion_manager.save_recurring_task(
-                    project_ref_id, recurring_task_notion_row.ref_id, recurring_task_notion_row, inbox_collection_link)
+                    project_ref_id, recurring_task_notion_row.ref_id, recurring_task_notion_row,
+                    inbox_tasks_collection.notion_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {recurring_task_notion_row}")
 
                 all_recurring_tasks_set[recurring_task_notion_row.ref_id] = new_recurring_task_row
@@ -719,7 +721,8 @@ class RecurringTasksService:
                     if recurring_task_notion_row.start_at_date is None:
                         recurring_task_notion_row.start_at_date = recurring_task_row.start_at_date
                         self._notion_manager.save_recurring_task(
-                            project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row, inbox_collection_link)
+                            project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row,
+                            inbox_tasks_collection.notion_collection)
                         LOGGER.info(f"Applies changes on Notion side too as {recurring_task_notion_row}")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
@@ -745,7 +748,8 @@ class RecurringTasksService:
                     recurring_task_notion_row.start_at_date = recurring_task_row.start_at_date
                     recurring_task_notion_row.end_at_date = recurring_task_row.end_at_date
                     self._notion_manager.save_recurring_task(
-                        project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row, inbox_collection_link)
+                        project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row,
+                        inbox_tasks_collection.notion_collection)
                     LOGGER.info(f"Changed recurring task with id={recurring_task_notion_row.ref_id} from local")
             else:
                 # If we're here, one of two cases have happened:
@@ -771,7 +775,7 @@ class RecurringTasksService:
             self._notion_manager.upsert_recurring_task(
                 project_ref_id=project_ref_id,
                 archived=recurring_task_row.archived,
-                inbox_collection_link=inbox_collection_link,
+                inbox_collection_link=inbox_tasks_collection.notion_collection,
                 name=recurring_task_row.name,
                 period=recurring_task_row.period.value,
                 the_type=recurring_task_row.the_type.value,

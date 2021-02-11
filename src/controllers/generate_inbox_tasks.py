@@ -4,8 +4,7 @@ from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
 from models import schedules
 from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp
-from repository.inbox_tasks import InboxTask
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService, Project
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.vacations import VacationsService, Vacation
@@ -48,7 +47,7 @@ class GenerateInboxTasksController:
             if len(all_recurring_tasks) == 0:
                 continue
             all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-                filter_archived=False, filter_project_ref_ids=[project.ref_id],
+                allow_archived=True, filter_project_ref_ids=[project.ref_id],
                 filter_recurring_task_ref_ids=(rt.ref_id for rt in all_recurring_tasks))
 
             all_inbox_tasks_by_recurring_task_ref_id_and_timeline = {}

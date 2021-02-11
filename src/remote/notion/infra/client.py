@@ -127,17 +127,6 @@ class NotionClient:
             self._client.create_record("collection", parent=collection_page, schema=schema))
         return collection
 
-    def update_collection_schema(
-            self, collection_page_id: NotionId, collection_id: NotionId, new_schema: JSONDictType) -> None:
-        """Update the schema for the collection."""
-        collection_page = self.get_collection_page_by_id(collection_page_id)
-        collection = collection_page.collection
-        if collection.id != collection_id:
-            raise NotionClientException(
-                f"Mismatch between page {collection_page_id} collection and selected one {collection_id}")
-
-        collection.set("schema", new_schema)
-
     def get_collection(
             self, collection_page_id: NotionId, collection_id: NotionId,
             all_view_ids: Iterable[NotionId]) -> Collection:

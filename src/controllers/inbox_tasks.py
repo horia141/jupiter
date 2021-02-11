@@ -4,9 +4,8 @@ from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate
-from repository.inbox_tasks import InboxTask
 from service.big_plans import BigPlansService, BigPlan
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 

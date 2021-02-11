@@ -7,9 +7,10 @@ from typing import Final, Iterable, Optional, Dict
 import remote.notion.common
 from models.basic import EntityId, BasicValidator, ModelValidationError, BigPlanStatus, SyncPrefer, ADate, Timestamp
 from remote.notion.big_plans_manager import NotionBigPlansManager
-from remote.notion.common import NotionPageLink, NotionCollectionLink, CollectionEntityNotFound
+from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from repository.big_plans import BigPlanRow, BigPlansRepository
 from service.errors import ServiceValidationError
+from service.inbox_tasks import InboxTasksCollectionX
 from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ class BigPlansService:
         return BigPlansCollection(project_ref_id=project_ref_id)
 
     def create_big_plan(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
+            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollectionX, name: str,
             due_date: Optional[ADate]) -> BigPlan:
         """Create a big plan."""
         try:
@@ -90,7 +91,7 @@ class BigPlansService:
         LOGGER.info("Applied local changes")
         self._notion_manager.upsert_big_plan(
             project_ref_id=project_ref_id,
-            inbox_collection_link=inbox_collection_link,
+            inbox_collection_link=inbox_tasks_collection.notion_collection,
             name=new_big_plan_row.name,
             archived=new_big_plan_row.archived,
             due_date=new_big_plan_row.due_date,
@@ -132,7 +133,7 @@ class BigPlansService:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
-    def set_big_plan_name(self, ref_id: EntityId, name: str, inbox_collection_link: NotionCollectionLink) -> BigPlan:
+    def set_big_plan_name(self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollectionX) -> BigPlan:
         """Change the name of a big plan."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -147,7 +148,8 @@ class BigPlansService:
         big_plan_notion_row = self._notion_manager.load_big_plan(big_plan_row.project_ref_id, big_plan_row.ref_id)
         big_plan_notion_row.name = name
         self._notion_manager.save_big_plan(
-            big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row, inbox_collection_link)
+            big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row,
+            inbox_tasks_collection.notion_collection)
         LOGGER.info("Applied Notion changes")
 
         return self._row_to_entity(big_plan_row)
@@ -243,29 +245,29 @@ class BigPlansService:
         return self._row_to_entity(big_plan_row)
 
     def big_plans_sync(
-            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_collection_link: NotionCollectionLink,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_tasks_collection: InboxTasksCollectionX,
             sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
         """Synchronise big plans between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
-        all_big_plans = self._repository.find_all_big_plans(
+        all_big_plan_rows = self._repository.find_all_big_plans(
             allow_archived=True, filter_ref_ids=filter_ref_ids, filter_project_ref_ids=[project_ref_id])
-        all_big_plans_set: Dict[EntityId, BigPlanRow] = {bp.ref_id: bp for bp in all_big_plans}
+        all_big_plan_rows_set: Dict[EntityId, BigPlanRow] = {bp.ref_id: bp for bp in all_big_plan_rows}
 
         if not drop_all_notion_side:
-            all_big_plans_notion_rows = self._notion_manager.load_all_big_plans(project_ref_id)
-            all_big_plans_notion_ids = \
+            all_big_plan_notion_rows = self._notion_manager.load_all_big_plans(project_ref_id)
+            all_big_plan_notion_ids = \
                 set(self._notion_manager.load_all_saved_big_plans_notion_ids(project_ref_id))
         else:
             self._notion_manager.drop_all_big_plans(project_ref_id)
-            all_big_plans_notion_rows = {}
-            all_big_plans_notion_ids = set()
-        all_big_plans_rows_set = {}
+            all_big_plan_notion_rows = {}
+            all_big_plan_notion_ids = set()
+        all_big_plan_notion_rows_set = {}
 
         # Then look at each big plan in Notion and try to match it with the one in the local stash
 
-        for big_plan_notion_row in all_big_plans_notion_rows:
+        for big_plan_notion_row in all_big_plan_notion_rows:
             # Skip this step when asking only for particular entities to be synced.
             if filter_ref_ids_set is not None and big_plan_notion_row.ref_id not in filter_ref_ids_set:
                 LOGGER.info(
@@ -299,16 +301,17 @@ class BigPlansService:
                 big_plan_notion_row.ref_id = new_big_plan_row.ref_id
                 big_plan_notion_row.status = new_big_plan_row.status.for_notion()
                 self._notion_manager.save_big_plan(
-                    project_ref_id, big_plan_notion_row.ref_id, big_plan_notion_row, inbox_collection_link)
+                    project_ref_id, big_plan_notion_row.ref_id, big_plan_notion_row,
+                    inbox_tasks_collection.notion_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {big_plan_notion_row}")
 
-                all_big_plans_set[big_plan_notion_row.ref_id] = new_big_plan_row
-                all_big_plans_rows_set[big_plan_notion_row.ref_id] = big_plan_notion_row
-            elif big_plan_notion_row.ref_id in all_big_plans_set and \
-                    big_plan_notion_row.notion_id in all_big_plans_notion_ids:
+                all_big_plan_rows_set[big_plan_notion_row.ref_id] = new_big_plan_row
+                all_big_plan_notion_rows_set[big_plan_notion_row.ref_id] = big_plan_notion_row
+            elif big_plan_notion_row.ref_id in all_big_plan_rows_set and \
+                    big_plan_notion_row.notion_id in all_big_plan_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
-                big_plan_row = all_big_plans_set[EntityId(big_plan_notion_row.ref_id)]
-                all_big_plans_rows_set[EntityId(big_plan_notion_row.ref_id)] = big_plan_notion_row
+                big_plan_row = all_big_plan_rows_set[EntityId(big_plan_notion_row.ref_id)]
+                all_big_plan_notion_rows_set[EntityId(big_plan_notion_row.ref_id)] = big_plan_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified \
@@ -368,7 +371,8 @@ class BigPlansService:
                     big_plan_notion_row.due_date = big_plan_row.due_date
                     big_plan_notion_row.ref_id = big_plan_row.ref_id
                     self._notion_manager.save_big_plan(
-                        project_ref_id, big_plan_row.ref_id, big_plan_notion_row, inbox_collection_link)
+                        project_ref_id, big_plan_row.ref_id, big_plan_notion_row,
+                        inbox_tasks_collection.notion_collection)
                     LOGGER.info(f"Changed big plan with id={big_plan_notion_row.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -386,16 +390,16 @@ class BigPlansService:
         # Now, go over each local big plan, and add it to Notion if it doesn't
         # exist there!
 
-        for big_plan_row in all_big_plans_set.values():
+        for big_plan_row in all_big_plan_rows_set.values():
             # We've already processed this thing above
-            if big_plan_row.ref_id in all_big_plans_rows_set:
+            if big_plan_row.ref_id in all_big_plan_notion_rows_set:
                 continue
             if big_plan_row.archived:
                 continue
 
             self._notion_manager.upsert_big_plan(
                 project_ref_id=project_ref_id,
-                inbox_collection_link=inbox_collection_link,
+                inbox_collection_link=inbox_tasks_collection.notion_collection,
                 name=big_plan_row.name,
                 archived=big_plan_row.archived,
                 status=big_plan_row.status.for_notion(),
@@ -404,7 +408,7 @@ class BigPlansService:
             LOGGER.info(f'Created Notion task for {big_plan_row.name}')
 
         return [self._row_to_entity(bp)
-                for bp in all_big_plans_set.values()]
+                for bp in all_big_plan_rows_set.values()]
 
     @staticmethod
     def _row_to_entity(row: BigPlanRow) -> BigPlan:

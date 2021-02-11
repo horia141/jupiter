@@ -111,10 +111,10 @@ from controllers.workspaces import WorkspacesController
 from models.basic import BasicValidator
 from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
+from remote.notion.inbox_tasks_manager import NotionInboxTasksManager
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.connection import \
     MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
-from remote.notion.inbox_tasks import InboxTasksCollection
 from remote.notion.infra.pages_manager import PagesManager
 from remote.notion.metrics_manager import NotionMetricsManager
 from remote.notion.projects_manager import NotionProjectsManager
@@ -164,12 +164,12 @@ def main() -> None:
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             MetricsRepository(time_provider) as metrics_repository, \
             MetricEntriesRepository(time_provider) as metric_entry_repository, \
-            InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
         notion_vacations_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
         notion_projects_manager = NotionProjectsManager(pages_manager)
+        notion_inbox_tasks_manager = NotionInboxTasksManager(time_provider, basic_validator, collections_manager)
         notion_recurring_tasks_manager = NotionRecurringTasksManager(
             time_provider, basic_validator, collections_manager)
         notion_big_plans_manager = NotionBigPlansManager(time_provider, basic_validator, collections_manager)
@@ -185,7 +185,7 @@ def main() -> None:
         projects_service = ProjectsService(
             basic_validator, projects_repository, notion_projects_manager)
         inbox_tasks_service = InboxTasksService(
-            basic_validator, inbox_tasks_repository, inbox_tasks_collection)
+            basic_validator, inbox_tasks_repository, notion_inbox_tasks_manager)
         recurring_tasks_service = RecurringTasksService(
             basic_validator, time_provider, recurring_tasks_repository, notion_recurring_tasks_manager)
         big_plans_service = BigPlansService(

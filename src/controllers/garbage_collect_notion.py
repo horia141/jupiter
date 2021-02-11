@@ -3,9 +3,8 @@ import logging
 from typing import Final, Optional, Iterable
 
 from models.basic import ProjectKey, SyncTarget
-from repository.inbox_tasks import InboxTask
 from service.big_plans import BigPlansService, BigPlan
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, InboxTask
 from service.metrics import MetricsService, Metric, MetricEntry
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
@@ -65,7 +64,7 @@ class GarbageCollectNotionController:
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for inbox tasks")
                     inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                        allow_archived=True, filter_project_ref_ids=[project.ref_id])
                     self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting inbox tasks which were archived")

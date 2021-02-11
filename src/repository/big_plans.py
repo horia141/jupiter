@@ -60,7 +60,7 @@ class BigPlansRepository:
             self, project_ref_id: EntityId, name: str, archived: bool, status: BigPlanStatus,
             due_date: Optional[ADate], notion_link_uuid: uuid.UUID) -> BigPlanRow:
         """Create a big plan."""
-        new_big_plan = BigPlanRow(
+        new_big_plan_row = BigPlanRow(
             project_ref_id=project_ref_id,
             name=name,
             archived=archived,
@@ -71,7 +71,7 @@ class BigPlansRepository:
             working_time=self._time_provider.get_current_time() if status.is_working_or_more else None,
             completed_time=self._time_provider.get_current_time() if status.is_completed else None)
 
-        return self._storage.create(new_big_plan)
+        return self._storage.create(new_big_plan_row)
 
     def archive_big_plan(self, ref_id: EntityId) -> BigPlanRow:
         """Remove a big plan."""
@@ -82,16 +82,16 @@ class BigPlansRepository:
         return self._storage.remove(ref_id)
 
     def update_big_plan(
-            self, new_big_plan: BigPlanRow,
+            self, new_big_plan_row: BigPlanRow,
             archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
             accepted_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
             working_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
             completed_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> BigPlanRow:
         """Store a particular big plan with all new properties."""
-        accepted_time_action.act(new_big_plan, "accepted_time", self._time_provider.get_current_time())
-        working_time_action.act(new_big_plan, "working_time", self._time_provider.get_current_time())
-        completed_time_action.act(new_big_plan, "completed_time", self._time_provider.get_current_time())
-        return self._storage.update(new_big_plan, archived_time_action=archived_time_action)
+        accepted_time_action.act(new_big_plan_row, "accepted_time", self._time_provider.get_current_time())
+        working_time_action.act(new_big_plan_row, "working_time", self._time_provider.get_current_time())
+        completed_time_action.act(new_big_plan_row, "completed_time", self._time_provider.get_current_time())
+        return self._storage.update(new_big_plan_row, archived_time_action=archived_time_action)
 
     def load_big_plan(self, ref_id: EntityId, allow_archived: bool = False) -> BigPlanRow:
         """Retrieve a particular big plan by its id."""

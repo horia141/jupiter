@@ -9,8 +9,7 @@ from typing import Final, ClassVar, Iterable, List, Optional
 
 from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus, RecurringTaskType, ADate, BasicValidator, \
     Timestamp
-from repository.common import RepositoryError
-from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -18,10 +17,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class InboxTask:
+class InboxTaskRow(BaseEntityRow):
     """An inbox task."""
 
-    ref_id: EntityId
     project_ref_id: EntityId
     big_plan_ref_id: Optional[EntityId]
     recurring_task_ref_id: Optional[EntityId]
@@ -35,9 +33,6 @@ class InboxTask:
     recurring_task_timeline: Optional[str]
     recurring_task_type: Optional[RecurringTaskType]
     recurring_task_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
-    created_time: Timestamp
-    last_modified_time: Timestamp
-    archived_time: Optional[Timestamp]
     accepted_time: Optional[Timestamp]
     working_time: Optional[Timestamp]
     completed_time: Optional[Timestamp]
@@ -50,16 +45,16 @@ class InboxTasksRepository:
     _INBOX_TASKS_FILE_PATH: ClassVar[Path] = Path("./inbox-tasks.yaml")
 
     _time_provider: Final[TimeProvider]
-    _structured_storage: Final[StructuredCollectionStorage[InboxTask]]
+    _storage: Final[EntitiesStorage[InboxTaskRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._structured_storage = StructuredCollectionStorage(self._INBOX_TASKS_FILE_PATH, self)
+        self._storage = EntitiesStorage[InboxTaskRow](self._INBOX_TASKS_FILE_PATH, time_provider, self)
 
     def __enter__(self) -> 'InboxTasksRepository':
         """Enter context."""
-        self._structured_storage.initialize()
+        self._storage.initialize()
         return self
 
     def __exit__(
@@ -68,7 +63,6 @@ class InboxTasksRepository:
         """Exit context."""
         if exc_type is not None:
             return
-        self._structured_storage.exit_save()
 
     def create_inbox_task(
             self, project_ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
@@ -76,12 +70,9 @@ class InboxTasksRepository:
             eisen: Iterable[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
             due_date: Optional[ADate], recurring_task_timeline: Optional[str],
             recurring_task_type: Optional[RecurringTaskType],
-            recurring_task_gen_right_now: Optional[Timestamp]) -> InboxTask:
+            recurring_task_gen_right_now: Optional[Timestamp]) -> InboxTaskRow:
         """Create a recurring task."""
-        inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
-
-        new_inbox_task = InboxTask(
-            ref_id=EntityId(str(inbox_tasks_next_idx)),
+        new_inbox_task_row = InboxTaskRow(
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
             recurring_task_ref_id=recurring_task_ref_id,
@@ -95,142 +86,79 @@ class InboxTasksRepository:
             recurring_task_timeline=recurring_task_timeline,
             recurring_task_type=recurring_task_type,
             recurring_task_gen_right_now=recurring_task_gen_right_now,
-            created_time=self._time_provider.get_current_time(),
-            last_modified_time=self._time_provider.get_current_time(),
-            archived_time=self._time_provider.get_current_time() if archived else None,
             accepted_time=self._time_provider.get_current_time() if status.is_accepted_or_more else None,
             working_time=self._time_provider.get_current_time() if status.is_working_or_more else None,
             completed_time=self._time_provider.get_current_time() if status.is_completed else None)
 
-        inbox_tasks_next_idx += 1
-        inbox_tasks.append(new_inbox_task)
+        return self._storage.create(new_inbox_task_row)
 
-        self._structured_storage.save((inbox_tasks_next_idx, inbox_tasks))
-
-        return new_inbox_task
-
-    def archive_inbox_task(self, ref_id: EntityId) -> InboxTask:
+    def archive_inbox_task(self, ref_id: EntityId) -> InboxTaskRow:
         """Remove a particular inbox task."""
-        inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
+        return self._storage.archive(ref_id)
 
-        for inbox_task in inbox_tasks:
-            if inbox_task.ref_id == ref_id:
-                inbox_task.archived = True
-                inbox_task.last_modified_time = self._time_provider.get_current_time()
-                inbox_task.archived_time = self._time_provider.get_current_time()
-                self._structured_storage.save((inbox_tasks_next_idx, inbox_tasks))
-                return inbox_task
+    def remove_inbox_task(self, ref_id: EntityId) -> InboxTaskRow:
+        """Hard remove an inbox task."""
+        return self._storage.remove(ref_id)
 
-        raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
-
-    def load_all_inbox_task(
-            self,
-            filter_archived: bool = True,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
-        """Retrieve all the inbox tasks defined."""
-        _, inbox_tasks = self._structured_storage.load()
-        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else []
-        filter_project_ref_ids_set = frozenset(filter_project_ref_ids) if filter_project_ref_ids else []
-        filter_big_plan_ref_ids_set = frozenset(filter_big_plan_ref_ids) if filter_big_plan_ref_ids else []
-        filter_recurring_task_ref_ids_set = frozenset(filter_recurring_task_ref_ids)\
-            if filter_recurring_task_ref_ids else []
-        return [it for it in inbox_tasks
-                if (filter_archived is False or it.archived is False)
-                and (len(filter_ref_ids_set) == 0 or it.ref_id in filter_ref_ids_set)
-                and (len(filter_project_ref_ids_set) == 0 or it.project_ref_id in filter_project_ref_ids_set)
-                and (len(filter_big_plan_ref_ids_set) == 0 or it.big_plan_ref_id in filter_big_plan_ref_ids_set)
-                and (len(filter_recurring_task_ref_ids_set) == 0
-                     or it.recurring_task_ref_id in filter_recurring_task_ref_ids_set)]
-
-    def load_inbox_task(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTask:
-        """Retrieve a particular inbox task by its id."""
-        _, inbox_tasks = self._structured_storage.load()
-        found_inbox_task = self._find_inbox_task_by_id(ref_id, inbox_tasks)
-        if not found_inbox_task:
-            raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
-        if not allow_archived and found_inbox_task.archived:
-            raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
-        return found_inbox_task
-
-    def save_inbox_task(
-            self, new_inbox_task: InboxTask,
+    def update_inbox_task(
+            self, new_inbox_task_row: InboxTaskRow,
             archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
             accepted_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
             working_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING,
-            completed_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> InboxTask:
+            completed_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> InboxTaskRow:
         """Store a particular inbox task with all new properties."""
-        inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
+        accepted_time_action.act(new_inbox_task_row, "accepted_time", self._time_provider.get_current_time())
+        working_time_action.act(new_inbox_task_row, "working_time", self._time_provider.get_current_time())
+        completed_time_action.act(new_inbox_task_row, "completed_time", self._time_provider.get_current_time())
+        return self._storage.update(new_inbox_task_row, archived_time_action=archived_time_action)
 
-        if not self._find_inbox_task_by_id(new_inbox_task.ref_id, inbox_tasks):
-            raise RepositoryError(f"Inbox task with id='{new_inbox_task.ref_id}' does not exist")
+    def load_inbox_task(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTaskRow:
+        """Retrieve a particular inbox task by its id."""
+        return self._storage.load(ref_id, allow_archived=allow_archived)
 
-        new_inbox_task.last_modified_time = self._time_provider.get_current_time()
-        archived_time_action.act(new_inbox_task, "archived_time", self._time_provider.get_current_time())
-        accepted_time_action.act(new_inbox_task, "accepted_time", self._time_provider.get_current_time())
-        working_time_action.act(new_inbox_task, "working_time", self._time_provider.get_current_time())
-        completed_time_action.act(new_inbox_task, "completed_time", self._time_provider.get_current_time())
-        new_inbox_tasks = [(rt if rt.ref_id != new_inbox_task.ref_id else new_inbox_task)
-                           for rt in inbox_tasks]
-        self._structured_storage.save((inbox_tasks_next_idx, new_inbox_tasks))
-
-        return new_inbox_task
-
-    def hard_remove_inbox_task(self, ref_id: EntityId) -> InboxTask:
-        """Hard remove an inbox task."""
-        inbox_tasks_next_idx, inbox_tasks = self._structured_storage.load()
-        found_inbox_task = self._find_inbox_task_by_id(ref_id, inbox_tasks)
-        if not found_inbox_task:
-            raise RepositoryError(f"Inbox task with id='{ref_id}' does not exist")
-        new_inbox_tasks = [it for it in inbox_tasks if it.ref_id != ref_id]
-        self._structured_storage.save((inbox_tasks_next_idx, new_inbox_tasks))
-        return found_inbox_task
-
-    @staticmethod
-    def _find_inbox_task_by_id(ref_id: EntityId, inbox_tasks: List[InboxTask]) -> Optional[InboxTask]:
-        try:
-            return next(it for it in inbox_tasks if it.ref_id == ref_id)
-        except StopIteration:
-            return None
+    def find_all_inbox_tasks(
+            self,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTaskRow]:
+        """Retrieve all the inbox tasks defined."""
+        return self._storage.find_all(
+            allow_archived=allow_archived,
+            ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
+            project_ref_id=In(*filter_project_ref_ids) if filter_project_ref_ids else None,
+            big_plan_ref_id=In(*filter_big_plan_ref_ids) if filter_big_plan_ref_ids else None,
+            recurring_task_ref_id=In(*filter_recurring_task_ref_ids) if filter_recurring_task_ref_ids else None)
 
     @staticmethod
     def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
-            "type": "object",
-            "properties": {
-                "ref_id": {"type": "string"},
-                "project_ref_id": {"type": "string"},
-                "big_plan_ref_id": {"type": ["string", "null"]},
-                "recurring_tasks_ref_id": {"type": ["string", "null"]},
-                "name": {"type": "string"},
-                "archived": {"type": "boolean"},
-                "eisen": {
-                    "type": "array",
-                    "entries": {"type": "string"}
-                },
-                "difficulty": {"type": ["string", "null"]},
-                "actionable_date": {"type": ["string", "null"]},
-                "due_date": {"type": ["string", "null"]},
-                "recurring_task_timeline": {"type": ["string", "null"]},
-                "recurring_task_type": {"type": ["string", "null"]},
-                "recurring_task_gen_right_now": {"type": ["string", "null"]},
-                "created_time": {"type": "string"},
-                "last_modified_time": {"type": "string"},
-                "archived_time": {"type": ["string", "null"]},
-                "accepted_time": {"type": ["string", "null"]},
-                "working_time": {"type": ["string", "null"]},
-                "completed_time": {"type": ["string", "null"]}
-            }
+            "project_ref_id": {"type": "string"},
+            "big_plan_ref_id": {"type": ["string", "null"]},
+            "recurring_tasks_ref_id": {"type": ["string", "null"]},
+            "name": {"type": "string"},
+            "archived": {"type": "boolean"},
+            "eisen": {
+                "type": "array",
+                "entries": {"type": "string"}
+            },
+            "difficulty": {"type": ["string", "null"]},
+            "actionable_date": {"type": ["string", "null"]},
+            "due_date": {"type": ["string", "null"]},
+            "recurring_task_timeline": {"type": ["string", "null"]},
+            "recurring_task_type": {"type": ["string", "null"]},
+            "recurring_task_gen_right_now": {"type": ["string", "null"]},
+            "accepted_time": {"type": ["string", "null"]},
+            "working_time": {"type": ["string", "null"]},
+            "completed_time": {"type": ["string", "null"]}
         }
 
     @staticmethod
-    def storage_to_live(storage_form: JSONDictType) -> InboxTask:
+    def storage_to_live(storage_form: JSONDictType) -> InboxTaskRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return InboxTask(
-            ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+        return InboxTaskRow(
             project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
             big_plan_ref_id=EntityId(typing.cast(str, storage_form["big_plan_ref_id"]))
             if storage_form["big_plan_ref_id"] else None,
@@ -253,10 +181,6 @@ class InboxTasksRepository:
             recurring_task_gen_right_now=BasicValidator.timestamp_from_str(
                 typing.cast(str, storage_form["recurring_task_gen_right_now"]))
             if storage_form["recurring_task_gen_right_now"] else None,
-            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
-            if storage_form["archived_time"] else None,
             accepted_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["accepted_time"]))
             if storage_form["accepted_time"] else None,
             working_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["working_time"]))
@@ -265,15 +189,13 @@ class InboxTasksRepository:
             if storage_form["completed_time"] else None)
 
     @staticmethod
-    def live_to_storage(live_form: InboxTask) -> JSONDictType:
+    def live_to_storage(live_form: InboxTaskRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "ref_id": live_form.ref_id,
             "project_ref_id": live_form.project_ref_id,
             "big_plan_ref_id": live_form.big_plan_ref_id,
             "recurring_task_ref_id": live_form.recurring_task_ref_id,
             "name": live_form.name,
-            "archived": live_form.archived,
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
@@ -284,10 +206,6 @@ class InboxTasksRepository:
             "recurring_task_type": live_form.recurring_task_type.value if live_form.recurring_task_type else None,
             "recurring_task_gen_right_now": BasicValidator.timestamp_to_str(live_form.recurring_task_gen_right_now)
                                             if live_form.recurring_task_gen_right_now else None,
-            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
-            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
-            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
-                             if live_form.archived_time else None,
             "accepted_time": BasicValidator.timestamp_to_str(live_form.accepted_time)
                              if live_form.accepted_time else None,
             "working_time": BasicValidator.timestamp_to_str(live_form.working_time)
