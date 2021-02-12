@@ -8,7 +8,7 @@ from models import schedules
 from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, BigPlanEssentials, RecurringTaskEssentials
 from service.metrics import MetricsService
 from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
@@ -146,7 +146,10 @@ class SyncLocalAndNotionController:
             if SyncTarget.INBOX_TASKS in sync_targets:
                 LOGGER.info(f"Syncing inbox tasks for '{project.name}'")
                 all_inbox_tasks = self._inbox_tasks_service.inbox_tasks_sync(
-                    project.ref_id, drop_all_notion, all_big_plans, all_recurring_tasks, sync_even_if_not_modified,
+                    project.ref_id, drop_all_notion,
+                    [BigPlanEssentials(b.ref_id, b.name) for b in all_big_plans],
+                    [RecurringTaskEssentials(rt.ref_id, rt.name, rt.period, rt.the_type) for rt in all_recurring_tasks],
+                    sync_even_if_not_modified,
                     filter_inbox_task_ref_ids, sync_prefer)
             else:
                 all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(

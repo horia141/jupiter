@@ -13,7 +13,7 @@ from remote.notion.common import NotionPageLink, CollectionError, CollectionEnti
 from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTaskRow
 from service.errors import ServiceValidationError
-from service.inbox_tasks import InboxTasksCollectionX
+from service.inbox_tasks import InboxTasksCollection
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -133,7 +133,7 @@ class RecurringTasksService:
                 f"Actionable day {actionable_from_day} should be before due day {due_at_day}")
 
     def create_recurring_task(
-            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollectionX, name: str,
+            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollection, name: str,
             period: RecurringTaskPeriod, the_type: RecurringTaskType, eisen: List[Eisen],
             difficulty: Optional[Difficulty], actionable_from_day: Optional[int], actionable_from_month: Optional[int],
             due_at_time: Optional[str], due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool,
@@ -221,7 +221,7 @@ class RecurringTasksService:
         return self._row_to_entity(recurring_task_row)
 
     def set_recurring_task_name(
-            self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollectionX) -> RecurringTask:
+            self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollection) -> RecurringTask:
         """Change the name of a recurring task."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -497,7 +497,7 @@ class RecurringTasksService:
         return self._row_to_entity(self._repository.load_recurring_task(ref_id))
 
     def recurring_tasks_sync(
-            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_tasks_collection: InboxTasksCollectionX,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_tasks_collection: InboxTasksCollection,
             sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer) -> Iterable[RecurringTask]:
         """Synchronise recurring tasks between Notion and local storage."""

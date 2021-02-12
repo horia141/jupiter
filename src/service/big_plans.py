@@ -10,7 +10,7 @@ from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from repository.big_plans import BigPlanRow, BigPlansRepository
 from service.errors import ServiceValidationError
-from service.inbox_tasks import InboxTasksCollectionX
+from service.inbox_tasks import InboxTasksCollection
 from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
@@ -73,7 +73,7 @@ class BigPlansService:
         return BigPlansCollection(project_ref_id=project_ref_id)
 
     def create_big_plan(
-            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollectionX, name: str,
+            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollection, name: str,
             due_date: Optional[ADate]) -> BigPlan:
         """Create a big plan."""
         try:
@@ -133,7 +133,7 @@ class BigPlansService:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
-    def set_big_plan_name(self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollectionX) -> BigPlan:
+    def set_big_plan_name(self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollection) -> BigPlan:
         """Change the name of a big plan."""
         try:
             name = self._basic_validator.entity_name_validate_and_clean(name)
@@ -245,7 +245,7 @@ class BigPlansService:
         return self._row_to_entity(big_plan_row)
 
     def big_plans_sync(
-            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_tasks_collection: InboxTasksCollectionX,
+            self, project_ref_id: EntityId, drop_all_notion_side: bool, inbox_tasks_collection: InboxTasksCollection,
             sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer) -> Iterable[BigPlan]:
         """Synchronise big plans between Notion and local storage."""

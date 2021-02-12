@@ -12,16 +12,14 @@ from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTa
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks_manager import NotionInboxTasksManager, InboxTaskBigPlanLabel
 from repository.inbox_tasks import InboxTasksRepository, InboxTaskRow
-from service.big_plans import BigPlan
 from service.errors import ServiceValidationError
-from service.recurring_tasks import RecurringTask
 from utils.time_field_action import TimeFieldAction
 
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class InboxTasksCollectionX:
+class InboxTasksCollection:
     """The inbox tasks collection attached to a project."""
 
     project_ref_id: EntityId
@@ -53,6 +51,24 @@ class InboxTask:
     completed_time: Optional[Timestamp]
 
 
+@dataclass()
+class BigPlanEssentials:
+    """Essential info about a big plan."""
+
+    ref_id: EntityId
+    name: str
+
+
+@dataclass()
+class RecurringTaskEssentials:
+    """Essential info about a recurring task."""
+
+    ref_id: EntityId
+    name: str
+    period: RecurringTaskPeriod
+    the_type: RecurringTaskType
+
+
 class InboxTasksService:
     """The service class for dealing with inbox tasks."""
 
@@ -69,10 +85,10 @@ class InboxTasksService:
         self._notion_manager = notion_manager
 
     def create_inbox_tasks_collection(
-            self, project_ref_id: EntityId, parent_page: NotionPageLink) -> InboxTasksCollectionX:
+            self, project_ref_id: EntityId, parent_page: NotionPageLink) -> InboxTasksCollection:
         """Create an inbox tasks collection for a project."""
         inbox_tasks_collection = self._notion_manager.upsert_inbox_task_collection(project_ref_id, parent_page)
-        return InboxTasksCollectionX(
+        return InboxTasksCollection(
             project_ref_id=project_ref_id, notion_collection=inbox_tasks_collection.notion_link)
 
     def upsert_inbox_tasks_collection_structure(
@@ -86,10 +102,10 @@ class InboxTasksService:
             self._repository.archive_inbox_task(inbox_task.ref_id)
         self._notion_manager.remove_inbox_tasks_collection(project_ref_id)
 
-    def get_inbox_tasks_collection(self, project_ref_id: EntityId) -> InboxTasksCollectionX:
+    def get_inbox_tasks_collection(self, project_ref_id: EntityId) -> InboxTasksCollection:
         """Retrieve the Notion-side structure link."""
         notion_link = self._notion_manager.get_inbox_tasks_structure(project_ref_id)
-        return InboxTasksCollectionX(
+        return InboxTasksCollection(
             project_ref_id=project_ref_id,
             notion_collection=NotionCollectionLink(
                 page_id=notion_link.page_id,
@@ -512,7 +528,7 @@ class InboxTasksService:
 
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,
-            all_big_plans: Iterable[BigPlan], all_recurring_tasks: Iterable[RecurringTask],
+            all_big_plans: Iterable[BigPlanEssentials], all_recurring_tasks: Iterable[RecurringTaskEssentials],
             sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
