@@ -5,27 +5,23 @@ import logging
 import typing
 from pathlib import Path
 from types import TracebackType
-from typing import Final, ClassVar, Iterable, List, Optional
+from typing import Final, ClassVar, Iterable, Optional
 
-from models.basic import EntityId, ProjectKey, Timestamp, BasicValidator
+from models.basic import EntityId, ProjectKey
 from repository.common import RepositoryError
-from utils.storage import StructuredCollectionStorage, JSONDictType
+from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, Eq, In
+from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class Project:
+class ProjectRow(BaseEntityRow):
     """A project."""
 
-    ref_id: EntityId
     key: ProjectKey
-    archived: bool
     name: str
-    created_time: Timestamp
-    last_modified_time: Timestamp
-    archived_time: Optional[Timestamp]
 
 
 @typing.final
@@ -34,17 +30,16 @@ class ProjectsRepository:
 
     _PROJECTS_FILE_PATH: ClassVar[Path] = Path("./projects.yaml")
 
-    _time_provider: Final[TimeProvider]
-    _structured_storage: Final[StructuredCollectionStorage[Project]]
+    _storage: Final[EntitiesStorage[ProjectRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._structured_storage = StructuredCollectionStorage(self._PROJECTS_FILE_PATH, self)
+        self._storage = EntitiesStorage[ProjectRow](self._PROJECTS_FILE_PATH, time_provider, self)
 
     def __enter__(self) -> 'ProjectsRepository':
         """Enter context."""
-        self._structured_storage.initialize()
+        self._storage.initialize()
         return self
 
     def __exit__(
@@ -53,125 +48,60 @@ class ProjectsRepository:
         """Exit context."""
         if exc_type is not None:
             return
-        self._structured_storage.exit_save()
 
-    def create_project(self, key: ProjectKey, archived: bool, name: str) -> Project:
+    def create_project(self, key: ProjectKey, archived: bool, name: str) -> ProjectRow:
         """Create a project."""
-        projects_next_idx, projects = self._structured_storage.load()
+        project_rows = self._storage.find_all(allow_archived=True, key=Eq(key))
 
-        if self._find_project_by_key(key, projects):
+        if len(project_rows) > 0:
             raise RepositoryError(f"Project with key='{key}' already exists")
 
-        new_project = Project(
-            ref_id=EntityId(str(projects_next_idx)),
-            key=key,
-            archived=archived,
-            name=name,
-            created_time=self._time_provider.get_current_time(),
-            last_modified_time=self._time_provider.get_current_time(),
-            archived_time=self._time_provider.get_current_time() if archived else None)
+        new_project_row = ProjectRow(key=key, archived=archived, name=name)
+        return self._storage.create(new_project_row)
 
-        projects_next_idx += 1
-        projects.append(new_project)
-
-        self._structured_storage.save((projects_next_idx, projects))
-
-        return new_project
-
-    def archive_project(self, key: ProjectKey) -> Project:
+    def archive_project(self, ref_id: EntityId) -> ProjectRow:
         """Remove a particular project."""
-        projects_next_idx, projects = self._structured_storage.load()
+        return self._storage.archive(ref_id)
 
-        for project in projects:
-            if project.key == key:
-                project.archived = True
-                project.last_modified_time = self._time_provider.get_current_time()
-                project.archived_time = self._time_provider.get_current_time()
-                self._structured_storage.save((projects_next_idx, projects))
-                return project
-
-        raise RepositoryError(f"Project with key='{key}' does not exist")
-
-    def load_all_projects(
-            self,
-            filter_archived: bool = True,
-            filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
-        """Retrieve all the projects defined."""
-        _, projects = self._structured_storage.load()
-        filter_keys_set = frozenset(filter_keys) if filter_keys else []
-        return [p for p in projects
-                if (filter_archived is False or p.archived is False)
-                and (len(filter_keys_set) == 0 or p.key in filter_keys_set)]
-
-    def load_project(self, key: ProjectKey) -> Project:
-        """Retrieve a particular project by its key."""
-        _, projects = self._structured_storage.load()
-        found_project = self._find_project_by_key(key, projects)
-        if not found_project:
-            raise RepositoryError(f"Project with key='{key}' does not exist")
-        if found_project.archived:
-            raise RepositoryError(f"Project with key='{key}' is archived")
-        return found_project
-
-    def save_project(self, new_project: Project) -> Project:
+    def update_project(self, new_project: ProjectRow) -> ProjectRow:
         """Store a particular project with all new properties."""
-        projects_next_idx, projects = self._structured_storage.load()
+        return self._storage.update(new_project, archived_time_action=TimeFieldAction.DO_NOTHING)
 
-        if not self._find_project_by_key(new_project.key, projects):
-            raise RepositoryError(f"Project with key='{new_project.key}' does not exist")
+    def load_project(self, ref_id: EntityId, allow_archived: bool = False) -> ProjectRow:
+        """Retrieve a particular project by its key."""
+        return self._storage.load(ref_id, allow_archived)
 
-        new_project.last_modified_time = self._time_provider.get_current_time()
-        new_projects = [(p if p.ref_id != new_project.ref_id else new_project) for p in projects]
-        self._structured_storage.save((projects_next_idx, new_projects))
+    def load_project_by_key(self, key: ProjectKey) -> ProjectRow:
+        """Retrieve a particular project by its key."""
+        return self._storage.find_first(allow_archived=False, key=Eq(key))
 
-        return new_project
-
-    @staticmethod
-    def _find_project_by_key(key: ProjectKey, projects: List[Project]) -> Optional[Project]:
-        try:
-            return next(p for p in projects if p.key == key)
-        except StopIteration:
-            return None
+    def find_all_projects(
+            self,
+            allow_archived: bool = False,
+            filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[ProjectRow]:
+        """Retrieve all the projects defined."""
+        return self._storage.find_all(allow_archived=allow_archived, key=In(*filter_keys) if filter_keys else None)
 
     @staticmethod
     def storage_schema() -> JSONDictType:
         """The schema for the data."""
         return {
-            "type": "object",
-            "properties": {
-                "ref_id": {"type": "string"},
-                "key": {"type": "string"},
-                "archived": {"type": "boolean"},
-                "name": {"type": "string"},
-                "created_time": {"type": "string"},
-                "last_modified_time": {"type": "string"},
-                "archived_time": {"type": ["string", "null"]}
-            }
+            "key": {"type": "string"},
+            "name": {"type": "string"}
         }
 
     @staticmethod
-    def storage_to_live(storage_form: JSONDictType) -> Project:
+    def storage_to_live(storage_form: JSONDictType) -> ProjectRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return Project(
-            ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+        return ProjectRow(
             key=ProjectKey(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
-            name=typing.cast(str, storage_form["name"]),
-            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])),
-            archived_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["archived_time"]))
-            if storage_form["archived_time"] is not None else None)
+            name=typing.cast(str, storage_form["name"]))
 
     @staticmethod
-    def live_to_storage(live_form: Project) -> JSONDictType:
+    def live_to_storage(live_form: ProjectRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "ref_id": live_form.ref_id,
             "key": live_form.key,
-            "archived": live_form.archived,
-            "name": live_form.name,
-            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
-            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time),
-            "archived_time": BasicValidator.timestamp_to_str(live_form.archived_time)
-                             if live_form.archived_time else None
+            "name": live_form.name
         }

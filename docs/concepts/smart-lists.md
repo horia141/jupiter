@@ -14,7 +14,7 @@ Each smart list contains many items, for example:
 ![Smart list items](../assets/concepts-smart-list-items.png)
 
 Much like [projects](projects.md), smart lists are created via the
-`jupiter smart-list-create --key $smartListKey --name "Smart List Name"` command. The command is
+`jupiter smart-lists-create --smart-list $smartListKey --name "Smart List Name"` command. The command is
 idempotent. The key plays the same part it does for a project, is a unique identifier for the
 smart list, and must be some nice string with no spaces or funny characters like `books` or `movies`.
 It will be used as a reference to the project in other commands.

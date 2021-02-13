@@ -52,6 +52,10 @@ class SyncLocalAndNotion(command.Command):
                             help="Sync only these smart lists")
         parser.add_argument("--smart-list-item-id", dest="smart_list_item_ref_ids", default=[], action="append",
                             help="Sync only these smart list items")
+        parser.add_argument("--metric", dest="metric_keys", default=[], action="append",
+                            help="Sync only these metrics")
+        parser.add_argument("--metric-entry-id", dest="metric_entry_ref_ids", default=[], action="append",
+                            help="Sync only these metric entries")
         parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
         parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
@@ -62,7 +66,7 @@ class SyncLocalAndNotion(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         sync_targets = [self._basic_validator.sync_target_validate_and_clean(st) for st in args.sync_targets]\
-            if len(args.sync_targets) > 0 else list(st for st in SyncTarget)
+            if len(args.sync_targets) > 0 else list(st for st in SyncTarget if st is not SyncTarget.STRUCTURE)
         vacation_ref_ids = [self._basic_validator.entity_id_validate_and_clean(v) for v in args.vacation_ref_ids] \
             if len(args.vacation_ref_ids) > 0 else None
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys]\
@@ -81,6 +85,12 @@ class SyncLocalAndNotion(command.Command):
         smart_list_item_ref_ids = [self._basic_validator.entity_id_validate_and_clean(sli)
                                    for sli in args.smart_list_item_ref_ids] \
             if len(args.smart_list_item_ref_ids) > 0 else None
+        metric_keys = [self._basic_validator.metric_key_validate_and_clean(sl)
+                       for sl in args.metric_keys] \
+            if len(args.metric_keys) > 0 else None
+        metric_entry_ref_ids = [self._basic_validator.entity_id_validate_and_clean(sli)
+                                for sli in args.metric_entry_ref_ids] \
+            if len(args.metric_entry_ref_ids) > 0 else None
         sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
@@ -95,4 +105,6 @@ class SyncLocalAndNotion(command.Command):
             filter_recurring_task_ref_ids=recurring_task_ref_ids,
             filter_smart_list_keys=smart_list_keys,
             filter_smart_list_item_ref_ids=smart_list_item_ref_ids,
+            filter_metric_keys=metric_keys,
+            filter_metric_entry_ref_ids=metric_entry_ref_ids,
             sync_prefer=sync_prefer)

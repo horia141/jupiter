@@ -7,6 +7,8 @@ from pendulum.tz.timezone import Timezone
 from models.basic import WorkspaceSpaceId, WorkspaceToken
 from remote.notion.infra.connection import NotionConnection
 from repository.workspace import Workspace
+from service.metrics import MetricsService
+from service.projects import ProjectsService
 from service.smart_lists import SmartListsService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
@@ -20,16 +22,21 @@ class WorkspacesController:
     _notion_connection: Final[NotionConnection]
     _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]
+    _projects_service: Final[ProjectsService]
     _smart_lists_service: Final[SmartListsService]
+    _metrics_service: Final[MetricsService]
 
     def __init__(
             self, notion_connection: NotionConnection, workspaces_service: WorkspacesService,
-            vacations_service: VacationsService, smart_lists_service: SmartListsService) -> None:
+            vacations_service: VacationsService, projects_service: ProjectsService,
+            smart_lists_service: SmartListsService, metrics_service: MetricsService) -> None:
         """Constructor."""
         self._notion_connection = notion_connection
         self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
+        self._projects_service = projects_service
         self._smart_lists_service = smart_lists_service
+        self._metrics_service = metrics_service
 
     def create_workspace(
             self, name: str, timezone: Timezone, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
@@ -41,8 +48,12 @@ class WorkspacesController:
         new_workspace_page = self._workspaces_service.create_workspace(name, timezone)
         LOGGER.info("Creating vacations")
         self._vacations_service.upsert_root_notion_structure(new_workspace_page)
+        LOGGER.info("Creating projects")
+        self._projects_service.upsert_root_notion_structure(new_workspace_page)
         LOGGER.info("Creating lists")
         self._smart_lists_service.upsert_root_notion_structure(new_workspace_page)
+        LOGGER.info("Creating metrics")
+        self._metrics_service.upsert_root_notion_structure(new_workspace_page)
 
     def set_workspace_name(self, name: str) -> Workspace:
         """Change the workspace name."""

@@ -7,7 +7,7 @@ from typing import Final, Optional, ClassVar, Iterable
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId, ADate, BasicValidator, Timestamp
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.common import NotionId, NotionPageLink, NotionLockKey
 from remote.notion.infra.collections_manager import BaseItem, CollectionsManager
 from utils.storage import JSONDictType
@@ -59,6 +59,15 @@ class NotionVacationsManager:
             "type": "text"
         }
     }
+
+    _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
+        NotionFieldProps("title", NotionFieldShow.SHOW),
+        NotionFieldProps("start-date", NotionFieldShow.SHOW),
+        NotionFieldProps("end-date", NotionFieldShow.SHOW),
+        NotionFieldProps("archived", NotionFieldShow.SHOW),
+        NotionFieldProps("ref-id", NotionFieldShow.SHOW),
+        NotionFieldProps("last-edited-time", NotionFieldShow.HIDE),
+    ]
 
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Database",
@@ -133,6 +142,7 @@ class NotionVacationsManager:
             parent_page=parent_page_link,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "database_view_id": self._DATABASE_VIEW_SCHEMA
             })

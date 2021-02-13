@@ -13,7 +13,7 @@ import typing
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
-from remote.notion.infra.client import NotionClient
+from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra, NotionCollectionTagLink
 from remote.notion.infra.connection import NotionConnection
@@ -104,8 +104,14 @@ class CollectionsManager:
 
     def upsert_collection(
             self, key: NotionLockKey, parent_page: NotionPageLink, name: str, schema: JSONDictType,
+            schema_properties: NotionCollectionSchemaProperties,
             view_schemas: Dict[str, JSONDictType]) -> NotionCollectionLink:
         """Create the Notion-side structure for this collection."""
+        simdif_fields = set(schema.keys()).symmetric_difference(m.name for m in schema_properties)
+
+        if len(simdif_fields) > 0:
+            raise Exception(f"Schema params are off: {','.join(simdif_fields)}")
+
         lock = self._collections_storage.load_optional(key)
 
         client = self._connection.get_notion_client()
@@ -146,6 +152,11 @@ class CollectionsManager:
         page.title = name
         collection.name = name
         LOGGER.info("Changed the name")
+
+        # Arrange the fields.
+
+        client.assign_collection_schema_properties(collection, schema_properties)
+        LOGGER.info("Changed the field order")
 
         # Save local locks.
         new_lock = _CollectionLockRow(
@@ -193,6 +204,17 @@ class CollectionsManager:
         old_schema = collection.get("schema")
         final_schema = self._merge_notion_schemas(old_schema, new_schema)
         collection.set("schema", final_schema)
+        LOGGER.info("Applied the most current schema to the collection")
+
+    def update_collection_no_merge(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
+        """Just updates the name and schema for the collection and asks no questions."""
+        lock = self._collections_storage.load(key)
+        client = self._connection.get_notion_client()
+        page = client.get_collection_page_by_id(lock.page_id)
+        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+        page.title = new_name
+        collection.name = new_name
+        collection.set("schema", new_schema)
         LOGGER.info("Applied the most current schema to the collection")
 
     @staticmethod
@@ -605,19 +627,17 @@ class CollectionsManager:
                     combined_schema[schema_item_name] = {
                         "name": schema_item["name"],
                         "type": schema_item["type"],
-                        "options": []
+                        "options": typing.cast(typing.List[Dict[str, str]], old_v.get("options", []))
                     }
 
                     for option in schema_item["options"]:
                         old_option = next(
-                            (old_o for old_o in old_v.get("options", []) if old_o["value"] == option["value"]),
+                            (old_o
+                             for old_o in combined_schema[schema_item_name]["options"]
+                             if old_o["value"] == option["value"]),
                             None)
                         if old_option is not None:
-                            combined_schema[schema_item_name]["options"].append({
-                                "color": option["color"],
-                                "value": option["value"],
-                                "id": old_option["id"]
-                            })
+                            old_option["color"] = option["color"]
                         else:
                             combined_schema[schema_item_name]["options"].append(option)
                 else:

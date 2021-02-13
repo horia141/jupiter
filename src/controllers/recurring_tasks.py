@@ -9,11 +9,9 @@ from controllers.common import ControllerInputValidationError
 from models import schedules
 from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
     ADate
-from repository.inbox_tasks import InboxTask
-from repository.recurring_tasks import RecurringTask
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
-from service.recurring_tasks import RecurringTasksService
+from service.recurring_tasks import RecurringTasksService, RecurringTask
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
@@ -58,10 +56,10 @@ class RecurringTasksController:
             end_at_date: Optional[ADate]) -> RecurringTask:
         """Create an recurring task."""
         project = self._projects_service.load_project_by_key(project_key)
-        inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
+        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project.ref_id)
         recurring_task = self._recurring_tasks_service.create_recurring_task(
             project_ref_id=project.ref_id,
-            inbox_collection_link=inbox_collection_link,
+            inbox_tasks_collection=inbox_tasks_collection,
             name=name,
             period=period,
             the_type=the_type,
@@ -83,7 +81,7 @@ class RecurringTasksController:
         """Archive an recurring task."""
         recurring_task = self._recurring_tasks_service.load_recurring_task_by_id(ref_id)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
             LOGGER.info(f"Removing inbox task instance {inbox_task.name}")
@@ -91,9 +89,11 @@ class RecurringTasksController:
 
     def set_recurring_task_name(self, ref_id: EntityId, name: str) -> RecurringTask:
         """Change the name for a recurring task."""
-        recurring_task = self._recurring_tasks_service.set_recurring_task_name(ref_id, name)
+        recurring_task = self._recurring_tasks_service.load_recurring_task_by_id(ref_id)
+        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(recurring_task.project_ref_id)
+        recurring_task = self._recurring_tasks_service.set_recurring_task_name(ref_id, name, inbox_tasks_collection)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
@@ -107,7 +107,7 @@ class RecurringTasksController:
         """Change the period for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_period(ref_id, period)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             if inbox_task.status.is_completed:
                 continue
@@ -125,7 +125,7 @@ class RecurringTasksController:
         """Change the type for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_type(ref_id, the_type)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             if inbox_task.status.is_completed:
                 continue
@@ -143,7 +143,7 @@ class RecurringTasksController:
         """Change the difficulty for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_eisen(ref_id, eisen)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.set_inbox_task_eisen(inbox_task.ref_id, eisen)
         return recurring_task
@@ -152,7 +152,7 @@ class RecurringTasksController:
         """Change the difficulty for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_difficulty(ref_id, difficulty)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.set_inbox_task_difficulty(inbox_task.ref_id, difficulty)
         return recurring_task
@@ -164,7 +164,7 @@ class RecurringTasksController:
         recurring_task = self._recurring_tasks_service.set_recurring_task_actionable_config(
             ref_id, actionable_from_day, actionable_from_month)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
@@ -181,7 +181,7 @@ class RecurringTasksController:
         recurring_task = self._recurring_tasks_service.set_recurring_task_deadlines(
             ref_id, due_at_time, due_at_day, due_at_month)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
@@ -218,10 +218,10 @@ class RecurringTasksController:
             filter_project_ref_ids = [p.ref_id for p in projects]
 
         recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-            filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,
+            allow_archived=show_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
         inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_recurring_task_ref_ids=(bp.ref_id for bp in recurring_tasks))
+            allow_archived=True, filter_recurring_task_ref_ids=(bp.ref_id for bp in recurring_tasks))
 
         return LoadAllRecurringTasksResponse(
             recurring_tasks=[LoadAllRecurringTasksEntry(
@@ -236,7 +236,7 @@ class RecurringTasksController:
             raise ControllerInputValidationError("Expected at least one entity to remove")
 
         inbox_tasks_for_recurring_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_big_plan_ref_ids=ref_ids)
+            allow_archived=True, filter_big_plan_ref_ids=ref_ids)
 
         for inbox_task in inbox_tasks_for_recurring_tasks:
             LOGGER.info(f"Hard removing task {inbox_task.name} for recurring task")

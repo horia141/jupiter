@@ -8,6 +8,7 @@ from notion.collection import CollectionRowBlock
 
 from models.basic import Timestamp, EntityId, BasicValidator, Tag
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from remote.notion.infra.pages_manager import PagesManager
 from utils.storage import JSONDictType
@@ -77,6 +78,16 @@ class NotionSmartListsManager:
             "type": "last_edited_time"
         },
     }
+
+    _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
+        NotionFieldProps("title", NotionFieldShow.SHOW),
+        NotionFieldProps("is-done", NotionFieldShow.SHOW),
+        NotionFieldProps("tags", NotionFieldShow.SHOW),
+        NotionFieldProps("url", NotionFieldShow.SHOW),
+        NotionFieldProps("archived", NotionFieldShow.SHOW),
+        NotionFieldProps("ref-id", NotionFieldShow.SHOW),
+        NotionFieldProps("last-edited-time", NotionFieldShow.HIDE),
+    ]
 
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "All",
@@ -260,7 +271,7 @@ class NotionSmartListsManager:
         """Upsert the root page for the smart lists section."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, parent_page_link)
 
-    def upsert_smart_list(self, ref_id: EntityId, name: str) -> SmartListNotionCollection:
+    def upsert_smart_list_collection(self, ref_id: EntityId, name: str) -> SmartListNotionCollection:
         """Upsert the Notion-side smart list."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         collection_link = self._collections_manager.upsert_collection(
@@ -268,6 +279,7 @@ class NotionSmartListsManager:
             parent_page=root_page,
             name=name,
             schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "database_view_id": self._DATABASE_VIEW_SCHEMA,
                 "database_done_view_id": self._DATABASE_VIEW_DONE_SCHEMA,
@@ -279,7 +291,7 @@ class NotionSmartListsManager:
             ref_id=ref_id,
             notion_id=collection_link.collection_id)
 
-    def load_smart_list(self, smart_list_ref_id: EntityId) -> SmartListNotionCollection:
+    def load_smart_list_collection(self, smart_list_ref_id: EntityId) -> SmartListNotionCollection:
         """Load a smart list collection."""
         smart_list_link = self._collections_manager.get_collection(
             key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
@@ -289,14 +301,14 @@ class NotionSmartListsManager:
             ref_id=smart_list_ref_id,
             notion_id=smart_list_link.collection_id)
 
-    def save_smart_list(self, smart_list: SmartListNotionCollection) -> None:
+    def save_smart_list_collection(self, smart_list: SmartListNotionCollection) -> None:
         """Save a smart list collection."""
         self._collections_manager.update_collection(
             key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
             new_name=smart_list.name,
             new_schema=self._SCHEMA)
 
-    def hard_remove_smart_list(self, ref_id: EntityId) -> None:
+    def hard_remove_smart_list_collection(self, ref_id: EntityId) -> None:
         """Hard remove a smart list item."""
         self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
 

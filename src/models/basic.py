@@ -29,6 +29,7 @@ class SyncTarget(enum.Enum):
     RECURRING_TASKS = "recurring-tasks"
     BIG_PLANS = "big-plans"
     SMART_LISTS = "smart-lists"
+    METRICS = "metrics"
 
 
 @enum.unique
@@ -63,6 +64,9 @@ ProjectKey = NewType("ProjectKey", str)
 
 
 SmartListKey = NewType("SmartListKey", str)
+
+
+MetricKey = NewType("MetricKey", str)
 
 
 @enum.unique
@@ -202,6 +206,18 @@ class BigPlanStatus(enum.Enum):
         return self in (BigPlanStatus.NOT_DONE, BigPlanStatus.DONE)
 
 
+@enum.unique
+class MetricUnit(enum.Enum):
+    """The unit for a metric."""
+    COUNT = "count"
+    MONETARY_AMOUNT = "money"
+    WEIGHT = "weight"
+
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return str(self.value).capitalize()
+
+
 class BasicValidator:
     """A validator class for various basic model types."""
 
@@ -213,6 +229,7 @@ class BasicValidator:
     _workspace_token_re: Final[Pattern[str]] = re.compile(r"^[0-9a-f]+$")
     _project_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
     _smart_list_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
+    _metric_key_re: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
     _eisen_values: Final[FrozenSet[str]] = frozenset(e.value for e in Eisen)
     _difficulty_values: Final[FrozenSet[str]] = frozenset(d.value for d in Difficulty)
     _inbox_task_status_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskStatus)
@@ -235,6 +252,7 @@ class BasicValidator:
     }
     _big_plan_status_values: Final[FrozenSet[str]] = frozenset(bps.value for bps in BigPlanStatus)
     _tag_re: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
+    _metric_unit_values: Final[FrozenSet[str]] = frozenset(mu.value for mu in MetricUnit)
 
     _global_properties: Final[GlobalProperties]
 
@@ -372,6 +390,22 @@ class BasicValidator:
                 f"Expected smart list key '{smart_list_key_raw}' to match '{self._smart_list_key_re.pattern}'")
 
         return SmartListKey(smart_list_key_str)
+
+    def metric_key_validate_and_clean(self, metric_key_raw: Optional[str]) -> MetricKey:
+        """Validate and clean a metric."""
+        if not metric_key_raw:
+            raise ModelValidationError("Expected metric key key to be non-null")
+
+        metric_key_str: str = metric_key_raw.strip().lower()
+
+        if len(metric_key_str) == 0:
+            raise ModelValidationError("Expected metric key to be non-empty")
+
+        if not self._metric_key_re.match(metric_key_str):
+            raise ModelValidationError(
+                f"Expected metric key '{metric_key_raw}' to match '{self._metric_key_re.pattern}'")
+
+        return MetricKey(metric_key_str)
 
     def timestamp_validate_and_clean(self, timestamp_raw: Optional[str]) -> Timestamp:
         """Validate and clean an optional timestamp."""
@@ -635,6 +669,25 @@ class BasicValidator:
     def big_plan_status_values() -> Iterable[str]:
         """The possible values for big plan statues."""
         return BasicValidator._big_plan_status_values
+
+    def metric_unit_validate_and_clean(self, metric_unit_raw: Optional[str]) -> MetricUnit:
+        """Validate and clean the metric unit."""
+        if not metric_unit_raw:
+            raise ModelValidationError("Expected metric unit to be non-null")
+
+        metric_unit_str: str = '-'.join(metric_unit_raw.strip().lower().split(' '))
+
+        if metric_unit_str not in self._metric_unit_values:
+            raise ModelValidationError(
+                f"Expected metric unit '{metric_unit_raw}' to be " +
+                f"one of '{','.join(self._metric_unit_values)}'")
+
+        return MetricUnit(metric_unit_str)
+
+    @staticmethod
+    def metric_unit_values() -> Iterable[str]:
+        """The possible values for metric units."""
+        return BasicValidator._metric_unit_values
 
     @staticmethod
     def timezone_validate_and_clean(timezone_raw: Optional[str]) -> Timezone:

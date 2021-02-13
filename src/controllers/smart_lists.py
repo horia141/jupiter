@@ -9,7 +9,7 @@ from service.smart_lists import SmartListsService, SmartList, SmartListItem, Sma
 
 @dataclass()
 class LoadAllSmartListsEntry:
-    """A single entry in the LoadALlSmartListsResponse."""
+    """A single entry in the LoadAllSmartListsResponse."""
 
     smart_list: SmartList
     smart_list_items: Iterable[SmartListItem]
@@ -66,7 +66,7 @@ class SmartListsController:
         return self._smart_lists_service.create_smart_list(key=key, name=name)
 
     def archive_smart_list(self, key: SmartListKey) -> SmartList:
-        """Archive smart list item."""
+        """Archive smart list."""
         smart_list = self._smart_lists_service.load_smart_list_by_key(key)
         return self._smart_lists_service.archive_smart_list(smart_list.ref_id)
 
@@ -77,13 +77,12 @@ class SmartListsController:
 
     def load_all_smart_lists(
             self, allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[SmartListKey]] = None) -> LoadAllSmartListsResponse:
         """Retrieve all smart lists."""
         smart_lists = self._smart_lists_service.load_all_smart_lists(
-            allow_archived=allow_archived, filter_ref_ids=filter_ref_ids, filter_keys=filter_keys)
+            allow_archived=allow_archived, filter_keys=filter_keys)
         smart_list_items = self._smart_lists_service.load_all_smart_list_items(
-            allow_archived=allow_archived, filter_smart_list_ref_ids=filter_ref_ids)
+            allow_archived=allow_archived, filter_smart_list_ref_ids=[sm.ref_id for sm in smart_lists])
         smart_list_items_by_smart_list_ref_ids = {}
         for smart_list_item in smart_list_items:
             if smart_list_item.smart_list_ref_id not in smart_list_items_by_smart_list_ref_ids:

@@ -3,13 +3,11 @@ import logging
 from typing import Final, Optional, Iterable
 
 from models.basic import ProjectKey, SyncTarget
-from repository.big_plans import BigPlan
-from repository.inbox_tasks import InboxTask
-from repository.recurring_tasks import RecurringTask
-from service.big_plans import BigPlansService
-from service.inbox_tasks import InboxTasksService
+from service.big_plans import BigPlansService, BigPlan
+from service.inbox_tasks import InboxTasksService, InboxTask
+from service.metrics import MetricsService, Metric, MetricEntry
 from service.projects import ProjectsService
-from service.recurring_tasks import RecurringTasksService
+from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.smart_lists import SmartListsService, SmartList, SmartListItem
 from service.vacations import VacationsService, Vacation
 
@@ -25,11 +23,13 @@ class GarbageCollectNotionController:
     _recurring_tasks_service: Final[RecurringTasksService]
     _big_plans_service: Final[BigPlansService]
     _smart_lists_service: Final[SmartListsService]
+    _metrics_service: Final[MetricsService]
 
     def __init__(
             self, vacations_service: VacationsService, projects_service: ProjectsService,
             inbox_tasks_service: InboxTasksService, recurring_tasks_service: RecurringTasksService,
-            big_plans_service: BigPlansService, smart_lists_service: SmartListsService) -> None:
+            big_plans_service: BigPlansService, smart_lists_service: SmartListsService,
+            metrics_service: MetricsService) -> None:
         """Constructor."""
         self._vacations_service = vacations_service
         self._projects_service = projects_service
@@ -37,6 +37,7 @@ class GarbageCollectNotionController:
         self._recurring_tasks_service = recurring_tasks_service
         self._big_plans_service = big_plans_service
         self._smart_lists_service = smart_lists_service
+        self._metrics_service = metrics_service
 
     def garbage_collect(
             self, sync_targets: Iterable[SyncTarget], project_keys: Optional[Iterable[ProjectKey]],
@@ -63,7 +64,7 @@ class GarbageCollectNotionController:
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for inbox tasks")
                     inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                        allow_archived=True, filter_project_ref_ids=[project.ref_id])
                     self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting inbox tasks which were archived")
@@ -74,7 +75,7 @@ class GarbageCollectNotionController:
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for recurring tasks")
                     recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                        allow_archived=True, filter_project_ref_ids=[project.ref_id])
                     self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting recurring tasks which were archived")
@@ -89,7 +90,7 @@ class GarbageCollectNotionController:
                 if do_anti_entropy:
                     LOGGER.info(f"Performing anti-entropy adjustments for big plans")
                     big_plans = self._big_plans_service.load_all_big_plans(
-                        filter_archived=False, filter_project_ref_ids=[project.ref_id])
+                        allow_archived=True, filter_project_ref_ids=[project.ref_id])
                     self._do_anti_entropy_for_big_plans(big_plans)
                 if do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting big plans which were archived")
@@ -116,6 +117,27 @@ class GarbageCollectNotionController:
                     smart_list_items = \
                         self._smart_lists_service.load_all_smart_list_items_not_notion_gced(smart_list.ref_id)
                     self._do_drop_all_archived_smart_list_items(smart_list_items)
+
+        if SyncTarget.METRICS in sync_targets:
+            metrics: Iterable[Metric] = []
+            if do_anti_entropy:
+                LOGGER.info(f"Performing anti-entropy adjustments for metrics")
+                metrics = self._metrics_service.load_all_metrics(allow_archived=True)
+                metrics = self._do_anti_entropy_for_metrics(metrics)
+            if do_notion_cleanup:
+                LOGGER.info(f"Garbage collecting metrics which were archived")
+                metrics = metrics or self._metrics_service.load_all_metrics(allow_archived=True)
+                self._do_drop_all_archived_metrics(metrics)
+            if do_anti_entropy:
+                LOGGER.info(f"Performing anti-entropy adjustments for metric entries")
+                metric_items = self._metrics_service.load_all_metric_entries(allow_archived=True)
+                self._do_anti_entropy_for_metric_entries(metric_items)
+            if do_notion_cleanup:
+                LOGGER.info(f"Garbage collecting metric entries which were archived")
+                for metric in metrics:
+                    metric_items = \
+                        self._metrics_service.load_all_metric_entries_not_notion_gced(metric.ref_id)
+                    self._do_drop_all_archived_metric_entries(metric_items)
 
     def _do_anti_entropy_for_vacations(
             self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:
@@ -180,6 +202,28 @@ class GarbageCollectNotionController:
             smart_list_items_name_set[smart_list_item.name] = smart_list_item
         return smart_list_items_name_set.values()
 
+    def _do_anti_entropy_for_metrics(self, all_metrics: Iterable[Metric]) -> Iterable[Metric]:
+        metrics_name_set = {}
+        for metric in all_metrics:
+            if metric.name in metrics_name_set:
+                LOGGER.info(f"Found a duplicate metric '{metric.name}' - removing in anti-entropy")
+                self._metrics_service.hard_remove_metric(metric.ref_id)
+                continue
+            metrics_name_set[metric.name] = metric
+        return metrics_name_set.values()
+
+    def _do_anti_entropy_for_metric_entries(
+            self, all_metric_entrys: Iterable[MetricEntry]) -> Iterable[MetricEntry]:
+        metric_entries_collection_time_set = {}
+        for metric_entry in all_metric_entrys:
+            if metric_entry.collection_time in metric_entries_collection_time_set:
+                LOGGER.info(
+                    f"Found a duplicate metric entry '{metric_entry.collection_time}' - removing in anti-entropy")
+                self._metrics_service.hard_remove_metric_entry(metric_entry.ref_id)
+                continue
+            metric_entries_collection_time_set[metric_entry.collection_time] = metric_entry
+        return metric_entries_collection_time_set.values()
+
     def _do_drop_all_archived_vacations(self, all_vacations: Iterable[Vacation]) -> None:
         for vacation in all_vacations:
             if not vacation.archived:
@@ -221,3 +265,17 @@ class GarbageCollectNotionController:
                 continue
             LOGGER.info(f"Removed an archived smart list item '{smart_list_item.name}' on Notion side")
             self._smart_lists_service.remove_smart_list_item_on_notion_side(smart_list_item.ref_id)
+
+    def _do_drop_all_archived_metrics(self, metrics: Iterable[Metric]) -> None:
+        for metric in metrics:
+            if not metric.archived:
+                continue
+            LOGGER.info(f"Removed an archived metric '{metric.name}' on Notion side")
+            self._metrics_service.remove_metric_on_notion_side(metric.ref_id)
+
+    def _do_drop_all_archived_metric_entries(self, metric_entries: Iterable[MetricEntry]) -> None:
+        for metric_entry in metric_entries:
+            if not metric_entry.archived:
+                continue
+            LOGGER.info(f"Removed an archived metric entry '{metric_entry.collection_time}' on Notion side")
+            self._metrics_service.remove_metric_entry_on_notion_side(metric_entry.ref_id)

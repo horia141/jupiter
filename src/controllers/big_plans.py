@@ -5,10 +5,9 @@ from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, BigPlanStatus, ADate
-from repository.big_plans import BigPlan
-from repository.inbox_tasks import InboxTask
-from service.big_plans import BigPlansService
-from service.inbox_tasks import InboxTasksService
+from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
+from service.big_plans import BigPlansService, BigPlan
+from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
 
 LOGGER = logging.getLogger(__name__)
@@ -46,10 +45,12 @@ class BigPlansController:
     def create_big_plan(self, project_key: ProjectKey, name: str, due_date: Optional[ADate]) -> BigPlan:
         """Create an big plan."""
         project = self._projects_service.load_project_by_key(project_key)
-        inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
-        big_plan = self._big_plans_service.create_big_plan(project.ref_id, inbox_collection_link, name, due_date)
+        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project.ref_id)
+        big_plan = self._big_plans_service.create_big_plan(project.ref_id, inbox_tasks_collection, name, due_date)
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[project.ref_id])
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
+        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+            project.ref_id,
+            [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
 
         return big_plan
 
@@ -67,16 +68,28 @@ class BigPlansController:
         LOGGER.info(f"Archived the big plan")
 
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(big_plan.project_ref_id, all_big_plans)
+        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+            big_plan.project_ref_id,
+            [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
         LOGGER.info(f"Updated the schema for the associated inbox")
 
         return big_plan
 
     def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
         """Change the due date of a big plan."""
-        big_plan = self._big_plans_service.set_big_plan_name(ref_id, name)
+        big_plan = self._big_plans_service.load_big_plan_by_id(ref_id)
+        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(big_plan.project_ref_id)
+        big_plan = self._big_plans_service.set_big_plan_name(ref_id, name, inbox_tasks_collection)
         all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[big_plan.project_ref_id])
-        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(big_plan.project_ref_id, all_big_plans)
+        self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+            big_plan.project_ref_id,
+            [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
+        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
+            allow_archived=True, filter_big_plan_ref_ids=[big_plan.ref_id])
+
+        for inbox_task in all_inbox_tasks:
+            LOGGER.info(f'Updating the associated inbox task "{inbox_task.name}"')
+            self._inbox_tasks_service.set_inbox_task_to_big_plan_link(inbox_task.ref_id, big_plan.ref_id, big_plan.name)
 
         return big_plan
 
@@ -98,10 +111,10 @@ class BigPlansController:
             filter_project_ref_ids = [p.ref_id for p in projects]
 
         big_plans = self._big_plans_service.load_all_big_plans(
-            filter_archived=not show_archived, filter_ref_ids=filter_ref_ids,
+            allow_archived=show_archived, filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids)
         inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_archived=False, filter_big_plan_ref_ids=(bp.ref_id for bp in big_plans))
+            allow_archived=True, filter_big_plan_ref_ids=(bp.ref_id for bp in big_plans))
 
         return LoadAllBigPlansResponse(
             big_plans=[LoadAllBigPlansEntry(
@@ -116,7 +129,7 @@ class BigPlansController:
             raise ControllerInputValidationError("Expected at least one entity to remove")
 
         inbox_tasks_for_big_plan = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_big_plan_ref_ids=ref_ids)
+            allow_archived=True, filter_big_plan_ref_ids=ref_ids)
 
         for inbox_task in inbox_tasks_for_big_plan:
             LOGGER.info(f"Hard removing task {inbox_task.name} for plan")

@@ -29,6 +29,19 @@ from command.inbox_tasks_set_eisen import InboxTasksSetEisen
 from command.inbox_tasks_set_name import InboxTasksSetName
 from command.inbox_tasks_set_status import InboxTasksSetStatus
 from command.inbox_tasks_show import InboxTasksShow
+from command.metrics_archive import MetricsArchive
+from command.metrics_create import MetricsCreate
+from command.metrics_entry_archive import MetricsEntryArchive
+from command.metrics_entry_create import MetricsEntryCreate
+from command.metrics_entry_hard_remove import MetricsEntryHardRemove
+from command.metrics_entry_set_collection_time import MetricsEntrySetCollectionTime
+from command.metrics_entry_set_notes import MetricsEntrySetNotes
+from command.metrics_entry_set_value import MetricsEntrySetValue
+from command.metrics_entry_show import MetricsEntryShow
+from command.metrics_hard_remove import MetricsHardRemove
+from command.metrics_set_collection_period import MetricsSetCollectionPeriod
+from command.metrics_set_name import MetricsSetName
+from command.metrics_show import MetricsShow
 from command.projects_archive import ProjectArchive
 from command.projects_create import ProjectCreate
 from command.projects_set_name import ProjectSetName
@@ -86,6 +99,7 @@ from command.workspace_show import WorkspaceShow
 from controllers.big_plans import BigPlansController
 from controllers.garbage_collect_notion import GarbageCollectNotionController
 from controllers.inbox_tasks import InboxTasksController
+from controllers.metrics import MetricsController
 from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
 from controllers.generate_inbox_tasks import GenerateInboxTasksController
@@ -95,20 +109,22 @@ from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
 from models.basic import BasicValidator
-from remote.notion.big_plans import BigPlansCollection
+from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
+from remote.notion.inbox_tasks_manager import NotionInboxTasksManager
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.connection import \
     MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
-from remote.notion.inbox_tasks import InboxTasksCollection
 from remote.notion.infra.pages_manager import PagesManager
+from remote.notion.metrics_manager import NotionMetricsManager
+from remote.notion.projects_manager import NotionProjectsManager
+from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from remote.notion.smart_lists_manager import NotionSmartListsManager
-from remote.notion.projects import ProjectsCollection
-from remote.notion.recurring_tasks import RecurringTasksCollection
 from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
+from repository.metrics import MetricsRepository, MetricEntriesRepository
 from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
@@ -116,6 +132,7 @@ from repository.vacations import VacationsRepository
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
+from service.metrics import MetricsService
 from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
@@ -145,15 +162,20 @@ def main() -> None:
             SmartListsRepository(time_provider) as smart_lists_repository, \
             SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
-            ProjectsCollection(notion_connection) as projects_collection, \
-            InboxTasksCollection(time_provider, basic_validator, notion_connection) as inbox_tasks_collection, \
-            RecurringTasksCollection(time_provider, basic_validator, notion_connection) as recurring_tasks_collection, \
-            BigPlansCollection(time_provider, basic_validator, notion_connection) as big_plans_collection, \
+            MetricsRepository(time_provider) as metrics_repository, \
+            MetricEntriesRepository(time_provider) as metric_entry_repository, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
         notion_vacations_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
+        notion_projects_manager = NotionProjectsManager(pages_manager)
+        notion_inbox_tasks_manager = NotionInboxTasksManager(time_provider, basic_validator, collections_manager)
+        notion_recurring_tasks_manager = NotionRecurringTasksManager(
+            time_provider, basic_validator, collections_manager)
+        notion_big_plans_manager = NotionBigPlansManager(time_provider, basic_validator, collections_manager)
         notion_smart_lists_manager = NotionSmartListsManager(
+            time_provider, basic_validator, pages_manager, collections_manager)
+        notion_metrics_manager = NotionMetricsManager(
             time_provider, basic_validator, pages_manager, collections_manager)
 
         workspaces_service = WorkspacesService(
@@ -161,39 +183,44 @@ def main() -> None:
         vacations_service = VacationsService(
             basic_validator, vacations_repository, notion_vacations_manager)
         projects_service = ProjectsService(
-            basic_validator, projects_repository, projects_collection)
+            basic_validator, projects_repository, notion_projects_manager)
         inbox_tasks_service = InboxTasksService(
-            basic_validator, inbox_tasks_repository, inbox_tasks_collection)
+            basic_validator, inbox_tasks_repository, notion_inbox_tasks_manager)
         recurring_tasks_service = RecurringTasksService(
-            basic_validator, time_provider, recurring_tasks_repository, recurring_tasks_collection)
-        big_plans_service = BigPlansService(basic_validator, big_plans_repository, big_plans_collection)
+            basic_validator, time_provider, recurring_tasks_repository, notion_recurring_tasks_manager)
+        big_plans_service = BigPlansService(
+            basic_validator, big_plans_repository, notion_big_plans_manager)
         smart_lists_service = SmartListsService(
             basic_validator, smart_lists_repository, smart_list_tags_repository, smart_list_items_repository,
             notion_smart_lists_manager)
+        metrics_service = MetricsService(
+            basic_validator, metrics_repository, metric_entry_repository, notion_metrics_manager)
 
         workspaces_controller = WorkspacesController(
-            notion_connection, workspaces_service, vacations_service, smart_lists_service)
+            notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
+            metrics_service)
         vacations_controller = VacationsController(vacations_service)
         projects_controller = ProjectsController(
-            workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+            projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         inbox_tasks_controller = InboxTasksController(
             projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         recurring_tasks_controller = RecurringTasksController(
             global_properties, projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
         smart_lists_controller = SmartListsController(smart_lists_service)
+        metrics_controller = MetricsController(time_provider, metrics_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
-            inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service)
+            inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
             global_properties, projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
         report_progress_controller = ReportProgressController(
             global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
         garbage_collect_controller = GarbageCollectNotionController(
             vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
-            smart_lists_service)
+            smart_lists_service, metrics_service)
 
-        commands = [
+        commands = {
             # CRUD Commands
             WorkspaceInit(basic_validator, workspaces_controller),
             WorkspaceSetName(basic_validator, workspaces_controller),
@@ -264,12 +291,25 @@ def main() -> None:
             SmartListsItemSetUrl(basic_validator, smart_lists_controller),
             SmartListsItemShow(basic_validator, smart_lists_controller),
             SmartListsItemHardRemove(basic_validator, smart_lists_controller),
+            MetricsCreate(basic_validator, metrics_controller),
+            MetricsArchive(basic_validator, metrics_controller),
+            MetricsSetName(basic_validator, metrics_controller),
+            MetricsSetCollectionPeriod(basic_validator, metrics_controller),
+            MetricsShow(basic_validator, metrics_controller),
+            MetricsHardRemove(basic_validator, metrics_controller),
+            MetricsEntryCreate(basic_validator, metrics_controller),
+            MetricsEntryArchive(basic_validator, metrics_controller),
+            MetricsEntrySetCollectionTime(basic_validator, metrics_controller),
+            MetricsEntrySetValue(basic_validator, metrics_controller),
+            MetricsEntrySetNotes(basic_validator, metrics_controller),
+            MetricsEntryShow(basic_validator, metrics_controller),
+            MetricsEntryHardRemove(basic_validator, metrics_controller),
             # Complex commands.
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),
             ReportProgress(basic_validator, time_provider, report_progress_controller),
             GarbageCollect(basic_validator, garbage_collect_controller)
-        ]
+        }
 
         parser = argparse.ArgumentParser(description=global_properties.description)
         parser.add_argument(

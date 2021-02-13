@@ -1,21 +1,15 @@
-"""The collection for recurring tasks."""
+"""The centralised point for interacting with Notion recurring tasks."""
 import logging
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
-from types import TracebackType
-import typing
-from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
+from typing import Optional, List, ClassVar, Final, cast, Dict, Iterable
 
 from notion.collection import CollectionRowBlock
-
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, Timestamp, \
-    BasicValidator, ADate
-from remote.notion import common
-from remote.notion.infra.client import NotionClient
-from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
-from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink
-from remote.notion.infra.connection import NotionConnection
+from models.basic import ADate, Timestamp, BasicValidator, EntityId, RecurringTaskPeriod, Eisen, Difficulty, \
+    RecurringTaskType
+from remote.notion.common import NotionCollectionLink, NotionLockKey, NotionId, NotionPageLink, clean_eisenhower
+from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
+from remote.notion.infra.collections_manager import BaseItem, CollectionsManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -23,7 +17,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class RecurringTaskRow(BasicRowType):
+class RecurringTasksNotionCollection(BaseItem):
+    """A recurring task collection on Notion side."""
+
+
+@dataclass()
+class RecurringTaskNotionRow(BaseItem):
     """A recurring task on Notion side."""
 
     name: str
@@ -45,10 +44,10 @@ class RecurringTaskRow(BasicRowType):
     last_edited_time: Timestamp
 
 
-class RecurringTasksCollection:
-    """A collection on Notion side for recurring tasks."""
+class NotionRecurringTasksManager:
+    """The centralised point for interacting with Notion recurring tasks."""
 
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("./recurring-tasks.lock.yaml")
+    _KEY: ClassVar[str] = "recurring-tasks"
 
     _PAGE_NAME: ClassVar[str] = "Recurring Tasks"
 
@@ -213,6 +212,27 @@ class RecurringTasksCollection:
             "type": "text"
         }
     }
+
+    _SCHEMA_PROPERTIES = [
+        NotionFieldProps(name="title", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="period", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="the-type", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="eisen", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="difficulty", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="actionable-from-month", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="actionable-from-day", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-at-month", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-at-day", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-at-time", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="skip-rule", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="start-at-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="end-at-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="suspended", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="must-do", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="archived", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="ref-id", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="last-edited-time", show=NotionFieldShow.SHOW)
+    ]
 
     _KANBAN_ALL_VIEW_SCHEMA: JSONDictType = {
         "name": "Kanban",
@@ -409,47 +429,47 @@ class RecurringTasksCollection:
 
     _time_provider: Final[TimeProvider]
     _basic_validator: Final[BasicValidator]
-    _collection: Final[NotionCollection[RecurringTaskRow]]
+    _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator, connection: NotionConnection) -> None:
+            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            collections_manager: CollectionsManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._basic_validator = basic_validator
-        self._collection = NotionCollection[RecurringTaskRow](connection, self._LOCK_FILE_PATH, self)
+        self._collections_manager = collections_manager
 
-    def __enter__(self) -> 'RecurringTasksCollection':
-        """Enter context."""
-        self._collection.initialize()
-        return self
+    def upsert_recurring_tasks_collection(
+            self, project_ref_id: EntityId, parent_page_link: NotionPageLink) -> RecurringTasksNotionCollection:
+        """Upsert the Notion-side recurring task."""
+        collection_link = self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            parent_page=parent_page_link,
+            name=self._PAGE_NAME,
+            schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
+            view_schemas={
+                "kanban_all_view_id": NotionRecurringTasksManager._KANBAN_ALL_VIEW_SCHEMA,
+                "database_view_id": NotionRecurringTasksManager._DATABASE_VIEW_SCHEMA
+            })
 
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-        if exc_type is not None:
-            return
-        self._collection.exit_save()
+        return RecurringTasksNotionCollection(
+            ref_id=project_ref_id,
+            notion_id=collection_link.collection_id)
 
-    def upsert_recurring_tasks_structure(
-            self, project_ref_id: EntityId, parent_page: NotionPageLink) -> NotionCollectionLink:
-        """Create the Notion-side structure for this collection."""
-        return self._collection.upsert_structure(project_ref_id, parent_page)
-
-    def remove_recurring_tasks_structure(self, project_ref_id: EntityId) -> None:
+    def remove_recurring_tasks_collection(self, project_ref_id: EntityId) -> None:
         """Remove the Notion-side structure for this collection."""
-        return self._collection.remove_structure(project_ref_id)
+        return self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    def create_recurring_task(
+    def upsert_recurring_task(
             self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool, name: str,
             period: str, the_type: str, eisen: List[str], difficulty: Optional[str],
             actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
             due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
             must_do: bool, start_at_date: Optional[ADate], end_at_date: Optional[ADate],
-            ref_id: EntityId) -> RecurringTaskRow:
-        """Create a recurring task."""
-        new_recurring_task_row = RecurringTaskRow(
-            notion_id=NotionId("FAKE-FAKE-FAKE"),
+            ref_id: EntityId) -> RecurringTaskNotionRow:
+        """Upsert a recurring task."""
+        new_row = RecurringTaskNotionRow(
             name=name,
             archived=archived,
             period=period,
@@ -467,126 +487,78 @@ class RecurringTasksCollection:
             start_at_date=start_at_date,
             end_at_date=end_at_date,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=ref_id)
-        return cast(RecurringTaskRow, self._collection.create(
-            project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link))
+            ref_id=ref_id,
+            notion_id=cast(NotionId, None))
+        self._collections_manager.upsert_collection_item(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            new_row=new_row,
+            copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+        return new_row
 
     def link_local_and_notion_entries(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
-        """Link a local entity with the Notio none, useful in syncing processes."""
-        self._collection.link_local_and_notion_entries(project_ref_id, ref_id, notion_id)
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        self._collections_manager.quick_link_local_and_notion_entries(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"),
+            ref_id=ref_id,
+            notion_id=notion_id)
+
+    def load_all_recurring_tasks(self, project_ref_id: EntityId) -> Iterable[RecurringTaskNotionRow]:
+        """Retrieve all the Notion-side recurring tasks."""
+        return self._collections_manager.load_all(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
+
+    def load_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> RecurringTaskNotionRow:
+        """Retrieve the Notion-side recurring task associated with a particular entity."""
+        return self._collections_manager.load(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def archive_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
-        """Remove a particular recurring task."""
-        self._collection.archive(project_ref_id, ref_id)
-
-    def load_all_recurring_tasks(self, project_ref_id: EntityId) -> Iterable[RecurringTaskRow]:
-        """Retrieve all the Notion-side recurring tasks."""
-        return cast(Iterable[RecurringTaskRow], self._collection.load_all(project_ref_id))
-
-    def load_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> RecurringTaskRow:
-        """Retrieve the Notion-side recurring task associated with a particular entity."""
-        return cast(RecurringTaskRow, self._collection.load(project_ref_id, ref_id))
+        """Remove a particular recurring tasks."""
+        self._collections_manager.quick_archive(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"))
 
     def save_recurring_task(
-            self, project_ref_id: EntityId, new_recurring_task_row: RecurringTaskRow,
-            inbox_collection_link: Optional[NotionCollectionLink] = None) -> RecurringTaskRow:
+            self, project_ref_id: EntityId, ref_id: EntityId, new_recurring_tasks_row: RecurringTaskNotionRow,
+            inbox_collection_link: Optional[NotionCollectionLink] = None) -> RecurringTaskNotionRow:
         """Update the Notion-side recurring task with new data."""
-        return cast(
-            RecurringTaskRow,
-            self._collection.save(project_ref_id, new_recurring_task_row, inbox_collection_link=inbox_collection_link))
+        return self._collections_manager.save(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            row=new_recurring_tasks_row,
+            copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
 
     def load_all_saved_recurring_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collection.load_all_saved_notion_ids(project_ref_id)
+        return self._collections_manager.load_all_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def load_all_saved_recurring_tasks_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids for the recurring tasks."""
-        return self._collection.load_all_saved_ref_ids(project_ref_id)
+        """Retrieve all the saved ref ids for the recurring tasks tasks."""
+        return self._collections_manager.load_all_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def drop_all_recurring_tasks(self, project_ref_id: EntityId) -> None:
-        """Hard remove all Notion-side entities."""
-        self._collection.drop_all(project_ref_id)
+        """Remove all recurring tasks Notion-side."""
+        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    def hard_remove_recurring_task(self, project_ref_id: EntityId, recurring_task_row: RecurringTaskRow) -> None:
+    def hard_remove_recurring_task(self, project_ref_id: EntityId, ref_id: Optional[str]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collection.hard_remove(
-            project_ref_id, recurring_task_row.notion_id,
-            EntityId(recurring_task_row.ref_id) if recurring_task_row.ref_id else None)
+        self._collections_manager.hard_remove(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    @staticmethod
-    def get_page_name() -> str:
-        """Get the name for the page."""
-        return RecurringTasksCollection._PAGE_NAME
-
-    @staticmethod
-    def get_notion_schema() -> JSONDictType:
-        """Get the Notion schema for the collection."""
-        return RecurringTasksCollection._SCHEMA
-
-    @staticmethod
-    def get_view_schemas() -> Dict[str, JSONDictType]:
-        """Get the Notion view schemas for the collection."""
-        return {
-            "kanban_all_view_id": RecurringTasksCollection._KANBAN_ALL_VIEW_SCHEMA,
-            "database_view_id": RecurringTasksCollection._DATABASE_VIEW_SCHEMA
-        }
-
-    @staticmethod
-    @typing.no_type_check
-    def merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
-        """Merge an old and new schema for the collection."""
-        combined_schema = {}
-
-        # Merging schema is limited right now. Basically we assume the new schema takes
-        # precedence over the old one, except for select and multi_select, which have a set
-        # of options for them which are identified by "id"s. We wanna keep these stable
-        # across schema updates.
-        # As a special case, the big plan item is left to whatever value it had before
-        # since this thing is managed via the big plan syncing flow!
-        # As another special case, the recurring tasks group key is left to whatever value it had
-        # before since this thing is managed by the other flows!
-        for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name == "bigplan2":
-                combined_schema[schema_item_name] = old_schema[schema_item_name] \
-                    if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
-                    else schema_item
-            elif schema_item["type"] == "select" or schema_item["type"] == "multi_select":
-                if schema_item_name in old_schema:
-                    old_v = old_schema[schema_item_name]
-
-                    combined_schema[schema_item_name] = {
-                        "name": schema_item["name"],
-                        "type": schema_item["type"],
-                        "options": []
-                    }
-
-                    for option in schema_item["options"]:
-                        old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
-                                          None)
-                        if old_option is not None:
-                            combined_schema[schema_item_name]["options"].append({
-                                "color": option["color"],
-                                "value": option["value"],
-                                "id": old_option["id"]
-                            })
-                        else:
-                            combined_schema[schema_item_name]["options"].append(option)
-                else:
-                    combined_schema[schema_item_name] = schema_item
-            else:
-                combined_schema[schema_item_name] = schema_item
-
-        return combined_schema
-
-    def copy_row_to_notion_row(
-            self, client: NotionClient, row: RecurringTaskRow, notion_row: CollectionRowBlock,
-            **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
+    def _copy_row_to_notion_row(
+            self, client: NotionClient, row: RecurringTaskNotionRow, notion_row: CollectionRowBlock,
+            inbox_collection_link: Optional[NotionCollectionLink]) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
-        # pylint: disable=no-self-use
         if row.ref_id is None:
             raise Exception(f"Recurring task row '{row.name}' which is synced must have a ref id")
-
-        inbox_collection_link = cast(NotionCollectionLink, kwargs.get("inbox_collection_link", None))
 
         notion_row.title = row.name
         notion_row.archived = row.archived
@@ -603,7 +575,7 @@ class RecurringTasksCollection:
         notion_row.skip_rule = row.skip_rule
         notion_row.must_do = row.must_do
         notion_row.start_at_date = self._basic_validator.adate_to_notion(row.start_at_date) \
-                                   if row.start_at_date else None
+            if row.start_at_date else None
         notion_row.end_at_date = self._basic_validator.adate_to_notion(row.end_at_date) if row.end_at_date else None
         notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
         notion_row.ref_id = row.ref_id
@@ -613,20 +585,19 @@ class RecurringTasksCollection:
 
             client.attach_view_block_as_child_of_block(
                 notion_row, 0, inbox_collection_link.collection_id,
-                RecurringTasksCollection._get_view_schema_for_recurring_task_desc(row.ref_id))
+                self._get_view_schema_for_recurring_tasks_desc(row.ref_id))
 
         return notion_row
 
-    def copy_notion_row_to_row(self, recurring_task_notion_row: CollectionRowBlock) -> RecurringTaskRow:
+    def _copy_notion_row_to_row(self, recurring_task_notion_row: CollectionRowBlock) -> RecurringTaskNotionRow:
         """Transform the live system data to something suitable for basic storage."""
-        # pylint: disable=no-self-use
-        return RecurringTaskRow(
+        return RecurringTaskNotionRow(
             notion_id=recurring_task_notion_row.id,
             name=recurring_task_notion_row.title,
             archived=recurring_task_notion_row.archived,
             period=recurring_task_notion_row.period,
             the_type=recurring_task_notion_row.the_type,
-            eisen=common.clean_eisenhower(recurring_task_notion_row.eisenhower),
+            eisen=clean_eisenhower(recurring_task_notion_row.eisenhower),
             difficulty=recurring_task_notion_row.difficulty,
             actionable_from_day=recurring_task_notion_row.actionable_from_day,
             actionable_from_month=recurring_task_notion_row.actionable_from_month,
@@ -645,8 +616,8 @@ class RecurringTasksCollection:
             ref_id=recurring_task_notion_row.ref_id)
 
     @staticmethod
-    def _get_view_schema_for_recurring_task_desc(recurring_task_ref_id: str) -> JSONDictType:
-        """Get the view schema for a recurring tasks details view."""
+    def _get_view_schema_for_recurring_tasks_desc(recurring_task_ref_id: str) -> JSONDictType:
+        """Get the view schema for a recurring task details view."""
         return {
             "name": "Inbox Tasks",
             "query2": {

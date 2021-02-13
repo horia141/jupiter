@@ -1,24 +1,19 @@
-"""The collection for inbox tasks."""
+"""The centralised point for interacting with Notion inbox tasks."""
 import copy
 import hashlib
 import logging
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
-from types import TracebackType
-import typing
-from typing import Final, Optional, Dict, ClassVar, Iterable, List, cast
+from typing import Final, ClassVar, cast, Dict, Optional, Iterable, List
 
 from notion.collection import CollectionRowBlock
 
-from models.basic import EntityId, InboxTaskStatus, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, ADate, \
-    BasicValidator, Timestamp
-from remote.notion import common
-from remote.notion.infra.client import NotionClient
-from remote.notion.infra.collection import NotionCollection, BasicRowType, NotionCollectionKWArgsType
-from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, format_name_for_option
-from remote.notion.infra.connection import NotionConnection
-from repository.big_plans import BigPlan
+from models.basic import BasicValidator, InboxTaskStatus, EntityId, ADate, Timestamp, Eisen, Difficulty, \
+    RecurringTaskPeriod, RecurringTaskType
+from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, \
+    format_name_for_option, NotionCollectionLinkExtra, clean_eisenhower
+from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow
+from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -26,7 +21,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class InboxTaskRow(BasicRowType):
+class InboxTaskNotionCollection(BaseItem):
+    """An inbox task collection on Notion side."""
+
+    notion_link: NotionCollectionLink
+
+
+@dataclass()
+class InboxTaskNotionRow(BaseItem):
     """An inbox task on Notion side."""
 
     name: str
@@ -47,12 +49,20 @@ class InboxTaskRow(BasicRowType):
     last_edited_time: Timestamp
 
 
-class InboxTasksCollection:
-    """A collection on Notion side for inbox tasks."""
+@dataclass()
+class InboxTaskBigPlanLabel:
+    """A value for an inbox task big plan label."""
+    notion_link_uuid: uuid.UUID
+    name: str
 
-    _LOCK_FILE_PATH: ClassVar[Path] = Path("./inbox-tasks.lock.yaml")
+
+class NotionInboxTasksManager:
+    """The centralised point for interacting with Notion inbox tasks."""
+
+    _KEY: ClassVar[str] = "inbox-tasks"
 
     _PAGE_NAME: ClassVar[str] = "Inbox Tasks"
+
     _STATUS: ClassVar[JSONDictType] = {
         "Not Started": {
             "name": InboxTaskStatus.NOT_STARTED.for_notion(),
@@ -249,6 +259,26 @@ class InboxTasksCollection:
             "type": "last_edited_time"
         },
     }
+
+    _SCHEMA_PROPERTIES = [
+        NotionFieldProps(name="title", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="status", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="eisen", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="difficulty", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="actionable-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="due-date", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="archived", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="ref-id", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="big-plan-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="bigplan2", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="recurring-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="recurring-task-type", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="recurring-task-gen-right-now", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="last-edited-time", show=NotionFieldShow.HIDE)
+    ]
 
     _KANBAN_FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
@@ -863,66 +893,73 @@ class InboxTasksCollection:
 
     _time_provider: Final[TimeProvider]
     _basic_validator: Final[BasicValidator]
-    _collection: Final[NotionCollection[InboxTaskRow]]
+    _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator, connection: NotionConnection) -> None:
+            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            collections_manager: CollectionsManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._basic_validator = basic_validator
-        self._collection = NotionCollection[InboxTaskRow](connection, self._LOCK_FILE_PATH, self)
+        self._collections_manager = collections_manager
 
-    def __enter__(self) -> 'InboxTasksCollection':
-        """Enter context."""
-        self._collection.initialize()
-        return self
+    def upsert_inbox_task_collection(
+            self, project_ref_id: EntityId, parent_page_link: NotionPageLink) -> InboxTaskNotionCollection:
+        """Upsert the Notion-side inbox task."""
+        collection_link = self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            parent_page=parent_page_link,
+            name=self._PAGE_NAME,
+            schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
+            view_schemas={
+                "kanban_all_view_id": NotionInboxTasksManager._KANBAN_ALL_VIEW_SCHEMA,
+                "kanban_urgent_view_id": NotionInboxTasksManager._KANBAN_URGENT_VIEW_SCHEMA,
+                "kanban_due_today_view_id": NotionInboxTasksManager._KANBAN_DUE_TODAY_VIEW_SCHEMA,
+                "kanban_due_this_week_view_id": NotionInboxTasksManager._KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA,
+                "kanban_due_this_month_view_id": NotionInboxTasksManager._KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA,
+                "calendar_view_id": NotionInboxTasksManager._CALENDAR_VIEW_SCHEMA,
+                "database_view_id": NotionInboxTasksManager._DATABASE_VIEW_SCHEMA
+            })
 
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-        if exc_type is not None:
-            return
-        self._collection.exit_save()
+        return InboxTaskNotionCollection(
+            ref_id=project_ref_id,
+            notion_id=collection_link.collection_id,
+            notion_link=collection_link)
 
-    def upsert_inbox_tasks_structure(
-            self, project_ref_id: EntityId, parent_page: NotionPageLink) -> NotionCollectionLink:
-        """Upsert the Notion-side structure for this collection."""
-        return self._collection.upsert_structure(project_ref_id, parent_page)
-
-    def remove_inbox_tasks_structure(self, project_ref_id: EntityId) -> None:
+    def remove_inbox_tasks_collection(self, project_ref_id: EntityId) -> None:
         """Remove the Notion-side structure for this collection."""
-        return self._collection.remove_structure(project_ref_id)
+        return self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    def get_inbox_tasks_structure(self, project_ref_id: EntityId) -> NotionCollectionLink:
+    def get_inbox_tasks_structure(self, project_ref_id: EntityId) -> NotionCollectionLinkExtra:
         """Retrieve the Notion-side structure link for this collection."""
-        return self._collection.get_structure(project_ref_id)
+        return self._collections_manager.get_collection(NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def upsert_inbox_tasks_big_plan_field_options(
-            self, project_ref_id: EntityId, big_plans: Iterable[BigPlan]) -> None:
+            self, project_ref_id: EntityId, big_plans_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
         """Upsert the Notion-side structure for the 'big plan' select field."""
         inbox_big_plan_options = [{
             "color": self._get_stable_color(str(bp.notion_link_uuid)),
             "id": str(bp.notion_link_uuid),
             "value": format_name_for_option(bp.name)
-        } for bp in big_plans]
+        } for bp in big_plans_labels]
 
         new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
         new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
 
-        self._collection.update_schema(project_ref_id, new_schema)
+        self._collections_manager.update_collection_no_merge(
+            NotionLockKey(f"{self._KEY}:{project_ref_id}"), self._PAGE_NAME, new_schema)
         LOGGER.info("Updated the schema for the associated inbox")
 
-    def create_inbox_task(
+    def upsert_inbox_task(
             self, project_ref_id: EntityId, name: str, archived: bool,
             big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
             recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
             difficulty: Optional[str], actionable_date: Optional[ADate], due_date: Optional[ADate],
             recurring_timeline: Optional[str], recurring_period: Optional[str], recurring_task_type: Optional[str],
-            recurring_task_gen_right_now: Optional[ADate], ref_id: EntityId) -> InboxTaskRow:
-        """Create an inbox task."""
-        new_inbox_task_row = InboxTaskRow(
-            notion_id=NotionId("FAKE-FAKE-FAKE"),
+            recurring_task_gen_right_now: Optional[ADate], ref_id: EntityId) -> InboxTaskNotionRow:
+        """Upsert a inbox task."""
+        new_row = InboxTaskNotionRow(
             name=name,
             archived=archived,
             big_plan_ref_id=big_plan_ref_id,
@@ -939,120 +976,74 @@ class InboxTasksCollection:
             recurring_task_type=recurring_task_type,
             recurring_task_gen_right_now=recurring_task_gen_right_now,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=ref_id)
-        return cast(InboxTaskRow, self._collection.create(project_ref_id, new_inbox_task_row))
+            ref_id=ref_id,
+            notion_id=cast(NotionId, None))
+        self._collections_manager.upsert_collection_item(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            new_row=new_row,
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        return new_row
 
     def link_local_and_notion_entries(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
-        """Link a local entity with the Notio none, useful in syncing processes."""
-        self._collection.link_local_and_notion_entries(project_ref_id, ref_id, notion_id)
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        self._collections_manager.quick_link_local_and_notion_entries(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"),
+            ref_id=ref_id,
+            notion_id=notion_id)
+
+    def load_all_inbox_tasks(self, project_ref_id: EntityId) -> Iterable[InboxTaskNotionRow]:
+        """Retrieve all the Notion-side inbox tasks."""
+        return self._collections_manager.load_all(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
+
+    def load_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> InboxTaskNotionRow:
+        """Retrieve the Notion-side inbox task associated with a particular entity."""
+        return self._collections_manager.load(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def archive_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
-        """Remove a particular inbox task."""
-        self._collection.archive(project_ref_id, ref_id)
+        """Remove a particular inbox tasks."""
+        self._collections_manager.quick_archive(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"))
 
-    def load_all_inbox_tasks(self, project_ref_id: EntityId) -> Iterable[InboxTaskRow]:
-        """Retrieve all the Notion-side inbox tasks."""
-        return cast(Iterable[InboxTaskRow], self._collection.load_all(project_ref_id))
-
-    def load_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> InboxTaskRow:
-        """Retrieve the Notion-side inbox task associated with a particular entity."""
-        return cast(InboxTaskRow, self._collection.load(project_ref_id, ref_id))
-
-    def save_inbox_task(self, project_ref_id: EntityId, new_inbox_task_row: InboxTaskRow) -> InboxTaskRow:
+    def save_inbox_task(
+            self, project_ref_id: EntityId, ref_id: EntityId,
+            new_inbox_task_row: InboxTaskNotionRow) -> InboxTaskNotionRow:
         """Update the Notion-side inbox task with new data."""
-        return cast(InboxTaskRow, self._collection.save(project_ref_id, new_inbox_task_row))
+        return self._collections_manager.save(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            row=new_inbox_task_row,
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
 
     def load_all_saved_inbox_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collection.load_all_saved_notion_ids(project_ref_id)
+        return self._collections_manager.load_all_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def load_all_saved_inbox_tasks_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids for the inbox tasks."""
-        return self._collection.load_all_saved_ref_ids(project_ref_id)
+        """Retrieve all the saved ref ids for the inbox tasks tasks."""
+        return self._collections_manager.load_all_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def drop_all_inbox_tasks(self, project_ref_id: EntityId) -> None:
-        """Hard remove all the Notion-side inbox tasks."""
-        self._collection.drop_all(project_ref_id)
+        """Remove all inbox tasks Notion-side."""
+        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    def hard_remove_inbox_task(self, project_ref_id: EntityId, inbox_task_row: InboxTaskRow) -> None:
+    def hard_remove_inbox_task(self, project_ref_id: EntityId, ref_id: Optional[str]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collection.hard_remove(
-            project_ref_id, inbox_task_row.notion_id,
-            EntityId(inbox_task_row.ref_id) if inbox_task_row.ref_id else None)
+        self._collections_manager.hard_remove(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    @staticmethod
-    def get_page_name() -> str:
-        """Get the name for the page."""
-        return InboxTasksCollection._PAGE_NAME
-
-    @staticmethod
-    def get_notion_schema() -> JSONDictType:
-        """Get the Notion schema for the collection."""
-        return InboxTasksCollection._SCHEMA
-
-    @staticmethod
-    def get_view_schemas() -> Dict[str, JSONDictType]:
-        """Get the Notion view schemas for the collection."""
-        return {
-            "kanban_all_view_id": InboxTasksCollection._KANBAN_ALL_VIEW_SCHEMA,
-            "kanban_urgent_view_id": InboxTasksCollection._KANBAN_URGENT_VIEW_SCHEMA,
-            "kanban_due_today_view_id": InboxTasksCollection._KANBAN_DUE_TODAY_VIEW_SCHEMA,
-            "kanban_due_this_week_view_id": InboxTasksCollection._KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA,
-            "kanban_due_this_month_view_id": InboxTasksCollection._KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA,
-            "calendar_view_id": InboxTasksCollection._CALENDAR_VIEW_SCHEMA,
-            "database_view_id": InboxTasksCollection._DATABASE_VIEW_SCHEMA
-        }
-
-    @staticmethod
-    @typing.no_type_check
-    def merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
-        """Merge an old and new schema for the collection."""
-        combined_schema = {}
-
-        # Merging schema is limited right now. Basically we assume the new schema takes
-        # precedence over the old one, except for select and multi_select, which have a set
-        # of options for them which are identified by "id"s. We wanna keep these stable
-        # across schema updates.
-        # As a special case, the big plan item is left to whatever value it had before
-        # since this thing is managed via the big plan syncing flow!
-        # As another special case, the recurring tasks group key is left to whatever value it had
-        # before since this thing is managed by the other flows!
-        for (schema_item_name, schema_item) in new_schema.items():
-            if schema_item_name == "bigplan2":
-                combined_schema[schema_item_name] = old_schema[schema_item_name] \
-                    if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
-                    else schema_item
-            elif schema_item["type"] == "select" or schema_item["type"] == "multi_select":
-                if schema_item_name in old_schema:
-                    old_v = old_schema[schema_item_name]
-
-                    combined_schema[schema_item_name] = {
-                        "name": schema_item["name"],
-                        "type": schema_item["type"],
-                        "options": []
-                    }
-
-                    for option in schema_item["options"]:
-                        old_option = next((old_o for old_o in old_v["options"] if old_o["value"] == option["value"]),
-                                          None)
-                        if old_option is not None:
-                            combined_schema[schema_item_name]["options"].append({
-                                "color": option["color"],
-                                "value": option["value"],
-                                "id": old_option["id"]
-                            })
-                        else:
-                            combined_schema[schema_item_name]["options"].append(option)
-                else:
-                    combined_schema[schema_item_name] = schema_item
-            else:
-                combined_schema[schema_item_name] = schema_item
-
-        return combined_schema
-
-    def copy_row_to_notion_row(
-            self, client: NotionClient, row: InboxTaskRow, notion_row: CollectionRowBlock,
-            **kwargs: NotionCollectionKWArgsType) -> CollectionRowBlock:
+    def _copy_row_to_notion_row(
+            self, client: NotionClient, row: InboxTaskNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         # pylint: disable=unused-argument
         notion_row.title = row.name
@@ -1078,9 +1069,10 @@ class InboxTasksCollection:
 
         return notion_row
 
-    def copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> InboxTaskRow:
+    def _copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> InboxTaskNotionRow:
         """Transform the live system data to something suitable for basic storage."""
-        return InboxTaskRow(
+        # pylint: disable=no-self-use
+        return InboxTaskNotionRow(
             notion_id=inbox_task_notion_row.id,
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,
@@ -1088,7 +1080,7 @@ class InboxTasksCollection:
             big_plan_name=inbox_task_notion_row.big_plan,
             recurring_task_ref_id=inbox_task_notion_row.recurring_task_id,
             status=inbox_task_notion_row.status,
-            eisen=common.clean_eisenhower(inbox_task_notion_row.eisenhower),
+            eisen=clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,
             actionable_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.actionable_date)
             if inbox_task_notion_row.actionable_date else None,

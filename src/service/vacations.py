@@ -92,12 +92,7 @@ class VacationsService:
             ref_id=new_vacation_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
-        return Vacation(
-            ref_id=new_vacation_row.ref_id,
-            name=new_vacation_row.name,
-            start_date=new_vacation_row.start_date,
-            end_date=new_vacation_row.end_date,
-            archived=new_vacation_row.archived)
+        return self._row_to_entity(new_vacation_row)
 
     def archive_vacation(self, ref_id: EntityId) -> Vacation:
         """Archive a given vacation."""
@@ -114,12 +109,7 @@ class VacationsService:
         except CollectionEntityNotFound:
             LOGGER.info("Skipping archival on Notion side because vacation was not found")
 
-        return Vacation(
-            ref_id=vacation_row.ref_id,
-            name=vacation_row.name,
-            start_date=vacation_row.start_date,
-            end_date=vacation_row.end_date,
-            archived=vacation_row.archived)
+        return self._row_to_entity(vacation_row)
 
     def set_vacation_name(self, ref_id: EntityId, name: str) -> Vacation:
         """Change the name of a vacation."""
@@ -142,12 +132,7 @@ class VacationsService:
         self._notion_manager.save_vacation(ref_id, vacation_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return Vacation(
-            ref_id=vacation_row.ref_id,
-            name=vacation_row.name,
-            start_date=vacation_row.start_date,
-            end_date=vacation_row.end_date,
-            archived=vacation_row.archived)
+        return self._row_to_entity(vacation_row)
 
     def set_vacation_start_date(self, ref_id: EntityId, start_date: ADate) -> Vacation:
         """Change the start date of a vacation."""
@@ -169,12 +154,7 @@ class VacationsService:
         self._notion_manager.save_vacation(ref_id, vacation_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return Vacation(
-            ref_id=vacation_row.ref_id,
-            name=vacation_row.name,
-            start_date=vacation_row.start_date,
-            end_date=vacation_row.end_date,
-            archived=vacation_row.archived)
+        return self._row_to_entity(vacation_row)
 
     def set_vacation_end_date(self, ref_id: EntityId, end_date: ADate) -> Vacation:
         """Change the end date of a vacation."""
@@ -196,32 +176,18 @@ class VacationsService:
         self._notion_manager.save_vacation(ref_id, vacation_notion_row)
         LOGGER.info("Applied Notion changes")
 
-        return Vacation(
-            ref_id=vacation_row.ref_id,
-            name=vacation_row.name,
-            start_date=vacation_row.start_date,
-            end_date=vacation_row.end_date,
-            archived=vacation_row.archived)
+        return self._row_to_entity(vacation_row)
 
     def load_all_vacations(self, allow_archived: bool = False) -> Iterable[Vacation]:
         """Retrieve all vacations."""
-        return [Vacation(ref_id=v.ref_id,
-                         name=v.name,
-                         start_date=v.start_date,
-                         end_date=v.end_date,
-                         archived=v.archived)
+        return [self._row_to_entity(v)
                 for v in self._repository.load_all_vacations(allow_archived=allow_archived)]
 
     def load_all_vacations_not_notion_gced(self) -> Iterable[Vacation]:
         """Retrieve all vacation which haven't been gced on Notion side."""
         allowed_ref_ids = self._notion_manager.load_all_saved_vacation_ref_ids()
 
-        return [Vacation(
-            ref_id=v.ref_id,
-            name=v.name,
-            start_date=v.start_date,
-            end_date=v.end_date,
-            archived=v.archived)
+        return [self._row_to_entity(v)
                 for v in self._repository.load_all_vacations(allow_archived=True)
                 if v.ref_id in allowed_ref_ids]
 
@@ -237,12 +203,7 @@ class VacationsService:
         except StructuredStorageError:
             LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
-        return Vacation(
-            ref_id=vacation_row.ref_id,
-            name=vacation_row.name,
-            start_date=vacation_row.start_date,
-            end_date=vacation_row.end_date,
-            archived=vacation_row.archived)
+        return self._row_to_entity(vacation_row)
 
     def remove_vacation_on_notion_side(self, ref_id: EntityId) -> Vacation:
         """Remove entries for a vacation on Notion-side."""
@@ -253,16 +214,11 @@ class VacationsService:
         except StructuredStorageError:
             LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
-        return Vacation(
-            ref_id=vacation_row.ref_id,
-            name=vacation_row.name,
-            start_date=vacation_row.start_date,
-            end_date=vacation_row.end_date,
-            archived=vacation_row.archived)
+        return self._row_to_entity(vacation_row)
 
     def vacations_sync(
             self, drop_all_notion_side: bool, sync_even_if_not_modified: bool,
-            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[VacationRow]:
+            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[Vacation]:
         """Synchronise vacations between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
@@ -396,4 +352,13 @@ class VacationsService:
                 ref_id=vacation.ref_id)
             LOGGER.info(f"Created new vacation on Notion side {new_vacation_row}")
 
-        return all_vacations_set.values()
+        return [self._row_to_entity(v) for v in all_vacations_set.values()]
+
+    @staticmethod
+    def _row_to_entity(row: VacationRow) -> Vacation:
+        return Vacation(
+            ref_id=row.ref_id,
+            name=row.name,
+            start_date=row.start_date,
+            end_date=row.end_date,
+            archived=row.archived)

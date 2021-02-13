@@ -5,9 +5,11 @@ from typing import Final, Optional, Iterable
 import typing
 
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey
+from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, BigPlanEssentials, RecurringTaskEssentials
+from service.metrics import MetricsService
 from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
@@ -31,13 +33,14 @@ class SyncLocalAndNotionController:
     _recurring_tasks_service: Final[RecurringTasksService]
     _big_plans_service: Final[BigPlansService]
     _smart_lists_service: Final[SmartListsService]
+    _metrics_service: Final[MetricsService]
 
     def __init__(
             self, time_provider: TimeProvider, global_properties: GlobalProperties,
             workspaces_service: WorkspacesService, vacations_service: VacationsService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
-            smart_lists_service: SmartListsService) -> None:
+            smart_lists_service: SmartListsService, metrics_service: MetricsService) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._global_properties = global_properties
@@ -48,6 +51,7 @@ class SyncLocalAndNotionController:
         self._recurring_tasks_service = recurring_tasks_service
         self._big_plans_service = big_plans_service
         self._smart_lists_service = smart_lists_service
+        self._metrics_service = metrics_service
 
     def sync(
             self,
@@ -61,6 +65,8 @@ class SyncLocalAndNotionController:
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             filter_smart_list_keys: Optional[Iterable[SmartListKey]],
             filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
+            filter_metric_keys: Optional[Iterable[MetricKey]],
+            filter_metric_entry_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
         filter_recurring_task_ref_ids_set = \
@@ -74,8 +80,14 @@ class SyncLocalAndNotionController:
             LOGGER.info("Recreating vacations structure")
             self._vacations_service.upsert_root_notion_structure(workspace_page)
 
+            LOGGER.info("Recreating projects structure")
+            self._projects_service.upsert_root_notion_structure(workspace_page)
+
             LOGGER.info("Recreating lists structure")
             self._smart_lists_service.upsert_root_notion_structure(workspace_page)
+
+            LOGGER.info("Recreating metrics structure")
+            self._metrics_service.upsert_root_notion_structure(workspace_page)
 
         if SyncTarget.WORKSPACE in sync_targets:
             LOGGER.info("Syncing the workspace")
@@ -88,52 +100,60 @@ class SyncLocalAndNotionController:
 
         for project in self._projects_service.load_all_projects(filter_keys=filter_project_keys):
             if SyncTarget.STRUCTURE in sync_targets:
-                LOGGER.info(f"Recreating project {project.name}")
-                project_page = self._projects_service.get_project_notion_structure(project.ref_id)
+                LOGGER.info(f"Recreating project {project.name} structure")
+                project_page = self._projects_service.upsert_project_structure(project.ref_id)
                 LOGGER.info("Recreating inbox tasks")
-                self._inbox_tasks_service.upsert_notion_structure(project.ref_id, project_page)
+                self._inbox_tasks_service.upsert_inbox_tasks_collection_structure(
+                    project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating recurring tasks")
-                self._recurring_tasks_service.upsert_notion_structure(project.ref_id, project_page)
+                self._recurring_tasks_service.upsert_recurring_tasks_collection_structure(
+                    project.ref_id, project_page.notion_page_link)
                 LOGGER.info("Recreating big plans")
-                self._big_plans_service.upsert_notion_structure(project.ref_id, project_page)
+                self._big_plans_service.upsert_big_plans_collection_structure(
+                    project.ref_id, project_page.notion_page_link)
 
-            inbox_collection_link = self._inbox_tasks_service.get_notion_structure(project.ref_id)
+            inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project.ref_id)
 
             if SyncTarget.PROJECTS in sync_targets:
                 LOGGER.info(f"Syncing project '{project.name}'")
-                self._projects_service.sync_projects(project.key, sync_prefer)
+                self._projects_service.sync_projects(project.ref_id, sync_prefer)
 
             if SyncTarget.BIG_PLANS in sync_targets:
                 LOGGER.info(f"Syncing big plans for '{project.name}'")
                 all_big_plans = self._big_plans_service.big_plans_sync(
-                    project.ref_id, drop_all_notion, inbox_collection_link, sync_even_if_not_modified,
+                    project.ref_id, drop_all_notion, inbox_tasks_collection, sync_even_if_not_modified,
                     filter_big_plan_ref_ids, sync_prefer)
-                self._inbox_tasks_service.upsert_notion_big_plan_ref_options(project.ref_id, all_big_plans)
+                self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
+                    project.ref_id,
+                    [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
             else:
                 all_big_plans = self._big_plans_service.load_all_big_plans(
-                    filter_archived=False, filter_ref_ids=filter_big_plan_ref_ids,
+                    allow_archived=True, filter_ref_ids=filter_big_plan_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
             big_plans_by_ref_id = {bp.ref_id: bp for bp in all_big_plans}
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
                 LOGGER.info(f"Syncing recurring tasks for '{project.name}'")
                 all_recurring_tasks = self._recurring_tasks_service.recurring_tasks_sync(
-                    project.ref_id, drop_all_notion, inbox_collection_link, sync_even_if_not_modified,
+                    project.ref_id, drop_all_notion, inbox_tasks_collection, sync_even_if_not_modified,
                     filter_recurring_task_ref_ids, sync_prefer)
             else:
                 all_recurring_tasks = self._recurring_tasks_service.load_all_recurring_tasks(
-                    filter_archived=False, filter_ref_ids=filter_recurring_task_ref_ids,
+                    allow_archived=True, filter_ref_ids=filter_recurring_task_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
             recurring_tasks_by_ref_id = {rt.ref_id: rt for rt in all_recurring_tasks}
 
             if SyncTarget.INBOX_TASKS in sync_targets:
                 LOGGER.info(f"Syncing inbox tasks for '{project.name}'")
                 all_inbox_tasks = self._inbox_tasks_service.inbox_tasks_sync(
-                    project.ref_id, drop_all_notion, all_big_plans, all_recurring_tasks, sync_even_if_not_modified,
+                    project.ref_id, drop_all_notion,
+                    [BigPlanEssentials(b.ref_id, b.name) for b in all_big_plans],
+                    [RecurringTaskEssentials(rt.ref_id, rt.name, rt.period, rt.the_type) for rt in all_recurring_tasks],
+                    sync_even_if_not_modified,
                     filter_inbox_task_ref_ids, sync_prefer)
             else:
                 all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-                    filter_archived=False, filter_ref_ids=filter_inbox_task_ref_ids,
+                    allow_archived=True, filter_ref_ids=filter_inbox_task_ref_ids,
                     filter_project_ref_ids=[project.ref_id])
 
             if SyncTarget.RECURRING_TASKS in sync_targets:
@@ -204,8 +224,20 @@ class SyncLocalAndNotionController:
                 self._smart_lists_service.upsert_smart_list_structure(smart_list.ref_id)
 
             if SyncTarget.SMART_LISTS in sync_targets:
-                LOGGER.info(f"Syncing small list '{smart_list.name}'")
+                LOGGER.info(f"Syncing smart list '{smart_list.name}'")
                 self._smart_lists_service.sync_smart_list_and_smart_list_items(
                     smart_list_ref_id=smart_list.ref_id, drop_all_notion_side=drop_all_notion,
                     sync_even_if_not_modified=sync_even_if_not_modified,
                     filter_smart_list_item_ref_ids=filter_smart_list_item_ref_ids, sync_prefer=sync_prefer)
+
+        for metric in self._metrics_service.load_all_metrics(filter_keys=filter_metric_keys):
+            if SyncTarget.STRUCTURE in sync_targets:
+                LOGGER.info(f"Recreating metric '{metric.name}'")
+                self._metrics_service.upsert_metric_structure(metric.ref_id)
+
+            if SyncTarget.METRICS in sync_targets:
+                LOGGER.info(f"Syncing metric '{metric.name}'")
+                self._metrics_service.sync_metric_and_metric_entries(
+                    metric_ref_id=metric.ref_id, drop_all_notion_side=drop_all_notion,
+                    sync_even_if_not_modified=sync_even_if_not_modified,
+                    filter_metric_entry_ref_ids=filter_metric_entry_ref_ids, sync_prefer=sync_prefer)
