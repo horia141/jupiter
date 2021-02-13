@@ -947,7 +947,7 @@ class NotionInboxTasksManager:
         new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
         new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
 
-        self._collections_manager.update_collection(
+        self._collections_manager.update_collection_no_merge(
             NotionLockKey(f"{self._KEY}:{project_ref_id}"), self._PAGE_NAME, new_schema)
         LOGGER.info("Updated the schema for the associated inbox")
 
