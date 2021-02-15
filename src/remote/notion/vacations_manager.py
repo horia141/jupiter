@@ -224,13 +224,13 @@ class NotionVacationsManager:
     def copy_row_to_notion_row(
             self, client: NotionClient, row: VacationNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
-        # pylint: disable=unused-argument
-        notion_row.title = row.name
-        notion_row.archived = row.archived
-        notion_row.start_date = self._basic_validator.adate_to_notion(row.start_date)
-        notion_row.end_date = self._basic_validator.adate_to_notion(row.end_date)
-        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
-        notion_row.ref_id = row.ref_id
+        with client.with_transaction():
+            notion_row.title = row.name
+            notion_row.archived = row.archived
+            notion_row.start_date = self._basic_validator.adate_to_notion(row.start_date)
+            notion_row.end_date = self._basic_validator.adate_to_notion(row.end_date)
+            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.ref_id = row.ref_id
 
         return notion_row
 

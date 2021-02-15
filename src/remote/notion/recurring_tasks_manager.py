@@ -560,25 +560,26 @@ class NotionRecurringTasksManager:
         if row.ref_id is None:
             raise Exception(f"Recurring task row '{row.name}' which is synced must have a ref id")
 
-        notion_row.title = row.name
-        notion_row.archived = row.archived
-        notion_row.period = row.period
-        notion_row.the_type = row.the_type
-        notion_row.eisenhower = row.eisen
-        notion_row.difficulty = row.difficulty
-        notion_row.actionable_from_day = row.actionable_from_day
-        notion_row.actionable_from_month = row.actionable_from_month
-        notion_row.due_at_time = row.due_at_time
-        notion_row.due_at_day = row.due_at_day
-        notion_row.due_at_month = row.due_at_month
-        notion_row.suspended = row.suspended
-        notion_row.skip_rule = row.skip_rule
-        notion_row.must_do = row.must_do
-        notion_row.start_at_date = self._basic_validator.adate_to_notion(row.start_at_date) \
-            if row.start_at_date else None
-        notion_row.end_at_date = self._basic_validator.adate_to_notion(row.end_at_date) if row.end_at_date else None
-        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
-        notion_row.ref_id = row.ref_id
+        with client.with_transaction():
+            notion_row.title = row.name
+            notion_row.archived = row.archived
+            notion_row.period = row.period
+            notion_row.the_type = row.the_type
+            notion_row.eisenhower = row.eisen
+            notion_row.difficulty = row.difficulty
+            notion_row.actionable_from_day = row.actionable_from_day
+            notion_row.actionable_from_month = row.actionable_from_month
+            notion_row.due_at_time = row.due_at_time
+            notion_row.due_at_day = row.due_at_day
+            notion_row.due_at_month = row.due_at_month
+            notion_row.suspended = row.suspended
+            notion_row.skip_rule = row.skip_rule
+            notion_row.must_do = row.must_do
+            notion_row.start_at_date = self._basic_validator.adate_to_notion(row.start_at_date) \
+                if row.start_at_date else None
+            notion_row.end_at_date = self._basic_validator.adate_to_notion(row.end_at_date) if row.end_at_date else None
+            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.ref_id = row.ref_id
 
         if inbox_collection_link:
             LOGGER.info(f"Creating views structure for recurring task {notion_row}")

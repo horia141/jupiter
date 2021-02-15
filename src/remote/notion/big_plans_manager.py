@@ -330,13 +330,13 @@ class NotionBigPlansManager:
             self, client: NotionClient, row: BigPlanNotionRow, notion_row: CollectionRowBlock,
             inbox_collection_link: Optional[NotionCollectionLink]) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
-        # Create fields of the big plan row.
-        notion_row.title = row.name
-        notion_row.archived = row.archived
-        notion_row.status = row.status
-        notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
-        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
-        notion_row.ref_id = row.ref_id
+        with client.with_transaction():
+            notion_row.title = row.name
+            notion_row.archived = row.archived
+            notion_row.status = row.status
+            notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
+            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.ref_id = row.ref_id
 
         # Create structure for the big plan.
 

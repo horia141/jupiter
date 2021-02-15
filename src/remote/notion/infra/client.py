@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Final, Optional, Iterable, List
 
 from notion.block import PageBlock, CollectionViewPageBlock, Block, CollectionViewBlock
-from notion.client import NotionClient as BaseNotionClient
+from notion.client import NotionClient as BaseNotionClient, Transaction
 from notion.collection import CollectionView, Collection, QueryResult, CollectionRowBlock
 from notion.space import Space
 
@@ -57,6 +57,9 @@ class NotionClient:
         """Constructor."""
         self._client = BaseNotionClient(token_v2=config.token)
         self._space = self._client.get_space(space_id=config.space_id)
+
+    def with_transaction(self) -> Transaction:
+        return self._client.as_atomic_transaction()
 
     # Page structures.
 

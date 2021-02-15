@@ -1045,27 +1045,27 @@ class NotionInboxTasksManager:
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: InboxTaskNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
-        # pylint: disable=unused-argument
-        notion_row.title = row.name
-        notion_row.archived = row.archived
-        notion_row.big_plan_id = row.big_plan_ref_id
-        if row.big_plan_name:
-            notion_row.big_plan = row.big_plan_name
-        notion_row.recurring_task_id = row.recurring_task_ref_id
-        notion_row.status = row.status
-        notion_row.eisenhower = row.eisen
-        notion_row.difficulty = row.difficulty
-        notion_row.actionable_date = \
-            self._basic_validator.adate_to_notion(row.actionable_date) if row.actionable_date else None
-        notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
-        notion_row.from_script = row.from_script
-        notion_row.recurring_timeline = row.recurring_timeline
-        notion_row.recurring_period = row.recurring_period
-        notion_row.recurring_type = row.recurring_task_type
-        notion_row.recurring_gen_right_now = self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
-            if row.recurring_task_gen_right_now else None
-        notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
-        notion_row.ref_id = row.ref_id
+        with client.with_transaction():
+            notion_row.title = row.name
+            notion_row.archived = row.archived
+            notion_row.big_plan_id = row.big_plan_ref_id
+            if row.big_plan_name:
+                notion_row.big_plan = row.big_plan_name
+            notion_row.recurring_task_id = row.recurring_task_ref_id
+            notion_row.status = row.status
+            notion_row.eisenhower = row.eisen
+            notion_row.difficulty = row.difficulty
+            notion_row.actionable_date = \
+                self._basic_validator.adate_to_notion(row.actionable_date) if row.actionable_date else None
+            notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
+            notion_row.from_script = row.from_script
+            notion_row.recurring_timeline = row.recurring_timeline
+            notion_row.recurring_period = row.recurring_period
+            notion_row.recurring_type = row.recurring_task_type
+            notion_row.recurring_gen_right_now = self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
+                if row.recurring_task_gen_right_now else None
+            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.ref_id = row.ref_id
 
         return notion_row
 
