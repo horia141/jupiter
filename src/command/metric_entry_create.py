@@ -5,27 +5,27 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.metrics import MetricsController
+from domain.metrics.commands.metric_entry_create import MetricEntryCreateCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricsEntryCreate(command.Command):
+class MetricEntryCreate(command.Command):
     """Command for creating a metric entry."""
 
     _basic_validator: Final[BasicValidator]
-    _metrics_controller: Final[MetricsController]
+    _command: Final[MetricEntryCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, metrics_controller: MetricsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: MetricEntryCreateCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._metrics_controller = metrics_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "metrics-entry-create"
+        return "metric-entry-create"
 
     @staticmethod
     def description() -> str:
@@ -49,5 +49,5 @@ class MetricsEntryCreate(command.Command):
             if args.collection_time else None
         value = args.value
         notes = args.notes
-        self._metrics_controller.create_metric_entry(
-            metric_key=metric_key, collection_time=collection_time, value=value, notes=notes)
+        self._command.execute(MetricEntryCreateCommand.Args(
+            metric_key=metric_key, collection_time=collection_time, value=value, notes=notes))

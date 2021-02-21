@@ -59,6 +59,7 @@ class NotionClient:
         self._space = self._client.get_space(space_id=config.space_id)
 
     def with_transaction(self) -> Transaction:
+        """Start a transaction context manager."""
         return self._client.as_atomic_transaction()
 
     # Page structures.

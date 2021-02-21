@@ -7,27 +7,27 @@ from typing import Final
 import pendulum
 
 import command.command as command
-from controllers.metrics import MetricsController
+from domain.metrics.commands.metric_find import MetricFindCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricsShow(command.Command):
+class MetricShow(command.Command):
     """Command for showing metrics."""
 
     _basic_validator: Final[BasicValidator]
-    _metrics_controller: Final[MetricsController]
+    _command: Final[MetricFindCommand]
 
-    def __init__(self, basic_validator: BasicValidator, metrics_controller: MetricsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: MetricFindCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._metrics_controller = metrics_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "metrics-show"
+        return "metric-show"
 
     @staticmethod
     def description() -> str:
@@ -43,7 +43,7 @@ class MetricsShow(command.Command):
         """Callback to execute when the command is invoked."""
         metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
-        response = self._metrics_controller.load_all_metrics(filter_keys=metric_keys)
+        response = self._command.execute(MetricFindCommand.Args(allow_archived=False, filter_keys=metric_keys))
 
         for metric_response_entry in response.metrics:
             metric = metric_response_entry.metric

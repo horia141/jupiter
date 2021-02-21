@@ -1062,7 +1062,8 @@ class NotionInboxTasksManager:
             notion_row.recurring_timeline = row.recurring_timeline
             notion_row.recurring_period = row.recurring_period
             notion_row.recurring_type = row.recurring_task_type
-            notion_row.recurring_gen_right_now = self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
+            notion_row.recurring_gen_right_now = \
+                self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
                 if row.recurring_task_gen_right_now else None
             notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
             notion_row.ref_id = row.ref_id

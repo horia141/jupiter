@@ -5,27 +5,27 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.metrics import MetricsController
+from domain.metrics.commands.metric_entry_remove import MetricEntryRemoveCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricsEntryHardRemove(command.Command):
+class MetricEntryRemove(command.Command):
     """Command for hard removing a metric."""
 
     _basic_validator: Final[BasicValidator]
-    _metrics_controller: Final[MetricsController]
+    _the_command: Final[MetricEntryRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, metrics_controller: MetricsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: MetricEntryRemoveCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._metrics_controller = metrics_controller
+        self._the_command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "metrics-entry-hard-remove"
+        return "metric-entry-remove"
 
     @staticmethod
     def description() -> str:
@@ -40,4 +40,5 @@ class MetricsEntryHardRemove(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
-        self._metrics_controller.hard_remove_metric_entries(ref_ids)
+        for ref_id in ref_ids:
+            self._the_command.execute(ref_id)

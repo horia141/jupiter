@@ -1,31 +1,27 @@
 """Command for creating a metric."""
-
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.metrics import MetricsController
+from domain.metrics.commands.metric_create import MetricCreateCommand
 from models.basic import BasicValidator
 
-LOGGER = logging.getLogger(__name__)
 
-
-class MetricsCreate(command.Command):
+class MetricCreate(command.Command):
     """Command for creating a metric."""
 
     _basic_validator: Final[BasicValidator]
-    _metrics_controller: Final[MetricsController]
+    _command: Final[MetricCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, metrics_controller: MetricsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: MetricCreateCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._metrics_controller = metrics_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "metrics-create"
+        return "metric-create"
 
     @staticmethod
     def description() -> str:
@@ -51,5 +47,5 @@ class MetricsCreate(command.Command):
             if args.collection_period else None
         metric_unit = self._basic_validator.metric_unit_validate_and_clean(args.metric_unit)\
             if args.metric_unit else None
-        self._metrics_controller.create_metric(
-            key=metric_key, name=name, collection_period=collection_period, metric_unit=metric_unit)
+        self._command.execute(MetricCreateCommand.Args(
+            key=metric_key, name=name, collection_period=collection_period, metric_unit=metric_unit))

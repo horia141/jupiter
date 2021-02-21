@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import Optional, Final, Iterable
 
 from models.basic import EntityId, MetricKey, RecurringTaskPeriod, BasicValidator, SyncPrefer, MetricUnit, \
-    ModelValidationError, ADate
+    ADate, EntityName
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
-from remote.notion.metrics_manager import NotionMetricsManager
-from repository.metrics import MetricsRepository, MetricEntriesRepository, MetricEntryRow, MetricRow
-from service.errors import ServiceValidationError, ServiceError
+from remote.notion.metrics_manager import NotionMetricManager
+from repository.metrics import YamlMetricsRepository, YamlMetricEntryRepository, MetricEntryRow, MetricRow
+from service.errors import ServiceError
 from utils.storage import StructuredStorageError
 from utils.time_field_action import TimeFieldAction
 
@@ -41,13 +41,13 @@ class MetricsService:
     """The service class for dealing with metrics."""
 
     _basic_validator: Final[BasicValidator]
-    _metrics_repository: Final[MetricsRepository]
-    _metric_entries_repository: Final[MetricEntriesRepository]
-    _notion_manager: Final[NotionMetricsManager]
+    _metrics_repository: Final[YamlMetricsRepository]
+    _metric_entries_repository: Final[YamlMetricEntryRepository]
+    _notion_manager: Final[NotionMetricManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, metrics_repository: MetricsRepository,
-            metric_entries_repository: MetricEntriesRepository, notion_manager: NotionMetricsManager) -> None:
+            self, basic_validator: BasicValidator, metrics_repository: YamlMetricsRepository,
+            metric_entries_repository: YamlMetricEntryRepository, notion_manager: NotionMetricManager) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
         self._metrics_repository = metrics_repository
@@ -58,79 +58,17 @@ class MetricsService:
         """Create the root page where all the metrics will be linked to."""
         self._notion_manager.upsert_root_page(parent_page)
 
-    def create_metric(
-            self, key: MetricKey, name: str, collection_period: Optional[RecurringTaskPeriod],
-            metric_unit: Optional[MetricUnit]) -> Metric:
-        """Create a new metric."""
-        new_metric_row = self._metrics_repository.create_metric(
-            key=key, name=name, archived=False, collection_period=collection_period, metric_unit=metric_unit)
-        LOGGER.info("Applied local changes")
-        self._notion_manager.upsert_metric_collection(new_metric_row.ref_id, new_metric_row.name)
-
-        return self._metric_row_to_entity(new_metric_row)
-
     def upsert_metric_structure(self, ref_id: EntityId) -> None:
         """Upsert the structure around the metric."""
         metric_row = self._metrics_repository.load_metric(ref_id)
         self._notion_manager.upsert_metric_collection(metric_row.ref_id, metric_row.name)
-
-    def archive_metric(self, ref_id: EntityId) -> Metric:
-        """Archive the metric."""
-        metric_row = self._metrics_repository.archive_metric(ref_id)
-
-        for metric_entry in self._metric_entries_repository.find_all_metric_entries(
-                filter_metric_ref_ids=[metric_row.ref_id]):
-            self._metric_entries_repository.archive_metric_entry(metric_entry.ref_id)
-
-        LOGGER.info("Applied local changes")
-
-        try:
-            self._notion_manager.hard_remove_metric_collection(ref_id)
-            LOGGER.info("Applied Notion changes")
-        except CollectionEntityNotFound:
-            LOGGER.info("Skipping archival on Notion side because metric was not found")
-
-        return self._metric_row_to_entity(metric_row)
-
-    def set_metric_name(self, ref_id: EntityId, name: str) -> Metric:
-        """Change the name of the metric."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
-        metric_row = self._metrics_repository.load_metric(ref_id)
-        metric_row.name = name
-        self._metrics_repository.update_metric(metric_row)
-        LOGGER.info("Applied local changes")
-
-        self._notion_manager.upsert_metric_collection(ref_id, name)
-        LOGGER.info("Applied remote changes")
-
-        return self._metric_row_to_entity(metric_row)
-
-    def set_metric_collection_period(
-            self, ref_id: EntityId, collection_period: Optional[RecurringTaskPeriod]) -> Metric:
-        """Change the collection period of the metric."""
-        metric_row = self._metrics_repository.load_metric(ref_id)
-        metric_row.collection_period = collection_period
-        self._metrics_repository.update_metric(metric_row)
-        LOGGER.info("Applied local changes")
-
-        return self._metric_row_to_entity(metric_row)
-
-    def load_metric_by_key(self, key: MetricKey) -> Metric:
-        """Retrieve a metric by key."""
-        metric_row = self._metrics_repository.load_metric_by_key(key)
-
-        return self._metric_row_to_entity(metric_row)
 
     def load_all_metrics(
             self, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[MetricKey]] = None) -> Iterable[Metric]:
         """Retrieve all the metrics."""
-        metric_rows = self._metrics_repository.find_all_metrics(
+        metric_rows = self._metrics_repository.find_all_old(
             allow_archived=allow_archived, filter_ref_ids=filter_ref_ids, filter_keys=filter_keys)
 
         return [self._metric_row_to_entity(m) for m in metric_rows]
@@ -164,88 +102,6 @@ class MetricsService:
             LOGGER.info("Skipping archival on Notion side because metric was not found")
 
         return self._metric_row_to_entity(metric_row)
-
-    def create_metric_entry(
-            self, metric_ref_id: EntityId, collection_time: ADate, value: float, notes: Optional[str]) -> MetricEntry:
-        """Create a metric entry."""
-        metric_row = self._metrics_repository.load_metric(metric_ref_id)
-
-        new_metric_entry_row = self._metric_entries_repository.create_metric_entry(
-            metric_ref_id, collection_time, value, notes, archived=False)
-        LOGGER.info("Applied local changes")
-
-        self._notion_manager.upsert_metric_entry(
-            metric_ref_id=metric_row.ref_id,
-            ref_id=new_metric_entry_row.ref_id,
-            collection_time=new_metric_entry_row.collection_time,
-            value=new_metric_entry_row.value,
-            notes=notes,
-            archived=new_metric_entry_row.archived)
-        LOGGER.info("Applied local changes")
-
-        return self._metric_entry_row_to_entity(new_metric_entry_row)
-
-    def archive_metric_entry(self, ref_id: EntityId) -> MetricEntry:
-        """Archive a metric entry."""
-        metric_entry_row = self._metric_entries_repository.archive_metric_entry(ref_id)
-        LOGGER.info("Applied local changes")
-
-        try:
-            self._notion_manager.archive_metric_entry(
-                metric_entry_row.metric_ref_id, metric_entry_row.ref_id)
-            LOGGER.info("Applied Notion changes")
-        except CollectionEntityNotFound:
-            LOGGER.info("Skipping archival on Notion side because recurring task was not found")
-
-        return self._metric_entry_row_to_entity(metric_entry_row)
-
-    def set_metric_entry_collection_time(self, ref_id: EntityId, collection_time: ADate) -> MetricEntry:
-        """Set the value for a metric entry."""
-        metric_entry_row = self._metric_entries_repository.load_metric_entry(ref_id)
-        metric_entry_row.collection_time = collection_time
-        self._metric_entries_repository.update_metric_entry(metric_entry_row)
-        LOGGER.info("Applied local changes")
-
-        metric_entry_notion_row = self._notion_manager.load_metric_entry(
-            metric_entry_row.metric_ref_id, metric_entry_row.ref_id)
-        metric_entry_notion_row.collection_time = collection_time
-        self._notion_manager.save_metric_entry(
-            metric_entry_row.metric_ref_id, metric_entry_row.ref_id, metric_entry_notion_row)
-        LOGGER.info("Applied Notion changes")
-
-        return self._metric_entry_row_to_entity(metric_entry_row)
-
-    def set_metric_entry_value(self, ref_id: EntityId, value: float) -> MetricEntry:
-        """Set the value for a metric entry."""
-        metric_entry_row = self._metric_entries_repository.load_metric_entry(ref_id)
-        metric_entry_row.value = value
-        self._metric_entries_repository.update_metric_entry(metric_entry_row)
-        LOGGER.info("Applied local changes")
-
-        metric_entry_notion_row = self._notion_manager.load_metric_entry(
-            metric_entry_row.metric_ref_id, metric_entry_row.ref_id)
-        metric_entry_notion_row.value = value
-        self._notion_manager.save_metric_entry(
-            metric_entry_row.metric_ref_id, metric_entry_row.ref_id, metric_entry_notion_row)
-        LOGGER.info("Applied Notion changes")
-
-        return self._metric_entry_row_to_entity(metric_entry_row)
-
-    def set_metric_entry_notes(self, ref_id: EntityId, notes: Optional[str]) -> MetricEntry:
-        """Set the value for a metric entry."""
-        metric_entry_row = self._metric_entries_repository.load_metric_entry(ref_id)
-        metric_entry_row.notes = notes
-        self._metric_entries_repository.update_metric_entry(metric_entry_row)
-        LOGGER.info("Applied local changes")
-
-        metric_entry_notion_row = self._notion_manager.load_metric_entry(
-            metric_entry_row.metric_ref_id, metric_entry_row.ref_id)
-        metric_entry_notion_row.notes = notes
-        self._notion_manager.save_metric_entry(
-            metric_entry_row.metric_ref_id, metric_entry_row.ref_id, metric_entry_notion_row)
-        LOGGER.info("Applied Notion changes")
-
-        return self._metric_entry_row_to_entity(metric_entry_row)
 
     def load_all_metric_entries(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
@@ -309,7 +165,7 @@ class MetricsService:
                 self._notion_manager.save_metric_collection(metric_notion_collection)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
-                metric_row.name = metric_notion_collection.name
+                metric_row.name = EntityName(metric_notion_collection.name)
                 self._metrics_repository.update_metric(metric_row)
                 LOGGER.info("Applied local change")
             else:
@@ -426,7 +282,7 @@ class MetricsService:
                 continue
 
             # If the metric entry does not exist on Notion side, we create it.
-            self._notion_manager.upsert_metric_entry(
+            self._notion_manager.upsert_metric_entry_old(
                 metric_ref_id=metric_ref_id,
                 ref_id=metric_entry_row.ref_id,
                 collection_time=metric_entry_row.collection_time,
