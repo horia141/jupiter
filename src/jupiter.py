@@ -1,14 +1,8 @@
 """The CLI entry-point for Jupiter."""
-
 import argparse
 import logging
-import os
-from pathlib import Path
-from typing import cast
 
 import coloredlogs
-import dotenv
-import pendulum
 
 from command.big_plans_archive import BigPlansArchive
 from command.big_plans_create import BigPlansCreate
@@ -128,7 +122,7 @@ from remote.notion.vacations_manager import NotionVacationsManager
 from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenError
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
-from repository.metrics import YamlMetricsRepository, YamlMetricEntryRepository
+from repository.sqlite.metrics import SqliteMetricEngine
 from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
@@ -142,7 +136,7 @@ from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
-from utils.global_properties import GlobalProperties
+from utils.global_properties import build_global_properties
 from utils.time_provider import TimeProvider
 
 
@@ -155,7 +149,13 @@ def main() -> None:
     workspaces_repository = WorkspaceRepository(time_provider)
     workspaces_singleton = WorkspaceSingleton(notion_connection)
 
-    global_properties = _build_global_properties(workspaces_repository)
+    try:
+        workspace = workspaces_repository.load_workspace()
+        timezone = workspace.timezone
+    except MissingWorkspaceRepositoryError:
+        timezone = None
+
+    global_properties = build_global_properties(timezone)
     basic_validator = BasicValidator(global_properties)
 
     with VacationsRepository(time_provider) as vacations_repository, \
@@ -166,10 +166,12 @@ def main() -> None:
             SmartListsRepository(time_provider) as smart_lists_repository, \
             SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
-            YamlMetricsRepository(time_provider) as metrics_repository, \
-            YamlMetricEntryRepository(time_provider) as metric_entry_repository, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
+        sqlite_metric_engine = SqliteMetricEngine(SqliteMetricEngine.Config(
+            global_properties.sqlite_db_url, global_properties.alembic_ini_path,
+            global_properties.alembic_migrations_path))
+
         notion_vacations_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
         notion_projects_manager = NotionProjectsManager(pages_manager)
@@ -198,7 +200,7 @@ def main() -> None:
             basic_validator, smart_lists_repository, smart_list_tags_repository, smart_list_items_repository,
             notion_smart_lists_manager)
         metrics_service = MetricsService(
-            basic_validator, metrics_repository, metric_entry_repository, notion_metrics_manager)
+            basic_validator, time_provider, sqlite_metric_engine, notion_metrics_manager)
 
         workspaces_controller = WorkspacesController(
             notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
@@ -295,23 +297,23 @@ def main() -> None:
             SmartListsItemShow(basic_validator, smart_lists_controller),
             SmartListsItemHardRemove(basic_validator, smart_lists_controller),
             MetricCreate(basic_validator, MetricCreateCommand(
-                time_provider, metrics_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricArchive(basic_validator, MetricArchiveCommand(
-                time_provider, metrics_repository, metric_entry_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricUpdate(basic_validator, MetricUpdateCommand(
-                time_provider, metrics_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricShow(basic_validator, MetricFindCommand(
-                time_provider, metrics_repository, metric_entry_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricRemove(basic_validator, MetricRemoveCommand(
-                time_provider, metrics_repository, metric_entry_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricEntryCreate(basic_validator, MetricEntryCreateCommand(
-                time_provider, metrics_repository, metric_entry_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricEntryArchive(basic_validator, MetricEntryArchiveCommand(
-                time_provider, metric_entry_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricEntryUpdate(basic_validator, MetricEntryUpdateCommand(
-                time_provider, metric_entry_repository, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metrics_manager)),
             MetricEntryRemove(basic_validator, MetricEntryRemoveCommand(
-                time_provider, metric_entry_repository, notion_metrics_manager)),
+                sqlite_metric_engine, notion_metrics_manager)),
             # Complex commands.
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),
@@ -353,6 +355,8 @@ def main() -> None:
             for handler in logging.root.handlers:
                 handler.addFilter(CommandsAndControllersLoggerFilter())
 
+        sqlite_metric_engine.prepare()
+
         try:
             for command in commands:
                 if args.subparser_name != command.name():
@@ -379,35 +383,6 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
         if record.name.startswith("command.") or record.name.startswith("controllers."):
             return 1
         return 0
-
-
-def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:
-    config_path = Path(os.path.realpath(Path(os.path.realpath(__file__)).parent / ".." / "Config"))
-
-    if not config_path.exists():
-        raise Exception("Critical error - missing Config file")
-
-    dotenv.load_dotenv(dotenv_path=config_path, verbose=True)
-
-    description = cast(str, os.getenv("DESCRIPTION"))
-    version = cast(str, os.getenv("VERSION"))
-    docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
-    docs_update_expired_token_url = cast(str, os.getenv("DOCS_UPDATE_EXPIRED_TOKEN_URL"))
-    docs_fix_data_inconsistencies_url = cast(str, os.getenv("DOCS_FIX_DATA_INCONSISTENCIES_URL"))
-
-    try:
-        workspace = workspace_repository.load_workspace()
-        timezone = workspace.timezone
-    except MissingWorkspaceRepositoryError:
-        timezone = pendulum.timezone(os.getenv("TZ", "UTC"))
-
-    return GlobalProperties(
-        description=description,
-        version=version,
-        timezone=timezone,
-        docs_init_workspace_url=docs_init_workspace_url,
-        docs_update_expired_token_url=docs_update_expired_token_url,
-        docs_fix_data_inconsistencies_url=docs_fix_data_inconsistencies_url)
 
 
 def _map_log_level_to_log_class(log_level: str) -> int:

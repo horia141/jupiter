@@ -2,9 +2,8 @@
 from dataclasses import dataclass
 from typing import Final, Optional, List, Dict
 
-from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
+from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from domain.metrics.infra.metric_repository import MetricRepository
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import MetricKey, EntityId
@@ -35,31 +34,30 @@ class MetricFindCommand(Command['MetricFindCommand.Args', 'MetricFindCommand.Res
         metrics: List['MetricFindCommand.ResponseEntry']
 
     _time_provider: Final[TimeProvider]
-    _metric_repository: Final[MetricRepository]
-    _metric_entry_repository: Final[MetricEntryRepository]
+    _metric_engine: Final[MetricEngine]
     _notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, metric_repository: MetricRepository,
-            metric_entry_repository: MetricEntryRepository, notion_manager: MetricNotionManager) -> None:
+            self, time_provider: TimeProvider, metric_engine: MetricEngine,
+            notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._metric_repository = metric_repository
-        self._metric_entry_repository = metric_entry_repository
+        self._metric_engine = metric_engine
         self._notion_manager = notion_manager
 
     def execute(self, args: Args) -> 'Response':
         """Execute the command's action."""
-        metrics = self._metric_repository.find_all(
-            allow_archived=args.allow_archived, filter_keys=args.filter_keys)
-        metric_entries = self._metric_entry_repository.find_all(
-            allow_archived=args.allow_archived, filter_metric_ref_ids=[m.ref_id for m in metrics])
-        metric_entries_by_ref_ids: Dict[EntityId, List[MetricEntry]] = {}
-        for metric_entry in metric_entries:
-            if metric_entry.metric_ref_id not in metric_entries_by_ref_ids:
-                metric_entries_by_ref_ids[metric_entry.metric_ref_id] = [metric_entry]
-            else:
-                metric_entries_by_ref_ids[metric_entry.metric_ref_id].append(metric_entry)
+        with self._metric_engine.get_unit_of_work() as uow:
+            metrics = uow.metric_repository.find_all(
+                allow_archived=args.allow_archived, filter_keys=args.filter_keys)
+            metric_entries = uow.metric_entry_repository.find_all(
+                allow_archived=args.allow_archived, filter_metric_ref_ids=[m.ref_id for m in metrics])
+            metric_entries_by_ref_ids: Dict[EntityId, List[MetricEntry]] = {}
+            for metric_entry in metric_entries:
+                if metric_entry.metric_ref_id not in metric_entries_by_ref_ids:
+                    metric_entries_by_ref_ids[metric_entry.metric_ref_id] = [metric_entry]
+                else:
+                    metric_entries_by_ref_ids[metric_entry.metric_ref_id].append(metric_entry)
         return self.Response(
             metrics=[self.ResponseEntry(
                 metric=m,

@@ -10,7 +10,7 @@ import pendulum
 from pendulum.tz.zoneinfo import Timezone
 
 from models.basic import Timestamp, BasicValidator
-from repository.common import RepositoryError
+from models.framework import RepositoryError
 from utils.storage import StructuredIndividualStorage, JSONDictType
 from utils.time_provider import TimeProvider
 

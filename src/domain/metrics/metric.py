@@ -52,6 +52,8 @@ class Metric(AggregateRoot):
 
     def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Metric':
         """Change the name of the metric."""
+        if self._name == name:
+            return self
         self._name = name
         self.record_event(Metric.Updated(name=UpdateAction.change_to(name), timestamp=modification_time))
         return self

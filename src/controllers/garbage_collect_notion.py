@@ -2,10 +2,12 @@
 import logging
 from typing import Final, Optional, Iterable
 
+from domain.metrics.metric import Metric
+from domain.metrics.metric_entry import MetricEntry
 from models.basic import ProjectKey, SyncTarget
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService, InboxTask
-from service.metrics import MetricsService, Metric, MetricEntry
+from service.metrics import MetricsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.smart_lists import SmartListsService, SmartList, SmartListItem

@@ -1,26 +1,27 @@
-"""Repository for metrics."""
+"""YAML text files repository for metrics."""
 import logging
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final
 import typing
 
+from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.metric import Metric
 from domain.metrics.infra.metric_repository import MetricRepository
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import EntityId, MetricKey, RecurringTaskPeriod, MetricUnit, BasicValidator, ADate, EntityName
-from repository.common import RepositoryError
+from models.framework import RepositoryError
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq
-from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class MetricRow(BaseEntityRow):
+class _MetricRow(BaseEntityRow):
     """A container for metric entries."""
     key: MetricKey
     name: EntityName
@@ -28,18 +29,18 @@ class MetricRow(BaseEntityRow):
     metric_unit: Optional[MetricUnit]
 
 
-class YamlMetricsRepository(MetricRepository):
+class YamlMetricRepository(MetricRepository):
     """A repository for metrics."""
 
     _METRICS_FILE_PATH: ClassVar[Path] = Path("./metrics.yaml")
 
-    _storage: Final[EntitiesStorage[MetricRow]]
+    _storage: Final[EntitiesStorage[_MetricRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
-        self._storage = EntitiesStorage[MetricRow](self._METRICS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[_MetricRow](self._METRICS_FILE_PATH, time_provider, self)
 
-    def __enter__(self) -> 'YamlMetricsRepository':
+    def __enter__(self) -> 'YamlMetricRepository':
         """Enter context."""
         self._storage.initialize()
         return self
@@ -51,6 +52,10 @@ class YamlMetricsRepository(MetricRepository):
         if exc_type is not None:
             return
 
+    def initialize(self) -> None:
+        """Initialise the repo."""
+        self._storage.initialize()
+
     def create(self, metric: Metric) -> Metric:
         """Create a metric."""
         metric_rows = self._storage.find_all(allow_archived=True, key=Eq(metric.key))
@@ -58,7 +63,7 @@ class YamlMetricsRepository(MetricRepository):
         if len(metric_rows) > 0:
             raise RepositoryError(f"Metric with key='{metric.key}' already exists")
 
-        new_metric_row = self._storage.create(MetricRow(
+        new_metric_row = self._storage.create(_MetricRow(
             key=metric.key,
             name=metric.name,
             archived=metric.archived,
@@ -78,41 +83,23 @@ class YamlMetricsRepository(MetricRepository):
         metric_row = self._storage.find_first(allow_archived=False, key=Eq(key))
         return self._row_to_entity(metric_row)
 
-    def find_all(self, allow_archived: bool, filter_keys: Optional[Iterable[MetricKey]]) -> typing.List[Metric]:
+    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
+        """Load a particular metric by its id."""
+        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+
+    def find_all(
+            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_keys: Optional[Iterable[MetricKey]] = None) -> typing.List[Metric]:
         """Find all metrics matching some criteria."""
         return [self._row_to_entity(mr)
                 for mr in self._storage.find_all(
                     allow_archived=allow_archived,
+                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
                     key=In(*filter_keys) if filter_keys else None)]
 
-    def remove(self, metric: Metric) -> None:
+    def remove(self, ref_id: EntityId) -> Metric:
         """Hard remove a metric."""
-        self._storage.remove(ref_id=metric.ref_id)
-
-    # Old methods down
-
-    def remove_metric(self, ref_id: EntityId) -> MetricRow:
-        """Hard remove a metric."""
-        return self._storage.remove(ref_id=ref_id)
-
-    def update_metric(
-            self, new_metric: MetricRow,
-            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> MetricRow:
-        """Store a particular metric."""
-        return self._storage.update(new_metric, archived_time_action=archived_time_action)
-
-    def load_metric(self, ref_id: EntityId, allow_archived: bool = False) -> MetricRow:
-        """Load a particular metric by its id."""
-        return self._storage.load(ref_id, allow_archived=allow_archived)
-
-    def find_all_old(
-            self, allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_keys: Optional[Iterable[MetricKey]] = None) -> Iterable[MetricRow]:
-        """Load all metrics."""
-        return self._storage.find_all(
-            allow_archived=allow_archived, ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-            key=In(*filter_keys) if filter_keys else None)
+        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -125,9 +112,9 @@ class YamlMetricsRepository(MetricRepository):
         }
 
     @staticmethod
-    def storage_to_live(storage_form: JSONDictType) -> MetricRow:
+    def storage_to_live(storage_form: JSONDictType) -> _MetricRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return MetricRow(
+        return _MetricRow(
             name=EntityName(typing.cast(str, storage_form["name"])),
             key=MetricKey(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
@@ -137,7 +124,7 @@ class YamlMetricsRepository(MetricRepository):
             if storage_form["metric_unit"] else None)
 
     @staticmethod
-    def live_to_storage(live_form: MetricRow) -> JSONDictType:
+    def live_to_storage(live_form: _MetricRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "name": live_form.name,
@@ -147,8 +134,8 @@ class YamlMetricsRepository(MetricRepository):
         }
 
     @staticmethod
-    def _entity_to_row(metric: Metric) -> MetricRow:
-        metric_row = MetricRow(
+    def _entity_to_row(metric: Metric) -> _MetricRow:
+        metric_row = _MetricRow(
             archived=metric.archived,
             key=metric.key,
             name=metric.name,
@@ -161,7 +148,7 @@ class YamlMetricsRepository(MetricRepository):
         return metric_row
 
     @staticmethod
-    def _row_to_entity(row: MetricRow) -> Metric:
+    def _row_to_entity(row: _MetricRow) -> Metric:
         return Metric(
             _ref_id=row.ref_id,
             _archived=row.archived,
@@ -176,7 +163,7 @@ class YamlMetricsRepository(MetricRepository):
 
 
 @dataclass()
-class MetricEntryRow(BaseEntityRow):
+class _MetricEntryRow(BaseEntityRow):
     """An entry in a metric."""
 
     metric_ref_id: EntityId
@@ -190,11 +177,11 @@ class YamlMetricEntryRepository(MetricEntryRepository):
 
     _METRIC_ENTRIES_FILE_PATH: ClassVar[Path] = Path("./metric-entries.yaml")
 
-    _storage: Final[EntitiesStorage[MetricEntryRow]]
+    _storage: Final[EntitiesStorage[_MetricEntryRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
-        self._storage = EntitiesStorage[MetricEntryRow](
+        self._storage = EntitiesStorage[_MetricEntryRow](
             self._METRIC_ENTRIES_FILE_PATH, time_provider, self)
 
     def __enter__(self) -> 'YamlMetricEntryRepository':
@@ -209,9 +196,13 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         if exc_type is not None:
             return
 
+    def initialize(self) -> None:
+        """Initialise the repo."""
+        self._storage.initialize()
+
     def create(self, metric_entry: MetricEntry) -> MetricEntry:
         """Create a metric entry."""
-        new_metric_entry_row = self._storage.create(MetricEntryRow(
+        new_metric_entry_row = self._storage.create(_MetricEntryRow(
             archived=metric_entry.archived,
             metric_ref_id=metric_entry.metric_ref_id,
             collection_time=metric_entry.collection_time,
@@ -226,59 +217,27 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         metric_entry_row = self._storage.update(metric_entry_row)
         return self._row_to_entity(metric_entry_row)
 
-    def load_by_id(self, ref_id: EntityId) -> MetricEntry:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> MetricEntry:
         """Load a given metric entry."""
-        return self._row_to_entity(self._storage.load(ref_id))
+        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
 
     def find_all_for_metric(self, metric_ref_id: EntityId) -> typing.List[MetricEntry]:
         """Retrieve all metric entries for a given metric."""
 
     def find_all(
-            self, allow_archived: bool,
-            filter_metric_ref_ids: Optional[Iterable[EntityId]]) -> typing.List[MetricEntry]:
+            self, allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None) -> typing.List[MetricEntry]:
         """Find all metric entries matching some criteria."""
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
+                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
                     metric_ref_id=In(*filter_metric_ref_ids) if filter_metric_ref_ids else None)]
 
-    def remove(self, metric_entry: MetricEntry) -> None:
+    def remove(self, ref_id: EntityId) -> MetricEntry:
         """Hard remove a metric - an irreversible operation."""
-        self._storage.remove(ref_id=metric_entry.ref_id)
-
-    # Old methods
-
-    def create_metric_entry(
-            self, metric_ref_id: EntityId, collection_time: ADate, value: float, notes: Optional[str],
-            archived: bool) -> MetricEntryRow:
-        """Create a metric entry."""
-        new_metric_entries = MetricEntryRow(
-            metric_ref_id=metric_ref_id, collection_time=collection_time, value=value, notes=notes, archived=archived)
-        return self._storage.create(new_metric_entries)
-
-    def remove_metric_entry(self, ref_id: EntityId) -> MetricEntryRow:
-        """Hard remove a metric entry."""
-        return self._storage.remove(ref_id=ref_id)
-
-    def update_metric_entry(
-            self, new_metric_entries: MetricEntryRow,
-            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> MetricEntryRow:
-        """Store a particular metric entry."""
-        return self._storage.update(new_metric_entries, archived_time_action=archived_time_action)
-
-    def load_metric_entry(self, ref_id: EntityId, allow_archived: bool = False) -> MetricEntryRow:
-        """Load a particular metric entry by its id."""
-        return self._storage.load(ref_id, allow_archived=allow_archived)
-
-    def find_all_metric_entries(
-            self, allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[MetricEntryRow]:
-        """Load all metrics entries."""
-        return self._storage.find_all(
-            allow_archived=allow_archived,
-            ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-            metric_ref_id=In(*filter_metric_ref_ids) if filter_metric_ref_ids else None)
+        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -292,9 +251,9 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         }
 
     @staticmethod
-    def storage_to_live(storage_form: JSONDictType) -> MetricEntryRow:
+    def storage_to_live(storage_form: JSONDictType) -> _MetricEntryRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return MetricEntryRow(
+        return _MetricEntryRow(
             metric_ref_id=EntityId(typing.cast(str, storage_form["metric_ref_id"])),
             collection_time=BasicValidator.adate_from_str(typing.cast(str, storage_form["collection_time"])),
             value=typing.cast(float, storage_form["value"]),
@@ -302,7 +261,7 @@ class YamlMetricEntryRepository(MetricEntryRepository):
             archived=typing.cast(bool, storage_form["archived"]))
 
     @staticmethod
-    def live_to_storage(live_form: MetricEntryRow) -> JSONDictType:
+    def live_to_storage(live_form: _MetricEntryRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "metric_ref_id": live_form.metric_ref_id,
@@ -312,8 +271,8 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         }
 
     @staticmethod
-    def _entity_to_row(metric_entry: MetricEntry) -> MetricEntryRow:
-        metric_entry_row = MetricEntryRow(
+    def _entity_to_row(metric_entry: MetricEntry) -> _MetricEntryRow:
+        metric_entry_row = _MetricEntryRow(
             archived=metric_entry.archived,
             metric_ref_id=metric_entry.metric_ref_id,
             collection_time=metric_entry.collection_time,
@@ -326,7 +285,7 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         return metric_entry_row
 
     @staticmethod
-    def _row_to_entity(row: MetricEntryRow) -> MetricEntry:
+    def _row_to_entity(row: _MetricEntryRow) -> MetricEntry:
         return MetricEntry(
             _ref_id=row.ref_id,
             _archived=row.archived,
@@ -338,3 +297,51 @@ class YamlMetricEntryRepository(MetricEntryRepository):
             _collection_time=row.collection_time,
             _value=row.value,
             _notes=row.notes)
+
+
+class YamlMetricUnitOfWork(MetricUnitOfWork):
+    """A Yaml text file specific metric unit of work."""
+
+    _metric_repository: Final[YamlMetricRepository]
+    _metric_entry_repository: Final[YamlMetricEntryRepository]
+
+    def __init__(self, time_provider: TimeProvider) -> None:
+        """Constructor."""
+        self._metric_repository = YamlMetricRepository(time_provider)
+        self._metric_entry_repository = YamlMetricEntryRepository(time_provider)
+
+    def __enter__(self) -> 'YamlMetricUnitOfWork':
+        """Enter context."""
+        self._metric_repository.initialize()
+        self._metric_entry_repository.initialize()
+        return self
+
+    def __exit__(
+            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
+            _exc_tb: Optional[TracebackType]) -> None:
+        """Exit context."""
+
+    @property
+    def metric_repository(self) -> MetricRepository:
+        """The metric repository."""
+        return self._metric_repository
+
+    @property
+    def metric_entry_repository(self) -> MetricEntryRepository:
+        """The metric entry repository."""
+        return self._metric_entry_repository
+
+
+class YamlMetricEngine(MetricEngine):
+    """An Yaml text file specific metric engine."""
+
+    _time_provider: Final[TimeProvider]
+
+    def __init__(self, time_provider: TimeProvider) -> None:
+        """Constructor."""
+        self._time_provider = time_provider
+
+    @contextmanager
+    def get_unit_of_work(self) -> typing.Iterator[MetricUnitOfWork]:
+        """Get the unit of work."""
+        yield YamlMetricUnitOfWork(self._time_provider)

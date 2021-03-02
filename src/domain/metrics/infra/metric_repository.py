@@ -3,10 +3,11 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.metrics.metric import Metric
-from models.basic import MetricKey
+from models.basic import MetricKey, EntityId
+from models.framework import Repository
 
 
-class MetricRepository(abc.ABC):
+class MetricRepository(Repository, abc.ABC):
     """A repository of metrics."""
 
     @abc.abstractmethod
@@ -22,9 +23,17 @@ class MetricRepository(abc.ABC):
         """Find a metric by key."""
 
     @abc.abstractmethod
-    def find_all(self, allow_archived: bool, filter_keys: Optional[Iterable[MetricKey]]) -> List[Metric]:
+    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
+        """Find a metric by id."""
+
+    @abc.abstractmethod
+    def find_all(
+            self,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_keys: Optional[Iterable[MetricKey]] = None) -> List[Metric]:
         """Find all metrics matching some criteria."""
 
     @abc.abstractmethod
-    def remove(self, metric: Metric) -> None:
+    def remove(self, ref_id: EntityId) -> Metric:
         """Hard remove a metric - an irreversible operation."""

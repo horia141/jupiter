@@ -2,7 +2,7 @@
 import logging
 from typing import Final
 
-from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
+from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from models.basic import EntityId
 from models.framework import Command
@@ -17,22 +17,23 @@ class MetricEntryArchiveCommand(Command[EntityId, None]):
     """The command for archiving a metric entry."""
 
     _time_provider: Final[TimeProvider]
-    _metric_entry_repository: Final[MetricEntryRepository]
+    _metric_engine: Final[MetricEngine]
     _notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, metric_entry_repository: MetricEntryRepository,
+            self, time_provider: TimeProvider, metric_engune: MetricEngine,
             notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._metric_entry_repository = metric_entry_repository
+        self._metric_engine = metric_engune
         self._notion_manager = notion_manager
 
     def execute(self, args: EntityId) -> None:
         """Execute the command's action."""
-        metric_entry = self._metric_entry_repository.load_by_id(args)
-        metric_entry.mark_archived(self._time_provider.get_current_time())
-        self._metric_entry_repository.save(metric_entry)
+        with self._metric_engine.get_unit_of_work() as uow:
+            metric_entry = uow.metric_entry_repository.load_by_id(args)
+            metric_entry.mark_archived(self._time_provider.get_current_time())
+            uow.metric_entry_repository.save(metric_entry)
 
         try:
             self._notion_manager.remove_metric_entry(metric_entry)

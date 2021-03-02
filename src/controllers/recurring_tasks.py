@@ -81,7 +81,7 @@ class RecurringTasksController:
         """Archive an recurring task."""
         recurring_task = self._recurring_tasks_service.load_recurring_task_by_id(ref_id)
         all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
+            allow_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
         for inbox_task in all_inbox_tasks:
             self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
             LOGGER.info(f"Removing inbox task instance {inbox_task.name}")

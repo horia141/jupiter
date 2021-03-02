@@ -311,7 +311,8 @@ class BasicValidator:
 
         return EntityId(entity_id)
 
-    def entity_name_validate_and_clean(self, entity_name_raw: Optional[str]) -> EntityName:
+    @staticmethod
+    def entity_name_validate_and_clean(entity_name_raw: Optional[str]) -> EntityName:
         """Validate and clean an entity name."""
         if not entity_name_raw:
             raise ModelValidationError("Expected entity name to be non-null")
@@ -321,9 +322,9 @@ class BasicValidator:
         if len(entity_name) == 0:
             raise ModelValidationError("Expected entity name to be non-empty")
 
-        if not self._entity_name_re.match(entity_name):
+        if not BasicValidator._entity_name_re.match(entity_name):
             raise ModelValidationError(
-                f"Expected entity id '{entity_name_raw}' to match '{self._entity_name_re.pattern}")
+                f"Expected entity id '{entity_name_raw}' to match '{BasicValidator._entity_name_re.pattern}")
 
         return EntityName(entity_name)
 
@@ -391,7 +392,8 @@ class BasicValidator:
 
         return SmartListKey(smart_list_key_str)
 
-    def metric_key_validate_and_clean(self, metric_key_raw: Optional[str]) -> MetricKey:
+    @staticmethod
+    def metric_key_validate_and_clean(metric_key_raw: Optional[str]) -> MetricKey:
         """Validate and clean a metric."""
         if not metric_key_raw:
             raise ModelValidationError("Expected metric key key to be non-null")
@@ -401,9 +403,9 @@ class BasicValidator:
         if len(metric_key_str) == 0:
             raise ModelValidationError("Expected metric key to be non-empty")
 
-        if not self._metric_key_re.match(metric_key_str):
+        if not BasicValidator._metric_key_re.match(metric_key_str):
             raise ModelValidationError(
-                f"Expected metric key '{metric_key_raw}' to match '{self._metric_key_re.pattern}'")
+                f"Expected metric key '{metric_key_raw}' to match '{BasicValidator._metric_key_re.pattern}'")
 
         return MetricKey(metric_key_str)
 
@@ -496,6 +498,16 @@ class BasicValidator:
         """Transform a timestamp to a Notion representation."""
         return cast(Timestamp, timestamp.in_timezone(self._global_properties.timezone))
 
+    @staticmethod
+    def timestamp_from_db_timestamp(timestamp_raw: datetime.datetime) -> Timestamp:
+        """Parse a timestamp from a Notion representation."""
+        return Timestamp(pendulum.instance(timestamp_raw).in_timezone(UTC))
+
+    @staticmethod
+    def timestamp_to_db_timestamp(timestamp: Timestamp) -> datetime.datetime:
+        """Transform a timestamp to a Notion representation."""
+        return timestamp
+
     def adate_to_user(self, adate: Optional[ADate]) -> str:
         """Transform a date to something meaningful to a user."""
         if not adate:
@@ -560,17 +572,18 @@ class BasicValidator:
         """The possible values for inbox task statues."""
         return BasicValidator._inbox_task_status_values
 
-    def recurring_task_period_validate_and_clean(self, recurring_task_period_raw: Optional[str]) -> RecurringTaskPeriod:
+    @staticmethod
+    def recurring_task_period_validate_and_clean(recurring_task_period_raw: Optional[str]) -> RecurringTaskPeriod:
         """Validate and clean the recurring task period."""
         if not recurring_task_period_raw:
-            raise ModelValidationError("Expected big plan status to be non-null")
+            raise ModelValidationError("Expected recurring task period to be non-null")
 
         recurring_task_period_str: str = recurring_task_period_raw.strip().lower()
 
-        if recurring_task_period_str not in self._recurring_task_period_values:
+        if recurring_task_period_str not in BasicValidator._recurring_task_period_values:
             raise ModelValidationError(
                 f"Expected recurring task period '{recurring_task_period_raw}' to be " +
-                f"one of '{','.join(self._recurring_task_period_values)}'")
+                f"one of '{','.join(BasicValidator._recurring_task_period_values)}'")
 
         return RecurringTaskPeriod(recurring_task_period_str)
 
@@ -670,17 +683,18 @@ class BasicValidator:
         """The possible values for big plan statues."""
         return BasicValidator._big_plan_status_values
 
-    def metric_unit_validate_and_clean(self, metric_unit_raw: Optional[str]) -> MetricUnit:
+    @staticmethod
+    def metric_unit_validate_and_clean(metric_unit_raw: Optional[str]) -> MetricUnit:
         """Validate and clean the metric unit."""
         if not metric_unit_raw:
             raise ModelValidationError("Expected metric unit to be non-null")
 
         metric_unit_str: str = '-'.join(metric_unit_raw.strip().lower().split(' '))
 
-        if metric_unit_str not in self._metric_unit_values:
+        if metric_unit_str not in BasicValidator._metric_unit_values:
             raise ModelValidationError(
                 f"Expected metric unit '{metric_unit_raw}' to be " +
-                f"one of '{','.join(self._metric_unit_values)}'")
+                f"one of '{','.join(BasicValidator._metric_unit_values)}'")
 
         return MetricUnit(metric_unit_str)
 

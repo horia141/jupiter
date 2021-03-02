@@ -7,7 +7,7 @@ from typing import Optional, Iterable, ClassVar, Final, Set, List
 import typing
 
 from models.basic import EntityId, SmartListKey, Tag, ModelValidationError
-from repository.common import RepositoryError
+from models.framework import RepositoryError
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider

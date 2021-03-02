@@ -1,20 +1,12 @@
 """A temporary migrator."""
 import logging
-import os
-from pathlib import Path
-from typing import cast
 
 import coloredlogs
-import dotenv
-import pendulum
 
-from models.basic import BasicValidator, EntityId
-from remote.notion.inbox_tasks_manager import NotionInboxTasksManager
-from remote.notion.infra.collections_manager import CollectionsManager
-from remote.notion.infra.connection import NotionConnection
-from repository.projects import ProjectsRepository
+from repository.sqlite.metrics import SqliteMetricEngine
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
-from utils.global_properties import GlobalProperties
+from repository.yaml.metrics import YamlMetricEngine
+from utils.global_properties import build_global_properties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -24,63 +16,55 @@ def main() -> None:
     """Application main function."""
     time_provider = TimeProvider()
 
-    notion_connection = NotionConnection()
-
     workspaces_repository = WorkspaceRepository(time_provider)
 
-    global_properties = _build_global_properties(workspaces_repository)
-    basic_validator = BasicValidator(global_properties)
+    try:
+        workspace = workspaces_repository.load_workspace()
+        timezone = workspace.timezone
+    except MissingWorkspaceRepositoryError:
+        timezone = None
+
+    global_properties = build_global_properties(timezone)
+    yaml_metric_engine = YamlMetricEngine(time_provider)
+    sqlite_metric_engine = SqliteMetricEngine(
+        SqliteMetricEngine.Config(
+            global_properties.sqlite_db_url, global_properties.alembic_ini_path,
+            global_properties.alembic_migrations_path))
 
     coloredlogs.install(
         level="info",
         fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S")
 
-    with ProjectsRepository(time_provider) as projects_repository, \
-        CollectionsManager(time_provider, notion_connection) as collections_manager:
-        notion_manager = NotionInboxTasksManager(time_provider, basic_validator, collections_manager)
+    sqlite_metric_engine.prepare()
 
-        for project_row in projects_repository.find_all_projects():
-            LOGGER.info(f'Processing project "{project_row.name}"')
-            all_inbox_tasks_notion_rows = notion_manager.load_all_inbox_tasks(project_row.ref_id)
+    with yaml_metric_engine.get_unit_of_work() as yaml_uow:
+        with sqlite_metric_engine.get_unit_of_work() as sqlite_uow:
+            for metric in yaml_uow.metric_repository.find_all(allow_archived=True):
+                sqlite_uow.metric_repository.create(metric)
 
-            for inbox_tasks_notion_row in all_inbox_tasks_notion_rows:
-                LOGGER.info(f'Processing big plan "{inbox_tasks_notion_row.name}"')
-                if inbox_tasks_notion_row.ref_id is None:
-                    LOGGER.info(f'Empty ... skipping')
-                    continue
-                notion_manager.link_local_and_notion_entries(
-                    project_row.ref_id, EntityId(inbox_tasks_notion_row.ref_id),
-                    inbox_tasks_notion_row.notion_id)
+            for metric_entry in yaml_uow.metric_entry_repository.find_all(allow_archived=True):
+                sqlite_uow.metric_entry_repository.create(metric_entry)
 
-
-def _build_global_properties(workspace_repository: WorkspaceRepository) -> GlobalProperties:
-    config_path = Path(os.path.realpath(Path(os.path.realpath(__file__)).parent / ".." / "Config"))
-
-    if not config_path.exists():
-        raise Exception("Critical error - missing Config file")
-
-    dotenv.load_dotenv(dotenv_path=config_path, verbose=True)
-
-    description = cast(str, os.getenv("DESCRIPTION"))
-    version = cast(str, os.getenv("VERSION"))
-    docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
-    docs_update_expired_token_url = cast(str, os.getenv("DOCS_UPDATE_EXPIRED_TOKEN_URL"))
-    docs_fix_data_inconsistencies_url = cast(str, os.getenv("DOCS_FIX_DATA_INCONSISTENCIES_URL"))
-
-    try:
-        workspace = workspace_repository.load_workspace()
-        timezone = workspace.timezone
-    except MissingWorkspaceRepositoryError:
-        timezone = pendulum.timezone(os.getenv("TZ", "UTC"))
-
-    return GlobalProperties(
-        description=description,
-        version=version,
-        timezone=timezone,
-        docs_init_workspace_url=docs_init_workspace_url,
-        docs_update_expired_token_url=docs_update_expired_token_url,
-        docs_fix_data_inconsistencies_url=docs_fix_data_inconsistencies_url)
+    # metric = Metric.new_metric(
+    #     MetricKey("weight"), EntityName("Weight"), None, MetricUnit.WEIGHT, time_provider.get_current_time())
+    # with sqlite_metric_engine.get_unit_of_work() as uow:
+    #     metric = uow.metric_repository.create(metric)
+    #     metric.change_name(EntityName("The weight"), time_provider.get_current_time())
+    #     uow.metric_repository.save(metric)
+    #     metric_entry = MetricEntry.new_metric_entry(
+    #         False, metric.ref_id, time_provider.get_current_time(), 89, "Notes", time_provider.get_current_time())
+    #     metric_entry = uow.metric_entry_repository.create(metric_entry)
+    #     metric_entry.change_notes("New notes", time_provider.get_current_time())
+    #     uow.metric_entry_repository.save(metric_entry)
+    # LOGGER.info(metric)
+    # LOGGER.info(metric_entry)
+    # with sqlite_metric_engine.get_unit_of_work() as uow:
+    #     for metric in uow.metric_repository.find_all():
+    #         LOGGER.info(metric)
+    #     for metric_entry in uow.metric_entry_repository.find_all(
+    #             allow_archived=True, filter_metric_ref_ids=[EntityId('1'), EntityId('2')]):
+    #         LOGGER.info(metric_entry)
 
 
 if __name__ == "__main__":

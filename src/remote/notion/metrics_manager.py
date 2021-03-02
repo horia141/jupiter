@@ -256,13 +256,6 @@ class NotionMetricManager(MetricNotionManager):
             collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
-    def load_metric_entry(self, metric_ref_id: EntityId, ref_id: EntityId) -> MetricNotionRow:
-        """Retrieve the Notion-side metric entry associated with a particular entity."""
-        return self._collections_manager.load(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
-
     def save_metric_entry(
             self, metric_ref_id: EntityId, ref_id: EntityId,
             new_metric_entry_row: MetricNotionRow) -> MetricNotionRow:

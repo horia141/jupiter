@@ -1,6 +1,9 @@
 lint:
 	./scripts/lint.sh
 
+migration-test:
+	./scripts/migration.sh
+
 docs:
 	./scripts/docs.sh
 
@@ -13,4 +16,4 @@ docker-push:
 stats-for-nerds:
 	./scripts/stats-for-nerds.sh
 
-.PHONY: lint docs docker-build docker-push stats-for-nerds
+.PHONY: lint docs migration-test docker-build docker-push stats-for-nerds
