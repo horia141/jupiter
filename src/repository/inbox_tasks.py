@@ -38,11 +38,11 @@ class InboxTaskRow(BaseEntityRow):
     completed_time: Optional[Timestamp]
 
 
-@typing.final
 class InboxTasksRepository:
     """A repository of the inbox tasks."""
 
-    _INBOX_TASKS_FILE_PATH: ClassVar[Path] = Path("./inbox-tasks.yaml")
+    _INBOX_TASKS_FILE_PATH: ClassVar[Path] = Path("./inbox-tasks")
+    _INBOX_TASKS_NUM_SHARDS: ClassVar[int] = 50
 
     _time_provider: Final[TimeProvider]
     _storage: Final[EntitiesStorage[InboxTaskRow]]
@@ -50,7 +50,8 @@ class InboxTasksRepository:
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._storage = EntitiesStorage[InboxTaskRow](self._INBOX_TASKS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[InboxTaskRow](
+            self._INBOX_TASKS_FILE_PATH, self._INBOX_TASKS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'InboxTasksRepository':
         """Enter context."""

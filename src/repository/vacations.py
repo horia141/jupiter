@@ -29,13 +29,15 @@ class VacationRow(BaseEntityRow):
 class VacationsRepository:
     """A repository for vacations."""
 
-    _VACATIONS_FILE_PATH: ClassVar[Path] = Path("./vacations.yaml")
+    _VACATIONS_FILE_PATH: ClassVar[Path] = Path("./vacations")
+    _VACATIONS_NUM_SHARDS: ClassVar[int] = 1
 
     _storage: Final[EntitiesStorage[VacationRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
-        self._storage = EntitiesStorage[VacationRow](self._VACATIONS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[VacationRow](
+            self._VACATIONS_FILE_PATH, self._VACATIONS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'VacationsRepository':
         """Enter context."""

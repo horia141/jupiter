@@ -17,7 +17,7 @@ from remote.notion.infra.client import NotionClient, NotionCollectionSchemaPrope
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra, NotionCollectionTagLink
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage, Eq
+from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -593,13 +593,17 @@ class CollectionsManager:
         """Hard remove the Notion entity associated with a local entity."""
         item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
-        lock = self._collection_items_storage.load(item_key)
-        client = self._connection.get_notion_client()
-        collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
-                                           collection_lock.view_ids.values())
-        notion_row = client.get_collection_row(collection, lock.row_id)
-        notion_row.remove()
-        self._collection_items_storage.remove(item_key)
+        try:
+            lock = self._collection_items_storage.load(item_key)
+            client = self._connection.get_notion_client()
+            collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
+                                               collection_lock.view_ids.values())
+            notion_row = client.get_collection_row(collection, lock.row_id)
+            notion_row.remove()
+            self._collection_items_storage.remove(item_key)
+        except StructuredStorageError:
+            LOGGER.error(
+                f"Tried to hard remove Notion-side entity identified by {collection_key}:{key} but found nothing")
 
     @staticmethod
     @typing.no_type_check

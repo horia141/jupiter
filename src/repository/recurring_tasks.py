@@ -44,7 +44,8 @@ class RecurringTaskRow(BaseEntityRow):
 class RecurringTasksRepository:
     """A repository for recurring tasks."""
 
-    _RECURRING_TASKS_FILE_PATH: ClassVar[Path] = Path("./recurring-tasks.yaml")
+    _RECURRING_TASKS_FILE_PATH: ClassVar[Path] = Path("./recurring-tasks")
+    _RECURRINg_TASKS_NUM_SHARDS: ClassVar[int] = 10
 
     _time_provider: Final[TimeProvider]
     _storage: Final[EntitiesStorage[RecurringTaskRow]]
@@ -52,7 +53,8 @@ class RecurringTasksRepository:
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._storage = EntitiesStorage[RecurringTaskRow](self._RECURRING_TASKS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[RecurringTaskRow](
+            self._RECURRING_TASKS_FILE_PATH, self._RECURRINg_TASKS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'RecurringTasksRepository':
         """Enter context."""

@@ -32,13 +32,15 @@ class _MetricRow(BaseEntityRow):
 class YamlMetricRepository(MetricRepository):
     """A repository for metrics."""
 
-    _METRICS_FILE_PATH: ClassVar[Path] = Path("./metrics.yaml")
+    _METRICS_FILE_PATH: ClassVar[Path] = Path("./metrics")
+    _METRICS_NUM_SHARDS: ClassVar[int] = 1
 
     _storage: Final[EntitiesStorage[_MetricRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
-        self._storage = EntitiesStorage[_MetricRow](self._METRICS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[_MetricRow](
+            self._METRICS_FILE_PATH, self._METRICS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'YamlMetricRepository':
         """Enter context."""
@@ -175,14 +177,15 @@ class _MetricEntryRow(BaseEntityRow):
 class YamlMetricEntryRepository(MetricEntryRepository):
     """A repository for metric entries."""
 
-    _METRIC_ENTRIES_FILE_PATH: ClassVar[Path] = Path("./metric-entries.yaml")
+    _METRIC_ENTRIES_FILE_PATH: ClassVar[Path] = Path("./metric-entries")
+    _METRIC_ENTRIES_NUM_SHARDS: ClassVar[int] = 10
 
     _storage: Final[EntitiesStorage[_MetricEntryRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._storage = EntitiesStorage[_MetricEntryRow](
-            self._METRIC_ENTRIES_FILE_PATH, time_provider, self)
+            self._METRIC_ENTRIES_FILE_PATH, self._METRIC_ENTRIES_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'YamlMetricEntryRepository':
         """Enter context."""

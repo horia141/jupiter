@@ -28,14 +28,16 @@ class ProjectRow(BaseEntityRow):
 class ProjectsRepository:
     """A repository for projects."""
 
-    _PROJECTS_FILE_PATH: ClassVar[Path] = Path("./projects.yaml")
+    _PROJECTS_FILE_PATH: ClassVar[Path] = Path("./projects")
+    _PROJECTS_NUM_SHARDS: ClassVar[int] = 1
 
     _storage: Final[EntitiesStorage[ProjectRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._storage = EntitiesStorage[ProjectRow](self._PROJECTS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[ProjectRow](
+            self._PROJECTS_FILE_PATH, self._PROJECTS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'ProjectsRepository':
         """Enter context."""

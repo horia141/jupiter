@@ -25,13 +25,15 @@ class SmartListRow(BaseEntityRow):
 class SmartListsRepository:
     """A repository for lists."""
 
-    _SMART_LISTS_FILE_PATH: ClassVar[Path] = Path("./smart-lists.yaml")
+    _SMART_LISTS_FILE_PATH: ClassVar[Path] = Path("./smart-lists")
+    _SMART_LISTS_NUM_SHARDS: ClassVar[int] = 1
 
     _storage: Final[EntitiesStorage[SmartListRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
-        self._storage = EntitiesStorage[SmartListRow](self._SMART_LISTS_FILE_PATH, time_provider, self)
+        self._storage = EntitiesStorage[SmartListRow](
+            self._SMART_LISTS_FILE_PATH, self._SMART_LISTS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'SmartListsRepository':
         """Enter context."""
@@ -122,14 +124,15 @@ class SmartListTagRow(BaseEntityRow):
 class SmartListTagsRepository:
     """A repository for smart list tags."""
 
-    _SMART_LIST_TAGS_FILE_PATH: ClassVar[Path] = Path("./smart-list-tags.yaml")
+    _SMART_LIST_TAGS_FILE_PATH: ClassVar[Path] = Path("./smart-list-tags")
+    _SMART_LIST_TAGS_NUM_SHARDS: ClassVar[int] = 1
 
     _storage: Final[EntitiesStorage[SmartListTagRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._storage = EntitiesStorage[SmartListTagRow](
-            self._SMART_LIST_TAGS_FILE_PATH, time_provider, self)
+            self._SMART_LIST_TAGS_FILE_PATH, self._SMART_LIST_TAGS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'SmartListTagsRepository':
         """Enter context."""
@@ -226,14 +229,15 @@ class SmartListItemRow(BaseEntityRow):
 class SmartListItemsRepository:
     """A repository for smart list items."""
 
-    _SMART_LIST_ITEMS_FILE_PATH: ClassVar[Path] = Path("./smart-list-items.yaml")
+    _SMART_LIST_ITEMS_FILE_PATH: ClassVar[Path] = Path("./smart-list-items")
+    _SMART_LIST_ITEMS_NUM_SHARDS: ClassVar[int] = 10
 
     _storage: Final[EntitiesStorage[SmartListItemRow]]
 
     def __init__(self, time_provider: TimeProvider) -> None:
         """Constructor."""
         self._storage = EntitiesStorage[SmartListItemRow](
-            self._SMART_LIST_ITEMS_FILE_PATH, time_provider, self)
+            self._SMART_LIST_ITEMS_FILE_PATH, self._SMART_LIST_ITEMS_NUM_SHARDS, time_provider, self)
 
     def __enter__(self) -> 'SmartListItemsRepository':
         """Enter context."""
