@@ -74,13 +74,11 @@ from command.smart_lists_tag_hard_remove import SmartListsTagHardRemove
 from command.smart_lists_tag_set_name import SmartListsTagSetName
 from command.smart_lists_tag_show import SmartListsTagShow
 from command.sync_local_and_notion import SyncLocalAndNotion
-from command.vacations_archive import VacationsArchive
-from command.vacations_create import VacationsCreate
-from command.vacations_hard_remove import VacationsHardRemove
-from command.vacations_set_end_date import VacationsSetEndDate
-from command.vacations_set_name import VacationsSetName
-from command.vacations_set_start_date import VacationsSetStartDate
-from command.vacations_show import VacationsShow
+from command.vacation_archive import VacationArchive
+from command.vacation_create import VacationCreate
+from command.vacation_remove import VacationRemove
+from command.vacation_update import VacationUpdate
+from command.vacation_show import VacationsShow
 from command.workspace_init import WorkspaceInit
 from command.workspace_set_name import WorkspaceSetName
 from command.workspace_set_timezone import WorkspaceSetTimezone
@@ -95,7 +93,6 @@ from controllers.generate_inbox_tasks import GenerateInboxTasksController
 from controllers.report_progress import ReportProgressController
 from controllers.smart_lists import SmartListsController
 from controllers.sync_local_and_notion import SyncLocalAndNotionController
-from controllers.vacations import VacationsController
 from controllers.workspaces import WorkspacesController
 from domain.metrics.commands.metric_archive import MetricArchiveCommand
 from domain.metrics.commands.metric_create import MetricCreateCommand
@@ -106,6 +103,11 @@ from domain.metrics.commands.metric_entry_update import MetricEntryUpdateCommand
 from domain.metrics.commands.metric_find import MetricFindCommand
 from domain.metrics.commands.metric_remove import MetricRemoveCommand
 from domain.metrics.commands.metric_update import MetricUpdateCommand
+from domain.vacations.commands.vacation_archive import VacationArchiveCommand
+from domain.vacations.commands.vacation_create import VacationCreateCommand
+from domain.vacations.commands.vacation_find import VacationFindCommand
+from domain.vacations.commands.vacation_remove import VacationRemoveCommand
+from domain.vacations.commands.vacation_update import VacationUpdateCommand
 from models.basic import BasicValidator
 from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
@@ -126,7 +128,7 @@ from repository.sqlite.metrics import SqliteMetricEngine
 from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
-from repository.vacations import VacationsRepository
+from repository.yaml.vacations import YamlVacationEngine
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService
@@ -158,8 +160,7 @@ def main() -> None:
     global_properties = build_global_properties(timezone)
     basic_validator = BasicValidator(global_properties)
 
-    with VacationsRepository(time_provider) as vacations_repository, \
-            ProjectsRepository(time_provider) as projects_repository, \
+    with ProjectsRepository(time_provider) as projects_repository, \
             InboxTasksRepository(time_provider) as inbox_tasks_repository, \
             RecurringTasksRepository(time_provider) as recurring_tasks_repository, \
             BigPlansRepository(time_provider) as big_plans_repository, \
@@ -168,6 +169,8 @@ def main() -> None:
             SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
+        yaml_vacation_engine = YamlVacationEngine(time_provider)
+
         sqlite_metric_engine = SqliteMetricEngine(SqliteMetricEngine.Config(
             global_properties.sqlite_db_url, global_properties.alembic_ini_path,
             global_properties.alembic_migrations_path))
@@ -187,7 +190,7 @@ def main() -> None:
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
-            basic_validator, vacations_repository, notion_vacations_manager)
+            basic_validator, yaml_vacation_engine, notion_vacations_manager)
         projects_service = ProjectsService(
             basic_validator, projects_repository, notion_projects_manager)
         inbox_tasks_service = InboxTasksService(
@@ -205,7 +208,6 @@ def main() -> None:
         workspaces_controller = WorkspacesController(
             notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
             metrics_service)
-        vacations_controller = VacationsController(vacations_service)
         projects_controller = ProjectsController(
             projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         inbox_tasks_controller = InboxTasksController(
@@ -232,13 +234,16 @@ def main() -> None:
             WorkspaceSetTimezone(basic_validator, workspaces_controller),
             WorkspaceSetToken(basic_validator, workspaces_controller),
             WorkspaceShow(workspaces_controller),
-            VacationsCreate(basic_validator, vacations_controller),
-            VacationsArchive(basic_validator, vacations_controller),
-            VacationsSetName(basic_validator, vacations_controller),
-            VacationsSetStartDate(basic_validator, vacations_controller),
-            VacationsSetEndDate(basic_validator, vacations_controller),
-            VacationsHardRemove(basic_validator, vacations_controller),
-            VacationsShow(basic_validator, vacations_controller),
+            VacationCreate(basic_validator, VacationCreateCommand(
+                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+            VacationArchive(basic_validator, VacationArchiveCommand(
+                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+            VacationUpdate(basic_validator, VacationUpdateCommand(
+                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+            VacationRemove(basic_validator, VacationRemoveCommand(
+                yaml_vacation_engine, notion_vacations_manager)),
+            VacationsShow(basic_validator, VacationFindCommand(
+                time_provider, yaml_vacation_engine, notion_vacations_manager)),
             ProjectCreate(basic_validator, projects_controller),
             ProjectArchive(basic_validator, projects_controller),
             ProjectSetName(basic_validator, projects_controller),

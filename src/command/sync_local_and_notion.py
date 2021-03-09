@@ -1,5 +1,4 @@
 """Command for syncing the local and Notion-side data."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final

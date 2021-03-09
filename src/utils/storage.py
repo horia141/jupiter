@@ -535,8 +535,6 @@ class EntitiesStorage(Generic[EntityRowType]):
             raise RuntimeError(f"Cannot update entity without a good id")
 
         shard_id = self._get_shard_id(new_entity.ref_id)
-        LOGGER.info(new_entity)
-        LOGGER.info(shard_id)
 
         next_idx, entities = self._load(shard_id)
 

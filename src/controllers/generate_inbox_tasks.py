@@ -2,12 +2,13 @@
 import logging
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
+from domain.vacations.vacation import Vacation
 from models import schedules
 from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService, Project
 from service.recurring_tasks import RecurringTasksService, RecurringTask
-from service.vacations import VacationsService, Vacation
+from service.vacations import VacationsService
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)

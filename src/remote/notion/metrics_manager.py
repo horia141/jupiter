@@ -19,14 +19,14 @@ from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class MetricNotionCollection(BaseItem):
+class _MetricNotionCollection(BaseItem):
     """A metric collection on Notion side."""
 
     name: str
 
 
 @dataclass()
-class MetricNotionRow(BaseItem):
+class _MetricNotionRow(BaseItem):
     """A metric entry on Notion side."""
 
     collection_time: ADate
@@ -170,7 +170,7 @@ class NotionMetricManager(MetricNotionManager):
 
     def upsert_metric_entry(self, metric_entry: MetricEntry) -> None:
         """Upsert a metric entry on Notion-side."""
-        new_row = MetricNotionRow(
+        new_row = _MetricNotionRow(
             collection_time=metric_entry.collection_time,
             value=metric_entry.value,
             notes=metric_entry.notes,
@@ -192,7 +192,7 @@ class NotionMetricManager(MetricNotionManager):
 
     # Old stuff
 
-    def upsert_metric_collection(self, ref_id: EntityId, name: str) -> MetricNotionCollection:
+    def upsert_metric_collection(self, ref_id: EntityId, name: str) -> _MetricNotionCollection:
         """Upsert the Notion-side metric."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         collection_link = self._collections_manager.upsert_collection(
@@ -205,22 +205,22 @@ class NotionMetricManager(MetricNotionManager):
                 "database_view_id": self._DATABASE_VIEW_SCHEMA
             })
 
-        return MetricNotionCollection(
+        return _MetricNotionCollection(
             name=name,
             ref_id=ref_id,
             notion_id=collection_link.collection_id)
 
-    def load_metric_collection(self, metric_ref_id: EntityId) -> MetricNotionCollection:
+    def load_metric_collection(self, metric_ref_id: EntityId) -> _MetricNotionCollection:
         """Load a metric collection."""
         metric_link = self._collections_manager.get_collection(
             key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"))
 
-        return MetricNotionCollection(
+        return _MetricNotionCollection(
             name=metric_link.name,
             ref_id=metric_ref_id,
             notion_id=metric_link.collection_id)
 
-    def save_metric_collection(self, metric: MetricNotionCollection) -> None:
+    def save_metric_collection(self, metric: _MetricNotionCollection) -> None:
         """Save a metric collection."""
         self._collections_manager.update_collection(
             key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
@@ -233,9 +233,9 @@ class NotionMetricManager(MetricNotionManager):
 
     def upsert_metric_entry_old(
             self, metric_ref_id: EntityId, ref_id: EntityId, collection_time: Timestamp, value: float,
-            notes: typing.Optional[str], archived: bool) -> MetricNotionRow:
+            notes: typing.Optional[str], archived: bool) -> _MetricNotionRow:
         """Upsert the Notion-side metric entry."""
-        new_row = MetricNotionRow(
+        new_row = _MetricNotionRow(
             collection_time=collection_time,
             value=value,
             notes=notes,
@@ -250,7 +250,7 @@ class NotionMetricManager(MetricNotionManager):
             copy_row_to_notion_row=self._copy_row_to_notion_row)
         return new_row
 
-    def load_all_metric_entries(self, metric_ref_id: EntityId) -> typing.Iterable[MetricNotionRow]:
+    def load_all_metric_entries(self, metric_ref_id: EntityId) -> typing.Iterable[_MetricNotionRow]:
         """Retrieve all the Notion-side metric entrys."""
         return self._collections_manager.load_all(
             collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
@@ -258,7 +258,7 @@ class NotionMetricManager(MetricNotionManager):
 
     def save_metric_entry(
             self, metric_ref_id: EntityId, ref_id: EntityId,
-            new_metric_entry_row: MetricNotionRow) -> MetricNotionRow:
+            new_metric_entry_row: _MetricNotionRow) -> _MetricNotionRow:
         """Update the Notion-side metric with new data."""
         return self._collections_manager.save(
             key=NotionLockKey(f"{ref_id}"),
@@ -296,7 +296,7 @@ class NotionMetricManager(MetricNotionManager):
             notion_id=notion_id)
 
     def _copy_row_to_notion_row(
-            self, client: NotionClient, row: MetricNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
+            self, client: NotionClient, row: _MetricNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
             notion_row.collection_time = self._basic_validator.adate_to_notion(row.collection_time)
@@ -308,9 +308,9 @@ class NotionMetricManager(MetricNotionManager):
 
         return notion_row
 
-    def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> MetricNotionRow:
+    def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> _MetricNotionRow:
         """Copy the fields of the local row to the actual Notion structure."""
-        return MetricNotionRow(
+        return _MetricNotionRow(
             collection_time=self._basic_validator.adate_from_notion(notion_row.collection_time),
             value=notion_row.value,
             notes=notion_row.title if typing.cast(str, notion_row.title).strip() != "" else None,

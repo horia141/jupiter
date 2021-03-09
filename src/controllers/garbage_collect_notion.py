@@ -4,6 +4,7 @@ from typing import Final, Optional, Iterable
 
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
+from domain.vacations.vacation import Vacation
 from models.basic import ProjectKey, SyncTarget
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService, InboxTask
@@ -11,7 +12,7 @@ from service.metrics import MetricsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.smart_lists import SmartListsService, SmartList, SmartListItem
-from service.vacations import VacationsService, Vacation
+from service.vacations import VacationsService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +47,6 @@ class GarbageCollectNotionController:
             do_archival: bool, do_anti_entropy: bool, do_notion_cleanup: bool) -> None:
         """Garbage collect everything."""
         if SyncTarget.VACATIONS in sync_targets:
-            vacations: Iterable[Vacation] = []
             if do_anti_entropy:
                 LOGGER.info(f"Performing anti-entropy adjustments for vacations")
                 vacations = self._vacations_service.load_all_vacations(allow_archived=True)

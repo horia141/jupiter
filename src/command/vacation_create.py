@@ -5,27 +5,27 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from controllers.vacations import VacationsController
+from domain.vacations.commands.vacation_create import VacationCreateCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsCreate(command.Command):
+class VacationCreate(command.Command):
     """Command class for adding a vacation."""
 
     _basic_validator: Final[BasicValidator]
-    _vacations_controller: Final[VacationsController]
+    _command: Final[VacationCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, vacations_controller: VacationsController):
+    def __init__(self, basic_validator: BasicValidator, the_command: VacationCreateCommand):
         """Constructor."""
         self._basic_validator = basic_validator
-        self._vacations_controller = vacations_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "vacations-create"
+        return "vacation-create"
 
     @staticmethod
     def description() -> str:
@@ -44,4 +44,5 @@ class VacationsCreate(command.Command):
         start_date = self._basic_validator.adate_validate_and_clean(args.start_date)
         end_date = self._basic_validator.adate_validate_and_clean(args.end_date)
 
-        self._vacations_controller.create_vacation(name, start_date, end_date)
+        self._command.execute(VacationCreateCommand.Args(
+            name=name, start_date=start_date, end_date=end_date))

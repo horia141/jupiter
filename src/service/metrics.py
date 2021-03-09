@@ -113,7 +113,6 @@ class MetricsService:
         """Remove entry for a metric on Notion-side."""
         with self._metric_engine.get_unit_of_work() as uow:
             metric_entry = uow.metric_entry_repository.load_by_id(ref_id, allow_archived=True)
-            LOGGER.info("Applied local changes")
 
         try:
             self._notion_manager.hard_remove_metric_entry(

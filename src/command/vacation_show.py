@@ -1,11 +1,10 @@
 """Command for showing the vacations."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from controllers.vacations import VacationsController
+from domain.vacations.commands.vacation_find import VacationFindCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -15,17 +14,17 @@ class VacationsShow(command.Command):
     """Command class for showing the vacations."""
 
     _basic_validator: Final[BasicValidator]
-    _vacations_controller: Final[VacationsController]
+    _command: Final[VacationFindCommand]
 
-    def __init__(self, basic_validator: BasicValidator, vacations_controller: VacationsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: VacationFindCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._vacations_controller = vacations_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "vacations-show"
+        return "vacation-show"
 
     @staticmethod
     def description() -> str:
@@ -36,11 +35,16 @@ class VacationsShow(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--show-archived", dest="show_archived", default=False, action="store_true",
                             help="Whether to show archived vacations or not")
+        parser.add_argument("--id", type=str, dest="ref_ids", default=[], action="append",
+                            required=False, help="Show only tasks selected by this id")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
-        for vacation in self._vacations_controller.load_all_vacations(allow_archived=show_archived):
+        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
+        response = self._command.execute(VacationFindCommand.Args(
+            allow_archived=show_archived, filter_ref_ids=ref_ids if len(ref_ids) > 0 else None))
+        for vacation in response.vacations:
             print(f'id={vacation.ref_id} {vacation.name} ' +
                   f'start={self._basic_validator.adate_to_user(vacation.start_date)} ' +
                   f'end={self._basic_validator.adate_to_user(vacation.end_date)} ' +

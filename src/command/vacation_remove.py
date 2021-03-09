@@ -1,36 +1,35 @@
 """Command for hard remove vacations."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from controllers.vacations import VacationsController
+from domain.vacations.commands.vacation_remove import VacationRemoveCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationsHardRemove(command.Command):
+class VacationRemove(command.Command):
     """Command class for hard removing vacations."""
 
     _basic_validator: Final[BasicValidator]
-    _vacations_controller: Final[VacationsController]
+    _command: Final[VacationRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, vacations_controller: VacationsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: VacationRemoveCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._vacations_controller = vacations_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "vacations-hard-remove"
+        return "vacation-remove"
 
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Hard remove vacations"
+        return "Remove a vacation"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
@@ -41,4 +40,5 @@ class VacationsHardRemove(command.Command):
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
-        self._vacations_controller.hard_remove_vacations(ref_ids)
+        for ref_id in ref_ids:
+            self._command.execute(ref_id)
