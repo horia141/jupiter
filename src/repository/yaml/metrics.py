@@ -224,8 +224,12 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         """Load a given metric entry."""
         return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
 
-    def find_all_for_metric(self, metric_ref_id: EntityId) -> typing.List[MetricEntry]:
+    def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> typing.List[MetricEntry]:
         """Retrieve all metric entries for a given metric."""
+        return [self._row_to_entity(mer)
+                for mer in self._storage.find_all(
+                    allow_archived=allow_archived,
+                    metric_ref_id=Eq(metric_ref_id))]
 
     def find_all(
             self, allow_archived: bool = False,

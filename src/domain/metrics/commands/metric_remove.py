@@ -33,7 +33,7 @@ class MetricRemoveCommand(Command[MetricKey, None]):
         with self._metric_engine.get_unit_of_work() as uow:
             metric = uow.metric_repository.get_by_key(args)
 
-            for metric_entry in uow.metric_entry_repository.find_all_for_metric(metric.ref_id):
+            for metric_entry in uow.metric_entry_repository.find_all_for_metric(metric.ref_id, allow_archived=True):
                 uow.metric_entry_repository.remove(metric_entry.ref_id)
 
             uow.metric_repository.remove(metric.ref_id)

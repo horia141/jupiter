@@ -1,45 +1,44 @@
-"""Command for changing the name of a smart list."""
-
+"""Command for creating a smart list tag."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.smart_lists import SmartListsController
+from domain.smart_lists.commands.smart_list_tag_create import SmartListTagCreateCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListsSetName(command.Command):
-    """Command for changing the name of a smart list."""
+class SmartListTagCreate(command.Command):
+    """Command for creating a smart list tag."""
 
     _basic_validator: Final[BasicValidator]
-    _smart_lists_controller: Final[SmartListsController]
+    _command: Final[SmartListTagCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, smart_lists_controller: SmartListsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: SmartListTagCreateCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._smart_lists_controller = smart_lists_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "smart-lists-set-name"
+        return "smart-list-tag-create"
 
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Change the name of a smart list"
+        return "Create a smart list tag"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--smart-list", dest="smart_list_key", required=True,
-                            help="The key of the smart list")
+                            help="The key of the smart list to add the tag to")
         parser.add_argument("--name", dest="name", required=True, help="The name of the smart list")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = self._basic_validator.smart_list_key_validate_and_clean(args.smart_list_key)
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        self._smart_lists_controller.set_smart_list_name(smart_list_key, name)
+        name = self._basic_validator.tag_validate_and_clean(args.name)
+        self._command.execute(SmartListTagCreateCommand.Args(smart_list_key=smart_list_key, name=name))

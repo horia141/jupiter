@@ -1,31 +1,30 @@
 """Command for hard removing a smart list item."""
-
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.smart_lists import SmartListsController
+from domain.smart_lists.commands.smart_list_item_remove import SmartListItemRemoveCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListsItemHardRemove(command.Command):
+class SmartListItemRemove(command.Command):
     """Command for hard removing of a smart list item."""
 
     _basic_validator: Final[BasicValidator]
-    _smart_list_controller: Final[SmartListsController]
+    _command: Final[SmartListItemRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, smart_lists_controller: SmartListsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: SmartListItemRemoveCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._smart_list_controller = smart_lists_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "smart-lists-item-hard-remove"
+        return "smart-list-item-remove"
 
     @staticmethod
     def description() -> str:
@@ -40,4 +39,5 @@ class SmartListsItemHardRemove(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
-        self._smart_list_controller.hard_remove_smart_list_item(ref_ids)
+        for ref_id in ref_ids:
+            self._command.execute(ref_id)

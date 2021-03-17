@@ -246,12 +246,13 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             raise StructuredStorageError(f"Metric entry identified by {ref_id} does not exist or is archived")
         return self._row_to_entity(result)
 
-    def find_all_for_metric(self, metric_ref_id: EntityId) -> List[MetricEntry]:
+    def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> List[MetricEntry]:
         """Retrieve all metric entries for a given metric."""
-        results = self._connection.execute(
-            select(self._metric_entry_table)
+        query_stmt = select(self._metric_entry_table)\
             .where(self._metric_entry_table.c.metric_ref_id == metric_ref_id)
-            .where(self._metric_entry_table.c.archived.is_(False)))
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
+        results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
     def find_all(

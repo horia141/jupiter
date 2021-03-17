@@ -1,42 +1,47 @@
-"""Command for archiving a smart list tag."""
-
+"""Command for updating a smart list tag."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.smart_lists import SmartListsController
+from domain.smart_lists.commands.smart_list_tag_update import SmartListTagUpdateCommand
 from models.basic import BasicValidator
+from models.framework import UpdateAction
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListsTagArchive(command.Command):
-    """Command for archiving a smart list tag."""
+class SmartListTagUpdate(command.Command):
+    """Command for creating a smart list tag."""
 
     _basic_validator: Final[BasicValidator]
-    _smart_lists_controller: Final[SmartListsController]
+    _command: Final[SmartListTagUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, smart_lists_controller: SmartListsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: SmartListTagUpdateCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._smart_lists_controller = smart_lists_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "smart-lists-tag-archive"
+        return "smart-list-tag-update"
 
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Archive a smart list tag"
+        return "Update a smart list tag"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", dest="ref_id", required=True, help="The id of the smart list tag")
+        parser.add_argument("--name", dest="name", required=False, help="The name of the smart list")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        self._smart_lists_controller.archive_smart_list_tag(ref_id)
+        if args.name:
+            name = UpdateAction.change_to(self._basic_validator.tag_validate_and_clean(args.name))
+        else:
+            name = UpdateAction.do_nothing()
+        self._command.execute(SmartListTagUpdateCommand.Args(ref_id=ref_id, name=name))

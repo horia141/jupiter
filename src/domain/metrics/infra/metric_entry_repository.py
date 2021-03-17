@@ -23,7 +23,7 @@ class MetricEntryRepository(Repository, abc.ABC):
         """Load a given metric entry."""
 
     @abc.abstractmethod
-    def find_all_for_metric(self, metric_ref_id: EntityId) -> List[MetricEntry]:
+    def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> List[MetricEntry]:
         """Retrieve all metric entries for a given metric."""
 
     @abc.abstractmethod

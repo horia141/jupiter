@@ -1,31 +1,30 @@
 """Command for creating a smart list."""
-
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from controllers.smart_lists import SmartListsController
+from domain.smart_lists.commands.smart_list_create import SmartListCreateCommand
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListsCreate(command.Command):
+class SmartListCreate(command.Command):
     """Command for creating a smart list."""
 
     _basic_validator: Final[BasicValidator]
-    _smart_lists_controller: Final[SmartListsController]
+    _command: Final[SmartListCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, smart_lists_controller: SmartListsController) -> None:
+    def __init__(self, basic_validator: BasicValidator, the_command: SmartListCreateCommand) -> None:
         """Constructor."""
         self._basic_validator = basic_validator
-        self._smart_lists_controller = smart_lists_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "smart-lists-create"
+        return "smart-list-create"
 
     @staticmethod
     def description() -> str:
@@ -41,4 +40,4 @@ class SmartListsCreate(command.Command):
         """Callback to execute when the command is invoked."""
         smart_list_key = self._basic_validator.smart_list_key_validate_and_clean(args.smart_list_key)
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        self._smart_lists_controller.create_smart_list(key=smart_list_key, name=name)
+        self._command.execute(SmartListCreateCommand.Args(key=smart_list_key, name=name))

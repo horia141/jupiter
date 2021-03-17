@@ -17,6 +17,7 @@ class MetricEntry(AggregateRoot):
         collection_time: ADate
         value: float
         notes: Optional[str]
+        archived: bool
 
     @dataclass(frozen=True)
     class Updated(Event):
@@ -49,7 +50,7 @@ class MetricEntry(AggregateRoot):
         metric_entry.record_event(
             MetricEntry.Created(
                 timestamp=created_time, metric_ref_id=metric_ref_id, collection_time=collection_time,
-                value=value, notes=notes))
+                value=value, notes=notes, archived=archived))
         return metric_entry
 
     def change_collection_time(self, collection_time: ADate, modification_time: Timestamp) -> 'MetricEntry':

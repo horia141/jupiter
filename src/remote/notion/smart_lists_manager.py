@@ -6,6 +6,10 @@ import typing
 from notion.client import NotionClient
 from notion.collection import CollectionRowBlock
 
+from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
+from domain.smart_lists.smart_list import SmartList
+from domain.smart_lists.smart_list_item import SmartListItem
+from domain.smart_lists.smart_list_tag import SmartListTag
 from models.basic import Timestamp, EntityId, BasicValidator, Tag
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
@@ -16,21 +20,21 @@ from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class SmartListNotionCollection(BaseItem):
+class _SmartListNotionCollection(BaseItem):
     """A smart list collection on Notion side."""
 
     name: str
 
 
 @dataclass()
-class SmartListNotionTag(BaseItem):
+class _SmartListNotionTag(BaseItem):
     """A smart list tag on Notion side."""
 
     name: str
 
 
 @dataclass()
-class SmartListNotionRow(BaseItem):
+class _SmartListNotionRow(BaseItem):
     """A smart list item on Notion side."""
 
     name: str
@@ -41,7 +45,7 @@ class SmartListNotionRow(BaseItem):
     last_edited_time: Timestamp
 
 
-class NotionSmartListsManager:
+class NotionSmartListsManager(SmartListNotionManager):
     """The centralised point for interacting with Notion smart lists."""
 
     _KEY: ClassVar[str] = "smart-lists"
@@ -267,11 +271,72 @@ class NotionSmartListsManager:
         self._pages_manager = pages_manager
         self._collections_manager = collections_manager
 
+    # New
+
+    def upsert_smart_list(self, smart_list: SmartList) -> None:
+        """Upsert a smart list on Notion-side."""
+        root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
+        self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
+            parent_page=root_page,
+            name=smart_list.name,
+            schema=self._SCHEMA,
+            schema_properties=self._SCHEMA_PROPERTIES,
+            view_schemas={
+                "database_view_id": self._DATABASE_VIEW_SCHEMA,
+                "database_done_view_id": self._DATABASE_VIEW_DONE_SCHEMA,
+                "database_not_done_view_id": self._DATABASE_VIEW_NOT_DONE_SCHEMA
+            })
+
+    def remove_smart_list(self, smart_list: SmartList) -> None:
+        """Remove a smart list on Notion-side."""
+        self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"))
+
+    def upsert_smart_list_tag(self, smart_list_tag: SmartListTag) -> None:
+        """Upsert a smart list tag on Notion-side."""
+        self._collections_manager.upsert_collection_field_tag(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_tag.smart_list_ref_id}"),
+            field="tags",
+            key=NotionLockKey(f"{smart_list_tag.ref_id}"),
+            ref_id=smart_list_tag.ref_id,
+            tag=smart_list_tag.name)
+
+    def remove_smart_list_tag(self, smart_list_tag: SmartListTag) -> None:
+        """Remove a smart list tag on Notion-side."""
+        self._collections_manager.hard_remove_collection_field_tag(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_tag.smart_list_ref_id}"),
+            key=NotionLockKey(f"{smart_list_tag.ref_id}"))
+
+    def upsert_smart_list_item(self, smart_list_item: SmartListItem, tags: typing.Iterable[Tag]) -> None:
+        """Upsert a smart list item on Notion-side."""
+        new_row = _SmartListNotionRow(
+            name=smart_list_item.name,
+            url=smart_list_item.url,
+            is_done=smart_list_item.is_done,
+            tags=[str(t) for t in tags],
+            archived=smart_list_item.archived,
+            last_edited_time=self._time_provider.get_current_time(),
+            ref_id=smart_list_item.ref_id,
+            notion_id=typing.cast(NotionId, None))
+        self._collections_manager.upsert_collection_item(
+            key=NotionLockKey(f"{smart_list_item.ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_item.smart_list_ref_id}"),
+            new_row=new_row,
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
+
+    def remove_smart_list_item(self, smart_list_item: SmartListItem) -> None:
+        """Remove a smart list item on Notion-side."""
+        self._collections_manager.hard_remove(
+            key=NotionLockKey(f"{smart_list_item.ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_item.smart_list_ref_id}"))
+
+    # Old
+
     def upsert_root_page(self, parent_page_link: NotionPageLink) -> None:
         """Upsert the root page for the smart lists section."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, parent_page_link)
 
-    def upsert_smart_list_collection(self, ref_id: EntityId, name: str) -> SmartListNotionCollection:
+    def upsert_smart_list_collection(self, ref_id: EntityId, name: str) -> _SmartListNotionCollection:
         """Upsert the Notion-side smart list."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         collection_link = self._collections_manager.upsert_collection(
@@ -286,22 +351,22 @@ class NotionSmartListsManager:
                 "database_not_done_view_id": self._DATABASE_VIEW_NOT_DONE_SCHEMA
             })
 
-        return SmartListNotionCollection(
+        return _SmartListNotionCollection(
             name=name,
             ref_id=ref_id,
             notion_id=collection_link.collection_id)
 
-    def load_smart_list_collection(self, smart_list_ref_id: EntityId) -> SmartListNotionCollection:
+    def load_smart_list_collection(self, smart_list_ref_id: EntityId) -> _SmartListNotionCollection:
         """Load a smart list collection."""
         smart_list_link = self._collections_manager.get_collection(
             key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
 
-        return SmartListNotionCollection(
+        return _SmartListNotionCollection(
             name=smart_list_link.name,
             ref_id=smart_list_ref_id,
             notion_id=smart_list_link.collection_id)
 
-    def save_smart_list_collection(self, smart_list: SmartListNotionCollection) -> None:
+    def save_smart_list_collection(self, smart_list: _SmartListNotionCollection) -> None:
         """Save a smart list collection."""
         self._collections_manager.update_collection(
             key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
@@ -312,26 +377,16 @@ class NotionSmartListsManager:
         """Hard remove a smart list item."""
         self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
 
-    def upsert_smart_list_tag(self, smart_list_ref_id: EntityId, ref_id: EntityId, name: Tag) -> SmartListNotionTag:
-        """Upsert a smart list tag."""
-        smart_list_tag_link = self._collections_manager.upsert_collection_field_tag(
-            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-            field="tags",
-            key=NotionLockKey(f"{ref_id}"),
-            ref_id=ref_id,
-            tag=name)
-        return SmartListNotionTag(notion_id=smart_list_tag_link.notion_id, ref_id=ref_id, name=name)
-
-    def load_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> typing.Iterable[SmartListNotionTag]:
+    def load_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> typing.Iterable[_SmartListNotionTag]:
         """Retrieve all the Notion-side smart list tags."""
-        return [SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=s.ref_id)
+        return [_SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=s.ref_id)
                 for s in self._collections_manager.load_all_collection_field_tags(
                     collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
                     field="tags")]
 
     def save_smart_list_tag(
             self, smart_list_ref_id: EntityId, ref_id: EntityId,
-            new_smart_list_item_tag: SmartListNotionTag) -> SmartListNotionTag:
+            new_smart_list_item_tag: _SmartListNotionTag) -> _SmartListNotionTag:
         """Update the Notion-side smart list tag with new data."""
         smart_list_tag_link = self._collections_manager.save_collection_field_tag(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
@@ -339,7 +394,7 @@ class NotionSmartListsManager:
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
             tag=new_smart_list_item_tag.name)
-        return SmartListNotionTag(
+        return _SmartListNotionTag(
             notion_id=smart_list_tag_link.notion_id, ref_id=ref_id, name=new_smart_list_item_tag.name)
 
     def load_all_saved_smart_list_tags_notion_ids(self, smart_list_ref_id: EntityId) -> typing.Iterable[NotionId]:
@@ -370,54 +425,21 @@ class NotionSmartListsManager:
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             key=NotionLockKey(f"{ref_id}"))
 
-    def upsert_smart_list_item(
-            self, smart_list_ref_id: EntityId, ref_id: EntityId, name: str, is_done: bool, tags: List[str],
-            url: Optional[str], archived: bool) -> SmartListNotionRow:
-        """Upsert the Notion-side smart list item."""
-        new_row = SmartListNotionRow(
-            name=name,
-            url=url,
-            is_done=is_done,
-            tags=tags,
-            archived=archived,
-            last_edited_time=self._time_provider.get_current_time(),
-            ref_id=ref_id,
-            notion_id=typing.cast(NotionId, None))
-        self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-            new_row=new_row,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
-        return new_row
-
-    def load_all_smart_list_items(self, smart_list_ref_id: EntityId) -> typing.Iterable[SmartListNotionRow]:
+    def load_all_smart_list_items(self, smart_list_ref_id: EntityId) -> typing.Iterable[_SmartListNotionRow]:
         """Retrieve all the Notion-side smart list items."""
         return self._collections_manager.load_all(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
-    def load_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> SmartListNotionRow:
-        """Retrieve the Notion-side smart list item associated with a particular entity."""
-        return self._collections_manager.load(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
-
     def save_smart_list_item(
             self, smart_list_ref_id: EntityId, ref_id: EntityId,
-            new_smart_list_item_row: SmartListNotionRow) -> SmartListNotionRow:
+            new_smart_list_item_row: _SmartListNotionRow) -> _SmartListNotionRow:
         """Update the Notion-side smart list with new data."""
         return self._collections_manager.save(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             row=new_smart_list_item_row,
             copy_row_to_notion_row=self._copy_row_to_notion_row)
-
-    def archive_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
-        """Remove a particular smart list item."""
-        self._collections_manager.quick_archive(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"))
 
     def hard_remove_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove a particular smart list item."""
@@ -449,7 +471,7 @@ class NotionSmartListsManager:
             notion_id=notion_id)
 
     def _copy_row_to_notion_row(
-            self, client: NotionClient, row: SmartListNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
+            self, client: NotionClient, row: _SmartListNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
             notion_row.title = row.name
@@ -462,7 +484,7 @@ class NotionSmartListsManager:
 
         return notion_row
 
-    def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> SmartListNotionRow:
+    def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> _SmartListNotionRow:
         """Copy the fields of the local row to the actual Notion structure."""
         tags: List[str] = []
         if len(notion_row.tags) == 0:
@@ -471,7 +493,7 @@ class NotionSmartListsManager:
             tags = []
         else:
             tags = notion_row.tags
-        return SmartListNotionRow(
+        return _SmartListNotionRow(
             name=notion_row.title,
             is_done=notion_row.is_done,
             tags=tags,

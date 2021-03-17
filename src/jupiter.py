@@ -54,25 +54,19 @@ from command.recurring_tasks_show import RecurringTasksShow
 from command.recurring_tasks_suspend import RecurringTasksSuspend
 from command.recurring_tasks_unsuspend import RecurringTasksUnsuspend
 from command.report_progress import ReportProgress
-from command.smart_lists_archive import SmartListsArchive
-from command.smart_lists_hard_remove import SmartListsHardRemove
-from command.smart_lists_item_archive import SmartListsItemArchive
-from command.smart_lists_item_create import SmartListsItemCreate
-from command.smart_lists_create import SmartListsCreate
-from command.smart_lists_item_hard_remove import SmartListsItemHardRemove
-from command.smart_lists_item_mark_done import SmartListsItemMarkDone
-from command.smart_lists_item_mark_undone import SmartListsItemMarkUndone
-from command.smart_lists_item_set_name import SmartListsItemSetName
-from command.smart_lists_item_set_tags import SmartListsItemSetTags
-from command.smart_lists_item_set_url import SmartListsItemSetUrl
-from command.smart_lists_item_show import SmartListsItemShow
-from command.smart_lists_set_name import SmartListsSetName
-from command.smart_lists_show import SmartListsShow
-from command.smart_lists_tag_archive import SmartListsTagArchive
-from command.smart_lists_tag_create import SmartListsTagCreate
-from command.smart_lists_tag_hard_remove import SmartListsTagHardRemove
-from command.smart_lists_tag_set_name import SmartListsTagSetName
-from command.smart_lists_tag_show import SmartListsTagShow
+from command.smart_list_archive import SmartListArchive
+from command.smart_list_item_update import SmartListItemUpdate
+from command.smart_list_remove import SmartListsRemove
+from command.smart_list_item_archive import SmartListItemArchive
+from command.smart_list_item_create import SmartListItemCreate
+from command.smart_list_create import SmartListCreate
+from command.smart_list_item_remove import SmartListItemRemove
+from command.smart_list_tag_update import SmartListTagUpdate
+from command.smart_list_update import SmartListUpdate
+from command.smart_list_show import SmartListShow
+from command.smart_list_tag_archive import SmartListTagArchive
+from command.smart_list_tag_create import SmartListTagCreate
+from command.smart_list_tag_remove import SmartListTagRemove
 from command.sync_local_and_notion import SyncLocalAndNotion
 from command.vacation_archive import VacationArchive
 from command.vacation_create import VacationCreate
@@ -91,7 +85,6 @@ from controllers.projects import ProjectsController
 from controllers.recurring_tasks import RecurringTasksController
 from controllers.generate_inbox_tasks import GenerateInboxTasksController
 from controllers.report_progress import ReportProgressController
-from controllers.smart_lists import SmartListsController
 from controllers.sync_local_and_notion import SyncLocalAndNotionController
 from controllers.workspaces import WorkspacesController
 from domain.metrics.commands.metric_archive import MetricArchiveCommand
@@ -103,6 +96,19 @@ from domain.metrics.commands.metric_entry_update import MetricEntryUpdateCommand
 from domain.metrics.commands.metric_find import MetricFindCommand
 from domain.metrics.commands.metric_remove import MetricRemoveCommand
 from domain.metrics.commands.metric_update import MetricUpdateCommand
+from domain.smart_lists.commands.smart_list_archive import SmartListArchiveCommand
+from domain.smart_lists.commands.smart_list_create import SmartListCreateCommand
+from domain.smart_lists.commands.smart_list_find import SmartListFindCommand
+from domain.smart_lists.commands.smart_list_item_archive import SmartListItemArchiveCommand
+from domain.smart_lists.commands.smart_list_item_create import SmartListItemCreateCommand
+from domain.smart_lists.commands.smart_list_item_remove import SmartListItemRemoveCommand
+from domain.smart_lists.commands.smart_list_item_update import SmartListItemUpdateCommand
+from domain.smart_lists.commands.smart_list_remove import SmartListRemoveCommand
+from domain.smart_lists.commands.smart_list_tag_archive import SmartListTagArchiveCommand
+from domain.smart_lists.commands.smart_list_tag_create import SmartListTagCreateCommand
+from domain.smart_lists.commands.smart_list_tag_remove import SmartListTagRemoveCommand
+from domain.smart_lists.commands.smart_list_tag_update import SmartListTagUpdateCommand
+from domain.smart_lists.commands.smart_list_update import SmartListUpdateCommand
 from domain.vacations.commands.vacation_archive import VacationArchiveCommand
 from domain.vacations.commands.vacation_create import VacationCreateCommand
 from domain.vacations.commands.vacation_find import VacationFindCommand
@@ -125,7 +131,7 @@ from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenE
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
 from repository.sqlite.metrics import SqliteMetricEngine
-from repository.smart_lists import SmartListsRepository, SmartListItemsRepository, SmartListTagsRepository
+from repository.yaml.smart_lists import YamlSmartListEngine
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
 from repository.yaml.vacations import YamlVacationEngine
@@ -164,33 +170,31 @@ def main() -> None:
             InboxTasksRepository(time_provider) as inbox_tasks_repository, \
             RecurringTasksRepository(time_provider) as recurring_tasks_repository, \
             BigPlansRepository(time_provider) as big_plans_repository, \
-            SmartListsRepository(time_provider) as smart_lists_repository, \
-            SmartListTagsRepository(time_provider) as smart_list_tags_repository, \
-            SmartListItemsRepository(time_provider) as smart_list_items_repository, \
             PagesManager(time_provider, notion_connection) as pages_manager, \
             CollectionsManager(time_provider, notion_connection) as collections_manager:
         yaml_vacation_engine = YamlVacationEngine(time_provider)
+        yaml_smart_list_engine = YamlSmartListEngine(time_provider)
 
         sqlite_metric_engine = SqliteMetricEngine(SqliteMetricEngine.Config(
             global_properties.sqlite_db_url, global_properties.alembic_ini_path,
             global_properties.alembic_migrations_path))
 
-        notion_vacations_manager = NotionVacationsManager(
+        notion_vacation_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
         notion_projects_manager = NotionProjectsManager(pages_manager)
         notion_inbox_tasks_manager = NotionInboxTasksManager(time_provider, basic_validator, collections_manager)
         notion_recurring_tasks_manager = NotionRecurringTasksManager(
             time_provider, basic_validator, collections_manager)
         notion_big_plans_manager = NotionBigPlansManager(time_provider, basic_validator, collections_manager)
-        notion_smart_lists_manager = NotionSmartListsManager(
+        notion_smart_list_manager = NotionSmartListsManager(
             time_provider, basic_validator, pages_manager, collections_manager)
-        notion_metrics_manager = NotionMetricManager(
+        notion_metric_manager = NotionMetricManager(
             time_provider, basic_validator, pages_manager, collections_manager)
 
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
         vacations_service = VacationsService(
-            basic_validator, yaml_vacation_engine, notion_vacations_manager)
+            basic_validator, yaml_vacation_engine, notion_vacation_manager)
         projects_service = ProjectsService(
             basic_validator, projects_repository, notion_projects_manager)
         inbox_tasks_service = InboxTasksService(
@@ -200,10 +204,9 @@ def main() -> None:
         big_plans_service = BigPlansService(
             basic_validator, big_plans_repository, notion_big_plans_manager)
         smart_lists_service = SmartListsService(
-            basic_validator, smart_lists_repository, smart_list_tags_repository, smart_list_items_repository,
-            notion_smart_lists_manager)
+            basic_validator, time_provider, yaml_smart_list_engine, notion_smart_list_manager)
         metrics_service = MetricsService(
-            basic_validator, time_provider, sqlite_metric_engine, notion_metrics_manager)
+            basic_validator, time_provider, sqlite_metric_engine, notion_metric_manager)
 
         workspaces_controller = WorkspacesController(
             notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
@@ -215,7 +218,6 @@ def main() -> None:
         recurring_tasks_controller = RecurringTasksController(
             global_properties, projects_service, inbox_tasks_service, recurring_tasks_service)
         big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
-        smart_lists_controller = SmartListsController(smart_lists_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
             inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service)
@@ -235,15 +237,15 @@ def main() -> None:
             WorkspaceSetToken(basic_validator, workspaces_controller),
             WorkspaceShow(workspaces_controller),
             VacationCreate(basic_validator, VacationCreateCommand(
-                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+                time_provider, yaml_vacation_engine, notion_vacation_manager)),
             VacationArchive(basic_validator, VacationArchiveCommand(
-                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+                time_provider, yaml_vacation_engine, notion_vacation_manager)),
             VacationUpdate(basic_validator, VacationUpdateCommand(
-                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+                time_provider, yaml_vacation_engine, notion_vacation_manager)),
             VacationRemove(basic_validator, VacationRemoveCommand(
-                yaml_vacation_engine, notion_vacations_manager)),
+                yaml_vacation_engine, notion_vacation_manager)),
             VacationsShow(basic_validator, VacationFindCommand(
-                time_provider, yaml_vacation_engine, notion_vacations_manager)),
+                time_provider, yaml_vacation_engine, notion_vacation_manager)),
             ProjectCreate(basic_validator, projects_controller),
             ProjectArchive(basic_validator, projects_controller),
             ProjectSetName(basic_validator, projects_controller),
@@ -282,43 +284,50 @@ def main() -> None:
             BigPlansSetStatus(basic_validator, big_plans_controller),
             BigPlansHardRemove(basic_validator, big_plans_controller),
             BigPlansShow(basic_validator, big_plans_controller),
-            SmartListsCreate(basic_validator, smart_lists_controller),
-            SmartListsArchive(basic_validator, smart_lists_controller),
-            SmartListsSetName(basic_validator, smart_lists_controller),
-            SmartListsShow(basic_validator, smart_lists_controller),
-            SmartListsHardRemove(basic_validator, smart_lists_controller),
-            SmartListsTagCreate(basic_validator, smart_lists_controller),
-            SmartListsTagArchive(basic_validator, smart_lists_controller),
-            SmartListsTagSetName(basic_validator, smart_lists_controller),
-            SmartListsTagShow(basic_validator, smart_lists_controller),
-            SmartListsTagHardRemove(basic_validator, smart_lists_controller),
-            SmartListsItemCreate(basic_validator, smart_lists_controller),
-            SmartListsItemArchive(basic_validator, smart_lists_controller),
-            SmartListsItemSetName(basic_validator, smart_lists_controller),
-            SmartListsItemMarkDone(basic_validator, smart_lists_controller),
-            SmartListsItemMarkUndone(basic_validator, smart_lists_controller),
-            SmartListsItemSetTags(basic_validator, smart_lists_controller),
-            SmartListsItemSetUrl(basic_validator, smart_lists_controller),
-            SmartListsItemShow(basic_validator, smart_lists_controller),
-            SmartListsItemHardRemove(basic_validator, smart_lists_controller),
+            SmartListCreate(basic_validator, SmartListCreateCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListArchive(basic_validator, SmartListArchiveCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListUpdate(basic_validator, SmartListUpdateCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListShow(basic_validator, SmartListFindCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListsRemove(basic_validator, SmartListRemoveCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListTagCreate(basic_validator, SmartListTagCreateCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListTagArchive(basic_validator, SmartListTagArchiveCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListTagUpdate(basic_validator, SmartListTagUpdateCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListTagRemove(basic_validator, SmartListTagRemoveCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListItemCreate(basic_validator, SmartListItemCreateCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListItemArchive(basic_validator, SmartListItemArchiveCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListItemUpdate(basic_validator, SmartListItemUpdateCommand(
+                time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
+            SmartListItemRemove(basic_validator, SmartListItemRemoveCommand(
+                yaml_smart_list_engine, notion_smart_list_manager)),
             MetricCreate(basic_validator, MetricCreateCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricArchive(basic_validator, MetricArchiveCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricUpdate(basic_validator, MetricUpdateCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricShow(basic_validator, MetricFindCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricRemove(basic_validator, MetricRemoveCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricEntryCreate(basic_validator, MetricEntryCreateCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricEntryArchive(basic_validator, MetricEntryArchiveCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricEntryUpdate(basic_validator, MetricEntryUpdateCommand(
-                time_provider, sqlite_metric_engine, notion_metrics_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricEntryRemove(basic_validator, MetricEntryRemoveCommand(
-                sqlite_metric_engine, notion_metrics_manager)),
+                sqlite_metric_engine, notion_metric_manager)),
             # Complex commands.
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),
