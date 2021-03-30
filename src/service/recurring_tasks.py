@@ -450,10 +450,8 @@ class RecurringTasksService:
         LOGGER.info("Applied local changes")
 
         try:
-            recurring_task_notion_row = \
-                self._notion_manager.load_recurring_task(recurring_task_row.project_ref_id, ref_id)
-            self._notion_manager.save_recurring_task(
-                recurring_task_row.project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row)
+            self._notion_manager.hard_remove_recurring_task(
+                recurring_task_row.project_ref_id, recurring_task_row.ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionEntityNotFound:
             LOGGER.info("Skipping hard removal on Notion side because recurring task could not be found")
@@ -464,10 +462,8 @@ class RecurringTasksService:
         """Remove entries for a recurring task on Notion-side."""
         recurring_task_row = self._repository.load_recurring_task(ref_id, allow_archived=True)
         try:
-            recurring_task_notion_row = \
-                self._notion_manager.load_recurring_task(recurring_task_row.project_ref_id, ref_id)
-            self._notion_manager.save_recurring_task(
-                recurring_task_row.project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row)
+            self._notion_manager.hard_remove_recurring_task(
+                recurring_task_row.project_ref_id, recurring_task_row.ref_id)
             LOGGER.info("Applied Notion changes")
         except CollectionError:
             LOGGER.info("Skipping removal on Notion side because recurring task could not be found")

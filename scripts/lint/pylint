@@ -552,10 +552,10 @@ max-args=32
 max-attributes=32
 
 # Maximum number of boolean expressions in an if statement (see R0916).
-max-bool-expr=5
+max-bool-expr=10
 
 # Maximum number of branch for function / method body.
-max-branches=40
+max-branches=64
 
 # Maximum number of locals for function / method body.
 max-locals=64

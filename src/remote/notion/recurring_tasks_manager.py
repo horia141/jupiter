@@ -6,7 +6,7 @@ from typing import Optional, List, ClassVar, Final, cast, Dict, Iterable
 
 from notion.collection import CollectionRowBlock
 from models.basic import ADate, Timestamp, BasicValidator, EntityId, RecurringTaskPeriod, Eisen, Difficulty, \
-    RecurringTaskType
+    RecurringTaskType, InboxTaskSource
 from remote.notion.common import NotionCollectionLink, NotionLockKey, NotionId, NotionPageLink, clean_eisenhower
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
 from remote.notion.infra.collections_manager import BaseItem, CollectionsManager
@@ -639,6 +639,15 @@ class NotionRecurringTasksManager:
                             "value": {
                                 "type": "exact",
                                 "value": recurring_task_ref_id
+                            }
+                        }
+                    }, {
+                        "property": "source",
+                        "filter": {
+                            "operator": "enum_is",
+                            "value": {
+                                "type": "exact",
+                                "value": InboxTaskSource.BIG_PLAN.for_notion()
                             }
                         }
                     }]

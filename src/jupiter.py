@@ -74,6 +74,7 @@ from command.vacation_remove import VacationRemove
 from command.vacation_update import VacationUpdate
 from command.vacation_show import VacationsShow
 from command.workspace_init import WorkspaceInit
+from command.workspace_set_default_project import WorkspaceSetDefaultProject
 from command.workspace_set_name import WorkspaceSetName
 from command.workspace_set_timezone import WorkspaceSetTimezone
 from command.workspace_set_token import WorkspaceSetToken
@@ -212,7 +213,8 @@ def main() -> None:
             notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
             metrics_service)
         projects_controller = ProjectsController(
-            projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+            workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
+            metrics_service)
         inbox_tasks_controller = InboxTasksController(
             projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         recurring_tasks_controller = RecurringTasksController(
@@ -222,9 +224,11 @@ def main() -> None:
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
             inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
-            global_properties, projects_service, vacations_service, inbox_tasks_service, recurring_tasks_service)
+            global_properties, workspaces_service, projects_service, vacations_service, inbox_tasks_service,
+            recurring_tasks_service, sqlite_metric_engine)
         report_progress_controller = ReportProgressController(
-            global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service)
+            global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service,
+            metrics_service)
         garbage_collect_controller = GarbageCollectNotionController(
             vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
             smart_lists_service, metrics_service)
@@ -234,6 +238,7 @@ def main() -> None:
             WorkspaceInit(basic_validator, workspaces_controller),
             WorkspaceSetName(basic_validator, workspaces_controller),
             WorkspaceSetTimezone(basic_validator, workspaces_controller),
+            WorkspaceSetDefaultProject(basic_validator, workspaces_controller),
             WorkspaceSetToken(basic_validator, workspaces_controller),
             WorkspaceShow(workspaces_controller),
             VacationCreate(basic_validator, VacationCreateCommand(
@@ -311,15 +316,16 @@ def main() -> None:
             SmartListItemRemove(basic_validator, SmartListItemRemoveCommand(
                 yaml_smart_list_engine, notion_smart_list_manager)),
             MetricCreate(basic_validator, MetricCreateCommand(
-                time_provider, sqlite_metric_engine, notion_metric_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager, workspaces_service, projects_service)),
             MetricArchive(basic_validator, MetricArchiveCommand(
-                time_provider, sqlite_metric_engine, notion_metric_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager, inbox_tasks_service)),
             MetricUpdate(basic_validator, MetricUpdateCommand(
-                time_provider, sqlite_metric_engine, notion_metric_manager)),
+                global_properties, time_provider, basic_validator, sqlite_metric_engine, notion_metric_manager,
+                workspaces_service, projects_service, inbox_tasks_service)),
             MetricShow(basic_validator, MetricFindCommand(
-                time_provider, sqlite_metric_engine, notion_metric_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager, projects_service, inbox_tasks_service)),
             MetricRemove(basic_validator, MetricRemoveCommand(
-                time_provider, sqlite_metric_engine, notion_metric_manager)),
+                time_provider, sqlite_metric_engine, notion_metric_manager, inbox_tasks_service)),
             MetricEntryCreate(basic_validator, MetricEntryCreateCommand(
                 time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricEntryArchive(basic_validator, MetricEntryArchiveCommand(

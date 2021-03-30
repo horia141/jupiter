@@ -110,6 +110,11 @@ class ProjectsService:
 
         return self._row_to_entity(project_row)
 
+    def load_project_by_ref_id(self, ref_id: EntityId) -> Project:
+        """Retrieve a particular project, by key."""
+        project_row = self._repository.load_project(ref_id)
+        return self._row_to_entity(project_row)
+
     def load_project_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project, by key."""
         project_row = self._repository.load_project_by_key(key)

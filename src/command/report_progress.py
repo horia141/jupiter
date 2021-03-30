@@ -4,12 +4,19 @@ from typing import Final
 
 from command import command
 from controllers.report_progress import ReportProgressController
-from models.basic import BasicValidator, RecurringTaskPeriod, ModelValidationError, RecurringTaskType
+from models.basic import BasicValidator, RecurringTaskPeriod, ModelValidationError, RecurringTaskType, InboxTaskSource
 from utils.time_provider import TimeProvider
 
 
 class ReportProgress(command.Command):
     """Command class for reporting progress."""
+
+    _SOURCES_TO_REPORT = [
+        InboxTaskSource.USER,
+        InboxTaskSource.BIG_PLAN,
+        InboxTaskSource.RECURRING_TASK,
+        InboxTaskSource.METRIC
+    ]
 
     _basic_validator: Final[BasicValidator]
     _time_provider: Final[TimeProvider]
@@ -38,15 +45,20 @@ class ReportProgress(command.Command):
         parser.add_argument("--date", help="The date on which the upsert should run at")
         parser.add_argument("--project", dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
+        parser.add_argument("--source", dest="sources", default=[], action="append",
+                            choices=BasicValidator.inbox_task_source_values(),
+                            help="Allow only inbox tasks form this particular source. Defaults to all")
         parser.add_argument("--big-plan-id", dest="big_plan_ref_ids", default=[], action="append",
                             help="Allow only tasks from these big plans")
         parser.add_argument("--recurring-task-id", dest="recurring_task_ref_ids", default=[], action="append",
                             help="Allow only tasks from these recurring tasks")
+        parser.add_argument("--metric", dest="metric_keys", required=False, default=[], action="append",
+                            help="The key of the metric")
         parser.add_argument("--cover", dest="covers", default=["inbox-tasks", "big-plans"],
                             choices=["inbox-tasks", "big-plans"],
                             help="Show reporting info about certain parts")
         parser.add_argument("--breakdown", dest="breakdowns", default=[], action="append",
-                            choices=["global", "projects", "periods", "big-plans", "recurring-tasks"],
+                            choices=["global", "projects", "periods", "big-plans", "recurring-tasks", "metrics"],
                             help="Breakdown report by one or more dimensions")
         parser.add_argument("--sub-period", dest="breakdown_period", default=None,
                             choices=BasicValidator.recurring_task_period_values(),
@@ -64,11 +76,15 @@ class ReportProgress(command.Command):
             if args.date else self._time_provider.get_current_time()
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
             if len(args.project_keys) > 0 else None
+        sources = [self._basic_validator.inbox_task_source_validate_and_clean(s) for s in args.sources] \
+            if len(args.sources) > 0 else None
         big_plan_ref_ids = [self._basic_validator.entity_id_validate_and_clean(bp) for bp in args.big_plan_ref_ids] \
             if len(args.big_plan_ref_ids) > 0 else None
         recurring_task_ref_ids = [self._basic_validator.entity_id_validate_and_clean(rt)
                                   for rt in args.recurring_task_ref_ids] \
             if len(args.recurring_task_ref_ids) > 0 else None
+        metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
+            if len(args.metric_keys) > 0 else None
         covers = args.covers
         breakdowns = args.breakdowns if len(args.breakdowns) > 0 else ["global"]
         breakdown_period_raw = self._basic_validator.recurring_task_period_validate_and_clean(args.breakdown_period) \
@@ -86,8 +102,11 @@ class ReportProgress(command.Command):
                 breakdown_period = self._check_period_against_breakdown_period(breakdown_period_raw, period)
 
         response = self._report_progress_controller.run_report(
-            right_now, project_keys, big_plan_ref_ids, recurring_task_ref_ids, period,
+            right_now, project_keys, sources, big_plan_ref_ids, recurring_task_ref_ids, metric_keys, period,
             breakdown_period=breakdown_period)
+
+        sources_to_present = [s for s in ReportProgress._SOURCES_TO_REPORT if s in sources]\
+            if sources else ReportProgress._SOURCES_TO_REPORT
 
         print(f"{period.for_notion()} as of {right_now.to_date_string()}:")
 
@@ -97,27 +116,30 @@ class ReportProgress(command.Command):
             if "inbox-tasks" in covers:
                 print(f"    Inbox Tasks:")
                 print(f"      Created: {response.global_inbox_tasks_summary.created.total_cnt}", end=" ")
-                print(f"({response.global_inbox_tasks_summary.created.ad_hoc_cnt} ad hoc)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.created.from_big_plan_cnt} from big plan)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.created.from_recurring_task_cnt} from recurring task)")
+                for source in sources_to_present:
+                    print(f"({response.global_inbox_tasks_summary.created.per_source_cnt[source]} " +
+                          f"from {source.for_notion()})", end=" ")
+                print("")
                 print(f"      Accepted: {response.global_inbox_tasks_summary.accepted.total_cnt}", end=" ")
-                print(f"({response.global_inbox_tasks_summary.accepted.ad_hoc_cnt} ad hoc)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.accepted.from_big_plan_cnt} from big plan)", end=" ")
-                print(
-                    f"({response.global_inbox_tasks_summary.accepted.from_recurring_task_cnt} from recurring task)")
+                for source in sources_to_present:
+                    print(f"({response.global_inbox_tasks_summary.accepted.per_source_cnt[source]} " +
+                          f"from {source.for_notion()})", end=" ")
+                print("")
                 print(f"      Working: {response.global_inbox_tasks_summary.working.total_cnt}", end=" ")
-                print(f"({response.global_inbox_tasks_summary.working.ad_hoc_cnt} ad hoc)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.working.from_big_plan_cnt} from big plan)", end=" ")
-                print(
-                    f"({response.global_inbox_tasks_summary.working.from_recurring_task_cnt} from recurring task)")
+                for source in sources_to_present:
+                    print(f"({response.global_inbox_tasks_summary.working.per_source_cnt[source]} " +
+                          f"from {source.for_notion()})", end=" ")
+                print("")
                 print(f"      Not Done: {response.global_inbox_tasks_summary.not_done.total_cnt}", end=" ")
-                print(f"({response.global_inbox_tasks_summary.not_done.ad_hoc_cnt} ad hoc)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.not_done.from_big_plan_cnt} from big plan)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.not_done.from_recurring_task_cnt} from recurring task)")
+                for source in sources_to_present:
+                    print(f"({response.global_inbox_tasks_summary.not_done.per_source_cnt[source]} " +
+                          f"from {source.for_notion()})", end=" ")
+                print("")
                 print(f"      Done: {response.global_inbox_tasks_summary.done.total_cnt}", end=" ")
-                print(f"({response.global_inbox_tasks_summary.done.ad_hoc_cnt} ad hoc)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.done.from_big_plan_cnt} from big plan)", end=" ")
-                print(f"({response.global_inbox_tasks_summary.done.from_recurring_task_cnt} from recurring task)")
+                for source in sources_to_present:
+                    print(f"({response.global_inbox_tasks_summary.done.per_source_cnt[source]} " +
+                          f"from {source.for_notion()})", end=" ")
+                print("")
 
             if "big-plans" in covers:
                 print(f"    Big Plans:")
@@ -139,27 +161,30 @@ class ReportProgress(command.Command):
                 if "inbox-tasks" in covers:
                     print(f"      Inbox Tasks:")
                     print(f"        Created: {project_item.inbox_tasks_summary.created.total_cnt}", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.created.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.created.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.created.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({project_item.inbox_tasks_summary.created.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Accepted: {project_item.inbox_tasks_summary.accepted.total_cnt}", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.accepted.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.accepted.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.accepted.from_recurring_task_cnt} " +
-                          "from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({project_item.inbox_tasks_summary.accepted.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Working: {project_item.inbox_tasks_summary.working.total_cnt}", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.working.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.working.from_big_plan_cnt} from big plan)", end=" ")
-                    print(
-                        f"({project_item.inbox_tasks_summary.working.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({project_item.inbox_tasks_summary.working.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Not Done: {project_item.inbox_tasks_summary.not_done.total_cnt}", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.not_done.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.not_done.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.not_done.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({project_item.inbox_tasks_summary.not_done.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Done: {project_item.inbox_tasks_summary.done.total_cnt}", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.done.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.done.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({project_item.inbox_tasks_summary.done.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({project_item.inbox_tasks_summary.done.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
 
                 if "big-plans" in covers:
                     print(f"      Big Plans:")
@@ -184,27 +209,30 @@ class ReportProgress(command.Command):
                 if "inbox-tasks" in covers:
                     print(f"      Inbox Tasks:")
                     print(f"        Created: {period_item.inbox_tasks_summary.created.total_cnt}", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.created.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.created.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.created.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({period_item.inbox_tasks_summary.created.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Accepted: {period_item.inbox_tasks_summary.accepted.total_cnt}", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.accepted.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.accepted.from_big_plan_cnt} from big plan)", end=" ")
-                    print(
-                        f"({period_item.inbox_tasks_summary.accepted.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({period_item.inbox_tasks_summary.accepted.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Working: {period_item.inbox_tasks_summary.working.total_cnt}", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.working.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.working.from_big_plan_cnt} from big plan)", end=" ")
-                    print(
-                        f"({period_item.inbox_tasks_summary.working.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({period_item.inbox_tasks_summary.working.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Not Done: {period_item.inbox_tasks_summary.not_done.total_cnt}", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.not_done.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.not_done.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.not_done.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({period_item.inbox_tasks_summary.not_done.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
                     print(f"        Done: {period_item.inbox_tasks_summary.done.total_cnt}", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.done.ad_hoc_cnt} ad hoc)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.done.from_big_plan_cnt} from big plan)", end=" ")
-                    print(f"({period_item.inbox_tasks_summary.done.from_recurring_task_cnt} from recurring task)")
+                    for source in sources_to_present:
+                        print(f"({period_item.inbox_tasks_summary.done.per_source_cnt[source]} " +
+                              f"from {source.for_notion()})", end=" ")
+                    print("")
 
                 if "big-plans" in covers:
                     print(f"      Big Plans:")

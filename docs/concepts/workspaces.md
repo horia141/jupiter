@@ -22,6 +22,13 @@ namely “Personal”, “Engineer 2.0”, “Work @Bolt”, etc:
 
 A workspace has a _name_. It is the name of the root page in Notion too.
 
+A workspace also has a _timezone_. It is usually the timezone in which you live. Internally
+all times are UTC, but whatever's displayed in the CLI or synced to Notion makes use of this.
+
+A workspace also has a notion of _default project_. Checkout [the projects section](./projects.md) for more details
+about projects. But in context where a project is needed - say when adding a new inbox task, or generating an
+inbox task from a metric - and none is specified, this one will be used instead.
+
 The token is the secret used to access Notion. From time to time it expires, so it needs tob be updated here as well
 The token can be obtained as described in the [tutorial section](https://github.com/horia141/jupiter/blob/master/docs
 /tutorial.md).

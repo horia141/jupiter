@@ -9,7 +9,7 @@ import typing
 
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
-from domain.metrics.metric import Metric
+from domain.metrics.metric import Metric, MetricCollectionParams
 from domain.metrics.infra.metric_repository import MetricRepository
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import EntityId, MetricKey, RecurringTaskPeriod, MetricUnit, BasicValidator, ADate, EntityName
@@ -25,7 +25,15 @@ class _MetricRow(BaseEntityRow):
     """A container for metric entries."""
     key: MetricKey
     name: EntityName
+    collection_project_ref_id: Optional[EntityId]
     collection_period: Optional[RecurringTaskPeriod]
+    collection_eisen: typing.List[str]
+    collection_difficulty: Optional[str]
+    collection_actionable_from_day: Optional[int]
+    collection_actionable_from_month: Optional[int]
+    collection_due_at_time: Optional[str]
+    collection_due_at_day: Optional[int]
+    collection_due_at_month: Optional[int]
     metric_unit: Optional[MetricUnit]
 
 
@@ -69,7 +77,19 @@ class YamlMetricRepository(MetricRepository):
             key=metric.key,
             name=metric.name,
             archived=metric.archived,
-            collection_period=metric.collection_period,
+            collection_project_ref_id=metric.collection_params.project_ref_id if metric.collection_params else None,
+            collection_period=metric.collection_params.period if metric.collection_params else None,
+            collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
+            collection_difficulty=metric.collection_params.difficulty.value
+            if metric.collection_params and metric.collection_params.difficulty else None,
+            collection_actionable_from_day=metric.collection_params.actionable_from_day
+            if metric.collection_params else None,
+            collection_actionable_from_month=metric.collection_params.actionable_from_month
+            if metric.collection_params else None,
+            collection_due_at_day=metric.collection_params.due_at_day if metric.collection_params else None,
+            collection_due_at_month=metric.collection_params.actionable_from_month
+            if metric.collection_params else None,
+            collection_due_at_time=metric.collection_params.due_at_time if metric.collection_params else None,
             metric_unit=metric.metric_unit))
         metric.assign_ref_id(new_metric_row.ref_id)
         return metric
@@ -109,7 +129,18 @@ class YamlMetricRepository(MetricRepository):
         return {
             "name": {"type": "string"},
             "key": {"type": "string"},
+            "collection_project_ref_id": {"type": ["string", "null"]},
             "collection_period": {"type": ["string", "null"]},
+            "collection_eisen": {
+                "type": "array",
+                "entries": {"type": "string"}
+            },
+            "collection_difficulty": {"type": ["string", "null"]},
+            "collection_actionable_from_day": {"type": ["number", "null"]},
+            "collection_actionable_from_month": {"type": ["number", "null"]},
+            "collection_due_at_time": {"type": ["string", "null"]},
+            "collection_due_at_day": {"type": ["number", "null"]},
+            "collection_due_at_month": {"type": ["number", "null"]},
             "metric_unit": {"type": ["string", "null"]}
         }
 
@@ -120,8 +151,22 @@ class YamlMetricRepository(MetricRepository):
             name=EntityName(typing.cast(str, storage_form["name"])),
             key=MetricKey(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
+            collection_project_ref_id=EntityId(typing.cast(str, storage_form["collection_project_ref_id"])),
             collection_period=RecurringTaskPeriod(typing.cast(str, storage_form["collection_period"]))
             if storage_form["collection_period"] else None,
+            collection_eisen=typing.cast(typing.List[str], storage_form["collection_eisen"]),
+            collection_difficulty=typing.cast(str, storage_form["collection_difficulty"])
+            if storage_form["collection_difficulty"] else None,
+            collection_actionable_from_day=typing.cast(int, storage_form["collection_actionable_from_day"])
+            if storage_form.get("collection_actionable_from_day", None) else None,
+            collection_actionable_from_month=typing.cast(int, storage_form["collection_actionable_from_month"])
+            if storage_form.get("collection_actionable_from_month", None) else None,
+            collection_due_at_time=typing.cast(str, storage_form["collection_due_at_time"])
+            if storage_form["collection_due_at_time"] else None,
+            collection_due_at_day=typing.cast(int, storage_form["collection_due_at_day"])
+            if storage_form["collection_due_at_day"] else None,
+            collection_due_at_month=typing.cast(int, storage_form["collection_due_at_month"])
+            if storage_form["collection_due_at_month"] else None,
             metric_unit=MetricUnit(typing.cast(str, storage_form["metric_unit"]))
             if storage_form["metric_unit"] else None)
 
@@ -131,7 +176,15 @@ class YamlMetricRepository(MetricRepository):
         return {
             "name": live_form.name,
             "key": live_form.key,
+            "collection_project_ref_id": live_form.collection_project_ref_id,
             "collection_period": live_form.collection_period.value if live_form.collection_period else None,
+            "collection_eisen": live_form.collection_eisen,
+            "collection_difficulty": live_form.collection_difficulty,
+            "collection_actionable_from_day": live_form.collection_actionable_from_day,
+            "collection_actionable_from_month": live_form.collection_actionable_from_month,
+            "collection_due_at_time": live_form.collection_due_at_time,
+            "collection_due_at_day": live_form.collection_due_at_day,
+            "collection_due_at_month": live_form.collection_due_at_month,
             "metric_unit": live_form.metric_unit.value if live_form.metric_unit else None
         }
 
@@ -141,7 +194,19 @@ class YamlMetricRepository(MetricRepository):
             archived=metric.archived,
             key=metric.key,
             name=metric.name,
-            collection_period=metric.collection_period,
+            collection_project_ref_id=metric.collection_params.project_ref_id if metric.collection_params else None,
+            collection_period=metric.collection_params.period if metric.collection_params else None,
+            collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
+            collection_difficulty=metric.collection_params.difficulty.value
+            if metric.collection_params and metric.collection_params.difficulty else None,
+            collection_actionable_from_day=metric.collection_params.actionable_from_day
+            if metric.collection_params else None,
+            collection_actionable_from_month=metric.collection_params.actionable_from_month
+            if metric.collection_params else None,
+            collection_due_at_day=metric.collection_params.due_at_day if metric.collection_params else None,
+            collection_due_at_month=metric.collection_params.actionable_from_month
+            if metric.collection_params else None,
+            collection_due_at_time=metric.collection_params.due_at_time if metric.collection_params else None,
             metric_unit=metric.metric_unit)
         metric_row.ref_id = metric.ref_id
         metric_row.created_time = metric.created_time
@@ -160,7 +225,18 @@ class YamlMetricRepository(MetricRepository):
             _events=[],
             _key=row.key,
             _name=row.name,
-            _collection_period=row.collection_period,
+            _collection_params=MetricCollectionParams(
+                project_ref_id=row.collection_project_ref_id,
+                period=row.collection_period,
+                eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row.collection_eisen],
+                difficulty=BasicValidator.difficulty_validate_and_clean(row.collection_difficulty)
+                if row.collection_difficulty else None,
+                actionable_from_day=row.collection_actionable_from_day,
+                actionable_from_month=row.collection_actionable_from_month,
+                due_at_day=row.collection_due_at_day,
+                due_at_month=row.collection_due_at_month,
+                due_at_time=row.collection_due_at_time)
+            if row.collection_project_ref_id is not None and row.collection_period is not None else None,
             _metric_unit=row.metric_unit)
 
 

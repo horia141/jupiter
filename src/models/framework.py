@@ -83,6 +83,8 @@ class Event:
                 }
             elif dataclasses.is_dataclass(primitive):
                 return {key: process_primitive(value, key) for key, value in dataclasses.asdict(primitive).items()}
+            elif isinstance(primitive, list):
+                return [process_primitive(p, key) for p in primitive]
             else:
                 raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__} -> {key}")
         return process_primitive(self, "root")

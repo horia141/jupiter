@@ -1,10 +1,10 @@
 """The service class for dealing with workspaces."""
 import logging
-from typing import Final
+from typing import Final, Optional
 
 from pendulum.tz.timezone import Timezone
 
-from models.basic import BasicValidator, SyncPrefer, ModelValidationError
+from models.basic import BasicValidator, SyncPrefer, ModelValidationError, EntityId
 from remote.notion.common import NotionPageLink
 from remote.notion.workspaces import WorkspaceSingleton
 from repository.workspace import WorkspaceRepository, Workspace
@@ -35,7 +35,7 @@ class WorkspacesService:
         except ModelValidationError as error:
             raise ServiceValidationError("Invalid inputs") from error
 
-        self._repository.create_workspace(name, timezone)
+        self._repository.create_workspace(name, timezone, None)
         LOGGER.info("Applied local changes")
 
         new_workspace_page = self._singleton.upsert_notion_structure(name)
@@ -68,6 +68,14 @@ class WorkspacesService:
         """Set the timezone of the workspace."""
         workspace = self._repository.load_workspace()
         workspace.timezone = timezone
+        self._repository.save_workspace(workspace)
+
+        return workspace
+
+    def set_workspace_default_project_ref_id(self, default_project_ref_id: Optional[EntityId]) -> Workspace:
+        """Set the timezone of the workspace."""
+        workspace = self._repository.load_workspace()
+        workspace.default_project_ref_id = default_project_ref_id
         self._repository.save_workspace(workspace)
 
         return workspace

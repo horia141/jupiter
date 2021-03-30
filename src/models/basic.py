@@ -138,6 +138,24 @@ class InboxTaskStatus(enum.Enum):
 
 
 @enum.unique
+class InboxTaskSource(enum.Enum):
+    """The origin of an inbox task."""
+    USER = "user"
+    BIG_PLAN = "big-plan"
+    RECURRING_TASK = "recurring-task"
+    METRIC = "metric"
+
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return " ".join(s.capitalize() for s in str(self.value).split("-"))
+
+    @property
+    def allow_user_changes(self) -> bool:
+        """Allow user changes for an inbox task."""
+        return self in (InboxTaskSource.USER, InboxTaskSource.BIG_PLAN)
+
+
+@enum.unique
 class RecurringTaskPeriod(enum.Enum):
     """A period for a particular task."""
     DAILY = "daily"
@@ -233,6 +251,7 @@ class BasicValidator:
     _eisen_values: Final[FrozenSet[str]] = frozenset(e.value for e in Eisen)
     _difficulty_values: Final[FrozenSet[str]] = frozenset(d.value for d in Difficulty)
     _inbox_task_status_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskStatus)
+    _inbox_task_source_values: Final[FrozenSet[str]] = frozenset(its.value for its in InboxTaskSource)
     _recurring_task_period_values: Final[FrozenSet[str]] = frozenset(rtp.value for rtp in RecurringTaskPeriod)
     _recurring_task_type_values: Final[FrozenSet[str]] = frozenset(rtt.value for rtt in RecurringTaskType)
     _recurring_task_due_at_time_re: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
@@ -296,7 +315,8 @@ class BasicValidator:
         """The possible values for sync prefer."""
         return BasicValidator._sync_prefer_values
 
-    def entity_id_validate_and_clean(self, entity_id_raw: Optional[str]) -> EntityId:
+    @staticmethod
+    def entity_id_validate_and_clean(entity_id_raw: Optional[str]) -> EntityId:
         """Validate and clean an entity id."""
         if not entity_id_raw:
             raise ModelValidationError("Expected entity id to be non-null")
@@ -306,8 +326,9 @@ class BasicValidator:
         if len(entity_id) == 0:
             raise ModelValidationError("Expected entity id to be non-empty")
 
-        if not self._entity_id_re.match(entity_id):
-            raise ModelValidationError(f"Expected entity id '{entity_id_raw}' to match '{self._entity_id_re.pattern}")
+        if not BasicValidator._entity_id_re.match(entity_id):
+            raise ModelValidationError(
+                f"Expected entity id '{entity_id_raw}' to match '{BasicValidator._entity_id_re.pattern}")
 
         return EntityId(entity_id)
 
@@ -517,16 +538,17 @@ class BasicValidator:
         else:
             return cast(str, adate.to_date_string())
 
-    def eisen_validate_and_clean(self, eisen_raw: Optional[str]) -> Eisen:
+    @staticmethod
+    def eisen_validate_and_clean(eisen_raw: Optional[str]) -> Eisen:
         """Validate and clean the Eisenhower status."""
         if not eisen_raw:
             raise ModelValidationError("Expected Eisenhower status to be non-null")
 
         eisen_str: str = eisen_raw.strip().lower()
 
-        if eisen_str not in self._eisen_values:
+        if eisen_str not in BasicValidator._eisen_values:
             raise ModelValidationError(
-                f"Expected Eisenhower status '{eisen_raw}' to be one of '{','.join(self._eisen_values)}'")
+                f"Expected Eisenhower status '{eisen_raw}' to be one of '{','.join(BasicValidator._eisen_values)}'")
 
         return Eisen(eisen_str)
 
@@ -535,16 +557,17 @@ class BasicValidator:
         """The possible values for Eisenhower statues."""
         return BasicValidator._eisen_values
 
-    def difficulty_validate_and_clean(self, difficulty_raw: Optional[str]) -> Difficulty:
+    @staticmethod
+    def difficulty_validate_and_clean(difficulty_raw: Optional[str]) -> Difficulty:
         """Validate and clean the difficulty."""
         if not difficulty_raw:
             raise ModelValidationError("Expected difficulty to be non-null")
 
         difficulty_str: str = difficulty_raw.strip().lower()
 
-        if difficulty_str not in self._difficulty_values:
+        if difficulty_str not in BasicValidator._difficulty_values:
             raise ModelValidationError(
-                f"Expected difficulty '{difficulty_raw}' to be one of '{','.join(self._difficulty_values)}'")
+                f"Expected difficulty '{difficulty_raw}' to be one of '{','.join(BasicValidator._difficulty_values)}'")
 
         return Difficulty(difficulty_str)
 
@@ -571,6 +594,26 @@ class BasicValidator:
     def inbox_task_status_values() -> Iterable[str]:
         """The possible values for inbox task statues."""
         return BasicValidator._inbox_task_status_values
+
+    @staticmethod
+    def inbox_task_source_validate_and_clean(inbox_task_source_raw: Optional[str]) -> InboxTaskSource:
+        """Validate and clean the big plan source."""
+        if not inbox_task_source_raw:
+            raise ModelValidationError("Expected inbox task source to be non-null")
+
+        inbox_task_source_str: str = '-'.join(inbox_task_source_raw.strip().lower().split(' '))
+
+        if inbox_task_source_str not in BasicValidator._inbox_task_source_values:
+            raise ModelValidationError(
+                f"Expected inbox task source '{inbox_task_source_raw}' to be " +
+                f"one of '{','.join(BasicValidator._inbox_task_source_values)}'")
+
+        return InboxTaskSource(inbox_task_source_str)
+
+    @staticmethod
+    def inbox_task_source_values() -> Iterable[str]:
+        """The possible values for inbox task statues."""
+        return BasicValidator._inbox_task_source_values
 
     @staticmethod
     def recurring_task_period_validate_and_clean(recurring_task_period_raw: Optional[str]) -> RecurringTaskPeriod:

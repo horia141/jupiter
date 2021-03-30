@@ -25,10 +25,10 @@ On their own, smart lists have a single property - their name.
 
 You can:
 
-* Create a smart list via `smart-lists-create`.
-* Remove a smart list via `smart-lists-archive`.
-* Change the name via `smart-lists-set-name`, or by changing the name of the page in Notion.
-* See a summary of the smart lists via `smart-lists-show`.
+* Create a smart list via `smart-list-create`.
+* Remove a smart list via `smart-list-archive`.
+* Change the name via `smart-list-update`, or by changing the name of the page in Notion.
+* See a summary of the smart lists via `smart-list-show`.
 
 ## Items
 
@@ -57,12 +57,11 @@ over to the [local store](local-storage.md).
 
 You can:
 
-* Create a smart list item via `smart-lists-item-create`, or by creating a new entry in the appropriate Notion table.
-* Remove a smart list item via `smart-lists-item-archive`, or by clicking the archive checkbox in Notion.
-* Change the doneness status via `smart-lists-item-mark-done` or `smart-lists-item-mark-undone`, or by clicking on
+* Create a smart list item via `smart-list-item-create`, or by creating a new entry in the appropriate Notion table.
+* Remove a smart list item via `smart-list-item-archive`, or by clicking the archive checkbox in Notion.
+* Change the doneness status via `smart-list-item-update`, or by clicking on
   the checkbox in Notion.
-* Change the name of a smart list item via `smart-lists-item-set-name`, or by changing the name from the Notion row.
-* Change the tags of a smart list item via `smart-lists-item-set-tags`, or by changing the tags from the Notion row.
-* Change the url of a smart list item via `smart-lists-item-set-url`, or by changing the URL field from the Notion row.
-* Show info about the smart list items via `smart-lists-item-show`.
-* There is a whole suite of `smart-lists-tag-*` commands for create/update/archival of tags.
+* Change the name of a smart list item via `smart-list-item-update`, or by changing the name from the Notion row.
+* Change the tags of a smart list item via `smart-list-item-update`, or by changing the tags from the Notion row.
+* Change the url of a smart list item via `smart-list-item-update`, or by changing the URL field from the Notion row.
+* There is a whole suite of `smart-list-tag-*` commands for create/update/archival of tags.

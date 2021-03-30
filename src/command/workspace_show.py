@@ -34,5 +34,6 @@ class WorkspaceShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        workspace = self._workspaces_controller.load_workspace()
-        print(f'{workspace.name} timezone={workspace.timezone}')
+        response = self._workspaces_controller.load_workspace()
+        print(f'{response.workspace.name} timezone={response.workspace.timezone}' +
+              (f' default project is "{response.default_project.name}"' if response.default_project else ''))

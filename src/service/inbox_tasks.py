@@ -7,8 +7,9 @@ import pendulum
 from pendulum import UTC
 
 import remote.notion.common
+from domain.metrics.metric import Metric
 from models.basic import BasicValidator, EntityId, ModelValidationError, InboxTaskStatus, Eisen, Difficulty, \
-    SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp
+    SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp, InboxTaskSource
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks_manager import NotionInboxTasksManager, InboxTaskBigPlanLabel
 from repository.inbox_tasks import InboxTasksRepository, InboxTaskRow
@@ -32,8 +33,10 @@ class InboxTask:
 
     ref_id: EntityId
     project_ref_id: EntityId
+    source: InboxTaskSource
     big_plan_ref_id: Optional[EntityId]
     recurring_task_ref_id: Optional[EntityId]
+    metric_ref_id: Optional[EntityId]
     archived: bool
     name: str
     status: InboxTaskStatus
@@ -41,9 +44,9 @@ class InboxTask:
     difficulty: Optional[Difficulty]
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
-    recurring_task_timeline: Optional[str]
-    recurring_task_type: Optional[RecurringTaskType]
-    recurring_task_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
+    recurring_timeline: Optional[str]
+    recurring_type: Optional[RecurringTaskType]
+    recurring_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
     created_time: Timestamp
     last_modified_time: Timestamp
     accepted_time: Optional[Timestamp]
@@ -136,8 +139,10 @@ class InboxTasksService:
         # Apply changes locally
         new_inbox_task_row = self._repository.create_inbox_task(
             project_ref_id=project_ref_id,
+            source=InboxTaskSource.USER if big_plan_ref_id is None else InboxTaskSource.BIG_PLAN,
             big_plan_ref_id=big_plan_ref_id,
             recurring_task_ref_id=None,
+            metric_ref_id=None,
             name=name,
             archived=False,
             status=InboxTaskStatus.ACCEPTED,
@@ -145,19 +150,21 @@ class InboxTasksService:
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
-            recurring_task_timeline=None,
-            recurring_task_type=None,
-            recurring_task_gen_right_now=None)
+            recurring_timeline=None,
+            recurring_type=None,
+            recurring_gen_right_now=None)
         LOGGER.info("Applied local changes")
         # Apply Notion changes
         self._notion_manager.upsert_inbox_task(
             project_ref_id=project_ref_id,
+            source=new_inbox_task_row.source.for_notion(),
             name=new_inbox_task_row.name,
             archived=False,
             big_plan_ref_id=new_inbox_task_row.big_plan_ref_id,
             big_plan_name=remote.notion.common.format_name_for_option(
                 big_plan_name) if big_plan_name else None,
             recurring_task_ref_id=None,
+            metric_ref_id=None,
             status=new_inbox_task_row.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task_row.eisen],
             difficulty=new_inbox_task_row.difficulty.for_notion() if new_inbox_task_row.difficulty else None,
@@ -165,8 +172,8 @@ class InboxTasksService:
             due_date=new_inbox_task_row.due_date,
             recurring_timeline=None,
             recurring_period=None,
-            recurring_task_type=None,
-            recurring_task_gen_right_now=None,
+            recurring_type=None,
+            recurring_gen_right_now=None,
             ref_id=new_inbox_task_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
@@ -181,8 +188,10 @@ class InboxTasksService:
         # Apply changes locally
         new_inbox_task_row = self._repository.create_inbox_task(
             project_ref_id=project_ref_id,
+            source=InboxTaskSource.RECURRING_TASK,
             big_plan_ref_id=None,
             recurring_task_ref_id=recurring_task_ref_id,
+            metric_ref_id=None,
             name=name,
             archived=False,
             status=InboxTaskStatus.RECURRING,
@@ -190,27 +199,81 @@ class InboxTasksService:
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
-            recurring_task_timeline=recurring_task_timeline,
-            recurring_task_type=recurring_task_type,
-            recurring_task_gen_right_now=recurring_task_gen_right_now)
+            recurring_timeline=recurring_task_timeline,
+            recurring_type=recurring_task_type,
+            recurring_gen_right_now=recurring_task_gen_right_now)
         LOGGER.info("Applied local changes")
         # Apply Notion changes
         self._notion_manager.upsert_inbox_task(
             project_ref_id=project_ref_id,
+            source=new_inbox_task_row.source.for_notion(),
             name=new_inbox_task_row.name,
             archived=False,
             big_plan_ref_id=None,
             big_plan_name=None,
             recurring_task_ref_id=new_inbox_task_row.recurring_task_ref_id,
+            metric_ref_id=None,
             status=new_inbox_task_row.status.for_notion(),
             eisen=[e.for_notion() for e in new_inbox_task_row.eisen],
             difficulty=new_inbox_task_row.difficulty.for_notion() if new_inbox_task_row.difficulty else None,
             actionable_date=new_inbox_task_row.actionable_date,
             due_date=new_inbox_task_row.due_date,
-            recurring_timeline=new_inbox_task_row.recurring_task_timeline,
+            recurring_timeline=new_inbox_task_row.recurring_timeline,
             recurring_period=recurring_task_period.value,
-            recurring_task_type=recurring_task_type.value,
-            recurring_task_gen_right_now=recurring_task_gen_right_now,
+            recurring_type=recurring_task_type.value,
+            recurring_gen_right_now=recurring_task_gen_right_now,
+            ref_id=new_inbox_task_row.ref_id)
+        LOGGER.info("Applied Notion changes")
+
+        return self._row_to_entity(new_inbox_task_row)
+
+    @staticmethod
+    def _build_name_for_collection_task(name: str) -> str:
+        return f"Collect value for metric {name}"
+
+    def create_inbox_task_for_metric(
+            self, project_ref_id: EntityId, name: str, metric_ref_id: EntityId,
+            recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod, eisen: List[Eisen],
+            difficulty: Optional[Difficulty], recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
+            due_date: Optional[ADate]) -> InboxTask:
+        """Create an inbox task."""
+        # Apply changes locally
+        new_inbox_task_row = self._repository.create_inbox_task(
+            project_ref_id=project_ref_id,
+            source=InboxTaskSource.METRIC,
+            big_plan_ref_id=None,
+            recurring_task_ref_id=None,
+            metric_ref_id=metric_ref_id,
+            name=self._build_name_for_collection_task(name),
+            archived=False,
+            status=InboxTaskStatus.RECURRING,
+            eisen=eisen,
+            difficulty=difficulty,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            recurring_timeline=recurring_task_timeline,
+            recurring_type=RecurringTaskType.CHORE,
+            recurring_gen_right_now=recurring_task_gen_right_now)
+        LOGGER.info("Applied local changes")
+        # Apply Notion changes
+        self._notion_manager.upsert_inbox_task(
+            project_ref_id=project_ref_id,
+            source=new_inbox_task_row.source.for_notion(),
+            name=new_inbox_task_row.name,
+            archived=False,
+            big_plan_ref_id=None,
+            big_plan_name=None,
+            recurring_task_ref_id=None,
+            metric_ref_id=new_inbox_task_row.metric_ref_id,
+            status=new_inbox_task_row.status.for_notion(),
+            eisen=[e.for_notion() for e in new_inbox_task_row.eisen],
+            difficulty=new_inbox_task_row.difficulty.for_notion() if new_inbox_task_row.difficulty else None,
+            actionable_date=new_inbox_task_row.actionable_date,
+            due_date=new_inbox_task_row.due_date,
+            recurring_timeline=new_inbox_task_row.recurring_timeline,
+            recurring_period=recurring_task_period.value,
+            recurring_type=new_inbox_task_row.recurring_type.value if new_inbox_task_row.recurring_type else None,
+            recurring_gen_right_now=recurring_task_gen_right_now,
             ref_id=new_inbox_task_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
@@ -239,7 +302,7 @@ class InboxTasksService:
 
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id)
-        if inbox_task_row.recurring_task_ref_id is not None:
+        if not inbox_task_row.source.allow_user_changes:
             raise ServiceValidationError(
                 f"Cannot modify name of task created from recurring task '{inbox_task_row.name}'")
         inbox_task_row.name = name
@@ -270,14 +333,16 @@ class InboxTasksService:
 
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id)
-        if inbox_task_row.recurring_task_ref_id is not None:
+        if not inbox_task_row.source.allow_user_changes:
             raise ServiceValidationError(
                 f"Cannot associate with a big plan a task created from recurring task '{inbox_task_row.name}'")
+        inbox_task_row.source = InboxTaskSource.BIG_PLAN
         inbox_task_row.big_plan_ref_id = big_plan_ref_id
         self._repository.update_inbox_task(inbox_task_row)
 
         # Apply changes in Notion
         inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
+        inbox_task_notion_row.source = InboxTaskSource.BIG_PLAN.for_notion()
         inbox_task_notion_row.big_plan_ref_id = big_plan_ref_id
         inbox_task_notion_row.big_plan_name = \
             remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None
@@ -292,6 +357,9 @@ class InboxTasksService:
         """Change the parameters of the link between the big plan and the inbox task."""
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
+        if inbox_task_row.source is not InboxTaskSource.BIG_PLAN:
+            raise ServiceValidationError(
+                f"Cannot reassociate a task which isn't a big plan one '{inbox_task_row.name}'")
         if inbox_task_row.big_plan_ref_id != big_plan_ref_id:
             raise ServiceValidationError(
                 f"Cannot reassociate a task which is not with the big plan '{inbox_task_row.name}'")
@@ -321,7 +389,7 @@ class InboxTasksService:
 
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
-        if inbox_task_row.recurring_task_ref_id is None:
+        if inbox_task_row.source is not InboxTaskSource.RECURRING_TASK:
             raise ServiceValidationError(
                 f"Cannot associate a task which is not recurring with a recurring one '{inbox_task_row.name}'")
         inbox_task_row.name = name
@@ -329,8 +397,8 @@ class InboxTasksService:
         inbox_task_row.due_date = due_time
         inbox_task_row.eisen = eisen
         inbox_task_row.difficulty = difficulty
-        inbox_task_row.recurring_task_timeline = timeline
-        inbox_task_row.recurring_task_type = the_type
+        inbox_task_row.recurring_timeline = timeline
+        inbox_task_row.recurring_type = the_type
         self._repository.update_inbox_task(inbox_task_row)
         LOGGER.info("Modified inbox task locally")
 
@@ -344,7 +412,49 @@ class InboxTasksService:
             inbox_task_notion_row.difficulty = difficulty.value if difficulty else None
             inbox_task_notion_row.recurring_timeline = timeline
             inbox_task_notion_row.recurring_period = period.value
-            inbox_task_notion_row.recurring_task_type = the_type.value
+            inbox_task_notion_row.recurring_type = the_type.value
+            self._notion_manager.save_inbox_task(
+                inbox_task_row.project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
+            LOGGER.info("Applied Notion changes")
+        except remote.notion.common.CollectionEntityNotFound:
+            LOGGER.info(
+                f"Skipping updating link of ref_id='{inbox_task_row.ref_id}' because it could not be found")
+
+        return self._row_to_entity(inbox_task_row)
+
+    def set_inbox_task_to_metric_link(
+            self, ref_id: EntityId, name: str, recurring_timeline: str, recurring_period: RecurringTaskPeriod,
+            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_date: ADate, due_time: ADate) -> InboxTask:
+        """Change the parameters of the link between the inbox task as an instance of a metric."""
+        try:
+            name = self._basic_validator.entity_name_validate_and_clean(name)
+        except ModelValidationError as error:
+            raise ServiceValidationError("Invalid inputs") from error
+
+        # Apply changes locally
+        inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
+        if inbox_task_row.source is not InboxTaskSource.METRIC:
+            raise ServiceValidationError(
+                f"Cannot associate a task which is not recurring with a metric one '{inbox_task_row.name}'")
+        inbox_task_row.name = self._build_name_for_collection_task(name)
+        inbox_task_row.actionable_date = actionable_date
+        inbox_task_row.due_date = due_time
+        inbox_task_row.eisen = eisen
+        inbox_task_row.difficulty = difficulty
+        inbox_task_row.recurring_timeline = recurring_timeline
+        self._repository.update_inbox_task(inbox_task_row)
+        LOGGER.info("Modified inbox task locally")
+
+        # Apply changes in Notion
+        try:
+            inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
+            inbox_task_notion_row.name = name
+            inbox_task_notion_row.actionable_date = actionable_date
+            inbox_task_notion_row.due_date = due_time
+            inbox_task_notion_row.eisen = [e.value for e in eisen]
+            inbox_task_notion_row.difficulty = difficulty.value if difficulty else None
+            inbox_task_notion_row.recurring_timeline = recurring_timeline
+            inbox_task_notion_row.recurring_period = recurring_period.value
             self._notion_manager.save_inbox_task(
                 inbox_task_row.project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
             LOGGER.info("Applied Notion changes")
@@ -425,7 +535,7 @@ class InboxTasksService:
         """Change the Eisenhower status of an inbox task."""
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id)
-        if inbox_task_row.recurring_task_ref_id is None:
+        if not inbox_task_row.source.allow_user_changes:
             raise ServiceValidationError(
                 f"Cannot change the Eisenhower status of a task created from a recurring one '{inbox_task_row.name}'")
         inbox_task_row.eisen = eisen
@@ -445,7 +555,7 @@ class InboxTasksService:
         """Change the difficulty of an inbox task."""
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id)
-        if inbox_task_row.recurring_task_ref_id is None:
+        if not inbox_task_row.source.allow_user_changes:
             raise ServiceValidationError(
                 f"Cannot change the difficulty of a task created from a recurring one '{inbox_task_row.name}'")
         inbox_task_row.difficulty = difficulty
@@ -506,15 +616,19 @@ class InboxTasksService:
     def load_all_inbox_tasks(
             self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_sources: Optional[Iterable[InboxTaskSource]] = None,
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
+            filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
         """Retrieve all inbox tasks."""
         inbox_task_rows = self._repository.find_all_inbox_tasks(
             allow_archived=allow_archived,
             filter_ref_ids=filter_ref_ids,
             filter_project_ref_ids=filter_project_ref_ids,
+            filter_sources=filter_sources,
             filter_big_plan_ref_ids=filter_big_plan_ref_ids,
-            filter_recurring_task_ref_ids=filter_recurring_task_ref_ids)
+            filter_recurring_task_ref_ids=filter_recurring_task_ref_ids,
+            filter_metric_ref_ids=filter_metric_ref_ids)
         return [self._row_to_entity(it) for it in inbox_task_rows]
 
     def load_all_inbox_tasks_not_notion_gced(self, project_ref_ids: EntityId) -> Iterable[InboxTask]:
@@ -529,8 +643,8 @@ class InboxTasksService:
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,
             all_big_plans: Iterable[BigPlanEssentials], all_recurring_tasks: Iterable[RecurringTaskEssentials],
-            sync_even_if_not_modified: bool, filter_ref_ids: Optional[Iterable[EntityId]],
-            sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
+            all_metrics: Iterable[Metric], sync_even_if_not_modified: bool,
+            filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
@@ -554,6 +668,7 @@ class InboxTasksService:
 
         all_big_plans_map = {bp.ref_id: bp for bp in all_big_plans}
         all_recurring_tasks_map = {rt.ref_id: rt for rt in all_recurring_tasks}
+        all_metrics_map = {m.ref_id: m for m in all_metrics}
 
         # Prepare Notion connection
 
@@ -581,6 +696,9 @@ class InboxTasksService:
                     inbox_task_recurring_task_ref_id = \
                         self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.recurring_task_ref_id)\
                         if inbox_task_notion_row.recurring_task_ref_id else None
+                    inbox_task_metric_ref_id = \
+                        self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.metric_ref_id)\
+                        if inbox_task_notion_row.metric_ref_id else None
                     inbox_task_status = \
                         self._basic_validator.inbox_task_status_validate_and_clean(inbox_task_notion_row.status)\
                         if inbox_task_notion_row.status else InboxTaskStatus.NOT_STARTED
@@ -590,10 +708,10 @@ class InboxTasksService:
                     inbox_task_difficulty = \
                         self._basic_validator.difficulty_validate_and_clean(inbox_task_notion_row.difficulty)\
                         if inbox_task_notion_row.difficulty else None
-                    inbox_task_recurring_task_type = \
+                    inbox_task_recurring_type = \
                         self._basic_validator.recurring_task_type_validate_and_clean(
-                            inbox_task_notion_row.recurring_task_type) \
-                        if inbox_task_notion_row.recurring_task_type else None
+                            inbox_task_notion_row.recurring_type) \
+                        if inbox_task_notion_row.recurring_type else None
                     self._check_actionable_and_due_dates(
                         inbox_task_notion_row.actionable_date, inbox_task_notion_row.due_date)
                 except ModelValidationError as error:
@@ -601,18 +719,28 @@ class InboxTasksService:
 
                 big_plan = None
                 recurring_task = None
+                metric = None
+                inbox_task_source = InboxTaskSource.USER
                 if inbox_task_big_plan_ref_id is not None:
                     big_plan = all_big_plans_map[inbox_task_big_plan_ref_id]
+                    inbox_task_source = InboxTaskSource.BIG_PLAN
                 elif inbox_task_big_plan_name is not None:
                     big_plan = \
                         all_big_plans_by_name[remote.notion.common.format_name_for_option(inbox_task_big_plan_name)]
+                    inbox_task_source = InboxTaskSource.BIG_PLAN
                 elif inbox_task_recurring_task_ref_id is not None:
                     recurring_task = all_recurring_tasks_map[inbox_task_recurring_task_ref_id]
+                    inbox_task_source = InboxTaskSource.RECURRING_TASK
+                elif inbox_task_metric_ref_id is not None:
+                    metric = all_metrics_map[inbox_task_metric_ref_id]
+                    inbox_task_source = InboxTaskSource.METRIC
 
                 new_inbox_task_row = self._repository.create_inbox_task(
                     project_ref_id=project_ref_id,
+                    source=inbox_task_source,
                     big_plan_ref_id=big_plan.ref_id if big_plan else None,
                     recurring_task_ref_id=recurring_task.ref_id if recurring_task else None,
+                    metric_ref_id=metric.ref_id if metric else None,
                     name=inbox_task_name,
                     archived=inbox_task_notion_row.archived,
                     status=inbox_task_status,
@@ -620,9 +748,9 @@ class InboxTasksService:
                     difficulty=inbox_task_difficulty,
                     actionable_date=inbox_task_notion_row.actionable_date,
                     due_date=inbox_task_notion_row.due_date,
-                    recurring_task_timeline=inbox_task_notion_row.recurring_timeline,
-                    recurring_task_type=inbox_task_recurring_task_type,
-                    recurring_task_gen_right_now=inbox_task_notion_row.recurring_task_gen_right_now)
+                    recurring_timeline=inbox_task_notion_row.recurring_timeline,
+                    recurring_type=inbox_task_recurring_type,
+                    recurring_gen_right_now=inbox_task_notion_row.recurring_gen_right_now)
                 LOGGER.info(f"Found new inbox task from Notion {inbox_task_notion_row.name}")
 
                 self._notion_manager.link_local_and_notion_entries(
@@ -630,6 +758,7 @@ class InboxTasksService:
                 LOGGER.info(f"Linked the new inbox task with local entries")
 
                 inbox_task_notion_row.ref_id = new_inbox_task_row.ref_id
+                inbox_task_notion_row.source = new_inbox_task_row.source.for_notion()
                 inbox_task_notion_row.status = new_inbox_task_row.status.for_notion()
                 inbox_task_notion_row.big_plan_ref_id = big_plan.ref_id if big_plan else None
                 inbox_task_notion_row.recurring_task_ref_id = recurring_task.ref_id if recurring_task else None
@@ -665,6 +794,9 @@ class InboxTasksService:
                             self._basic_validator.entity_id_validate_and_clean(
                                 inbox_task_notion_row.recurring_task_ref_id) \
                                 if inbox_task_notion_row.recurring_task_ref_id else None
+                        inbox_task_metric_ref_id = \
+                            self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.metric_ref_id) \
+                                if inbox_task_notion_row.metric_ref_id else None
                         inbox_task_status = \
                             self._basic_validator.inbox_task_status_validate_and_clean(inbox_task_notion_row.status) \
                                 if inbox_task_notion_row.status else InboxTaskStatus.NOT_STARTED
@@ -674,10 +806,10 @@ class InboxTasksService:
                         inbox_task_difficulty = \
                             self._basic_validator.difficulty_validate_and_clean(inbox_task_notion_row.difficulty) \
                                 if inbox_task_notion_row.difficulty else None
-                        inbox_task_recurring_task_type = \
+                        inbox_task_recurring_type = \
                             self._basic_validator.recurring_task_type_validate_and_clean(
-                                inbox_task_notion_row.recurring_task_type) \
-                            if inbox_task_notion_row.recurring_task_type else None
+                                inbox_task_notion_row.recurring_type) \
+                            if inbox_task_notion_row.recurring_type else None
                         self._check_actionable_and_due_dates(
                             inbox_task_notion_row.actionable_date, inbox_task_notion_row.due_date)
                     except ModelValidationError as error:
@@ -685,13 +817,21 @@ class InboxTasksService:
 
                     big_plan = None
                     recurring_task = None
+                    metric = None
+                    inbox_task_source = InboxTaskSource.USER
                     if inbox_task_big_plan_ref_id is not None:
                         big_plan = all_big_plans_map[inbox_task_big_plan_ref_id]
+                        inbox_task_source = InboxTaskSource.BIG_PLAN
                     elif inbox_task_big_plan_name is not None:
                         big_plan = \
                             all_big_plans_by_name[remote.notion.common.format_name_for_option(inbox_task_big_plan_name)]
+                        inbox_task_source = InboxTaskSource.BIG_PLAN
                     elif inbox_task_recurring_task_ref_id is not None:
                         recurring_task = all_recurring_tasks_map[inbox_task_recurring_task_ref_id]
+                        inbox_task_source = InboxTaskSource.RECURRING_TASK
+                    elif inbox_task_metric_ref_id is not None:
+                        metric = all_metrics_map[inbox_task_metric_ref_id]
+                        inbox_task_source = InboxTaskSource.METRIC
 
                     archived_time_action = \
                         TimeFieldAction.SET if not inbox_task_row.archived and inbox_task_notion_row.archived else \
@@ -722,16 +862,17 @@ class InboxTasksService:
                              and not inbox_task_status.is_completed) else \
                         TimeFieldAction.DO_NOTHING
                     inbox_task_row.big_plan_ref_id = big_plan.ref_id if big_plan else None
-                    if recurring_task is None:
+                    if recurring_task is None and metric is None:
                         inbox_task_row.name = inbox_task_name
                         inbox_task_row.eisen = inbox_task_eisen
                         inbox_task_row.difficulty = inbox_task_difficulty
                     inbox_task_row.archived = inbox_task_notion_row.archived
+                    inbox_task_row.source = inbox_task_source
                     inbox_task_row.status = inbox_task_status
                     inbox_task_row.actionable_date = inbox_task_notion_row.actionable_date
                     inbox_task_row.due_date = inbox_task_notion_row.due_date
-                    inbox_task_row.recurring_task_timeline = inbox_task_notion_row.recurring_timeline
-                    inbox_task_row.recurring_task_type = inbox_task_recurring_task_type
+                    inbox_task_row.recurring_timeline = inbox_task_notion_row.recurring_timeline
+                    inbox_task_row.recurring_type = inbox_task_recurring_type
                     self._repository.update_inbox_task(
                         inbox_task_row, archived_time_action=archived_time_action,
                         accepted_time_action=accepted_time_action, working_time_action=working_time_action,
@@ -746,15 +887,20 @@ class InboxTasksService:
 
                     big_plan = None
                     recurring_task = None
+                    metric = None
                     if inbox_task_row.big_plan_ref_id is not None:
                         big_plan = all_big_plans_map[inbox_task_row.big_plan_ref_id]
                     elif inbox_task_row.recurring_task_ref_id is not None:
                         recurring_task = all_recurring_tasks_map[inbox_task_row.recurring_task_ref_id]
+                    elif inbox_task_row.metric_ref_id is not None:
+                        metric = all_metrics_map[inbox_task_row.metric_ref_id]
 
+                    inbox_task_notion_row.source = inbox_task_row.source.for_notion()
                     inbox_task_notion_row.big_plan_ref_id = inbox_task_row.big_plan_ref_id
                     inbox_task_notion_row.big_plan_name = \
                         remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None
                     inbox_task_notion_row.recurring_task_ref_id = inbox_task_row.recurring_task_ref_id
+                    inbox_task_notion_row.metric_ref_id = inbox_task_row.metric_ref_id
                     inbox_task_notion_row.name = inbox_task_row.name
                     inbox_task_notion_row.archived = inbox_task_row.archived
                     inbox_task_notion_row.status = inbox_task_row.status.for_notion()
@@ -763,9 +909,9 @@ class InboxTasksService:
                         inbox_task_row.difficulty.value if inbox_task_row.difficulty else None
                     inbox_task_notion_row.actionable_date = inbox_task_row.actionable_date
                     inbox_task_notion_row.due_date = inbox_task_row.due_date
-                    inbox_task_notion_row.recurring_timeline = inbox_task_row.recurring_task_timeline
+                    inbox_task_notion_row.recurring_timeline = inbox_task_row.recurring_timeline
                     inbox_task_notion_row.recurring_period = recurring_task.period.value if recurring_task else None
-                    inbox_task_notion_row.recurring_task_type = \
+                    inbox_task_notion_row.recurring_type = \
                         recurring_task.the_type.value if recurring_task else None
                     self._notion_manager.save_inbox_task(project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
                     LOGGER.info(f"Changed inbox task with id={inbox_task_notion_row.ref_id} from local")
@@ -778,7 +924,7 @@ class InboxTasksService:
                 # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
                 #    duplicates in these cases, and they need to be removed.
                 self._notion_manager.hard_remove_inbox_task(project_ref_id, inbox_task_notion_row.ref_id, )
-                LOGGER.info(f"Removed dangling big plan in Notion {inbox_task_notion_row}")
+                LOGGER.info(f"Removed dangling inbox task in Notion {inbox_task_notion_row}")
 
         LOGGER.info("Applied local changes")
 
@@ -794,28 +940,33 @@ class InboxTasksService:
 
             big_plan = None
             recurring_task = None
+            metric = None
             if inbox_task_row.big_plan_ref_id is not None:
                 big_plan = all_big_plans_map[inbox_task_row.big_plan_ref_id]
             elif inbox_task_row.recurring_task_ref_id is not None:
                 recurring_task = all_recurring_tasks_map[inbox_task_row.recurring_task_ref_id]
+            elif inbox_task_row.metric_ref_id is not None:
+                metric = all_metrics_map[inbox_task_row.metric_ref_id]
 
             self._notion_manager.upsert_inbox_task(
                 project_ref_id=project_ref_id,
+                source=inbox_task_row.source.for_notion(),
                 name=inbox_task_row.name,
                 archived=inbox_task_row.archived,
                 big_plan_ref_id=big_plan.ref_id if big_plan else None,
                 big_plan_name=remote.notion.common.format_name_for_option(
                     big_plan.name) if big_plan else None,
                 recurring_task_ref_id=recurring_task.ref_id if recurring_task else None,
+                metric_ref_id=metric.ref_id if metric else None,
                 status=inbox_task_row.status.for_notion(),
                 eisen=[e.value for e in inbox_task_row.eisen],
                 difficulty=inbox_task_row.difficulty.value if inbox_task_row.difficulty else None,
                 actionable_date=inbox_task_row.actionable_date,
                 due_date=inbox_task_row.due_date,
-                recurring_timeline=inbox_task_row.recurring_task_timeline,
+                recurring_timeline=inbox_task_row.recurring_timeline,
                 recurring_period=recurring_task.period.value if recurring_task else None,
-                recurring_task_type=recurring_task.the_type.value if recurring_task else None,
-                recurring_task_gen_right_now=inbox_task_row.recurring_task_gen_right_now,
+                recurring_type=recurring_task.the_type.value if recurring_task else None,
+                recurring_gen_right_now=inbox_task_row.recurring_gen_right_now,
                 ref_id=inbox_task_row.ref_id)
             LOGGER.info(f'Created Notion inbox task for {inbox_task_row.name}')
 
@@ -840,8 +991,10 @@ class InboxTasksService:
         return InboxTask(
             ref_id=row.ref_id,
             project_ref_id=row.project_ref_id,
+            source=row.source,
             big_plan_ref_id=row.big_plan_ref_id,
             recurring_task_ref_id=row.recurring_task_ref_id,
+            metric_ref_id=row.metric_ref_id,
             archived=row.archived,
             name=row.name,
             status=row.status,
@@ -849,9 +1002,9 @@ class InboxTasksService:
             difficulty=row.difficulty,
             actionable_date=row.actionable_date,
             due_date=row.due_date,
-            recurring_task_timeline=row.recurring_task_timeline,
-            recurring_task_type=row.recurring_task_type,
-            recurring_task_gen_right_now=row.recurring_task_gen_right_now,
+            recurring_timeline=row.recurring_timeline,
+            recurring_type=row.recurring_type,
+            recurring_gen_right_now=row.recurring_gen_right_now,
             created_time=row.created_time,
             last_modified_time=row.last_modified_time,
             accepted_time=row.accepted_time,

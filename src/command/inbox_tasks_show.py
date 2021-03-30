@@ -39,6 +39,9 @@ class InboxTasksShow(command.Command):
                             help="Show only tasks selected by this id")
         parser.add_argument("--project", dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
+        parser.add_argument("--source", dest="sources", default=[], action="append",
+                            choices=BasicValidator.inbox_task_source_values(),
+                            help="Allow only inbox tasks form this particular source. Defaults to all")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -47,14 +50,17 @@ class InboxTasksShow(command.Command):
             if len(args.ref_ids) > 0 else None
         project_keys = [self._basic_validator.project_key_validate_and_clean(p) for p in args.project_keys]\
             if len(args.project_keys) > 0 else None
+        sources = [self._basic_validator.inbox_task_source_validate_and_clean(s) for s in args.sources]\
+            if len(args.sources) > 0 else None
         response = self._inbox_tasks_controller.load_all_inbox_tasks(
-            filter_ref_ids=ref_ids, filter_project_keys=project_keys)
+            filter_ref_ids=ref_ids, filter_project_keys=project_keys, filter_sources=sources)
 
         for inbox_task_entry in response.inbox_tasks:
             inbox_task = inbox_task_entry.inbox_task
             big_plan = inbox_task_entry.big_plan
             recurring_task = inbox_task_entry.recurring_task
             print(f'id={inbox_task.ref_id} {inbox_task.name}' +
+                  f' source={inbox_task.source.for_notion()}' +
                   f' status={inbox_task.status.value}' +
                   f' archived="{inbox_task.archived}"' +
                   (f' big_plan="{big_plan.name}"' if big_plan else "") +

@@ -97,7 +97,7 @@ class RecurringTasksController:
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
-                typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now), self._global_properties.timezone,
+                typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                 recurring_task.skip_rule, recurring_task.actionable_from_day, recurring_task.actionable_from_month,
                 recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_name(inbox_task.ref_id, schedule.full_name)
@@ -113,7 +113,7 @@ class RecurringTasksController:
                 continue
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
-                typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now), self._global_properties.timezone,
+                typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                 recurring_task.skip_rule, recurring_task.actionable_from_day, recurring_task.actionable_from_month,
                 recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
@@ -131,7 +131,7 @@ class RecurringTasksController:
                 continue
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
-                typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now), self._global_properties.timezone,
+                typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                 recurring_task.skip_rule, recurring_task.actionable_from_day, recurring_task.actionable_from_month,
                 recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_to_recurring_task_link(
@@ -168,7 +168,7 @@ class RecurringTasksController:
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
-                typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now), self._global_properties.timezone,
+                typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                 recurring_task.skip_rule, recurring_task.actionable_from_day, recurring_task.actionable_from_month,
                 recurring_task.due_at_time, recurring_task.due_at_day, recurring_task.due_at_month)
             self._inbox_tasks_service.set_inbox_task_actionable_date(inbox_task.ref_id, schedule.actionable_date)
@@ -185,7 +185,7 @@ class RecurringTasksController:
         for inbox_task in all_inbox_tasks:
             schedule = schedules.get_schedule(
                 recurring_task.period, recurring_task.name,
-                typing.cast(Timestamp, inbox_task.recurring_task_gen_right_now), self._global_properties.timezone,
+                typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                 recurring_task.skip_rule, recurring_task.actionable_from_day, recurring_task.actionable_from_month,
                 due_at_time, due_at_day, due_at_month)
             self._inbox_tasks_service.set_inbox_task_due_date(inbox_task.ref_id, schedule.due_time)
@@ -236,7 +236,7 @@ class RecurringTasksController:
             raise ControllerInputValidationError("Expected at least one entity to remove")
 
         inbox_tasks_for_recurring_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            allow_archived=True, filter_big_plan_ref_ids=ref_ids)
+            allow_archived=True, filter_recurring_task_ref_ids=ref_ids)
 
         for inbox_task in inbox_tasks_for_recurring_tasks:
             LOGGER.info(f"Hard removing task {inbox_task.name} for recurring task")

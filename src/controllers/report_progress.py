@@ -1,22 +1,25 @@
 """The controller for computing progress reports."""
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
-from typing import Optional, Iterable, Final, Dict, List, cast, Tuple
+from typing import Optional, Iterable, Final, Dict, List, cast, Tuple, DefaultDict
 
 import pendulum
 from nested_dataclasses import nested
 from pendulum import UTC
 
+from domain.metrics.metric import Metric
 from models import schedules
 from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
-    Timestamp
+    Timestamp, InboxTaskSource, MetricKey
 from models.schedules import Schedule
 from repository.inbox_tasks import InboxTaskRow
 from repository.projects import ProjectRow
 from service.big_plans import BigPlansService, BigPlan
-from service.inbox_tasks import InboxTasksService
+from service.inbox_tasks import InboxTasksService, InboxTask
+from service.metrics import MetricsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 from utils.global_properties import GlobalProperties
@@ -35,9 +38,7 @@ class InboxTasksSummary:
     class NestedResult:
         """A result broken down by the various sources of inbox tasks."""
         total_cnt: int
-        ad_hoc_cnt: int
-        from_big_plan_cnt: int
-        from_recurring_task_cnt: int
+        per_source_cnt: Dict[InboxTaskSource, int]
 
     created: NestedResult
     accepted: NestedResult
@@ -150,34 +151,52 @@ class ReportProgressController:
     _inbox_tasks_service = Final[InboxTasksService]
     _big_plans_service = Final[BigPlansService]
     _recurring_tasks_service: Final[RecurringTasksService]
+    _metrics_service: Final[MetricsService]
 
     def __init__(
             self, global_properties: GlobalProperties, projects_service: ProjectsService,
             inbox_tasks_service: InboxTasksService, big_plans_service: BigPlansService,
-            recurring_tasks_service: RecurringTasksService) -> None:
+            recurring_tasks_service: RecurringTasksService, metrics_service: MetricsService) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._projects_service = projects_service
         self._inbox_tasks_service = inbox_tasks_service
         self._big_plans_service = big_plans_service
         self._recurring_tasks_service = recurring_tasks_service
+        self._metrics_service = metrics_service
 
     def run_report(
-            self, right_now: Timestamp, filter_project_keys: Optional[Iterable[ProjectKey]],
+            self, right_now: Timestamp,
+            filter_project_keys: Optional[Iterable[ProjectKey]],
+            filter_sources: Optional[Iterable[InboxTaskSource]],
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
+            filter_metric_keys: Optional[Iterable[MetricKey]],
             period: RecurringTaskPeriod, breakdown_period: Optional[RecurringTaskPeriod] = None) -> RunReportResponse:
         """Run a progress report."""
         today = right_now.date()
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
         projects_by_ref_id: Dict[EntityId, ProjectRow] = {p.ref_id: p for p in projects}
+        metrics = self._metrics_service.load_all_metrics(allow_archived=True, filter_keys=filter_metric_keys)
+        metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
         schedule = schedules.get_schedule(
             period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
 
-        all_inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            allow_archived=True, filter_project_ref_ids=[p.ref_id for p in projects],
-            filter_big_plan_ref_ids=filter_big_plan_ref_ids,
-            filter_recurring_task_ref_ids=filter_recurring_task_ref_ids)
+        all_inbox_tasks = [
+            it for it in self._inbox_tasks_service.load_all_inbox_tasks(
+                allow_archived=True,
+                filter_project_ref_ids=[p.ref_id for p in projects],
+                filter_sources=filter_sources)
+            if it.source is InboxTaskSource.USER
+            # (source is BIG_PLAN and (need to filter then (big_plan_ref_id in filter))
+            or (it.source is InboxTaskSource.BIG_PLAN and
+                (not (filter_big_plan_ref_ids is not None) or it.big_plan_ref_id in filter_big_plan_ref_ids))
+            or (it.source is InboxTaskSource.RECURRING_TASK and
+                (not (filter_recurring_task_ref_ids is not None) or
+                 it.recurring_task_ref_id in filter_recurring_task_ref_ids))
+            or (it.source is InboxTaskSource.METRIC and
+                (not (filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))]
+
         all_big_plans = self._big_plans_service.load_all_big_plans(
             allow_archived=True, filter_ref_ids=filter_big_plan_ref_ids,
             filter_project_ref_ids=[p.ref_id for p in projects])
@@ -276,98 +295,53 @@ class ReportProgressController:
             per_recurring_task_breakdown=per_recurring_task_breakdown)
 
     @staticmethod
-    def _run_report_for_inbox_tasks(schedule: Schedule, inbox_tasks: Iterable[InboxTaskRow]) -> InboxTasksSummary:
+    def _run_report_for_inbox_tasks(schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> InboxTasksSummary:
         created_cnt_total = 0
-        created_cnt_ad_hoc = 0
-        created_cnt_from_big_plan = 0
-        created_cnt_from_recurring_task = 0
+        created_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
         accepted_cnt_total = 0
-        accepted_cnt_ad_hoc = 0
-        accepted_cnt_from_big_plan = 0
-        accepted_cnt_from_recurring_task = 0
+        accepted_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
         working_cnt_total = 0
-        working_cnt_ad_hoc = 0
-        working_cnt_from_big_plan = 0
-        working_cnt_from_recurring_task = 0
+        working_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
         done_cnt_total = 0
-        done_cnt_ad_hoc = 0
-        done_cnt_from_big_plan = 0
-        done_cnt_from_recurring_task = 0
+        done_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
         not_done_cnt_total = 0
-        not_done_cnt_ad_hoc = 0
-        not_done_cnt_from_big_plan = 0
-        not_done_cnt_from_recurring_task = 0
+        not_done_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
 
         for inbox_task in inbox_tasks:
             if schedule.contains(inbox_task.created_time):
                 created_cnt_total += 1
-                if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
-                    created_cnt_ad_hoc += 1
-                elif inbox_task.big_plan_ref_id is None:
-                    created_cnt_from_recurring_task += 1
-                else:
-                    created_cnt_from_big_plan += 1
+                created_per_source_cnt[inbox_task.source] += 1
 
             if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt_total += 1
-                    if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
-                        done_cnt_ad_hoc += 1
-                    elif inbox_task.big_plan_ref_id is None:
-                        done_cnt_from_recurring_task += 1
-                    else:
-                        done_cnt_from_big_plan += 1
+                    done_per_source_cnt[inbox_task.source] += 1
                 else:
                     not_done_cnt_total += 1
-                    if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
-                        not_done_cnt_ad_hoc += 1
-                    elif inbox_task.big_plan_ref_id is None:
-                        not_done_cnt_from_recurring_task += 1
-                    else:
-                        not_done_cnt_from_big_plan += 1
+                    not_done_per_source_cnt[inbox_task.source] += 1
             elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
                 working_cnt_total += 1
-                if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
-                    working_cnt_ad_hoc += 1
-                elif inbox_task.big_plan_ref_id is None:
-                    working_cnt_from_recurring_task += 1
-                else:
-                    working_cnt_from_big_plan += 1
+                working_per_source_cnt[inbox_task.source] += 1
             elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt_total += 1
-                if inbox_task.big_plan_ref_id is None and inbox_task.recurring_task_ref_id is None:
-                    accepted_cnt_ad_hoc += 1
-                elif inbox_task.big_plan_ref_id is None:
-                    accepted_cnt_from_recurring_task += 1
-                else:
-                    accepted_cnt_from_big_plan += 1
+                accepted_per_source_cnt[inbox_task.source] += 1
 
         return InboxTasksSummary(
             created=InboxTasksSummary.NestedResult(
                 total_cnt=created_cnt_total,
-                ad_hoc_cnt=created_cnt_ad_hoc,
-                from_big_plan_cnt=created_cnt_from_big_plan,
-                from_recurring_task_cnt=created_cnt_from_recurring_task),
+                per_source_cnt=created_per_source_cnt),
             accepted=InboxTasksSummary.NestedResult(
                 total_cnt=accepted_cnt_total,
-                ad_hoc_cnt=accepted_cnt_ad_hoc,
-                from_big_plan_cnt=accepted_cnt_from_big_plan,
-                from_recurring_task_cnt=accepted_cnt_from_recurring_task),
+                per_source_cnt=accepted_per_source_cnt),
             working=InboxTasksSummary.NestedResult(
                 total_cnt=working_cnt_total,
-                ad_hoc_cnt=working_cnt_ad_hoc,
-                from_big_plan_cnt=working_cnt_from_big_plan,
-                from_recurring_task_cnt=working_cnt_from_recurring_task),
+                per_source_cnt=working_per_source_cnt),
             not_done=InboxTasksSummary.NestedResult(
                 total_cnt=not_done_cnt_total,
-                ad_hoc_cnt=not_done_cnt_ad_hoc,
-                from_big_plan_cnt=not_done_cnt_from_big_plan,
-                from_recurring_task_cnt=not_done_cnt_from_recurring_task),
+                per_source_cnt=not_done_per_source_cnt),
             done=InboxTasksSummary.NestedResult(
                 total_cnt=done_cnt_total,
-                ad_hoc_cnt=done_cnt_ad_hoc,
-                from_big_plan_cnt=done_cnt_from_big_plan,
-                from_recurring_task_cnt=done_cnt_from_recurring_task))
+                per_source_cnt=done_per_source_cnt))
 
     @staticmethod
     def _run_report_for_inbox_tasks_for_big_plan(

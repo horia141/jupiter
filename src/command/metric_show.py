@@ -47,10 +47,27 @@ class MetricShow(command.Command):
 
         for metric_response_entry in response.metrics:
             metric = metric_response_entry.metric
+            collection_project = metric_response_entry.collection_project
             metric_entries = metric_response_entry.metric_entries
 
             print(f"{metric.key}: {metric.name}" +
-                  (f" @{metric.collection_period.for_notion()}" if metric.collection_period else '') +
+                  (f" @{metric.collection_params.period.for_notion()} in " +
+                   (f"{collection_project.name if collection_project else 'Default'}") +
+                   (f" eisen={','.join(e.for_notion() for e in metric.collection_params.eisen)}"
+                    if metric.collection_params.eisen else '')) +
+                  (f" difficulty={metric.collection_params.difficulty.for_notion()}"
+                   if metric.collection_params.difficulty else '') +
+                  (f" actionable-from-day={metric.collection_params.actionable_from_day}"
+                   if metric.collection_params.actionable_from_day else '') +
+                  (f" actionable-from-month={metric.collection_params.actionable_from_month}"
+                   if metric.collection_params.actionable_from_month else '') +
+                  (f" due-at-time={metric.collection_params.due_at_time}"
+                   if metric.collection_params.due_at_time else '') +
+                  (f" due-at-day={metric.collection_params.due_at_day}"
+                   if metric.collection_params.due_at_day else '') +
+                  (f" due-at-month={metric.collection_params.due_at_month}"
+                   if metric.collection_params.due_at_month else '')
+                  if metric.collection_params else '' +
                   (f' #{metric.metric_unit.for_notion()}' if metric.metric_unit else ''))
 
             for metric_entry in sorted(metric_entries, key=lambda me: me.collection_time):
@@ -59,3 +76,9 @@ class MetricShow(command.Command):
                        if isinstance(metric_entry.collection_time, pendulum.Date)
                        else f" {metric_entry.collection_time.to_datetime_string()}") +
                       f" val={metric_entry.value}")
+
+            if metric_response_entry.metric_collection_inbox_tasks:
+                print(f"  Collection Tasks:")
+                for inbox_task in sorted(
+                        metric_response_entry.metric_collection_inbox_tasks, key=lambda it: it.due_date):
+                    print(f"    -id={inbox_task.ref_id} {inbox_task.name} {inbox_task.status.for_notion()}")

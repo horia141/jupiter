@@ -9,7 +9,7 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable, List
 from notion.collection import CollectionRowBlock
 
 from models.basic import BasicValidator, InboxTaskStatus, EntityId, ADate, Timestamp, Eisen, Difficulty, \
-    RecurringTaskPeriod, RecurringTaskType
+    RecurringTaskPeriod, RecurringTaskType, InboxTaskSource
 from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, \
     format_name_for_option, NotionCollectionLinkExtra, clean_eisenhower
 from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow
@@ -31,11 +31,13 @@ class InboxTaskNotionCollection(BaseItem):
 class InboxTaskNotionRow(BaseItem):
     """An inbox task on Notion side."""
 
+    source: str
     name: str
     archived: bool
     big_plan_ref_id: Optional[str]
     big_plan_name: Optional[str]
     recurring_task_ref_id: Optional[str]
+    metric_ref_id: Optional[str]
     status: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
@@ -44,8 +46,8 @@ class InboxTaskNotionRow(BaseItem):
     from_script: bool
     recurring_timeline: Optional[str]
     recurring_period: Optional[str]
-    recurring_task_type: Optional[str]
-    recurring_task_gen_right_now: Optional[ADate]
+    recurring_type: Optional[str]
+    recurring_gen_right_now: Optional[ADate]
     last_edited_time: Timestamp
 
 
@@ -98,6 +100,25 @@ class NotionInboxTasksManager:
             "name": InboxTaskStatus.DONE.for_notion(),
             "color": "green",
             "in_board": True
+        }
+    }
+
+    _SOURCE: ClassVar[JSONDictType] = {
+        "User": {
+            "name": InboxTaskSource.USER.for_notion(),
+            "color": "blue"
+        },
+        "Big Plan": {
+            "name": InboxTaskSource.BIG_PLAN.for_notion(),
+            "color": "green"
+        },
+        "Recurring Task": {
+            "name": InboxTaskSource.RECURRING_TASK.for_notion(),
+            "color": "yellow"
+        },
+        "Metric": {
+            "name": InboxTaskSource.METRIC.for_notion(),
+            "color": "red"
         }
     }
 
@@ -185,6 +206,15 @@ class NotionInboxTasksManager:
             "name": "Archived",
             "type": "checkbox"
         },
+        "source": {
+            "name": "Source",
+            "type": "select",
+            "options": [{
+                "color": cast(Dict[str, str], v)["color"],
+                "id": str(uuid.uuid4()),
+                "value": cast(Dict[str, str], v)["name"]
+            } for v in _SOURCE.values()]
+        },
         "big-plan-ref-id": {
             "name": "Big Plan Id",
             "type": "text"
@@ -196,6 +226,10 @@ class NotionInboxTasksManager:
         },
         "recurring-task-ref-id": {
             "name": "Recurring Task Id",
+            "type": "text"
+        },
+        "metric-ref-id": {
+            "name": "Metric Id",
             "type": "text"
         },
         "actionable-date": {
@@ -263,6 +297,7 @@ class NotionInboxTasksManager:
     _SCHEMA_PROPERTIES = [
         NotionFieldProps(name="title", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="status", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="source", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="eisen", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="difficulty", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="actionable-date", show=NotionFieldShow.SHOW),
@@ -273,6 +308,7 @@ class NotionInboxTasksManager:
         NotionFieldProps(name="bigplan2", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="recurring-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="recurring-task-type", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="metric-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
@@ -312,6 +348,9 @@ class NotionInboxTasksManager:
             "property": "status",
             "visible": False
         }, {
+            "property": "source",
+            "visible": True
+        }, {
             "property": "archived",
             "visible": False
         }, {
@@ -322,6 +361,9 @@ class NotionInboxTasksManager:
             "visible": True
         }, {
             "property": "recurring-task-ref-id",
+            "visible": False
+        }, {
+            "property": "metric-ref-id",
             "visible": False
         }, {
             "property": "actionable-date",
@@ -767,6 +809,9 @@ class NotionInboxTasksManager:
                 "property": "status",
                 "visible": True
             }, {
+                "property": "source",
+                "visible": True
+            }, {
                 "property": "archived",
                 "visible": False
             }, {
@@ -777,6 +822,9 @@ class NotionInboxTasksManager:
                 "visible": True
             }, {
                 "property": "recurring-task-ref-id",
+                "visible": False
+            }, {
+                "property": "metric-ref-id",
                 "visible": False
             }, {
                 "property": "actionable-date",
@@ -838,11 +886,19 @@ class NotionInboxTasksManager:
                 "visible": True
             }, {
                 "width": 100,
+                "property": "metric-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "archived",
                 "visible": True
             }, {
                 "width": 100,
                 "property": "status",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "source",
                 "visible": True
             }, {
                 "width": 100,
@@ -952,19 +1008,22 @@ class NotionInboxTasksManager:
         LOGGER.info("Updated the schema for the associated inbox")
 
     def upsert_inbox_task(
-            self, project_ref_id: EntityId, name: str, archived: bool,
+            self, project_ref_id: EntityId, source: str, name: str, archived: bool,
             big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
-            recurring_task_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]],
-            difficulty: Optional[str], actionable_date: Optional[ADate], due_date: Optional[ADate],
-            recurring_timeline: Optional[str], recurring_period: Optional[str], recurring_task_type: Optional[str],
-            recurring_task_gen_right_now: Optional[ADate], ref_id: EntityId) -> InboxTaskNotionRow:
+            recurring_task_ref_id: Optional[EntityId], metric_ref_id: Optional[EntityId],
+            status: str, eisen: Optional[List[str]], difficulty: Optional[str], actionable_date: Optional[ADate],
+            due_date: Optional[ADate], recurring_timeline: Optional[str], recurring_period: Optional[str],
+            recurring_type: Optional[str], recurring_gen_right_now: Optional[ADate],
+            ref_id: EntityId) -> InboxTaskNotionRow:
         """Upsert a inbox task."""
         new_row = InboxTaskNotionRow(
+            source=source,
             name=name,
             archived=archived,
             big_plan_ref_id=big_plan_ref_id,
             big_plan_name=big_plan_name,
             recurring_task_ref_id=recurring_task_ref_id,
+            metric_ref_id=metric_ref_id,
             status=status,
             eisen=eisen,
             difficulty=difficulty,
@@ -973,8 +1032,8 @@ class NotionInboxTasksManager:
             from_script=True,
             recurring_timeline=recurring_timeline,
             recurring_period=recurring_period,
-            recurring_task_type=recurring_task_type,
-            recurring_task_gen_right_now=recurring_task_gen_right_now,
+            recurring_type=recurring_type,
+            recurring_gen_right_now=recurring_gen_right_now,
             last_edited_time=self._time_provider.get_current_time(),
             ref_id=ref_id,
             notion_id=cast(NotionId, None))
@@ -1047,11 +1106,13 @@ class NotionInboxTasksManager:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
             notion_row.title = row.name
+            notion_row.source = row.source
             notion_row.archived = row.archived
             notion_row.big_plan_id = row.big_plan_ref_id
             if row.big_plan_name:
                 notion_row.big_plan = row.big_plan_name
             notion_row.recurring_task_id = row.recurring_task_ref_id
+            notion_row.metric_id = row.metric_ref_id
             notion_row.status = row.status
             notion_row.eisenhower = row.eisen
             notion_row.difficulty = row.difficulty
@@ -1061,10 +1122,10 @@ class NotionInboxTasksManager:
             notion_row.from_script = row.from_script
             notion_row.recurring_timeline = row.recurring_timeline
             notion_row.recurring_period = row.recurring_period
-            notion_row.recurring_type = row.recurring_task_type
+            notion_row.recurring_type = row.recurring_type
             notion_row.recurring_gen_right_now = \
-                self._basic_validator.adate_to_notion(row.recurring_task_gen_right_now) \
-                if row.recurring_task_gen_right_now else None
+                self._basic_validator.adate_to_notion(row.recurring_gen_right_now) \
+                if row.recurring_gen_right_now else None
             notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
             notion_row.ref_id = row.ref_id
 
@@ -1075,11 +1136,13 @@ class NotionInboxTasksManager:
         # pylint: disable=no-self-use
         return InboxTaskNotionRow(
             notion_id=inbox_task_notion_row.id,
+            source=inbox_task_notion_row.source,
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,
             big_plan_ref_id=inbox_task_notion_row.big_plan_id,
             big_plan_name=inbox_task_notion_row.big_plan,
             recurring_task_ref_id=inbox_task_notion_row.recurring_task_id,
+            metric_ref_id=inbox_task_notion_row.metric_id,
             status=inbox_task_notion_row.status,
             eisen=clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,
@@ -1090,8 +1153,8 @@ class NotionInboxTasksManager:
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
             recurring_period=inbox_task_notion_row.recurring_period,
-            recurring_task_type=inbox_task_notion_row.recurring_type,
-            recurring_task_gen_right_now=
+            recurring_type=inbox_task_notion_row.recurring_type,
+            recurring_gen_right_now=
             self._basic_validator.adate_from_notion(inbox_task_notion_row.recurring_gen_right_now)
             if inbox_task_notion_row.recurring_gen_right_now else None,
             last_edited_time=

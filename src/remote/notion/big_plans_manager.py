@@ -6,7 +6,7 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
 from notion.collection import CollectionRowBlock
 
-from models.basic import BasicValidator, BigPlanStatus, EntityId, ADate, Timestamp
+from models.basic import BasicValidator, BigPlanStatus, EntityId, ADate, Timestamp, InboxTaskSource
 from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
@@ -386,6 +386,15 @@ class NotionBigPlansManager:
                             "value": {
                                 "type": "exact",
                                 "value": big_plan_name
+                            }
+                        }
+                    }, {
+                        "property": "source",
+                        "filter": {
+                            "operator": "enum_is",
+                            "value": {
+                                "type": "exact",
+                                "value": InboxTaskSource.BIG_PLAN.for_notion()
                             }
                         }
                     }]

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate
+from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate, InboxTaskSource
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
@@ -95,7 +95,8 @@ class InboxTasksController:
 
     def load_all_inbox_tasks(
             self, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_keys: Optional[Iterable[ProjectKey]] = None) -> LoadAllInboxTasksResponse:
+            filter_project_keys: Optional[Iterable[ProjectKey]] = None,
+            filter_sources: Optional[Iterable[InboxTaskSource]] = None) -> LoadAllInboxTasksResponse:
         """Retrieve all inbox tasks."""
         filter_project_ref_ids: Optional[List[EntityId]] = None
         if filter_project_keys:
@@ -103,7 +104,7 @@ class InboxTasksController:
             filter_project_ref_ids = [p.ref_id for p in projects]
 
         inbox_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
-            filter_ref_ids=filter_ref_ids, filter_project_ref_ids=filter_project_ref_ids)
+            filter_ref_ids=filter_ref_ids, filter_project_ref_ids=filter_project_ref_ids, filter_sources=filter_sources)
         big_plans = self._big_plans_service.load_all_big_plans(
             filter_ref_ids=(it.big_plan_ref_id for it in inbox_tasks if it.big_plan_ref_id is not None))
         big_plans_map = {bp.ref_id: bp for bp in big_plans}

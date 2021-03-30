@@ -3,6 +3,7 @@ import logging
 
 import coloredlogs
 
+from repository.inbox_tasks import InboxTasksRepository
 from repository.sqlite.metrics import SqliteMetricEngine
 from repository.workspace import WorkspaceRepository, MissingWorkspaceRepositoryError
 from repository.yaml.metrics import YamlMetricEngine
@@ -25,6 +26,10 @@ def main() -> None:
         timezone = None
 
     global_properties = build_global_properties(timezone)
+
+    inbox_tasks_repository = InboxTasksRepository(time_provider)
+    all_inbox_tasks = inbox_tasks_repository.find_all_inbox_tasks(allow_archived=True)
+    inbox_tasks_repository.save_all(all_inbox_tasks)
     yaml_metric_engine = YamlMetricEngine(time_provider)
     sqlite_metric_engine = SqliteMetricEngine(
         SqliteMetricEngine.Config(

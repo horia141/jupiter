@@ -9,7 +9,7 @@ from typing import Final, ClassVar
 import pendulum
 from pendulum.tz.zoneinfo import Timezone
 
-from models.basic import Timestamp, BasicValidator
+from models.basic import Timestamp, BasicValidator, EntityId
 from models.framework import RepositoryError
 from utils.storage import StructuredIndividualStorage, JSONDictType
 from utils.time_provider import TimeProvider
@@ -27,6 +27,7 @@ class Workspace:
 
     name: str
     timezone: Timezone
+    default_project_ref_id: typing.Optional[EntityId]
     created_time: Timestamp
     last_modified_time: Timestamp
 
@@ -45,11 +46,13 @@ class WorkspaceRepository:
         self._time_provider = time_provider
         self._structured_storage = StructuredIndividualStorage(self._WORKSPACE_FILE_PATH, self)
 
-    def create_workspace(self, name: str, timezone: Timezone) -> Workspace:
+    def create_workspace(
+            self, name: str, timezone: Timezone, default_project_ref_id: typing.Optional[EntityId]) -> Workspace:
         """Create a workspace."""
         new_workspace = Workspace(
             name=name,
             timezone=timezone,
+            default_project_ref_id=default_project_ref_id,
             created_time=self._time_provider.get_current_time(),
             last_modified_time=self._time_provider.get_current_time())
         self._structured_storage.save(new_workspace)
@@ -76,6 +79,7 @@ class WorkspaceRepository:
             "properties": {
                 "name": {"type": "string"},
                 "timezone": {"type": "string"},
+                "default_project_ref_id": {"type": ["string", "null"]},
                 "created_time": {"type": "string"},
                 "last_modified_time": {"type": "string"}
             }
@@ -87,6 +91,8 @@ class WorkspaceRepository:
         return Workspace(
             name=typing.cast(str, storage_form["name"]),
             timezone=pendulum.timezone(typing.cast(str, storage_form["timezone"])),
+            default_project_ref_id=EntityId(typing.cast(str, storage_form["default_project_ref_id"]))
+            if storage_form["default_project_ref_id"] else None,
             created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
             last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])))
 
@@ -96,6 +102,7 @@ class WorkspaceRepository:
         return {
             "name": live_form.name,
             "timezone": live_form.timezone.name,
+            "default_project_ref_id": live_form.default_project_ref_id,
             "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time)
         }

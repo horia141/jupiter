@@ -4,6 +4,7 @@ import collections
 import hashlib
 import logging
 from dataclasses import dataclass, field
+from enum import Enum
 from itertools import chain
 from pathlib import Path
 from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
@@ -30,7 +31,7 @@ JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  #
 JSONDictType = Dict[str, JSONValueType]
 
 
-FindFilterType = Union[None, bool, int, float, str, List[int]]
+FindFilterType = Union[None, bool, int, float, str, List[int], Enum]
 
 
 class FindFilterPredicate(abc.ABC):
@@ -547,6 +548,18 @@ class EntitiesStorage(Generic[EntityRowType]):
                 return new_entity
 
         raise StructuredStorageError(f"Entity identified by {new_entity.ref_id} does not exist")
+
+    def dump_all(self, entities: Iterable[EntityRowType]) -> None:
+        """Dump and overwrite all entities."""
+        all_datas: Dict[int, List[EntityRowType]] = {shard_id: [] for shard_id in self._get_all_shard_ids()}
+
+        next_idx, _ = self._load(0)
+
+        for entity in entities:
+            all_datas[self._get_shard_id(entity.ref_id)].append(entity)
+
+        for shard_id, shard_data in all_datas.items():
+            self._save(shard_id, next_idx, shard_data)
 
     def load(self, ref_id: EntityId, allow_archived: bool = False) -> EntityRowType:
         """Retrieve the entity identified by the ref id."""

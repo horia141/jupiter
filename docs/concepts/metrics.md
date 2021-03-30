@@ -23,18 +23,25 @@ Metrics have a name. It's the nicely looking counterpart to the key.
 Metrics can also have a _unit_. It adds extra info about what exactly you're recording - weight,
 currency, the count of an event, etc.
 
-Metrics can also have a collection period. This isn't yet used.
+Metrics can have a _collection project_ and _collection period_. It makes sense to record (or collect)
+the value of a metric regularly. Think of your weight or the number of kilometers run in a week. To
+allow for this, special collection inbox tasks can be generated for the metric, just like a
+[recurring task](./recurring-tasks.md). The collection period will determine how often the task
+is generated (weekly, monthly, etc.). The inbox tasks will go to the configured [project](./projects.md)
+if it is present, or to the [default workspace one](./workspaces.md) if it is missing. If none
+are present, generation will fail.
 
 ## Interaction Summary
 
 You can:
 
-* Create a metric via `metrics-create`.
-* Remove a metric via `metrics-archive`.
-* Change the name via `metrics-set-name`, or by changing the name of the page in Notion.
-* Change the collection period via `metrics-set-collection-period`. This cannot be changed from Notion.
-* Change the unit via `metrics-set-unit`. This cannot be changed from Notion.
-* See a summary of the metrics via `metrics-show`.
+* Create a metric via `metric-create`.
+* Remove a metric via `metric-archive`.
+* Change the name via `metric-update`, or by changing the name of the page in Notion.
+* Change the collection project via `metric-update`. This cannot be changed from Notion.
+* Change the collection period via `metric-update`. This cannot be changed from Notion.
+* Change the unit via `metric-update`. This cannot be changed from Notion.
+* See a summary of the metrics via `metric-show`.
 
 ## Entries
 
@@ -53,10 +60,9 @@ over to the [local store](local-storage.md).
 
 You can:
 
-* Create a metric entry via `metrics-entry-create`, or by creating a new entry in the appropriate Notion table.
-* Remove a metric entry via `metrics-entry-archive`, or by clicking the archive checkbox in Notion.
-* Change the collection time of a metric entry via `metrics-entry-set-collection-time`, or by changing the collection
+* Create a metric entry via `metric-entry-create`, or by creating a new entry in the appropriate Notion table.
+* Remove a metric entry via `metric-entry-archive`, or by clicking the archive checkbox in Notion.
+* Change the collection time of a metric entry via `metric-entry-update`, or by changing the collection
   time from the Notion row.
-* Change the value of a metric entry via `metrics-entry-set-value`, or by changing the value from the Notion row.
-* Change the notes of a metric entry via `metrics-entry-set-notes`, or by changing the notes from the Notion row.
-* Show info about the metric entrys via `metrics-entry-show`.
+* Change the value of a metric entry via `metric-entry-update`, or by changing the value from the Notion row.
+* Change the notes of a metric entry via `metric-entry-update`, or by changing the notes from the Notion row.

@@ -18,7 +18,7 @@ from sqlalchemy.future import Engine
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.infra.metric_repository import MetricRepository
-from domain.metrics.metric import Metric
+from domain.metrics.metric import Metric, MetricCollectionParams
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import MetricKey, EntityId, BasicValidator
 from models.framework import AggregateRoot, RepositoryError, BAD_REF_ID
@@ -72,7 +72,15 @@ class SqliteMetricRepository(MetricRepository):
             Column('archived_time', DateTime, nullable=True),
             Column('the_key', String(64), nullable=False, index=True, unique=True),
             Column('name', Unicode(), nullable=False),
+            Column('collection_project_ref_id', Integer, nullable=True),
             Column('collection_period', String(), nullable=True),
+            Column('collection_eisen', JSON, nullable=True),
+            Column('collection_difficulty', String, nullable=True),
+            Column('collection_actionable_from_day', Integer, nullable=True),
+            Column('collection_actionable_from_month', Integer, nullable=True),
+            Column('collection_due_at_time', String, nullable=True),
+            Column('collection_due_at_day', Integer, nullable=True),
+            Column('collection_due_at_month', Integer, nullable=True),
             Column('metric_unit', String(), nullable=True),
             keep_existing=True)
         self._metric_event_table = _build_event_table(self._metric_table, metadata)
@@ -89,7 +97,19 @@ class SqliteMetricRepository(MetricRepository):
                 if metric.archived_time else None,
                 the_key=metric.key,
                 name=metric.name,
-                collection_period=metric.collection_period.value if metric.collection_period else None,
+                collection_project_ref_id=
+                int(metric.collection_params.project_ref_id) if metric.collection_params else None,
+                collection_period=metric.collection_params.period.value if metric.collection_params else None,
+                collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
+                collection_difficulty=metric.collection_params.difficulty.value
+                if metric.collection_params and metric.collection_params.difficulty else None,
+                collection_actionable_from_day=metric.collection_params.actionable_from_day
+                if metric.collection_params else None,
+                collection_actionable_from_month=metric.collection_params.actionable_from_month
+                if metric.collection_params else None,
+                collection_due_at_time=metric.collection_params.due_at_time if metric.collection_params else None,
+                collection_due_at_day=metric.collection_params.due_at_day if metric.collection_params else None,
+                collection_due_at_month=metric.collection_params.due_at_month if metric.collection_params else None,
                 metric_unit=metric.metric_unit.value if metric.metric_unit else None))
         except IntegrityError as err:
             raise RepositoryError(f"Metric with key='{metric.key}' already exists") from err
@@ -110,7 +130,19 @@ class SqliteMetricRepository(MetricRepository):
                 if metric.archived_time else None,
                 the_key=metric.key,
                 name=metric.name,
-                collection_period=metric.collection_period.value if metric.collection_period else None,
+                collection_project_ref_id=int(metric.collection_params.project_ref_id)
+                if metric.collection_params else None,
+                collection_period=metric.collection_params.period.value if metric.collection_params else None,
+                collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
+                collection_difficulty=metric.collection_params.difficulty.value
+                if metric.collection_params and metric.collection_params.difficulty else None,
+                collection_actionable_from_day=metric.collection_params.actionable_from_day
+                if metric.collection_params else None,
+                collection_actionable_from_month=metric.collection_params.actionable_from_month
+                if metric.collection_params else None,
+                collection_due_at_time=metric.collection_params.due_at_time if metric.collection_params else None,
+                collection_due_at_day=metric.collection_params.due_at_day if metric.collection_params else None,
+                collection_due_at_month=metric.collection_params.due_at_month if metric.collection_params else None,
                 metric_unit=metric.metric_unit.value if metric.metric_unit else None))
         _upsert_events(self._connection, self._metric_event_table, metric)
         return metric
@@ -147,7 +179,6 @@ class SqliteMetricRepository(MetricRepository):
         if filter_keys:
             query_stmt = query_stmt.where(
                 self._metric_table.c.the_key.in_(filter_keys))
-        LOGGER.info(query_stmt)
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
@@ -170,8 +201,18 @@ class SqliteMetricRepository(MetricRepository):
             _events=[],
             _key=BasicValidator.metric_key_validate_and_clean(row["the_key"]),
             _name=BasicValidator.entity_name_validate_and_clean(row["name"]),
-            _collection_period=BasicValidator.recurring_task_period_validate_and_clean(row["collection_period"])
-            if row["collection_period"] else None,
+            _collection_params=MetricCollectionParams(
+                project_ref_id=BasicValidator.entity_id_validate_and_clean(str(row["collection_project_ref_id"])),
+                period=BasicValidator.recurring_task_period_validate_and_clean(row["collection_period"]),
+                eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row["collection_eisen"]],
+                difficulty=BasicValidator.difficulty_validate_and_clean(row["collection_difficulty"])
+                if row["collection_difficulty"] else None,
+                actionable_from_day=row["collection_actionable_from_day"],
+                actionable_from_month=row["collection_actionable_from_month"],
+                due_at_time=row["collection_due_at_time"],
+                due_at_day=row["collection_due_at_day"],
+                due_at_month=row["collection_due_at_month"])
+            if row["collection_project_ref_id"] is not None and row["collection_period"] is not None else None,
             _metric_unit=BasicValidator.metric_unit_validate_and_clean(row["metric_unit"])
             if row["metric_unit"] else None)
 
@@ -289,7 +330,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             if row["archived_time"] else None,
             _last_modified_time=BasicValidator.timestamp_from_db_timestamp(row["last_modified_time"]),
             _events=[],
-            _metric_ref_id=EntityId(row["metric_ref_id"]),
+            _metric_ref_id=EntityId(str(row["metric_ref_id"])),
             _collection_time=BasicValidator.timestamp_from_db_timestamp(row["collection_time"]),
             _value=row["value"],
             _notes=row["notes"])

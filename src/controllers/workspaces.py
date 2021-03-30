@@ -1,19 +1,27 @@
 """The controller for workspaces."""
 import logging
-from typing import Final
+from dataclasses import dataclass
+from typing import Final, Optional
 
 from pendulum.tz.timezone import Timezone
 
-from models.basic import WorkspaceSpaceId, WorkspaceToken
+from models.basic import WorkspaceSpaceId, WorkspaceToken, ProjectKey
 from remote.notion.infra.connection import NotionConnection
 from repository.workspace import Workspace
 from service.metrics import MetricsService
-from service.projects import ProjectsService
+from service.projects import ProjectsService, Project
 from service.smart_lists import SmartListsService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
 
 LOGGER = logging.getLogger(__name__)
+
+
+@dataclass()
+class _LoadWorkspaceResponse:
+
+    workspace: Workspace
+    default_project: Optional[Project]
 
 
 class WorkspacesController:
@@ -63,10 +71,22 @@ class WorkspacesController:
         """Change the workspace timezone."""
         return self._workspaces_service.set_workspace_timezone(timezone)
 
+    def set_workspace_default_project(self, project_key: Optional[ProjectKey]) -> Workspace:
+        """Change the workspace name."""
+        if project_key:
+            project = self._projects_service.load_project_by_key(project_key)
+            return self._workspaces_service.set_workspace_default_project_ref_id(project.ref_id)
+        else:
+            return self._workspaces_service.set_workspace_default_project_ref_id(None)
+
     def set_workspace_token(self, token: WorkspaceToken) -> None:
         """Change the workspace token."""
         self._notion_connection.update_token(token)
 
-    def load_workspace(self) -> Workspace:
+    def load_workspace(self) -> _LoadWorkspaceResponse:
         """Retrieve a workspace."""
-        return self._workspaces_service.load_workspace()
+        workspace = self._workspaces_service.load_workspace()
+        default_project = None
+        if workspace.default_project_ref_id:
+            default_project = self._projects_service.load_project_by_ref_id(workspace.default_project_ref_id)
+        return _LoadWorkspaceResponse(workspace, default_project)
