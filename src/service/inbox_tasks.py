@@ -448,7 +448,7 @@ class InboxTasksService:
         # Apply changes in Notion
         try:
             inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
-            inbox_task_notion_row.name = name
+            inbox_task_notion_row.name = inbox_task_row.name
             inbox_task_notion_row.actionable_date = actionable_date
             inbox_task_notion_row.due_date = due_time
             inbox_task_notion_row.eisen = [e.value for e in eisen]
