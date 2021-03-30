@@ -29,7 +29,8 @@ allow for this, special collection inbox tasks can be generated for the metric, 
 [recurring task](./recurring-tasks.md). The collection period will determine how often the task
 is generated (weekly, monthly, etc.). The inbox tasks will go to the configured [project](./projects.md)
 if it is present, or to the [default workspace one](./workspaces.md) if it is missing. If none
-are present, generation will fail.
+are present, generation will fail. There's also all the other collection parameters (actionable
+dates, due dates, Eisenhower statuses, etc).
 
 ## Interaction Summary
 
