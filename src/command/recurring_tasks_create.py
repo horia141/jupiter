@@ -34,7 +34,7 @@ class RecurringTasksCreate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project_key", required=True, help="The project key to add the task to")
+        parser.add_argument("--project", dest="project_key", required=False, help="The project key to add the task to")
         parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
         parser.add_argument("--period", dest="period", choices=BasicValidator.recurring_task_period_values(),
                             required=True, help="The period for the recurring task")
@@ -64,7 +64,8 @@ class RecurringTasksCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        project_key = self._basic_validator.project_key_validate_and_clean(args.project_key)
+        project_key = self._basic_validator.project_key_validate_and_clean(args.project_key) \
+            if args.project_key else None
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
         period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
         the_type = self._basic_validator.recurring_task_type_validate_and_clean(args.the_type)

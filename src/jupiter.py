@@ -216,10 +216,11 @@ def main() -> None:
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
             metrics_service)
         inbox_tasks_controller = InboxTasksController(
-            projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
+            workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service)
         recurring_tasks_controller = RecurringTasksController(
-            global_properties, projects_service, inbox_tasks_service, recurring_tasks_service)
-        big_plans_controller = BigPlansController(projects_service, inbox_tasks_service, big_plans_service)
+            global_properties, workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service)
+        big_plans_controller = BigPlansController(
+            workspaces_service, projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
             inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service)

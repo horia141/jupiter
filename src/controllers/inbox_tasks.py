@@ -5,9 +5,11 @@ from typing import Final, Iterable, Optional, List
 from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate, InboxTaskSource
 from service.big_plans import BigPlansService, BigPlan
+from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
+from service.workspaces import WorkspacesService
 
 
 @dataclass()
@@ -28,25 +30,35 @@ class LoadAllInboxTasksResponse:
 class InboxTasksController:
     """The controller for inbox tasks."""
 
+    _workspaces_service: Final[WorkspacesService]
     _projects_service: Final[ProjectsService]
     _inbox_tasks_service: Final[InboxTasksService]
     _recurring_tasks_service: Final[RecurringTasksService]
     _big_plans_service: Final[BigPlansService]
 
     def __init__(
-            self, projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
-            recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService) -> None:
+            self, workspaces_service: WorkspacesService, projects_service: ProjectsService,
+            inbox_tasks_service: InboxTasksService, recurring_tasks_service: RecurringTasksService,
+            big_plans_service: BigPlansService) -> None:
         """Constructor."""
+        self._workspaces_service = workspaces_service
         self._projects_service = projects_service
         self._inbox_tasks_service = inbox_tasks_service
         self._recurring_tasks_service = recurring_tasks_service
         self._big_plans_service = big_plans_service
 
     def create_inbox_task(
-            self, project_key: ProjectKey, name: str, big_plan_ref_id: Optional[EntityId], eisen: List[Eisen],
+            self, project_key: Optional[ProjectKey], name: str, big_plan_ref_id: Optional[EntityId], eisen: List[Eisen],
             difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
-        project = self._projects_service.load_project_by_key(project_key)
+        if project_key is not None:
+            project = self._projects_service.load_project_by_key(project_key)
+            project_ref_id = project.ref_id
+        else:
+            workspace = self._workspaces_service.load_workspace()
+            if workspace.default_project_ref_id is None:
+                raise ServiceError(f"Expected a project and default project is missing")
+            project_ref_id = workspace.default_project_ref_id
 
         big_plan_name: Optional[str] = None
         if big_plan_ref_id:
@@ -54,7 +66,7 @@ class InboxTasksController:
             big_plan_name = big_plan.name
 
         return self._inbox_tasks_service.create_inbox_task(
-            project.ref_id, name, big_plan_ref_id, big_plan_name, eisen, difficulty, actionable_date, due_date)
+            project_ref_id, name, big_plan_ref_id, big_plan_name, eisen, difficulty, actionable_date, due_date)
 
     def archive_inbox_task(self, ref_id: EntityId) -> InboxTask:
         """Archive an inbox task."""

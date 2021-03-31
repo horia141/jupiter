@@ -9,9 +9,11 @@ from controllers.common import ControllerInputValidationError
 from models import schedules
 from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
     ADate
+from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
+from service.workspaces import WorkspacesService
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
@@ -35,30 +37,40 @@ class RecurringTasksController:
     """The controller for recurring tasks."""
 
     _global_properties: Final[GlobalProperties]
+    _workspaces_service: Final[WorkspacesService]
     _projects_service: Final[ProjectsService]
     _inbox_tasks_service: Final[InboxTasksService]
     _recurring_tasks_service: Final[RecurringTasksService]
 
     def __init__(
-            self, global_properties: GlobalProperties, projects_service: ProjectsService,
-            inbox_tasks_service: InboxTasksService, recurring_tasks_service: RecurringTasksService) -> None:
+            self, global_properties: GlobalProperties, workspaces_service: WorkspacesService,
+            projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
+            recurring_tasks_service: RecurringTasksService) -> None:
         """Constructor."""
         self._global_properties = global_properties
+        self._workspaces_service = workspaces_service
         self._projects_service = projects_service
         self._inbox_tasks_service = inbox_tasks_service
         self._recurring_tasks_service = recurring_tasks_service
 
     def create_recurring_task(
-            self, project_key: ProjectKey, name: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
-            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_from_day: Optional[int],
-            actionable_from_month: Optional[int], due_at_time: Optional[str], due_at_day: Optional[int],
-            due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str], start_at_date: Optional[ADate],
-            end_at_date: Optional[ADate]) -> RecurringTask:
+            self, project_key: Optional[ProjectKey], name: str, period: RecurringTaskPeriod,
+            the_type: RecurringTaskType, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
+            due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str],
+            start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
         """Create an recurring task."""
-        project = self._projects_service.load_project_by_key(project_key)
-        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project.ref_id)
+        if project_key is not None:
+            project = self._projects_service.load_project_by_key(project_key)
+            project_ref_id = project.ref_id
+        else:
+            workspace = self._workspaces_service.load_workspace()
+            if workspace.default_project_ref_id is None:
+                raise ServiceError(f"Expected a project and default project is missing")
+            project_ref_id = workspace.default_project_ref_id
+        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project_ref_id)
         recurring_task = self._recurring_tasks_service.create_recurring_task(
-            project_ref_id=project.ref_id,
+            project_ref_id=project_ref_id,
             inbox_tasks_collection=inbox_tasks_collection,
             name=name,
             period=period,

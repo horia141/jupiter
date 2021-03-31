@@ -34,14 +34,15 @@ class BigPlansCreate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project", required=True,
+        parser.add_argument("--project", dest="project_key", required=False,
                             help="The key of the project")
         parser.add_argument("--name", dest="name", required=True, help="The name of the big plan")
         parser.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        project_key = self._basic_validator.project_key_validate_and_clean(args.project)
+        project_key = self._basic_validator.project_key_validate_and_clean(args.project_key) \
+            if args.project_key else None
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
         due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
         self._big_plans_controller.create_big_plan(project_key, name, due_date)

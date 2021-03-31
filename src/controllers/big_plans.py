@@ -7,8 +7,10 @@ from controllers.common import ControllerInputValidationError
 from models.basic import EntityId, ProjectKey, BigPlanStatus, ADate
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService, BigPlan
+from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
+from service.workspaces import WorkspacesService
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,24 +32,33 @@ class LoadAllBigPlansResponse:
 class BigPlansController:
     """The controller for big plans."""
 
+    _workspaces_service: Final[WorkspacesService]
     _projects_service: Final[ProjectsService]
     _inbox_tasks_service: Final[InboxTasksService]
     _big_plans_service: Final[BigPlansService]
 
     def __init__(
-            self, projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
-            big_plans_service: BigPlansService) -> None:
+            self, workspaces_service: WorkspacesService, projects_service: ProjectsService,
+            inbox_tasks_service: InboxTasksService, big_plans_service: BigPlansService) -> None:
         """Constructor."""
+        self._workspaces_service = workspaces_service
         self._projects_service = projects_service
         self._inbox_tasks_service = inbox_tasks_service
         self._big_plans_service = big_plans_service
 
-    def create_big_plan(self, project_key: ProjectKey, name: str, due_date: Optional[ADate]) -> BigPlan:
+    def create_big_plan(self, project_key: Optional[ProjectKey], name: str, due_date: Optional[ADate]) -> BigPlan:
         """Create an big plan."""
-        project = self._projects_service.load_project_by_key(project_key)
-        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project.ref_id)
+        if project_key is not None:
+            project = self._projects_service.load_project_by_key(project_key)
+            project_ref_id = project.ref_id
+        else:
+            workspace = self._workspaces_service.load_workspace()
+            if workspace.default_project_ref_id is None:
+                raise ServiceError(f"Expected a project and default project is missing")
+            project_ref_id = workspace.default_project_ref_id
+        inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(project_ref_id)
         big_plan = self._big_plans_service.create_big_plan(project.ref_id, inbox_tasks_collection, name, due_date)
-        all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[project.ref_id])
+        all_big_plans = self._big_plans_service.load_all_big_plans(filter_project_ref_ids=[project_ref_id])
         self._inbox_tasks_service.upsert_notion_big_plan_ref_options(
             project.ref_id,
             [InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans])
