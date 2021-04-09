@@ -38,6 +38,7 @@ class InboxTaskNotionRow(BaseItem):
     big_plan_name: Optional[str]
     recurring_task_ref_id: Optional[str]
     metric_ref_id: Optional[str]
+    person_ref_id: Optional[str]
     status: Optional[str]
     eisen: Optional[List[str]]
     difficulty: Optional[str]
@@ -119,6 +120,10 @@ class NotionInboxTasksManager:
         "Metric": {
             "name": InboxTaskSource.METRIC.for_notion(),
             "color": "red"
+        },
+        "Person": {
+            "name": InboxTaskSource.PERSON.for_notion(),
+            "color": "purple"
         }
     }
 
@@ -232,6 +237,10 @@ class NotionInboxTasksManager:
             "name": "Metric Id",
             "type": "text"
         },
+        "person-ref-id": {
+            "name": "Person Id",
+            "type": "text"
+        },
         "actionable-date": {
             "name": "Actionable Date",
             "type": "date"
@@ -309,6 +318,7 @@ class NotionInboxTasksManager:
         NotionFieldProps(name="recurring-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="recurring-task-type", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="metric-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="person-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
@@ -366,6 +376,9 @@ class NotionInboxTasksManager:
             "property": "metric-ref-id",
             "visible": False
         }, {
+            "property": "person-ref-id",
+            "visible": False
+        }, {
             "property": "actionable-date",
             "visible": True
         }, {
@@ -394,7 +407,7 @@ class NotionInboxTasksManager:
             "visible": False
         }, {
             "property": "last-edited-time",
-            "visible": True
+            "visible": False
         }],
         "board_cover_size": "small"
     }
@@ -827,6 +840,9 @@ class NotionInboxTasksManager:
                 "property": "metric-ref-id",
                 "visible": False
             }, {
+                "property": "person-ref-id",
+                "visible": False
+            }, {
                 "property": "actionable-date",
                 "visible": False
             }, {
@@ -855,7 +871,7 @@ class NotionInboxTasksManager:
                 "visible": False
             }, {
                 "property": "last-edited-time",
-                "visible": True
+                "visible": False
             }]
         }
     }
@@ -887,6 +903,10 @@ class NotionInboxTasksManager:
             }, {
                 "width": 100,
                 "property": "metric-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "person-ref-id",
                 "visible": True
             }, {
                 "width": 100,
@@ -1011,9 +1031,9 @@ class NotionInboxTasksManager:
             self, project_ref_id: EntityId, source: str, name: str, archived: bool,
             big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
             recurring_task_ref_id: Optional[EntityId], metric_ref_id: Optional[EntityId],
-            status: str, eisen: Optional[List[str]], difficulty: Optional[str], actionable_date: Optional[ADate],
-            due_date: Optional[ADate], recurring_timeline: Optional[str], recurring_period: Optional[str],
-            recurring_type: Optional[str], recurring_gen_right_now: Optional[ADate],
+            person_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]], difficulty: Optional[str],
+            actionable_date: Optional[ADate], due_date: Optional[ADate], recurring_timeline: Optional[str],
+            recurring_period: Optional[str], recurring_type: Optional[str], recurring_gen_right_now: Optional[ADate],
             ref_id: EntityId) -> InboxTaskNotionRow:
         """Upsert a inbox task."""
         new_row = InboxTaskNotionRow(
@@ -1024,6 +1044,7 @@ class NotionInboxTasksManager:
             big_plan_name=big_plan_name,
             recurring_task_ref_id=recurring_task_ref_id,
             metric_ref_id=metric_ref_id,
+            person_ref_id=person_ref_id,
             status=status,
             eisen=eisen,
             difficulty=difficulty,
@@ -1113,6 +1134,7 @@ class NotionInboxTasksManager:
                 notion_row.big_plan = row.big_plan_name
             notion_row.recurring_task_id = row.recurring_task_ref_id
             notion_row.metric_id = row.metric_ref_id
+            notion_row.person_id = row.person_ref_id
             notion_row.status = row.status
             notion_row.eisenhower = row.eisen
             notion_row.difficulty = row.difficulty
@@ -1143,6 +1165,7 @@ class NotionInboxTasksManager:
             big_plan_name=inbox_task_notion_row.big_plan,
             recurring_task_ref_id=inbox_task_notion_row.recurring_task_id,
             metric_ref_id=inbox_task_notion_row.metric_id,
+            person_ref_id=inbox_task_notion_row.person_id,
             status=inbox_task_notion_row.status,
             eisen=clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,

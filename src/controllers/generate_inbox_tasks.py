@@ -5,7 +5,8 @@ from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 import typing
 
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.metric import Metric, MetricCollectionParams
+from domain.metrics.metric import Metric
+from domain.shared import RecurringTaskGenParams
 from domain.vacations.vacation import Vacation
 from models import schedules
 from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp, SyncTarget, MetricKey
@@ -193,7 +194,7 @@ class GenerateInboxTasksController:
             right_now: Timestamp,
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
             metric: Metric,
-            collection_params: MetricCollectionParams,
+            collection_params: RecurringTaskGenParams,
             all_inbox_tasks_by_metric_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask],
             sync_even_if_not_modified: bool) -> None:
         if period_filter is not None and collection_params.period not in period_filter:

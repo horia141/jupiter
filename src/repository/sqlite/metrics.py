@@ -18,7 +18,8 @@ from sqlalchemy.future import Engine
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.infra.metric_repository import MetricRepository
-from domain.metrics.metric import Metric, MetricCollectionParams
+from domain.metrics.metric import Metric
+from domain.shared import RecurringTaskGenParams
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import MetricKey, EntityId, BasicValidator
 from models.framework import AggregateRoot, RepositoryError, BAD_REF_ID
@@ -201,7 +202,7 @@ class SqliteMetricRepository(MetricRepository):
             _events=[],
             _key=BasicValidator.metric_key_validate_and_clean(row["the_key"]),
             _name=BasicValidator.entity_name_validate_and_clean(row["name"]),
-            _collection_params=MetricCollectionParams(
+            _collection_params=RecurringTaskGenParams(
                 project_ref_id=BasicValidator.entity_id_validate_and_clean(str(row["collection_project_ref_id"])),
                 period=BasicValidator.recurring_task_period_validate_and_clean(row["collection_period"]),
                 eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row["collection_eisen"]],

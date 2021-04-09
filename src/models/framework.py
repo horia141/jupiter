@@ -19,6 +19,10 @@ BAD_REF_ID = EntityId("bad-entity-id")
 UpdateActionType = TypeVar('UpdateActionType')
 
 
+class Value:
+    """A value object in the domain."""
+
+
 class UpdateAction(Generic[UpdateActionType]):
     """The update action for a field."""
 
@@ -208,3 +212,7 @@ class Engine(Generic[UnitOfWorkType], abc.ABC):
 
 class RepositoryError(Exception):
     """An exception raised when loading data from a repository."""
+
+
+class ModelValidationError(Exception):
+    """An exception raised when validating some model type."""

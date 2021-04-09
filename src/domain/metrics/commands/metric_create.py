@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import Optional, Final, List
 
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.metric import Metric, MetricCollectionParams
+from domain.metrics.metric import Metric
+from domain.shared import RecurringTaskGenParams
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from models.basic import MetricKey, RecurringTaskPeriod, MetricUnit, EntityName, ProjectKey, Eisen, Difficulty
 from models.framework import Command
@@ -64,7 +65,7 @@ class MetricCreateCommand(Command['MetricCreateCommand.Args', None]):
                 if workspace.default_project_ref_id is None:
                     raise ServiceError("Cannot specify a collection period without a project (or a default one)")
                 project_ref_id = workspace.default_project_ref_id
-            collection_params = MetricCollectionParams(
+            collection_params = RecurringTaskGenParams(
                 project_ref_id=project_ref_id,
                 period=args.collection_period,
                 eisen=args.collection_eisen,

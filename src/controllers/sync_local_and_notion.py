@@ -4,7 +4,8 @@ from typing import Final, Optional, Iterable
 
 import typing
 
-from domain.metrics.metric import MetricCollectionParams
+from domain.prm.infra.prm_engine import PrmEngine
+from domain.shared import RecurringTaskGenParams
 from models import schedules
 from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
@@ -35,13 +36,15 @@ class SyncLocalAndNotionController:
     _big_plans_service: Final[BigPlansService]
     _smart_lists_service: Final[SmartListsService]
     _metrics_service: Final[MetricsService]
+    _prm_engine: Final[PrmEngine]
 
     def __init__(
             self, time_provider: TimeProvider, global_properties: GlobalProperties,
             workspaces_service: WorkspacesService, vacations_service: VacationsService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
-            smart_lists_service: SmartListsService, metrics_service: MetricsService) -> None:
+            smart_lists_service: SmartListsService, metrics_service: MetricsService,
+            prm_engine: PrmEngine) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._global_properties = global_properties
@@ -53,6 +56,7 @@ class SyncLocalAndNotionController:
         self._big_plans_service = big_plans_service
         self._smart_lists_service = smart_lists_service
         self._metrics_service = metrics_service
+        self._prm_engine = prm_engine
 
     def sync(
             self,
@@ -99,6 +103,8 @@ class SyncLocalAndNotionController:
                 drop_all_notion, sync_even_if_not_modified, filter_vacation_ref_ids, sync_prefer)
 
         all_metrics = self._metrics_service.load_all_metrics(allow_archived=True)
+        with self._prm_engine.get_unit_of_work() as uow:
+            all_persons = uow.person_repository.find_all(allow_archived=True)
 
         if SyncTarget.PROJECTS in sync_targets \
             or SyncTarget.INBOX_TASKS in sync_targets \
@@ -159,6 +165,7 @@ class SyncLocalAndNotionController:
                         [RecurringTaskEssentials(rt.ref_id, rt.name, rt.period, rt.the_type)
                          for rt in all_recurring_tasks],
                         all_metrics,
+                        all_persons,
                         sync_even_if_not_modified,
                         filter_inbox_task_ref_ids,
                         sync_prefer)
@@ -267,9 +274,9 @@ class SyncLocalAndNotionController:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of metric filtering")
                     continue
                 LOGGER.info(f"Syncing inbox tasks '{inbox_task.name}'")
-                collection_params = typing.cast(MetricCollectionParams, metric.collection_params)
+                collection_params = typing.cast(RecurringTaskGenParams, metric.collection_params)
                 schedule = schedules.get_schedule(
-                    typing.cast(MetricCollectionParams, metric.collection_params).period, metric.name,
+                    typing.cast(RecurringTaskGenParams, metric.collection_params).period, metric.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                     None, collection_params.actionable_from_day, collection_params.actionable_from_month,
                     collection_params.due_at_time, collection_params.due_at_day, collection_params.due_at_month)

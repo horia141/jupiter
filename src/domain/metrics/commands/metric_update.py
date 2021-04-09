@@ -6,7 +6,7 @@ import typing
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from domain.metrics.metric import MetricCollectionParams
+from domain.shared import RecurringTaskGenParams
 from models import schedules
 from models.basic import MetricKey, RecurringTaskPeriod, EntityName, ProjectKey, Timestamp, Eisen, Difficulty, \
     BasicValidator
@@ -149,7 +149,7 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
                     elif metric.collection_params is not None:
                         new_collection_due_at_month = metric.collection_params.due_at_month
 
-                    collection_params = MetricCollectionParams(
+                    collection_params = RecurringTaskGenParams(
                         project_ref_id=new_collection_project_ref_id,
                         period=new_collection_period,
                         eisen=new_collection_eisen,
