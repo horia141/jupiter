@@ -5,6 +5,7 @@ from typing import Final, Optional, Iterable
 import typing
 
 from domain.prm.infra.prm_engine import PrmEngine
+from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.shared import RecurringTaskGenParams
 from models import schedules
 from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey
@@ -37,6 +38,7 @@ class SyncLocalAndNotionController:
     _smart_lists_service: Final[SmartListsService]
     _metrics_service: Final[MetricsService]
     _prm_engine: Final[PrmEngine]
+    _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
             self, time_provider: TimeProvider, global_properties: GlobalProperties,
@@ -44,7 +46,7 @@ class SyncLocalAndNotionController:
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
             smart_lists_service: SmartListsService, metrics_service: MetricsService,
-            prm_engine: PrmEngine) -> None:
+            prm_engine: PrmEngine, prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._global_properties = global_properties
@@ -57,6 +59,7 @@ class SyncLocalAndNotionController:
         self._smart_lists_service = smart_lists_service
         self._metrics_service = metrics_service
         self._prm_engine = prm_engine
+        self._prm_notion_manager = prm_notion_manager
 
     def sync(
             self,
@@ -93,6 +96,9 @@ class SyncLocalAndNotionController:
 
                 LOGGER.info("Recreating metrics structure")
                 self._metrics_service.upsert_root_notion_structure(workspace_page)
+
+                LOGGER.info("Recreating the PRM database structure")
+                self._prm_notion_manager.upsert_root_notion_structure(workspace_page)
 
             LOGGER.info("Syncing the workspace")
             self._workspaces_service.workspace_sync(sync_prefer)

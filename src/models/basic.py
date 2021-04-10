@@ -28,6 +28,7 @@ class SyncTarget(enum.Enum):
     BIG_PLANS = "big-plans"
     SMART_LISTS = "smart-lists"
     METRICS = "metrics"
+    PRM = "prm"
 
 
 @enum.unique

@@ -229,7 +229,7 @@ def main() -> None:
 
         workspaces_controller = WorkspacesController(
             notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
-            metrics_service)
+            metrics_service, notion_prm_manager)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
             metrics_service)
@@ -242,7 +242,7 @@ def main() -> None:
         sync_local_and_notion_controller = SyncLocalAndNotionController(
             time_provider, global_properties, workspaces_service, vacations_service, projects_service,
             inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service,
-            sqlite_prm_engine)
+            sqlite_prm_engine, notion_prm_manager)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
             global_properties, workspaces_service, projects_service, vacations_service, inbox_tasks_service,
             recurring_tasks_service, sqlite_metric_engine)
@@ -250,8 +250,8 @@ def main() -> None:
             global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service,
             metrics_service, sqlite_prm_engine)
         garbage_collect_controller = GarbageCollectNotionController(
-            vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
-            smart_lists_service, metrics_service)
+            time_provider, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
+            big_plans_service, smart_lists_service, metrics_service, sqlite_prm_engine, notion_prm_manager)
 
         commands = {
             # CRUD Commands

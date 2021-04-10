@@ -5,6 +5,7 @@ from typing import Final, Optional
 
 from pendulum.tz.timezone import Timezone
 
+from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from models.basic import WorkspaceSpaceId, WorkspaceToken, ProjectKey
 from remote.notion.infra.connection import NotionConnection
 from repository.workspace import Workspace
@@ -33,11 +34,13 @@ class WorkspacesController:
     _projects_service: Final[ProjectsService]
     _smart_lists_service: Final[SmartListsService]
     _metrics_service: Final[MetricsService]
+    _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
             self, notion_connection: NotionConnection, workspaces_service: WorkspacesService,
             vacations_service: VacationsService, projects_service: ProjectsService,
-            smart_lists_service: SmartListsService, metrics_service: MetricsService) -> None:
+            smart_lists_service: SmartListsService, metrics_service: MetricsService,
+            prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._notion_connection = notion_connection
         self._workspaces_service = workspaces_service
@@ -45,6 +48,7 @@ class WorkspacesController:
         self._projects_service = projects_service
         self._smart_lists_service = smart_lists_service
         self._metrics_service = metrics_service
+        self._prm_notion_manager = prm_notion_manager
 
     def create_workspace(
             self, name: str, timezone: Timezone, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
@@ -62,6 +66,8 @@ class WorkspacesController:
         self._smart_lists_service.upsert_root_notion_structure(new_workspace_page)
         LOGGER.info("Creating metrics")
         self._metrics_service.upsert_root_notion_structure(new_workspace_page)
+        LOGGER.info("Creating the PRM database")
+        self._prm_notion_manager.upsert_root_notion_structure(new_workspace_page)
 
     def set_workspace_name(self, name: str) -> Workspace:
         """Change the workspace name."""
