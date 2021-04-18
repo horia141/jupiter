@@ -11,6 +11,7 @@ import typing
 from pendulum import Date, DateTime
 
 from models.basic import EntityId, Timestamp, BasicValidator
+from remote.notion.common import NotionId
 from utils.storage import JSONValueType
 
 BAD_REF_ID = EntityId("bad-entity-id")
@@ -216,3 +217,28 @@ class RepositoryError(Exception):
 
 class ModelValidationError(Exception):
     """An exception raised when validating some model type."""
+
+
+NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
+
+
+# This is actually an ABC.
+@dataclass(frozen=True)
+class NotionRow(Generic[NotionRowAggregateRoot]):
+    """Base class for Notion-side entities."""
+
+    notion_id: NotionId
+    ref_id: Optional[str]
+    last_edited_time: Timestamp
+
+    @staticmethod
+    def new_aggregate_root() -> NotionRowAggregateRoot:
+        """Construct a new aggregate root from this notion row."""
+
+    def apply_from_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot]:
+        """Construct a Notion row from a given aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def apply_to_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRowAggregateRoot:
+        """Obtain the aggregate root form of this, with a possible error."""
+        raise NotImplementedError("Can't use a base NotionRow class.")

@@ -240,7 +240,7 @@ def main() -> None:
         big_plans_controller = BigPlansController(
             workspaces_service, projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
-            time_provider, global_properties, workspaces_service, vacations_service, projects_service,
+            time_provider, basic_validator, global_properties, workspaces_service, vacations_service, projects_service,
             inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service,
             sqlite_prm_engine, notion_prm_manager)
         generate_inbox_tasks_controller = GenerateInboxTasksController(

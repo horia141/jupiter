@@ -2,9 +2,10 @@
 import abc
 from typing import Iterable
 
+from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
-from models.basic import EntityId
-from remote.notion.common import NotionPageLink
+from models.basic import EntityId, Timestamp
+from remote.notion.common import NotionPageLink, NotionId
 
 
 class PrmNotionManager(abc.ABC):
@@ -19,9 +20,29 @@ class PrmNotionManager(abc.ABC):
         """Upsert a person on Notion-side."""
 
     @abc.abstractmethod
+    def save_person(self, notion_person: NotionPerson) -> None:
+        """Save an already existing person on Notion-side."""
+
+    @abc.abstractmethod
     def remove_person(self, ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
 
     @abc.abstractmethod
+    def load_all_persons(self) -> Iterable[NotionPerson]:
+        """Retrieve all persons from Notion-side."""
+
+    @abc.abstractmethod
     def load_all_saved_person_ref_ids(self) -> Iterable[EntityId]:
         """Load ids of all persons we know about from Notion side."""
+
+    @abc.abstractmethod
+    def load_all_saved_person_notion_ids(self) -> Iterable[NotionId]:
+        """Load ids of all persons we know about from Notion side."""
+
+    @abc.abstractmethod
+    def drop_all_persons(self) -> None:
+        """Drop all persons on Notion-side."""
+
+    @abc.abstractmethod
+    def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:
+        """Link a local and Notion version of the entities."""
