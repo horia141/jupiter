@@ -4,6 +4,7 @@ from typing import Final, Iterable, Dict, Optional
 
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
 from models.basic import BasicValidator, EntityId, SyncPrefer
 from service.errors import ServiceError
@@ -62,7 +63,8 @@ class PrmSyncService:
                 self._prm_notion_manager.link_local_and_notion_entries(new_person.ref_id, person_row.notion_id)
                 LOGGER.info(f"Linked the new person with local entries")
 
-                self._prm_notion_manager.upsert_person(new_person)
+                person_row.apply_from_aggregate_root(new_person)
+                self._prm_notion_manager.upsert_person(person_row)
                 LOGGER.info(f"Applies changes on Notion side too as {person_row}")
 
                 persons_rows_set[person_row.ref_id] = person_row
@@ -110,7 +112,8 @@ class PrmSyncService:
                 continue
 
             # If the person does not exist on Notion side, we create it.
-            self._prm_notion_manager.upsert_person(person)
+            notion_person = NotionPerson.new_notion_row(person)
+            self._prm_notion_manager.upsert_person(notion_person)
             LOGGER.info(f"Created new person on Notion side {person.name}")
 
         return all_persons_set.values()

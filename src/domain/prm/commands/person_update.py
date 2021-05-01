@@ -7,6 +7,7 @@ import typing
 
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.notion_person import NotionPerson
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.shared import RecurringTaskGenParams
@@ -152,19 +153,21 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
                         due_at_month=new_catch_up_due_at_month)
 
                     person.change_catch_up_params(catch_up_params, self._time_provider.get_current_time())
-                if args.birthday.should_change:
-                    person.change_birthday(args.birthday.value, self._time_provider.get_current_time())
+            if args.birthday.should_change:
+                person.change_birthday(args.birthday.value, self._time_provider.get_current_time())
 
-                uow.person_repository.save(person)
+            uow.person_repository.save(person)
 
-        self._notion_manager.upsert_person(person)
+        notion_person = self._notion_manager.load_person_by_ref_id(person.ref_id)
+        notion_person.apply_from_aggregate_root(person)
+        self._notion_manager.save_person(notion_person)
 
         # Change the inbox tasks
         person_catch_up_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
             allow_archived=True, filter_person_ref_ids=[person.ref_id])
 
         if person.catch_up_params is None:
-            # Situation 1: we need to get rid of any existing collection persons because there's no collection anymore.
+            # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
             for inbox_task in person_catch_up_tasks:
                 self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
         else:
@@ -176,28 +179,13 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
                     None, person.catch_up_params.actionable_from_day, person.catch_up_params.actionable_from_month,
                     person.catch_up_params.due_at_time, person.catch_up_params.due_at_day,
                     person.catch_up_params.due_at_month)
-                if inbox_task.project_ref_id == person.catch_up_params.project_ref_id:
-                    # Situation 2a: we're handling the same project.
-                    self._inbox_tasks_service.set_inbox_task_to_person_link(
-                        ref_id=inbox_task.ref_id,
-                        name=schedule.full_name,
-                        recurring_timeline=schedule.timeline,
-                        recurring_period=person.catch_up_params.period,
-                        eisen=person.catch_up_params.eisen,
-                        difficulty=person.catch_up_params.difficulty,
-                        actionable_date=schedule.actionable_date,
-                        due_time=schedule.due_time)
-                else:
-                    # Situation 2b: we're handling a new project.
-                    self._inbox_tasks_service.hard_remove_inbox_task(inbox_task.ref_id)
-                    self._inbox_tasks_service.create_inbox_task_for_person(
-                        project_ref_id=person.catch_up_params.project_ref_id,
-                        name=schedule.full_name,
-                        person_ref_id=person.ref_id,
-                        recurring_task_timeline=schedule.timeline,
-                        recurring_task_period=person.catch_up_params.period,
-                        recurring_task_gen_right_now=self._time_provider.get_current_time(),
-                        eisen=person.catch_up_params.eisen,
-                        difficulty=person.catch_up_params.difficulty,
-                        actionable_date=schedule.actionable_date,
-                        due_date=schedule.due_time)
+                # Situation 2a: we're handling the same project.
+                self._inbox_tasks_service.set_inbox_task_to_person_link(
+                    ref_id=inbox_task.ref_id,
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    recurring_period=person.catch_up_params.period,
+                    eisen=person.catch_up_params.eisen,
+                    difficulty=person.catch_up_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time)

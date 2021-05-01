@@ -222,21 +222,31 @@ class ModelValidationError(Exception):
 NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
 
 
-# This is actually an ABC.
-@dataclass(frozen=True)
-class NotionRow(Generic[NotionRowAggregateRoot]):
-    """Base class for Notion-side entities."""
+@dataclass()
+class BaseNotionRow:
+    """A basic item type, which must contain a Notion id and an local id."""
 
     notion_id: NotionId
     ref_id: Optional[str]
+
+
+# This is actually an ABC.
+@dataclass(frozen=True)
+class NotionRow(Generic[NotionRowAggregateRoot], BaseNotionRow):
+    """Base class for Notion-side entities."""
+
     last_edited_time: Timestamp
+
+    @staticmethod
+    def new_notion_row(aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot]:
+        """Construct a new Notion row from a ggiven aggregate root."""
 
     @staticmethod
     def new_aggregate_root() -> NotionRowAggregateRoot:
         """Construct a new aggregate root from this notion row."""
 
     def apply_from_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot]:
-        """Construct a Notion row from a given aggregate root."""
+        """Add to this Notion row from a given aggregate root."""
         raise NotImplementedError("Can't use a base NotionRow class.")
 
     def apply_to_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRowAggregateRoot:

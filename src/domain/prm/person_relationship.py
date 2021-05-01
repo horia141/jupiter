@@ -15,6 +15,11 @@ class PersonRelationship(enum.Enum, Value):
     SCHOOL_BUDDY = "school-buddy"
     WORK_BUDDY = "work-buddy"
     COLLEAGUE = "colleague"
+    OTHER = "other"
+
+    def for_notion(self) -> str:
+        """A prettier version of the value for Notion."""
+        return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
     @staticmethod
     def from_raw(person_relationship_raw: Optional[str]) -> PersonRelationship:

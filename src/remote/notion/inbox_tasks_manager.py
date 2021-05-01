@@ -6,6 +6,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable, List
 
+from models.framework import BaseNotionRow
 from notion.collection import CollectionRowBlock
 
 from models.basic import BasicValidator, InboxTaskStatus, EntityId, ADate, Timestamp, Eisen, Difficulty, \
@@ -13,7 +14,7 @@ from models.basic import BasicValidator, InboxTaskStatus, EntityId, ADate, Times
 from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, \
     format_name_for_option, NotionCollectionLinkExtra, clean_eisenhower
 from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow
-from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
+from remote.notion.infra.collections_manager import CollectionsManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -21,14 +22,14 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class InboxTaskNotionCollection(BaseItem):
+class InboxTaskNotionCollection(BaseNotionRow):
     """An inbox task collection on Notion side."""
 
     notion_link: NotionCollectionLink
 
 
 @dataclass()
-class InboxTaskNotionRow(BaseItem):
+class InboxTaskNotionRow(BaseNotionRow):
     """An inbox task on Notion side."""
 
     source: str

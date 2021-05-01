@@ -3,8 +3,7 @@ import abc
 from typing import Iterable
 
 from domain.prm.notion_person import NotionPerson
-from domain.prm.person import Person
-from models.basic import EntityId, Timestamp
+from models.basic import EntityId
 from remote.notion.common import NotionPageLink, NotionId
 
 
@@ -16,7 +15,7 @@ class PrmNotionManager(abc.ABC):
         """Upsert the root Notion structure."""
 
     @abc.abstractmethod
-    def upsert_person(self, person: Person) -> None:
+    def upsert_person(self, notion_person: NotionPerson) -> None:
         """Upsert a person on Notion-side."""
 
     @abc.abstractmethod
@@ -26,6 +25,10 @@ class PrmNotionManager(abc.ABC):
     @abc.abstractmethod
     def remove_person(self, ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
+
+    @abc.abstractmethod
+    def load_person_by_ref_id(self, ref_id: EntityId) -> NotionPerson:
+        """Retrieve a person from Notion-side."""
 
     @abc.abstractmethod
     def load_all_persons(self) -> Iterable[NotionPerson]:

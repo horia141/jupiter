@@ -208,7 +208,7 @@ def main() -> None:
             time_provider, basic_validator, pages_manager, collections_manager)
         notion_metric_manager = NotionMetricManager(
             time_provider, basic_validator, pages_manager, collections_manager)
-        notion_prm_manager = NotionPrmManager()
+        notion_prm_manager = NotionPrmManager(time_provider, basic_validator, collections_manager)
 
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)

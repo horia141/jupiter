@@ -10,6 +10,7 @@ from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, Cla
 
 import typing
 
+from models.framework import BaseNotionRow
 from notion.collection import CollectionRowBlock
 
 from models.basic import EntityId
@@ -23,15 +24,7 @@ from utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass()
-class BaseItem:
-    """A basic item type, which must contain a Notion id and an local id."""
-
-    notion_id: NotionId
-    ref_id: Optional[str]
-
-
-ItemType = TypeVar("ItemType", bound=BaseItem)
+ItemType = TypeVar("ItemType", bound=BaseNotionRow)
 CopyRowToNotionRowType = Callable[[NotionClient, ItemType, CollectionRowBlock], CollectionRowBlock]
 CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
 

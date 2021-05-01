@@ -5,13 +5,13 @@ from typing import Final, Optional, List
 
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.shared import RecurringTaskGenParams
 from models.basic import RecurringTaskPeriod, Eisen, Difficulty
 from models.framework import Command
-from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService
 from service.workspaces import WorkspacesService
 from utils.time_provider import TimeProvider
@@ -78,4 +78,5 @@ class PersonCreateCommand(Command['PersonCreateCommand.Args', None]):
             birthday=args.birthday, created_time=self._time_provider.get_current_time())
         with self._engine.get_unit_of_work() as uow:
             person = uow.person_repository.create(person)
-        self._notion_manager.upsert_person(person)
+        notion_person = NotionPerson.new_notion_row(person)
+        self._notion_manager.upsert_person(notion_person)

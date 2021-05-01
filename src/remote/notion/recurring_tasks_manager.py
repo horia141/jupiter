@@ -4,12 +4,13 @@ import uuid
 from dataclasses import dataclass
 from typing import Optional, List, ClassVar, Final, cast, Dict, Iterable
 
+from models.framework import BaseNotionRow
 from notion.collection import CollectionRowBlock
 from models.basic import ADate, Timestamp, BasicValidator, EntityId, RecurringTaskPeriod, Eisen, Difficulty, \
     RecurringTaskType, InboxTaskSource
 from remote.notion.common import NotionCollectionLink, NotionLockKey, NotionId, NotionPageLink, clean_eisenhower
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
-from remote.notion.infra.collections_manager import BaseItem, CollectionsManager
+from remote.notion.infra.collections_manager import CollectionsManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -17,12 +18,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class RecurringTasksNotionCollection(BaseItem):
+class RecurringTasksNotionCollection(BaseNotionRow):
     """A recurring task collection on Notion side."""
 
 
 @dataclass()
-class RecurringTaskNotionRow(BaseItem):
+class RecurringTaskNotionRow(BaseNotionRow):
     """A recurring task on Notion side."""
 
     name: str
