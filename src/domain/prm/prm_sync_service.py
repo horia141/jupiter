@@ -34,6 +34,7 @@ class PrmSyncService:
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
         with self._prm_engine.get_unit_of_work() as uow:
+            prm_database = uow.prm_database_repository.load()
             all_persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=filter_ref_ids)
         all_persons_set: Dict[EntityId, Person] = {v.ref_id: v for v in all_persons}
 
@@ -55,7 +56,7 @@ class PrmSyncService:
             LOGGER.info(f"Syncing '{person_row.name}' (id={person_row.notion_id})")
 
             if person_row.ref_id is None or person_row.ref_id == "":
-                new_person = person_row.new_aggregate_root()
+                new_person = person_row.new_aggregate_root(prm_database.catch_up_project_ref_id)
 
                 with self._prm_engine.get_unit_of_work() as uow:
                     new_person = uow.person_repository.create(new_person)
@@ -78,7 +79,7 @@ class PrmSyncService:
                         LOGGER.info(f"Skipping {person_row.name} because it was not modified")
                         continue
 
-                    updated_person = person_row.apply_to_aggregate_root(person)
+                    updated_person = person_row.apply_to_aggregate_root(person, prm_database.catch_up_project_ref_id)
 
                     with self._prm_engine.get_unit_of_work() as uow:
                         uow.person_repository.save(updated_person)

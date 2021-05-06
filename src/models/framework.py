@@ -220,6 +220,7 @@ class ModelValidationError(Exception):
 
 
 NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
+NotionRowNewAggregateRootExtraInfo = TypeVar('NotionRowNewAggregateRootExtraInfo')
 
 
 @dataclass()
@@ -230,25 +231,29 @@ class BaseNotionRow:
     ref_id: Optional[str]
 
 
+BAD_NOTION_ID = NotionId("bad-notion-id")
+
+
 # This is actually an ABC.
 @dataclass(frozen=True)
-class NotionRow(Generic[NotionRowAggregateRoot], BaseNotionRow):
+class NotionRow(Generic[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo], BaseNotionRow):
     """Base class for Notion-side entities."""
 
     last_edited_time: Timestamp
 
     @staticmethod
-    def new_notion_row(aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot]:
+    def new_notion_row(aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo]:
         """Construct a new Notion row from a ggiven aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
 
-    @staticmethod
-    def new_aggregate_root() -> NotionRowAggregateRoot:
+    def new_aggregate_root(self, extra_info: NotionRowNewAggregateRootExtraInfo) -> NotionRowAggregateRoot:
         """Construct a new aggregate root from this notion row."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
 
-    def apply_from_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot]:
+    def apply_from_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRow[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo]:
         """Add to this Notion row from a given aggregate root."""
         raise NotImplementedError("Can't use a base NotionRow class.")
 
-    def apply_to_aggregate_root(self, aggregate_root: NotionRowAggregateRoot) -> NotionRowAggregateRoot:
+    def apply_to_aggregate_root(self, aggregate_root: NotionRowAggregateRoot, extra_info: NotionRowNewAggregateRootExtraInfo) -> NotionRowAggregateRoot:
         """Obtain the aggregate root form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionRow class.")

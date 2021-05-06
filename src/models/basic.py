@@ -654,7 +654,8 @@ class BasicValidator:
         """The possible values for recurring task types."""
         return BasicValidator._recurring_task_type_values
 
-    def recurring_task_due_at_time_validate_and_clean(self, recurring_task_due_at_time_raw: Optional[str]) -> str:
+    @staticmethod
+    def recurring_task_due_at_time_validate_and_clean(recurring_task_due_at_time_raw: Optional[str]) -> str:
         """Validate and clean the due at time info."""
         if not recurring_task_due_at_time_raw:
             raise ModelValidationError("Expected the due time info to be non-null")
@@ -664,10 +665,10 @@ class BasicValidator:
         if len(recurring_task_due_at_time_str) == 0:
             raise ModelValidationError("Expected due time info to be non-empty")
 
-        if not self._recurring_task_due_at_time_re.match(recurring_task_due_at_time_str):
+        if not BasicValidator._recurring_task_due_at_time_re.match(recurring_task_due_at_time_str):
             raise ModelValidationError(
                 f"Expected due time info '{recurring_task_due_at_time_raw}' to " +
-                f"match '{self._recurring_task_due_at_time_re.pattern}'")
+                f"match '{BasicValidator._recurring_task_due_at_time_re.pattern}'")
 
         return recurring_task_due_at_time_str
 
