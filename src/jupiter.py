@@ -228,8 +228,8 @@ def main() -> None:
             basic_validator, time_provider, sqlite_metric_engine, notion_metric_manager)
 
         workspaces_controller = WorkspacesController(
-            notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
-            metrics_service, notion_prm_manager)
+            time_provider, notion_connection, workspaces_service, vacations_service, projects_service,
+            smart_lists_service, metrics_service, sqlite_prm_engine, notion_prm_manager)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
             metrics_service)

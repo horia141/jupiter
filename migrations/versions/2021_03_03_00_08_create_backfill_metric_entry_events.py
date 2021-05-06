@@ -28,7 +28,7 @@ def upgrade():
         json_object(
             'metric_ref_id', metric_ref_id, 
             'timestamp', created_time, 
-            'collection_tine', collection_time, 
+            'collection_time', collection_time, 
             'value', value, 
             'notes', notes) as data 
     from metric_entry 
