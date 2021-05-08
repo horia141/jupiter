@@ -6,12 +6,12 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, ClassVar
-
 import typing
+from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, ClassVar
 
 from notion.collection import CollectionRowBlock
 
+from models.framework import BaseNotionRow
 from models.basic import EntityId
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
@@ -23,15 +23,7 @@ from utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass()
-class BaseItem:
-    """A basic item type, which must contain a Notion id and an local id."""
-
-    notion_id: NotionId
-    ref_id: Optional[str]
-
-
-ItemType = TypeVar("ItemType", bound=BaseItem)
+ItemType = TypeVar("ItemType", bound=BaseNotionRow)
 CopyRowToNotionRowType = Callable[[NotionClient, ItemType, CollectionRowBlock], CollectionRowBlock]
 CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
 

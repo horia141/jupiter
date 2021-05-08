@@ -10,7 +10,6 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, Unicode, \
     ForeignKey, Float, UnicodeText, JSON, update, select, delete
-from sqlalchemy.dialects.sqlite import insert as sqliteInsert
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import Engine
@@ -18,38 +17,16 @@ from sqlalchemy.future import Engine
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.infra.metric_repository import MetricRepository
-from domain.metrics.metric import Metric, MetricCollectionParams
+from domain.metrics.metric import Metric
+from domain.shared import RecurringTaskGenParams
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import MetricKey, EntityId, BasicValidator
-from models.framework import AggregateRoot, RepositoryError, BAD_REF_ID
+from models.framework import BAD_REF_ID
+from models.errors import RepositoryError
+from repository.sqlite.common import build_event_table, upsert_events
 from utils.storage import StructuredStorageError
 
 LOGGER = logging.getLogger(__name__)
-
-
-def _build_event_table(entity_table: Table, metadata: MetaData) -> Table:
-    return Table(
-        entity_table.name + '_event',
-        metadata,
-        Column('owner_ref_id', Integer, ForeignKey(entity_table.c.ref_id), primary_key=True),
-        Column('timestamp', DateTime, primary_key=True),
-        Column('session_index', Integer, primary_key=True),
-        Column('name', String(32), primary_key=True),
-        Column('data', JSON, nullable=True),
-        keep_existing=True)
-
-
-def _upsert_events(connection: Connection, table: Table, entity: AggregateRoot) -> None:
-    for event_idx, event in enumerate(entity.events):
-        connection.execute(
-            sqliteInsert(table)
-            .values(
-                owner_ref_id=int(entity.ref_id),
-                timestamp=event.timestamp,
-                session_index=event_idx,
-                name=str(event.__class__.__name__),
-                data=event.to_serializable_dict())
-            .on_conflict_do_nothing(index_elements=['owner_ref_id', 'timestamp', 'session_index', 'name']))
 
 
 class SqliteMetricRepository(MetricRepository):
@@ -83,13 +60,13 @@ class SqliteMetricRepository(MetricRepository):
             Column('collection_due_at_month', Integer, nullable=True),
             Column('metric_unit', String(), nullable=True),
             keep_existing=True)
-        self._metric_event_table = _build_event_table(self._metric_table, metadata)
+        self._metric_event_table = build_event_table(self._metric_table, metadata)
 
     def create(self, metric: Metric) -> Metric:
         """Create a metric."""
         try:
             result = self._connection.execute(insert(self._metric_table).values(
-                ref_id=metric.ref_id if metric.ref_id != BAD_REF_ID else None,
+                ref_id=int(metric.ref_id) if metric.ref_id != BAD_REF_ID else None,
                 archived=metric.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(metric.created_time),
                 last_modified_time=BasicValidator.timestamp_to_db_timestamp(metric.last_modified_time),
@@ -114,7 +91,7 @@ class SqliteMetricRepository(MetricRepository):
         except IntegrityError as err:
             raise RepositoryError(f"Metric with key='{metric.key}' already exists") from err
         metric.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        _upsert_events(self._connection, self._metric_event_table, metric)
+        upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
     def save(self, metric: Metric) -> Metric:
@@ -144,7 +121,7 @@ class SqliteMetricRepository(MetricRepository):
                 collection_due_at_day=metric.collection_params.due_at_day if metric.collection_params else None,
                 collection_due_at_month=metric.collection_params.due_at_month if metric.collection_params else None,
                 metric_unit=metric.metric_unit.value if metric.metric_unit else None))
-        _upsert_events(self._connection, self._metric_event_table, metric)
+        upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
     def get_by_key(self, key: MetricKey) -> Metric:
@@ -201,7 +178,7 @@ class SqliteMetricRepository(MetricRepository):
             _events=[],
             _key=BasicValidator.metric_key_validate_and_clean(row["the_key"]),
             _name=BasicValidator.entity_name_validate_and_clean(row["name"]),
-            _collection_params=MetricCollectionParams(
+            _collection_params=RecurringTaskGenParams(
                 project_ref_id=BasicValidator.entity_id_validate_and_clean(str(row["collection_project_ref_id"])),
                 period=BasicValidator.recurring_task_period_validate_and_clean(row["collection_period"]),
                 eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row["collection_eisen"]],
@@ -240,7 +217,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             Column('value', Float, nullable=False),
             Column('notes', UnicodeText, nullable=True),
             keep_existing=True)
-        self._metric_entry_event_table = _build_event_table(self._metric_entry_table, metadata)
+        self._metric_entry_event_table = build_event_table(self._metric_entry_table, metadata)
 
     def create(self, metric_entry: MetricEntry) -> MetricEntry:
         """Create a metric entry."""
@@ -256,7 +233,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             value=metric_entry.value,
             notes=metric_entry.notes))
         metric_entry.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        _upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
+        upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
         return metric_entry
 
     def save(self, metric_entry: MetricEntry) -> MetricEntry:
@@ -274,7 +251,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
                 collection_time=metric_entry.collection_time,
                 value=metric_entry.value,
                 notes=metric_entry.notes))
-        _upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
+        upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
         return metric_entry
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> MetricEntry:

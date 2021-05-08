@@ -4,9 +4,13 @@ from typing import Final, Optional, Iterable
 
 import typing
 
-from domain.metrics.metric import MetricCollectionParams
+from domain.prm.infra.prm_engine import PrmEngine
+from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.prm_sync_service import PrmSyncService
+from domain.shared import RecurringTaskGenParams
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey, \
+    BasicValidator
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService, BigPlanEssentials, RecurringTaskEssentials
@@ -26,6 +30,7 @@ class SyncLocalAndNotionController:
     """The controller for syncing the local and Notion data."""
 
     _time_provider: Final[TimeProvider]
+    _basic_validator: Final[BasicValidator]
     _global_properties: Final[GlobalProperties]
     _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]
@@ -35,15 +40,19 @@ class SyncLocalAndNotionController:
     _big_plans_service: Final[BigPlansService]
     _smart_lists_service: Final[SmartListsService]
     _metrics_service: Final[MetricsService]
+    _prm_engine: Final[PrmEngine]
+    _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, global_properties: GlobalProperties,
+            self, time_provider: TimeProvider, basic_validator: BasicValidator, global_properties: GlobalProperties,
             workspaces_service: WorkspacesService, vacations_service: VacationsService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
-            smart_lists_service: SmartListsService, metrics_service: MetricsService) -> None:
+            smart_lists_service: SmartListsService, metrics_service: MetricsService,
+            prm_engine: PrmEngine, prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
+        self._basic_validator = basic_validator
         self._global_properties = global_properties
         self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
@@ -53,6 +62,8 @@ class SyncLocalAndNotionController:
         self._big_plans_service = big_plans_service
         self._smart_lists_service = smart_lists_service
         self._metrics_service = metrics_service
+        self._prm_engine = prm_engine
+        self._prm_notion_manager = prm_notion_manager
 
     def sync(
             self,
@@ -68,6 +79,7 @@ class SyncLocalAndNotionController:
             filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]],
             filter_metric_keys: Optional[Iterable[MetricKey]],
             filter_metric_entry_ref_ids: Optional[Iterable[EntityId]],
+            filter_person_ref_ids: Optional[Iterable[EntityId]],
             sync_prefer: SyncPrefer = SyncPrefer.NOTION) -> None:
         """Sync the local and Notion data."""
         filter_recurring_task_ref_ids_set = \
@@ -90,6 +102,9 @@ class SyncLocalAndNotionController:
                 LOGGER.info("Recreating metrics structure")
                 self._metrics_service.upsert_root_notion_structure(workspace_page)
 
+                LOGGER.info("Recreating the PRM database structure")
+                self._prm_notion_manager.upsert_root_notion_structure(workspace_page)
+
             LOGGER.info("Syncing the workspace")
             self._workspaces_service.workspace_sync(sync_prefer)
 
@@ -99,6 +114,8 @@ class SyncLocalAndNotionController:
                 drop_all_notion, sync_even_if_not_modified, filter_vacation_ref_ids, sync_prefer)
 
         all_metrics = self._metrics_service.load_all_metrics(allow_archived=True)
+        with self._prm_engine.get_unit_of_work() as uow:
+            all_persons = uow.person_repository.find_all(allow_archived=True)
 
         if SyncTarget.PROJECTS in sync_targets \
             or SyncTarget.INBOX_TASKS in sync_targets \
@@ -159,6 +176,7 @@ class SyncLocalAndNotionController:
                         [RecurringTaskEssentials(rt.ref_id, rt.name, rt.period, rt.the_type)
                          for rt in all_recurring_tasks],
                         all_metrics,
+                        all_persons,
                         sync_even_if_not_modified,
                         filter_inbox_task_ref_ids,
                         sync_prefer)
@@ -266,10 +284,10 @@ class SyncLocalAndNotionController:
                 if filter_metric_keys is not None and metric.key not in filter_metric_keys:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of metric filtering")
                     continue
-                LOGGER.info(f"Syncing inbox tasks '{inbox_task.name}'")
-                collection_params = typing.cast(MetricCollectionParams, metric.collection_params)
+                LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
+                collection_params = typing.cast(RecurringTaskGenParams, metric.collection_params)
                 schedule = schedules.get_schedule(
-                    typing.cast(MetricCollectionParams, metric.collection_params).period, metric.name,
+                    typing.cast(RecurringTaskGenParams, metric.collection_params).period, metric.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                     None, collection_params.actionable_from_day, collection_params.actionable_from_month,
                     collection_params.due_at_time, collection_params.due_at_day, collection_params.due_at_month)
@@ -282,3 +300,39 @@ class SyncLocalAndNotionController:
                     difficulty=collection_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_time=schedule.due_time)
+
+        if SyncTarget.PRM in sync_targets:
+            LOGGER.info("Syncing the PRM database")
+            prm_sync_service = PrmSyncService(self._basic_validator, self._prm_engine, self._prm_notion_manager)
+            persons = prm_sync_service.sync(
+                drop_all_notion_side=drop_all_notion, sync_even_if_not_modified=sync_even_if_not_modified,
+                filter_ref_ids=filter_person_ref_ids, sync_prefer=sync_prefer)
+            all_persons_by_ref_id = {p.ref_id: p for p in persons}
+            all_person_catch_up_tasks = self._inbox_tasks_service.load_all_inbox_tasks(
+                allow_archived=True, filter_person_ref_ids=[p.ref_id for p in all_persons])
+
+            for inbox_task in all_person_catch_up_tasks:
+                person = all_persons_by_ref_id[typing.cast(EntityId, inbox_task.person_ref_id)]
+                if filter_person_ref_ids is not None and person.ref_id not in filter_person_ref_ids:
+                    LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
+                    continue
+                LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
+                if person.archived:
+                    if not inbox_task.archived:
+                        self._inbox_tasks_service.archive_inbox_task(inbox_task.ref_id)
+                else:
+                    catch_up_params = typing.cast(RecurringTaskGenParams, person.catch_up_params)
+                    schedule = schedules.get_schedule(
+                        typing.cast(RecurringTaskGenParams, person.catch_up_params).period, person.name,
+                        typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
+                        None, catch_up_params.actionable_from_day, catch_up_params.actionable_from_month,
+                        catch_up_params.due_at_time, catch_up_params.due_at_day, catch_up_params.due_at_month)
+                    self._inbox_tasks_service.set_inbox_task_to_person_link(
+                        ref_id=inbox_task.ref_id,
+                        name=schedule.full_name,
+                        recurring_timeline=schedule.timeline,
+                        recurring_period=catch_up_params.period,
+                        eisen=catch_up_params.eisen,
+                        difficulty=catch_up_params.difficulty,
+                        actionable_date=schedule.actionable_date,
+                        due_time=schedule.due_time)

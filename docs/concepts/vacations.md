@@ -3,9 +3,13 @@
 A _vacation_ is a set period of time when some scheduled tasks aren't scheduled. Vacations are attached to the
 workspace. They can be created both via Jupiter commands and in Notion.
 
+In the workspace, you can see the vacations:
+
+![Vacations](../assets/concepts-workspace.png)
+
 After creating a workspace you'll have an empty set of vacations. Adding to them you can obtain something like:
 
-![Workspace image](../assets/concepts-vacations.png)
+![Vacations](../assets/concepts-vacations.png)
 
 Alternatively you can see vacations via `vacation-show` like so:
 

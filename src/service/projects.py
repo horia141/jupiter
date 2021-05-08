@@ -3,7 +3,8 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional
 
-from models.basic import ProjectKey, BasicValidator, ModelValidationError, SyncPrefer, EntityId
+from models.basic import ProjectKey, BasicValidator, SyncPrefer, EntityId
+from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink
 from remote.notion.projects_manager import NotionProjectsManager
 from repository.projects import ProjectsRepository, ProjectRow

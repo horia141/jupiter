@@ -4,7 +4,8 @@ from typing import Final, Optional
 
 from pendulum.tz.timezone import Timezone
 
-from models.basic import BasicValidator, SyncPrefer, ModelValidationError, EntityId
+from models.basic import BasicValidator, SyncPrefer, EntityId
+from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink
 from remote.notion.workspaces import WorkspaceSingleton
 from repository.workspace import WorkspaceRepository, Workspace

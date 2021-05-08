@@ -9,11 +9,12 @@ import typing
 
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
-from domain.metrics.metric import Metric, MetricCollectionParams
+from domain.metrics.metric import Metric
+from domain.shared import RecurringTaskGenParams
 from domain.metrics.infra.metric_repository import MetricRepository
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import EntityId, MetricKey, RecurringTaskPeriod, MetricUnit, BasicValidator, ADate, EntityName
-from models.framework import RepositoryError
+from models.errors import RepositoryError
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 
@@ -225,7 +226,7 @@ class YamlMetricRepository(MetricRepository):
             _events=[],
             _key=row.key,
             _name=row.name,
-            _collection_params=MetricCollectionParams(
+            _collection_params=RecurringTaskGenParams(
                 project_ref_id=row.collection_project_ref_id,
                 period=row.collection_period,
                 eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row.collection_eisen],

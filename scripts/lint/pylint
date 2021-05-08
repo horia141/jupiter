@@ -428,7 +428,7 @@ good-names=i,
            _
 
 # Include a hint for the correct naming format with invalid-name.
-include-naming-hint=no
+include-naming-hint=yes
 
 # Naming style matching correct inline iteration names.
 inlinevar-naming-style=any
@@ -567,7 +567,7 @@ max-parents=7
 max-public-methods=64
 
 # Maximum number of return / yield for function / method body.
-max-returns=10
+max-returns=16
 
 # Maximum number of statements in function / method body.
 max-statements=200

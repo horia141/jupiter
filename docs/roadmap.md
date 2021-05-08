@@ -7,7 +7,6 @@ New features:
 
 * Support a journal
 * Support habits as separated from chores
-* Support a Rolodex
 * Support megaplans
 * Define visual identity
 * Translate app and docs in one other language
@@ -22,7 +21,7 @@ Public infrastructure:
 
 Quality:
 
-* Switch from text files to SQLite storage
+* (In Progress) Switch from text files to SQLite storage
 * Upgrade to Notion public API (when available)
 
 Beyond this the plans get _ambitious_. Here's some product-wise plans:

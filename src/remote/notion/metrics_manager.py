@@ -10,23 +10,24 @@ from domain.metrics.metric import Metric
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import Timestamp, EntityId, BasicValidator, ADate
+from models.framework import BaseNotionRow
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
-from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
+from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class _MetricNotionCollection(BaseItem):
+class _MetricNotionCollection(BaseNotionRow):
     """A metric collection on Notion side."""
 
     name: str
 
 
 @dataclass()
-class _MetricNotionRow(BaseItem):
+class _MetricNotionRow(BaseNotionRow):
     """A metric entry on Notion side."""
 
     collection_time: ADate

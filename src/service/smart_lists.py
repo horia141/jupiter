@@ -6,7 +6,8 @@ from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import EntityId, ModelValidationError, BasicValidator, SyncPrefer, SmartListKey, Tag
+from models.basic import EntityId, BasicValidator, SyncPrefer, SmartListKey, Tag
+from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from service.errors import ServiceValidationError, ServiceError

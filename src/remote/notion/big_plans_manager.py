@@ -6,10 +6,11 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
 from notion.collection import CollectionRowBlock
 
+from models.framework import BaseNotionRow
 from models.basic import BasicValidator, BigPlanStatus, EntityId, ADate, Timestamp, InboxTaskSource
 from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
-from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
+from remote.notion.infra.collections_manager import CollectionsManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -17,12 +18,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class BigPlanNotionCollection(BaseItem):
+class BigPlanNotionCollection(BaseNotionRow):
     """A big plan collection on Notion side."""
 
 
 @dataclass()
-class BigPlanNotionRow(BaseItem):
+class BigPlanNotionRow(BaseNotionRow):
     """A big plan on Notion side."""
 
     name: str

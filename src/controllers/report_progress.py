@@ -11,6 +11,7 @@ from nested_dataclasses import nested
 from pendulum import UTC
 
 from domain.metrics.metric import Metric
+from domain.prm.infra.prm_engine import PrmEngine
 from models import schedules
 from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
     Timestamp, InboxTaskSource, MetricKey
@@ -152,11 +153,13 @@ class ReportProgressController:
     _big_plans_service = Final[BigPlansService]
     _recurring_tasks_service: Final[RecurringTasksService]
     _metrics_service: Final[MetricsService]
+    _prm_engine: Final[PrmEngine]
 
     def __init__(
             self, global_properties: GlobalProperties, projects_service: ProjectsService,
             inbox_tasks_service: InboxTasksService, big_plans_service: BigPlansService,
-            recurring_tasks_service: RecurringTasksService, metrics_service: MetricsService) -> None:
+            recurring_tasks_service: RecurringTasksService, metrics_service: MetricsService,
+            prm_engine: PrmEngine) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._projects_service = projects_service
@@ -164,6 +167,7 @@ class ReportProgressController:
         self._big_plans_service = big_plans_service
         self._recurring_tasks_service = recurring_tasks_service
         self._metrics_service = metrics_service
+        self._prm_engine = prm_engine
 
     def run_report(
             self, right_now: Timestamp,
@@ -172,6 +176,7 @@ class ReportProgressController:
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]],
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]],
             filter_metric_keys: Optional[Iterable[MetricKey]],
+            filter_person_ref_ids: Optional[Iterable[EntityId]],
             period: RecurringTaskPeriod, breakdown_period: Optional[RecurringTaskPeriod] = None) -> RunReportResponse:
         """Run a progress report."""
         today = right_now.date()
@@ -179,6 +184,9 @@ class ReportProgressController:
         projects_by_ref_id: Dict[EntityId, ProjectRow] = {p.ref_id: p for p in projects}
         metrics = self._metrics_service.load_all_metrics(allow_archived=True, filter_keys=filter_metric_keys)
         metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
+        with self._prm_engine.get_unit_of_work() as uow:
+            persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=filter_person_ref_ids)
+            persons_by_ref_id = {p.ref_id: p for p in persons}
         schedule = schedules.get_schedule(
             period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
 
@@ -195,7 +203,9 @@ class ReportProgressController:
                 (not (filter_recurring_task_ref_ids is not None) or
                  it.recurring_task_ref_id in filter_recurring_task_ref_ids))
             or (it.source is InboxTaskSource.METRIC and
-                (not (filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))]
+                (not (filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))
+            or (it.source is InboxTaskSource.PERSON and
+                (not (filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))]
 
         all_big_plans = self._big_plans_service.load_all_big_plans(
             allow_archived=True, filter_ref_ids=filter_big_plan_ref_ids,

@@ -7,14 +7,12 @@ from typing import Final, Optional, List, Dict, DefaultDict
 import typing
 
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from models.basic import MetricKey, EntityId
 from models.framework import Command
 from service.inbox_tasks import InboxTask, InboxTasksService
 from service.projects import Project, ProjectsService
-from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,20 +41,15 @@ class MetricFindCommand(Command['MetricFindCommand.Args', 'MetricFindCommand.Res
 
         metrics: List['MetricFindCommand.ResponseEntry']
 
-    _time_provider: Final[TimeProvider]
     _metric_engine: Final[MetricEngine]
-    _notion_manager: Final[MetricNotionManager]
     _project_service: Final[ProjectsService]
     _inbox_tasks_service: Final[InboxTasksService]
 
     def __init__(
-            self, time_provider: TimeProvider, metric_engine: MetricEngine,
-            notion_manager: MetricNotionManager, project_service: ProjectsService,
+            self, metric_engine: MetricEngine, project_service: ProjectsService,
             inbox_tasks_service: InboxTasksService) -> None:
         """Constructor."""
-        self._time_provider = time_provider
         self._metric_engine = metric_engine
-        self._notion_manager = notion_manager
         self._project_service = project_service
         self._inbox_tasks_service = inbox_tasks_service
 

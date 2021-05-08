@@ -1,24 +1,10 @@
 """A metric."""
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional
 
-from models.basic import MetricKey, RecurringTaskPeriod, MetricUnit, Timestamp, EntityName, EntityId, Eisen, Difficulty
+from domain.shared import RecurringTaskGenParams
+from models.basic import MetricKey, MetricUnit, Timestamp, EntityName
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
-
-
-@dataclass()
-class MetricCollectionParams:
-    """Parameters for metric collection."""
-
-    project_ref_id: EntityId
-    period: RecurringTaskPeriod
-    eisen: List[Eisen]
-    difficulty: Optional[Difficulty]
-    actionable_from_day: Optional[int]
-    actionable_from_month: Optional[int]
-    due_at_time: Optional[str]
-    due_at_day: Optional[int]
-    due_at_month: Optional[int]
 
 
 @dataclass()
@@ -30,24 +16,24 @@ class Metric(AggregateRoot):
         """Created event."""
         key: MetricKey
         name: EntityName
-        collection_params: Optional[MetricCollectionParams]
+        collection_params: Optional[RecurringTaskGenParams]
         metric_unit: Optional[MetricUnit]
 
     @dataclass(frozen=True)
     class Updated(Event):
         """Updated event."""
         name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
-        collection_params: UpdateAction[Optional[MetricCollectionParams]] \
+        collection_params: UpdateAction[Optional[RecurringTaskGenParams]] \
             = field(default_factory=UpdateAction.do_nothing)
 
     _key: MetricKey
     _name: EntityName
-    _collection_params: Optional[MetricCollectionParams]
+    _collection_params: Optional[RecurringTaskGenParams]
     _metric_unit: Optional[MetricUnit]
 
     @staticmethod
     def new_metric(
-            key: MetricKey, name: EntityName, collection_params: Optional[MetricCollectionParams],
+            key: MetricKey, name: EntityName, collection_params: Optional[RecurringTaskGenParams],
             metric_unit: Optional[MetricUnit], created_time: Timestamp) -> 'Metric':
         """Create a metric."""
         metric = Metric(
@@ -75,7 +61,7 @@ class Metric(AggregateRoot):
         return self
 
     def change_collection_params(
-            self, collection_params: Optional[MetricCollectionParams], modification_time: Timestamp) -> 'Metric':
+            self, collection_params: Optional[RecurringTaskGenParams], modification_time: Timestamp) -> 'Metric':
         """Change the collection period of the metric."""
         if self._collection_params == collection_params:
             return self
@@ -96,7 +82,7 @@ class Metric(AggregateRoot):
         return self._name
 
     @property
-    def collection_params(self) -> Optional[MetricCollectionParams]:
+    def collection_params(self) -> Optional[RecurringTaskGenParams]:
         """The collection parameters of the metric."""
         return self._collection_params
 

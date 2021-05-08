@@ -11,12 +11,17 @@ import typing
 from pendulum import Date, DateTime
 
 from models.basic import EntityId, Timestamp, BasicValidator
+from remote.notion.common import NotionId
 from utils.storage import JSONValueType
 
 BAD_REF_ID = EntityId("bad-entity-id")
 
 
 UpdateActionType = TypeVar('UpdateActionType')
+
+
+class Value:
+    """A value object in the domain."""
 
 
 class UpdateAction(Generic[UpdateActionType]):
@@ -82,11 +87,13 @@ class Event:
                     "value": process_primitive(primitive.value, key) if primitive.should_change else None
                 }
             elif dataclasses.is_dataclass(primitive):
-                return {key: process_primitive(value, key) for key, value in dataclasses.asdict(primitive).items()}
+                return {k: process_primitive(v, k) for k, v in dataclasses.asdict(primitive).items()}
             elif isinstance(primitive, list):
                 return [process_primitive(p, key) for p in primitive]
+            elif isinstance(primitive, dict):
+                return {k: process_primitive(v, k) for k, v in primitive.items()}
             else:
-                raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__} -> {key}")
+                raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__}")
         return process_primitive(self, "root")
 
 
@@ -206,5 +213,47 @@ class Engine(Generic[UnitOfWorkType], abc.ABC):
         """Build a unit of work."""
 
 
-class RepositoryError(Exception):
-    """An exception raised when loading data from a repository."""
+NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
+NotionRowNewAggregateRootExtraInfo = TypeVar('NotionRowNewAggregateRootExtraInfo')
+
+
+@dataclass()
+class BaseNotionRow:
+    """A basic item type, which must contain a Notion id and an local id."""
+
+    notion_id: NotionId
+    ref_id: Optional[str]
+
+
+BAD_NOTION_ID = NotionId("bad-notion-id")
+
+
+# This is actually an ABC.
+@dataclass()
+class NotionRow(Generic[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo], BaseNotionRow):
+    """Base class for Notion-side entities."""
+
+    last_edited_time: Timestamp
+
+    @staticmethod
+    def new_notion_row(
+            aggregate_root: NotionRowAggregateRoot) \
+            -> 'NotionRow[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo]':
+        """Construct a new Notion row from a ggiven aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def join_with_aggregate_root(
+            self, aggregate_root: NotionRowAggregateRoot) \
+            -> 'NotionRow[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo]':
+        """Add to this Notion row from a given aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def new_aggregate_root(self, extra_info: NotionRowNewAggregateRootExtraInfo) -> NotionRowAggregateRoot:
+        """Construct a new aggregate root from this notion row."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def apply_to_aggregate_root(
+            self, aggregate_root: NotionRowAggregateRoot,
+            extra_info: NotionRowNewAggregateRootExtraInfo) -> NotionRowAggregateRoot:
+        """Obtain the aggregate root form of this, with a possible error."""
+        raise NotImplementedError("Can't use a base NotionRow class.")

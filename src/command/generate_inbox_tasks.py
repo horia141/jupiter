@@ -48,6 +48,8 @@ class GenerateInboxTasks(command.Command):
                             help="Allow only recurring tasks with this id")
         parser.add_argument("--metric", dest="metric_keys", default=[], action="append",
                             help="Allow only these metrics")
+        parser.add_argument("--person", dest="person_ref_ids", default=[], action="append",
+                            help="Allow only these persons")
         parser.add_argument("--period", default=[RecurringTaskPeriod.DAILY.value], action="append",
                             choices=BasicValidator.recurring_task_period_values(),
                             help="The period for which the upsert should happen. Defaults to all")
@@ -67,10 +69,13 @@ class GenerateInboxTasks(command.Command):
             if len(args.recurring_task_ref_ids) > 0 else None
         metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
+        person_ref_ids = [
+            self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.person_ref_ids] \
+            if len(args.person_ref_ids) > 0 else None
         period_filter = frozenset(self._basic_validator.recurring_task_period_validate_and_clean(p)
                                   for p in args.period) \
             if len(args.period) > 0 else None
         sync_even_if_not_modified: bool = args.sync_even_if_not_modified
         self._generate_inbox_tasks_controller.recurring_tasks_gen(
-            right_now, gen_targets, project_keys, recurring_task_ref_ids, metric_keys, period_filter,
+            right_now, gen_targets, project_keys, recurring_task_ref_ids, metric_keys, person_ref_ids, period_filter,
             sync_even_if_not_modified)

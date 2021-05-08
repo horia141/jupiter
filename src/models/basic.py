@@ -5,17 +5,14 @@ import re
 from typing import Dict, Iterable, Optional, NewType, Final, FrozenSet, Tuple, Pattern, Union, cast
 from urllib.parse import urlparse
 
+from notion.collection import NotionDate
 import pendulum
 import pendulum.parsing.exceptions
-from notion.collection import NotionDate
 from pendulum.tz.timezone import Timezone, UTC
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
+from models.errors import ModelValidationError
 from utils.global_properties import GlobalProperties
-
-
-class ModelValidationError(Exception):
-    """An exception raised when validating some model type."""
 
 
 @enum.unique
@@ -30,6 +27,7 @@ class SyncTarget(enum.Enum):
     BIG_PLANS = "big-plans"
     SMART_LISTS = "smart-lists"
     METRICS = "metrics"
+    PRM = "prm"
 
 
 @enum.unique
@@ -144,6 +142,7 @@ class InboxTaskSource(enum.Enum):
     BIG_PLAN = "big-plan"
     RECURRING_TASK = "recurring-task"
     METRIC = "metric"
+    PERSON = "person"
 
     def for_notion(self) -> str:
         """A prettier version of the value for Notion."""
@@ -654,7 +653,8 @@ class BasicValidator:
         """The possible values for recurring task types."""
         return BasicValidator._recurring_task_type_values
 
-    def recurring_task_due_at_time_validate_and_clean(self, recurring_task_due_at_time_raw: Optional[str]) -> str:
+    @staticmethod
+    def recurring_task_due_at_time_validate_and_clean(recurring_task_due_at_time_raw: Optional[str]) -> str:
         """Validate and clean the due at time info."""
         if not recurring_task_due_at_time_raw:
             raise ModelValidationError("Expected the due time info to be non-null")
@@ -664,20 +664,21 @@ class BasicValidator:
         if len(recurring_task_due_at_time_str) == 0:
             raise ModelValidationError("Expected due time info to be non-empty")
 
-        if not self._recurring_task_due_at_time_re.match(recurring_task_due_at_time_str):
+        if not BasicValidator._recurring_task_due_at_time_re.match(recurring_task_due_at_time_str):
             raise ModelValidationError(
                 f"Expected due time info '{recurring_task_due_at_time_raw}' to " +
-                f"match '{self._recurring_task_due_at_time_re.pattern}'")
+                f"match '{BasicValidator._recurring_task_due_at_time_re.pattern}'")
 
         return recurring_task_due_at_time_str
 
+    @staticmethod
     def recurring_task_due_at_day_validate_and_clean(
-            self, period: RecurringTaskPeriod, recurring_task_due_at_day_raw: Optional[int]) -> int:
+            period: RecurringTaskPeriod, recurring_task_due_at_day_raw: Optional[int]) -> int:
         """Validate and clean the recurring task due at day info."""
         if not recurring_task_due_at_day_raw:
             raise ModelValidationError("Expected the due day info to be non-null")
 
-        bounds = self._recurring_task_due_at_day_bounds[period]
+        bounds = BasicValidator._recurring_task_due_at_day_bounds[period]
 
         if recurring_task_due_at_day_raw < bounds[0] or recurring_task_due_at_day_raw > bounds[1]:
             raise ModelValidationError(
@@ -685,13 +686,14 @@ class BasicValidator:
 
         return recurring_task_due_at_day_raw
 
+    @staticmethod
     def recurring_task_due_at_month_validate_and_clean(
-            self, period: RecurringTaskPeriod, recurring_task_due_at_month_raw: Optional[int]) -> int:
+            period: RecurringTaskPeriod, recurring_task_due_at_month_raw: Optional[int]) -> int:
         """Validate and clean the recurring task due at day info."""
         if not recurring_task_due_at_month_raw:
             raise ModelValidationError("Expected the due month info to be non-null")
 
-        bounds = self._recurring_task_due_at_month_bounds[period]
+        bounds = BasicValidator._recurring_task_due_at_month_bounds[period]
 
         if recurring_task_due_at_month_raw < bounds[0] or recurring_task_due_at_month_raw > bounds[1]:
             raise ModelValidationError(

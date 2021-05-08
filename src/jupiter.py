@@ -32,6 +32,12 @@ from command.metric_entry_update import MetricEntryUpdate
 from command.metric_update import MetricUpdate
 from command.metric_remove import MetricRemove
 from command.metric_show import MetricShow
+from command.person_archive import PersonArchive
+from command.person_create import PersonCreate
+from command.person_remove import PersonRemove
+from command.person_update import PersonUpdate
+from command.prm_show import PrmShow
+from command.prm_update import PrmUpdate
 from command.projects_archive import ProjectArchive
 from command.projects_create import ProjectCreate
 from command.projects_set_name import ProjectSetName
@@ -97,6 +103,12 @@ from domain.metrics.commands.metric_entry_update import MetricEntryUpdateCommand
 from domain.metrics.commands.metric_find import MetricFindCommand
 from domain.metrics.commands.metric_remove import MetricRemoveCommand
 from domain.metrics.commands.metric_update import MetricUpdateCommand
+from domain.prm.commands.person_archive import PersonArchiveCommand
+from domain.prm.commands.person_create import PersonCreateCommand
+from domain.prm.commands.person_remove import PersonRemoveCommand
+from domain.prm.commands.person_update import PersonUpdateCommand
+from domain.prm.commands.prm_database_find import PrmDatabaseFindCommand
+from domain.prm.commands.prm_database_update import PrmDatabaseUpdateCommand
 from domain.smart_lists.commands.smart_list_archive import SmartListArchiveCommand
 from domain.smart_lists.commands.smart_list_create import SmartListCreateCommand
 from domain.smart_lists.commands.smart_list_find import SmartListFindCommand
@@ -124,6 +136,7 @@ from remote.notion.infra.connection import \
     MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionConnection
 from remote.notion.infra.pages_manager import PagesManager
 from remote.notion.metrics_manager import NotionMetricManager
+from remote.notion.prm_manager import NotionPrmManager
 from remote.notion.projects_manager import NotionProjectsManager
 from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from remote.notion.smart_lists_manager import NotionSmartListsManager
@@ -132,6 +145,7 @@ from remote.notion.workspaces import WorkspaceSingleton, MissingWorkspaceScreenE
 from repository.big_plans import BigPlansRepository
 from repository.inbox_tasks import InboxTasksRepository
 from repository.sqlite.metrics import SqliteMetricEngine
+from repository.sqlite.prm import SqlitePrmEngine
 from repository.yaml.smart_lists import YamlSmartListEngine
 from repository.projects import ProjectsRepository
 from repository.recurring_tasks import RecurringTasksRepository
@@ -179,6 +193,9 @@ def main() -> None:
         sqlite_metric_engine = SqliteMetricEngine(SqliteMetricEngine.Config(
             global_properties.sqlite_db_url, global_properties.alembic_ini_path,
             global_properties.alembic_migrations_path))
+        sqlite_prm_engine = SqlitePrmEngine(SqlitePrmEngine.Config(
+            global_properties.sqlite_db_url, global_properties.alembic_ini_path,
+            global_properties.alembic_migrations_path))
 
         notion_vacation_manager = NotionVacationsManager(
             time_provider, basic_validator, collections_manager)
@@ -191,6 +208,7 @@ def main() -> None:
             time_provider, basic_validator, pages_manager, collections_manager)
         notion_metric_manager = NotionMetricManager(
             time_provider, basic_validator, pages_manager, collections_manager)
+        notion_prm_manager = NotionPrmManager(time_provider, basic_validator, collections_manager)
 
         workspaces_service = WorkspacesService(
             basic_validator, workspaces_repository, workspaces_singleton)
@@ -210,8 +228,8 @@ def main() -> None:
             basic_validator, time_provider, sqlite_metric_engine, notion_metric_manager)
 
         workspaces_controller = WorkspacesController(
-            notion_connection, workspaces_service, vacations_service, projects_service, smart_lists_service,
-            metrics_service)
+            time_provider, notion_connection, workspaces_service, vacations_service, projects_service,
+            smart_lists_service, metrics_service, sqlite_prm_engine, notion_prm_manager)
         projects_controller = ProjectsController(
             workspaces_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
             metrics_service)
@@ -222,17 +240,18 @@ def main() -> None:
         big_plans_controller = BigPlansController(
             workspaces_service, projects_service, inbox_tasks_service, big_plans_service)
         sync_local_and_notion_controller = SyncLocalAndNotionController(
-            time_provider, global_properties, workspaces_service, vacations_service, projects_service,
-            inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service)
+            time_provider, basic_validator, global_properties, workspaces_service, vacations_service, projects_service,
+            inbox_tasks_service, recurring_tasks_service, big_plans_service, smart_lists_service, metrics_service,
+            sqlite_prm_engine, notion_prm_manager)
         generate_inbox_tasks_controller = GenerateInboxTasksController(
             global_properties, workspaces_service, projects_service, vacations_service, inbox_tasks_service,
-            recurring_tasks_service, sqlite_metric_engine)
+            recurring_tasks_service, sqlite_metric_engine, sqlite_prm_engine)
         report_progress_controller = ReportProgressController(
             global_properties, projects_service, inbox_tasks_service, big_plans_service, recurring_tasks_service,
-            metrics_service)
+            metrics_service, sqlite_prm_engine)
         garbage_collect_controller = GarbageCollectNotionController(
-            vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service, big_plans_service,
-            smart_lists_service, metrics_service)
+            time_provider, vacations_service, projects_service, inbox_tasks_service, recurring_tasks_service,
+            big_plans_service, smart_lists_service, metrics_service, sqlite_prm_engine, notion_prm_manager)
 
         commands = {
             # CRUD Commands
@@ -324,7 +343,7 @@ def main() -> None:
                 global_properties, time_provider, basic_validator, sqlite_metric_engine, notion_metric_manager,
                 workspaces_service, projects_service, inbox_tasks_service)),
             MetricShow(basic_validator, MetricFindCommand(
-                time_provider, sqlite_metric_engine, notion_metric_manager, projects_service, inbox_tasks_service)),
+                sqlite_metric_engine, projects_service, inbox_tasks_service)),
             MetricRemove(basic_validator, MetricRemoveCommand(
                 time_provider, sqlite_metric_engine, notion_metric_manager, inbox_tasks_service)),
             MetricEntryCreate(basic_validator, MetricEntryCreateCommand(
@@ -335,6 +354,20 @@ def main() -> None:
                 time_provider, sqlite_metric_engine, notion_metric_manager)),
             MetricEntryRemove(basic_validator, MetricEntryRemoveCommand(
                 sqlite_metric_engine, notion_metric_manager)),
+            PrmUpdate(basic_validator, PrmDatabaseUpdateCommand(
+                time_provider, sqlite_prm_engine, notion_prm_manager, workspaces_service, projects_service,
+                inbox_tasks_service)),
+            PrmShow(basic_validator, PrmDatabaseFindCommand(
+                sqlite_prm_engine, projects_service, inbox_tasks_service)),
+            PersonCreate(basic_validator, PersonCreateCommand(
+                time_provider, sqlite_prm_engine, notion_prm_manager, inbox_tasks_service, workspaces_service)),
+            PersonArchive(basic_validator, PersonArchiveCommand(
+                time_provider, sqlite_prm_engine, notion_prm_manager, inbox_tasks_service)),
+            PersonUpdate(basic_validator, PersonUpdateCommand(
+                global_properties, time_provider, basic_validator, sqlite_prm_engine, notion_prm_manager,
+                inbox_tasks_service, workspaces_service)),
+            PersonRemove(basic_validator, PersonRemoveCommand(
+                time_provider, sqlite_prm_engine, notion_prm_manager, inbox_tasks_service)),
             # Complex commands.
             SyncLocalAndNotion(basic_validator, sync_local_and_notion_controller),
             GenerateInboxTasks(basic_validator, time_provider, generate_inbox_tasks_controller),

@@ -4,6 +4,10 @@ from typing import Final, Optional, Iterable
 
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
+from domain.prm.commands.person_remove import PersonRemoveCommand
+from domain.prm.infra.prm_engine import PrmEngine
+from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.person import Person
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.vacations.vacation import Vacation
@@ -15,6 +19,7 @@ from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 from service.smart_lists import SmartListsService
 from service.vacations import VacationsService
+from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +27,7 @@ LOGGER = logging.getLogger(__name__)
 class GarbageCollectNotionController:
     """The controller for Notion systems garbage collection."""
 
+    _time_provider: Final[TimeProvider]
     _vacations_service: Final[VacationsService]
     _projects_service: Final[ProjectsService]
     _inbox_tasks_service: Final[InboxTasksService]
@@ -29,13 +35,16 @@ class GarbageCollectNotionController:
     _big_plans_service: Final[BigPlansService]
     _smart_lists_service: Final[SmartListsService]
     _metrics_service: Final[MetricsService]
+    _prm_engine: Final[PrmEngine]
+    _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, vacations_service: VacationsService, projects_service: ProjectsService,
+            self, time_provider: TimeProvider, vacations_service: VacationsService, projects_service: ProjectsService,
             inbox_tasks_service: InboxTasksService, recurring_tasks_service: RecurringTasksService,
             big_plans_service: BigPlansService, smart_lists_service: SmartListsService,
-            metrics_service: MetricsService) -> None:
+            metrics_service: MetricsService, prm_engine: PrmEngine, prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
+        self._time_provider = time_provider
         self._vacations_service = vacations_service
         self._projects_service = projects_service
         self._inbox_tasks_service = inbox_tasks_service
@@ -43,6 +52,8 @@ class GarbageCollectNotionController:
         self._big_plans_service = big_plans_service
         self._smart_lists_service = smart_lists_service
         self._metrics_service = metrics_service
+        self._prm_engine = prm_engine
+        self._prm_notion_manager = prm_notion_manager
 
     def garbage_collect(
             self, sync_targets: Iterable[SyncTarget], project_keys: Optional[Iterable[ProjectKey]],
@@ -143,6 +154,20 @@ class GarbageCollectNotionController:
                         self._metrics_service.load_all_metric_entries_not_notion_gced(metric.ref_id)
                     self._do_drop_all_archived_metric_entries(metric_items)
 
+        if SyncTarget.PRM in sync_targets:
+            if do_anti_entropy:
+                LOGGER.info(f"Performing anti-entropy adjustments for persons in the PRM database")
+                with self._prm_engine.get_unit_of_work() as uow:
+                    persons = uow.person_repository.find_all(allow_archived=True)
+                self._do_anti_entropy_for_persons(persons)
+            if do_notion_cleanup:
+                LOGGER.info(f"Garbage collecting persons which were archived")
+                allowed_person_ref_ids = self._prm_notion_manager.load_all_saved_person_ref_ids()
+
+                with self._prm_engine.get_unit_of_work() as uow:
+                    persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=allowed_person_ref_ids)
+                self._do_drop_all_archived_persons(persons)
+
     def _do_anti_entropy_for_vacations(
             self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:
         vacations_names_set = {}
@@ -228,6 +253,19 @@ class GarbageCollectNotionController:
             metric_entries_collection_time_set[metric_entry.collection_time] = metric_entry
         return metric_entries_collection_time_set.values()
 
+    def _do_anti_entropy_for_persons(self, all_persons: Iterable[Person]) -> Iterable[Person]:
+        persons_name_set = {}
+        for person in all_persons:
+            if person.name in persons_name_set:
+                LOGGER.info(
+                    f"Found a duplicate person '{person.name}' - removing in anti-entropy")
+                PersonRemoveCommand(
+                    self._time_provider, self._prm_engine, self._prm_notion_manager, self._inbox_tasks_service)\
+                    .execute(person.ref_id)
+                continue
+            persons_name_set[person.name] = person
+        return persons_name_set.values()
+
     def _do_drop_all_archived_vacations(self, all_vacations: Iterable[Vacation]) -> None:
         for vacation in all_vacations:
             if not vacation.archived:
@@ -283,3 +321,10 @@ class GarbageCollectNotionController:
                 continue
             LOGGER.info(f"Removed an archived metric entry '{metric_entry.collection_time}' on Notion side")
             self._metrics_service.remove_metric_entry_on_notion_side(metric_entry.ref_id)
+
+    def _do_drop_all_archived_persons(self, persons: Iterable[Person]) -> None:
+        for person in persons:
+            if not person.archived:
+                continue
+            LOGGER.info(f"Removed an archived person '{person.name}' on Notion side")
+            self._prm_notion_manager.remove_person(person.ref_id)

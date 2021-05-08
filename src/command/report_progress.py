@@ -4,7 +4,8 @@ from typing import Final
 
 from command import command
 from controllers.report_progress import ReportProgressController
-from models.basic import BasicValidator, RecurringTaskPeriod, ModelValidationError, RecurringTaskType, InboxTaskSource
+from models.basic import BasicValidator, RecurringTaskPeriod, RecurringTaskType, InboxTaskSource
+from models.errors import ModelValidationError
 from utils.time_provider import TimeProvider
 
 
@@ -15,7 +16,8 @@ class ReportProgress(command.Command):
         InboxTaskSource.USER,
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.RECURRING_TASK,
-        InboxTaskSource.METRIC
+        InboxTaskSource.METRIC,
+        InboxTaskSource.PERSON
     ]
 
     _basic_validator: Final[BasicValidator]
@@ -54,6 +56,8 @@ class ReportProgress(command.Command):
                             help="Allow only tasks from these recurring tasks")
         parser.add_argument("--metric", dest="metric_keys", required=False, default=[], action="append",
                             help="The key of the metric")
+        parser.add_argument("--person-id", dest="person_ref_ids", default=[], action="append",
+                            help="Allow only tasks from these persons")
         parser.add_argument("--cover", dest="covers", default=["inbox-tasks", "big-plans"],
                             choices=["inbox-tasks", "big-plans"],
                             help="Show reporting info about certain parts")
@@ -85,6 +89,8 @@ class ReportProgress(command.Command):
             if len(args.recurring_task_ref_ids) > 0 else None
         metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
+        person_ref_ids = [self._basic_validator.entity_id_validate_and_clean(bp) for bp in args.person_ref_ids] \
+            if len(args.person_ref_ids) > 0 else None
         covers = args.covers
         breakdowns = args.breakdowns if len(args.breakdowns) > 0 else ["global"]
         breakdown_period_raw = self._basic_validator.recurring_task_period_validate_and_clean(args.breakdown_period) \
@@ -102,8 +108,8 @@ class ReportProgress(command.Command):
                 breakdown_period = self._check_period_against_breakdown_period(breakdown_period_raw, period)
 
         response = self._report_progress_controller.run_report(
-            right_now, project_keys, sources, big_plan_ref_ids, recurring_task_ref_ids, metric_keys, period,
-            breakdown_period=breakdown_period)
+            right_now, project_keys, sources, big_plan_ref_ids, recurring_task_ref_ids, metric_keys,
+            person_ref_ids, period, breakdown_period=breakdown_period)
 
         sources_to_present = [s for s in ReportProgress._SOURCES_TO_REPORT if s in sources]\
             if sources else ReportProgress._SOURCES_TO_REPORT

@@ -25,6 +25,7 @@ class InboxTaskRow(BaseEntityRow):
     big_plan_ref_id: Optional[EntityId]
     recurring_task_ref_id: Optional[EntityId]
     metric_ref_id: Optional[EntityId]
+    person_ref_id: Optional[EntityId]
     name: str
     archived: bool
     status: InboxTaskStatus
@@ -69,10 +70,10 @@ class InboxTasksRepository:
 
     def create_inbox_task(
             self, project_ref_id: EntityId, source: InboxTaskSource, big_plan_ref_id: Optional[EntityId],
-            recurring_task_ref_id: Optional[EntityId], metric_ref_id: Optional[EntityId], name: str, archived: bool,
-            status: InboxTaskStatus, eisen: Iterable[Eisen], difficulty: Optional[Difficulty],
-            actionable_date: Optional[ADate], due_date: Optional[ADate], recurring_timeline: Optional[str],
-            recurring_type: Optional[RecurringTaskType],
+            recurring_task_ref_id: Optional[EntityId], metric_ref_id: Optional[EntityId],
+            person_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
+            eisen: Iterable[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
+            due_date: Optional[ADate], recurring_timeline: Optional[str], recurring_type: Optional[RecurringTaskType],
             recurring_gen_right_now: Optional[Timestamp]) -> InboxTaskRow:
         """Create a recurring task."""
         new_inbox_task_row = InboxTaskRow(
@@ -81,6 +82,7 @@ class InboxTasksRepository:
             big_plan_ref_id=big_plan_ref_id,
             recurring_task_ref_id=recurring_task_ref_id,
             metric_ref_id=metric_ref_id,
+            person_ref_id=person_ref_id,
             name=name,
             archived=archived,
             status=status,
@@ -133,7 +135,8 @@ class InboxTasksRepository:
             filter_sources: Optional[Iterable[InboxTaskSource]] = None,
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTaskRow]:
+            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_person_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTaskRow]:
         """Retrieve all the inbox tasks defined."""
         return self._storage.find_all(
             allow_archived=allow_archived,
@@ -142,7 +145,8 @@ class InboxTasksRepository:
             source=In(*filter_sources) if filter_sources else None,
             big_plan_ref_id=In(*filter_big_plan_ref_ids) if filter_big_plan_ref_ids else None,
             recurring_task_ref_id=In(*filter_recurring_task_ref_ids) if filter_recurring_task_ref_ids else None,
-            metric_ref_id=In(*filter_metric_ref_ids) if filter_metric_ref_ids else None)
+            metric_ref_id=In(*filter_metric_ref_ids) if filter_metric_ref_ids else None,
+            person_ref_id=In(*filter_person_ref_ids) if filter_person_ref_ids else None)
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -153,6 +157,7 @@ class InboxTasksRepository:
             "big_plan_ref_id": {"type": ["string", "null"]},
             "recurring_tasks_ref_id": {"type": ["string", "null"]},
             "metric_ref_id": {"type": ["string", "null"]},
+            "person_ref_id": {"type": ["string", "null"]},
             "name": {"type": "string"},
             "archived": {"type": "boolean"},
             "eisen": {
@@ -185,6 +190,8 @@ class InboxTasksRepository:
             if storage_form["recurring_task_ref_id"] else None,
             metric_ref_id=EntityId(typing.cast(str, storage_form["metric_ref_id"]))
             if storage_form["metric_ref_id"] else None,
+            person_ref_id=EntityId(typing.cast(str, storage_form["person_ref_id"]))
+            if storage_form.get("person_ref_id", None) else None,
             name=typing.cast(str, storage_form["name"]),
             archived=typing.cast(bool, storage_form["archived"]),
             status=InboxTaskStatus(typing.cast(str, storage_form["status"])),
@@ -218,6 +225,7 @@ class InboxTasksRepository:
             "big_plan_ref_id": live_form.big_plan_ref_id,
             "recurring_task_ref_id": live_form.recurring_task_ref_id,
             "metric_ref_id": live_form.metric_ref_id,
+            "person_ref_id": live_form.person_ref_id,
             "name": live_form.name,
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],

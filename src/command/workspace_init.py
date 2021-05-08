@@ -38,6 +38,10 @@ class WorkspaceInit(command.Command):
         parser.add_argument("--timezone", required=True, help="The timezone you're currently in")
         parser.add_argument("--space-id", dest="workspace_space_id", required=True, help="The Notion space id to use")
         parser.add_argument("--token", dest="workspace_token", required=True, help="The Notion access token to use")
+        parser.add_argument(
+            "--project-key", dest="first_project_key", required=True, help="The key of the first project")
+        parser.add_argument(
+            "--project-name", dest="first_project_name", required=True, help="The name of the first project")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -45,5 +49,8 @@ class WorkspaceInit(command.Command):
         timezone = self._basic_validator.timezone_validate_and_clean(args.timezone)
         space_id = self._basic_validator.workspace_space_id_validate_and_clean(args.workspace_space_id)
         token = self._basic_validator.workspace_token_validate_and_clean(args.workspace_token)
+        first_project_key = self._basic_validator.project_key_validate_and_clean(args.first_project_key)
+        first_project_name = self._basic_validator.entity_name_validate_and_clean(args.first_project_name)
 
-        self._workspaces_controller.create_workspace(name, timezone, space_id, token)
+        self._workspaces_controller.create_workspace(
+            name, timezone, space_id, token, first_project_key, first_project_name)

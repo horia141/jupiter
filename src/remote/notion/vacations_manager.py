@@ -9,9 +9,10 @@ from notion.collection import CollectionRowBlock
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
 from models.basic import EntityId, ADate, BasicValidator, Timestamp
+from models.framework import BaseNotionRow
 from remote.notion.common import NotionId, NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
-from remote.notion.infra.collections_manager import BaseItem, CollectionsManager
+from remote.notion.infra.collections_manager import CollectionsManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
@@ -19,7 +20,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 @dataclass()
-class _VacationNotionRow(BaseItem):
+class _VacationNotionRow(BaseNotionRow):
     """A vacation row on Notion side."""
 
     name: str

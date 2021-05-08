@@ -7,8 +7,9 @@ from typing import Final, Optional, Iterable, List
 import pendulum
 from pendulum import UTC
 
-from models.basic import EntityId, Difficulty, Eisen, BasicValidator, ModelValidationError, RecurringTaskPeriod, \
+from models.basic import EntityId, Difficulty, Eisen, BasicValidator, RecurringTaskPeriod, \
     SyncPrefer, RecurringTaskType, ADate, Timestamp
+from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink, CollectionError, CollectionEntityNotFound
 from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from repository.recurring_tasks import RecurringTasksRepository, RecurringTaskRow

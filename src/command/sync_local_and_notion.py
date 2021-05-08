@@ -55,6 +55,8 @@ class SyncLocalAndNotion(command.Command):
                             help="Sync only these metrics")
         parser.add_argument("--metric-entry-id", dest="metric_entry_ref_ids", default=[], action="append",
                             help="Sync only these metric entries")
+        parser.add_argument("--person-id", dest="person_ref_ids", default=[], action="append",
+                            help="Sync only these persons")
         parser.add_argument("--prefer", dest="sync_prefer", choices=BasicValidator.sync_prefer_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
         parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
@@ -90,6 +92,9 @@ class SyncLocalAndNotion(command.Command):
         metric_entry_ref_ids = [self._basic_validator.entity_id_validate_and_clean(sli)
                                 for sli in args.metric_entry_ref_ids] \
             if len(args.metric_entry_ref_ids) > 0 else None
+        person_ref_ids = [self._basic_validator.entity_id_validate_and_clean(sli)
+                          for sli in args.person_ref_ids] \
+            if len(args.person_ref_ids) > 0 else None
         sync_prefer = self._basic_validator.sync_prefer_validate_and_clean(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
@@ -106,4 +111,5 @@ class SyncLocalAndNotion(command.Command):
             filter_smart_list_item_ref_ids=smart_list_item_ref_ids,
             filter_metric_keys=metric_keys,
             filter_metric_entry_ref_ids=metric_entry_ref_ids,
+            filter_person_ref_ids=person_ref_ids,
             sync_prefer=sync_prefer)

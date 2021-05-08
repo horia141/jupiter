@@ -4,7 +4,8 @@ from typing import Final, Iterable, Dict, Optional
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.vacation import Vacation
-from models.basic import BasicValidator, EntityId, SyncPrefer, ModelValidationError
+from models.basic import BasicValidator, EntityId, SyncPrefer
+from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink
 from remote.notion.vacations_manager import NotionVacationsManager
 from service.errors import ServiceError, ServiceValidationError

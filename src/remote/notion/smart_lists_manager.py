@@ -11,30 +11,31 @@ from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
 from models.basic import Timestamp, EntityId, BasicValidator, Tag
+from models.framework import BaseNotionRow
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
-from remote.notion.infra.collections_manager import CollectionsManager, BaseItem
+from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
 from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 
 @dataclass()
-class _SmartListNotionCollection(BaseItem):
+class _SmartListNotionCollection(BaseNotionRow):
     """A smart list collection on Notion side."""
 
     name: str
 
 
 @dataclass()
-class _SmartListNotionTag(BaseItem):
+class _SmartListNotionTag(BaseNotionRow):
     """A smart list tag on Notion side."""
 
     name: str
 
 
 @dataclass()
-class _SmartListNotionRow(BaseItem):
+class _SmartListNotionRow(BaseNotionRow):
     """A smart list item on Notion side."""
 
     name: str

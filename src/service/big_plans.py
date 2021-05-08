@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, Dict
 
 import remote.notion.common
-from models.basic import EntityId, BasicValidator, ModelValidationError, BigPlanStatus, SyncPrefer, ADate, Timestamp
+from models.basic import EntityId, BasicValidator, BigPlanStatus, SyncPrefer, ADate, Timestamp
+from models.errors import ModelValidationError
 from remote.notion.big_plans_manager import NotionBigPlansManager
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from repository.big_plans import BigPlanRow, BigPlansRepository

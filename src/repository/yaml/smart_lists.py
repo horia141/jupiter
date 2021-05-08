@@ -15,7 +15,7 @@ from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
 from models.basic import EntityId, SmartListKey, Tag, EntityName
-from models.framework import RepositoryError
+from models.errors import RepositoryError
 from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_provider import TimeProvider
 
