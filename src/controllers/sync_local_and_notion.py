@@ -280,6 +280,8 @@ class SyncLocalAndNotionController:
                 allow_archived=True, filter_metric_ref_ids=[m.ref_id for m in all_metrics])
 
             for inbox_task in all_metric_collection_tasks:
+                if inbox_task.archived:
+                    continue
                 metric = all_metrics_by_ref_id[typing.cast(EntityId, inbox_task.metric_ref_id)]
                 if filter_metric_keys is not None and metric.key not in filter_metric_keys:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of metric filtering")
@@ -312,6 +314,8 @@ class SyncLocalAndNotionController:
                 allow_archived=True, filter_person_ref_ids=[p.ref_id for p in all_persons])
 
             for inbox_task in all_person_catch_up_tasks:
+                if inbox_task.archived:
+                    continue
                 person = all_persons_by_ref_id[typing.cast(EntityId, inbox_task.person_ref_id)]
                 if filter_person_ref_ids is not None and person.ref_id not in filter_person_ref_ids:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
