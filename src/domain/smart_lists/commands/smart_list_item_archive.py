@@ -4,8 +4,7 @@ from typing import Final
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
-from models.basic import EntityId
-from models.framework import Command
+from models.framework import Command, EntityId
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 

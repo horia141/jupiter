@@ -6,7 +6,7 @@ import typing
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models import schedules
 from models.basic import MetricKey, RecurringTaskPeriod, EntityName, ProjectKey, Timestamp, Eisen, Difficulty, \
     BasicValidator

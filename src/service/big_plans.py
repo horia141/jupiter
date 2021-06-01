@@ -5,9 +5,10 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, Dict
 
 import remote.notion.common
-from models.basic import EntityId, BasicValidator, BigPlanStatus, SyncPrefer, ADate, Timestamp
+from models.basic import BasicValidator, BigPlanStatus, SyncPrefer, ADate, Timestamp
+from models.framework import EntityId
 from models.errors import ModelValidationError
-from remote.notion.big_plans_manager import NotionBigPlansManager
+from remote.notion.big_plans_manager import NotionBigPlansManager, BigPlanNotionRow
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from repository.big_plans import BigPlanRow, BigPlansRepository
 from service.errors import ServiceValidationError
@@ -264,19 +265,21 @@ class BigPlansService:
             self._notion_manager.drop_all_big_plans(project_ref_id)
             all_big_plan_notion_rows = {}
             all_big_plan_notion_ids = set()
-        all_big_plan_notion_rows_set = {}
+        all_big_plan_notion_rows_set: Dict[EntityId, BigPlanNotionRow] = {}
 
         # Then look at each big plan in Notion and try to match it with the one in the local stash
 
         for big_plan_notion_row in all_big_plan_notion_rows:
             # Skip this step when asking only for particular entities to be synced.
-            if filter_ref_ids_set is not None and big_plan_notion_row.ref_id not in filter_ref_ids_set:
+            big_plan_notion_row_ref_id = \
+                EntityId.from_raw(big_plan_notion_row.ref_id) if big_plan_notion_row.ref_id else None
+            if filter_ref_ids_set is not None and big_plan_notion_row_ref_id not in filter_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{big_plan_notion_row.name}' (id={big_plan_notion_row.notion_id}) because of filtering")
                 continue
 
             LOGGER.info(f"Syncing '{big_plan_notion_row.name}' (id={big_plan_notion_row.notion_id})")
-            if big_plan_notion_row.ref_id is None or big_plan_notion_row.ref_id == "":
+            if big_plan_notion_row_ref_id is None or big_plan_notion_row.ref_id == "":
                 # If the big plan doesn't exist locally, we create it!
                 try:
                     big_plan_name = self._basic_validator.entity_name_validate_and_clean(big_plan_notion_row.name)
@@ -299,20 +302,20 @@ class BigPlansService:
                     project_ref_id, new_big_plan_row.ref_id, big_plan_notion_row.notion_id)
                 LOGGER.info(f"Linked the new big plan with local entries")
 
-                big_plan_notion_row.ref_id = new_big_plan_row.ref_id
+                big_plan_notion_row.ref_id = str(new_big_plan_row.ref_id)
                 big_plan_notion_row.status = new_big_plan_row.status.for_notion()
                 self._notion_manager.save_big_plan(
-                    project_ref_id, big_plan_notion_row.ref_id, big_plan_notion_row,
+                    project_ref_id, new_big_plan_row.ref_id, big_plan_notion_row,
                     inbox_tasks_collection.notion_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {big_plan_notion_row}")
 
-                all_big_plan_rows_set[big_plan_notion_row.ref_id] = new_big_plan_row
-                all_big_plan_notion_rows_set[big_plan_notion_row.ref_id] = big_plan_notion_row
-            elif big_plan_notion_row.ref_id in all_big_plan_rows_set and \
+                all_big_plan_rows_set[new_big_plan_row.ref_id] = new_big_plan_row
+                all_big_plan_notion_rows_set[new_big_plan_row.ref_id] = big_plan_notion_row
+            elif big_plan_notion_row_ref_id in all_big_plan_rows_set and \
                     big_plan_notion_row.notion_id in all_big_plan_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
-                big_plan_row = all_big_plan_rows_set[EntityId(big_plan_notion_row.ref_id)]
-                all_big_plan_notion_rows_set[EntityId(big_plan_notion_row.ref_id)] = big_plan_notion_row
+                big_plan_row = all_big_plan_rows_set[big_plan_notion_row_ref_id]
+                all_big_plan_notion_rows_set[big_plan_notion_row_ref_id] = big_plan_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified \
@@ -370,7 +373,7 @@ class BigPlansService:
                     big_plan_notion_row.archived = big_plan_row.archived
                     big_plan_notion_row.status = big_plan_row.status.for_notion()
                     big_plan_notion_row.due_date = big_plan_row.due_date
-                    big_plan_notion_row.ref_id = big_plan_row.ref_id
+                    big_plan_notion_row.ref_id = str(big_plan_notion_row_ref_id)
                     self._notion_manager.save_big_plan(
                         project_ref_id, big_plan_row.ref_id, big_plan_notion_row,
                         inbox_tasks_collection.notion_collection)
@@ -383,7 +386,7 @@ class BigPlansService:
                 #    setup, and we remove it.
                 # 2. This is a big plan added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_big_plan(project_ref_id, big_plan_notion_row.ref_id)
+                # self._notion_manager.hard_remove_big_plan(project_ref_id, big_plan_notion_row_ref_id)
                 LOGGER.info(f"Removed dangling big plan in Notion {big_plan_notion_row}")
 
         LOGGER.info("Applied local changes")

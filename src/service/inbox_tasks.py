@@ -9,8 +9,9 @@ from pendulum import UTC
 import remote.notion.common
 from domain.metrics.metric import Metric
 from domain.prm.person import Person
-from models.basic import BasicValidator, EntityId, InboxTaskStatus, Eisen, Difficulty, \
+from models.basic import BasicValidator, InboxTaskStatus, Eisen, Difficulty, \
     SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp, InboxTaskSource
+from models.framework import EntityId
 from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks_manager import NotionInboxTasksManager, InboxTaskBigPlanLabel
@@ -398,7 +399,7 @@ class InboxTasksService:
         # Apply changes in Notion
         inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
         inbox_task_notion_row.source = InboxTaskSource.BIG_PLAN.for_notion()
-        inbox_task_notion_row.big_plan_ref_id = big_plan_ref_id
+        inbox_task_notion_row.big_plan_ref_id = str(big_plan_ref_id) if big_plan_ref_id else None
         inbox_task_notion_row.big_plan_name = \
             remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None
         self._notion_manager.save_inbox_task(
@@ -422,7 +423,7 @@ class InboxTasksService:
         # Apply changes in Notion
         try:
             inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
-            inbox_task_notion_row.big_plan_ref_id = big_plan_ref_id
+            inbox_task_notion_row.big_plan_ref_id = str(big_plan_ref_id)
             inbox_task_notion_row.big_plan_name = remote.notion.common.format_name_for_option(big_plan_name)
             self._notion_manager.save_inbox_task(
                 inbox_task_row.project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
@@ -773,8 +774,10 @@ class InboxTasksService:
         # Prepare Notion connection
 
         for inbox_task_notion_row in all_inbox_task_notion_rows:
+            notion_inbox_task_ref_id = EntityId.from_raw(inbox_task_notion_row.ref_id) \
+                if inbox_task_notion_row.ref_id else None
             # Skip this step when asking only for particular entities to be synced.
-            if filter_ref_ids_set is not None and inbox_task_notion_row.ref_id not in filter_ref_ids_set:
+            if filter_ref_ids_set is not None and notion_inbox_task_ref_id not in filter_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{inbox_task_notion_row.name}' " +
                     f"(id={inbox_task_notion_row.notion_id}) because of filtering")
@@ -782,25 +785,25 @@ class InboxTasksService:
 
             LOGGER.info(f"Syncing '{inbox_task_notion_row.name}' (id={inbox_task_notion_row.notion_id})")
 
-            if inbox_task_notion_row.ref_id is None or inbox_task_notion_row.ref_id == "":
+            if notion_inbox_task_ref_id is None or inbox_task_notion_row.ref_id == "":
                 # If the big plan doesn't exist locally, we create it!
 
                 try:
                     inbox_task_name = self._basic_validator.entity_name_validate_and_clean(inbox_task_notion_row.name)
                     inbox_task_big_plan_ref_id = \
-                        self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.big_plan_ref_id)\
+                        EntityId.from_raw(inbox_task_notion_row.big_plan_ref_id)\
                         if inbox_task_notion_row.big_plan_ref_id else None
                     inbox_task_big_plan_name = \
                         self._basic_validator.entity_name_validate_and_clean(inbox_task_notion_row.big_plan_name)\
                         if inbox_task_notion_row.big_plan_name else None
                     inbox_task_recurring_task_ref_id = \
-                        self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.recurring_task_ref_id)\
+                        EntityId.from_raw(inbox_task_notion_row.recurring_task_ref_id)\
                         if inbox_task_notion_row.recurring_task_ref_id else None
                     inbox_task_metric_ref_id = \
-                        self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.metric_ref_id)\
+                        EntityId.from_raw(inbox_task_notion_row.metric_ref_id)\
                         if inbox_task_notion_row.metric_ref_id else None
                     inbox_task_person_ref_id = \
-                        self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.person_ref_id) \
+                        EntityId.from_raw(inbox_task_notion_row.person_ref_id) \
                             if inbox_task_notion_row.person_ref_id else None
                     inbox_task_status = \
                         self._basic_validator.inbox_task_status_validate_and_clean(inbox_task_notion_row.status)\
@@ -865,24 +868,24 @@ class InboxTasksService:
                     project_ref_id, new_inbox_task_row.ref_id, inbox_task_notion_row.notion_id)
                 LOGGER.info(f"Linked the new inbox task with local entries")
 
-                inbox_task_notion_row.ref_id = new_inbox_task_row.ref_id
+                inbox_task_notion_row.ref_id = str(new_inbox_task_row.ref_id)
                 inbox_task_notion_row.source = new_inbox_task_row.source.for_notion()
                 inbox_task_notion_row.status = new_inbox_task_row.status.for_notion()
-                inbox_task_notion_row.big_plan_ref_id = big_plan.ref_id if big_plan else None
-                inbox_task_notion_row.recurring_task_ref_id = recurring_task.ref_id if recurring_task else None
-                inbox_task_notion_row.metric_ref_id = metric.ref_id if metric else None
-                inbox_task_notion_row.person_ref_id = person.ref_id if person else None
+                inbox_task_notion_row.big_plan_ref_id = str(big_plan.ref_id) if big_plan else None
+                inbox_task_notion_row.recurring_task_ref_id = str(recurring_task.ref_id) if recurring_task else None
+                inbox_task_notion_row.metric_ref_id = str(metric.ref_id) if metric else None
+                inbox_task_notion_row.person_ref_id = str(person.ref_id) if person else None
                 self._notion_manager.save_inbox_task(
-                    project_ref_id, inbox_task_notion_row.ref_id, inbox_task_notion_row)
+                    project_ref_id, new_inbox_task_row.ref_id, inbox_task_notion_row)
                 LOGGER.info(f"Applied changes on Notion side too as {inbox_task_notion_row}")
 
-                all_inbox_task_rows_set[inbox_task_notion_row.ref_id] = new_inbox_task_row
-                all_inbox_tasks_notion_row_set[inbox_task_notion_row.ref_id] = inbox_task_notion_row
-            elif inbox_task_notion_row.ref_id in all_inbox_task_rows_set and \
+                all_inbox_task_rows_set[new_inbox_task_row.ref_id] = new_inbox_task_row
+                all_inbox_tasks_notion_row_set[new_inbox_task_row.ref_id] = inbox_task_notion_row
+            elif notion_inbox_task_ref_id in all_inbox_task_rows_set and \
                     inbox_task_notion_row.notion_id in all_inbox_task_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
-                inbox_task_row = all_inbox_task_rows_set[EntityId(inbox_task_notion_row.ref_id)]
-                all_inbox_tasks_notion_row_set[EntityId(inbox_task_notion_row.ref_id)] = inbox_task_notion_row
+                inbox_task_row = all_inbox_task_rows_set[notion_inbox_task_ref_id]
+                all_inbox_tasks_notion_row_set[notion_inbox_task_ref_id] = inbox_task_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
@@ -895,20 +898,20 @@ class InboxTasksService:
                         inbox_task_name = \
                             self._basic_validator.entity_name_validate_and_clean(inbox_task_notion_row.name)
                         inbox_task_big_plan_ref_id = \
-                            self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.big_plan_ref_id) \
+                            EntityId.from_raw(inbox_task_notion_row.big_plan_ref_id) \
                                 if inbox_task_notion_row.big_plan_ref_id else None
                         inbox_task_big_plan_name = self._basic_validator.entity_name_validate_and_clean(
                             inbox_task_notion_row.big_plan_name) \
                             if inbox_task_notion_row.big_plan_name else None
                         inbox_task_recurring_task_ref_id = \
-                            self._basic_validator.entity_id_validate_and_clean(
+                            EntityId.from_raw(
                                 inbox_task_notion_row.recurring_task_ref_id) \
                                 if inbox_task_notion_row.recurring_task_ref_id else None
                         inbox_task_metric_ref_id = \
-                            self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.metric_ref_id) \
+                            EntityId.from_raw(inbox_task_notion_row.metric_ref_id) \
                                 if inbox_task_notion_row.metric_ref_id else None
                         inbox_task_person_ref_id = \
-                            self._basic_validator.entity_id_validate_and_clean(inbox_task_notion_row.person_ref_id) \
+                            EntityId.from_raw(inbox_task_notion_row.person_ref_id) \
                                 if inbox_task_notion_row.person_ref_id else None
                         inbox_task_status = \
                             self._basic_validator.inbox_task_status_validate_and_clean(inbox_task_notion_row.status) \
@@ -1016,12 +1019,16 @@ class InboxTasksService:
                         person = all_persons_map[inbox_task_row.person_ref_id]
 
                     inbox_task_notion_row.source = inbox_task_row.source.for_notion()
-                    inbox_task_notion_row.big_plan_ref_id = inbox_task_row.big_plan_ref_id
+                    inbox_task_notion_row.big_plan_ref_id = str(inbox_task_row.big_plan_ref_id) \
+                        if inbox_task_row.big_plan_ref_id else None
                     inbox_task_notion_row.big_plan_name = \
                         remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None
-                    inbox_task_notion_row.recurring_task_ref_id = inbox_task_row.recurring_task_ref_id
-                    inbox_task_notion_row.metric_ref_id = inbox_task_row.metric_ref_id
-                    inbox_task_notion_row.person_ref_id = inbox_task_row.person_ref_id
+                    inbox_task_notion_row.recurring_task_ref_id = str(inbox_task_row.recurring_task_ref_id) \
+                        if inbox_task_row.recurring_task_ref_id else None
+                    inbox_task_notion_row.metric_ref_id = str(inbox_task_row.metric_ref_id) \
+                        if inbox_task_row.metric_ref_id else None
+                    inbox_task_notion_row.person_ref_id = str(inbox_task_row.person_ref_id) \
+                        if inbox_task_row.person_ref_id else None
                     inbox_task_notion_row.name = inbox_task_row.name
                     inbox_task_notion_row.archived = inbox_task_row.archived
                     inbox_task_notion_row.status = inbox_task_row.status.for_notion()
@@ -1044,7 +1051,7 @@ class InboxTasksService:
                 #    setup, and we remove it.
                 # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
                 #    duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_inbox_task(project_ref_id, inbox_task_notion_row.ref_id, )
+                self._notion_manager.hard_remove_inbox_task(project_ref_id, notion_inbox_task_ref_id)
                 LOGGER.info(f"Removed dangling inbox task in Notion {inbox_task_notion_row}")
 
         LOGGER.info("Applied local changes")

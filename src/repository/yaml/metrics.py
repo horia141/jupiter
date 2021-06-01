@@ -10,12 +10,13 @@ import typing
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.metric import Metric
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from domain.metrics.infra.metric_repository import MetricRepository
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import EntityId, MetricKey, RecurringTaskPeriod, MetricUnit, BasicValidator, ADate, EntityName
+from models.basic import MetricKey, RecurringTaskPeriod, MetricUnit, BasicValidator, ADate, EntityName
+from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq
+from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -117,7 +118,7 @@ class YamlMetricRepository(MetricRepository):
         return [self._row_to_entity(mr)
                 for mr in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
+                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
                     key=In(*filter_keys) if filter_keys else None)]
 
     def remove(self, ref_id: EntityId) -> Metric:
@@ -177,7 +178,8 @@ class YamlMetricRepository(MetricRepository):
         return {
             "name": live_form.name,
             "key": live_form.key,
-            "collection_project_ref_id": live_form.collection_project_ref_id,
+            "collection_project_ref_id":
+                str(live_form.collection_project_ref_id) if live_form.collection_project_ref_id else None,
             "collection_period": live_form.collection_period.value if live_form.collection_period else None,
             "collection_eisen": live_form.collection_eisen,
             "collection_difficulty": live_form.collection_difficulty,
@@ -306,7 +308,7 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    metric_ref_id=Eq(metric_ref_id))]
+                    metric_ref_id=Eq(str(metric_ref_id)))]
 
     def find_all(
             self, allow_archived: bool = False,
@@ -316,8 +318,8 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-                    metric_ref_id=In(*filter_metric_ref_ids) if filter_metric_ref_ids else None)]
+                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
+                    metric_ref_id=In(*(str(fi) for fi in filter_metric_ref_ids)) if filter_metric_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> MetricEntry:
         """Hard remove a metric - an irreversible operation."""
@@ -348,7 +350,7 @@ class YamlMetricEntryRepository(MetricEntryRepository):
     def live_to_storage(live_form: _MetricEntryRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "metric_ref_id": live_form.metric_ref_id,
+            "metric_ref_id": str(live_form.metric_ref_id),
             "collection_time": BasicValidator.adate_to_str(live_form.collection_time),
             "value": live_form.value,
             "notes": live_form.notes

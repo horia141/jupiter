@@ -3,8 +3,8 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.metrics.metric import Metric
-from models.basic import MetricKey, EntityId
-from models.framework import Repository
+from models.basic import MetricKey
+from models.framework import Repository, EntityId
 
 
 class MetricRepository(Repository, abc.ABC):

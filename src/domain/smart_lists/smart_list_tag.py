@@ -1,8 +1,8 @@
 """A smart list tag."""
 from dataclasses import dataclass, field
 
-from models.basic import Timestamp, EntityId, Tag
-from models.framework import AggregateRoot, Event, BAD_REF_ID, UpdateAction
+from models.basic import Timestamp, Tag
+from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
 
 @dataclass()

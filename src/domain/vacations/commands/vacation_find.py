@@ -5,8 +5,7 @@ from typing import Final, Optional, List
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
-from models.basic import EntityId
-from models.framework import Command
+from models.framework import Command, EntityId
 from utils.time_provider import TimeProvider
 
 

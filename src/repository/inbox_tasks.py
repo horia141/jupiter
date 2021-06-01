@@ -7,9 +7,10 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
-from models.basic import EntityId, Eisen, Difficulty, InboxTaskStatus, RecurringTaskType, ADate, BasicValidator, \
+from models.basic import Eisen, Difficulty, InboxTaskStatus, RecurringTaskType, ADate, BasicValidator, \
     Timestamp, InboxTaskSource
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
+from models.framework import EntityId, JSONDictType
+from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -220,12 +221,12 @@ class InboxTasksRepository:
     def live_to_storage(live_form: InboxTaskRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "project_ref_id": live_form.project_ref_id,
+            "project_ref_id": str(live_form.project_ref_id),
             "source": live_form.source.value,
-            "big_plan_ref_id": live_form.big_plan_ref_id,
-            "recurring_task_ref_id": live_form.recurring_task_ref_id,
-            "metric_ref_id": live_form.metric_ref_id,
-            "person_ref_id": live_form.person_ref_id,
+            "big_plan_ref_id": str(live_form.big_plan_ref_id) if live_form.big_plan_ref_id else None,
+            "recurring_task_ref_id": str(live_form.recurring_task_ref_id) if live_form.recurring_task_ref_id else None,
+            "metric_ref_id": str(live_form.metric_ref_id) if live_form.metric_ref_id else None,
+            "person_ref_id": str(live_form.person_ref_id) if live_form.person_ref_id else None,
             "name": live_form.name,
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],

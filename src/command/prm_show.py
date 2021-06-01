@@ -5,6 +5,7 @@ from typing import Final
 from command.command import Command
 from domain.prm.commands.prm_database_find import PrmDatabaseFindCommand
 from models.basic import BasicValidator
+from models.framework import EntityId
 
 
 class PrmShow(Command):
@@ -35,7 +36,7 @@ class PrmShow(Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids] \
+        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids] \
             if len(args.ref_ids) > 0 else None
 
         response = self._command.execute(

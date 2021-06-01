@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId, ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate, InboxTaskSource
+from models.basic import ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate, InboxTaskSource
+from models.framework import EntityId
 from service.big_plans import BigPlansService, BigPlan
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService, InboxTask

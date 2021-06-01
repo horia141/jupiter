@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
 from controllers.common import ControllerInputValidationError
-from models.basic import EntityId, ProjectKey, BigPlanStatus, ADate
+from models.basic import ProjectKey, BigPlanStatus, ADate
+from models.framework import EntityId
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService, BigPlan
 from service.errors import ServiceError

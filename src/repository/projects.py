@@ -7,9 +7,10 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, Optional
 
-from models.basic import EntityId, ProjectKey
+from models.basic import ProjectKey
+from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, Eq, In
+from utils.storage import BaseEntityRow, EntitiesStorage, Eq, In
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 

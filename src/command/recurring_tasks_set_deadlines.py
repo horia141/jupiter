@@ -1,11 +1,11 @@
 """Command for setting the deadlines of a recurring task."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
+from models.framework import EntityId
 from models.basic import BasicValidator, RecurringTaskPeriod
 
 LOGGER = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class RecurringTasksSetDeadlines(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        ref_id = EntityId.from_raw(args.ref_id)
         due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time) \
             if args.due_at_time else None
         due_at_day = \

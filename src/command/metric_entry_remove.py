@@ -7,6 +7,7 @@ from typing import Final
 import command.command as command
 from domain.metrics.commands.metric_entry_remove import MetricEntryRemoveCommand
 from models.basic import BasicValidator
+from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,6 +40,6 @@ class MetricEntryRemove(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
+        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
         for ref_id in ref_ids:
             self._the_command.execute(ref_id)

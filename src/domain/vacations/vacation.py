@@ -7,7 +7,7 @@ import pendulum
 from pendulum import UTC
 
 from models.basic import EntityName, ADate, Timestamp
-from models.framework import AggregateRoot, Event, BAD_REF_ID, UpdateAction
+from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 from service.errors import ServiceValidationError
 
 

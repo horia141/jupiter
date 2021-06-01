@@ -6,6 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.inbox_tasks import InboxTasksController
+from models.framework import EntityId
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class InboxTasksAssociateBigPlan(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
-        big_plan_ref_id = self._basic_validator.entity_id_validate_and_clean(args.big_plan_ref_id)\
+        ref_id = EntityId.from_raw(args.ref_id)
+        big_plan_ref_id = EntityId.from_raw(args.big_plan_ref_id)\
             if args.big_plan_ref_id else None
         self._inbox_tasks_controller.associate_inbox_task_with_big_plan(ref_id, big_plan_ref_id)

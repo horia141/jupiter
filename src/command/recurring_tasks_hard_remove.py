@@ -1,11 +1,11 @@
 """Command for hard removing recurring tasks."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
+from models.framework import EntityId
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -40,5 +40,5 @@ class RecurringTasksHardRemove(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         # Parse arguments
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
+        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
         self._recurring_tasks_controller.hard_remove_recurring_tasks(ref_ids)

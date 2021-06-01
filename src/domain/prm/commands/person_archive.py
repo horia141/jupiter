@@ -4,8 +4,7 @@ from typing import Final
 
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
-from models.basic import EntityId
-from models.framework import Command
+from models.framework import Command, EntityId
 from remote.notion.common import CollectionEntityNotFound
 from service.inbox_tasks import InboxTasksService
 from utils.time_provider import TimeProvider

@@ -14,9 +14,10 @@ from domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepos
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import EntityId, SmartListKey, Tag, EntityName
+from models.basic import SmartListKey, Tag, EntityName
+from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In, Eq, Intersect
+from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ class YamlSmartListRepository(SmartListRepository):
         return [self._row_to_entity(mr)
                 for mr in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
+                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
                     key=In(*filter_keys) if filter_keys else None)]
 
     def remove(self, ref_id: EntityId) -> SmartList:
@@ -218,7 +219,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
                     name=In(*filter_names) if filter_names else None,
-                    smart_list_ref_id=Eq(smart_list_ref_id))]
+                    smart_list_ref_id=Eq(str(smart_list_ref_id)))]
 
     def find_all(
             self, allow_archived: bool = False,
@@ -229,9 +230,10 @@ class YamlSmartListTagRepository(SmartListTagRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-                    name=In(*filter_names) if filter_names else None,
-                    smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None)]
+                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
+                    name=In(*(str(fi) for fi in filter_names)) if filter_names else None,
+                    smart_list_ref_id=In(*(str(fi) for fi in filter_smart_list_ref_ids))
+                    if filter_smart_list_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> SmartListTag:
         """Hard remove a smart list - an irreversible operation."""
@@ -257,7 +259,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
     def live_to_storage(live_form: _SmartListTagRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "smart_list_ref_id": live_form.smart_list_ref_id,
+            "smart_list_ref_id": str(live_form.smart_list_ref_id),
             "name": live_form.name
         }
 
@@ -353,7 +355,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    smart_list_ref_id=Eq(smart_list_ref_id))]
+                    smart_list_ref_id=Eq(str(smart_list_ref_id)))]
 
     def find_all(
             self, allow_archived: bool = False,
@@ -365,10 +367,11 @@ class YamlSmartListItemRepository(SmartListItemRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-                    smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None,
+                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
+                    smart_list_ref_id=In(*(str(fi) for fi in filter_smart_list_ref_ids))
+                    if filter_smart_list_ref_ids else None,
                     is_done=Eq(filter_is_done) if filter_is_done else None,
-                    tag_ids=Intersect(*filter_tag_ref_ids) if filter_tag_ref_ids else None)]
+                    tag_ids=Intersect(*(str(fi) for fi in filter_tag_ref_ids)) if filter_tag_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> SmartListItem:
         """Hard remove a smart list- an irreversible operation."""
@@ -403,7 +406,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
     def live_to_storage(live_form: _SmartListItemRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "smart_list_ref_id": live_form.smart_list_ref_id,
+            "smart_list_ref_id": str(live_form.smart_list_ref_id),
             "name": live_form.name,
             "is_done": live_form.is_done,
             "tag_ids": [str(tid) for tid in live_form.tag_ids],

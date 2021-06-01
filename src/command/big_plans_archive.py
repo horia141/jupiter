@@ -6,6 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.big_plans import BigPlansController
+from models.framework import EntityId
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -38,5 +39,5 @@ class BigPlansArchive(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        ref_id = EntityId.from_raw(args.ref_id)
         self._big_plans_controller.archive_big_plan(ref_id)

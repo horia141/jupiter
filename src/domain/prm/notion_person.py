@@ -5,9 +5,9 @@ from typing import Optional, List
 from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from domain.shared import RecurringTaskGenParams
-from models.basic import BasicValidator, EntityId
-from models.framework import NotionRow, BAD_NOTION_ID
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from models.basic import BasicValidator
+from models.framework import NotionRow, BAD_NOTION_ID, EntityId
 from remote.notion.common import clean_eisenhower
 
 
@@ -33,7 +33,7 @@ class NotionPerson(NotionRow[Person, EntityId]):
         """Construct a new Notion row from a given aggregate root."""
         return NotionPerson(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
+            ref_id=str(aggregate_root.ref_id),
             last_edited_time=aggregate_root.last_modified_time,
             name=aggregate_root.name,
             archived=aggregate_root.archived,
@@ -60,7 +60,7 @@ class NotionPerson(NotionRow[Person, EntityId]):
         """Construct a Notion row from a given aggregate root."""
         return NotionPerson(
             notion_id=self.notion_id,
-            ref_id=aggregate_root.ref_id,
+            ref_id=str(aggregate_root.ref_id),
             last_edited_time=aggregate_root.last_modified_time,
             name=aggregate_root.name,
             archived=aggregate_root.archived,

@@ -4,8 +4,8 @@ from typing import Final
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
-from models.basic import EntityId, Tag
-from models.framework import Command, UpdateAction
+from models.basic import Tag
+from models.framework import Command, UpdateAction, EntityId
 from utils.time_provider import TimeProvider
 
 

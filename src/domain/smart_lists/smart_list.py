@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 
 from models.basic import Timestamp, SmartListKey, EntityName
-from models.framework import AggregateRoot, Event, BAD_REF_ID, UpdateAction
+from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 
 
 @dataclass()

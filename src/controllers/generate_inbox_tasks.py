@@ -8,10 +8,11 @@ from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.metric import Metric
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.person import Person
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from domain.vacations.vacation import Vacation
 from models import schedules
-from models.basic import EntityId, RecurringTaskPeriod, ProjectKey, Timestamp, SyncTarget, MetricKey
+from models.basic import RecurringTaskPeriod, ProjectKey, Timestamp, SyncTarget, MetricKey
+from models.framework import EntityId
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService, Project
 from service.recurring_tasks import RecurringTasksService, RecurringTask

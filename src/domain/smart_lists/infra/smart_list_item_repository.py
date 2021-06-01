@@ -3,8 +3,7 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.smart_lists.smart_list_item import SmartListItem
-from models.basic import EntityId
-from models.framework import Repository
+from models.framework import Repository, EntityId
 
 
 class SmartListItemRepository(Repository, abc.ABC):

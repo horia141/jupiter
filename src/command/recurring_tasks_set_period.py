@@ -1,11 +1,11 @@
 """Command for setting the period of a recurring task."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
+from models.framework import EntityId
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -42,6 +42,6 @@ class RecurringTasksSetPeriod(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        ref_id = EntityId.from_raw(args.ref_id)
         period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
         self._recurring_tasks_controller.set_recurring_task_period(ref_id, period)

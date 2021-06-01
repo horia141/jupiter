@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models.basic import MetricKey, MetricUnit, Timestamp, EntityName
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 

@@ -4,7 +4,8 @@ from typing import Final, Iterable, Dict, Optional
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.vacation import Vacation
-from models.basic import BasicValidator, EntityId, SyncPrefer
+from models.basic import BasicValidator, SyncPrefer
+from models.framework import EntityId
 from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink
 from remote.notion.vacations_manager import NotionVacationsManager
@@ -87,13 +88,14 @@ class VacationsService:
 
         # Explore Notion and apply to local
         for vacation_row in all_vacations_rows:
-            if filter_ref_ids_set is not None and vacation_row.ref_id not in filter_ref_ids_set:
+            notion_vacation_ref_id = EntityId.from_raw(vacation_row.ref_id) if vacation_row.ref_id else None
+            if filter_ref_ids_set is not None and notion_vacation_ref_id not in filter_ref_ids_set:
                 LOGGER.info(f"Skipping '{vacation_row.name}' (id={vacation_row.notion_id}) because of filtering")
                 continue
 
             LOGGER.info(f"Syncing '{vacation_row.name}' (id={vacation_row.notion_id})")
 
-            if vacation_row.ref_id is None or vacation_row.ref_id == "":
+            if notion_vacation_ref_id is None or vacation_row.ref_id == "":
                 # If the vacation doesn't exist locally, we create it:
                 try:
                     vacation_name = self._basic_validator.entity_name_validate_and_clean(vacation_row.name)
@@ -116,14 +118,14 @@ class VacationsService:
                 self._notion_manager.link_local_and_notion_entries(new_vacation.ref_id, vacation_row.notion_id)
                 LOGGER.info(f"Linked the new vacation with local entries")
 
-                vacation_row.ref_id = new_vacation.ref_id
+                vacation_row.ref_id = str(new_vacation.ref_id)
                 self._notion_manager.save_vacation(new_vacation.ref_id, vacation_row)
                 LOGGER.info(f"Applies changes on Notion side too as {vacation_row}")
 
-                vacations_rows_set[vacation_row.ref_id] = vacation_row
-            elif vacation_row.ref_id in all_vacations_set and vacation_row.notion_id in all_vacations_notion_ids:
-                vacation = all_vacations_set[EntityId(vacation_row.ref_id)]
-                vacations_rows_set[EntityId(vacation_row.ref_id)] = vacation_row
+                vacations_rows_set[new_vacation.ref_id] = vacation_row
+            elif notion_vacation_ref_id in all_vacations_set and vacation_row.notion_id in all_vacations_notion_ids:
+                vacation = all_vacations_set[notion_vacation_ref_id]
+                vacations_rows_set[notion_vacation_ref_id] = vacation_row
 
                 # If the vacation exists locally, we sync it with the remote:
                 if sync_prefer == SyncPrefer.NOTION:
@@ -167,7 +169,7 @@ class VacationsService:
                 #    setup, and we remove it.
                 # 2. This is a vacation added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.remove_vacation(EntityId(vacation_row.ref_id))
+                self._notion_manager.remove_vacation(notion_vacation_ref_id)
                 LOGGER.info(f"Removed vacation with id={vacation_row.ref_id} from Notion")
 
         # Explore local and apply to Notion now

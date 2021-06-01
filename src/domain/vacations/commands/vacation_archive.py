@@ -4,8 +4,7 @@ from typing import Final
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
-from models.basic import EntityId
-from models.framework import Command
+from models.framework import Command, EntityId
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 

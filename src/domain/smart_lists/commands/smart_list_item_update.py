@@ -5,8 +5,8 @@ from typing import Optional, Final, List
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import EntityName, Tag, EntityId
-from models.framework import Command, UpdateAction
+from models.basic import EntityName, Tag
+from models.framework import Command, UpdateAction, EntityId
 from utils.time_provider import TimeProvider
 
 

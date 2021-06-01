@@ -2,7 +2,7 @@
 import abc
 
 from domain.vacations.vacation import Vacation
-from models.basic import EntityId
+from models.framework import EntityId
 
 
 class VacationNotionManager(abc.ABC):

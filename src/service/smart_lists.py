@@ -6,7 +6,8 @@ from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import EntityId, BasicValidator, SyncPrefer, SmartListKey, Tag
+from models.basic import BasicValidator, SyncPrefer, SmartListKey, Tag
+from models.framework import EntityId
 from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.smart_lists_manager import NotionSmartListsManager
@@ -201,9 +202,11 @@ class SmartListsService:
         smart_list_tags_notion_rows_set = {}
 
         for smart_list_tag_notion_row in all_smart_list_tags_notion_rows:
+            notion_smart_list_tag_ref_id = EntityId.from_raw(smart_list_tag_notion_row.ref_id)\
+                if smart_list_tag_notion_row.ref_id else None
             LOGGER.info(f"Syncing tag '{smart_list_tag_notion_row.name}' (id={smart_list_tag_notion_row.notion_id})")
 
-            if smart_list_tag_notion_row.ref_id is None or smart_list_tag_notion_row.ref_id == "":
+            if notion_smart_list_tag_ref_id is None or smart_list_tag_notion_row.ref_id == "":
                 # If the smart list tag doesn't exist locally, we create it.
                 try:
                     smart_list_tag_name = self._basic_validator.tag_validate_and_clean(smart_list_tag_notion_row.name)
@@ -220,19 +223,19 @@ class SmartListsService:
                     smart_list_ref_id, new_smart_list_tag.ref_id, smart_list_tag_notion_row.notion_id)
                 LOGGER.info(f"Linked the new smart list tag with local entries")
 
-                smart_list_tag_notion_row.ref_id = new_smart_list_tag.ref_id
+                smart_list_tag_notion_row.ref_id = str(new_smart_list_tag.ref_id)
                 self._notion_manager.save_smart_list_tag(
                     smart_list_ref_id, new_smart_list_tag.ref_id, smart_list_tag_notion_row)
                 LOGGER.info(f"Applied changes on Notion side too")
 
-                smart_list_tags_notion_rows_set[EntityId(smart_list_tag_notion_row.ref_id)] = smart_list_tag_notion_row
+                smart_list_tags_notion_rows_set[new_smart_list_tag.ref_id] = smart_list_tag_notion_row
                 all_smart_list_tags.append(new_smart_list_tag)
                 all_smart_list_tags_set[new_smart_list_tag.ref_id] = new_smart_list_tag
                 all_smart_list_tags_by_name[new_smart_list_tag.name] = new_smart_list_tag
-            elif smart_list_tag_notion_row.ref_id in all_smart_list_tags_set and \
+            elif notion_smart_list_tag_ref_id in all_smart_list_tags_set and \
                     smart_list_tag_notion_row.notion_id in all_smart_list_tags_notion_ids:
-                smart_list_tag = all_smart_list_tags_set[EntityId(smart_list_tag_notion_row.ref_id)]
-                smart_list_tags_notion_rows_set[EntityId(smart_list_tag_notion_row.ref_id)] = smart_list_tag_notion_row
+                smart_list_tag = all_smart_list_tags_set[notion_smart_list_tag_ref_id]
+                smart_list_tags_notion_rows_set[notion_smart_list_tag_ref_id] = smart_list_tag_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     try:
@@ -259,7 +262,7 @@ class SmartListsService:
                 # 2. This is a smart list item added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
                 self._notion_manager.hard_remove_smart_list_tag(
-                    smart_list_ref_id, EntityId(smart_list_tag_notion_row.ref_id))
+                    smart_list_ref_id, notion_smart_list_tag_ref_id)
                 LOGGER.info(f"Removed smart list item with id={smart_list_tag_notion_row.ref_id} from Notion")
 
         for smart_list_tag in all_smart_list_tags:
@@ -296,14 +299,16 @@ class SmartListsService:
 
         # Explore Notion and apply to local
         for smart_list_item_notion_row in all_smart_list_items_notion_rows:
+            notion_smart_list_item_ref_id = EntityId.from_raw(smart_list_item_notion_row.ref_id) \
+                if smart_list_item_notion_row.ref_id else None
             if filter_smart_list_item_ref_ids_set is not None and \
-                    smart_list_item_notion_row.ref_id not in filter_smart_list_item_ref_ids_set:
+                    notion_smart_list_item_ref_id not in filter_smart_list_item_ref_ids_set:
                 LOGGER.info(f"Skipping '{smart_list_item_notion_row.name}' (id={smart_list_item_notion_row.notion_id})")
                 continue
 
             LOGGER.info(f"Syncing '{smart_list_item_notion_row.name}' (id={smart_list_item_notion_row.notion_id})")
 
-            if smart_list_item_notion_row.ref_id is None or smart_list_item_notion_row.ref_id == "":
+            if notion_smart_list_item_ref_id is None or smart_list_item_notion_row.ref_id == "":
                 # If the smart list item doesn't exist locally, we create it.
                 try:
                     smart_list_item_name = \
@@ -313,7 +318,6 @@ class SmartListsService:
                             if smart_list_item_notion_row.url else None
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
-
 
                 with self._smart_list_engine.get_unit_of_work() as uow:
                     new_smart_list_item = SmartListItem.new_smart_list_item(
@@ -333,17 +337,17 @@ class SmartListsService:
                     smart_list_ref_id, new_smart_list_item.ref_id, smart_list_item_notion_row.notion_id)
                 LOGGER.info(f"Linked the new smart list item with local entries")
 
-                smart_list_item_notion_row.ref_id = new_smart_list_item.ref_id
+                smart_list_item_notion_row.ref_id = str(new_smart_list_item.ref_id)
                 self._notion_manager.save_smart_list_item(
                     smart_list_ref_id, new_smart_list_item.ref_id, smart_list_item_notion_row)
                 LOGGER.info(f"Applied changes on Notion side too")
 
-                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = \
+                smart_list_items_notion_rows_set[new_smart_list_item.ref_id] = \
                     smart_list_item_notion_row
-            elif smart_list_item_notion_row.ref_id in all_smart_list_items_set and \
+            elif notion_smart_list_item_ref_id in all_smart_list_items_set and \
                     smart_list_item_notion_row.notion_id in all_smart_list_items_notion_ids:
-                smart_list_item = all_smart_list_items_set[EntityId(smart_list_item_notion_row.ref_id)]
-                smart_list_items_notion_rows_set[EntityId(smart_list_item_notion_row.ref_id)] = \
+                smart_list_item = all_smart_list_items_set[notion_smart_list_item_ref_id]
+                smart_list_items_notion_rows_set[notion_smart_list_item_ref_id] = \
                     smart_list_item_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
@@ -396,8 +400,7 @@ class SmartListsService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a smart list item added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_smart_list_item(
-                    smart_list_ref_id, EntityId(smart_list_item_notion_row.ref_id))
+                self._notion_manager.hard_remove_smart_list_item(smart_list_ref_id, notion_smart_list_item_ref_id)
                 LOGGER.info(f"Removed smart list item with id={smart_list_item_notion_row.ref_id} from Notion")
 
         for smart_list_item in all_smart_list_items_rows:

@@ -9,7 +9,7 @@ from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models.basic import RecurringTaskPeriod, Eisen, Difficulty
 from models.framework import Command
 from service.inbox_tasks import InboxTasksService

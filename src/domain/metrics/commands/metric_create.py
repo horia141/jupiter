@@ -4,7 +4,7 @@ from typing import Optional, Final, List
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.metric import Metric
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from models.basic import MetricKey, RecurringTaskPeriod, MetricUnit, EntityName, ProjectKey, Eisen, Difficulty
 from models.framework import Command

@@ -6,10 +6,9 @@ from typing import Final, Optional, List
 import command.command as command
 from domain.prm.commands.person_update import PersonUpdateCommand
 from domain.prm.person_birthday import PersonBirthday
-
 from domain.prm.person_relationship import PersonRelationship
 from models.basic import BasicValidator, RecurringTaskPeriod, Eisen, Difficulty
-from models.framework import UpdateAction
+from models.framework import UpdateAction, EntityId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -136,7 +135,7 @@ class PersonUpdate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = self._basic_validator.entity_id_validate_and_clean(args.ref_id)
+        ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
             name = UpdateAction.change_to(args.name)
         else:

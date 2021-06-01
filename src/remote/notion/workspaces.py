@@ -6,7 +6,8 @@ from typing import ClassVar, Final, cast
 
 from remote.notion.common import NotionId, CollectionError, NotionPageLink
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import StructuredIndividualStorage, JSONDictType
+from utils.storage import StructuredIndividualStorage
+from models.framework import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 

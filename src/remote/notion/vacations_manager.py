@@ -8,12 +8,11 @@ from notion.collection import CollectionRowBlock
 
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
-from models.basic import EntityId, ADate, BasicValidator, Timestamp
-from models.framework import BaseNotionRow
+from models.basic import ADate, BasicValidator, Timestamp
+from models.framework import BaseNotionRow, EntityId, JSONDictType
 from remote.notion.common import NotionId, NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
-from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -158,7 +157,7 @@ class NotionVacationsManager(VacationNotionManager):
             start_date=vacation.start_date,
             end_date=vacation.end_date,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=vacation.ref_id,
+            ref_id=str(vacation.ref_id),
             notion_id=typing.cast(NotionId, None))
         self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{vacation.ref_id}"),

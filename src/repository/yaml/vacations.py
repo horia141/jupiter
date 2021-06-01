@@ -12,8 +12,9 @@ import pendulum
 from domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationEngine
 from domain.vacations.infra.vacation_repository import VacationRepository
 from domain.vacations.vacation import Vacation
-from models.basic import EntityId, BasicValidator, EntityName
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
+from models.basic import BasicValidator, EntityName
+from models.framework import EntityId, JSONDictType
+from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -83,7 +84,8 @@ class YamlVacationRepository(VacationRepository):
         """Find all vacations matching some criteria."""
         return [self._row_to_entity(vr)
                 for vr in self._storage.find_all(
-                    allow_archived=allow_archived, ref_id=In(*filter_ref_ids) if filter_ref_ids else None)]
+                    allow_archived=allow_archived,
+                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> None:
         """Hard remove a vacation - an irreversible operation."""

@@ -7,11 +7,11 @@ from notion.collection import CollectionRowBlock
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person_relationship import PersonRelationship
-from models.basic import EntityId, BasicValidator, RecurringTaskPeriod, Eisen, Difficulty
+from models.basic import BasicValidator, RecurringTaskPeriod, Eisen, Difficulty
+from models.framework import EntityId, JSONDictType
 from remote.notion.common import NotionPageLink, NotionId, NotionLockKey
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
 from remote.notion.infra.collections_manager import CollectionsManager
-from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 

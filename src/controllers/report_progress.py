@@ -13,8 +13,9 @@ from pendulum import UTC
 from domain.metrics.metric import Metric
 from domain.prm.infra.prm_engine import PrmEngine
 from models import schedules
-from models.basic import ProjectKey, RecurringTaskPeriod, EntityId, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
+from models.basic import ProjectKey, RecurringTaskPeriod, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
     Timestamp, InboxTaskSource, MetricKey
+from models.framework import EntityId
 from models.schedules import Schedule
 from repository.inbox_tasks import InboxTaskRow
 from repository.projects import ProjectRow

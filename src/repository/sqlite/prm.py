@@ -20,9 +20,9 @@ from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.prm.prm_database import PrmDatabase
-from domain.shared import RecurringTaskGenParams
-from models.basic import EntityId, BasicValidator
-from models.framework import BAD_REF_ID
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from models.basic import BasicValidator
+from models.framework import EntityId, BAD_REF_ID
 from models.errors import RepositoryError
 from repository.sqlite.common import build_event_table, upsert_events
 from utils.storage import StructuredStorageError
@@ -53,13 +53,13 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
     def create(self, prm_database: PrmDatabase) -> PrmDatabase:
         """Create a PRM database."""
         result = self._connection.execute(insert(self._prm_database_table).values(
-            ref_id=prm_database.ref_id if prm_database.ref_id != BAD_REF_ID else None,
+            ref_id=prm_database.ref_id.as_int() if prm_database.ref_id != BAD_REF_ID else None,
             archived=prm_database.archived,
             created_time=BasicValidator.timestamp_to_db_timestamp(prm_database.created_time),
             last_modified_time=BasicValidator.timestamp_to_db_timestamp(prm_database.last_modified_time),
             archived_time=BasicValidator.timestamp_to_db_timestamp(prm_database.archived_time)
             if prm_database.archived_time else None,
-            catch_up_project_ref_id=int(prm_database.catch_up_project_ref_id)))
+            catch_up_project_ref_id=int(str(prm_database.catch_up_project_ref_id))))
         prm_database.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
@@ -68,14 +68,14 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         """Save a PRM database - it should already exist."""
         self._connection.execute(
             update(self._prm_database_table)
-            .where(self._prm_database_table.c.ref_id == prm_database.ref_id)
+            .where(self._prm_database_table.c.ref_id == prm_database.ref_id.as_int())
             .values(
                 archived=prm_database.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(prm_database.created_time),
                 last_modified_time=BasicValidator.timestamp_to_db_timestamp(prm_database.last_modified_time),
                 archived_time=BasicValidator.timestamp_to_db_timestamp(prm_database.archived_time)
                 if prm_database.archived_time else None,
-                catch_up_project_ref_id=int(prm_database.catch_up_project_ref_id)))
+                catch_up_project_ref_id=prm_database.catch_up_project_ref_id.as_int()))
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
 
@@ -90,14 +90,14 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
     @staticmethod
     def _row_to_entity(row: Result) -> PrmDatabase:
         return PrmDatabase(
-            _ref_id=EntityId(str(row["ref_id"])),
+            _ref_id=EntityId.from_raw(str(row["ref_id"])),
             _archived=row["archived"],
             _created_time=BasicValidator.timestamp_from_db_timestamp(row["created_time"]),
             _archived_time=BasicValidator.timestamp_from_db_timestamp(row["archived_time"])
             if row["archived_time"] else None,
             _last_modified_time=BasicValidator.timestamp_from_db_timestamp(row["last_modified_time"]),
             _events=[],
-            _catch_up_project_ref_id=BasicValidator.entity_id_validate_and_clean(str(row["catch_up_project_ref_id"])))
+            _catch_up_project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])))
 
 
 class SqlitePersonRepository(PersonRepository):
@@ -137,7 +137,7 @@ class SqlitePersonRepository(PersonRepository):
         """Create a person."""
         try:
             result = self._connection.execute(insert(self._person_table).values(
-                ref_id=int(person.ref_id) if person.ref_id != BAD_REF_ID else None,
+                ref_id=person.ref_id.as_int() if person.ref_id != BAD_REF_ID else None,
                 archived=person.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(person.created_time),
                 last_modified_time=BasicValidator.timestamp_to_db_timestamp(person.last_modified_time),
@@ -146,7 +146,7 @@ class SqlitePersonRepository(PersonRepository):
                 name=person.name,
                 relationship=person.relationship.value,
                 catch_up_project_ref_id=
-                int(person.catch_up_params.project_ref_id) if person.catch_up_params else None,
+                person.catch_up_params.project_ref_id.as_int() if person.catch_up_params else None,
                 catch_up_period=person.catch_up_params.period.value if person.catch_up_params else None,
                 catch_up_eisen=[e.value for e in person.catch_up_params.eisen] if person.catch_up_params else [],
                 catch_up_difficulty=person.catch_up_params.difficulty.value
@@ -161,7 +161,7 @@ class SqlitePersonRepository(PersonRepository):
                 birthday=str(person.birthday) if person.birthday else None))
         except IntegrityError as err:
             raise RepositoryError(f"Person with name='{person.name}' already exists") from err
-        person.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        person.assign_ref_id(EntityId.from_raw(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._person_event_table, person)
         return person
 
@@ -169,7 +169,7 @@ class SqlitePersonRepository(PersonRepository):
         """Save a person - it should already exist."""
         self._connection.execute(
             update(self._person_table)
-            .where(self._person_table.c.ref_id == person.ref_id)
+            .where(self._person_table.c.ref_id == person.ref_id.as_int())
             .values(
                 archived=person.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(person.created_time),
@@ -178,7 +178,7 @@ class SqlitePersonRepository(PersonRepository):
                 if person.archived_time else None,
                 name=person.name,
                 relationship=person.relationship.value,
-                catch_up_project_ref_id=int(person.catch_up_params.project_ref_id)
+                catch_up_project_ref_id=person.catch_up_params.project_ref_id.as_int()
                 if person.catch_up_params else None,
                 catch_up_period=person.catch_up_params.period.value if person.catch_up_params else None,
                 catch_up_eisen=[e.value for e in person.catch_up_params.eisen] if person.catch_up_params else [],
@@ -197,7 +197,7 @@ class SqlitePersonRepository(PersonRepository):
 
     def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Person:
         """Find a person by id."""
-        query_stmt = select(self._person_table).where(self._person_table.c.ref_id == ref_id)
+        query_stmt = select(self._person_table).where(self._person_table.c.ref_id == ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._person_table.c.archived.is_(False))
         result = self._connection.execute(query_stmt).first()
@@ -214,15 +214,15 @@ class SqlitePersonRepository(PersonRepository):
         if not allow_archived:
             query_stmt = query_stmt.where(self._person_table.c.archived.is_(False))
         if filter_ref_ids:
-            query_stmt = query_stmt.where(self._person_table.c.ref_id.in_(int(fi) for fi in filter_ref_ids))
+            query_stmt = query_stmt.where(self._person_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
     def remove(self, ref_id: EntityId) -> Person:
         """Hard remove a person - an irreversible operation."""
-        query_stmt = select(self._person_table).where(self._person_table.c.ref_id == ref_id)
+        query_stmt = select(self._person_table).where(self._person_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
-        self._connection.execute(delete(self._person_table).where(self._person_table.c.ref_id == ref_id))
+        self._connection.execute(delete(self._person_table).where(self._person_table.c.ref_id == ref_id.as_int()))
         return self._row_to_entity(result)
 
     @staticmethod
@@ -238,7 +238,7 @@ class SqlitePersonRepository(PersonRepository):
             _name=BasicValidator.entity_name_validate_and_clean(row["name"]),
             _relationship=PersonRelationship.from_raw(row["relationship"]),
             _catch_up_params=RecurringTaskGenParams(
-                project_ref_id=BasicValidator.entity_id_validate_and_clean(str(row["catch_up_project_ref_id"])),
+                project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])),
                 period=BasicValidator.recurring_task_period_validate_and_clean(row["catch_up_period"]),
                 eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row["catch_up_eisen"]],
                 difficulty=BasicValidator.difficulty_validate_and_clean(row["catch_up_difficulty"])

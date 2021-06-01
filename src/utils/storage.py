@@ -7,14 +7,15 @@ from dataclasses import dataclass, field
 from enum import Enum
 from itertools import chain
 from pathlib import Path
-from typing import Final, Dict, Any, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
+from typing import Final, Dict, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
 import typing
 
 import jsonschema as js
 import pendulum
 import yaml
 
-from models.basic import EntityId, Timestamp, BasicValidator
+from models.basic import Timestamp, BasicValidator
+from models.framework import EntityId, JSONDictType, Value
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -27,11 +28,7 @@ class StructuredStorageError(Exception):
 
 LiveType = TypeVar("LiveType")
 
-JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  # type: ignore
-JSONDictType = Dict[str, JSONValueType]
-
-
-FindFilterType = Union[None, bool, int, float, str, List[int], Enum]
+FindFilterType = Union[None, bool, int, float, str, List[int], Enum, Value]
 
 
 class FindFilterPredicate(abc.ABC):
@@ -732,7 +729,7 @@ class EntitiesStorage(Generic[EntityRowType]):
 
     def _entity_to_full_storage_form(self, entity: EntityRowType) -> JSONDictType:
         full_storage_form: JSONDictType = {
-            "ref_id": entity.ref_id,
+            "ref_id": str(entity.ref_id),
             "archived": entity.archived,
             "created_time": BasicValidator.timestamp_to_str(entity.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(entity.last_modified_time),
@@ -745,7 +742,7 @@ class EntitiesStorage(Generic[EntityRowType]):
 
     def _get_shard_id(self, ref_id: EntityId) -> int:
         hasher = hashlib.sha256()
-        hasher.update(ref_id.encode("utf-8"))
+        hasher.update(str(ref_id).encode("utf-8"))
         return int(hasher.hexdigest(), 16) % self._num_shards
 
     def _get_all_shard_ids(self) -> Iterable[int]:

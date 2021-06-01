@@ -2,7 +2,8 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from models.basic import EntityId, RecurringTaskPeriod, Eisen, Difficulty
+from models.basic import RecurringTaskPeriod, Eisen, Difficulty
+from models.framework import EntityId
 
 
 @dataclass()

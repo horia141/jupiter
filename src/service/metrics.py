@@ -5,7 +5,8 @@ from typing import Optional, Final, Iterable, List, Dict
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import EntityId, MetricKey, BasicValidator, SyncPrefer, EntityName
+from models.basic import MetricKey, BasicValidator, SyncPrefer, EntityName
+from models.framework import EntityId
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.metrics_manager import NotionMetricManager
 from service.errors import ServiceError
@@ -171,15 +172,17 @@ class MetricsService:
 
         # Explore Notion and apply to local
         for metric_entry_notion_row in all_metric_entries_notion_rows:
+            notion_metric_ref_id = EntityId.from_raw(metric_entry_notion_row.ref_id) \
+                if metric_entry_notion_row.ref_id else None
             if filter_metric_entry_ref_ids_set is not None and \
-                    metric_entry_notion_row.ref_id not in filter_metric_entry_ref_ids_set:
+                    notion_metric_ref_id not in filter_metric_entry_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{metric_entry_notion_row.collection_time}' (id={metric_entry_notion_row.notion_id})")
                 continue
 
             LOGGER.info(f"Syncing '{metric_entry_notion_row.collection_time}' (id={metric_entry_notion_row.notion_id})")
 
-            if metric_entry_notion_row.ref_id is None or metric_entry_notion_row.ref_id == "":
+            if notion_metric_ref_id is None or metric_entry_notion_row.ref_id == "":
                 # If the metric entry doesn't exist locally, we create it.
                 new_metric_entry = MetricEntry.new_metric_entry(
                     archived=metric_entry_notion_row.archived,
@@ -196,18 +199,16 @@ class MetricsService:
                     metric_ref_id, new_metric_entry.ref_id, metric_entry_notion_row.notion_id)
                 LOGGER.info(f"Linked the new metric entry with local entries")
 
-                metric_entry_notion_row.ref_id = new_metric_entry.ref_id
+                metric_entry_notion_row.ref_id = str(new_metric_entry.ref_id)
                 self._notion_manager.save_metric_entry(
                     metric_ref_id, new_metric_entry.ref_id, metric_entry_notion_row)
                 LOGGER.info(f"Applied changes on Notion side too")
 
-                metric_entries_notion_rows_set[EntityId(metric_entry_notion_row.ref_id)] = \
-                    metric_entry_notion_row
-            elif metric_entry_notion_row.ref_id in all_metric_entries_set and \
+                metric_entries_notion_rows_set[new_metric_entry.ref_id] = metric_entry_notion_row
+            elif notion_metric_ref_id in all_metric_entries_set and \
                     metric_entry_notion_row.notion_id in all_metric_entries_notion_ids:
-                metric_entry = all_metric_entries_set[EntityId(metric_entry_notion_row.ref_id)]
-                metric_entries_notion_rows_set[EntityId(metric_entry_notion_row.ref_id)] = \
-                    metric_entry_notion_row
+                metric_entry = all_metric_entries_set[notion_metric_ref_id]
+                metric_entries_notion_rows_set[notion_metric_ref_id] = metric_entry_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified and \
@@ -245,8 +246,7 @@ class MetricsService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a metric entry added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_metric_entry(
-                    metric_ref_id, EntityId(metric_entry_notion_row.ref_id))
+                self._notion_manager.hard_remove_metric_entry(metric_ref_id, notion_metric_ref_id)
                 LOGGER.info(f"Removed metric entry with id={metric_entry_notion_row.ref_id} from Notion")
 
         for metric_entry in all_metric_entries:

@@ -6,8 +6,9 @@ from typing import ClassVar, Final, Optional, cast
 import requests
 
 from models.basic import WorkspaceSpaceId, WorkspaceToken
+from models.framework import JSONDictType
 from remote.notion.infra.client import NotionClient, NotionClientConfig
-from utils.storage import StructuredIndividualStorage, JSONDictType
+from utils.storage import StructuredIndividualStorage
 
 
 class MissingNotionConnectionError(Exception):

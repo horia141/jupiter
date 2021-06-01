@@ -6,6 +6,7 @@ from typing import Final
 import command.command as command
 from domain.vacations.commands.vacation_find import VacationFindCommand
 from models.basic import BasicValidator
+from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class VacationsShow(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]
+        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
         response = self._command.execute(VacationFindCommand.Args(
             allow_archived=show_archived, filter_ref_ids=ref_ids if len(ref_ids) > 0 else None))
         for vacation in response.vacations:

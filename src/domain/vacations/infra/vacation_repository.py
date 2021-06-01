@@ -3,8 +3,7 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.vacations.vacation import Vacation
-from models.basic import EntityId
-from models.framework import Repository
+from models.framework import Repository, EntityId
 
 
 class VacationRepository(Repository, abc.ABC):

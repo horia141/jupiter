@@ -7,8 +7,9 @@ from typing import Final, Optional, Iterable, List
 import pendulum
 from pendulum import UTC
 
-from models.basic import EntityId, Difficulty, Eisen, BasicValidator, RecurringTaskPeriod, \
+from models.basic import Difficulty, Eisen, BasicValidator, RecurringTaskPeriod, \
     SyncPrefer, RecurringTaskType, ADate, Timestamp
+from models.framework import EntityId
 from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink, CollectionError, CollectionEntityNotFound
 from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
@@ -519,8 +520,10 @@ class RecurringTasksService:
         # Then look at each recurring task in Notion and try to match it with one in the local storage
 
         for recurring_task_notion_row in all_recurring_tasks_notion_rows:
+            notion_recurring_task_ref_id = EntityId.from_raw(recurring_task_notion_row.ref_id) \
+                if recurring_task_notion_row.ref_id else None
             # Skip this step when asking only for particular entities to be synced.
-            if filter_ref_ids_set is not None and recurring_task_notion_row.ref_id not in filter_ref_ids_set:
+            if filter_ref_ids_set is not None and notion_recurring_task_ref_id not in filter_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{recurring_task_notion_row.name}' "+
                     f"(id={recurring_task_notion_row.notion_id}) because of filtering")
@@ -528,7 +531,7 @@ class RecurringTasksService:
 
             LOGGER.info(f"Syncing '{recurring_task_notion_row.name}' (id={recurring_task_notion_row.notion_id})")
 
-            if recurring_task_notion_row.ref_id is None or recurring_task_notion_row.ref_id == "":
+            if notion_recurring_task_ref_id is None or recurring_task_notion_row.ref_id == "":
                 # If the recurring task doesn't exist locally, we create it!
 
                 try:
@@ -610,20 +613,20 @@ class RecurringTasksService:
                     project_ref_id, new_recurring_task_row.ref_id, recurring_task_notion_row.notion_id)
                 LOGGER.info(f"Linked the new inbox task with local entries")
 
-                recurring_task_notion_row.ref_id = new_recurring_task_row.ref_id
+                recurring_task_notion_row.ref_id = str(new_recurring_task_row.ref_id)
                 recurring_task_notion_row.start_at_date = new_recurring_task_row.start_at_date
                 self._notion_manager.save_recurring_task(
-                    project_ref_id, recurring_task_notion_row.ref_id, recurring_task_notion_row,
+                    project_ref_id, new_recurring_task_row.ref_id, recurring_task_notion_row,
                     inbox_tasks_collection.notion_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {recurring_task_notion_row}")
 
-                all_recurring_tasks_set[recurring_task_notion_row.ref_id] = new_recurring_task_row
-                all_recurring_tasks_row_set[recurring_task_notion_row.ref_id] = recurring_task_notion_row
-            elif recurring_task_notion_row.ref_id in all_recurring_tasks_set \
+                all_recurring_tasks_set[new_recurring_task_row.ref_id] = new_recurring_task_row
+                all_recurring_tasks_row_set[new_recurring_task_row.ref_id] = recurring_task_notion_row
+            elif notion_recurring_task_ref_id in all_recurring_tasks_set \
                     and recurring_task_notion_row.notion_id in all_recurring_tasks_saved_notion_ids:
                 # If the recurring task exists locally, we sync it with the remote
-                recurring_task_row = all_recurring_tasks_set[EntityId(recurring_task_notion_row.ref_id)]
-                all_recurring_tasks_row_set[EntityId(recurring_task_notion_row.ref_id)] = recurring_task_notion_row
+                recurring_task_row = all_recurring_tasks_set[notion_recurring_task_ref_id]
+                all_recurring_tasks_row_set[notion_recurring_task_ref_id] = recurring_task_notion_row
 
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
@@ -755,7 +758,7 @@ class RecurringTasksService:
                 # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
                 #    duplicates in these cases, and they need to be removed.
                 LOGGER.info(f"Removed dangling recurring task in Notion {recurring_task_notion_row}")
-                self._notion_manager.hard_remove_recurring_task(project_ref_id, recurring_task_notion_row.ref_id)
+                self._notion_manager.hard_remove_recurring_task(project_ref_id, notion_recurring_task_ref_id)
 
         LOGGER.info("Applied local changes")
 

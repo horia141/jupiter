@@ -11,13 +11,12 @@ from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, Cla
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow
-from models.basic import EntityId
+from models.framework import BaseNotionRow, EntityId, JSONDictType
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
-    NotionCollectionLinkExtra, NotionCollectionTagLink
+    NotionCollectionLinkExtra
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
+from utils.storage import BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -26,6 +25,15 @@ LOGGER = logging.getLogger(__name__)
 ItemType = TypeVar("ItemType", bound=BaseNotionRow)
 CopyRowToNotionRowType = Callable[[NotionClient, ItemType, CollectionRowBlock], CollectionRowBlock]
 CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
+
+
+@dataclass()
+class _NotionCollectionTagLink:
+    """Info about a particular tag in a collection."""
+    notion_id: NotionId
+    collection_id: NotionId
+    name: str
+    ref_id: Optional[EntityId]
 
 
 @dataclass()
@@ -215,7 +223,7 @@ class CollectionsManager:
 
     def upsert_collection_field_tag(
             self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
-            field: str, tag: str) -> NotionCollectionTagLink:
+            field: str, tag: str) -> _NotionCollectionTagLink:
         """Create a new tag for a Collection's field which has tags support."""
         collection_lock = self._collections_storage.load(collection_key)
         tag_key = self._build_compound_key(collection_key, key)
@@ -273,14 +281,14 @@ class CollectionsManager:
             self._collection_field_tags_storage.create(new_lock)
         LOGGER.info("Saved lock structure")
 
-        return NotionCollectionTagLink(
+        return _NotionCollectionTagLink(
             notion_id=tag_id,
             collection_id=collection.id,
             name=tag,
             ref_id=ref_id)
 
     def load_all_collection_field_tags(
-            self, collection_key: NotionLockKey, field: str) -> Iterable[NotionCollectionTagLink]:
+            self, collection_key: NotionLockKey, field: str) -> Iterable[_NotionCollectionTagLink]:
         """Load all tags for a field in a collection."""
         collection_lock = self._collections_storage.load(collection_key)
 
@@ -305,7 +313,7 @@ class CollectionsManager:
             for s in self._collection_field_tags_storage.find_all(collection_key=Eq(collection_key), field=Eq(field))}
 
         return [
-            NotionCollectionTagLink(
+            _NotionCollectionTagLink(
                 collection_id=collection.id,
                 notion_id=NotionId(option["id"]),
                 name=option["value"],
@@ -314,7 +322,7 @@ class CollectionsManager:
 
     def save_collection_field_tag(
             self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
-            field: str, tag: str) -> NotionCollectionTagLink:
+            field: str, tag: str) -> _NotionCollectionTagLink:
         """Create a new tag for a Collection's field which has tags support."""
         collection_lock = self._collections_storage.load(collection_key)
         tag_key = self._build_compound_key(collection_key, key)
@@ -358,7 +366,7 @@ class CollectionsManager:
         self._collection_field_tags_storage.update(new_lock)
         LOGGER.info("Saved lock structure")
 
-        return NotionCollectionTagLink(
+        return _NotionCollectionTagLink(
             notion_id=tag_id,
             collection_id=collection.id,
             name=tag,
@@ -460,10 +468,14 @@ class CollectionsManager:
         collection = client.get_collection(
             collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
 
+        was_found = False
         if lock:
             notion_row = client.get_collection_row(collection, lock.row_id)
-            LOGGER.info(f"Entity already exists on Notion side with id={notion_row.id}")
-        else:
+            if notion_row.alive:
+                was_found = True
+                LOGGER.info(f"Entity already exists on Notion side with id={notion_row.id}")
+
+        if not was_found:
             notion_row = client.create_collection_row(collection)
             LOGGER.info(f"Created new row on Notion side with id={notion_row.id}")
 
@@ -473,7 +485,7 @@ class CollectionsManager:
             key=item_key,
             collection_key=collection_key,
             row_id=notion_row.id,
-            ref_id=EntityId(new_row.ref_id))
+            ref_id=EntityId.from_raw(new_row.ref_id))
 
         if lock:
             self._collection_items_storage.update(new_lock)
@@ -692,7 +704,7 @@ class CollectionsManager:
             return _CollectionFieldTagLockRow(
                 key=NotionLockKey(typing.cast(str, storage_form["key"])),
                 collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
-                ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+                ref_id=EntityId.from_raw(typing.cast(str, storage_form["ref_id"])),
                 field=typing.cast(str, storage_form["field"]),
                 tag_id=NotionId(typing.cast(str, storage_form["tag_id"])))
 
@@ -701,7 +713,7 @@ class CollectionsManager:
             """Transform the live system data to something suitable for basic storage."""
             return {
                 "collection_key": live_form.collection_key,
-                "ref_id": live_form.ref_id,
+                "ref_id": str(live_form.ref_id),
                 "tag_id": live_form.tag_id,
                 "field": live_form.field
             }
@@ -720,10 +732,12 @@ class CollectionsManager:
         @staticmethod
         def storage_to_live(storage_form: JSONDictType) -> _CollectionItemLockRow:
             """Transform the data reconstructed from basic storage into something useful for the live system."""
+            if not storage_form["ref_id"]:
+                LOGGER.error(storage_form)
             return _CollectionItemLockRow(
                 key=NotionLockKey(typing.cast(str, storage_form["key"])),
                 collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
-                ref_id=EntityId(typing.cast(str, storage_form["ref_id"])),
+                ref_id=EntityId.from_raw(typing.cast(str, storage_form["ref_id"])),
                 row_id=NotionId(typing.cast(str, storage_form["row_id"])))
 
         @staticmethod
@@ -731,7 +745,7 @@ class CollectionsManager:
             """Transform the live system data to something suitable for basic storage."""
             return {
                 "collection_key": live_form.collection_key,
-                "ref_id": live_form.ref_id,
+                "ref_id": str(live_form.ref_id),
                 "row_id": live_form.row_id
             }
 

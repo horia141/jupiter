@@ -4,7 +4,7 @@ from typing import Optional
 
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models.basic import Timestamp
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 

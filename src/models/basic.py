@@ -42,10 +42,6 @@ Timestamp = NewType("Timestamp", pendulum.DateTime)  # type: ignore
 
 ADate = Union[pendulum.Date, pendulum.DateTime]
 
-
-EntityId = NewType("EntityId", str)
-
-
 EntityName = NewType("EntityName", str)
 
 
@@ -240,7 +236,6 @@ class BasicValidator:
 
     _sync_target_values: Final[FrozenSet[str]] = frozenset(st.value for st in SyncTarget)
     _sync_prefer_values: Final[FrozenSet[str]] = frozenset(sp.value for sp in SyncPrefer)
-    _entity_id_re: Final[Pattern[str]] = re.compile(r"^\d+$")
     _entity_name_re: Final[Pattern[str]] = re.compile(r"^.+$")
     _workspace_space_id_re: Final[Pattern[str]] = re.compile(r"^[0-9a-z-]{36}$")
     _workspace_token_re: Final[Pattern[str]] = re.compile(r"^[0-9a-f]+$")
@@ -313,23 +308,6 @@ class BasicValidator:
     def sync_prefer_values() -> Iterable[str]:
         """The possible values for sync prefer."""
         return BasicValidator._sync_prefer_values
-
-    @staticmethod
-    def entity_id_validate_and_clean(entity_id_raw: Optional[str]) -> EntityId:
-        """Validate and clean an entity id."""
-        if not entity_id_raw:
-            raise ModelValidationError("Expected entity id to be non-null")
-
-        entity_id: str = entity_id_raw.strip()
-
-        if len(entity_id) == 0:
-            raise ModelValidationError("Expected entity id to be non-empty")
-
-        if not BasicValidator._entity_id_re.match(entity_id):
-            raise ModelValidationError(
-                f"Expected entity id '{entity_id_raw}' to match '{BasicValidator._entity_id_re.pattern}")
-
-        return EntityId(entity_id)
 
     @staticmethod
     def entity_name_validate_and_clean(entity_name_raw: Optional[str]) -> EntityName:

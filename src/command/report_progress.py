@@ -4,6 +4,7 @@ from typing import Final
 
 from command import command
 from controllers.report_progress import ReportProgressController
+from models.framework import EntityId
 from models.basic import BasicValidator, RecurringTaskPeriod, RecurringTaskType, InboxTaskSource
 from models.errors import ModelValidationError
 from utils.time_provider import TimeProvider
@@ -82,14 +83,14 @@ class ReportProgress(command.Command):
             if len(args.project_keys) > 0 else None
         sources = [self._basic_validator.inbox_task_source_validate_and_clean(s) for s in args.sources] \
             if len(args.sources) > 0 else None
-        big_plan_ref_ids = [self._basic_validator.entity_id_validate_and_clean(bp) for bp in args.big_plan_ref_ids] \
+        big_plan_ref_ids = [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids] \
             if len(args.big_plan_ref_ids) > 0 else None
-        recurring_task_ref_ids = [self._basic_validator.entity_id_validate_and_clean(rt)
+        recurring_task_ref_ids = [EntityId.from_raw(rt)
                                   for rt in args.recurring_task_ref_ids] \
             if len(args.recurring_task_ref_ids) > 0 else None
         metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
-        person_ref_ids = [self._basic_validator.entity_id_validate_and_clean(bp) for bp in args.person_ref_ids] \
+        person_ref_ids = [EntityId.from_raw(bp) for bp in args.person_ref_ids] \
             if len(args.person_ref_ids) > 0 else None
         covers = args.covers
         breakdowns = args.breakdowns if len(args.breakdowns) > 0 else ["global"]

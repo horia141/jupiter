@@ -9,9 +9,10 @@ from typing import Final, ClassVar
 import pendulum
 from pendulum.tz.zoneinfo import Timezone
 
-from models.basic import Timestamp, BasicValidator, EntityId
+from models.basic import Timestamp, BasicValidator
+from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
-from utils.storage import StructuredIndividualStorage, JSONDictType
+from utils.storage import StructuredIndividualStorage
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -102,7 +103,8 @@ class WorkspaceRepository:
         return {
             "name": live_form.name,
             "timezone": live_form.timezone.name,
-            "default_project_ref_id": live_form.default_project_ref_id,
+            "default_project_ref_id":
+                str(live_form.default_project_ref_id) if live_form.default_project_ref_id else None,
             "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
             "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time)
         }

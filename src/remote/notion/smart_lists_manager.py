@@ -10,13 +10,12 @@ from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionMa
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import Timestamp, EntityId, BasicValidator, Tag
-from models.framework import BaseNotionRow
+from models.basic import Timestamp, BasicValidator, Tag
+from models.framework import BaseNotionRow, EntityId, JSONDictType
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
-from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 
@@ -317,7 +316,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             tags=[str(t) for t in tags],
             archived=smart_list_item.archived,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=smart_list_item.ref_id,
+            ref_id=str(smart_list_item.ref_id),
             notion_id=typing.cast(NotionId, None))
         self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{smart_list_item.ref_id}"),
@@ -354,7 +353,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
         return _SmartListNotionCollection(
             name=name,
-            ref_id=ref_id,
+            ref_id=str(ref_id),
             notion_id=collection_link.collection_id)
 
     def load_smart_list_collection(self, smart_list_ref_id: EntityId) -> _SmartListNotionCollection:
@@ -364,7 +363,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
         return _SmartListNotionCollection(
             name=smart_list_link.name,
-            ref_id=smart_list_ref_id,
+            ref_id=str(smart_list_ref_id),
             notion_id=smart_list_link.collection_id)
 
     def save_smart_list_collection(self, smart_list: _SmartListNotionCollection) -> None:
@@ -380,7 +379,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     def load_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> typing.Iterable[_SmartListNotionTag]:
         """Retrieve all the Notion-side smart list tags."""
-        return [_SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=s.ref_id)
+        return [_SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=str(s.ref_id))
                 for s in self._collections_manager.load_all_collection_field_tags(
                     collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
                     field="tags")]
@@ -396,7 +395,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             ref_id=ref_id,
             tag=new_smart_list_item_tag.name)
         return _SmartListNotionTag(
-            notion_id=smart_list_tag_link.notion_id, ref_id=ref_id, name=new_smart_list_item_tag.name)
+            notion_id=smart_list_tag_link.notion_id, ref_id=str(ref_id), name=new_smart_list_item_tag.name)
 
     def load_all_saved_smart_list_tags_notion_ids(self, smart_list_ref_id: EntityId) -> typing.Iterable[NotionId]:
         """Retrieve all the Notion ids for the smart list tags."""

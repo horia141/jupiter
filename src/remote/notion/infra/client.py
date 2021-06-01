@@ -10,8 +10,8 @@ from notion.collection import CollectionView, Collection, QueryResult, Collectio
 from notion.space import Space
 
 from models.basic import WorkspaceSpaceId, WorkspaceToken
+from models.framework import JSONDictType
 from remote.notion.common import NotionId
-from utils.storage import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 

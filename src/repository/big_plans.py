@@ -1,5 +1,4 @@
 """Repository for big plans."""
-
 from dataclasses import dataclass
 import logging
 from pathlib import Path
@@ -8,8 +7,9 @@ import typing
 from typing import Final, ClassVar, Iterable, Optional, Type
 import uuid
 
-from models.basic import EntityId, BigPlanStatus, ADate, BasicValidator, Timestamp
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
+from models.basic import BigPlanStatus, ADate, BasicValidator, Timestamp
+from models.framework import EntityId, JSONDictType
+from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -144,7 +144,7 @@ class BigPlansRepository:
     def live_to_storage(live_form: BigPlanRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "project_ref_id": live_form.project_ref_id,
+            "project_ref_id": str(live_form.project_ref_id),
             "name": live_form.name,
             "status": live_form.status.value,
             "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,

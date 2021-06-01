@@ -18,10 +18,10 @@ from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.infra.metric_repository import MetricRepository
 from domain.metrics.metric import Metric
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import MetricKey, EntityId, BasicValidator
-from models.framework import BAD_REF_ID
+from models.basic import MetricKey, BasicValidator
+from models.framework import EntityId, BAD_REF_ID
 from models.errors import RepositoryError
 from repository.sqlite.common import build_event_table, upsert_events
 from utils.storage import StructuredStorageError
@@ -66,7 +66,7 @@ class SqliteMetricRepository(MetricRepository):
         """Create a metric."""
         try:
             result = self._connection.execute(insert(self._metric_table).values(
-                ref_id=int(metric.ref_id) if metric.ref_id != BAD_REF_ID else None,
+                ref_id=metric.ref_id.as_int() if metric.ref_id != BAD_REF_ID else None,
                 archived=metric.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(metric.created_time),
                 last_modified_time=BasicValidator.timestamp_to_db_timestamp(metric.last_modified_time),
@@ -75,7 +75,7 @@ class SqliteMetricRepository(MetricRepository):
                 the_key=metric.key,
                 name=metric.name,
                 collection_project_ref_id=
-                int(metric.collection_params.project_ref_id) if metric.collection_params else None,
+                metric.collection_params.project_ref_id.as_int() if metric.collection_params else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
                 collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
                 collection_difficulty=metric.collection_params.difficulty.value
@@ -98,7 +98,7 @@ class SqliteMetricRepository(MetricRepository):
         """Save a metric - it should already exist."""
         self._connection.execute(
             update(self._metric_table)
-            .where(self._metric_table.c.ref_id == metric.ref_id)
+            .where(self._metric_table.c.ref_id == metric.ref_id.as_int())
             .values(
                 archived=metric.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(metric.created_time),
@@ -107,7 +107,7 @@ class SqliteMetricRepository(MetricRepository):
                 if metric.archived_time else None,
                 the_key=metric.key,
                 name=metric.name,
-                collection_project_ref_id=int(metric.collection_params.project_ref_id)
+                collection_project_ref_id=metric.collection_params.project_ref_id.as_int()
                 if metric.collection_params else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
                 collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
@@ -134,7 +134,7 @@ class SqliteMetricRepository(MetricRepository):
 
     def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
         """Find a metric by id."""
-        query_stmt = select(self._metric_table).where(self._metric_table.c.ref_id == ref_id)
+        query_stmt = select(self._metric_table).where(self._metric_table.c.ref_id == ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_table.c.archived.is_(False))
         result = self._connection.execute(query_stmt).first()
@@ -152,7 +152,7 @@ class SqliteMetricRepository(MetricRepository):
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_table.c.archived.is_(False))
         if filter_ref_ids:
-            query_stmt = query_stmt.where(self._metric_table.c.ref_id.in_(int(fi) for fi in filter_ref_ids))
+            query_stmt = query_stmt.where(self._metric_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
         if filter_keys:
             query_stmt = query_stmt.where(
                 self._metric_table.c.the_key.in_(filter_keys))
@@ -161,15 +161,15 @@ class SqliteMetricRepository(MetricRepository):
 
     def remove(self, ref_id: EntityId) -> Metric:
         """Hard remove a metric - an irreversible operation."""
-        query_stmt = select(self._metric_table).where(self._metric_table.c.ref_id == ref_id)
+        query_stmt = select(self._metric_table).where(self._metric_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
-        self._connection.execute(delete(self._metric_table).where(self._metric_table.c.ref_id == ref_id))
+        self._connection.execute(delete(self._metric_table).where(self._metric_table.c.ref_id == ref_id.as_int()))
         return self._row_to_entity(result)
 
     @staticmethod
     def _row_to_entity(row: Result) -> Metric:
         return Metric(
-            _ref_id=EntityId(str(row["ref_id"])),
+            _ref_id=EntityId.from_raw(str(row["ref_id"])),
             _archived=row["archived"],
             _created_time=BasicValidator.timestamp_from_db_timestamp(row["created_time"]),
             _archived_time=BasicValidator.timestamp_from_db_timestamp(row["archived_time"])
@@ -179,7 +179,7 @@ class SqliteMetricRepository(MetricRepository):
             _key=BasicValidator.metric_key_validate_and_clean(row["the_key"]),
             _name=BasicValidator.entity_name_validate_and_clean(row["name"]),
             _collection_params=RecurringTaskGenParams(
-                project_ref_id=BasicValidator.entity_id_validate_and_clean(str(row["collection_project_ref_id"])),
+                project_ref_id=EntityId.from_raw(str(row["collection_project_ref_id"])),
                 period=BasicValidator.recurring_task_period_validate_and_clean(row["collection_period"]),
                 eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row["collection_eisen"]],
                 difficulty=BasicValidator.difficulty_validate_and_clean(row["collection_difficulty"])
@@ -222,13 +222,13 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
     def create(self, metric_entry: MetricEntry) -> MetricEntry:
         """Create a metric entry."""
         result = self._connection.execute(insert(self._metric_entry_table).values(
-            ref_id=metric_entry.ref_id if metric_entry.ref_id != BAD_REF_ID else None,
+            ref_id=metric_entry.ref_id.as_int() if metric_entry.ref_id != BAD_REF_ID else None,
             archived=metric_entry.archived,
             created_time=BasicValidator.timestamp_to_db_timestamp(metric_entry.created_time),
             last_modified_time=BasicValidator.timestamp_to_db_timestamp(metric_entry.last_modified_time),
             archived_time=BasicValidator.timestamp_to_db_timestamp(metric_entry.archived_time)
             if metric_entry.archived_time else None,
-            metric_ref_id=metric_entry.metric_ref_id,
+            metric_ref_id=metric_entry.metric_ref_id.as_int(),
             collection_time=metric_entry.collection_time,
             value=metric_entry.value,
             notes=metric_entry.notes))
@@ -240,14 +240,14 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
         """Save a metric entry - it should already exist."""
         self._connection.execute(
             update(self._metric_entry_table)
-            .where(self._metric_entry_table.c.ref_id == metric_entry.ref_id)
+            .where(self._metric_entry_table.c.ref_id == metric_entry.ref_id.as_int())
             .values(
                 archived=metric_entry.archived,
                 created_time=BasicValidator.timestamp_to_db_timestamp(metric_entry.created_time),
                 last_modified_time=BasicValidator.timestamp_to_db_timestamp(metric_entry.last_modified_time),
                 archived_time=BasicValidator.timestamp_to_db_timestamp(metric_entry.archived_time)
                 if metric_entry.archived_time else None,
-                metric_ref_id=metric_entry.metric_ref_id,
+                metric_ref_id=metric_entry.metric_ref_id.as_int(),
                 collection_time=metric_entry.collection_time,
                 value=metric_entry.value,
                 notes=metric_entry.notes))
@@ -256,7 +256,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> MetricEntry:
         """Load a given metric entry."""
-        query_stmt = select(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id)
+        query_stmt = select(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
         result = self._connection.execute(query_stmt).first()
@@ -267,7 +267,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
     def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> List[MetricEntry]:
         """Retrieve all metric entries for a given metric."""
         query_stmt = select(self._metric_entry_table)\
-            .where(self._metric_entry_table.c.metric_ref_id == metric_ref_id)
+            .where(self._metric_entry_table.c.metric_ref_id == metric_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
         results = self._connection.execute(query_stmt)
@@ -283,31 +283,32 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
         if filter_ref_ids:
-            query_stmt = query_stmt.where(self._metric_entry_table.c.ref_id.in_(int(fi) for fi in filter_ref_ids))
+            query_stmt = query_stmt.where(self._metric_entry_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
         if filter_metric_ref_ids:
             query_stmt = query_stmt\
-                .where(self._metric_entry_table.c.metric_ref_id.in_(int(fi) for fi in filter_metric_ref_ids))
+                .where(self._metric_entry_table.c.metric_ref_id.in_(fi.as_int() for fi in filter_metric_ref_ids))
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
     def remove(self, ref_id: EntityId) -> MetricEntry:
         """Hard remove a metric entry - an irreversible operation."""
-        query_stmt = select(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id)
+        query_stmt = select(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
-        self._connection.execute(delete(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id))
+        self._connection.execute(
+            delete(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id.as_int()))
         return self._row_to_entity(result)
 
     @staticmethod
     def _row_to_entity(row: Result) -> MetricEntry:
         return MetricEntry(
-            _ref_id=EntityId(str(row["ref_id"])),
+            _ref_id=EntityId.from_raw(str(row["ref_id"])),
             _archived=row["archived"],
             _created_time=BasicValidator.timestamp_from_db_timestamp(row["created_time"]),
             _archived_time=BasicValidator.timestamp_from_db_timestamp(row["archived_time"])
             if row["archived_time"] else None,
             _last_modified_time=BasicValidator.timestamp_from_db_timestamp(row["last_modified_time"]),
             _events=[],
-            _metric_ref_id=EntityId(str(row["metric_ref_id"])),
+            _metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])),
             _collection_time=BasicValidator.timestamp_from_db_timestamp(row["collection_time"]),
             _value=row["value"],
             _notes=row["notes"])

@@ -6,6 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.generate_inbox_tasks import GenerateInboxTasksController
+from models.framework import EntityId
 from models.basic import BasicValidator, RecurringTaskPeriod, SyncTarget
 from utils.time_provider import TimeProvider
 
@@ -65,12 +66,12 @@ class GenerateInboxTasks(command.Command):
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
             if len(args.project_keys) > 0 else None
         recurring_task_ref_ids = [
-            self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.recurring_task_ref_ids] \
+            EntityId.from_raw(rid) for rid in args.recurring_task_ref_ids] \
             if len(args.recurring_task_ref_ids) > 0 else None
         metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
         person_ref_ids = [
-            self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.person_ref_ids] \
+            EntityId.from_raw(rid) for rid in args.person_ref_ids] \
             if len(args.person_ref_ids) > 0 else None
         period_filter = frozenset(self._basic_validator.recurring_task_period_validate_and_clean(p)
                                   for p in args.period) \

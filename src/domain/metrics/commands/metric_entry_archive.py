@@ -4,8 +4,7 @@ from typing import Final
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from models.basic import EntityId
-from models.framework import Command
+from models.framework import Command, EntityId
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 

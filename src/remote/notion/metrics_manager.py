@@ -9,13 +9,12 @@ from notion.collection import CollectionRowBlock
 from domain.metrics.metric import Metric
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import Timestamp, EntityId, BasicValidator, ADate
-from models.framework import BaseNotionRow
+from models.basic import Timestamp, BasicValidator, ADate
+from models.framework import BaseNotionRow, EntityId, JSONDictType
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
-from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 
@@ -177,7 +176,7 @@ class NotionMetricManager(MetricNotionManager):
             notes=metric_entry.notes,
             archived=metric_entry.archived,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=metric_entry.ref_id,
+            ref_id=str(metric_entry.ref_id),
             notion_id=typing.cast(NotionId, None))
         self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{metric_entry.ref_id}"),
@@ -208,7 +207,7 @@ class NotionMetricManager(MetricNotionManager):
 
         return _MetricNotionCollection(
             name=name,
-            ref_id=ref_id,
+            ref_id=str(ref_id),
             notion_id=collection_link.collection_id)
 
     def load_metric_collection(self, metric_ref_id: EntityId) -> _MetricNotionCollection:
@@ -218,7 +217,7 @@ class NotionMetricManager(MetricNotionManager):
 
         return _MetricNotionCollection(
             name=metric_link.name,
-            ref_id=metric_ref_id,
+            ref_id=str(metric_ref_id),
             notion_id=metric_link.collection_id)
 
     def save_metric_collection(self, metric: _MetricNotionCollection) -> None:
@@ -242,7 +241,7 @@ class NotionMetricManager(MetricNotionManager):
             notes=notes,
             archived=archived,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=ref_id,
+            ref_id=str(ref_id),
             notion_id=typing.cast(NotionId, None))
         self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{ref_id}"),

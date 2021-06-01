@@ -9,10 +9,10 @@ from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models import schedules
-from models.basic import RecurringTaskPeriod, Eisen, Difficulty, EntityId, BasicValidator, Timestamp
-from models.framework import Command, UpdateAction
+from models.basic import RecurringTaskPeriod, Eisen, Difficulty, BasicValidator, Timestamp
+from models.framework import Command, UpdateAction, EntityId
 from service.inbox_tasks import InboxTasksService
 from service.workspaces import WorkspacesService
 from utils.global_properties import GlobalProperties

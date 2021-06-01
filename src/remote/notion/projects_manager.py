@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import ClassVar, Final
 
-from models.basic import EntityId
+from models.framework import EntityId
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
 from remote.notion.infra.pages_manager import PagesManager
 

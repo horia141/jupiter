@@ -6,9 +6,9 @@ from typing import Final, Optional, cast, Dict
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.person import Person
-from domain.shared import RecurringTaskGenParams
-from models.basic import ProjectKey, EntityId, Timestamp
-from models.framework import Command, UpdateAction
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from models.basic import ProjectKey, Timestamp
+from models.framework import Command, UpdateAction, EntityId
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService
 from service.projects import ProjectsService

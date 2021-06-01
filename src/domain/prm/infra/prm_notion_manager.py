@@ -3,7 +3,7 @@ import abc
 from typing import Iterable
 
 from domain.prm.notion_person import NotionPerson
-from models.basic import EntityId
+from models.framework import EntityId
 from remote.notion.common import NotionPageLink, NotionId
 
 

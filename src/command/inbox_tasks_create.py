@@ -6,6 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.inbox_tasks import InboxTasksController
+from models.framework import EntityId
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class InboxTasksCreate(command.Command):
         project_key = self._basic_validator.project_key_validate_and_clean(args.project_key) \
             if args.project_key else None
         name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        big_plan_ref_id = self._basic_validator.entity_id_validate_and_clean(args.big_plan_ref_id) \
+        big_plan_ref_id = EntityId.from_raw(args.big_plan_ref_id) \
             if args.big_plan_ref_id else None
         eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
         difficulty = self._basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None

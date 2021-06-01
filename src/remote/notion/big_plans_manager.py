@@ -6,12 +6,11 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow
-from models.basic import BasicValidator, BigPlanStatus, EntityId, ADate, Timestamp, InboxTaskSource
+from models.framework import BaseNotionRow, EntityId, JSONDictType
+from models.basic import BasicValidator, BigPlanStatus, ADate, Timestamp, InboxTaskSource
 from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
-from utils.storage import JSONDictType
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -244,7 +243,7 @@ class NotionBigPlansManager:
             })
 
         return BigPlanNotionCollection(
-            ref_id=project_ref_id,
+            ref_id=str(project_ref_id),
             notion_id=collection_link.collection_id)
 
     def remove_big_plans_collection(self, project_ref_id: EntityId) -> None:
@@ -261,7 +260,7 @@ class NotionBigPlansManager:
             status=status,
             due_date=due_date,
             last_edited_time=self._time_provider.get_current_time(),
-            ref_id=ref_id,
+            ref_id=str(ref_id),
             notion_id=cast(NotionId, None))
         self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{ref_id}"),
@@ -321,7 +320,7 @@ class NotionBigPlansManager:
         """Remove all big plans Notion-side."""
         self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
-    def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: Optional[str]) -> None:
+    def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         self._collections_manager.hard_remove(
             key=NotionLockKey(f"{ref_id}"),

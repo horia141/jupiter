@@ -5,8 +5,7 @@ from typing import List, Optional, Final
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.person import Person
 from domain.prm.prm_database import PrmDatabase
-from models.basic import EntityId
-from models.framework import Command
+from models.framework import Command, EntityId
 from service.inbox_tasks import InboxTasksService
 from service.projects import Project, ProjectsService
 

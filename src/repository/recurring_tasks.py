@@ -9,9 +9,10 @@ from typing import Final, ClassVar, Iterable, List, Optional
 
 import pendulum
 
-from models.basic import EntityId, Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, \
+from models.basic import Eisen, Difficulty, RecurringTaskPeriod, RecurringTaskType, \
     BasicValidator, ADate
-from utils.storage import JSONDictType, BaseEntityRow, EntitiesStorage, In
+from models.framework import EntityId, JSONDictType
+from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -180,7 +181,7 @@ class RecurringTasksRepository:
     def live_to_storage(live_form: RecurringTaskRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "project_ref_id": live_form.project_ref_id,
+            "project_ref_id": str(live_form.project_ref_id),
             "name": live_form.name,
             "period": live_form.period.value,
             "the_type": live_form.the_type.value,

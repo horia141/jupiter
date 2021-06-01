@@ -7,10 +7,11 @@ import typing
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.prm_sync_service import PrmSyncService
-from domain.shared import RecurringTaskGenParams
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, EntityId, Timestamp, SmartListKey, MetricKey, \
+from models.basic import SyncPrefer, ProjectKey, SyncTarget, Timestamp, SmartListKey, MetricKey, \
     BasicValidator
+from models.framework import EntityId
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService, BigPlanEssentials, RecurringTaskEssentials

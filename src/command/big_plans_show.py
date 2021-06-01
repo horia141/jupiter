@@ -6,6 +6,7 @@ from typing import Final
 
 import command.command as command
 from controllers.big_plans import BigPlansController
+from models.framework import EntityId
 from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class BigPlansShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_ids = [self._basic_validator.entity_id_validate_and_clean(rid) for rid in args.ref_ids]\
+        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]\
             if len(args.ref_ids) > 0 else None
         project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys]\
             if len(args.project_keys) > 0 else None

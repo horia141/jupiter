@@ -2,8 +2,8 @@
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, List
 
-from models.basic import EntityId, EntityName, Timestamp
-from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
+from models.basic import EntityName, Timestamp
+from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
 
 @dataclass()

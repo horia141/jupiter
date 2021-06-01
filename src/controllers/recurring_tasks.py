@@ -7,8 +7,9 @@ import typing
 
 from controllers.common import ControllerInputValidationError
 from models import schedules
-from models.basic import EntityId, Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
+from models.basic import Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
     ADate
+from models.framework import EntityId
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService
