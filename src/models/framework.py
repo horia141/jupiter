@@ -5,6 +5,7 @@ import re
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
+from functools import total_ordering
 from typing import TypeVar, Generic, List, Optional, Iterator, Iterable, Final, Union, Dict, Any
 
 import typing
@@ -30,6 +31,7 @@ _ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+$")
 
 
 @dataclass(frozen=True)
+@total_ordering
 class EntityId(Value):
     """A generic entity id."""
 
@@ -55,6 +57,12 @@ class EntityId(Value):
     def as_int(self) -> int:
         """Return an integer form of this, if possible."""
         return int(self._the_id)
+
+    def __lt__(self, other: object) -> bool:
+        """Compare this with another."""
+        if not isinstance(other, EntityId):
+            raise Exception(f"Cannot compare an entity id with {other.__class__.__name__}")
+        return self._the_id < other._the_id
 
     def __str__(self) -> str:
         """Transform this to a string version."""
