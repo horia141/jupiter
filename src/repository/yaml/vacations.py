@@ -85,7 +85,7 @@ class YamlVacationRepository(VacationRepository):
         return [self._row_to_entity(vr)
                 for vr in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None)]
+                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> None:
         """Hard remove a vacation - an irreversible operation."""

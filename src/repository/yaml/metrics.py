@@ -118,7 +118,7 @@ class YamlMetricRepository(MetricRepository):
         return [self._row_to_entity(mr)
                 for mr in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
+                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
                     key=In(*filter_keys) if filter_keys else None)]
 
     def remove(self, ref_id: EntityId) -> Metric:
@@ -308,7 +308,7 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    metric_ref_id=Eq(str(metric_ref_id)))]
+                    metric_ref_id=Eq(metric_ref_id))]
 
     def find_all(
             self, allow_archived: bool = False,
@@ -318,8 +318,8 @@ class YamlMetricEntryRepository(MetricEntryRepository):
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    ref_id=In(*(str(fi) for fi in filter_ref_ids)) if filter_ref_ids else None,
-                    metric_ref_id=In(*(str(fi) for fi in filter_metric_ref_ids)) if filter_metric_ref_ids else None)]
+                    ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
+                    metric_ref_id=In(*filter_metric_ref_ids) if filter_metric_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> MetricEntry:
         """Hard remove a metric - an irreversible operation."""
