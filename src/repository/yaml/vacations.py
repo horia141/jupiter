@@ -59,11 +59,11 @@ class YamlVacationRepository(VacationRepository):
 
     def create(self, vacation: Vacation) -> Vacation:
         """Create a vacation."""
-        new_vacation_row = _VacationRow(
+        new_vacation_row = self._storage.create(_VacationRow(
             archived=vacation.archived,
             name=vacation.name,
             start_date=vacation.start_date,
-            end_date=vacation.end_date)
+            end_date=vacation.end_date))
         vacation.assign_ref_id(new_vacation_row.ref_id)
         return vacation
 
