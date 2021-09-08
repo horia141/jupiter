@@ -11,9 +11,9 @@ from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, Cla
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow, EntityId, JSONDictType
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
-from remote.notion.common import NotionId, NotionPageLink, NotionCollectionLink, NotionLockKey, \
+from remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
@@ -34,6 +34,11 @@ class _NotionCollectionTagLink:
     collection_id: NotionId
     name: str
     ref_id: Optional[EntityId]
+
+    @property
+    def tmp_ref_id_as_str(self) -> Optional[str]:
+        """A temporary string value for ref sid."""
+        return str(self.ref_id) if self.ref_id else None
 
 
 @dataclass()
@@ -610,9 +615,10 @@ class CollectionsManager:
                 f"Tried to hard remove Notion-side entity identified by {collection_key}:{key} but found nothing")
 
     @staticmethod
-    @typing.no_type_check
     def _merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
         """Merge an old and new schema for the collection."""
+        old_schema_any: typing.Any = old_schema # type: ignore
+        new_schema_any: typing.Any = new_schema # type: ignore
         combined_schema = {}
 
         # Merging schema is limited right now. Basically we assume the new schema takes
@@ -623,14 +629,14 @@ class CollectionsManager:
         # since this thing is managed via the big plan syncing flow!
         # As another special case, the recurring tasks group key is left to whatever value it had
         # before since this thing is managed by the other flows!
-        for (schema_item_name, schema_item) in new_schema.items():
+        for (schema_item_name, schema_item) in new_schema_any.items():
             if schema_item_name == "bigplan2":
-                combined_schema[schema_item_name] = old_schema[schema_item_name] \
-                    if (schema_item_name in old_schema and old_schema[schema_item_name]["type"] == "select") \
+                combined_schema[schema_item_name] = old_schema_any[schema_item_name] \
+                    if (schema_item_name in old_schema_any and old_schema_any[schema_item_name]["type"] == "select") \
                     else schema_item
             elif schema_item["type"] == "select" or schema_item["type"] == "multi_select":
-                if schema_item_name in old_schema:
-                    old_v = old_schema[schema_item_name]
+                if schema_item_name in old_schema_any:
+                    old_v = old_schema_any[schema_item_name]
 
                     combined_schema[schema_item_name] = {
                         "name": schema_item["name"],

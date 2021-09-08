@@ -4,9 +4,15 @@ from typing import Final
 
 from command import command
 from controllers.report_progress import ReportProgressController
-from models.framework import EntityId
-from models.basic import BasicValidator, RecurringTaskPeriod, RecurringTaskType, InboxTaskSource
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.metrics.metric_key import MetricKey
+from domain.projects.project_key import ProjectKey
 from models.errors import ModelValidationError
+from models.framework import EntityId
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 
@@ -21,15 +27,15 @@ class ReportProgress(command.Command):
         InboxTaskSource.PERSON
     ]
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
     _report_progress_controller: Final[ReportProgressController]
 
     def __init__(
-            self, basic_validator: BasicValidator, time_provider: TimeProvider,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             report_progress_controller: ReportProgressController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._time_provider = time_provider
         self._report_progress_controller = report_progress_controller
 
@@ -49,7 +55,7 @@ class ReportProgress(command.Command):
         parser.add_argument("--project", dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
         parser.add_argument("--source", dest="sources", default=[], action="append",
-                            choices=BasicValidator.inbox_task_source_values(),
+                            choices=InboxTaskSource.all_values(),
                             help="Allow only inbox tasks form this particular source. Defaults to all")
         parser.add_argument("--big-plan-id", dest="big_plan_ref_ids", default=[], action="append",
                             help="Allow only tasks from these big plans")
@@ -66,40 +72,39 @@ class ReportProgress(command.Command):
                             choices=["global", "projects", "periods", "big-plans", "recurring-tasks", "metrics"],
                             help="Breakdown report by one or more dimensions")
         parser.add_argument("--sub-period", dest="breakdown_period", default=None,
-                            choices=BasicValidator.recurring_task_period_values(),
+                            choices=RecurringTaskPeriod.all_values(),
                             help="Specify subperiod to use when breaking down by period")
         parser.add_argument("--recurring-task-type", dest="recurring_task_types", default=[], action="append",
-                            choices=BasicValidator.recurring_task_type_values(),
+                            choices=RecurringTaskType.all_values(),
                             help="Allow only recurring tasks of this type")
         parser.add_argument("--period", default=RecurringTaskPeriod.WEEKLY.value, dest="period",
-                            choices=BasicValidator.recurring_task_period_values(),
+                            choices=RecurringTaskPeriod.all_values(),
                             help="The period to report on")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        right_now = self._basic_validator.timestamp_validate_and_clean(args.date) \
+        right_now = Timestamp.from_raw(self._global_properties.timezone, args.date) \
             if args.date else self._time_provider.get_current_time()
-        project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
-            if len(args.project_keys) > 0 else None
-        sources = [self._basic_validator.inbox_task_source_validate_and_clean(s) for s in args.sources] \
+        project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
+        sources = [InboxTaskSource.from_raw(s) for s in args.sources] \
             if len(args.sources) > 0 else None
         big_plan_ref_ids = [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids] \
             if len(args.big_plan_ref_ids) > 0 else None
         recurring_task_ref_ids = [EntityId.from_raw(rt)
                                   for rt in args.recurring_task_ref_ids] \
             if len(args.recurring_task_ref_ids) > 0 else None
-        metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
+        metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
         person_ref_ids = [EntityId.from_raw(bp) for bp in args.person_ref_ids] \
             if len(args.person_ref_ids) > 0 else None
         covers = args.covers
         breakdowns = args.breakdowns if len(args.breakdowns) > 0 else ["global"]
-        breakdown_period_raw = self._basic_validator.recurring_task_period_validate_and_clean(args.breakdown_period) \
+        breakdown_period_raw = RecurringTaskPeriod.from_raw(args.breakdown_period) \
             if args.breakdown_period else None
-        recurring_task_types = [self._basic_validator.recurring_task_type_validate_and_clean(rtt)
+        recurring_task_types = [RecurringTaskType.from_raw(rtt)
                                 for rtt in args.recurring_task_types] \
             if len(args.recurring_task_types) > 0 else list(rtt for rtt in RecurringTaskType)
-        period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
+        period = RecurringTaskPeriod.from_raw(args.period)
 
         breakdown_period = None
         if "periods" in breakdowns:
@@ -115,7 +120,7 @@ class ReportProgress(command.Command):
         sources_to_present = [s for s in ReportProgress._SOURCES_TO_REPORT if s in sources]\
             if sources else ReportProgress._SOURCES_TO_REPORT
 
-        print(f"{period.for_notion()} as of {right_now.to_date_string()}:")
+        print(f"{period.for_notion()} as of {right_now}:")
 
         if "global" in breakdowns:
             print(f"  Global:")

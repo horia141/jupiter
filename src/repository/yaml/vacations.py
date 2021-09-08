@@ -1,18 +1,19 @@
 """Repository for vacations."""
+import logging
+import typing
 from contextlib import contextmanager
 from dataclasses import dataclass
-import logging
 from pathlib import Path
 from types import TracebackType
-import typing
 from typing import ClassVar, Iterable, Optional, Final
 
 import pendulum
 
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
 from domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationEngine
 from domain.vacations.infra.vacation_repository import VacationRepository
 from domain.vacations.vacation import Vacation
-from models.basic import BasicValidator, EntityName
 from models.framework import EntityId, JSONDictType
 from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_provider import TimeProvider
@@ -105,17 +106,17 @@ class YamlVacationRepository(VacationRepository):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _VacationRow(
             archived=typing.cast(bool, storage_form["archived"]),
-            name=EntityName(typing.cast(str, storage_form["name"])),
-            start_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["start_date"])),
-            end_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["end_date"])))
+            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            start_date=ADate.from_str(typing.cast(str, storage_form["start_date"])),
+            end_date=ADate.from_str(typing.cast(str, storage_form["end_date"])))
 
     @staticmethod
     def live_to_storage(live_form: _VacationRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "name": live_form.name,
-            "start_date": BasicValidator.adate_to_str(live_form.start_date),
-            "end_date": BasicValidator.adate_to_str(live_form.end_date)
+            "name": str(live_form.name),
+            "start_date": str(live_form.start_date),
+            "end_date": str(live_form.end_date)
         }
 
     @staticmethod

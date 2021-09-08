@@ -3,7 +3,7 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.metrics.metric import Metric
-from models.basic import MetricKey
+from domain.metrics.metric_key import MetricKey
 from models.framework import Repository, EntityId
 
 

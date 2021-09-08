@@ -2,7 +2,8 @@
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional
 
-from models.basic import ProjectKey
+from domain.common.entity_name import EntityName
+from domain.projects.project_key import ProjectKey
 from service.big_plans import BigPlansService
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService
@@ -48,7 +49,7 @@ class ProjectsController:
         self._big_plans_service = big_plans_service
         self._metrics_service = metrics_service
 
-    def create_project(self, key: ProjectKey, name: str) -> None:
+    def create_project(self, key: ProjectKey, name: EntityName) -> None:
         """Create a project."""
         response = self._projects_service.create_project(key, name)
         self._inbox_tasks_service.create_inbox_tasks_collection(response.ref_id, response.notion_page_link)
@@ -75,7 +76,7 @@ class ProjectsController:
 
         return self._projects_service.archive_project(project.ref_id)
 
-    def set_project_name(self, key: ProjectKey, name: str) -> Project:
+    def set_project_name(self, key: ProjectKey, name: EntityName) -> Project:
         """Change the name of a project."""
         project = self._projects_service.load_project_by_key(key)
         return self._projects_service.set_project_name(project.ref_id, name)

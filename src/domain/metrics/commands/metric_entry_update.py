@@ -4,7 +4,7 @@ from typing import Final, Optional
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from models.basic import ADate
+from domain.common.adate import ADate
 from models.framework import Command, UpdateAction, EntityId
 from utils.time_provider import TimeProvider
 

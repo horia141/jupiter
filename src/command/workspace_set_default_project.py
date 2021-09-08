@@ -5,7 +5,7 @@ from typing import Final
 
 import command.command as command
 from controllers.workspaces import WorkspacesController
-from models.basic import BasicValidator
+from domain.projects.project_key import ProjectKey
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class WorkspaceSetDefaultProject(command.Command):
     """Command class for setting the default project of a workspace."""
 
-    _basic_validator: Final[BasicValidator]
     _workspaces_controller: Final[WorkspacesController]
 
-    def __init__(self, basic_validator: BasicValidator, workspaces_controller: WorkspacesController) -> None:
+    def __init__(self, workspaces_controller: WorkspacesController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._workspaces_controller = workspaces_controller
 
     @staticmethod
@@ -43,5 +41,5 @@ class WorkspaceSetDefaultProject(command.Command):
         if args.clear_project:
             project_key = None
         else:
-            project_key = self._basic_validator.project_key_validate_and_clean(args.project_key)
+            project_key = ProjectKey.from_raw(args.project_key)
         self._workspaces_controller.set_workspace_default_project(project_key)

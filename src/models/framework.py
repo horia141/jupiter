@@ -2,30 +2,24 @@
 import abc
 import dataclasses
 import re
+import typing
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
 from functools import total_ordering
-from typing import TypeVar, Generic, List, Optional, Iterator, Iterable, Final, Union, Dict, Any
-
-import typing
+from typing import TypeVar, Generic, List, Optional, Iterator, Iterable, Final, Union, Dict, Any, NewType
 
 from pendulum import Date, DateTime
 
-from models.basic import Timestamp, BasicValidator
+from domain.common.timestamp import Timestamp
 from models.errors import ModelValidationError
-from remote.notion.common import NotionId
+from models.frame.value import Value
 
 UpdateActionType = TypeVar('UpdateActionType')
 
 
 JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  # type: ignore
 JSONDictType = Dict[str, JSONValueType]
-
-
-class Value:
-    """A value object in the domain."""
-
 
 _ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+$")
 
@@ -38,7 +32,7 @@ class EntityId(Value):
     _the_id: str
 
     @staticmethod
-    def from_raw(entity_id_raw: str) -> 'EntityId':
+    def from_raw(entity_id_raw: Optional[str]) -> 'EntityId':
         """Validate and clean an entity id."""
         if not entity_id_raw:
             raise ModelValidationError("Expected entity id to be non-null")
@@ -124,9 +118,9 @@ class Event:
             elif isinstance(primitive, str):
                 return primitive
             elif isinstance(primitive, Date):
-                return BasicValidator.adate_to_str(primitive)
+                return str(primitive)
             elif isinstance(primitive, DateTime):
-                return BasicValidator.adate_to_str(primitive)
+                return str(primitive)
             elif isinstance(primitive, Enum):
                 return process_primitive(primitive.value, key)
             elif isinstance(primitive, UpdateAction):
@@ -265,16 +259,15 @@ NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
 NotionRowNewAggregateRootExtraInfo = TypeVar('NotionRowNewAggregateRootExtraInfo')
 
 
+NotionId = NewType("NotionId", str)
+BAD_NOTION_ID = NotionId("bad-notion-id")
+
 @dataclass()
 class BaseNotionRow:
     """A basic item type, which must contain a Notion id and an local id."""
 
     notion_id: NotionId
     ref_id: Optional[str]
-
-
-BAD_NOTION_ID = NotionId("bad-notion-id")
-
 
 # This is actually an ABC.
 @dataclass()

@@ -8,13 +8,21 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable, List
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow, EntityId, JSONDictType
-from models.basic import BasicValidator, InboxTaskStatus, ADate, Timestamp, Eisen, Difficulty, \
-    RecurringTaskPeriod, RecurringTaskType, InboxTaskSource
-from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, \
-    format_name_for_option, NotionCollectionLinkExtra, clean_eisenhower
+from domain.common.adate import ADate
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, format_name_for_option, \
+    NotionCollectionLinkExtra, clean_eisenhower
 from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -56,7 +64,7 @@ class InboxTaskNotionRow(BaseNotionRow):
 class InboxTaskBigPlanLabel:
     """A value for an inbox task big plan label."""
     notion_link_uuid: uuid.UUID
-    name: str
+    name: EntityName
 
 
 class NotionInboxTasksManager:
@@ -967,16 +975,16 @@ class NotionInboxTasksManager:
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._collections_manager = collections_manager
 
     def upsert_inbox_task_collection(
@@ -1029,7 +1037,7 @@ class NotionInboxTasksManager:
 
     def upsert_inbox_task(
             self, project_ref_id: EntityId, source: str, name: str, archived: bool,
-            big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str],
+            big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[EntityName],
             recurring_task_ref_id: Optional[EntityId], metric_ref_id: Optional[EntityId],
             person_ref_id: Optional[EntityId], status: str, eisen: Optional[List[str]], difficulty: Optional[str],
             actionable_date: Optional[ADate], due_date: Optional[ADate], recurring_timeline: Optional[str],
@@ -1041,7 +1049,7 @@ class NotionInboxTasksManager:
             name=name,
             archived=archived,
             big_plan_ref_id=str(big_plan_ref_id) if big_plan_ref_id else None,
-            big_plan_name=big_plan_name,
+            big_plan_name=str(big_plan_name) if big_plan_name else None,
             recurring_task_ref_id=str(recurring_task_ref_id) if recurring_task_ref_id else None,
             metric_ref_id=str(metric_ref_id) if metric_ref_id else None,
             person_ref_id=str(person_ref_id) if person_ref_id else None,
@@ -1139,16 +1147,16 @@ class NotionInboxTasksManager:
             notion_row.eisenhower = row.eisen
             notion_row.difficulty = row.difficulty
             notion_row.actionable_date = \
-                self._basic_validator.adate_to_notion(row.actionable_date) if row.actionable_date else None
-            notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
+                row.actionable_date.to_notion(self._global_properties.timezone) if row.actionable_date else None
+            notion_row.due_date = row.due_date.to_notion(self._global_properties.timezone) if row.due_date else None
             notion_row.from_script = row.from_script
             notion_row.recurring_timeline = row.recurring_timeline
             notion_row.recurring_period = row.recurring_period
             notion_row.recurring_type = row.recurring_type
             notion_row.recurring_gen_right_now = \
-                self._basic_validator.adate_to_notion(row.recurring_gen_right_now) \
+                row.recurring_gen_right_now.to_notion(self._global_properties.timezone) \
                 if row.recurring_gen_right_now else None
-            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -1169,19 +1177,19 @@ class NotionInboxTasksManager:
             status=inbox_task_notion_row.status,
             eisen=clean_eisenhower(inbox_task_notion_row.eisenhower),
             difficulty=inbox_task_notion_row.difficulty,
-            actionable_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.actionable_date)
+            actionable_date=ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.actionable_date)
             if inbox_task_notion_row.actionable_date else None,
-            due_date=self._basic_validator.adate_from_notion(inbox_task_notion_row.due_date)
+            due_date=ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.due_date)
             if inbox_task_notion_row.due_date else None,
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
             recurring_period=inbox_task_notion_row.recurring_period,
             recurring_type=inbox_task_notion_row.recurring_type,
             recurring_gen_right_now=
-            self._basic_validator.adate_from_notion(inbox_task_notion_row.recurring_gen_right_now)
+            ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.recurring_gen_right_now)
             if inbox_task_notion_row.recurring_gen_right_now else None,
             last_edited_time=
-            self._basic_validator.timestamp_from_notion_timestamp(inbox_task_notion_row.last_edited_time),
+            Timestamp.from_notion(inbox_task_notion_row.last_edited_time),
             ref_id=inbox_task_notion_row.ref_id)
 
     @staticmethod

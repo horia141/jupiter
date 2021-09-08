@@ -2,7 +2,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from models.basic import ADate, Timestamp
+from domain.common.adate import ADate
+from domain.common.timestamp import Timestamp
 from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
 

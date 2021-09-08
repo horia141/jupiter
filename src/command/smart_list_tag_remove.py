@@ -5,7 +5,6 @@ from typing import Final
 
 from command import command
 from domain.smart_lists.commands.smart_list_tag_remove import SmartListTagRemoveCommand
-from models.basic import BasicValidator
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -14,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListTagRemove(command.Command):
     """Command for hard removing a smart list tag."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListTagRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListTagRemoveCommand) -> None:
+    def __init__(self, the_command: SmartListTagRemoveCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod

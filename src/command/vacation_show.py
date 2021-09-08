@@ -4,9 +4,10 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
+from domain.common.adate import ADate
 from domain.vacations.commands.vacation_find import VacationFindCommand
-from models.basic import BasicValidator
 from models.framework import EntityId
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +15,12 @@ LOGGER = logging.getLogger(__name__)
 class VacationsShow(command.Command):
     """Command class for showing the vacations."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _command: Final[VacationFindCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: VacationFindCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: VacationFindCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._command = the_command
 
     @staticmethod
@@ -47,6 +48,6 @@ class VacationsShow(command.Command):
             allow_archived=show_archived, filter_ref_ids=ref_ids if len(ref_ids) > 0 else None))
         for vacation in response.vacations:
             print(f'id={vacation.ref_id} {vacation.name} ' +
-                  f'start={self._basic_validator.adate_to_user(vacation.start_date)} ' +
-                  f'end={self._basic_validator.adate_to_user(vacation.end_date)} ' +
+                  f'start={ADate.to_user_str(self._global_properties.timezone, vacation.start_date)} ' +
+                  f'end={ADate.to_user_str(self._global_properties.timezone, vacation.end_date)} ' +
                   f'{"archived=" + str(vacation.archived) if show_archived else ""}')

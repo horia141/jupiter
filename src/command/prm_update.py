@@ -4,19 +4,17 @@ from typing import Final, Optional
 
 from command.command import Command
 from domain.prm.commands.prm_database_update import PrmDatabaseUpdateCommand
-from models.basic import BasicValidator, ProjectKey
+from domain.projects.project_key import ProjectKey
 from models.framework import UpdateAction
 
 
 class PrmUpdate(Command):
     """Command for updating the PRM database."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[PrmDatabaseUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: PrmDatabaseUpdateCommand):
+    def __init__(self, the_command: PrmDatabaseUpdateCommand):
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -46,8 +44,7 @@ class PrmUpdate(Command):
         if args.clear_catch_up_project_key:
             catch_up_project_key = UpdateAction.change_to(None)
         elif args.catch_up_project_key is not None:
-            catch_up_project_key = UpdateAction.change_to(
-                self._basic_validator.project_key_validate_and_clean(args.catch_up_project_key))
+            catch_up_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.catch_up_project_key))
         else:
             catch_up_project_key = UpdateAction.do_nothing()
 

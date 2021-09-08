@@ -1,23 +1,28 @@
 """Update a person."""
 import logging
+import typing
 from dataclasses import dataclass
 from typing import Final, Optional, List
 
-import typing
-
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.timestamp import Timestamp
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
 from models import schedules
-from models.basic import RecurringTaskPeriod, Eisen, Difficulty, BasicValidator, Timestamp
 from models.framework import Command, UpdateAction, EntityId
 from service.inbox_tasks import InboxTasksService
 from service.workspaces import WorkspacesService
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,34 +34,32 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[str]
+        name: UpdateAction[EntityName]
         relationship: UpdateAction[PersonRelationship]
         catch_up_period: UpdateAction[Optional[RecurringTaskPeriod]]
         catch_up_eisen: UpdateAction[List[Eisen]]
         catch_up_difficulty: UpdateAction[Optional[Difficulty]]
-        catch_up_actionable_from_day: UpdateAction[Optional[int]]
-        catch_up_actionable_from_month: UpdateAction[Optional[int]]
-        catch_up_due_at_time: UpdateAction[Optional[str]]
-        catch_up_due_at_day: UpdateAction[Optional[int]]
-        catch_up_due_at_month: UpdateAction[Optional[int]]
+        catch_up_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
+        catch_up_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
+        catch_up_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
+        catch_up_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
+        catch_up_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
         birthday: UpdateAction[Optional[PersonBirthday]]
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _engine: Final[PrmEngine]
     _notion_manager: Final[PrmNotionManager]
     _workspaces_service: Final[WorkspacesService]
     _inbox_tasks_service: Final[InboxTasksService]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider, basic_validator: BasicValidator,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             engine: PrmEngine, notion_manager: PrmNotionManager, inbox_tasks_service: InboxTasksService,
             workspaces_service: WorkspacesService) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._engine = engine
         self._notion_manager = notion_manager
         self._workspaces_service = workspaces_service
@@ -104,17 +107,13 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
 
                     new_catch_up_actionable_from_day = None
                     if args.catch_up_actionable_from_day.should_change:
-                        new_catch_up_actionable_from_day = \
-                            self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                                new_catch_up_period, args.catch_up_actionable_from_day.value)
+                        new_catch_up_actionable_from_day = args.catch_up_actionable_from_day.value
                     elif person.catch_up_params is not None:
                         new_catch_up_actionable_from_day = person.catch_up_params.actionable_from_day
 
                     new_catch_up_actionable_from_month = None
                     if args.catch_up_actionable_from_month.should_change:
-                        new_catch_up_actionable_from_month = \
-                            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                                new_catch_up_period, args.catch_up_actionable_from_month.value)
+                        new_catch_up_actionable_from_month = args.catch_up_actionable_from_month.value
                     elif person.catch_up_params is not None:
                         new_catch_up_actionable_from_month = person.catch_up_params.actionable_from_month
 
@@ -126,16 +125,13 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
 
                     new_catch_up_due_at_day = None
                     if args.catch_up_due_at_day.should_change:
-                        new_catch_up_due_at_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                            new_catch_up_period, args.catch_up_due_at_day.value)
+                        new_catch_up_due_at_day = args.catch_up_due_at_day.value
                     elif person.catch_up_params is not None:
                         new_catch_up_due_at_day = person.catch_up_params.due_at_day
 
                     new_catch_up_due_at_month = None
                     if args.catch_up_due_at_month.should_change:
-                        new_catch_up_due_at_month = \
-                            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                                new_catch_up_period, args.catch_up_due_at_month.value)
+                        new_catch_up_due_at_month = args.catch_up_due_at_month.value
                     elif person.catch_up_params is not None:
                         new_catch_up_due_at_month = person.catch_up_params.due_at_month
 

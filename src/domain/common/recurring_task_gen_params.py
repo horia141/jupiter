@@ -2,7 +2,12 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from models.basic import RecurringTaskPeriod, Eisen, Difficulty
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
 from models.framework import EntityId
 
 
@@ -14,11 +19,11 @@ class RecurringTaskGenParams:
     period: RecurringTaskPeriod
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
-    actionable_from_day: Optional[int]
-    actionable_from_month: Optional[int]
-    due_at_time: Optional[str]
-    due_at_day: Optional[int]
-    due_at_month: Optional[int]
+    actionable_from_day: Optional[RecurringTaskDueAtDay]
+    actionable_from_month: Optional[RecurringTaskDueAtMonth]
+    due_at_time: Optional[RecurringTaskDueAtTime]
+    due_at_day: Optional[RecurringTaskDueAtDay]
+    due_at_month: Optional[RecurringTaskDueAtMonth]
 
     def with_new_project_ref_id(self, project_ref_id: EntityId) -> 'RecurringTaskGenParams':
         """Return a new params object, with the project changed to the argument."""

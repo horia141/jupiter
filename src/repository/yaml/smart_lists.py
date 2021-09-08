@@ -7,6 +7,7 @@ from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final, Set, List
 import typing
 
+from domain.common.url import URL
 from domain.smart_lists.infra.smart_list_engine import SmartListUnitOfWork, SmartListEngine
 from domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
 from domain.smart_lists.infra.smart_list_repository import SmartListRepository
@@ -14,7 +15,9 @@ from domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepos
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import SmartListKey, Tag, EntityName
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
+from domain.common.entity_name import EntityName
+from domain.smart_lists.smart_list_key import SmartListKey
 from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
 from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect
@@ -118,7 +121,7 @@ class YamlSmartListRepository(SmartListRepository):
     def storage_to_live(storage_form: JSONDictType) -> _SmartListRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _SmartListRow(
-            key=SmartListKey(typing.cast(str, storage_form["key"])),
+            key=SmartListKey.from_raw(typing.cast(str, storage_form["key"])),
             name=EntityName(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]))
 
@@ -126,8 +129,8 @@ class YamlSmartListRepository(SmartListRepository):
     def live_to_storage(live_form: _SmartListRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "name": live_form.name,
-            "key": live_form.key
+            "name": str(live_form.name),
+            "key": str(live_form.key)
         }
 
     @staticmethod
@@ -160,7 +163,7 @@ class _SmartListTagRow(BaseEntityRow):
     """A tag for a smart list item."""
 
     smart_list_ref_id: EntityId
-    name: Tag
+    tag_name: SmartListTagName
 
 
 class YamlSmartListTagRepository(SmartListTagRepository):
@@ -197,7 +200,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
         new_smart_list_tag_row = self._storage.create(_SmartListTagRow(
             archived=smart_list_tag.archived,
             smart_list_ref_id=smart_list_tag.smart_list_ref_id,
-            name=smart_list_tag.name))
+            tag_name=smart_list_tag.tag_name))
         smart_list_tag.assign_ref_id(new_smart_list_tag_row.ref_id)
         return smart_list_tag
 
@@ -213,25 +216,25 @@ class YamlSmartListTagRepository(SmartListTagRepository):
 
     def find_all_for_smart_list(
             self, smart_list_ref_id: EntityId, allow_archived: bool = False,
-            filter_names: Optional[Iterable[Tag]] = None) -> typing.List[SmartListTag]:
+            filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> typing.List[SmartListTag]:
         """Retrieve all smart list items for a given smart list."""
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
-                    name=In(*filter_names) if filter_names else None,
+                    tag_name=In(*filter_tag_names) if filter_tag_names else None,
                     smart_list_ref_id=Eq(smart_list_ref_id))]
 
     def find_all(
             self, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_names: Optional[Iterable[Tag]] = None) -> typing.List[SmartListTag]:
+            filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> typing.List[SmartListTag]:
         """Find all smart list items matching some criteria."""
         return [self._row_to_entity(mer)
                 for mer in self._storage.find_all(
                     allow_archived=allow_archived,
                     ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-                    name=In(*(str(fi) for fi in filter_names)) if filter_names else None,
+                    tag_name=In(*(str(fi) for fi in filter_tag_names)) if filter_tag_names else None,
                     smart_list_ref_id=In(*filter_smart_list_ref_ids) if filter_smart_list_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> SmartListTag:
@@ -243,7 +246,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
         """The schema for the data."""
         return {
             "smart_list_ref_id": {"type": "string"},
-            "name": {"type": "string"}
+            "tag_name": {"type": "string"}
         }
 
     @staticmethod
@@ -251,7 +254,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _SmartListTagRow(
             smart_list_ref_id=EntityId(typing.cast(str, storage_form["smart_list_ref_id"])),
-            name=Tag(typing.cast(str, storage_form["name"])),
+            tag_name=SmartListTagName.from_raw(typing.cast(str, storage_form["tag_name"])),
             archived=typing.cast(bool, storage_form["archived"]))
 
     @staticmethod
@@ -259,7 +262,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
         """Transform the live system data to something suitable for basic storage."""
         return {
             "smart_list_ref_id": str(live_form.smart_list_ref_id),
-            "name": live_form.name
+            "tag_name": str(live_form.tag_name)
         }
 
     @staticmethod
@@ -267,7 +270,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
         smart_list_tag_row = _SmartListTagRow(
             archived=smart_list_tag.archived,
             smart_list_ref_id=smart_list_tag.smart_list_ref_id,
-            name=smart_list_tag.name)
+            tag_name=smart_list_tag.tag_name)
         smart_list_tag_row.ref_id = smart_list_tag.ref_id
         smart_list_tag_row.created_time = smart_list_tag.created_time
         smart_list_tag_row.archived_time = smart_list_tag.archived_time
@@ -284,7 +287,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
             _last_modified_time=row.last_modified_time,
             _events=[],
             _smart_list_ref_id=row.smart_list_ref_id,
-            _name=row.name)
+            _tag_name=row.tag_name)
 
 
 @dataclass()
@@ -295,7 +298,7 @@ class _SmartListItemRow(BaseEntityRow):
     name: EntityName
     is_done: bool
     tag_ids: Set[EntityId]
-    url: Optional[str]
+    url: Optional[URL]
 
 
 class YamlSmartListItemRepository(SmartListItemRepository):
@@ -397,7 +400,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             name=EntityName(typing.cast(str, storage_form["name"])),
             is_done=typing.cast(bool, storage_form["is_done"]),
             tag_ids=set(EntityId(tid) for tid in typing.cast(List[str], storage_form["tag_ids"])),
-            url=typing.cast(str, storage_form["url"]) if storage_form["url"] is not None else None,
+            url=URL.from_raw(typing.cast(str, storage_form["url"])) if storage_form["url"] is not None else None,
             archived=typing.cast(bool, storage_form["archived"]))
 
     @staticmethod
@@ -405,10 +408,10 @@ class YamlSmartListItemRepository(SmartListItemRepository):
         """Transform the live system data to something suitable for basic storage."""
         return {
             "smart_list_ref_id": str(live_form.smart_list_ref_id),
-            "name": live_form.name,
+            "name": str(live_form.name),
             "is_done": live_form.is_done,
             "tag_ids": [str(tid) for tid in live_form.tag_ids],
-            "url": live_form.url
+            "url": str(live_form.url)
         }
 
     @staticmethod

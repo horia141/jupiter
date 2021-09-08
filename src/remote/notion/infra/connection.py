@@ -5,7 +5,8 @@ from typing import ClassVar, Final, Optional, cast
 
 import requests
 
-from models.basic import WorkspaceSpaceId, WorkspaceToken
+from domain.workspaces.notion_token import NotionToken
+from domain.workspaces.notion_space_id import NotionSpaceId
 from models.framework import JSONDictType
 from remote.notion.infra.client import NotionClient, NotionClientConfig
 from utils.storage import StructuredIndividualStorage
@@ -23,8 +24,8 @@ class OldTokenForNotionConnectionError(Exception):
 class NotionConnectionData:
     """Data about the link to Notion."""
 
-    space_id: WorkspaceSpaceId
-    token: WorkspaceToken
+    space_id: NotionSpaceId
+    token: NotionToken
 
 
 class NotionConnection:
@@ -40,9 +41,9 @@ class NotionConnection:
         self._structured_storage = StructuredIndividualStorage(self._NOTION_LINK_FILE_PATH, self)
         self._cached_client = None
 
-    def initialize(self, space_id: WorkspaceSpaceId, token: WorkspaceToken) -> None:
+    def initialize(self, notion_space_id: NotionSpaceId, notion_token: NotionToken) -> None:
         """Initialize the Notion collection."""
-        self._structured_storage.save(NotionConnectionData(space_id=space_id, token=token))
+        self._structured_storage.save(NotionConnectionData(space_id=notion_space_id, token=notion_token))
 
     def get_notion_client(self) -> NotionClient:
         """Construct a new Notion client."""
@@ -62,7 +63,7 @@ class NotionConnection:
                 raise OldTokenForNotionConnectionError()
             raise
 
-    def update_token(self, new_token: WorkspaceToken) -> None:
+    def update_token(self, new_token: NotionToken) -> None:
         """Save new connection token."""
         data = self._structured_storage.load()
         data.token = new_token
@@ -84,13 +85,13 @@ class NotionConnection:
     def storage_to_live(storage_form: JSONDictType) -> NotionConnectionData:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return NotionConnectionData(
-            space_id=WorkspaceSpaceId(cast(str, storage_form["space_id"])),
-            token=WorkspaceToken(cast(str, storage_form["token"])))
+            space_id=NotionSpaceId.from_raw(cast(str, storage_form["space_id"])),
+            token=NotionToken.from_raw(cast(str, storage_form["token"])))
 
     @staticmethod
     def live_to_storage(live_form: NotionConnectionData) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "space_id": live_form.space_id,
-            "token": live_form.token
+            "space_id": str(live_form.space_id),
+            "token": str(live_form.token)
         }

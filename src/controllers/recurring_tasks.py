@@ -1,14 +1,23 @@
 """The controller for recurring tasks."""
 import logging
+import typing
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
-import typing
-
-from controllers.common import ControllerInputValidationError
+from controllers.validation_error import ControllerInputValidationError
+from domain.common.adate import ADate
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_skip_rule import RecurringTaskSkipRule
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.timestamp import Timestamp
+from domain.projects.project_key import ProjectKey
 from models import schedules
-from models.basic import Difficulty, Eisen, RecurringTaskPeriod, ProjectKey, RecurringTaskType, Timestamp, \
-    ADate
 from models.framework import EntityId
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService, InboxTask
@@ -55,11 +64,13 @@ class RecurringTasksController:
         self._recurring_tasks_service = recurring_tasks_service
 
     def create_recurring_task(
-            self, project_key: Optional[ProjectKey], name: str, period: RecurringTaskPeriod,
+            self, project_key: Optional[ProjectKey], name: EntityName, period: RecurringTaskPeriod,
             the_type: RecurringTaskType, eisen: List[Eisen], difficulty: Optional[Difficulty],
-            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], must_do: bool, skip_rule: Optional[str],
-            start_at_date: Optional[ADate], end_at_date: Optional[ADate]) -> RecurringTask:
+            actionable_from_day: Optional[RecurringTaskDueAtDay],
+            actionable_from_month: Optional[RecurringTaskDueAtMonth], due_at_time: Optional[RecurringTaskDueAtTime],
+            due_at_day: Optional[RecurringTaskDueAtDay], due_at_month: Optional[RecurringTaskDueAtMonth],
+            must_do: bool, skip_rule: Optional[RecurringTaskSkipRule], start_at_date: Optional[ADate],
+            end_at_date: Optional[ADate]) -> RecurringTask:
         """Create an recurring task."""
         if project_key is not None:
             project = self._projects_service.load_project_by_key(project_key)
@@ -100,7 +111,7 @@ class RecurringTasksController:
             LOGGER.info(f"Removing inbox task instance {inbox_task.name}")
         return self._recurring_tasks_service.archive_recurring_task(ref_id)
 
-    def set_recurring_task_name(self, ref_id: EntityId, name: str) -> RecurringTask:
+    def set_recurring_task_name(self, ref_id: EntityId, name: EntityName) -> RecurringTask:
         """Change the name for a recurring task."""
         recurring_task = self._recurring_tasks_service.load_recurring_task_by_id(ref_id)
         inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(recurring_task.project_ref_id)
@@ -171,8 +182,8 @@ class RecurringTasksController:
         return recurring_task
 
     def set_recurring_task_actionable_config(
-            self, ref_id: EntityId, actionable_from_day: Optional[int],
-            actionable_from_month: Optional[int]) -> RecurringTask:
+            self, ref_id: EntityId, actionable_from_day: Optional[RecurringTaskDueAtDay],
+            actionable_from_month: Optional[RecurringTaskDueAtMonth]) -> RecurringTask:
         """Change the actionable date config for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_actionable_config(
             ref_id, actionable_from_day, actionable_from_month)
@@ -188,8 +199,9 @@ class RecurringTasksController:
         return recurring_task
 
     def set_recurring_task_deadlines(
-            self, ref_id: EntityId, due_at_time: Optional[str], due_at_day: Optional[int],
-            due_at_month: Optional[int]) -> RecurringTask:
+            self, ref_id: EntityId, due_at_time: Optional[RecurringTaskDueAtTime],
+            due_at_day: Optional[RecurringTaskDueAtDay],
+            due_at_month: Optional[RecurringTaskDueAtMonth]) -> RecurringTask:
         """Change the deadlines for a recurring task."""
         recurring_task = self._recurring_tasks_service.set_recurring_task_deadlines(
             ref_id, due_at_time, due_at_day, due_at_month)
@@ -208,7 +220,8 @@ class RecurringTasksController:
         """Change the skip rule for a recurring task."""
         return self._recurring_tasks_service.set_recurring_task_must_do_state(ref_id, must_do)
 
-    def set_recurring_task_skip_rule(self, ref_id: EntityId, skip_rule: Optional[str]) -> RecurringTask:
+    def set_recurring_task_skip_rule(
+            self, ref_id: EntityId, skip_rule: Optional[RecurringTaskSkipRule]) -> RecurringTask:
         """Change the skip rule for a recurring task."""
         return self._recurring_tasks_service.set_recurring_task_skip_rule(ref_id, skip_rule)
 

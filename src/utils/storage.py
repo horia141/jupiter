@@ -3,19 +3,20 @@ import abc
 import collections
 import hashlib
 import logging
+import typing
 from dataclasses import dataclass, field
 from enum import Enum
 from itertools import chain
 from pathlib import Path
 from typing import Final, Dict, Protocol, TypeVar, Generic, Optional, List, Tuple, Union, Iterable, FrozenSet
-import typing
 
 import jsonschema as js
 import pendulum
 import yaml
 
-from models.basic import Timestamp, BasicValidator
-from models.framework import EntityId, JSONDictType, Value
+from domain.common.timestamp import Timestamp
+from models.framework import EntityId, JSONDictType
+from models.frame.value import Value
 from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
@@ -371,18 +372,18 @@ class RecordsStorage(Generic[RecordRowType]):
     def _full_storage_form_to_record(self, full_storage_form: JSONDictType) -> RecordRowType:
         record = self._protocol.storage_to_live(full_storage_form)
         record.created_time = \
-            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["created_time"])) \
+            Timestamp.from_str(typing.cast(str, full_storage_form["created_time"])) \
                 if full_storage_form.get("created_time", None) else self._time_provider.get_current_time()
         record.last_modified_time = \
-            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["last_modified_time"])) \
+            Timestamp.from_str(typing.cast(str, full_storage_form["last_modified_time"])) \
                 if full_storage_form.get("created_time", None) else self._time_provider.get_current_time()
         return record
 
     def _entity_to_full_storage_form(self, record: RecordRowType) -> JSONDictType:
         full_storage_form: JSONDictType = {
             "key": record.key,
-            "created_time": BasicValidator.timestamp_to_str(record.created_time),
-            "last_modified_time": BasicValidator.timestamp_to_str(record.last_modified_time)
+            "created_time": str(record.created_time),
+            "last_modified_time": str(record.last_modified_time)
         }
         for key, val in self._protocol.live_to_storage(record).items():
             full_storage_form[key] = val
@@ -719,11 +720,11 @@ class EntitiesStorage(Generic[EntityRowType]):
         entity = self._protocol.storage_to_live(full_storage_form)
         entity.ref_id = EntityId(typing.cast(str, full_storage_form["ref_id"]))
         entity.created_time = \
-            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["created_time"]))
+            Timestamp.from_str(typing.cast(str, full_storage_form["created_time"]))
         entity.last_modified_time = \
-            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["last_modified_time"]))
+            Timestamp.from_str(typing.cast(str, full_storage_form["last_modified_time"]))
         entity.archived_time = \
-            BasicValidator.timestamp_from_str(typing.cast(str, full_storage_form["archived_time"])) \
+            Timestamp.from_str(typing.cast(str, full_storage_form["archived_time"])) \
                 if full_storage_form["archived_time"] is not None else None
         return entity
 
@@ -731,9 +732,9 @@ class EntitiesStorage(Generic[EntityRowType]):
         full_storage_form: JSONDictType = {
             "ref_id": str(entity.ref_id),
             "archived": entity.archived,
-            "created_time": BasicValidator.timestamp_to_str(entity.created_time),
-            "last_modified_time": BasicValidator.timestamp_to_str(entity.last_modified_time),
-            "archived_time": BasicValidator.timestamp_to_str(entity.archived_time)
+            "created_time": str(entity.created_time),
+            "last_modified_time": str(entity.last_modified_time),
+            "archived_time": str(entity.archived_time)
                              if entity.archived_time else None
         }
         for key, val in self._protocol.live_to_storage(entity).items():

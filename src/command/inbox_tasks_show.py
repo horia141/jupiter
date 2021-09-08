@@ -1,13 +1,15 @@
 """Command for showing the inbox tasks."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.inbox_tasks import InboxTasksController
+from domain.common.adate import ADate
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.projects.project_key import ProjectKey
 from models.framework import EntityId
-from models.basic import BasicValidator
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,13 +17,13 @@ LOGGER = logging.getLogger(__name__)
 class InboxTasksShow(command.Command):
     """Command class for showing the inbox tasks."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _inbox_tasks_controller: Final[InboxTasksController]
 
     def __init__(
-            self, basic_validator: BasicValidator, inbox_tasks_controller: InboxTasksController) -> None:
+            self, global_properties: GlobalProperties, inbox_tasks_controller: InboxTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._inbox_tasks_controller = inbox_tasks_controller
 
     @staticmethod
@@ -41,7 +43,7 @@ class InboxTasksShow(command.Command):
         parser.add_argument("--project", dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
         parser.add_argument("--source", dest="sources", default=[], action="append",
-                            choices=BasicValidator.inbox_task_source_values(),
+                            choices=InboxTaskSource.all_values(),
                             help="Allow only inbox tasks form this particular source. Defaults to all")
 
     def run(self, args: Namespace) -> None:
@@ -49,9 +51,8 @@ class InboxTasksShow(command.Command):
         # Parse arguments
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]\
             if len(args.ref_ids) > 0 else None
-        project_keys = [self._basic_validator.project_key_validate_and_clean(p) for p in args.project_keys]\
-            if len(args.project_keys) > 0 else None
-        sources = [self._basic_validator.inbox_task_source_validate_and_clean(s) for s in args.sources]\
+        project_keys = [ProjectKey.from_raw(p) for p in args.project_keys] if len(args.project_keys) > 0 else None
+        sources = [InboxTaskSource.from_raw(s) for s in args.sources]\
             if len(args.sources) > 0 else None
         response = self._inbox_tasks_controller.load_all_inbox_tasks(
             filter_ref_ids=ref_ids, filter_project_keys=project_keys, filter_sources=sources)
@@ -66,7 +67,7 @@ class InboxTasksShow(command.Command):
                   f' archived="{inbox_task.archived}"' +
                   (f' big_plan="{big_plan.name}"' if big_plan else "") +
                   (f' recurring_task="{recurring_task.name}"' if recurring_task else "") +
-                  f' due_date="{self._basic_validator.adate_to_user(inbox_task.due_date)}"' +
-                  f'\n    created_time="{inbox_task.created_time.to_datetime_string()}"' +
+                  f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"' +
+                  f'\n    created_time="{inbox_task.created_time}"' +
                   f' eisen={",".join(e.for_notion() for e in inbox_task.eisen)}' +
                   f' difficulty={inbox_task.difficulty.for_notion() if inbox_task.difficulty else ""}')

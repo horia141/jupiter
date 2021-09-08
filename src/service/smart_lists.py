@@ -2,13 +2,17 @@
 import logging
 from typing import Final, Optional, Iterable
 
+from domain.common.entity_name import EntityName
+from domain.common.sync_prefer import SyncPrefer
+from domain.common.url import URL
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
+from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import BasicValidator, SyncPrefer, SmartListKey, Tag
-from models.framework import EntityId
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.errors import ModelValidationError
+from models.framework import EntityId
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from service.errors import ServiceValidationError, ServiceError
@@ -21,16 +25,14 @@ LOGGER = logging.getLogger(__name__)
 class SmartListsService:
     """The service class for dealing with smart lists."""
 
-    _basic_validator: Final[BasicValidator]
     _time_provider: Final[TimeProvider]
     _smart_list_engine: Final[SmartListEngine]
     _notion_manager: Final[NotionSmartListsManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, time_provider: TimeProvider,
-            smart_list_engine: SmartListEngine, notion_manager: NotionSmartListsManager) -> None:
+            self, time_provider: TimeProvider, smart_list_engine: SmartListEngine,
+            notion_manager: NotionSmartListsManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._time_provider = time_provider
         self._smart_list_engine = smart_list_engine
         self._notion_manager = notion_manager
@@ -167,13 +169,13 @@ class SmartListsService:
             smart_list_notion_collection = self._notion_manager.load_smart_list_collection(smart_list_ref_id)
 
             if sync_prefer == SyncPrefer.LOCAL:
-                smart_list_notion_collection.name = smart_list.name
+                smart_list_notion_collection.name = str(smart_list.name)
                 self._notion_manager.save_smart_list_collection(smart_list_notion_collection)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
                 with self._smart_list_engine.get_unit_of_work() as uow:
                     smart_list.change_name(
-                        self._basic_validator.entity_name_validate_and_clean(smart_list_notion_collection.name),
+                        EntityName.from_raw(smart_list_notion_collection.name),
                         self._time_provider.get_current_time())
                     uow.smart_list_repository.save(smart_list)
                 LOGGER.info("Applied local change")
@@ -188,7 +190,7 @@ class SmartListsService:
             all_smart_list_tags = list(uow.smart_list_tag_repository.find_all(
                 allow_archived=True, filter_smart_list_ref_ids=[smart_list_ref_id]))
         all_smart_list_tags_set = {slt.ref_id: slt for slt in all_smart_list_tags}
-        all_smart_list_tags_by_name = {slt.name: slt for slt in all_smart_list_tags}
+        all_smart_list_tags_by_name = {slt.tag_name: slt for slt in all_smart_list_tags}
 
         if not drop_all_notion_side:
             all_smart_list_tags_notion_rows = \
@@ -209,7 +211,7 @@ class SmartListsService:
             if notion_smart_list_tag_ref_id is None or smart_list_tag_notion_row.ref_id == "":
                 # If the smart list tag doesn't exist locally, we create it.
                 try:
-                    smart_list_tag_name = self._basic_validator.tag_validate_and_clean(smart_list_tag_notion_row.name)
+                    smart_list_tag_name = SmartListTagName.from_raw(smart_list_tag_notion_row.name)
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
 
@@ -217,7 +219,7 @@ class SmartListsService:
                     new_smart_list_tag = SmartListTag.new_smart_list_tag(
                         smart_list_ref_id, smart_list_tag_name, self._time_provider.get_current_time())
                     new_smart_list_tag = uow.smart_list_tag_repository.create(new_smart_list_tag)
-                LOGGER.info(f"Found new smart list tag from Notion '{new_smart_list_tag.name}'")
+                LOGGER.info(f"Found new smart list tag from Notion '{new_smart_list_tag.tag_name}'")
 
                 self._notion_manager.link_local_and_notion_tag_for_smart_list(
                     smart_list_ref_id, new_smart_list_tag.ref_id, smart_list_tag_notion_row.notion_id)
@@ -231,7 +233,7 @@ class SmartListsService:
                 smart_list_tags_notion_rows_set[new_smart_list_tag.ref_id] = smart_list_tag_notion_row
                 all_smart_list_tags.append(new_smart_list_tag)
                 all_smart_list_tags_set[new_smart_list_tag.ref_id] = new_smart_list_tag
-                all_smart_list_tags_by_name[new_smart_list_tag.name] = new_smart_list_tag
+                all_smart_list_tags_by_name[new_smart_list_tag.tag_name] = new_smart_list_tag
             elif notion_smart_list_tag_ref_id in all_smart_list_tags_set and \
                     smart_list_tag_notion_row.notion_id in all_smart_list_tags_notion_ids:
                 smart_list_tag = all_smart_list_tags_set[notion_smart_list_tag_ref_id]
@@ -239,17 +241,17 @@ class SmartListsService:
 
                 if sync_prefer == SyncPrefer.NOTION:
                     try:
-                        smart_list_tag_name = self._basic_validator.tag_validate_and_clean(
+                        smart_list_tag_name = SmartListTagName.from_raw(
                             smart_list_tag_notion_row.name)
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
 
                     with self._smart_list_engine.get_unit_of_work() as uow:
-                        smart_list_tag.change_name(smart_list_tag_name, self._time_provider.get_current_time())
+                        smart_list_tag.change_tag_name(smart_list_tag_name, self._time_provider.get_current_time())
                         uow.smart_list_tag_repository.save(smart_list_tag)
-                    LOGGER.info(f"Changed smart list tag '{smart_list_tag.name}' from Notion")
+                    LOGGER.info(f"Changed smart list tag '{smart_list_tag.tag_name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
-                    smart_list_tag_notion_row.name = smart_list_tag.name
+                    smart_list_tag_notion_row.name = str(smart_list_tag.tag_name)
                     self._notion_manager.save_smart_list_tag(
                         smart_list_ref_id, smart_list_tag.ref_id, smart_list_tag_notion_row)
                     LOGGER.info(f"Changed smart list tag '{smart_list_tag_notion_row.name}' from local")
@@ -274,7 +276,7 @@ class SmartListsService:
 
             # If the smart list item does not exist on Notion side, we create it.
             self._notion_manager.upsert_smart_list_tag(smart_list_tag)
-            LOGGER.info(f"Created new smart list tag on Notion side '{smart_list_tag.name}'")
+            LOGGER.info(f"Created new smart list tag on Notion side '{smart_list_tag.tag_name}'")
 
         # Now synchronize the list items here.
         filter_smart_list_item_ref_ids_set = frozenset(filter_smart_list_item_ref_ids) \
@@ -311,10 +313,8 @@ class SmartListsService:
             if notion_smart_list_item_ref_id is None or smart_list_item_notion_row.ref_id == "":
                 # If the smart list item doesn't exist locally, we create it.
                 try:
-                    smart_list_item_name = \
-                        self._basic_validator.entity_name_validate_and_clean(smart_list_item_notion_row.name)
-                    smart_list_item_url = \
-                        self._basic_validator.url_validate_and_clean(smart_list_item_notion_row.url) \
+                    smart_list_item_name = EntityName.from_raw(smart_list_item_notion_row.name)
+                    smart_list_item_url = URL.from_raw(smart_list_item_notion_row.url) \
                             if smart_list_item_notion_row.url else None
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
@@ -326,8 +326,9 @@ class SmartListsService:
                         name=smart_list_item_name,
                         is_done=smart_list_item_notion_row.is_done,
                         tags_ref_id=[
-                            all_smart_list_tags_by_name[Tag(t)].ref_id for t in smart_list_item_notion_row.tags
-                            if Tag(t) in all_smart_list_tags_by_name],
+                            all_smart_list_tags_by_name[SmartListTagName(t)].ref_id
+                            for t in smart_list_item_notion_row.tags
+                            if SmartListTagName(t) in all_smart_list_tags_by_name],
                         url=smart_list_item_url,
                         created_time=self._time_provider.get_current_time())
                     new_smart_list_item = uow.smart_list_item_repository.create(new_smart_list_item)
@@ -357,10 +358,8 @@ class SmartListsService:
                         continue
 
                     try:
-                        smart_list_item_name = \
-                            self._basic_validator.entity_name_validate_and_clean(smart_list_item_notion_row.name)
-                        smart_list_item_url = \
-                            self._basic_validator.url_validate_and_clean(smart_list_item_notion_row.url) \
+                        smart_list_item_name = EntityName.from_raw(smart_list_item_notion_row.name)
+                        smart_list_item_url = URL.from_raw(smart_list_item_notion_row.url) \
                                 if smart_list_item_notion_row.url else None
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
@@ -369,7 +368,8 @@ class SmartListsService:
                     smart_list_item.change_is_done(
                         smart_list_item_notion_row.is_done, self._time_provider.get_current_time())
                     smart_list_item.change_tags(
-                        [all_smart_list_tags_by_name[Tag(t)].ref_id for t in smart_list_item_notion_row.tags],
+                        [all_smart_list_tags_by_name[SmartListTagName(t)].ref_id
+                         for t in smart_list_item_notion_row.tags],
                         self._time_provider.get_current_time())
                     smart_list_item.change_url(smart_list_item_url, self._time_provider.get_current_time())
                     smart_list_item.change_archived(
@@ -383,11 +383,11 @@ class SmartListsService:
                         LOGGER.info(f"Skipping '{smart_list_item_notion_row.name}' because it was not modified")
                         continue
 
-                    smart_list_item_notion_row.name = smart_list_item.name
+                    smart_list_item_notion_row.name = str(smart_list_item.name)
                     smart_list_item_notion_row.is_done = smart_list_item.is_done
-                    smart_list_item_notion_row.url = smart_list_item.url
+                    smart_list_item_notion_row.url = str(smart_list_item.url)
                     smart_list_item_notion_row.tags = \
-                        [all_smart_list_tags_set[t].name for t in smart_list_item.tags]
+                        [str(all_smart_list_tags_set[t].tag_name) for t in smart_list_item.tags]
                     smart_list_item_notion_row.archived = smart_list_item.archived
                     self._notion_manager.save_smart_list_item(
                         smart_list_ref_id, smart_list_item.ref_id, smart_list_item_notion_row)
@@ -412,7 +412,7 @@ class SmartListsService:
 
             # If the smart list item does not exist on Notion side, we create it.
             self._notion_manager.upsert_smart_list_item(
-                smart_list_item, [all_smart_list_tags_set[t].name for t in smart_list_item.tags])
+                smart_list_item, [all_smart_list_tags_set[t].tag_name for t in smart_list_item.tags])
             LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item.name}'")
 
         # Done this way because it's a bit fasterr

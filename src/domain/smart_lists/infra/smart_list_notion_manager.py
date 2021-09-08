@@ -5,7 +5,7 @@ from typing import Iterable
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import Tag
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 
 
 class SmartListNotionManager(abc.ABC):
@@ -28,7 +28,7 @@ class SmartListNotionManager(abc.ABC):
         """Remove a smart list tag on Notion-side."""
 
     @abc.abstractmethod
-    def upsert_smart_list_item(self, smart_list_item: SmartListItem, tags: Iterable[Tag]) -> None:
+    def upsert_smart_list_item(self, smart_list_item: SmartListItem, tags: Iterable[SmartListTagName]) -> None:
         """Upsert a smart list item on Notion-side."""
 
     @abc.abstractmethod

@@ -6,7 +6,6 @@ from typing import Final
 
 import command.command as command
 from domain.metrics.commands.metric_entry_archive import MetricEntryArchiveCommand
-from models.basic import BasicValidator
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -15,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class MetricEntryArchive(command.Command):
     """Command for archiving a metric entry."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[MetricEntryArchiveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricEntryArchiveCommand) -> None:
+    def __init__(self, the_command: MetricEntryArchiveCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod

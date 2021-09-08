@@ -1,13 +1,12 @@
 """Command for setting the name of an inbox task."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.inbox_tasks import InboxTasksController
+from domain.common.entity_name import EntityName
 from models.framework import EntityId
-from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class InboxTasksSetName(command.Command):
     """Command class for setting the name of an inbox task."""
 
-    _basic_validator: Final[BasicValidator]
     _inbox_tasks_controller: Final[InboxTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, inbox_tasks_controller: InboxTasksController) -> None:
+    def __init__(self, inbox_tasks_controller: InboxTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._inbox_tasks_controller = inbox_tasks_controller
 
     @staticmethod
@@ -41,5 +38,5 @@ class InboxTasksSetName(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
+        name = EntityName.from_raw(args.name)
         self._inbox_tasks_controller.set_inbox_task_name(ref_id, name)

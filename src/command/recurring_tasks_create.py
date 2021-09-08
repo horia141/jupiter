@@ -1,12 +1,22 @@
 """Command for adding a recurring task."""
-
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
-from models.basic import BasicValidator, RecurringTaskType
+from domain.common.adate import ADate
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_skip_rule import RecurringTaskSkipRule
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.projects.project_key import ProjectKey
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +24,13 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTasksCreate(command.Command):
     """Command class for creating a recurring task."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _recurring_tasks_controller: Final[RecurringTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+    def __init__(
+            self, global_properties: GlobalProperties, recurring_tasks_controller: RecurringTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._recurring_tasks_controller = recurring_tasks_controller
 
     @staticmethod
@@ -36,14 +47,14 @@ class RecurringTasksCreate(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--project", dest="project_key", required=False, help="The project key to add the task to")
         parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
-        parser.add_argument("--period", dest="period", choices=BasicValidator.recurring_task_period_values(),
+        parser.add_argument("--period", dest="period", choices=RecurringTaskPeriod.all_values(),
                             required=True, help="The period for the recurring task")
-        parser.add_argument("--type", dest="the_type", choices=BasicValidator.recurring_task_type_values(),
+        parser.add_argument("--type", dest="the_type", choices=RecurringTaskType.all_values(),
                             default=RecurringTaskType.CHORE.value, required=True,
                             help="The type of the recurring task")
         parser.add_argument("--eisen", dest="eisen", default=[], action="append",
-                            choices=BasicValidator.eisen_values(), help="The Eisenhower matrix values to use for task")
-        parser.add_argument("--difficulty", dest="difficulty", choices=BasicValidator.difficulty_values(),
+                            choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
+        parser.add_argument("--difficulty", dest="difficulty", choices=Difficulty.all_values(),
                             help="The difficulty to use for tasks")
         parser.add_argument("--actionable-from-day", type=int, dest="actionable_from_day", metavar="DAY",
                             help="The day of the interval the task will be actionable from")
@@ -64,31 +75,28 @@ class RecurringTasksCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        project_key = self._basic_validator.project_key_validate_and_clean(args.project_key) \
-            if args.project_key else None
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        period = self._basic_validator.recurring_task_period_validate_and_clean(args.period)
-        the_type = self._basic_validator.recurring_task_type_validate_and_clean(args.the_type)
-        eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.eisen]
-        difficulty = self._basic_validator.difficulty_validate_and_clean(args.difficulty) if args.difficulty else None
-        actionable_from_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-            period, args.actionable_from_day) \
+        project_key = ProjectKey.from_raw(args.project_key) if args.project_key else None
+        name = EntityName.from_raw(args.name)
+        period = RecurringTaskPeriod.from_raw(args.period)
+        the_type = RecurringTaskType.from_raw(args.the_type)
+        eisen = [Eisen.from_raw(e) for e in args.eisen]
+        difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
+        actionable_from_day = RecurringTaskDueAtDay.from_raw(period, args.actionable_from_day) \
             if args.actionable_from_day else None
-        actionable_from_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+        actionable_from_month = RecurringTaskDueAtMonth.from_raw(
             period, args.actionable_from_month) \
             if args.actionable_from_month else None
-        due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time)\
+        due_at_time = RecurringTaskDueAtTime.from_raw(args.due_at_time)\
             if args.due_at_time else None
-        due_at_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(period, args.due_at_day) \
+        due_at_day = RecurringTaskDueAtDay.from_raw(period, args.due_at_day) \
             if args.due_at_day else None
-        due_at_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(period, args.due_at_month) \
+        due_at_month = RecurringTaskDueAtMonth.from_raw(period, args.due_at_month) \
             if args.due_at_month else None
         must_do = args.must_do
-        skip_rule = self._basic_validator.recurring_task_skip_rule_validate_and_clean(args.skip_rule) \
-            if args.skip_rule else None
-        start_at_date = self._basic_validator.adate_validate_and_clean(args.start_at_date) \
+        skip_rule = RecurringTaskSkipRule.from_raw(args.skip_rule) if args.skip_rule else None
+        start_at_date = ADate.from_raw(self._global_properties.timezone, args.start_at_date) \
             if args.start_at_date else None
-        end_at_date = self._basic_validator.adate_validate_and_clean(args.end_at_date) \
+        end_at_date = ADate.from_raw(self._global_properties.timezone, args.end_at_date) \
             if args.end_at_date else None
         self._recurring_tasks_controller.create_recurring_task(
             project_key=project_key,

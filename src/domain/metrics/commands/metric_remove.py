@@ -4,7 +4,7 @@ from typing import Final
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from models.basic import MetricKey
+from domain.metrics.metric_key import MetricKey
 from models.framework import Command
 from remote.notion.common import CollectionEntityNotFound
 from service.inbox_tasks import InboxTasksService

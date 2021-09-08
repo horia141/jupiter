@@ -1,13 +1,14 @@
 """Command for showing the big plans."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.big_plans import BigPlansController
+from domain.common.adate import ADate
+from domain.projects.project_key import ProjectKey
 from models.framework import EntityId
-from models.basic import BasicValidator
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,13 +16,13 @@ LOGGER = logging.getLogger(__name__)
 class BigPlansShow(command.Command):
     """Command class for showing the big plans."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _big_plans_controller: Final[BigPlansController]
 
     def __init__(
-            self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
+            self, global_properties: GlobalProperties, big_plans_controller: BigPlansController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._big_plans_controller = big_plans_controller
 
     @staticmethod
@@ -45,8 +46,7 @@ class BigPlansShow(command.Command):
         """Callback to execute when the command is invoked."""
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]\
             if len(args.ref_ids) > 0 else None
-        project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys]\
-            if len(args.project_keys) > 0 else None
+        project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
         response = self._big_plans_controller.load_all_big_plans(
             filter_ref_ids=ref_ids, filter_project_keys=project_keys)
 
@@ -56,10 +56,10 @@ class BigPlansShow(command.Command):
             print(f'id={big_plan.ref_id} {big_plan.name}' +
                   f' status={big_plan.status.value}' +
                   f' archived="{big_plan.archived}"' +
-                  f' due_date="{self._basic_validator.adate_to_user(big_plan.due_date)}"')
+                  f' due_date="{ADate.to_user_str(self._global_properties.timezone, big_plan.due_date)}"')
             print("  Tasks:")
             for inbox_task in inbox_tasks:
                 print(f'   - id={inbox_task.ref_id} {inbox_task.name}' +
                       f' status={inbox_task.status.value}' +
                       f' archived="{inbox_task.archived}"' +
-                      f' due_date="{self._basic_validator.adate_to_user(inbox_task.due_date)}"')
+                      f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"')

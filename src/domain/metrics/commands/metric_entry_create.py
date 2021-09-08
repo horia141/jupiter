@@ -5,7 +5,8 @@ from typing import Optional, Final
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import MetricKey, ADate
+from domain.common.adate import ADate
+from domain.metrics.metric_key import MetricKey
 from models.framework import Command
 from utils.time_provider import TimeProvider
 
@@ -37,8 +38,10 @@ class MetricEntryCreateCommand(Command['MetricEntryCreateCommand.Args', None]):
         """Execute the command's action."""
         with self._metric_engine.get_unit_of_work() as uow:
             metric = uow.metric_repository.get_by_key(args.metric_key)
+            collection_time = args.collection_time \
+                if args.collection_time else ADate.from_timestamp(self._time_provider.get_current_time())
             metric_entry = MetricEntry.new_metric_entry(
-                False, metric.ref_id, args.collection_time, args.value, args.notes,
+                False, metric.ref_id, collection_time, args.value, args.notes,
                 self._time_provider.get_current_time())
             metric_entry = uow.metric_entry_repository.create(metric_entry)
         self._notion_manager.upsert_metric_entry(metric_entry)

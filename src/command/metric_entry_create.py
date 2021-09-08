@@ -5,8 +5,9 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
+from domain.common.adate import ADate
 from domain.metrics.commands.metric_entry_create import MetricEntryCreateCommand
-from models.basic import BasicValidator
+from domain.metrics.metric_key import MetricKey
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +15,10 @@ LOGGER = logging.getLogger(__name__)
 class MetricEntryCreate(command.Command):
     """Command for creating a metric entry."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[MetricEntryCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricEntryCreateCommand) -> None:
+    def __init__(self, the_command: MetricEntryCreateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -44,8 +43,8 @@ class MetricEntryCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        metric_key = self._basic_validator.metric_key_validate_and_clean(args.metric_key)
-        collection_time = self._basic_validator.adate_from_str(args.collection_time) \
+        metric_key = MetricKey.from_raw(args.metric_key)
+        collection_time = ADate.from_str(args.collection_time) \
             if args.collection_time else None
         value = args.value
         notes = args.notes

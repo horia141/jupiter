@@ -3,13 +3,13 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional
 
-from models.basic import ProjectKey, BasicValidator, SyncPrefer
+from domain.common.entity_name import EntityName
+from domain.common.sync_prefer import SyncPrefer
+from domain.projects.project_key import ProjectKey
 from models.framework import EntityId
-from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink
 from remote.notion.projects_manager import NotionProjectsManager
 from repository.projects import ProjectsRepository, ProjectRow
-from service.errors import ServiceValidationError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class ProjectWithPage:
 
     ref_id: EntityId
     key: ProjectKey
-    name: str
+    name: EntityName
     notion_page_link: NotionPageLink
 
 
@@ -30,21 +30,18 @@ class Project:
 
     ref_id: EntityId
     key: ProjectKey
-    name: str
+    name: EntityName
 
 
 class ProjectsService:
     """The service class for dealing with projects."""
 
-    _basic_validator: Final[BasicValidator]
     _repository: Final[ProjectsRepository]
     _notion_manager: Final[NotionProjectsManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, repository: ProjectsRepository,
-            notion_manager: NotionProjectsManager) -> None:
+            self, repository: ProjectsRepository, notion_manager: NotionProjectsManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._repository = repository
         self._notion_manager = notion_manager
 
@@ -52,13 +49,8 @@ class ProjectsService:
         """Create the root page where all the projects will be placed."""
         self._notion_manager.upsert_root_page(parent_page)
 
-    def create_project(self, key: ProjectKey, name: str) -> ProjectWithPage:
+    def create_project(self, key: ProjectKey, name: EntityName) -> ProjectWithPage:
         """Create a project."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         new_project_row = self._repository.create_project(
             key=key,
             name=name,
@@ -93,20 +85,15 @@ class ProjectsService:
         LOGGER.info("Applied Notion changes")
         return self._row_to_entity(project_row)
 
-    def set_project_name(self, ref_id: EntityId, name: str) -> Project:
+    def set_project_name(self, ref_id: EntityId, name: EntityName) -> Project:
         """Change the name of a project."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         project_row = self._repository.load_project(ref_id)
         project_row.name = name
         self._repository.update_project(project_row)
         LOGGER.info("Modified local project")
 
         project_page = self._notion_manager.load_project(project_row.ref_id)
-        project_page.name = name
+        project_page.name = str(name)
         self._notion_manager.save_project(project_page)
         LOGGER.info("Applied Notion changes")
 
@@ -135,11 +122,11 @@ class ProjectsService:
         project_page = self._notion_manager.load_project(project_row.ref_id)
 
         if sync_prefer == SyncPrefer.LOCAL:
-            project_page.name = project_row.name
+            project_page.name = str(project_row.name)
             self._notion_manager.save_project(project_page)
             LOGGER.info("Applied changes to Notion")
         elif sync_prefer == SyncPrefer.NOTION:
-            project_row.name = project_page.name
+            project_row.name = EntityName.from_raw(project_page.name)
             self._repository.update_project(project_row)
             LOGGER.info("Applied local change")
         else:

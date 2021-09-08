@@ -4,7 +4,8 @@ from typing import Final
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
-from models.basic import EntityName, ADate
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
 from models.framework import Command, UpdateAction, EntityId
 from utils.time_provider import TimeProvider
 

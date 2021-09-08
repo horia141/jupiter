@@ -10,22 +10,26 @@ import pendulum
 from nested_dataclasses import nested
 from pendulum import UTC
 
+from domain.big_plans.big_plan_status import BigPlanStatus
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.metrics.metric import Metric
+from domain.metrics.metric_key import MetricKey
 from domain.prm.infra.prm_engine import PrmEngine
+from domain.projects.project_key import ProjectKey
 from models import schedules
-from models.basic import ProjectKey, RecurringTaskPeriod, InboxTaskStatus, BigPlanStatus, RecurringTaskType, \
-    Timestamp, InboxTaskSource, MetricKey
 from models.framework import EntityId
 from models.schedules import Schedule
-from repository.inbox_tasks import InboxTaskRow
-from repository.projects import ProjectRow
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.metrics import MetricsService
-from service.projects import ProjectsService
+from service.projects import ProjectsService, Project
 from service.recurring_tasks import RecurringTasksService, RecurringTask
 from utils.global_properties import GlobalProperties
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,8 +62,8 @@ class WorkableSummary:
     working_cnt: int
     not_done_cnt: int
     done_cnt: int
-    not_done_projects: List[str]
-    done_projects: List[str]
+    not_done_projects: List[EntityName]
+    done_projects: List[EntityName]
 
 
 @nested()
@@ -102,7 +106,7 @@ class RecurringTaskSummary:
 @dataclass()
 class PerProjectBreakdownItem:
     """The report for a particular project."""
-    name: str
+    name: EntityName
     inbox_tasks_summary: InboxTasksSummary
     big_plans_summary: WorkableSummary
 
@@ -111,7 +115,7 @@ class PerProjectBreakdownItem:
 @dataclass()
 class PerPeriodBreakdownItem:
     """The report for a particular time period."""
-    name: str
+    name: EntityName
     inbox_tasks_summary: InboxTasksSummary
     big_plans_summary: WorkableSummary
 
@@ -120,7 +124,7 @@ class PerPeriodBreakdownItem:
 @dataclass()
 class PerBigPlanBreakdownItem:
     """The report for a particular big plan."""
-    name: str
+    name: EntityName
     summary: BigPlanSummary
 
 
@@ -128,7 +132,7 @@ class PerBigPlanBreakdownItem:
 @dataclass()
 class PerRecurringTaskBreakdownItem:
     """The report for a particular recurring task."""
-    name: str
+    name: EntityName
     the_type: RecurringTaskType
     summary: RecurringTaskSummary
 
@@ -148,10 +152,10 @@ class RunReportResponse:
 class ReportProgressController:
     """The controller for computing progress reports."""
 
-    _global_properties = Final[GlobalProperties]
-    _projects_service = Final[ProjectsService]
-    _inbox_tasks_service = Final[InboxTasksService]
-    _big_plans_service = Final[BigPlansService]
+    _global_properties: Final[GlobalProperties]
+    _projects_service: Final[ProjectsService]
+    _inbox_tasks_service: Final[InboxTasksService]
+    _big_plans_service: Final[BigPlansService]
     _recurring_tasks_service: Final[RecurringTasksService]
     _metrics_service: Final[MetricsService]
     _prm_engine: Final[PrmEngine]
@@ -180,16 +184,17 @@ class ReportProgressController:
             filter_person_ref_ids: Optional[Iterable[EntityId]],
             period: RecurringTaskPeriod, breakdown_period: Optional[RecurringTaskPeriod] = None) -> RunReportResponse:
         """Run a progress report."""
-        today = right_now.date()
+        today = right_now.value.date()
         projects = self._projects_service.load_all_projects(filter_keys=filter_project_keys)
-        projects_by_ref_id: Dict[EntityId, ProjectRow] = {p.ref_id: p for p in projects}
+        projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
         metrics = self._metrics_service.load_all_metrics(allow_archived=True, filter_keys=filter_metric_keys)
         metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
         with self._prm_engine.get_unit_of_work() as uow:
             persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=filter_person_ref_ids)
             persons_by_ref_id = {p.ref_id: p for p in persons}
         schedule = schedules.get_schedule(
-            period, "Helper", right_now, self._global_properties.timezone, None, None, None, None, None, None)
+            period, EntityName("Helper"), right_now, self._global_properties.timezone,
+            None, None, None, None, None, None)
 
         all_inbox_tasks = [
             it for it in self._inbox_tasks_service.load_all_inbox_tasks(
@@ -199,10 +204,11 @@ class ReportProgressController:
             if it.source is InboxTaskSource.USER
             # (source is BIG_PLAN and (need to filter then (big_plan_ref_id in filter))
             or (it.source is InboxTaskSource.BIG_PLAN and
-                (not (filter_big_plan_ref_ids is not None) or it.big_plan_ref_id in filter_big_plan_ref_ids))
+                (not (filter_big_plan_ref_ids is not None) or
+                 (it.big_plan_ref_id is not None and it.big_plan_ref_id in filter_big_plan_ref_ids)))
             or (it.source is InboxTaskSource.RECURRING_TASK and
                 (not (filter_recurring_task_ref_ids is not None) or
-                 it.recurring_task_ref_id in filter_recurring_task_ref_ids))
+                 (it.recurring_task_ref_id is not None and it.recurring_task_ref_id in filter_recurring_task_ref_ids)))
             or (it.source is InboxTaskSource.METRIC and
                 (not (filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))
             or (it.source is InboxTaskSource.PERSON and
@@ -247,16 +253,16 @@ class ReportProgressController:
         per_period_breakdown = None
         if breakdown_period:
             all_schedules = {}
-            curr_date: pendulum.Date = schedule.first_day.start_of("day")
-            end_date: pendulum.Date = schedule.end_day.end_of("day")
+            curr_date = schedule.first_day.start_of_day()
+            end_date = schedule.end_day.end_of_day()
             while curr_date < end_date and curr_date <= today:
                 curr_date_as_time = \
                     Timestamp(pendulum.DateTime(curr_date.year, curr_date.month, curr_date.day, tzinfo=UTC))
                 phase_schedule = schedules.get_schedule(
-                    breakdown_period, "Sub-period", curr_date_as_time, self._global_properties.timezone,
+                    breakdown_period, EntityName("Sub-period"), curr_date_as_time, self._global_properties.timezone,
                     None, None, None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
-                curr_date = curr_date.add(days=1)
+                curr_date = curr_date.next_day()
 
             per_period_inbox_tasks_summary = {
                 k: self._run_report_for_inbox_tasks(v, all_inbox_tasks) for (k, v) in all_schedules.items()}
@@ -319,21 +325,24 @@ class ReportProgressController:
         not_done_per_source_cnt: DefaultDict[InboxTaskSource, int] = defaultdict(int)
 
         for inbox_task in inbox_tasks:
-            if schedule.contains(inbox_task.created_time):
+            if schedule.contains_timestamp(inbox_task.created_time):
                 created_cnt_total += 1
                 created_per_source_cnt[inbox_task.source] += 1
 
-            if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
+            if inbox_task.status.is_completed \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt_total += 1
                     done_per_source_cnt[inbox_task.source] += 1
                 else:
                     not_done_cnt_total += 1
                     not_done_per_source_cnt[inbox_task.source] += 1
-            elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
+            elif inbox_task.status.is_working \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.working_time)):
                 working_cnt_total += 1
                 working_per_source_cnt[inbox_task.source] += 1
-            elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
+            elif inbox_task.status.is_accepted \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt_total += 1
                 accepted_per_source_cnt[inbox_task.source] += 1
 
@@ -356,7 +365,7 @@ class ReportProgressController:
 
     @staticmethod
     def _run_report_for_inbox_tasks_for_big_plan(
-            schedule: Schedule, inbox_tasks: Iterable[InboxTaskRow]) -> BigPlanSummary:
+            schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> BigPlanSummary:
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -364,17 +373,20 @@ class ReportProgressController:
         not_done_cnt = 0
 
         for inbox_task in inbox_tasks:
-            if schedule.contains(inbox_task.created_time):
+            if schedule.contains_timestamp(inbox_task.created_time):
                 created_cnt += 1
 
-            if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
+            if inbox_task.status.is_completed\
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt += 1
                 else:
                     not_done_cnt += 1
-            elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
+            elif inbox_task.status.is_working \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.working_time)):
                 working_cnt += 1
-            elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
+            elif inbox_task.status.is_accepted \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
         return BigPlanSummary(
@@ -389,7 +401,7 @@ class ReportProgressController:
 
     def _run_report_for_inbox_for_recurring_tasks(
             self, recurring_task_period: RecurringTaskPeriod, right_now: Timestamp, schedule: Schedule,
-            inbox_tasks: List[InboxTaskRow]) -> RecurringTaskSummary:
+            inbox_tasks: List[InboxTask]) -> RecurringTaskSummary:
 
         def _build_bigger_periods_and_schedules() -> List[Tuple[RecurringTaskPeriod, Schedule]]:
             the_bigger_periods_and_schedules = []
@@ -398,7 +410,7 @@ class ReportProgressController:
 
             while the_current_period != the_bigger_period:
                 the_bigger_schedule = schedules.get_schedule(
-                    the_bigger_period, "Helper", right_now, self._global_properties.timezone,
+                    the_bigger_period, EntityName("Helper"), right_now, self._global_properties.timezone,
                     None, None, None, None, None, None)
 
                 the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))
@@ -414,17 +426,20 @@ class ReportProgressController:
         not_done_cnt = 0
 
         for inbox_task in inbox_tasks:
-            if schedule.contains(inbox_task.created_time):
+            if schedule.contains_timestamp(inbox_task.created_time):
                 created_cnt += 1
 
-            if inbox_task.status.is_completed and schedule.contains(cast(Timestamp, inbox_task.completed_time)):
+            if inbox_task.status.is_completed \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.completed_time)):
                 if inbox_task.status == InboxTaskStatus.DONE:
                     done_cnt += 1
                 else:
                     not_done_cnt += 1
-            elif inbox_task.status.is_working and schedule.contains(cast(Timestamp, inbox_task.working_time)):
+            elif inbox_task.status.is_working \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.working_time)):
                 working_cnt += 1
-            elif inbox_task.status.is_accepted and schedule.contains(cast(Timestamp, inbox_task.accepted_time)):
+            elif inbox_task.status.is_accepted \
+                    and schedule.contains_timestamp(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
         bigger_periods_and_schedules = _build_bigger_periods_and_schedules()
@@ -435,7 +450,7 @@ class ReportProgressController:
         one_current_streak_size = 0
         one_streak_size_histogram: Dict[int, int] = {}
         sorted_inbox_tasks = sorted(
-            (it for it in inbox_tasks if schedule.contains(it.created_time)), key=lambda it: it.created_time)
+            (it for it in inbox_tasks if schedule.contains_timestamp(it.created_time)), key=lambda it: it.created_time)
         used_skip_once = False
         done_cnt_with_one_streak = 0
         done_cnt_with_one_streak_per_last_period: Dict[RecurringTaskPeriod, int] = \
@@ -449,14 +464,14 @@ class ReportProgressController:
                 if inbox_task.due_date is None:
                     LOGGER.warning(f'There is an inbox task here without a due date "{inbox_task.name}"')
                     continue
-                if bigger_period_schedule.contains(inbox_task.due_date):
+                if bigger_period_schedule.contains_adate(inbox_task.due_date):
                     total_cnt_per_last_period[bigger_period] += 1
             if inbox_task.status == InboxTaskStatus.DONE:
                 zero_current_streak_size += 1
                 one_current_streak_size += 1
                 done_cnt_with_one_streak += 1
                 for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
-                    if bigger_period_schedule.contains(inbox_task.due_date):
+                    if inbox_task.due_date is not None and bigger_period_schedule.contains_adate(inbox_task.due_date):
                         done_cnt_with_one_streak_per_last_period[bigger_period] += 1
                 streak_plot.append("X")
             else:
@@ -475,7 +490,8 @@ class ReportProgressController:
                     used_skip_once = True
                     done_cnt_with_one_streak += 1
                     for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
-                        if bigger_period_schedule.contains(inbox_task.due_date):
+                        if inbox_task.due_date is not None and \
+                                bigger_period_schedule.contains_adate(inbox_task.due_date):
                             done_cnt_with_one_streak_per_last_period[bigger_period] += 1
                     streak_plot.append("x")
                 else:
@@ -526,19 +542,19 @@ class ReportProgressController:
         done_projects = []
 
         for big_plan in big_plans:
-            if schedule.contains(big_plan.created_time):
+            if schedule.contains_timestamp(big_plan.created_time):
                 created_cnt += 1
 
-            if big_plan.status.is_completed and schedule.contains(cast(Timestamp, big_plan.completed_time)):
+            if big_plan.status.is_completed and schedule.contains_timestamp(cast(Timestamp, big_plan.completed_time)):
                 if big_plan.status == BigPlanStatus.DONE:
                     done_cnt += 1
                     done_projects.append(big_plan.name)
                 else:
                     not_done_cnt += 1
                     not_done_projects.append(big_plan.name)
-            elif big_plan.status.is_working and schedule.contains(cast(Timestamp, big_plan.working_time)):
+            elif big_plan.status.is_working and schedule.contains_timestamp(cast(Timestamp, big_plan.working_time)):
                 working_cnt += 1
-            elif big_plan.status.is_accepted and schedule.contains(cast(Timestamp, big_plan.accepted_time)):
+            elif big_plan.status.is_accepted and schedule.contains_timestamp(cast(Timestamp, big_plan.accepted_time)):
                 accepted_cnt += 1
 
         return WorkableSummary(

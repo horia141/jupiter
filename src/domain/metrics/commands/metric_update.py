@@ -1,15 +1,22 @@
 """The command for updating a metric's properties."""
+import typing
 from dataclasses import dataclass
 from typing import Final, Optional
 
-import typing
-
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.timestamp import Timestamp
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.metrics.metric_key import MetricKey
+from domain.projects.project_key import ProjectKey
 from models import schedules
-from models.basic import MetricKey, RecurringTaskPeriod, EntityName, ProjectKey, Timestamp, Eisen, Difficulty, \
-    BasicValidator
 from models.framework import Command, UpdateAction
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService
@@ -31,15 +38,14 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
         collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
         collection_eisen: UpdateAction[typing.List[Eisen]]
         collection_difficulty: UpdateAction[Optional[Difficulty]]
-        collection_actionable_from_day: UpdateAction[Optional[int]]
-        collection_actionable_from_month: UpdateAction[Optional[int]]
-        collection_due_at_time: UpdateAction[Optional[str]]
-        collection_due_at_day: UpdateAction[Optional[int]]
-        collection_due_at_month: UpdateAction[Optional[int]]
+        collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
+        collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
+        collection_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
+        collection_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
+        collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _metric_engine: Final[MetricEngine]
     _notion_manager: Final[MetricNotionManager]
     _workspaces_service: Final[WorkspacesService]
@@ -48,13 +54,12 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            basic_validator: BasicValidator, metric_engine: MetricEngine,
+            metric_engine: MetricEngine,
             notion_manager: MetricNotionManager, workspaces_service: WorkspacesService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._metric_engine = metric_engine
         self._notion_manager = notion_manager
         self._workspaces_service = workspaces_service
@@ -114,17 +119,13 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
 
                     new_collection_actionable_from_day = None
                     if args.collection_actionable_from_day.should_change:
-                        new_collection_actionable_from_day = \
-                            self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                                new_collection_period, args.collection_actionable_from_day.value)
+                        new_collection_actionable_from_day = args.collection_actionable_from_day.value
                     elif metric.collection_params is not None:
                         new_collection_actionable_from_day = metric.collection_params.actionable_from_day
 
                     new_collection_actionable_from_month = None
                     if args.collection_actionable_from_month.should_change:
-                        new_collection_actionable_from_month = \
-                            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                                new_collection_period, args.collection_actionable_from_month.value)
+                        new_collection_actionable_from_month = args.collection_actionable_from_month.value
                     elif metric.collection_params is not None:
                         new_collection_actionable_from_month = metric.collection_params.actionable_from_month
 
@@ -136,16 +137,13 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
 
                     new_collection_due_at_day = None
                     if args.collection_due_at_day.should_change:
-                        new_collection_due_at_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                            new_collection_period, args.collection_due_at_day.value)
+                        new_collection_due_at_day = args.collection_due_at_day.value
                     elif metric.collection_params is not None:
                         new_collection_due_at_day = metric.collection_params.due_at_day
 
                     new_collection_due_at_month = None
                     if args.collection_due_at_month.should_change:
-                        new_collection_due_at_month = \
-                            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                                new_collection_period, args.collection_due_at_month.value)
+                        new_collection_due_at_month = args.collection_due_at_month.value
                     elif metric.collection_params is not None:
                         new_collection_due_at_month = metric.collection_params.due_at_month
 

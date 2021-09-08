@@ -7,7 +7,8 @@ from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.person import Person
 from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from models.basic import ProjectKey, Timestamp
+from domain.common.timestamp import Timestamp
+from domain.projects.project_key import ProjectKey
 from models.framework import Command, UpdateAction, EntityId
 from service.errors import ServiceError
 from service.inbox_tasks import InboxTasksService

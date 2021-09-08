@@ -4,7 +4,7 @@ from typing import Final
 import pendulum
 from pendulum import UTC, Date
 
-from models.basic import Timestamp
+from domain.common.timestamp import Timestamp
 
 
 class TimeProvider:
@@ -18,7 +18,7 @@ class TimeProvider:
 
     def get_current_date(self) -> pendulum.Date:
         """Get the current date."""
-        return Date(self._right_now.year, self._right_now.month, self._right_now.day)  # pylint: disable=no-member
+        return Date(self._right_now.value.year, self._right_now.value.month, self._right_now.value.day)  # pylint: disable=no-member
 
     def get_current_time(self) -> Timestamp:
         """Get the current time."""

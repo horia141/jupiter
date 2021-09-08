@@ -7,7 +7,6 @@ from typing import Final
 import command.command as command
 from controllers.inbox_tasks import InboxTasksController
 from models.framework import EntityId
-from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class InboxTasksArchive(command.Command):
     """Command class for archiving an inbox task."""
 
-    _basic_validator: Final[BasicValidator]
     _inbox_tasks_controller: Final[InboxTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, inbox_tasks_controller: InboxTasksController) -> None:
+    def __init__(self, inbox_tasks_controller: InboxTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._inbox_tasks_controller = inbox_tasks_controller
 
     @staticmethod

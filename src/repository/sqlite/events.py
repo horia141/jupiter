@@ -26,7 +26,7 @@ def upsert_events(connection: Connection, event_table: Table, aggreggate_root: A
             sqliteInsert(event_table)
             .values(
                 owner_ref_id=int(str(aggreggate_root.ref_id)),
-                timestamp=event.timestamp,
+                timestamp=event.timestamp.to_db(),
                 session_index=event_idx,
                 name=str(event.__class__.__name__),
                 data=event.to_serializable_dict())

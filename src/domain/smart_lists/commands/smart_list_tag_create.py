@@ -5,7 +5,8 @@ from typing import Final
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import SmartListKey, Tag
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
+from domain.smart_lists.smart_list_key import SmartListKey
 from models.framework import Command
 from utils.time_provider import TimeProvider
 
@@ -17,7 +18,7 @@ class SmartListTagCreateCommand(Command['SmartListTagCreateCommand.Args', None])
     class Args:
         """Args."""
         smart_list_key: SmartListKey
-        name: Tag
+        tag_name: SmartListTagName
 
     _time_provider: Final[TimeProvider]
     _smart_list_engine: Final[SmartListEngine]
@@ -36,6 +37,7 @@ class SmartListTagCreateCommand(Command['SmartListTagCreateCommand.Args', None])
         with self._smart_list_engine.get_unit_of_work() as uow:
             metric = uow.smart_list_repository.get_by_key(args.smart_list_key)
             smart_list_tag = SmartListTag.new_smart_list_tag(
-                smart_list_ref_id=metric.ref_id, name=args.name, created_time=self._time_provider.get_current_time())
+                smart_list_ref_id=metric.ref_id, tag_name=args.tag_name,
+                created_time=self._time_provider.get_current_time())
             smart_list_tag = uow.smart_list_tag_repository.create(smart_list_tag)
         self._notion_manager.upsert_smart_list_tag(smart_list_tag)

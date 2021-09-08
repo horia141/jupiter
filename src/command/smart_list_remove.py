@@ -5,7 +5,7 @@ from typing import Final
 
 import command.command as command
 from domain.smart_lists.commands.smart_list_remove import SmartListRemoveCommand
-from models.basic import BasicValidator
+from domain.smart_lists.smart_list_key import SmartListKey
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListsRemove(command.Command):
     """Command for hard removing of a smart list."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListRemoveCommand) -> None:
+    def __init__(self, the_command: SmartListRemoveCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -38,6 +36,6 @@ class SmartListsRemove(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        smart_list_keys = [self._basic_validator.smart_list_key_validate_and_clean(srk) for srk in args.smart_list_keys]
+        smart_list_keys = [SmartListKey.from_raw(srk) for srk in args.smart_list_keys]
         for key in smart_list_keys:
             self._command.execute(key)

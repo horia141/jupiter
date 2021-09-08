@@ -4,14 +4,18 @@ from typing import Iterable, ClassVar, cast, Dict, Final
 
 from notion.collection import CollectionRowBlock
 
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.timestamp import Timestamp
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person_relationship import PersonRelationship
-from models.basic import BasicValidator, RecurringTaskPeriod, Eisen, Difficulty
-from models.framework import EntityId, JSONDictType
-from remote.notion.common import NotionPageLink, NotionId, NotionLockKey
+from models.framework import EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
 from remote.notion.infra.collections_manager import CollectionsManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 
@@ -273,16 +277,16 @@ class NotionPrmManager(PrmNotionManager):
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._collections_manager = collections_manager
 
     def upsert_root_notion_structure(self, parent_page: NotionPageLink) -> None:
@@ -371,13 +375,14 @@ class NotionPrmManager(PrmNotionManager):
             notion_row.catch_up_due_at_day = row.catch_up_due_at_day
             notion_row.catch_up_due_at_month = row.catch_up_due_at_month
             notion_row.archived = row.archived
-            notion_row.last_edited_time = self._basic_validator.timestamp_from_notion_timestamp(row.last_edited_time)
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         return notion_row
 
     def copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> NotionPerson:
         """Transform the live system data to something suitable for basic storage."""
+        # pylint: disable=no-self-use
         return NotionPerson(
             notion_id=notion_row.id,
             name=notion_row.title,
@@ -392,5 +397,5 @@ class NotionPrmManager(PrmNotionManager):
             catch_up_due_at_time=notion_row.catch_up_due_at_time,
             catch_up_due_at_day=notion_row.catch_up_due_at_day,
             catch_up_due_at_month=notion_row.catch_up_due_at_month,
-            last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),
+            last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
             ref_id=notion_row.ref_id)

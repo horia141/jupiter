@@ -1,5 +1,4 @@
 """Repository for projects."""
-
 from dataclasses import dataclass
 import logging
 import typing
@@ -7,7 +6,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, Optional
 
-from models.basic import ProjectKey
+from domain.common.entity_name import EntityName
+from domain.projects.project_key import ProjectKey
 from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
 from utils.storage import BaseEntityRow, EntitiesStorage, Eq, In
@@ -22,7 +22,7 @@ class ProjectRow(BaseEntityRow):
     """A project."""
 
     key: ProjectKey
-    name: str
+    name: EntityName
 
 
 @typing.final
@@ -52,7 +52,7 @@ class ProjectsRepository:
         if exc_type is not None:
             return
 
-    def create_project(self, key: ProjectKey, archived: bool, name: str) -> ProjectRow:
+    def create_project(self, key: ProjectKey, archived: bool, name: EntityName) -> ProjectRow:
         """Create a project."""
         project_rows = self._storage.find_all(allow_archived=True, key=Eq(key))
 
@@ -97,14 +97,14 @@ class ProjectsRepository:
     def storage_to_live(storage_form: JSONDictType) -> ProjectRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return ProjectRow(
-            key=ProjectKey(typing.cast(str, storage_form["key"])),
+            key=ProjectKey.from_raw(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
-            name=typing.cast(str, storage_form["name"]))
+            name=EntityName.from_raw(typing.cast(str, storage_form["name"])))
 
     @staticmethod
     def live_to_storage(live_form: ProjectRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "key": live_form.key,
-            "name": live_form.name
+            "key": str(live_form.key),
+            "name": str(live_form.name)
         }

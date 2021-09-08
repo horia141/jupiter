@@ -1,21 +1,24 @@
 """The centralised point for interacting with Notion smart lists."""
+import typing
 from dataclasses import dataclass
 from typing import Optional, ClassVar, Final, List
-import typing
 
 from notion.client import NotionClient
 from notion.collection import CollectionRowBlock
 
+from domain.common.entity_name import EntityName
+from domain.common.timestamp import Timestamp
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import Timestamp, BasicValidator, Tag
-from models.framework import BaseNotionRow, EntityId, JSONDictType
-from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 
@@ -257,17 +260,17 @@ class NotionSmartListsManager(SmartListNotionManager):
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _pages_manager: Final[PagesManager]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator, pages_manager: PagesManager,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider, pages_manager: PagesManager,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._pages_manager = pages_manager
         self._collections_manager = collections_manager
 
@@ -279,7 +282,7 @@ class NotionSmartListsManager(SmartListNotionManager):
         self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
             parent_page=root_page,
-            name=smart_list.name,
+            name=str(smart_list.name),
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
@@ -299,7 +302,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             field="tags",
             key=NotionLockKey(f"{smart_list_tag.ref_id}"),
             ref_id=smart_list_tag.ref_id,
-            tag=smart_list_tag.name)
+            tag=str(smart_list_tag.tag_name))
 
     def remove_smart_list_tag(self, smart_list_tag: SmartListTag) -> None:
         """Remove a smart list tag on Notion-side."""
@@ -307,11 +310,11 @@ class NotionSmartListsManager(SmartListNotionManager):
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_tag.smart_list_ref_id}"),
             key=NotionLockKey(f"{smart_list_tag.ref_id}"))
 
-    def upsert_smart_list_item(self, smart_list_item: SmartListItem, tags: typing.Iterable[Tag]) -> None:
+    def upsert_smart_list_item(self, smart_list_item: SmartListItem, tags: typing.Iterable[SmartListTagName]) -> None:
         """Upsert a smart list item on Notion-side."""
         new_row = _SmartListNotionRow(
-            name=smart_list_item.name,
-            url=smart_list_item.url,
+            name=str(smart_list_item.name),
+            url=str(smart_list_item.url),
             is_done=smart_list_item.is_done,
             tags=[str(t) for t in tags],
             archived=smart_list_item.archived,
@@ -336,13 +339,13 @@ class NotionSmartListsManager(SmartListNotionManager):
         """Upsert the root page for the smart lists section."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, parent_page_link)
 
-    def upsert_smart_list_collection(self, ref_id: EntityId, name: str) -> _SmartListNotionCollection:
+    def upsert_smart_list_collection(self, ref_id: EntityId, name: EntityName) -> _SmartListNotionCollection:
         """Upsert the Notion-side smart list."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         collection_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{ref_id}"),
             parent_page=root_page,
-            name=name,
+            name=str(name),
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
@@ -352,7 +355,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             })
 
         return _SmartListNotionCollection(
-            name=name,
+            name=str(name),
             ref_id=str(ref_id),
             notion_id=collection_link.collection_id)
 
@@ -379,7 +382,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     def load_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> typing.Iterable[_SmartListNotionTag]:
         """Retrieve all the Notion-side smart list tags."""
-        return [_SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=str(s.ref_id))
+        return [_SmartListNotionTag(name=s.name, notion_id=s.notion_id, ref_id=s.tmp_ref_id_as_str)
                 for s in self._collections_manager.load_all_collection_field_tags(
                     collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
                     field="tags")]
@@ -479,13 +482,14 @@ class NotionSmartListsManager(SmartListNotionManager):
             notion_row.tags = row.tags
             notion_row.url = row.url
             notion_row.archived = row.archived
-            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         return notion_row
 
     def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> _SmartListNotionRow:
         """Copy the fields of the local row to the actual Notion structure."""
+        # pylint: disable=no-self-use
         tags: List[str] = []
         if len(notion_row.tags) == 0:
             tags = []
@@ -499,6 +503,6 @@ class NotionSmartListsManager(SmartListNotionManager):
             tags=tags,
             url=notion_row.url,
             archived=notion_row.archived,
-            last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),
+            last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
             ref_id=notion_row.ref_id,
             notion_id=notion_row.id)

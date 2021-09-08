@@ -3,6 +3,10 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Optional, List
 
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
@@ -10,7 +14,9 @@ from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from models.basic import RecurringTaskPeriod, Eisen, Difficulty
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
 from models.framework import Command
 from service.inbox_tasks import InboxTasksService
 from service.workspaces import WorkspacesService
@@ -26,16 +32,16 @@ class PersonCreateCommand(Command['PersonCreateCommand.Args', None]):
     @dataclass()
     class Args:
         """Args."""
-        name: str
+        name: EntityName
         relationship: PersonRelationship
         catch_up_period: Optional[RecurringTaskPeriod]
         catch_up_eisen: List[Eisen]
         catch_up_difficulty: Optional[Difficulty]
-        catch_up_actionable_from_day: Optional[int]
-        catch_up_actionable_from_month: Optional[int]
-        catch_up_due_at_time: Optional[str]
-        catch_up_due_at_day: Optional[int]
-        catch_up_due_at_month: Optional[int]
+        catch_up_actionable_from_day: Optional[RecurringTaskDueAtDay]
+        catch_up_actionable_from_month: Optional[RecurringTaskDueAtMonth]
+        catch_up_due_at_time: Optional[RecurringTaskDueAtTime]
+        catch_up_due_at_day: Optional[RecurringTaskDueAtDay]
+        catch_up_due_at_month: Optional[RecurringTaskDueAtMonth]
         birthday: Optional[PersonBirthday]
 
     _time_provider: Final[TimeProvider]

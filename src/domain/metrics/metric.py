@@ -3,7 +3,10 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from models.basic import MetricKey, MetricUnit, Timestamp, EntityName
+from domain.metrics.metric_unit import MetricUnit
+from domain.common.timestamp import Timestamp
+from domain.common.entity_name import EntityName
+from domain.metrics.metric_key import MetricKey
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 
 

@@ -6,12 +6,23 @@ from typing import Optional, List, ClassVar, Final, cast, Dict, Iterable
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow, EntityId, JSONDictType
-from models.basic import ADate, Timestamp, BasicValidator, RecurringTaskPeriod, Eisen, Difficulty, \
-    RecurringTaskType, InboxTaskSource
-from remote.notion.common import NotionCollectionLink, NotionLockKey, NotionId, NotionPageLink, clean_eisenhower
+from domain.common.adate import ADate
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_skip_rule import RecurringTaskSkipRule
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionCollectionLink, NotionLockKey, NotionPageLink, clean_eisenhower
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
 from remote.notion.infra.collections_manager import CollectionsManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -428,16 +439,16 @@ class NotionRecurringTasksManager:
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._collections_manager = collections_manager
 
     def upsert_recurring_tasks_collection(
@@ -463,27 +474,28 @@ class NotionRecurringTasksManager:
         return self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def upsert_recurring_task(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool, name: str,
-            period: str, the_type: str, eisen: List[str], difficulty: Optional[str],
-            actionable_from_day: Optional[int], actionable_from_month: Optional[int], due_at_time: Optional[str],
-            due_at_day: Optional[int], due_at_month: Optional[int], suspended: bool, skip_rule: Optional[str],
-            must_do: bool, start_at_date: Optional[ADate], end_at_date: Optional[ADate],
-            ref_id: EntityId) -> RecurringTaskNotionRow:
+            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, archived: bool,
+            name: EntityName, period: str, the_type: str, eisen: List[str], difficulty: Optional[str],
+            actionable_from_day: Optional[RecurringTaskDueAtDay],
+            actionable_from_month: Optional[RecurringTaskDueAtMonth], due_at_time: Optional[RecurringTaskDueAtTime],
+            due_at_day: Optional[RecurringTaskDueAtDay], due_at_month: Optional[RecurringTaskDueAtMonth],
+            suspended: bool, skip_rule: Optional[RecurringTaskSkipRule], must_do: bool, start_at_date: Optional[ADate],
+            end_at_date: Optional[ADate], ref_id: EntityId) -> RecurringTaskNotionRow:
         """Upsert a recurring task."""
         new_row = RecurringTaskNotionRow(
-            name=name,
+            name=str(name),
             archived=archived,
             period=period,
             the_type=the_type,
             eisen=eisen,
             difficulty=difficulty,
-            actionable_from_day=actionable_from_day,
-            actionable_from_month=actionable_from_month,
-            due_at_time=due_at_time,
-            due_at_day=due_at_day,
-            due_at_month=due_at_month,
+            actionable_from_day=actionable_from_day.as_int() if actionable_from_day else None,
+            actionable_from_month=actionable_from_month.as_int() if actionable_from_month else None,
+            due_at_time=str(due_at_time) if due_at_time else None,
+            due_at_day=due_at_day.as_int() if due_at_day else None,
+            due_at_month=due_at_month.as_int() if due_at_month else None,
             suspended=suspended,
-            skip_rule=skip_rule,
+            skip_rule=str(skip_rule),
             must_do=must_do,
             start_at_date=start_at_date,
             end_at_date=end_at_date,
@@ -576,10 +588,11 @@ class NotionRecurringTasksManager:
             notion_row.suspended = row.suspended
             notion_row.skip_rule = row.skip_rule
             notion_row.must_do = row.must_do
-            notion_row.start_at_date = self._basic_validator.adate_to_notion(row.start_at_date) \
-                if row.start_at_date else None
-            notion_row.end_at_date = self._basic_validator.adate_to_notion(row.end_at_date) if row.end_at_date else None
-            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.start_at_date = \
+                row.start_at_date.to_notion(self._global_properties.timezone) if row.start_at_date else None
+            notion_row.end_at_date = \
+                row.end_at_date.to_notion(self._global_properties.timezone) if row.end_at_date else None
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         if inbox_collection_link:
@@ -609,12 +622,12 @@ class NotionRecurringTasksManager:
             suspended=recurring_task_notion_row.suspended,
             skip_rule=recurring_task_notion_row.skip_rule,
             must_do=recurring_task_notion_row.must_do,
-            start_at_date=self._basic_validator.adate_from_notion(recurring_task_notion_row.start_at_date)
+            start_at_date=ADate.from_notion(self._global_properties.timezone, recurring_task_notion_row.start_at_date)
             if recurring_task_notion_row.start_at_date else None,
-            end_at_date=self._basic_validator.adate_from_notion(recurring_task_notion_row.end_at_date)
+            end_at_date=ADate.from_notion(self._global_properties.timezone, recurring_task_notion_row.end_at_date)
             if recurring_task_notion_row.end_at_date else None,
             last_edited_time=
-            self._basic_validator.timestamp_from_notion_timestamp(recurring_task_notion_row.last_edited_time),
+            Timestamp.from_notion(recurring_task_notion_row.last_edited_time),
             ref_id=recurring_task_notion_row.ref_id)
 
     @staticmethod

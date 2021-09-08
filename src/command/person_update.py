@@ -4,10 +4,15 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional, List
 
 import command.command as command
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
 from domain.prm.commands.person_update import PersonUpdateCommand
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from models.basic import BasicValidator, RecurringTaskPeriod, Eisen, Difficulty
 from models.framework import UpdateAction, EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -16,12 +21,10 @@ LOGGER = logging.getLogger(__name__)
 class PersonUpdate(command.Command):
     """Command class for updating a person."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[PersonUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: PersonUpdateCommand):
+    def __init__(self, the_command: PersonUpdateCommand):
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -51,7 +54,7 @@ class PersonUpdate(command.Command):
         catch_up_period_group = parser.add_mutually_exclusive_group()
         catch_up_period_group.add_argument(
             "--catch-up-period", dest="catch_up_period", required=False,
-            choices=BasicValidator.recurring_task_period_values(),
+            choices=RecurringTaskPeriod.all_values(),
             help="The period at which a metric should be recorded")
         catch_up_period_group.add_argument(
             "--clear-catch-up-period", dest="clear_catch_up_period", default=False,
@@ -59,14 +62,14 @@ class PersonUpdate(command.Command):
         catch_up_period_eisen = parser.add_mutually_exclusive_group()
         catch_up_period_eisen.add_argument(
             "--catch-up-eisen", dest="catch_up_eisen", default=[], action="append",
-            choices=BasicValidator.eisen_values(),
+            choices=Eisen.all_values(),
             help="The Eisenhower matrix values to use for catch up tasks")
         catch_up_period_eisen.add_argument(
             "--clear-catch-up-eisen", dest="clear_catch_up_eisen", default=False,
             action="store_const", const=True, help="Clear the catch up eisen")
         catch_up_period_difficulty = parser.add_mutually_exclusive_group()
         catch_up_period_difficulty.add_argument("--catch-up-difficulty", dest="catch_up_difficulty",
-                                                choices=BasicValidator.difficulty_values(),
+                                                choices=Difficulty.all_values(),
                                                 help="The difficulty to use for catch up tasks")
         catch_up_period_difficulty.add_argument("--clear-catch-up-difficulty", dest="clear_catch_up_difficulty",
                                                 default=False,
@@ -149,7 +152,7 @@ class PersonUpdate(command.Command):
             catch_up_period = UpdateAction.change_to(None)
         elif args.catch_up_period is not None:
             catch_up_period = UpdateAction.change_to(
-                self._basic_validator.recurring_task_period_validate_and_clean(args.catch_up_period))
+                RecurringTaskPeriod.from_raw(args.catch_up_period))
         else:
             catch_up_period = UpdateAction.do_nothing()
         catch_up_eisen: UpdateAction[List[Eisen]]
@@ -157,7 +160,7 @@ class PersonUpdate(command.Command):
             catch_up_eisen = UpdateAction.change_to([])
         elif len(args.catch_up_eisen) > 0:
             catch_up_eisen = UpdateAction.change_to(
-                [self._basic_validator.eisen_validate_and_clean(e) for e in args.catch_up_eisen])
+                [Eisen.from_raw(e) for e in args.catch_up_eisen])
         else:
             catch_up_eisen = UpdateAction.do_nothing()
         catch_up_difficulty: UpdateAction[Optional[Difficulty]]
@@ -165,51 +168,48 @@ class PersonUpdate(command.Command):
             catch_up_difficulty = UpdateAction.change_to(None)
         elif args.catch_up_difficulty is not None:
             catch_up_difficulty = UpdateAction.change_to(
-                self._basic_validator.difficulty_validate_and_clean(args.catch_up_difficulty))
+                Difficulty.from_raw(args.catch_up_difficulty))
         else:
             catch_up_difficulty = UpdateAction.do_nothing()
-        catch_up_actionable_from_day: UpdateAction[Optional[int]]
+        catch_up_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         if args.clear_catch_up_actionable_from_day:
             catch_up_actionable_from_day = UpdateAction.change_to(None)
         elif args.catch_up_actionable_from_day is not None:
             catch_up_actionable_from_day = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                    RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_day))
+                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_day))
         else:
             catch_up_actionable_from_day = UpdateAction.do_nothing()
-        catch_up_actionable_from_month: UpdateAction[Optional[int]]
+        catch_up_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
         if args.clear_catch_up_actionable_from_month:
             catch_up_actionable_from_month = UpdateAction.change_to(None)
         elif args.catch_up_actionable_from_month is not None:
             catch_up_actionable_from_month = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                RecurringTaskDueAtMonth.from_raw(
                     RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_month))
         else:
             catch_up_actionable_from_month = UpdateAction.do_nothing()
-        catch_up_due_at_time: UpdateAction[Optional[str]]
+        catch_up_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
         if args.clear_catch_up_due_at_time:
             catch_up_due_at_time = UpdateAction.change_to(None)
         elif args.catch_up_due_at_time is not None:
             catch_up_due_at_time = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_time_validate_and_clean(
-                    args.catch_up_due_at_time))
+                RecurringTaskDueAtTime.from_raw(args.catch_up_due_at_time))
         else:
             catch_up_due_at_time = UpdateAction.do_nothing()
-        catch_up_due_at_day: UpdateAction[Optional[int]]
+        catch_up_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         if args.clear_catch_up_due_at_day:
             catch_up_due_at_day = UpdateAction.change_to(None)
         elif args.catch_up_due_at_day is not None:
             catch_up_due_at_day = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                    RecurringTaskPeriod.YEARLY, args.catch_up_due_at_day))
+                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.catch_up_due_at_day))
         else:
             catch_up_due_at_day = UpdateAction.do_nothing()
-        catch_up_due_at_month: UpdateAction[Optional[int]]
+        catch_up_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
         if args.clear_catch_up_due_at_month:
             catch_up_due_at_month = UpdateAction.change_to(None)
         elif args.catch_up_due_at_month is not None:
             catch_up_due_at_month = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                RecurringTaskDueAtMonth.from_raw(
                     RecurringTaskPeriod.YEARLY, args.catch_up_due_at_month))
         else:
             catch_up_due_at_month = UpdateAction.do_nothing()

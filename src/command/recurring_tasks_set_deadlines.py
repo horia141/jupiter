@@ -5,8 +5,11 @@ from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
 from models.framework import EntityId
-from models.basic import BasicValidator, RecurringTaskPeriod
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +17,10 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTasksSetDeadlines(command.Command):
     """Command class for setting the deadlines of a recurring task."""
 
-    _basic_validator: Final[BasicValidator]
     _recurring_tasks_controller: Final[RecurringTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+    def __init__(self, recurring_tasks_controller: RecurringTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._recurring_tasks_controller = recurring_tasks_controller
 
     @staticmethod
@@ -45,14 +46,12 @@ class RecurringTasksSetDeadlines(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        due_at_time = self._basic_validator.recurring_task_due_at_time_validate_and_clean(args.due_at_time) \
+        due_at_time = RecurringTaskDueAtTime.from_raw(args.due_at_time) \
             if args.due_at_time else None
         due_at_day = \
-            self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                RecurringTaskPeriod.YEARLY, args.due_at_day) \
+            RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.due_at_day) \
             if args.due_at_day else None
         due_at_month = \
-            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                RecurringTaskPeriod.YEARLY, args.due_at_month) \
+            RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, args.due_at_month) \
             if args.due_at_month else None
         self._recurring_tasks_controller.set_recurring_task_deadlines(ref_id, due_at_time, due_at_day, due_at_month)

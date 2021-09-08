@@ -3,8 +3,11 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
-from controllers.common import ControllerInputValidationError
-from models.basic import ProjectKey, BigPlanStatus, ADate
+from controllers.validation_error import ControllerInputValidationError
+from domain.common.entity_name import EntityName
+from domain.common.adate import ADate
+from domain.big_plans.big_plan_status import BigPlanStatus
+from domain.projects.project_key import ProjectKey
 from models.framework import EntityId
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService, BigPlan
@@ -47,7 +50,8 @@ class BigPlansController:
         self._inbox_tasks_service = inbox_tasks_service
         self._big_plans_service = big_plans_service
 
-    def create_big_plan(self, project_key: Optional[ProjectKey], name: str, due_date: Optional[ADate]) -> BigPlan:
+    def create_big_plan(
+            self, project_key: Optional[ProjectKey], name: EntityName, due_date: Optional[ADate]) -> BigPlan:
         """Create an big plan."""
         if project_key is not None:
             project = self._projects_service.load_project_by_key(project_key)
@@ -87,7 +91,7 @@ class BigPlansController:
 
         return big_plan
 
-    def set_big_plan_name(self, ref_id: EntityId, name: str) -> BigPlan:
+    def set_big_plan_name(self, ref_id: EntityId, name: EntityName) -> BigPlan:
         """Change the due date of a big plan."""
         big_plan = self._big_plans_service.load_big_plan_by_id(ref_id)
         inbox_tasks_collection = self._inbox_tasks_service.get_inbox_tasks_collection(big_plan.project_ref_id)

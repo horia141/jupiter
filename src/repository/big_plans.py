@@ -1,13 +1,16 @@
 """Repository for big plans."""
-from dataclasses import dataclass
 import logging
+import typing
+import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-import typing
 from typing import Final, ClassVar, Iterable, Optional, Type
-import uuid
 
-from models.basic import BigPlanStatus, ADate, BasicValidator, Timestamp
+from domain.big_plans.big_plan_status import BigPlanStatus
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
+from domain.common.timestamp import Timestamp
 from models.framework import EntityId, JSONDictType
 from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_field_action import TimeFieldAction
@@ -21,7 +24,7 @@ class BigPlanRow(BaseEntityRow):
     """A big plan."""
 
     project_ref_id: EntityId
-    name: str
+    name: EntityName
     status: BigPlanStatus
     due_date: Optional[ADate]
     notion_link_uuid: uuid.UUID
@@ -59,7 +62,7 @@ class BigPlansRepository:
             return
 
     def create_big_plan(
-            self, project_ref_id: EntityId, name: str, archived: bool, status: BigPlanStatus,
+            self, project_ref_id: EntityId, name: EntityName, archived: bool, status: BigPlanStatus,
             due_date: Optional[ADate], notion_link_uuid: uuid.UUID) -> BigPlanRow:
         """Create a big plan."""
         new_big_plan_row = BigPlanRow(
@@ -127,17 +130,17 @@ class BigPlansRepository:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return BigPlanRow(
             project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
-            name=typing.cast(str, storage_form["name"]),
+            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]),
             status=BigPlanStatus(typing.cast(str, storage_form["status"])),
-            due_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["due_date"]))
+            due_date=ADate.from_str(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             notion_link_uuid=uuid.UUID(typing.cast(str, storage_form["notion_link_uuid"])),
-            accepted_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["accepted_time"]))
+            accepted_time=Timestamp.from_str(typing.cast(str, storage_form["accepted_time"]))
             if storage_form["accepted_time"] else None,
-            working_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["working_time"]))
+            working_time=Timestamp.from_str(typing.cast(str, storage_form["working_time"]))
             if storage_form["working_time"] else None,
-            completed_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["completed_time"]))
+            completed_time=Timestamp.from_str(typing.cast(str, storage_form["completed_time"]))
             if storage_form["completed_time"] else None)
 
     @staticmethod
@@ -145,14 +148,14 @@ class BigPlansRepository:
         """Transform the live system data to something suitable for basic storage."""
         return {
             "project_ref_id": str(live_form.project_ref_id),
-            "name": live_form.name,
+            "name": str(live_form.name),
             "status": live_form.status.value,
-            "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,
+            "due_date": str(live_form.due_date) if live_form.due_date else None,
             "notion_link_uuid": str(live_form.notion_link_uuid),
-            "accepted_time": BasicValidator.timestamp_to_str(live_form.accepted_time)
+            "accepted_time": str(live_form.accepted_time)
                              if live_form.accepted_time else None,
-            "working_time": BasicValidator.timestamp_to_str(live_form.working_time)
+            "working_time": str(live_form.working_time)
                             if live_form.working_time else None,
-            "completed_time": BasicValidator.timestamp_to_str(live_form.completed_time)
+            "completed_time": str(live_form.completed_time)
                               if live_form.completed_time else None
         }

@@ -1,17 +1,20 @@
 """The controller for generating inbox tasks."""
 import logging
+import typing
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
-import typing
-
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.sync_target import SyncTarget
+from domain.common.timestamp import Timestamp
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.metric import Metric
+from domain.metrics.metric_key import MetricKey
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.person import Person
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.projects.project_key import ProjectKey
 from domain.vacations.vacation import Vacation
 from models import schedules
-from models.basic import RecurringTaskPeriod, ProjectKey, Timestamp, SyncTarget, MetricKey
 from models.framework import EntityId
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.projects import ProjectsService, Project

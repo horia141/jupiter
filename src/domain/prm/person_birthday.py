@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from typing import Optional, ClassVar, Dict
 
-from models.basic import BasicValidator, RecurringTaskPeriod
-from models.framework import Value
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from models.frame.value import Value
 from models.errors import ModelValidationError
 
 
@@ -42,15 +43,14 @@ class PersonBirthday(Value):
             raise ModelValidationError(f"Invalid format for birthday '{birthday_str}'")
 
         try:
-            day = BasicValidator.recurring_task_due_at_day_validate_and_clean(
-                RecurringTaskPeriod.MONTHLY, int(parts[0], base=10))
+            day = RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, int(parts[0], base=10))
             month = PersonBirthday._MONTH_NAME_INDEX[parts[1].capitalize()]
         except ValueError as err:
             raise ModelValidationError(f"Invalid format for day part of birthday '{birthday_str}'") from err
         except KeyError:
             raise ModelValidationError(f"Invalid format for month part of birthday '{birthday_str}'")
 
-        return PersonBirthday(day, month)
+        return PersonBirthday(day.as_int(), month)
 
     def __str__(self) -> str:
         """String representation."""

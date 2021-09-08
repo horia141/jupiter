@@ -2,8 +2,14 @@
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List
 
-from controllers.common import ControllerInputValidationError
-from models.basic import ProjectKey, Eisen, Difficulty, InboxTaskStatus, ADate, InboxTaskSource
+from controllers.validation_error import ControllerInputValidationError
+from domain.common.entity_name import EntityName
+from domain.common.adate import ADate
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.projects.project_key import ProjectKey
 from models.framework import EntityId
 from service.big_plans import BigPlansService, BigPlan
 from service.errors import ServiceError
@@ -49,8 +55,9 @@ class InboxTasksController:
         self._big_plans_service = big_plans_service
 
     def create_inbox_task(
-            self, project_key: Optional[ProjectKey], name: str, big_plan_ref_id: Optional[EntityId], eisen: List[Eisen],
-            difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
+            self, project_key: Optional[ProjectKey], name: EntityName, big_plan_ref_id: Optional[EntityId],
+            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
+            due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         if project_key is not None:
             project = self._projects_service.load_project_by_key(project_key)
@@ -61,7 +68,7 @@ class InboxTasksController:
                 raise ServiceError(f"Expected a project and default project is missing")
             project_ref_id = workspace.default_project_ref_id
 
-        big_plan_name: Optional[str] = None
+        big_plan_name: Optional[EntityName] = None
         if big_plan_ref_id:
             big_plan = self._big_plans_service.load_big_plan_by_id(big_plan_ref_id)
             big_plan_name = big_plan.name
@@ -75,14 +82,14 @@ class InboxTasksController:
 
     def associate_inbox_task_with_big_plan(self, ref_id: EntityId, big_plan_ref_id: Optional[EntityId]) -> InboxTask:
         """Associate a big plan with an inbox task."""
-        big_plan_name: Optional[str] = None
+        big_plan_name: Optional[EntityName] = None
         if big_plan_ref_id:
             big_plan = self._big_plans_service.load_big_plan_by_id(big_plan_ref_id)
             big_plan_name = big_plan.name
 
         return self._inbox_tasks_service.associate_inbox_task_with_big_plan(ref_id, big_plan_ref_id, big_plan_name)
 
-    def set_inbox_task_name(self, ref_id: EntityId, name: str) -> InboxTask:
+    def set_inbox_task_name(self, ref_id: EntityId, name: EntityName) -> InboxTask:
         """Change the difficulty of an inbox task."""
         return self._inbox_tasks_service.set_inbox_task_name(ref_id, name)
 

@@ -4,10 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar, Final, cast
 
-from remote.notion.common import NotionId, CollectionError, NotionPageLink
+from domain.common.entity_name import EntityName
+from remote.notion.common import CollectionError, NotionPageLink
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredIndividualStorage
-from models.framework import JSONDictType
+from models.framework import JSONDictType, NotionId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class WorkspaceSingleton:
         self._connection = connection
         self._structured_storage = StructuredIndividualStorage(self._WORKSPACES_LOCK_FILE_PATH, self)
 
-    def upsert_notion_structure(self, name: str) -> NotionPageLink:
+    def upsert_notion_structure(self, name: EntityName) -> NotionPageLink:
         """Create/update the Notion-side structure for this singleton."""
         lock = self._structured_storage.load_optional()
         client = self._connection.get_notion_client()
@@ -52,11 +53,11 @@ class WorkspaceSingleton:
             page = client.get_regular_page(lock.page_id)
             LOGGER.info(f"Found the root page via id {page}")
         else:
-            page = client.create_regular_page(name)
+            page = client.create_regular_page(str(name))
             LOGGER.info(f"Created the root page {page}")
 
         # Change the title.
-        page.title = name
+        page.title = str(name)
         LOGGER.info("Applied changes to root page on Notion side")
 
         # Saved local locks.

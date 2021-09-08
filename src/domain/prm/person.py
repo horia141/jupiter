@@ -2,10 +2,11 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+from domain.common.entity_name import EntityName
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from models.basic import Timestamp
+from domain.common.timestamp import Timestamp
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 
 
@@ -16,7 +17,7 @@ class Person(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        name: str
+        name: EntityName
         relationship: PersonRelationship
         catch_up_params: Optional[RecurringTaskGenParams]
         birthday: Optional[PersonBirthday]
@@ -24,7 +25,7 @@ class Person(AggregateRoot):
     @dataclass(frozen=True)
     class ChangeName(Event):
         """Updated event."""
-        name: UpdateAction[str] = field(default_factory=UpdateAction.do_nothing)
+        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
 
     @dataclass(frozen=True)
     class ChangeRelationship(Event):
@@ -41,14 +42,14 @@ class Person(AggregateRoot):
         """Change birthday event."""
         birthday: UpdateAction[Optional[PersonBirthday]] = field(default_factory=UpdateAction.do_nothing)
 
-    _name: str
+    _name: EntityName
     _relationship: PersonRelationship
     _catch_up_params: Optional[RecurringTaskGenParams]
     _birthday: Optional[PersonBirthday]
 
     @staticmethod
     def new_person(
-            name: str, relationship: PersonRelationship, catch_up_params: Optional[RecurringTaskGenParams],
+            name: EntityName, relationship: PersonRelationship, catch_up_params: Optional[RecurringTaskGenParams],
             birthday: Optional[PersonBirthday], created_time: Timestamp) -> 'Person':
         """Create a person."""
         person = Person(
@@ -68,7 +69,7 @@ class Person(AggregateRoot):
 
         return person
 
-    def change_name(self, name: str, modification_time: Timestamp) -> 'Person':
+    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Person':
         """Change the name of the person."""
         if self._name == name:
             return self
@@ -106,7 +107,7 @@ class Person(AggregateRoot):
         return self
 
     @property
-    def name(self) -> str:
+    def name(self) -> EntityName:
         """The name of the person."""
         return self._name
 

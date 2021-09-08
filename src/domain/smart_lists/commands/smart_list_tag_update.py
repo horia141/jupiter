@@ -4,7 +4,7 @@ from typing import Final
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
-from models.basic import Tag
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import Command, UpdateAction, EntityId
 from utils.time_provider import TimeProvider
 
@@ -16,7 +16,7 @@ class SmartListTagUpdateCommand(Command['SmartListTagUpdateCommand.Args', None])
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[Tag]
+        tag_name: UpdateAction[SmartListTagName]
 
     _time_provider: Final[TimeProvider]
     _smart_list_engine: Final[SmartListEngine]
@@ -35,8 +35,8 @@ class SmartListTagUpdateCommand(Command['SmartListTagUpdateCommand.Args', None])
         with self._smart_list_engine.get_unit_of_work() as uow:
             smart_list_tag = uow.smart_list_tag_repository.load_by_id(args.ref_id)
 
-            if args.name.should_change:
-                smart_list_tag.change_name(args.name.value, self._time_provider.get_current_time())
+            if args.tag_name.should_change:
+                smart_list_tag.change_tag_name(args.tag_name.value, self._time_provider.get_current_time())
 
             uow.smart_list_tag_repository.save(smart_list_tag)
 

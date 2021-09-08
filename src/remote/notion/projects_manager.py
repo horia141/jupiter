@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from typing import ClassVar, Final
 
-from models.framework import EntityId
-from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from domain.common.entity_name import EntityName
+from models.framework import EntityId, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.pages_manager import PagesManager
 
 
@@ -32,12 +33,12 @@ class NotionProjectsManager:
         """Upsert the root page for the projects section."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, parent_page_link)
 
-    def upsert_project(self, ref_id: EntityId, name: str) -> ProjectNotionPage:
+    def upsert_project(self, ref_id: EntityId, name: EntityName) -> ProjectNotionPage:
         """Upsert the Notion-side project."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
-        project_page = self._pages_manager.upsert_page(NotionLockKey(f"{self._KEY}:{ref_id}"), name, root_page)
+        project_page = self._pages_manager.upsert_page(NotionLockKey(f"{self._KEY}:{ref_id}"), str(name), root_page)
 
-        return ProjectNotionPage(name=name, ref_id=ref_id, notion_id=project_page.page_id)
+        return ProjectNotionPage(name=str(name), ref_id=ref_id, notion_id=project_page.page_id)
 
     def archive_project(self, ref_id: EntityId) -> None:
         """Archive the Notion-side project."""

@@ -1,14 +1,13 @@
 """The service class for syncing the PRM database between local and Notion."""
 import logging
+import typing
 from typing import Final, Iterable, Dict, Optional
 
-import typing
-
+from domain.common.sync_prefer import SyncPrefer
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
-from models.basic import BasicValidator, SyncPrefer
 from models.framework import EntityId
 from service.errors import ServiceError
 
@@ -18,15 +17,12 @@ LOGGER = logging.getLogger(__name__)
 class PrmSyncService:
     """The service class for syncing the PRM database between local and Notion."""
 
-    _basic_validator: Final[BasicValidator]
     _prm_engine: Final[PrmEngine]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, prm_engine: PrmEngine,
-            prm_prm_notion_manager: PrmNotionManager) -> None:
+            self, prm_engine: PrmEngine, prm_prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._prm_engine = prm_engine
         self._prm_notion_manager = prm_prm_notion_manager
 

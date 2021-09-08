@@ -3,12 +3,14 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Optional
 
-from pendulum.tz.timezone import Timezone
-
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.prm_database import PrmDatabase
-from models.basic import WorkspaceSpaceId, WorkspaceToken, ProjectKey, EntityName
+from domain.workspaces.notion_token import NotionToken
+from domain.workspaces.notion_space_id import NotionSpaceId
+from domain.common.entity_name import EntityName
+from domain.projects.project_key import ProjectKey
+from domain.common.timezone import Timezone
 from remote.notion.infra.connection import NotionConnection
 from repository.workspace import Workspace
 from service.metrics import MetricsService
@@ -58,10 +60,10 @@ class WorkspacesController:
         self._prm_notion_manager = prm_notion_manager
 
     def create_workspace(
-            self, name: str, timezone: Timezone, space_id: WorkspaceSpaceId, token: WorkspaceToken,
+            self, name: EntityName, timezone: Timezone, notion_space_id: NotionSpaceId, notion_token: NotionToken,
             first_project_key: ProjectKey, first_project_name: EntityName) -> None:
         """Create a workspace."""
-        self._notion_connection.initialize(space_id, token)
+        self._notion_connection.initialize(notion_space_id, notion_token)
         LOGGER.info("Initialised Notion connection")
 
         LOGGER.info("Creating workspace")
@@ -82,7 +84,7 @@ class WorkspacesController:
             uow.prm_database_repository.create(prm_database)
         self._prm_notion_manager.upsert_root_notion_structure(new_workspace_page)
 
-    def set_workspace_name(self, name: str) -> Workspace:
+    def set_workspace_name(self, name: EntityName) -> Workspace:
         """Change the workspace name."""
         return self._workspaces_service.set_workspace_name(name)
 
@@ -98,9 +100,9 @@ class WorkspacesController:
         else:
             return self._workspaces_service.set_workspace_default_project_ref_id(None)
 
-    def set_workspace_token(self, token: WorkspaceToken) -> None:
+    def set_workspace_notion_token(self, notion_token: NotionToken) -> None:
         """Change the workspace token."""
-        self._notion_connection.update_token(token)
+        self._notion_connection.update_token(notion_token)
 
     def load_workspace(self) -> _LoadWorkspaceResponse:
         """Retrieve a workspace."""

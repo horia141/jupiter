@@ -7,7 +7,8 @@ from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionMa
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import SmartListKey, Tag
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
+from domain.smart_lists.smart_list_key import SmartListKey
 from models.framework import Command
 from utils.time_provider import TimeProvider
 
@@ -21,7 +22,7 @@ class SmartListFindCommand(Command['SmartListFindCommand.Args', 'SmartListFindCo
         allow_archived: bool
         filter_keys: Optional[Iterable[SmartListKey]]
         filter_is_done: Optional[bool]
-        filter_tags: Optional[Iterable[Tag]]
+        filter_tag_names: Optional[Iterable[SmartListTagName]]
 
     @dataclass()
     class ResponseEntry:
@@ -57,11 +58,11 @@ class SmartListFindCommand(Command['SmartListFindCommand.Args', 'SmartListFindCo
             smart_list_tags = uow.smart_list_tag_repository.find_all(
                 allow_archived=args.allow_archived,
                 filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists],
-                filter_names=args.filter_tags)
+                filter_tag_names=args.filter_tag_names)
             smart_list_items = uow.smart_list_item_repository.find_all(
                 allow_archived=args.allow_archived,
                 filter_is_done=args.filter_is_done,
-                filter_tag_ref_ids=[t.ref_id for t in smart_list_tags] if args.filter_tags else None,
+                filter_tag_ref_ids=[t.ref_id for t in smart_list_tags] if args.filter_tag_names else None,
                 filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists])
 
         smart_list_tags_by_smart_list_ref_ids = {}

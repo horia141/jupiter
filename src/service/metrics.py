@@ -2,10 +2,12 @@
 import logging
 from typing import Optional, Final, Iterable, List, Dict
 
+from domain.common.entity_name import EntityName
+from domain.common.sync_prefer import SyncPrefer
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import MetricKey, BasicValidator, SyncPrefer, EntityName
+from domain.metrics.metric_key import MetricKey
 from models.framework import EntityId
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from remote.notion.metrics_manager import NotionMetricManager
@@ -19,16 +21,14 @@ LOGGER = logging.getLogger(__name__)
 class MetricsService:
     """The service class for dealing with metrics."""
 
-    _basic_validator: Final[BasicValidator]
     _time_provider: Final[TimeProvider]
     _metric_engine: Final[MetricEngine]
     _notion_manager: Final[NotionMetricManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, time_provider: TimeProvider,
-            metric_engine: MetricEngine, notion_manager: NotionMetricManager) -> None:
+            self, time_provider: TimeProvider, metric_engine: MetricEngine,
+            notion_manager: NotionMetricManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._time_provider = time_provider
         self._metric_engine = metric_engine
         self._notion_manager = notion_manager
@@ -135,7 +135,7 @@ class MetricsService:
             metric_notion_collection = self._notion_manager.load_metric_collection(metric_ref_id)
 
             if sync_prefer == SyncPrefer.LOCAL:
-                metric_notion_collection.name = metric.name
+                metric_notion_collection.name = str(metric.name)
                 self._notion_manager.save_metric_collection(metric_notion_collection)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:

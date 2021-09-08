@@ -3,7 +3,7 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import Tag
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import Repository, EntityId
 
 
@@ -25,7 +25,8 @@ class SmartListTagRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def find_all_for_smart_list(
             self, smart_list_ref_id: EntityId,
-            allow_archived: bool = False, filter_names: Optional[Iterable[Tag]] = None) -> List[SmartListTag]:
+            allow_archived: bool = False,
+            filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> List[SmartListTag]:
         """Retrieve all smart list tags for a given smart list."""
 
     @abc.abstractmethod
@@ -34,7 +35,7 @@ class SmartListTagRepository(Repository, abc.ABC):
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_names: Optional[Iterable[Tag]] = None) -> List[SmartListTag]:
+            filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> List[SmartListTag]:
         """Find all smart list tags matching some criteria."""
 
     @abc.abstractmethod

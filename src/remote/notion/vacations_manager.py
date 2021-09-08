@@ -8,11 +8,13 @@ from notion.collection import CollectionRowBlock
 
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
-from models.basic import ADate, BasicValidator, Timestamp
-from models.framework import BaseNotionRow, EntityId, JSONDictType
-from remote.notion.common import NotionId, NotionPageLink, NotionLockKey
+from domain.common.adate import ADate
+from domain.common.timestamp import Timestamp
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -125,16 +127,16 @@ class NotionVacationsManager(VacationNotionManager):
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._collections_manager = collections_manager
 
     def upsert_root_page(self, parent_page_link: NotionPageLink) -> None:
@@ -152,7 +154,7 @@ class NotionVacationsManager(VacationNotionManager):
     def upsert_vacation(self, vacation: Vacation) -> None:
         """Create a vacation."""
         new_vacation_row = _VacationNotionRow(
-            name=vacation.name,
+            name=str(vacation.name),
             archived=vacation.archived,
             start_date=vacation.start_date,
             end_date=vacation.end_date,
@@ -216,9 +218,10 @@ class NotionVacationsManager(VacationNotionManager):
         with client.with_transaction():
             notion_row.title = row.name
             notion_row.archived = row.archived
-            notion_row.start_date = self._basic_validator.adate_to_notion(row.start_date)
-            notion_row.end_date = self._basic_validator.adate_to_notion(row.end_date)
-            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.start_date = \
+                row.start_date.to_notion(self._global_properties.timezone) if row.start_date else None
+            notion_row.end_date = row.end_date.to_notion(self._global_properties.timezone) if row.end_date else None
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -229,10 +232,9 @@ class NotionVacationsManager(VacationNotionManager):
             notion_id=vacation_notion_row.id,
             name=vacation_notion_row.title,
             archived=vacation_notion_row.archived or False,
-            start_date=self._basic_validator.adate_from_notion(vacation_notion_row.start_date)
+            start_date=ADate.from_notion(self._global_properties.timezone, vacation_notion_row.start_date)
             if vacation_notion_row.start_date else None,
-            end_date=self._basic_validator.adate_from_notion(vacation_notion_row.end_date)
+            end_date=ADate.from_notion(self._global_properties.timezone, vacation_notion_row.end_date)
             if vacation_notion_row.end_date else None,
-            last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(
-                vacation_notion_row.last_edited_time),
+            last_edited_time=Timestamp.from_notion(vacation_notion_row.last_edited_time),
             ref_id=vacation_notion_row.ref_id)

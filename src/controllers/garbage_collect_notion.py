@@ -11,7 +11,8 @@ from domain.prm.person import Person
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.vacations.vacation import Vacation
-from models.basic import ProjectKey, SyncTarget
+from domain.common.sync_target import SyncTarget
+from domain.projects.project_key import ProjectKey
 from service.big_plans import BigPlansService, BigPlan
 from service.inbox_tasks import InboxTasksService, InboxTask
 from service.metrics import MetricsService

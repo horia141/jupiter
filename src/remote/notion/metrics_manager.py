@@ -1,20 +1,23 @@
 """The centralised point for interacting with Notion metrics."""
+import typing
 from dataclasses import dataclass
 from typing import ClassVar, Final
-import typing
 
 from notion.client import NotionClient
 from notion.collection import CollectionRowBlock
 
-from domain.metrics.metric import Metric
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
+from domain.common.timestamp import Timestamp
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import Timestamp, BasicValidator, ADate
-from models.framework import BaseNotionRow, EntityId, JSONDictType
-from remote.notion.common import NotionPageLink, NotionLockKey, NotionId
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.pages_manager import PagesManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 
@@ -133,17 +136,17 @@ class NotionMetricManager(MetricNotionManager):
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _pages_manager: Final[PagesManager]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator, pages_manager: PagesManager,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider, pages_manager: PagesManager,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._pages_manager = pages_manager
         self._collections_manager = collections_manager
 
@@ -157,7 +160,7 @@ class NotionMetricManager(MetricNotionManager):
         self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
             parent_page=root_page,
-            name=metric.name,
+            name=str(metric.name),
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
@@ -192,13 +195,13 @@ class NotionMetricManager(MetricNotionManager):
 
     # Old stuff
 
-    def upsert_metric_collection(self, ref_id: EntityId, name: str) -> _MetricNotionCollection:
+    def upsert_metric_collection(self, ref_id: EntityId, name: EntityName) -> _MetricNotionCollection:
         """Upsert the Notion-side metric."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         collection_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{ref_id}"),
             parent_page=root_page,
-            name=name,
+            name=str(name),
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
@@ -206,7 +209,7 @@ class NotionMetricManager(MetricNotionManager):
             })
 
         return _MetricNotionCollection(
-            name=name,
+            name=str(name),
             ref_id=str(ref_id),
             notion_id=collection_link.collection_id)
 
@@ -232,7 +235,7 @@ class NotionMetricManager(MetricNotionManager):
         self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
 
     def upsert_metric_entry_old(
-            self, metric_ref_id: EntityId, ref_id: EntityId, collection_time: Timestamp, value: float,
+            self, metric_ref_id: EntityId, ref_id: EntityId, collection_time: ADate, value: float,
             notes: typing.Optional[str], archived: bool) -> _MetricNotionRow:
         """Upsert the Notion-side metric entry."""
         new_row = _MetricNotionRow(
@@ -299,11 +302,11 @@ class NotionMetricManager(MetricNotionManager):
             self, client: NotionClient, row: _MetricNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
-            notion_row.collection_time = self._basic_validator.adate_to_notion(row.collection_time)
+            notion_row.collection_time = str(row.collection_time)
             notion_row.value = row.value
             notion_row.title = row.notes if row.notes else ""
             notion_row.archived = row.archived
-            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         return notion_row
@@ -311,10 +314,10 @@ class NotionMetricManager(MetricNotionManager):
     def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> _MetricNotionRow:
         """Copy the fields of the local row to the actual Notion structure."""
         return _MetricNotionRow(
-            collection_time=self._basic_validator.adate_from_notion(notion_row.collection_time),
+            collection_time=ADate.from_notion(self._global_properties.timezone, notion_row.collection_time),
             value=notion_row.value,
             notes=notion_row.title if typing.cast(str, notion_row.title).strip() != "" else None,
             archived=notion_row.archived,
-            last_edited_time=self._basic_validator.timestamp_from_notion_timestamp(notion_row.last_edited_time),
+            last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
             ref_id=notion_row.ref_id,
             notion_id=notion_row.id)

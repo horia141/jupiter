@@ -2,9 +2,10 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
+from domain.common.entity_name import EntityName
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.vacation import Vacation
-from models.basic import BasicValidator, SyncPrefer
+from domain.common.sync_prefer import SyncPrefer
 from models.framework import EntityId
 from models.errors import ModelValidationError
 from remote.notion.common import NotionPageLink
@@ -18,15 +19,13 @@ LOGGER = logging.getLogger(__name__)
 class VacationsService:
     """The service class for dealing with vacations."""
 
-    _basic_validator: Final[BasicValidator]
     _vacation_engine: Final[VacationEngine]
     _notion_manager: Final[NotionVacationsManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, vacation_engine: VacationEngine,
+            self, vacation_engine: VacationEngine,
             notion_manager: NotionVacationsManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._vacation_engine = vacation_engine
         self._notion_manager = notion_manager
 
@@ -98,7 +97,7 @@ class VacationsService:
             if notion_vacation_ref_id is None or vacation_row.ref_id == "":
                 # If the vacation doesn't exist locally, we create it:
                 try:
-                    vacation_name = self._basic_validator.entity_name_validate_and_clean(vacation_row.name)
+                    vacation_name = EntityName.from_raw(vacation_row.name)
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
 
@@ -134,7 +133,7 @@ class VacationsService:
                         continue
 
                     try:
-                        vacation_name = self._basic_validator.entity_name_validate_and_clean(vacation_row.name)
+                        vacation_name = EntityName.from_raw(vacation_row.name)
                     except ModelValidationError as error:
                         raise ServiceValidationError("Invalid inputs") from error
 
@@ -156,7 +155,7 @@ class VacationsService:
                         continue
 
                     vacation_row.archived = vacation.archived
-                    vacation_row.name = vacation.name
+                    vacation_row.name = str(vacation.name)
                     vacation_row.start_date = vacation.start_date
                     vacation_row.end_date = vacation.end_date
                     self._notion_manager.save_vacation(vacation.ref_id, vacation_row)

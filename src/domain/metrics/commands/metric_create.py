@@ -2,11 +2,20 @@
 from dataclasses import dataclass
 from typing import Optional, Final, List
 
-from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.metric import Metric
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from models.basic import MetricKey, RecurringTaskPeriod, MetricUnit, EntityName, ProjectKey, Eisen, Difficulty
+from domain.metrics.metric import Metric
+from domain.metrics.metric_unit import MetricUnit
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.projects.project_key import ProjectKey
+from domain.metrics.metric_key import MetricKey
 from models.framework import Command
 from service.errors import ServiceError
 from service.projects import ProjectsService
@@ -26,11 +35,11 @@ class MetricCreateCommand(Command['MetricCreateCommand.Args', None]):
         collection_period: Optional[RecurringTaskPeriod]
         collection_eisen: List[Eisen]
         collection_difficulty: Optional[Difficulty]
-        collection_actionable_from_day: Optional[int]
-        collection_actionable_from_month: Optional[int]
-        collection_due_at_time: Optional[str]
-        collection_due_at_day: Optional[int]
-        collection_due_at_month: Optional[int]
+        collection_actionable_from_day: Optional[RecurringTaskDueAtDay]
+        collection_actionable_from_month: Optional[RecurringTaskDueAtMonth]
+        collection_due_at_time: Optional[RecurringTaskDueAtTime]
+        collection_due_at_day: Optional[RecurringTaskDueAtDay]
+        collection_due_at_month: Optional[RecurringTaskDueAtMonth]
         metric_unit: Optional[MetricUnit]
 
     _time_provider: Final[TimeProvider]

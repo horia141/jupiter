@@ -1,12 +1,11 @@
 """Command for showing the projects."""
-
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
 from controllers.projects import ProjectsController
-from models.basic import BasicValidator
+from domain.projects.project_key import ProjectKey
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class ProjectShow(command.Command):
     """Command class for showing the projects."""
 
-    _basic_validator: Final[BasicValidator]
     _projects_controller: Final[ProjectsController]
 
-    def __init__(self, basic_validator: BasicValidator, projects_controller: ProjectsController) -> None:
+    def __init__(self, projects_controller: ProjectsController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._projects_controller = projects_controller
 
     @staticmethod
@@ -39,8 +36,7 @@ class ProjectShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        project_keys = [self._basic_validator.project_key_validate_and_clean(pk) for pk in args.project_keys] \
-            if len(args.project_keys) > 0 else None
+        project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
         response = self._projects_controller.load_all_projects(filter_project_keys=project_keys)
 
         for project_entry in response.projects:

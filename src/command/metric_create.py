@@ -3,19 +3,26 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
 from domain.metrics.commands.metric_create import MetricCreateCommand
-from models.basic import BasicValidator
+from domain.metrics.metric_key import MetricKey
+from domain.metrics.metric_unit import MetricUnit
+from domain.projects.project_key import ProjectKey
 
 
 class MetricCreate(command.Command):
     """Command for creating a metric."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[MetricCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricCreateCommand) -> None:
+    def __init__(self, the_command: MetricCreateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -35,13 +42,13 @@ class MetricCreate(command.Command):
         parser.add_argument("--collection-project", dest="collection_project_key", required=False,
                             help="The project key to generate recurring collection tasks")
         parser.add_argument("--collection-period", dest="collection_period", required=False,
-                            choices=BasicValidator.recurring_task_period_values(),
+                            choices=RecurringTaskPeriod.all_values(),
                             help="The period at which a metric should be recorded")
         parser.add_argument("--collection-eisen", dest="ecollection_eisen", default=[], action="append",
-                            choices=BasicValidator.eisen_values(),
+                            choices=Eisen.all_values(),
                             help="The Eisenhower matrix values to use for collection tasks")
         parser.add_argument("--collection-difficulty", dest="collection_difficulty",
-                            choices=BasicValidator.difficulty_values(),
+                            choices=Difficulty.all_values(),
                             help="The difficulty to use for collection tasks")
         parser.add_argument("--collection-actionable-from-day", type=int,
                             dest="collection_actionable_from_day", metavar="DAY",
@@ -56,39 +63,36 @@ class MetricCreate(command.Command):
         parser.add_argument("--collection-due-at-month", type=int, dest="collection_due_at_month", metavar="MONTH",
                             help="The month of the interval the collection task will be due on")
         parser.add_argument("--unit", dest="metric_unit", required=False,
-                            choices=BasicValidator.metric_unit_values(),
+                            choices=MetricUnit.all_values(),
                             help="The unit for the values of the metric")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        metric_key = self._basic_validator.metric_key_validate_and_clean(args.metric_key)
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        collection_project_key = self._basic_validator.project_key_validate_and_clean(args.collection_project_key) \
+        metric_key = MetricKey.from_raw(args.metric_key)
+        name = EntityName.from_raw(args.name)
+        collection_project_key = ProjectKey.from_raw(args.collection_project_key) \
             if args.collection_project_key else None
-        collection_period = self._basic_validator.recurring_task_period_validate_and_clean(args.collection_period)\
+        collection_period = RecurringTaskPeriod.from_raw(args.collection_period)\
             if args.collection_period else None
-        collection_eisen = [self._basic_validator.eisen_validate_and_clean(e) for e in args.collection_eisen]
-        collection_difficulty = self._basic_validator.difficulty_validate_and_clean(args.collection_difficulty) \
+        collection_eisen = [Eisen.from_raw(e) for e in args.collection_eisen]
+        collection_difficulty = Difficulty.from_raw(args.collection_difficulty) \
             if args.collection_difficulty else None
-        collection_actionable_from_day = self._basic_validator.recurring_task_due_at_day_validate_and_clean(
+        collection_actionable_from_day = RecurringTaskDueAtDay.from_raw(
             collection_period, args.collection_actionable_from_day) \
             if args.actionable_from_day and collection_period else None
-        collection_actionable_from_month = self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+        collection_actionable_from_month = RecurringTaskDueAtMonth.from_raw(
             collection_period, args.collection_actionable_from_month) \
             if args.collection_actionable_from_month and collection_period else None
         collection_due_at_time = \
-            self._basic_validator.recurring_task_due_at_time_validate_and_clean(args.collection_due_at_time) \
+            RecurringTaskDueAtTime.from_raw(args.collection_due_at_time) \
             if args.collection_due_at_time and collection_period else None
         collection_due_at_day = \
-            self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                collection_period, args.collection_due_at_day) \
+            RecurringTaskDueAtDay.from_raw(collection_period, args.collection_due_at_day) \
             if args.collection_due_at_day and collection_period else None
         collection_due_at_month = \
-            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                collection_period, args.collection_due_at_month) \
+            RecurringTaskDueAtMonth.from_raw(collection_period, args.collection_due_at_month) \
             if args.collection_due_at_month and collection_period else None
-        metric_unit = self._basic_validator.metric_unit_validate_and_clean(args.metric_unit)\
-            if args.metric_unit else None
+        metric_unit = MetricUnit.from_raw(args.metric_unit) if args.metric_unit else None
         self._command.execute(MetricCreateCommand.Args(
             key=metric_key,
             name=name,

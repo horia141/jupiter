@@ -1,7 +1,7 @@
 """The personal relationship database."""
 from dataclasses import dataclass, field
 
-from models.basic import Timestamp
+from domain.common.timestamp import Timestamp
 from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
 

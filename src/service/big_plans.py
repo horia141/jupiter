@@ -5,9 +5,13 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, Dict
 
 import remote.notion.common
-from models.basic import BasicValidator, BigPlanStatus, SyncPrefer, ADate, Timestamp
-from models.framework import EntityId
+from domain.big_plans.big_plan_status import BigPlanStatus
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
+from domain.common.sync_prefer import SyncPrefer
+from domain.common.timestamp import Timestamp
 from models.errors import ModelValidationError
+from models.framework import EntityId
 from remote.notion.big_plans_manager import NotionBigPlansManager, BigPlanNotionRow
 from remote.notion.common import NotionPageLink, CollectionEntityNotFound
 from repository.big_plans import BigPlanRow, BigPlansRepository
@@ -32,7 +36,7 @@ class BigPlan:
     ref_id: EntityId
     project_ref_id: EntityId
     archived: bool
-    name: str
+    name: EntityName
     status: BigPlanStatus
     due_date: Optional[ADate]
     notion_link_uuid: uuid.UUID
@@ -45,15 +49,12 @@ class BigPlan:
 class BigPlansService:
     """The service class for dealing with big plans."""
 
-    _basic_validator: Final[BasicValidator]
     _repository: Final[BigPlansRepository]
     _notion_manager: Final[NotionBigPlansManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, repository: BigPlansRepository,
-            notion_manager: NotionBigPlansManager) -> None:
+            self, repository: BigPlansRepository, notion_manager: NotionBigPlansManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._repository = repository
         self._notion_manager = notion_manager
 
@@ -75,14 +76,9 @@ class BigPlansService:
         return BigPlansCollection(project_ref_id=project_ref_id)
 
     def create_big_plan(
-            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollection, name: str,
+            self, project_ref_id: EntityId, inbox_tasks_collection: InboxTasksCollection, name: EntityName,
             due_date: Optional[ADate]) -> BigPlan:
         """Create a big plan."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         new_big_plan_row = self._repository.create_big_plan(
             project_ref_id=project_ref_id,
             name=name,
@@ -135,20 +131,16 @@ class BigPlansService:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
-    def set_big_plan_name(self, ref_id: EntityId, name: str, inbox_tasks_collection: InboxTasksCollection) -> BigPlan:
+    def set_big_plan_name(
+            self, ref_id: EntityId, name: EntityName, inbox_tasks_collection: InboxTasksCollection) -> BigPlan:
         """Change the name of a big plan."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         big_plan_row = self._repository.load_big_plan(ref_id)
         big_plan_row.name = name
         self._repository.update_big_plan(big_plan_row)
         LOGGER.info("Applied local changes")
 
         big_plan_notion_row = self._notion_manager.load_big_plan(big_plan_row.project_ref_id, big_plan_row.ref_id)
-        big_plan_notion_row.name = name
+        big_plan_notion_row.name = str(name)
         self._notion_manager.save_big_plan(
             big_plan_row.project_ref_id, big_plan_row.ref_id, big_plan_notion_row,
             inbox_tasks_collection.notion_collection)
@@ -282,9 +274,9 @@ class BigPlansService:
             if big_plan_notion_row_ref_id is None or big_plan_notion_row.ref_id == "":
                 # If the big plan doesn't exist locally, we create it!
                 try:
-                    big_plan_name = self._basic_validator.entity_name_validate_and_clean(big_plan_notion_row.name)
+                    big_plan_name = EntityName.from_raw(big_plan_notion_row.name)
                     big_plan_status = \
-                        self._basic_validator.big_plan_status_validate_and_clean(big_plan_notion_row.status)\
+                        BigPlanStatus.from_raw(big_plan_notion_row.status)\
                             if big_plan_notion_row.status else BigPlanStatus.NOT_STARTED
                 except ModelValidationError as error:
                     raise ServiceValidationError("Invalid inputs") from error
@@ -324,8 +316,8 @@ class BigPlansService:
                         continue
 
                     try:
-                        big_plan_name = self._basic_validator.entity_name_validate_and_clean(big_plan_notion_row.name)
-                        big_plan_status = self._basic_validator.big_plan_status_validate_and_clean(
+                        big_plan_name = EntityName.from_raw(big_plan_notion_row.name)
+                        big_plan_status = BigPlanStatus.from_raw(
                             big_plan_notion_row.status) \
                             if big_plan_notion_row.status else BigPlanStatus.NOT_STARTED
                     except ModelValidationError as error:
@@ -369,7 +361,7 @@ class BigPlansService:
                         LOGGER.info(f"Skipping {big_plan_row.name} because it was not modified")
                         continue
 
-                    big_plan_notion_row.name = big_plan_row.name
+                    big_plan_notion_row.name = str(big_plan_row.name)
                     big_plan_notion_row.archived = big_plan_row.archived
                     big_plan_notion_row.status = big_plan_row.status.for_notion()
                     big_plan_notion_row.due_date = big_plan_row.due_date

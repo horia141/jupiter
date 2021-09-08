@@ -6,8 +6,9 @@ from typing import Final
 
 import command.command as command
 from controllers.big_plans import BigPlansController
+from domain.common.adate import ADate
 from models.framework import EntityId
-from models.basic import BasicValidator
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,12 +16,12 @@ LOGGER = logging.getLogger(__name__)
 class BigPlansSetDueDate(command.Command):
     """Command class for setting the due date of a big plan."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _big_plans_controller: Final[BigPlansController]
 
-    def __init__(self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
+    def __init__(self, global_properties: GlobalProperties, big_plans_controller: BigPlansController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._big_plans_controller = big_plans_controller
 
     @staticmethod
@@ -41,5 +42,5 @@ class BigPlansSetDueDate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        due_date = self._basic_validator.adate_validate_and_clean(args.due_date) if args.due_date else None
+        due_date = ADate.from_raw(self._global_properties.timezone, args.due_date) if args.due_date else None
         self._big_plans_controller.set_big_plan_due_date(ref_id, due_date)

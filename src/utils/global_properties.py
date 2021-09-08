@@ -5,9 +5,8 @@ from pathlib import Path
 from typing import cast, Optional
 
 import dotenv
-import pendulum
 
-from pendulum.tz.timezone import Timezone
+from domain.common.timezone import Timezone
 
 
 @dataclass(frozen=True)
@@ -46,7 +45,7 @@ def build_global_properties(timezone: Optional[Timezone] = None) -> GlobalProper
     return GlobalProperties(
         description=description,
         version=version,
-        timezone=timezone or pendulum.timezone(os.getenv("TZ", "UTC")),
+        timezone=timezone or Timezone.from_raw(os.getenv("TZ", "UTC")),
         docs_init_workspace_url=docs_init_workspace_url,
         docs_update_expired_token_url=docs_update_expired_token_url,
         docs_fix_data_inconsistencies_url=docs_fix_data_inconsistencies_url,

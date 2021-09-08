@@ -7,7 +7,6 @@ from typing import Final
 import command.command as command
 from controllers.big_plans import BigPlansController
 from models.framework import EntityId
-from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class BigPlansHardRemove(command.Command):
     """Command class for hard removing big plans."""
 
-    _basic_validator: Final[BasicValidator]
     _big_plans_controller: Final[BigPlansController]
 
-    def __init__(self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
+    def __init__(self, big_plans_controller: BigPlansController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._big_plans_controller = big_plans_controller
 
     @staticmethod

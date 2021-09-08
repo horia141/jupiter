@@ -6,7 +6,9 @@ from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from domain.smart_lists.smart_list_tag import SmartListTag
-from models.basic import SmartListKey, EntityName, Tag
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
+from domain.common.entity_name import EntityName
+from domain.smart_lists.smart_list_key import SmartListKey
 from models.framework import Command
 from utils.time_provider import TimeProvider
 
@@ -39,7 +41,7 @@ class SmartListCreateCommand(Command['SmartListCreateCommand.Args', None]):
         with self._smart_list_engine.get_unit_of_work() as uow:
             smart_list = uow.smart_list_repository.create(smart_list)
             smart_list_default_tag = SmartListTag.new_smart_list_tag(
-                smart_list.ref_id, Tag('Default'), self._time_provider.get_current_time())
+                smart_list.ref_id, SmartListTagName('Default'), self._time_provider.get_current_time())
             smart_list_default_tag = uow.smart_list_tag_repository.create(smart_list_default_tag)
         self._notion_manager.upsert_smart_list(smart_list)
         self._notion_manager.upsert_smart_list_tag(smart_list_default_tag)

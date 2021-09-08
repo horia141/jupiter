@@ -4,8 +4,9 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
+from domain.common.entity_name import EntityName
 from domain.smart_lists.commands.smart_list_create import SmartListCreateCommand
-from models.basic import BasicValidator
+from domain.smart_lists.smart_list_key import SmartListKey
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListCreate(command.Command):
     """Command for creating a smart list."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListCreateCommand) -> None:
+    def __init__(self, the_command: SmartListCreateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -38,6 +37,6 @@ class SmartListCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        smart_list_key = self._basic_validator.smart_list_key_validate_and_clean(args.smart_list_key)
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
+        smart_list_key = SmartListKey.from_raw(args.smart_list_key)
+        name = EntityName.from_raw(args.name)
         self._command.execute(SmartListCreateCommand.Args(key=smart_list_key, name=name))

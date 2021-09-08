@@ -3,8 +3,8 @@ import abc
 from typing import Iterable
 
 from domain.prm.notion_person import NotionPerson
-from models.framework import EntityId
-from remote.notion.common import NotionPageLink, NotionId
+from models.framework import EntityId, NotionId
+from remote.notion.common import NotionPageLink
 
 
 class PrmNotionManager(abc.ABC):

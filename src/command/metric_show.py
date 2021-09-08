@@ -1,14 +1,17 @@
 """Command for showing metrics."""
-
 import logging
 from argparse import Namespace, ArgumentParser
-from typing import Final
-
-import pendulum
+from typing import Final, TYPE_CHECKING, cast
 
 import command.command as command
+from domain.common.adate import ADate
 from domain.metrics.commands.metric_find import MetricFindCommand
-from models.basic import BasicValidator
+from domain.metrics.metric_key import MetricKey
+from utils.global_properties import GlobalProperties
+
+# pylint: disable=import-error
+if TYPE_CHECKING:
+    from _typeshed import SupportsLessThan
 
 LOGGER = logging.getLogger(__name__)
 
@@ -16,12 +19,12 @@ LOGGER = logging.getLogger(__name__)
 class MetricShow(command.Command):
     """Command for showing metrics."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _command: Final[MetricFindCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricFindCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: MetricFindCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._command = the_command
 
     @staticmethod
@@ -41,7 +44,7 @@ class MetricShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys] \
+        metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
         response = self._command.execute(MetricFindCommand.Args(allow_archived=False, filter_keys=metric_keys))
 
@@ -70,15 +73,14 @@ class MetricShow(command.Command):
                   if metric.collection_params else '' +
                   (f' #{metric.metric_unit.for_notion()}' if metric.metric_unit else ''))
 
-            for metric_entry in sorted(metric_entries, key=lambda me: me.collection_time):
+            for metric_entry in sorted(metric_entries, key=lambda me: cast(SupportsLessThan, me.collection_time)):
                 print(f"  - id={metric_entry.ref_id}" +
-                      (f" {metric_entry.collection_time.to_date_string()}"
-                       if isinstance(metric_entry.collection_time, pendulum.Date)
-                       else f" {metric_entry.collection_time.to_datetime_string()}") +
+                      (f" {ADate.to_user_str(self._global_properties.timezone, metric_entry.collection_time)}") +
                       f" val={metric_entry.value}")
 
             if metric_response_entry.metric_collection_inbox_tasks:
                 print(f"  Collection Tasks:")
                 for inbox_task in sorted(
-                        metric_response_entry.metric_collection_inbox_tasks, key=lambda it: it.due_date):
+                        metric_response_entry.metric_collection_inbox_tasks,
+                        key=lambda it: cast(SupportsLessThan, it.due_date)):
                     print(f"    -id={inbox_task.ref_id} {inbox_task.name} {inbox_task.status.for_notion()}")

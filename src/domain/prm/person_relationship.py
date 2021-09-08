@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from models.framework import Value
+from models.frame.value import Value
 from models.errors import ModelValidationError
 
 
@@ -28,7 +28,7 @@ class PersonRelationship(Value, enum.Enum):
         if not person_relationship_raw:
             raise ModelValidationError("Expected sync target to be non-null")
 
-        person_relationship_str: str = person_relationship_raw.strip().lower()
+        person_relationship_str: str = '-'.join(person_relationship_raw.strip().lower().split())
 
         if person_relationship_str not in PersonRelationship.all_values():
             raise ModelValidationError(

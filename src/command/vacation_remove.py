@@ -5,7 +5,6 @@ from typing import Final
 
 import command.command as command
 from domain.vacations.commands.vacation_remove import VacationRemoveCommand
-from models.basic import BasicValidator
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -14,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class VacationRemove(command.Command):
     """Command class for hard removing vacations."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[VacationRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: VacationRemoveCommand) -> None:
+    def __init__(self, the_command: VacationRemoveCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod

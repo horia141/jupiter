@@ -4,8 +4,10 @@ from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 import command.command as command
+from domain.common.entity_name import EntityName
+from domain.common.url import URL
 from domain.smart_lists.commands.smart_list_item_update import SmartListItemUpdateCommand
-from models.basic import BasicValidator
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import UpdateAction, EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -14,12 +16,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListItemUpdate(command.Command):
     """Command for updating a smart list item."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListItemUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListItemUpdateCommand) -> None:
+    def __init__(self, the_command: SmartListItemUpdateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -51,7 +51,7 @@ class SmartListItemUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
-            name = UpdateAction.change_to(self._basic_validator.entity_name_validate_and_clean(args.name))
+            name = UpdateAction.change_to(EntityName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.is_done:
@@ -61,14 +61,14 @@ class SmartListItemUpdate(command.Command):
         else:
             is_done = UpdateAction.do_nothing()
         if len(args.tags) > 0:
-            tags = UpdateAction.change_to([self._basic_validator.tag_validate_and_clean(t) for t in args.tags])
+            tags = UpdateAction.change_to([SmartListTagName.from_raw(t) for t in args.tags])
         else:
             tags = UpdateAction.do_nothing()
-        url: UpdateAction[Optional[str]]
+        url: UpdateAction[Optional[URL]]
         if args.clear_url:
             url = UpdateAction.change_to(None)
         elif args.url:
-            url = UpdateAction.change_to(self._basic_validator.url_validate_and_clean(args.url))
+            url = UpdateAction.change_to(URL.from_raw(args.url))
         else:
             url = UpdateAction.do_nothing()
         self._command.execute(SmartListItemUpdateCommand.Args(

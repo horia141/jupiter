@@ -13,6 +13,12 @@ from sqlalchemy.engine import Result, Connection
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import Engine
 
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.timestamp import Timestamp
 from domain.prm.infra.person_repository import PersonRepository
 from domain.prm.infra.prm_database_repository import PrmDatabaseRepository
 from domain.prm.infra.prm_engine import PrmUnitOfWork, PrmEngine
@@ -20,11 +26,9 @@ from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.prm.prm_database import PrmDatabase
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from models.basic import BasicValidator
-from models.framework import EntityId, BAD_REF_ID
 from models.errors import RepositoryError
-from repository.sqlite.common import build_event_table, upsert_events
+from models.framework import EntityId, BAD_REF_ID
+from repository.sqlite.events import build_event_table, upsert_events
 from utils.storage import StructuredStorageError
 
 
@@ -55,10 +59,9 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         result = self._connection.execute(insert(self._prm_database_table).values(
             ref_id=prm_database.ref_id.as_int() if prm_database.ref_id != BAD_REF_ID else None,
             archived=prm_database.archived,
-            created_time=BasicValidator.timestamp_to_db_timestamp(prm_database.created_time),
-            last_modified_time=BasicValidator.timestamp_to_db_timestamp(prm_database.last_modified_time),
-            archived_time=BasicValidator.timestamp_to_db_timestamp(prm_database.archived_time)
-            if prm_database.archived_time else None,
+            created_time=prm_database.created_time.to_db(),
+            last_modified_time=prm_database.last_modified_time.to_db(),
+            archived_time=prm_database.archived_time.to_db() if prm_database.archived_time else None,
             catch_up_project_ref_id=int(str(prm_database.catch_up_project_ref_id))))
         prm_database.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
@@ -71,10 +74,9 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
             .where(self._prm_database_table.c.ref_id == prm_database.ref_id.as_int())
             .values(
                 archived=prm_database.archived,
-                created_time=BasicValidator.timestamp_to_db_timestamp(prm_database.created_time),
-                last_modified_time=BasicValidator.timestamp_to_db_timestamp(prm_database.last_modified_time),
-                archived_time=BasicValidator.timestamp_to_db_timestamp(prm_database.archived_time)
-                if prm_database.archived_time else None,
+                created_time=prm_database.created_time.to_db(),
+                last_modified_time=prm_database.last_modified_time.to_db(),
+                archived_time=prm_database.archived_time.to_db() if prm_database.archived_time else None,
                 catch_up_project_ref_id=prm_database.catch_up_project_ref_id.as_int()))
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
@@ -92,10 +94,10 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         return PrmDatabase(
             _ref_id=EntityId.from_raw(str(row["ref_id"])),
             _archived=row["archived"],
-            _created_time=BasicValidator.timestamp_from_db_timestamp(row["created_time"]),
-            _archived_time=BasicValidator.timestamp_from_db_timestamp(row["archived_time"])
+            _created_time=Timestamp.from_db(row["created_time"]),
+            _archived_time=Timestamp.from_db(row["archived_time"])
             if row["archived_time"] else None,
-            _last_modified_time=BasicValidator.timestamp_from_db_timestamp(row["last_modified_time"]),
+            _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
             _catch_up_project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])))
 
@@ -139,11 +141,10 @@ class SqlitePersonRepository(PersonRepository):
             result = self._connection.execute(insert(self._person_table).values(
                 ref_id=person.ref_id.as_int() if person.ref_id != BAD_REF_ID else None,
                 archived=person.archived,
-                created_time=BasicValidator.timestamp_to_db_timestamp(person.created_time),
-                last_modified_time=BasicValidator.timestamp_to_db_timestamp(person.last_modified_time),
-                archived_time=BasicValidator.timestamp_to_db_timestamp(person.archived_time)
-                if person.archived_time else None,
-                name=person.name,
+                created_time=person.created_time.to_db(),
+                last_modified_time=person.last_modified_time.to_db(),
+                archived_time=person.archived_time.to_db() if person.archived_time else None,
+                name=str(person.name),
                 relationship=person.relationship.value,
                 catch_up_project_ref_id=
                 person.catch_up_params.project_ref_id.as_int() if person.catch_up_params else None,
@@ -172,11 +173,10 @@ class SqlitePersonRepository(PersonRepository):
             .where(self._person_table.c.ref_id == person.ref_id.as_int())
             .values(
                 archived=person.archived,
-                created_time=BasicValidator.timestamp_to_db_timestamp(person.created_time),
-                last_modified_time=BasicValidator.timestamp_to_db_timestamp(person.last_modified_time),
-                archived_time=BasicValidator.timestamp_to_db_timestamp(person.archived_time)
-                if person.archived_time else None,
-                name=person.name,
+                created_time=person.created_time.to_db(),
+                last_modified_time=person.last_modified_time.to_db(),
+                archived_time=person.archived_time.to_db() if person.archived_time else None,
+                name=str(person.name),
                 relationship=person.relationship.value,
                 catch_up_project_ref_id=person.catch_up_params.project_ref_id.as_int()
                 if person.catch_up_params else None,
@@ -230,18 +230,18 @@ class SqlitePersonRepository(PersonRepository):
         return Person(
             _ref_id=EntityId(str(row["ref_id"])),
             _archived=row["archived"],
-            _created_time=BasicValidator.timestamp_from_db_timestamp(row["created_time"]),
-            _archived_time=BasicValidator.timestamp_from_db_timestamp(row["archived_time"])
+            _created_time=Timestamp.from_db(row["created_time"]),
+            _archived_time=Timestamp.from_db(row["archived_time"])
             if row["archived_time"] else None,
-            _last_modified_time=BasicValidator.timestamp_from_db_timestamp(row["last_modified_time"]),
+            _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
-            _name=BasicValidator.entity_name_validate_and_clean(row["name"]),
+            _name=EntityName.from_raw(row["name"]),
             _relationship=PersonRelationship.from_raw(row["relationship"]),
             _catch_up_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])),
-                period=BasicValidator.recurring_task_period_validate_and_clean(row["catch_up_period"]),
-                eisen=[BasicValidator.eisen_validate_and_clean(e) for e in row["catch_up_eisen"]],
-                difficulty=BasicValidator.difficulty_validate_and_clean(row["catch_up_difficulty"])
+                period=RecurringTaskPeriod.from_raw(row["catch_up_period"]),
+                eisen=[Eisen.from_raw(e) for e in row["catch_up_eisen"]],
+                difficulty=Difficulty.from_raw(row["catch_up_difficulty"])
                 if row["catch_up_difficulty"] else None,
                 actionable_from_day=row["catch_up_actionable_from_day"],
                 actionable_from_month=row["catch_up_actionable_from_month"],

@@ -5,7 +5,7 @@ from typing import Final
 
 import command.command as command
 from domain.smart_lists.commands.smart_list_tag_update import SmartListTagUpdateCommand
-from models.basic import BasicValidator
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import UpdateAction, EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -14,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListTagUpdate(command.Command):
     """Command for creating a smart list tag."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListTagUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListTagUpdateCommand) -> None:
+    def __init__(self, the_command: SmartListTagUpdateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -35,13 +33,13 @@ class SmartListTagUpdate(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", dest="ref_id", required=True, help="The id of the smart list tag")
-        parser.add_argument("--name", dest="name", required=False, help="The name of the smart list")
+        parser.add_argument("--name", dest="tag_name", required=False, help="The name of the smart list")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        if args.name:
-            name = UpdateAction.change_to(self._basic_validator.tag_validate_and_clean(args.name))
+        if args.tag_name:
+            tag_name = UpdateAction.change_to(SmartListTagName.from_raw(args.tag_name))
         else:
-            name = UpdateAction.do_nothing()
-        self._command.execute(SmartListTagUpdateCommand.Args(ref_id=ref_id, name=name))
+            tag_name = UpdateAction.do_nothing()
+        self._command.execute(SmartListTagUpdateCommand.Args(ref_id=ref_id, tag_name=tag_name))

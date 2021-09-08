@@ -5,8 +5,10 @@ from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_period import RecurringTaskPeriod
 from models.framework import EntityId
-from models.basic import BasicValidator, RecurringTaskPeriod
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +16,10 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTasksSetActionableConfig(command.Command):
     """Command class for setting the actionable config of a recurring task."""
 
-    _basic_validator: Final[BasicValidator]
     _recurring_tasks_controller: Final[RecurringTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+    def __init__(self, recurring_tasks_controller: RecurringTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._recurring_tasks_controller = recurring_tasks_controller
 
     @staticmethod
@@ -45,12 +45,10 @@ class RecurringTasksSetActionableConfig(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         actionable_from_day = \
-            self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                RecurringTaskPeriod.YEARLY, args.actionable_from_day) \
+            RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.actionable_from_day) \
             if args.actionable_from_day else None
         actionable_from_month = \
-            self._basic_validator.recurring_task_due_at_month_validate_and_clean(
-                RecurringTaskPeriod.YEARLY, args.actionable_from_month) \
+            RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, args.actionable_from_month) \
             if args.actionable_from_month else None
         self._recurring_tasks_controller.set_recurring_task_actionable_config(
             ref_id, actionable_from_day, actionable_from_month)

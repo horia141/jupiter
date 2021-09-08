@@ -6,11 +6,16 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow, EntityId, JSONDictType
-from models.basic import BasicValidator, BigPlanStatus, ADate, Timestamp, InboxTaskSource
-from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, NotionId, format_name_for_option
+from domain.big_plans.big_plan_status import BigPlanStatus
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
+from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -216,16 +221,16 @@ class NotionBigPlansManager:
         }
     }
 
+    _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _collections_manager: Final[CollectionsManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
             collections_manager: CollectionsManager) -> None:
         """Constructor."""
+        self._global_properties = global_properties
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._collections_manager = collections_manager
 
     def upsert_big_plan_collection(
@@ -251,11 +256,11 @@ class NotionBigPlansManager:
         return self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def upsert_big_plan(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: str,
+            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: EntityName,
             archived: bool, due_date: Optional[ADate], status: str, ref_id: EntityId) -> BigPlanNotionRow:
         """Upsert a big plan."""
         new_row = BigPlanNotionRow(
-            name=name,
+            name=str(name),
             archived=archived,
             status=status,
             due_date=due_date,
@@ -334,8 +339,8 @@ class NotionBigPlansManager:
             notion_row.title = row.name
             notion_row.archived = row.archived
             notion_row.status = row.status
-            notion_row.due_date = self._basic_validator.adate_to_notion(row.due_date) if row.due_date else None
-            notion_row.last_edited_time = self._basic_validator.timestamp_to_notion_timestamp(row.last_edited_time)
+            notion_row.due_date = row.due_date.to_notion(self._global_properties.timezone) if row.due_date else None
+            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
 
         # Create structure for the big plan.
@@ -345,7 +350,7 @@ class NotionBigPlansManager:
 
             client.attach_view_block_as_child_of_block(
                 notion_row, 0, inbox_collection_link.collection_id,
-                self._get_view_schema_for_big_plan_desc(format_name_for_option(row.name)))
+                self._get_view_schema_for_big_plan_desc(format_name_for_option(EntityName(row.name))))
 
         return notion_row
 
@@ -357,10 +362,10 @@ class NotionBigPlansManager:
             name=big_plan_notion_row.title,
             archived=big_plan_notion_row.archived,
             status=big_plan_notion_row.status,
-            due_date=self._basic_validator.adate_from_notion(big_plan_notion_row.due_date)
+            due_date=ADate.from_notion(self._global_properties.timezone, big_plan_notion_row.due_date)
             if big_plan_notion_row.due_date else None,
             last_edited_time=
-            self._basic_validator.timestamp_from_notion_timestamp(big_plan_notion_row.last_edited_time),
+            Timestamp.from_notion(big_plan_notion_row.last_edited_time),
             ref_id=big_plan_notion_row.ref_id)
 
     @staticmethod

@@ -4,19 +4,16 @@ from typing import Final
 
 from command.command import Command
 from domain.prm.commands.prm_database_find import PrmDatabaseFindCommand
-from models.basic import BasicValidator
 from models.framework import EntityId
 
 
 class PrmShow(Command):
     """Command for showing the PRM database."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[PrmDatabaseFindCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: PrmDatabaseFindCommand):
+    def __init__(self, the_command: PrmDatabaseFindCommand):
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod

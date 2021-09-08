@@ -4,18 +4,16 @@ from typing import Final
 
 import command.command as command
 from domain.metrics.commands.metric_remove import MetricRemoveCommand
-from models.basic import BasicValidator
+from domain.metrics.metric_key import MetricKey
 
 
 class MetricRemove(command.Command):
     """Command for hard removing a metric."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[MetricRemoveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricRemoveCommand) -> None:
+    def __init__(self, the_command: MetricRemoveCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -35,6 +33,6 @@ class MetricRemove(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        metric_keys = [self._basic_validator.metric_key_validate_and_clean(mk) for mk in args.metric_keys]
+        metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys]
         for key in metric_keys:
             self._command.execute(key)

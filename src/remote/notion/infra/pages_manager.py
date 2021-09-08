@@ -5,8 +5,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Optional, Final
 
-from models.framework import JSONDictType
-from remote.notion.common import NotionPageLink, NotionId, NotionLockKey, NotionPageLinkExtra
+from models.framework import JSONDictType, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey, NotionPageLinkExtra
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import BaseRecordRow, RecordsStorage
 from utils.time_provider import TimeProvider

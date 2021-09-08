@@ -1,24 +1,27 @@
 """The controller for syncing the local and Notion data."""
 import logging
+import typing
 from typing import Final, Optional, Iterable
 
-import typing
-
+from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.common.sync_prefer import SyncPrefer
+from domain.common.sync_target import SyncTarget
+from domain.common.timestamp import Timestamp
+from domain.metrics.metric_key import MetricKey
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.prm_sync_service import PrmSyncService
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
+from domain.projects.project_key import ProjectKey
+from domain.smart_lists.smart_list_key import SmartListKey
 from models import schedules
-from models.basic import SyncPrefer, ProjectKey, SyncTarget, Timestamp, SmartListKey, MetricKey, \
-    BasicValidator
 from models.framework import EntityId
 from remote.notion.inbox_tasks_manager import InboxTaskBigPlanLabel
 from service.big_plans import BigPlansService
 from service.inbox_tasks import InboxTasksService, BigPlanEssentials, RecurringTaskEssentials
 from service.metrics import MetricsService
-from service.smart_lists import SmartListsService
 from service.projects import ProjectsService
 from service.recurring_tasks import RecurringTasksService
+from service.smart_lists import SmartListsService
 from service.vacations import VacationsService
 from service.workspaces import WorkspacesService
 from utils.global_properties import GlobalProperties
@@ -31,7 +34,6 @@ class SyncLocalAndNotionController:
     """The controller for syncing the local and Notion data."""
 
     _time_provider: Final[TimeProvider]
-    _basic_validator: Final[BasicValidator]
     _global_properties: Final[GlobalProperties]
     _workspaces_service: Final[WorkspacesService]
     _vacations_service: Final[VacationsService]
@@ -45,7 +47,7 @@ class SyncLocalAndNotionController:
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, basic_validator: BasicValidator, global_properties: GlobalProperties,
+            self, time_provider: TimeProvider, global_properties: GlobalProperties,
             workspaces_service: WorkspacesService, vacations_service: VacationsService,
             projects_service: ProjectsService, inbox_tasks_service: InboxTasksService,
             recurring_tasks_service: RecurringTasksService, big_plans_service: BigPlansService,
@@ -53,7 +55,6 @@ class SyncLocalAndNotionController:
             prm_engine: PrmEngine, prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._basic_validator = basic_validator
         self._global_properties = global_properties
         self._workspaces_service = workspaces_service
         self._vacations_service = vacations_service
@@ -306,7 +307,7 @@ class SyncLocalAndNotionController:
 
         if SyncTarget.PRM in sync_targets:
             LOGGER.info("Syncing the PRM database")
-            prm_sync_service = PrmSyncService(self._basic_validator, self._prm_engine, self._prm_notion_manager)
+            prm_sync_service = PrmSyncService(self._prm_engine, self._prm_notion_manager)
             persons = prm_sync_service.sync(
                 drop_all_notion_side=drop_all_notion, sync_even_if_not_modified=sync_even_if_not_modified,
                 filter_ref_ids=filter_person_ref_ids, sync_prefer=sync_prefer)

@@ -2,7 +2,9 @@
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, List
 
-from models.basic import EntityName, Timestamp
+from domain.common.url import URL
+from domain.common.timestamp import Timestamp
+from domain.common.entity_name import EntityName
 from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
 
@@ -17,7 +19,7 @@ class SmartListItem(AggregateRoot):
         name: EntityName
         is_done: bool
         tags_ref_id: List[EntityId]
-        url: Optional[str]
+        url: Optional[URL]
         archived: bool
 
     @dataclass(frozen=True)
@@ -26,18 +28,18 @@ class SmartListItem(AggregateRoot):
         name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
         is_done: UpdateAction[bool] = field(default_factory=UpdateAction.do_nothing)
         tags_ref_id: UpdateAction[List[EntityId]] = field(default_factory=UpdateAction.do_nothing)
-        url: UpdateAction[Optional[str]] = field(default_factory=UpdateAction.do_nothing)
+        url: UpdateAction[Optional[URL]] = field(default_factory=UpdateAction.do_nothing)
 
     _smart_list_ref_id: EntityId
     _name: EntityName
     _is_done: bool
     _tags_ref_id: List[EntityId]
-    _url: Optional[str]
+    _url: Optional[URL]
 
     @staticmethod
     def new_smart_list_item(
             archived: bool, smart_list_ref_id: EntityId, name: EntityName, is_done: bool,
-            tags_ref_id: List[EntityId], url: Optional[str], created_time: Timestamp) -> 'SmartListItem':
+            tags_ref_id: List[EntityId], url: Optional[URL], created_time: Timestamp) -> 'SmartListItem':
         """Create a smart list item."""
         smart_list_item = SmartListItem(
             _ref_id=BAD_REF_ID,
@@ -81,7 +83,7 @@ class SmartListItem(AggregateRoot):
             tags_ref_id=UpdateAction.change_to(tags_ref_id), timestamp=modification_time))
         return self
 
-    def change_url(self, url: Optional[str], modification_time: Timestamp) -> 'SmartListItem':
+    def change_url(self, url: Optional[URL], modification_time: Timestamp) -> 'SmartListItem':
         """Change the url of the smart list item."""
         if self._url == url:
             return self
@@ -110,6 +112,6 @@ class SmartListItem(AggregateRoot):
         return self._tags_ref_id
 
     @property
-    def url(self) -> Optional[str]:
+    def url(self) -> Optional[URL]:
         """The url for the item."""
         return self._url

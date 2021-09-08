@@ -5,8 +5,8 @@ from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 import command.command as command
+from domain.common.adate import ADate
 from domain.metrics.commands.metric_entry_update import MetricEntryUpdateCommand
-from models.basic import BasicValidator
 from models.framework import UpdateAction, EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -15,12 +15,10 @@ LOGGER = logging.getLogger(__name__)
 class MetricEntryUpdate(command.Command):
     """Command for updating a metric entry's properties."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[MetricEntryUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricEntryUpdateCommand) -> None:
+    def __init__(self, the_command: MetricEntryUpdateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -48,7 +46,7 @@ class MetricEntryUpdate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        collection_time = UpdateAction.change_to(self._basic_validator.adate_from_str(args.collection_time)) \
+        collection_time = UpdateAction.change_to(ADate.from_str(args.collection_time)) \
             if args.collection_time is not None else UpdateAction.do_nothing()
         value = UpdateAction.change_to(args.value) if args.value is not None else UpdateAction.do_nothing()
         notes: UpdateAction[Optional[str]]

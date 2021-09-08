@@ -1,13 +1,12 @@
 """Command for setting the name of a big plan."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.big_plans import BigPlansController
+from domain.common.entity_name import EntityName
 from models.framework import EntityId
-from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class BigPlansSetName(command.Command):
     """Command class for setting the name of a big plan."""
 
-    _basic_validator: Final[BasicValidator]
     _big_plans_controller: Final[BigPlansController]
 
-    def __init__(self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
+    def __init__(self, big_plans_controller: BigPlansController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._big_plans_controller = big_plans_controller
 
     @staticmethod
@@ -41,5 +38,5 @@ class BigPlansSetName(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
+        name = EntityName.from_raw(args.name)
         self._big_plans_controller.set_big_plan_name(ref_id, name)

@@ -6,7 +6,9 @@ import typing
 import pendulum
 from pendulum import UTC
 
-from models.basic import EntityName, ADate, Timestamp
+from domain.common.adate import ADate
+from domain.common.timestamp import Timestamp
+from domain.common.entity_name import EntityName
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 from service.errors import ServiceValidationError
 
@@ -26,8 +28,8 @@ class Vacation(AggregateRoot):
     class Updated(Event):
         """Updated event."""
         name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
-        start_date: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
-        end_date: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
+        start_date: UpdateAction[ADate] = field(default_factory=UpdateAction.do_nothing)
+        end_date: UpdateAction[ADate] = field(default_factory=UpdateAction.do_nothing)
 
     _name: EntityName
     _start_date: ADate

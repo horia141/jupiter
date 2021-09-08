@@ -7,12 +7,20 @@ import pendulum
 from pendulum import UTC
 
 import remote.notion.common
+from domain.common.adate import ADate
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.sync_prefer import SyncPrefer
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.metrics.metric import Metric
 from domain.prm.person import Person
-from models.basic import BasicValidator, InboxTaskStatus, Eisen, Difficulty, \
-    SyncPrefer, RecurringTaskPeriod, RecurringTaskType, ADate, Timestamp, InboxTaskSource
-from models.framework import EntityId
 from models.errors import ModelValidationError
+from models.framework import EntityId
 from remote.notion.common import NotionPageLink, NotionCollectionLink
 from remote.notion.inbox_tasks_manager import NotionInboxTasksManager, InboxTaskBigPlanLabel
 from repository.inbox_tasks import InboxTasksRepository, InboxTaskRow
@@ -42,7 +50,7 @@ class InboxTask:
     metric_ref_id: Optional[EntityId]
     person_ref_id: Optional[EntityId]
     archived: bool
-    name: str
+    name: EntityName
     status: InboxTaskStatus
     eisen: List[Eisen]
     difficulty: Optional[Difficulty]
@@ -63,7 +71,7 @@ class BigPlanEssentials:
     """Essential info about a big plan."""
 
     ref_id: EntityId
-    name: str
+    name: EntityName
 
 
 @dataclass()
@@ -71,7 +79,7 @@ class RecurringTaskEssentials:
     """Essential info about a recurring task."""
 
     ref_id: EntityId
-    name: str
+    name: EntityName
     period: RecurringTaskPeriod
     the_type: RecurringTaskType
 
@@ -79,15 +87,12 @@ class RecurringTaskEssentials:
 class InboxTasksService:
     """The service class for dealing with inbox tasks."""
 
-    _basic_validator: Final[BasicValidator]
     _repository: Final[InboxTasksRepository]
     _notion_manager: Final[NotionInboxTasksManager]
 
     def __init__(
-            self, basic_validator: BasicValidator, repository: InboxTasksRepository,
-            notion_manager: NotionInboxTasksManager) -> None:
+            self, repository: InboxTasksRepository, notion_manager: NotionInboxTasksManager) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._repository = repository
         self._notion_manager = notion_manager
 
@@ -124,19 +129,14 @@ class InboxTasksService:
         self._notion_manager.upsert_inbox_tasks_big_plan_field_options(project_ref_id, big_plan_labels)
 
     def create_inbox_task(
-            self, project_ref_id: EntityId, name: str, big_plan_ref_id: Optional[EntityId],
-            big_plan_name: Optional[str], eisen: List[Eisen], difficulty: Optional[Difficulty],
+            self, project_ref_id: EntityId, name: EntityName, big_plan_ref_id: Optional[EntityId],
+            big_plan_name: Optional[EntityName], eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
         """Create an inbox task."""
         if big_plan_ref_id is None and big_plan_name is not None:
             raise ServiceValidationError(f"Should have null name for null big plan for task")
         if big_plan_ref_id is not None and big_plan_name is None:
             raise ServiceValidationError(f"Should have non-null name for non-null big plan for task")
-
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
 
         self._check_actionable_and_due_dates(actionable_date, due_date)
 
@@ -163,11 +163,11 @@ class InboxTasksService:
         self._notion_manager.upsert_inbox_task(
             project_ref_id=project_ref_id,
             source=new_inbox_task_row.source.for_notion(),
-            name=new_inbox_task_row.name,
+            name=str(new_inbox_task_row.name),
             archived=False,
             big_plan_ref_id=new_inbox_task_row.big_plan_ref_id,
-            big_plan_name=remote.notion.common.format_name_for_option(
-                big_plan_name) if big_plan_name else None,
+            big_plan_name=EntityName(remote.notion.common.format_name_for_option(big_plan_name))
+            if big_plan_name else None,
             recurring_task_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
@@ -186,7 +186,7 @@ class InboxTasksService:
         return self._row_to_entity(new_inbox_task_row)
 
     def create_inbox_task_for_recurring_task(
-            self, project_ref_id: EntityId, name: str, recurring_task_ref_id: EntityId,
+            self, project_ref_id: EntityId, name: EntityName, recurring_task_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod,
             recurring_task_type: RecurringTaskType, recurring_task_gen_right_now: Timestamp, eisen: List[Eisen],
             difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate]) -> InboxTask:
@@ -214,7 +214,7 @@ class InboxTasksService:
         self._notion_manager.upsert_inbox_task(
             project_ref_id=project_ref_id,
             source=new_inbox_task_row.source.for_notion(),
-            name=new_inbox_task_row.name,
+            name=str(new_inbox_task_row.name),
             archived=False,
             big_plan_ref_id=None,
             big_plan_name=None,
@@ -229,14 +229,14 @@ class InboxTasksService:
             recurring_timeline=new_inbox_task_row.recurring_timeline,
             recurring_period=recurring_task_period.value,
             recurring_type=recurring_task_type.value,
-            recurring_gen_right_now=recurring_task_gen_right_now,
+            recurring_gen_right_now=ADate.from_timestamp(recurring_task_gen_right_now),
             ref_id=new_inbox_task_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
         return self._row_to_entity(new_inbox_task_row)
 
     def create_inbox_task_for_metric(
-            self, project_ref_id: EntityId, name: str, metric_ref_id: EntityId,
+            self, project_ref_id: EntityId, name: EntityName, metric_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod, eisen: List[Eisen],
             difficulty: Optional[Difficulty], recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
             due_date: Optional[ADate]) -> InboxTask:
@@ -264,7 +264,7 @@ class InboxTasksService:
         self._notion_manager.upsert_inbox_task(
             project_ref_id=project_ref_id,
             source=new_inbox_task_row.source.for_notion(),
-            name=new_inbox_task_row.name,
+            name=str(new_inbox_task_row.name),
             archived=False,
             big_plan_ref_id=None,
             big_plan_name=None,
@@ -279,14 +279,14 @@ class InboxTasksService:
             recurring_timeline=new_inbox_task_row.recurring_timeline,
             recurring_period=recurring_task_period.value,
             recurring_type=new_inbox_task_row.recurring_type.value if new_inbox_task_row.recurring_type else None,
-            recurring_gen_right_now=recurring_task_gen_right_now,
+            recurring_gen_right_now=ADate.from_timestamp(recurring_task_gen_right_now),
             ref_id=new_inbox_task_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
         return self._row_to_entity(new_inbox_task_row)
 
     def create_inbox_task_for_person(
-            self, project_ref_id: EntityId, name: str, person_ref_id: EntityId,
+            self, project_ref_id: EntityId, name: EntityName, person_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_period: RecurringTaskPeriod, eisen: List[Eisen],
             difficulty: Optional[Difficulty], recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
             due_date: Optional[ADate]) -> InboxTask:
@@ -314,7 +314,7 @@ class InboxTasksService:
         self._notion_manager.upsert_inbox_task(
             project_ref_id=project_ref_id,
             source=new_inbox_task_row.source.for_notion(),
-            name=new_inbox_task_row.name,
+            name=str(new_inbox_task_row.name),
             archived=False,
             big_plan_ref_id=None,
             big_plan_name=None,
@@ -329,7 +329,7 @@ class InboxTasksService:
             recurring_timeline=new_inbox_task_row.recurring_timeline,
             recurring_period=recurring_task_period.value,
             recurring_type=new_inbox_task_row.recurring_type.value if new_inbox_task_row.recurring_type else None,
-            recurring_gen_right_now=recurring_task_gen_right_now,
+            recurring_gen_right_now=ADate.from_timestamp(recurring_task_gen_right_now),
             ref_id=new_inbox_task_row.ref_id)
         LOGGER.info("Applied Notion changes")
 
@@ -349,13 +349,8 @@ class InboxTasksService:
 
         return self._row_to_entity(inbox_task_row)
 
-    def set_inbox_task_name(self, ref_id: EntityId, name: str) -> InboxTask:
+    def set_inbox_task_name(self, ref_id: EntityId, name: EntityName) -> InboxTask:
         """Change the name of an inbox task."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id)
         if not inbox_task_row.source.allow_user_changes:
@@ -367,7 +362,7 @@ class InboxTasksService:
 
         # Apply changes in Notion
         inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
-        inbox_task_notion_row.name = name
+        inbox_task_notion_row.name = str(name)
         self._notion_manager.save_inbox_task(
             inbox_task_row.project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
         LOGGER.info("Applied Notion changes")
@@ -375,17 +370,13 @@ class InboxTasksService:
         return self._row_to_entity(inbox_task_row)
 
     def associate_inbox_task_with_big_plan(
-            self, ref_id: EntityId, big_plan_ref_id: Optional[EntityId], big_plan_name: Optional[str]) -> InboxTask:
+            self, ref_id: EntityId, big_plan_ref_id: Optional[EntityId],
+            big_plan_name: Optional[EntityName]) -> InboxTask:
         """Associate an inbox task with a big plan."""
         if big_plan_ref_id is None and big_plan_name is not None:
             raise ServiceValidationError(f"Should have null name for null big plan for task with id='{ref_id}'")
         if big_plan_ref_id is not None and big_plan_name is None:
             raise ServiceValidationError(f"Should have non-null name for non-null big plan for task with id='{ref_id}'")
-
-        try:
-            big_plan_name = self._basic_validator.entity_name_validate_and_clean(big_plan_name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
 
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id)
@@ -401,7 +392,7 @@ class InboxTasksService:
         inbox_task_notion_row.source = InboxTaskSource.BIG_PLAN.for_notion()
         inbox_task_notion_row.big_plan_ref_id = str(big_plan_ref_id) if big_plan_ref_id else None
         inbox_task_notion_row.big_plan_name = \
-            remote.notion.common.format_name_for_option(big_plan_name) if big_plan_name else None
+            str(remote.notion.common.format_name_for_option(big_plan_name)) if big_plan_name else None
         self._notion_manager.save_inbox_task(
             inbox_task_row.project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
         LOGGER.info("Applied Notion changes")
@@ -409,7 +400,7 @@ class InboxTasksService:
         return self._row_to_entity(inbox_task_row)
 
     def set_inbox_task_to_big_plan_link(
-            self, ref_id: EntityId, big_plan_ref_id: EntityId, big_plan_name: str) -> InboxTask:
+            self, ref_id: EntityId, big_plan_ref_id: EntityId, big_plan_name: EntityName) -> InboxTask:
         """Change the parameters of the link between the big plan and the inbox task."""
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
@@ -424,7 +415,7 @@ class InboxTasksService:
         try:
             inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
             inbox_task_notion_row.big_plan_ref_id = str(big_plan_ref_id)
-            inbox_task_notion_row.big_plan_name = remote.notion.common.format_name_for_option(big_plan_name)
+            inbox_task_notion_row.big_plan_name = str(remote.notion.common.format_name_for_option(big_plan_name))
             self._notion_manager.save_inbox_task(
                 inbox_task_row.project_ref_id, inbox_task_row.ref_id, inbox_task_notion_row)
             LOGGER.info("Applied Notion changes")
@@ -435,14 +426,10 @@ class InboxTasksService:
         return self._row_to_entity(inbox_task_row)
 
     def set_inbox_task_to_recurring_task_link(
-            self, ref_id: EntityId, name: str, timeline: str, period: RecurringTaskPeriod, the_type: RecurringTaskType,
-            actionable_date: ADate, due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty]) -> InboxTask:
+            self, ref_id: EntityId, name: EntityName, timeline: str, period: RecurringTaskPeriod,
+            the_type: RecurringTaskType, actionable_date: Optional[ADate], due_time: ADate, eisen: List[Eisen],
+            difficulty: Optional[Difficulty]) -> InboxTask:
         """Change the parameters of the link between the inbox task as an instance of a recurring task."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
         if inbox_task_row.source is not InboxTaskSource.RECURRING_TASK:
@@ -461,7 +448,7 @@ class InboxTasksService:
         # Apply changes in Notion
         try:
             inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
-            inbox_task_notion_row.name = name
+            inbox_task_notion_row.name = str(name)
             inbox_task_notion_row.actionable_date = actionable_date
             inbox_task_notion_row.due_date = due_time
             inbox_task_notion_row.eisen = [e.value for e in eisen]
@@ -479,14 +466,10 @@ class InboxTasksService:
         return self._row_to_entity(inbox_task_row)
 
     def set_inbox_task_to_metric_link(
-            self, ref_id: EntityId, name: str, recurring_timeline: str, recurring_period: RecurringTaskPeriod,
-            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_date: ADate, due_time: ADate) -> InboxTask:
+            self, ref_id: EntityId, name: EntityName, recurring_timeline: str, recurring_period: RecurringTaskPeriod,
+            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
+            due_time: ADate) -> InboxTask:
         """Change the parameters of the link between the inbox task as an instance of a metric."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
         if inbox_task_row.source is not InboxTaskSource.METRIC:
@@ -504,7 +487,7 @@ class InboxTasksService:
         # Apply changes in Notion
         try:
             inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
-            inbox_task_notion_row.name = inbox_task_row.name
+            inbox_task_notion_row.name = str(inbox_task_row.name)
             inbox_task_notion_row.actionable_date = actionable_date
             inbox_task_notion_row.due_date = due_time
             inbox_task_notion_row.eisen = [e.value for e in eisen]
@@ -521,14 +504,10 @@ class InboxTasksService:
         return self._row_to_entity(inbox_task_row)
 
     def set_inbox_task_to_person_link(
-            self, ref_id: EntityId, name: str, recurring_timeline: str, recurring_period: RecurringTaskPeriod,
-            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_date: ADate, due_time: ADate) -> InboxTask:
+            self, ref_id: EntityId, name: EntityName, recurring_timeline: str, recurring_period: RecurringTaskPeriod,
+            eisen: List[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
+            due_time: ADate) -> InboxTask:
         """Change the parameters of the link between the inbox task as an instance of a person."""
-        try:
-            name = self._basic_validator.entity_name_validate_and_clean(name)
-        except ModelValidationError as error:
-            raise ServiceValidationError("Invalid inputs") from error
-
         # Apply changes locally
         inbox_task_row = self._repository.load_inbox_task(ref_id, allow_archived=True)
         if inbox_task_row.source is not InboxTaskSource.PERSON:
@@ -546,7 +525,7 @@ class InboxTasksService:
         # Apply changes in Notion
         try:
             inbox_task_notion_row = self._notion_manager.load_inbox_task(inbox_task_row.project_ref_id, ref_id)
-            inbox_task_notion_row.name = inbox_task_row.name
+            inbox_task_notion_row.name = str(inbox_task_row.name)
             inbox_task_notion_row.actionable_date = actionable_date
             inbox_task_notion_row.due_date = due_time
             inbox_task_notion_row.eisen = [e.value for e in eisen]
@@ -763,8 +742,7 @@ class InboxTasksService:
         all_inbox_tasks_notion_row_set = {}
 
         all_big_plans_by_name = \
-            {remote.notion.common.format_name_for_option(
-                self._basic_validator.entity_name_validate_and_clean(bp.name)): bp for bp in all_big_plans}
+            {remote.notion.common.format_name_for_option(bp.name): bp for bp in all_big_plans}
 
         all_big_plans_map = {bp.ref_id: bp for bp in all_big_plans}
         all_recurring_tasks_map = {rt.ref_id: rt for rt in all_recurring_tasks}
@@ -789,12 +767,11 @@ class InboxTasksService:
                 # If the big plan doesn't exist locally, we create it!
 
                 try:
-                    inbox_task_name = self._basic_validator.entity_name_validate_and_clean(inbox_task_notion_row.name)
+                    inbox_task_name = EntityName.from_raw(inbox_task_notion_row.name)
                     inbox_task_big_plan_ref_id = \
                         EntityId.from_raw(inbox_task_notion_row.big_plan_ref_id)\
                         if inbox_task_notion_row.big_plan_ref_id else None
-                    inbox_task_big_plan_name = \
-                        self._basic_validator.entity_name_validate_and_clean(inbox_task_notion_row.big_plan_name)\
+                    inbox_task_big_plan_name = EntityName.from_raw(inbox_task_notion_row.big_plan_name)\
                         if inbox_task_notion_row.big_plan_name else None
                     inbox_task_recurring_task_ref_id = \
                         EntityId.from_raw(inbox_task_notion_row.recurring_task_ref_id)\
@@ -806,16 +783,16 @@ class InboxTasksService:
                         EntityId.from_raw(inbox_task_notion_row.person_ref_id) \
                             if inbox_task_notion_row.person_ref_id else None
                     inbox_task_status = \
-                        self._basic_validator.inbox_task_status_validate_and_clean(inbox_task_notion_row.status)\
+                        InboxTaskStatus.from_raw(inbox_task_notion_row.status)\
                         if inbox_task_notion_row.status else InboxTaskStatus.NOT_STARTED
                     inbox_task_eisen = \
-                        [self._basic_validator.eisen_validate_and_clean(e) for e in inbox_task_notion_row.eisen]\
+                        [Eisen.from_raw(e) for e in inbox_task_notion_row.eisen]\
                         if inbox_task_notion_row.eisen else []
                     inbox_task_difficulty = \
-                        self._basic_validator.difficulty_validate_and_clean(inbox_task_notion_row.difficulty)\
+                        Difficulty.from_raw(inbox_task_notion_row.difficulty)\
                         if inbox_task_notion_row.difficulty else None
                     inbox_task_recurring_type = \
-                        self._basic_validator.recurring_task_type_validate_and_clean(
+                        RecurringTaskType.from_raw(
                             inbox_task_notion_row.recurring_type) \
                         if inbox_task_notion_row.recurring_type else None
                     self._check_actionable_and_due_dates(
@@ -861,7 +838,8 @@ class InboxTasksService:
                     due_date=inbox_task_notion_row.due_date,
                     recurring_timeline=inbox_task_notion_row.recurring_timeline,
                     recurring_type=inbox_task_recurring_type,
-                    recurring_gen_right_now=inbox_task_notion_row.recurring_gen_right_now)
+                    recurring_gen_right_now=inbox_task_notion_row.recurring_gen_right_now.to_timestamp()
+                    if inbox_task_notion_row.recurring_gen_right_now else None)
                 LOGGER.info(f"Found new inbox task from Notion {inbox_task_notion_row.name}")
 
                 self._notion_manager.link_local_and_notion_entries(
@@ -895,13 +873,10 @@ class InboxTasksService:
                         continue
 
                     try:
-                        inbox_task_name = \
-                            self._basic_validator.entity_name_validate_and_clean(inbox_task_notion_row.name)
-                        inbox_task_big_plan_ref_id = \
-                            EntityId.from_raw(inbox_task_notion_row.big_plan_ref_id) \
-                                if inbox_task_notion_row.big_plan_ref_id else None
-                        inbox_task_big_plan_name = self._basic_validator.entity_name_validate_and_clean(
-                            inbox_task_notion_row.big_plan_name) \
+                        inbox_task_name = EntityName.from_raw(inbox_task_notion_row.name)
+                        inbox_task_big_plan_ref_id = EntityId.from_raw(inbox_task_notion_row.big_plan_ref_id) \
+                            if inbox_task_notion_row.big_plan_ref_id else None
+                        inbox_task_big_plan_name = EntityName.from_raw(inbox_task_notion_row.big_plan_name) \
                             if inbox_task_notion_row.big_plan_name else None
                         inbox_task_recurring_task_ref_id = \
                             EntityId.from_raw(
@@ -914,16 +889,16 @@ class InboxTasksService:
                             EntityId.from_raw(inbox_task_notion_row.person_ref_id) \
                                 if inbox_task_notion_row.person_ref_id else None
                         inbox_task_status = \
-                            self._basic_validator.inbox_task_status_validate_and_clean(inbox_task_notion_row.status) \
+                            InboxTaskStatus.from_raw(inbox_task_notion_row.status) \
                                 if inbox_task_notion_row.status else InboxTaskStatus.NOT_STARTED
                         inbox_task_eisen = \
-                            [self._basic_validator.eisen_validate_and_clean(e) for e in inbox_task_notion_row.eisen] \
+                            [Eisen.from_raw(e) for e in inbox_task_notion_row.eisen] \
                                 if inbox_task_notion_row.eisen else []
                         inbox_task_difficulty = \
-                            self._basic_validator.difficulty_validate_and_clean(inbox_task_notion_row.difficulty) \
+                            Difficulty.from_raw(inbox_task_notion_row.difficulty) \
                                 if inbox_task_notion_row.difficulty else None
                         inbox_task_recurring_type = \
-                            self._basic_validator.recurring_task_type_validate_and_clean(
+                            RecurringTaskType.from_raw(
                                 inbox_task_notion_row.recurring_type) \
                             if inbox_task_notion_row.recurring_type else None
                         self._check_actionable_and_due_dates(
@@ -1022,14 +997,14 @@ class InboxTasksService:
                     inbox_task_notion_row.big_plan_ref_id = str(inbox_task_row.big_plan_ref_id) \
                         if inbox_task_row.big_plan_ref_id else None
                     inbox_task_notion_row.big_plan_name = \
-                        remote.notion.common.format_name_for_option(big_plan.name) if big_plan else None
+                        str(remote.notion.common.format_name_for_option(big_plan.name)) if big_plan else None
                     inbox_task_notion_row.recurring_task_ref_id = str(inbox_task_row.recurring_task_ref_id) \
                         if inbox_task_row.recurring_task_ref_id else None
                     inbox_task_notion_row.metric_ref_id = str(inbox_task_row.metric_ref_id) \
                         if inbox_task_row.metric_ref_id else None
                     inbox_task_notion_row.person_ref_id = str(inbox_task_row.person_ref_id) \
                         if inbox_task_row.person_ref_id else None
-                    inbox_task_notion_row.name = inbox_task_row.name
+                    inbox_task_notion_row.name = str(inbox_task_row.name)
                     inbox_task_notion_row.archived = inbox_task_row.archived
                     inbox_task_notion_row.status = inbox_task_row.status.for_notion()
                     inbox_task_notion_row.eisen = [e.value for e in inbox_task_row.eisen]
@@ -1082,11 +1057,11 @@ class InboxTasksService:
             self._notion_manager.upsert_inbox_task(
                 project_ref_id=project_ref_id,
                 source=inbox_task_row.source.for_notion(),
-                name=inbox_task_row.name,
+                name=str(inbox_task_row.name),
                 archived=inbox_task_row.archived,
                 big_plan_ref_id=big_plan.ref_id if big_plan else None,
-                big_plan_name=remote.notion.common.format_name_for_option(
-                    big_plan.name) if big_plan else None,
+                big_plan_name=EntityName(remote.notion.common.format_name_for_option(big_plan.name))
+                if big_plan else None,
                 recurring_task_ref_id=recurring_task.ref_id if recurring_task else None,
                 metric_ref_id=metric.ref_id if metric else None,
                 person_ref_id=person.ref_id if person else None,
@@ -1098,19 +1073,20 @@ class InboxTasksService:
                 recurring_timeline=inbox_task_row.recurring_timeline,
                 recurring_period=recurring_task.period.value if recurring_task else None,
                 recurring_type=recurring_task.the_type.value if recurring_task else None,
-                recurring_gen_right_now=inbox_task_row.recurring_gen_right_now,
+                recurring_gen_right_now=ADate.from_timestamp(inbox_task_row.recurring_gen_right_now)
+                if inbox_task_row.recurring_gen_right_now else None,
                 ref_id=inbox_task_row.ref_id)
             LOGGER.info(f'Created Notion inbox task for {inbox_task_row.name}')
 
         return [self._row_to_entity(it) for it in all_inbox_task_rows_set.values()]
 
     @staticmethod
-    def _build_name_for_collection_task(name: str) -> str:
-        return f"Collect value for metric {name}"
+    def _build_name_for_collection_task(name: EntityName) -> EntityName:
+        return EntityName.from_raw(f"Collect value for metric {name}")
 
     @staticmethod
-    def _build_name_for_catch_up_task(name: str) -> str:
-        return f"Catch up with {name}"
+    def _build_name_for_catch_up_task(name: EntityName) -> EntityName:
+        return EntityName.from_raw(f"Catch up with {name}")
 
     @staticmethod
     def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:

@@ -3,20 +3,26 @@ from argparse import Namespace, ArgumentParser
 from typing import Final, Optional, List
 
 import command.command as command
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.common.recurring_task_period import RecurringTaskPeriod
 from domain.metrics.commands.metric_update import MetricUpdateCommand
-from models.basic import BasicValidator, RecurringTaskPeriod, ProjectKey, Difficulty, Eisen
+from domain.metrics.metric_key import MetricKey
+from domain.projects.project_key import ProjectKey
 from models.framework import UpdateAction
 
 
 class MetricUpdate(command.Command):
     """Command for updating a metric's properties."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[MetricUpdateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: MetricUpdateCommand) -> None:
+    def __init__(self, the_command: MetricUpdateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -44,7 +50,7 @@ class MetricUpdate(command.Command):
         collection_period_group = parser.add_mutually_exclusive_group()
         collection_period_group.add_argument(
             "--collection-period", dest="collection_period", required=False,
-            choices=BasicValidator.recurring_task_period_values(),
+            choices=RecurringTaskPeriod.all_values(),
             help="The period at which a metric should be recorded")
         collection_period_group.add_argument(
             "--clear-collection-period", dest="clear_collection_period", default=False,
@@ -52,14 +58,14 @@ class MetricUpdate(command.Command):
         collection_period_eisen = parser.add_mutually_exclusive_group()
         collection_period_eisen.add_argument(
             "--collection-eisen", dest="collection_eisen", default=[], action="append",
-            choices=BasicValidator.eisen_values(),
+            choices=Eisen.all_values(),
             help="The Eisenhower matrix values to use for collection tasks")
         collection_period_eisen.add_argument(
             "--clear-collection-eisen", dest="clear_collection_eisen", default=False,
             action="store_const", const=True, help="Clear the collection eisen")
         collection_period_difficulty = parser.add_mutually_exclusive_group()
         collection_period_difficulty.add_argument("--collection-difficulty", dest="collection_difficulty",
-                                                  choices=BasicValidator.difficulty_values(),
+                                                  choices=Difficulty.all_values(),
                                                   help="The difficulty to use for collection tasks")
         collection_period_difficulty.add_argument("--clear-collection-difficulty", dest="clear_collection_difficulty",
                                                   default=False,
@@ -122,17 +128,16 @@ class MetricUpdate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        metric_key = self._basic_validator.metric_key_validate_and_clean(args.metric_key)
+        metric_key = MetricKey.from_raw(args.metric_key)
         if args.name is not None:
-            name = UpdateAction.change_to(self._basic_validator.entity_name_validate_and_clean(args.name))
+            name = UpdateAction.change_to(EntityName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         collection_project_key: UpdateAction[Optional[ProjectKey]]
         if args.clear_collection_project_key:
             collection_project_key = UpdateAction.change_to(None)
         elif args.collection_project_key is not None:
-            collection_project_key = UpdateAction.change_to(
-                self._basic_validator.project_key_validate_and_clean(args.collection_project_key))
+            collection_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.collection_project_key))
         else:
             collection_project_key = UpdateAction.do_nothing()
         collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
@@ -140,7 +145,7 @@ class MetricUpdate(command.Command):
             collection_period = UpdateAction.change_to(None)
         elif args.collection_period is not None:
             collection_period = UpdateAction.change_to(
-                self._basic_validator.recurring_task_period_validate_and_clean(args.collection_period))
+                RecurringTaskPeriod.from_raw(args.collection_period))
         else:
             collection_period = UpdateAction.do_nothing()
         collection_eisen: UpdateAction[List[Eisen]]
@@ -148,7 +153,7 @@ class MetricUpdate(command.Command):
             collection_eisen = UpdateAction.change_to([])
         elif len(args.collection_eisen) > 0:
             collection_eisen = UpdateAction.change_to(
-                [self._basic_validator.eisen_validate_and_clean(e) for e in args.collection_eisen])
+                [Eisen.from_raw(e) for e in args.collection_eisen])
         else:
             collection_eisen = UpdateAction.do_nothing()
         collection_difficulty: UpdateAction[Optional[Difficulty]]
@@ -156,51 +161,48 @@ class MetricUpdate(command.Command):
             collection_difficulty = UpdateAction.change_to(None)
         elif args.collection_difficulty is not None:
             collection_difficulty = UpdateAction.change_to(
-                self._basic_validator.difficulty_validate_and_clean(args.collection_difficulty))
+                Difficulty.from_raw(args.collection_difficulty))
         else:
             collection_difficulty = UpdateAction.do_nothing()
-        collection_actionable_from_day: UpdateAction[Optional[int]]
+        collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         if args.clear_collection_actionable_from_day:
             collection_actionable_from_day = UpdateAction.change_to(None)
         elif args.collection_actionable_from_day is not None:
             collection_actionable_from_day = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                    RecurringTaskPeriod.YEARLY, args.collection_actionable_from_day))
+                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.collection_actionable_from_day))
         else:
             collection_actionable_from_day = UpdateAction.do_nothing()
-        collection_actionable_from_month: UpdateAction[Optional[int]]
+        collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
         if args.clear_collection_actionable_from_month:
             collection_actionable_from_month = UpdateAction.change_to(None)
         elif args.collection_actionable_from_month is not None:
             collection_actionable_from_month = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                RecurringTaskDueAtMonth.from_raw(
                     RecurringTaskPeriod.YEARLY, args.collection_actionable_from_month))
         else:
             collection_actionable_from_month = UpdateAction.do_nothing()
-        collection_due_at_time: UpdateAction[Optional[str]]
+        collection_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
         if args.clear_collection_due_at_time:
             collection_due_at_time = UpdateAction.change_to(None)
         elif args.collection_due_at_time is not None:
-            collection_due_at_time = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_time_validate_and_clean(
-                    args.collection_due_at_time))
+            collection_due_at_time = \
+                UpdateAction.change_to(RecurringTaskDueAtTime.from_raw(args.collection_due_at_time))
         else:
             collection_due_at_time = UpdateAction.do_nothing()
-        collection_due_at_day: UpdateAction[Optional[int]]
+        collection_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         if args.clear_collection_due_at_day:
             collection_due_at_day = UpdateAction.change_to(None)
         elif args.collection_due_at_day is not None:
             collection_due_at_day = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_day_validate_and_clean(
-                    RecurringTaskPeriod.YEARLY, args.collection_due_at_day))
+                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.collection_due_at_day))
         else:
             collection_due_at_day = UpdateAction.do_nothing()
-        collection_due_at_month: UpdateAction[Optional[int]]
+        collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
         if args.clear_collection_due_at_month:
             collection_due_at_month = UpdateAction.change_to(None)
         elif args.collection_due_at_month is not None:
             collection_due_at_month = UpdateAction.change_to(
-                self._basic_validator.recurring_task_due_at_month_validate_and_clean(
+                RecurringTaskDueAtMonth.from_raw(
                     RecurringTaskPeriod.YEARLY, args.collection_due_at_month))
         else:
             collection_due_at_month = UpdateAction.do_nothing()

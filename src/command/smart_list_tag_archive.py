@@ -5,7 +5,6 @@ from typing import Final
 
 import command.command as command
 from domain.smart_lists.commands.smart_list_tag_archive import SmartListTagArchiveCommand
-from models.basic import BasicValidator
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -14,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListTagArchive(command.Command):
     """Command for archiving a smart list tag."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListTagArchiveCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListTagArchiveCommand) -> None:
+    def __init__(self, the_command: SmartListTagArchiveCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod

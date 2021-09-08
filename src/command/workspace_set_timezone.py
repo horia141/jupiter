@@ -1,12 +1,11 @@
 """Command for setting the timezone of a workspace."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.workspaces import WorkspacesController
-from models.basic import BasicValidator
+from domain.common.timezone import Timezone
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class WorkspaceSetTimezone(command.Command):
     """Command class for setting the timezone of a workspace."""
 
-    _basic_validator: Final[BasicValidator]
     _workspaces_controller: Final[WorkspacesController]
 
-    def __init__(self, basic_validator: BasicValidator, workspaces_controller: WorkspacesController) -> None:
+    def __init__(self, workspaces_controller: WorkspacesController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._workspaces_controller = workspaces_controller
 
     @staticmethod
@@ -38,5 +35,5 @@ class WorkspaceSetTimezone(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        timezone = self._basic_validator.timezone_validate_and_clean(args.timezone)
+        timezone = Timezone.from_raw(args.timezone)
         self._workspaces_controller.set_workspace_timezone(timezone)

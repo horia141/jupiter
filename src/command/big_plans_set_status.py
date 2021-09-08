@@ -1,13 +1,12 @@
 """Command for setting the status of a big plan."""
-
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from controllers.big_plans import BigPlansController
+from domain.big_plans.big_plan_status import BigPlanStatus
 from models.framework import EntityId
-from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class BigPlansSetStatus(command.Command):
     """Command class for setting the status of a big plan."""
 
-    _basic_validator: Final[BasicValidator]
     _big_plans_controller: Final[BigPlansController]
 
-    def __init__(self, basic_validator: BasicValidator, big_plans_controller: BigPlansController) -> None:
+    def __init__(self, big_plans_controller: BigPlansController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._big_plans_controller = big_plans_controller
 
     @staticmethod
@@ -37,10 +34,10 @@ class BigPlansSetStatus(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacations to modify")
         parser.add_argument("--status", dest="status", required=True,
-                            choices=BasicValidator.big_plan_status_values(), help="The status of the big plan")
+                            choices=BigPlanStatus.all_values(), help="The status of the big plan")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        status = self._basic_validator.big_plan_status_validate_and_clean(args.status)
+        status = BigPlanStatus.from_raw(args.status)
         self._big_plans_controller.set_big_plan_status(ref_id, status)

@@ -5,7 +5,8 @@ from typing import Final
 
 import command.command as command
 from domain.smart_lists.commands.smart_list_tag_create import SmartListTagCreateCommand
-from models.basic import BasicValidator
+from domain.smart_lists.smart_list_key import SmartListKey
+from domain.smart_lists.smart_list_tag_name import SmartListTagName
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class SmartListTagCreate(command.Command):
     """Command for creating a smart list tag."""
 
-    _basic_validator: Final[BasicValidator]
     _command: Final[SmartListTagCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: SmartListTagCreateCommand) -> None:
+    def __init__(self, the_command: SmartListTagCreateCommand) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._command = the_command
 
     @staticmethod
@@ -39,6 +38,6 @@ class SmartListTagCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        smart_list_key = self._basic_validator.smart_list_key_validate_and_clean(args.smart_list_key)
-        name = self._basic_validator.tag_validate_and_clean(args.name)
-        self._command.execute(SmartListTagCreateCommand.Args(smart_list_key=smart_list_key, name=name))
+        smart_list_key = SmartListKey.from_raw(args.smart_list_key)
+        tag_name = SmartListTagName.from_raw(args.name)
+        self._command.execute(SmartListTagCreateCommand.Args(smart_list_key=smart_list_key, tag_name=tag_name))

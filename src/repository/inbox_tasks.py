@@ -1,14 +1,20 @@
 """Repository for inbox tasks."""
 
-from dataclasses import dataclass
 import logging
 import typing
+from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, List, Optional
 
-from models.basic import Eisen, Difficulty, InboxTaskStatus, RecurringTaskType, ADate, BasicValidator, \
-    Timestamp, InboxTaskSource
+from domain.common.adate import ADate
+from domain.common.difficulty import Difficulty
+from domain.common.eisen import Eisen
+from domain.common.entity_name import EntityName
+from domain.common.recurring_task_type import RecurringTaskType
+from domain.common.timestamp import Timestamp
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from models.framework import EntityId, JSONDictType
 from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_field_action import TimeFieldAction
@@ -27,7 +33,7 @@ class InboxTaskRow(BaseEntityRow):
     recurring_task_ref_id: Optional[EntityId]
     metric_ref_id: Optional[EntityId]
     person_ref_id: Optional[EntityId]
-    name: str
+    name: EntityName
     archived: bool
     status: InboxTaskStatus
     eisen: List[Eisen]
@@ -72,7 +78,7 @@ class InboxTasksRepository:
     def create_inbox_task(
             self, project_ref_id: EntityId, source: InboxTaskSource, big_plan_ref_id: Optional[EntityId],
             recurring_task_ref_id: Optional[EntityId], metric_ref_id: Optional[EntityId],
-            person_ref_id: Optional[EntityId], name: str, archived: bool, status: InboxTaskStatus,
+            person_ref_id: Optional[EntityId], name: EntityName, archived: bool, status: InboxTaskStatus,
             eisen: Iterable[Eisen], difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
             due_date: Optional[ADate], recurring_timeline: Optional[str], recurring_type: Optional[RecurringTaskType],
             recurring_gen_right_now: Optional[Timestamp]) -> InboxTaskRow:
@@ -184,7 +190,7 @@ class InboxTasksRepository:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return InboxTaskRow(
             project_ref_id=EntityId(typing.cast(str, storage_form["project_ref_id"])),
-            source=BasicValidator.inbox_task_source_validate_and_clean(typing.cast(str, storage_form["source"])),
+            source=InboxTaskSource.from_raw(typing.cast(str, storage_form["source"])),
             big_plan_ref_id=EntityId(typing.cast(str, storage_form["big_plan_ref_id"]))
             if storage_form["big_plan_ref_id"] else None,
             recurring_task_ref_id=EntityId(typing.cast(str, (storage_form["recurring_task_ref_id"])))
@@ -193,28 +199,28 @@ class InboxTasksRepository:
             if storage_form["metric_ref_id"] else None,
             person_ref_id=EntityId(typing.cast(str, storage_form["person_ref_id"]))
             if storage_form.get("person_ref_id", None) else None,
-            name=typing.cast(str, storage_form["name"]),
+            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]),
             status=InboxTaskStatus(typing.cast(str, storage_form["status"])),
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"]))
             if storage_form["difficulty"] else None,
-            actionable_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["actionable_date"]))
+            actionable_date=ADate.from_str(typing.cast(str, storage_form["actionable_date"]))
             if storage_form["actionable_date"] else None,
-            due_date=BasicValidator.adate_from_str(typing.cast(str, storage_form["due_date"]))
+            due_date=ADate.from_str(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             recurring_timeline=typing.cast(str, storage_form["recurring_timeline"])
             if storage_form["recurring_timeline"] else None,
             recurring_type=RecurringTaskType(typing.cast(str, storage_form["recurring_type"]))
             if storage_form["recurring_type"] else None,
-            recurring_gen_right_now=BasicValidator.timestamp_from_str(
+            recurring_gen_right_now=Timestamp.from_str(
                 typing.cast(str, storage_form["recurring_gen_right_now"]))
             if storage_form["recurring_gen_right_now"] else None,
-            accepted_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["accepted_time"]))
+            accepted_time=Timestamp.from_str(typing.cast(str, storage_form["accepted_time"]))
             if storage_form["accepted_time"] else None,
-            working_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["working_time"]))
+            working_time=Timestamp.from_str(typing.cast(str, storage_form["working_time"]))
             if storage_form["working_time"] else None,
-            completed_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["completed_time"]))
+            completed_time=Timestamp.from_str(typing.cast(str, storage_form["completed_time"]))
             if storage_form["completed_time"] else None)
 
     @staticmethod
@@ -227,21 +233,21 @@ class InboxTasksRepository:
             "recurring_task_ref_id": str(live_form.recurring_task_ref_id) if live_form.recurring_task_ref_id else None,
             "metric_ref_id": str(live_form.metric_ref_id) if live_form.metric_ref_id else None,
             "person_ref_id": str(live_form.person_ref_id) if live_form.person_ref_id else None,
-            "name": live_form.name,
+            "name": str(live_form.name),
             "status": live_form.status.value,
             "eisen": [e.value for e in live_form.eisen],
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
-            "actionable_date": BasicValidator.adate_to_str(live_form.actionable_date)
+            "actionable_date": str(live_form.actionable_date)
                                if live_form.actionable_date else None,
-            "due_date": BasicValidator.adate_to_str(live_form.due_date) if live_form.due_date else None,
+            "due_date": str(live_form.due_date) if live_form.due_date else None,
             "recurring_timeline": live_form.recurring_timeline,
             "recurring_type": live_form.recurring_type.value if live_form.recurring_type else None,
-            "recurring_gen_right_now": BasicValidator.timestamp_to_str(live_form.recurring_gen_right_now)
+            "recurring_gen_right_now": str(live_form.recurring_gen_right_now)
                                        if live_form.recurring_gen_right_now else None,
-            "accepted_time": BasicValidator.timestamp_to_str(live_form.accepted_time)
+            "accepted_time": str(live_form.accepted_time)
                              if live_form.accepted_time else None,
-            "working_time": BasicValidator.timestamp_to_str(live_form.working_time)
+            "working_time": str(live_form.working_time)
                             if live_form.working_time else None,
-            "completed_time": BasicValidator.timestamp_to_str(live_form.completed_time)
+            "completed_time": str(live_form.completed_time)
                               if live_form.completed_time else None
         }

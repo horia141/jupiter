@@ -9,7 +9,7 @@ import typing
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
-from models.basic import MetricKey
+from domain.metrics.metric_key import MetricKey
 from models.framework import Command, EntityId
 from service.inbox_tasks import InboxTask, InboxTasksService
 from service.projects import Project, ProjectsService

@@ -5,8 +5,8 @@ from typing import Final
 
 import command.command as command
 from controllers.recurring_tasks import RecurringTasksController
+from domain.common.recurring_task_skip_rule import RecurringTaskSkipRule
 from models.framework import EntityId
-from models.basic import BasicValidator
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTasksSetSkipRule(command.Command):
     """Command class for setting the skip rule of a recurring task."""
 
-    _basic_validator: Final[BasicValidator]
     _recurring_tasks_controller: Final[RecurringTasksController]
 
-    def __init__(self, basic_validator: BasicValidator, recurring_tasks_controller: RecurringTasksController) -> None:
+    def __init__(self, recurring_tasks_controller: RecurringTasksController) -> None:
         """Constructor."""
-        self._basic_validator = basic_validator
         self._recurring_tasks_controller = recurring_tasks_controller
 
     @staticmethod
@@ -41,6 +39,5 @@ class RecurringTasksSetSkipRule(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        skip_rule = self._basic_validator.recurring_task_skip_rule_validate_and_clean(args.skip_rule) \
-            if args.skip_rule else None
+        skip_rule = RecurringTaskSkipRule.from_raw(args.skip_rule) if args.skip_rule else None
         self._recurring_tasks_controller.set_recurring_task_skip_rule(ref_id, skip_rule)

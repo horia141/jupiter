@@ -5,8 +5,10 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
+from domain.common.adate import ADate
+from domain.common.entity_name import EntityName
 from domain.vacations.commands.vacation_create import VacationCreateCommand
-from models.basic import BasicValidator
+from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +16,12 @@ LOGGER = logging.getLogger(__name__)
 class VacationCreate(command.Command):
     """Command class for adding a vacation."""
 
-    _basic_validator: Final[BasicValidator]
+    _global_properties: Final[GlobalProperties]
     _command: Final[VacationCreateCommand]
 
-    def __init__(self, basic_validator: BasicValidator, the_command: VacationCreateCommand):
+    def __init__(self, global_properties: GlobalProperties, the_command: VacationCreateCommand):
         """Constructor."""
-        self._basic_validator = basic_validator
+        self._global_properties = global_properties
         self._command = the_command
 
     @staticmethod
@@ -40,9 +42,9 @@ class VacationCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        name = self._basic_validator.entity_name_validate_and_clean(args.name)
-        start_date = self._basic_validator.adate_validate_and_clean(args.start_date)
-        end_date = self._basic_validator.adate_validate_and_clean(args.end_date)
+        name = EntityName.from_raw(args.name)
+        start_date = ADate.from_raw(self._global_properties.timezone, args.start_date)
+        end_date = ADate.from_raw(self._global_properties.timezone, args.end_date)
 
         self._command.execute(VacationCreateCommand.Args(
             name=name, start_date=start_date, end_date=end_date))

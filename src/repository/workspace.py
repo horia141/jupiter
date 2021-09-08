@@ -1,17 +1,16 @@
 """Repository for workspaces."""
 
-from dataclasses import dataclass
 import logging
 import typing
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, ClassVar
 
-import pendulum
-from pendulum.tz.zoneinfo import Timezone
-
-from models.basic import Timestamp, BasicValidator
-from models.framework import EntityId, JSONDictType
+from domain.common.entity_name import EntityName
+from domain.common.timestamp import Timestamp
+from domain.common.timezone import Timezone
 from models.errors import RepositoryError
+from models.framework import EntityId, JSONDictType
 from utils.storage import StructuredIndividualStorage
 from utils.time_provider import TimeProvider
 
@@ -26,7 +25,7 @@ class MissingWorkspaceRepositoryError(RepositoryError):
 class Workspace:
     """A workspace."""
 
-    name: str
+    name: EntityName
     timezone: Timezone
     default_project_ref_id: typing.Optional[EntityId]
     created_time: Timestamp
@@ -48,7 +47,7 @@ class WorkspaceRepository:
         self._structured_storage = StructuredIndividualStorage(self._WORKSPACE_FILE_PATH, self)
 
     def create_workspace(
-            self, name: str, timezone: Timezone, default_project_ref_id: typing.Optional[EntityId]) -> Workspace:
+            self, name: EntityName, timezone: Timezone, default_project_ref_id: typing.Optional[EntityId]) -> Workspace:
         """Create a workspace."""
         new_workspace = Workspace(
             name=name,
@@ -90,21 +89,21 @@ class WorkspaceRepository:
     def storage_to_live(storage_form: JSONDictType) -> Workspace:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return Workspace(
-            name=typing.cast(str, storage_form["name"]),
-            timezone=pendulum.timezone(typing.cast(str, storage_form["timezone"])),
+            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            timezone=Timezone.from_raw(typing.cast(str, storage_form["timezone"])),
             default_project_ref_id=EntityId(typing.cast(str, storage_form["default_project_ref_id"]))
             if storage_form["default_project_ref_id"] else None,
-            created_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["created_time"])),
-            last_modified_time=BasicValidator.timestamp_from_str(typing.cast(str, storage_form["last_modified_time"])))
+            created_time=Timestamp.from_str(typing.cast(str, storage_form["created_time"])),
+            last_modified_time=Timestamp.from_str(typing.cast(str, storage_form["last_modified_time"])))
 
     @staticmethod
     def live_to_storage(live_form: Workspace) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "name": live_form.name,
-            "timezone": live_form.timezone.name,
+            "name": str(live_form.name),
+            "timezone": str(live_form.timezone),
             "default_project_ref_id":
                 str(live_form.default_project_ref_id) if live_form.default_project_ref_id else None,
-            "created_time": BasicValidator.timestamp_to_str(live_form.created_time),
-            "last_modified_time": BasicValidator.timestamp_to_str(live_form.last_modified_time)
+            "created_time": str(live_form.created_time),
+            "last_modified_time": str(live_form.last_modified_time)
         }
