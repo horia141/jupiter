@@ -186,7 +186,7 @@ class RecurringTasksRepository:
             if storage_form["skip_rule"] else None,
             must_do=typing.cast(bool, storage_form["must_do"]),
             start_at_date=ADate.from_str(typing.cast(str, storage_form["start_at_date"]))
-            if storage_form["start_at_date"] else today_hack,
+            if storage_form["start_at_date"] else ADate.from_date(today_hack),
             end_at_date=ADate.from_str(typing.cast(str, storage_form["end_at_date"]))
             if storage_form["end_at_date"] else None)
 

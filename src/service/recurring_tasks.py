@@ -162,7 +162,7 @@ class RecurringTasksService:
             due_at_month=due_at_month,
             must_do=must_do,
             skip_rule=skip_rule,
-            start_at_date=start_at_date if start_at_date else today,
+            start_at_date=start_at_date if start_at_date else ADate.from_date(today),
             end_at_date=end_at_date,
             suspended=False)
         LOGGER.info("Applied local changes")
@@ -376,7 +376,7 @@ class RecurringTasksService:
         LOGGER.info("Applied local changes")
 
         recurring_task_notion_row = self._notion_manager.load_recurring_task(recurring_task_row.project_ref_id, ref_id)
-        recurring_task_notion_row.start_at_date = start_at_date if start_at_date else today
+        recurring_task_notion_row.start_at_date = start_at_date if start_at_date else ADate.from_date(today)
         recurring_task_notion_row.end_at_date = end_at_date
         self._notion_manager.save_recurring_task(
             recurring_task_row.project_ref_id, recurring_task_row.ref_id, recurring_task_notion_row)
@@ -559,7 +559,7 @@ class RecurringTasksService:
                     skip_rule=recurring_task_skip_rule,
                     must_do=recurring_task_notion_row.must_do,
                     start_at_date=recurring_task_notion_row.start_at_date
-                    if recurring_task_notion_row.start_at_date else today,
+                    if recurring_task_notion_row.start_at_date else ADate.from_date(today),
                     end_at_date=recurring_task_notion_row.end_at_date)
                 LOGGER.info(f"Found new recurring task from Notion {recurring_task_notion_row.name}")
 
