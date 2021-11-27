@@ -302,7 +302,7 @@ class NotionMetricManager(MetricNotionManager):
             self, client: NotionClient, row: _MetricNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
-            notion_row.collection_time = str(row.collection_time)
+            notion_row.collection_time = row.collection_time.to_notion(self._global_properties.timezone)
             notion_row.value = row.value
             notion_row.title = row.notes if row.notes else ""
             notion_row.archived = row.archived
@@ -314,7 +314,7 @@ class NotionMetricManager(MetricNotionManager):
     def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> _MetricNotionRow:
         """Copy the fields of the local row to the actual Notion structure."""
         return _MetricNotionRow(
-            collection_time=ADate.from_notion(self._global_properties.timezone, notion_row.collection_time),
+            collection_time =ADate.from_notion(self._global_properties.timezone, notion_row.collection_time),
             value=notion_row.value,
             notes=notion_row.title if typing.cast(str, notion_row.title).strip() != "" else None,
             archived=notion_row.archived,
