@@ -2,9 +2,9 @@
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, List
 
-from domain.common.url import URL
-from domain.common.timestamp import Timestamp
-from domain.common.entity_name import EntityName
+from domain.url import URL
+from domain.timestamp import Timestamp
+from domain.entity_name import EntityName
 from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
 

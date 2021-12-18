@@ -2,11 +2,11 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from domain.common.entity_name import EntityName
+from domain.entity_name import EntityName
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from domain.common.timestamp import Timestamp
+from domain.recurring_task_gen_params import RecurringTaskGenParams
+from domain.timestamp import Timestamp
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
 
 

@@ -14,7 +14,7 @@ import jsonschema as js
 import pendulum
 import yaml
 
-from domain.common.timestamp import Timestamp
+from domain.timestamp import Timestamp
 from models.framework import EntityId, JSONDictType
 from models.frame.value import Value
 from utils.time_field_action import TimeFieldAction
@@ -371,12 +371,8 @@ class RecordsStorage(Generic[RecordRowType]):
 
     def _full_storage_form_to_record(self, full_storage_form: JSONDictType) -> RecordRowType:
         record = self._protocol.storage_to_live(full_storage_form)
-        record.created_time = \
-            Timestamp.from_str(typing.cast(str, full_storage_form["created_time"])) \
-                if full_storage_form.get("created_time", None) else self._time_provider.get_current_time()
-        record.last_modified_time = \
-            Timestamp.from_str(typing.cast(str, full_storage_form["last_modified_time"])) \
-                if full_storage_form.get("created_time", None) else self._time_provider.get_current_time()
+        record.created_time = Timestamp.from_str(typing.cast(str, full_storage_form["created_time"]))
+        record.last_modified_time = Timestamp.from_str(typing.cast(str, full_storage_form["last_modified_time"]))
         return record
 
     def _entity_to_full_storage_form(self, record: RecordRowType) -> JSONDictType:

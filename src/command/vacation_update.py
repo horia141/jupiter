@@ -3,9 +3,9 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.common.adate import ADate
-from domain.common.entity_name import EntityName
-from domain.vacations.commands.vacation_update import VacationUpdateCommand
+from domain.adate import ADate
+from domain.entity_name import EntityName
+from use_cases.vacations.update import VacationUpdateCommand
 from models.framework import UpdateAction, EntityId
 from utils.global_properties import GlobalProperties
 

@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.smart_lists.commands.smart_list_tag_create import SmartListTagCreateCommand
+from use_cases.smart_lists.tag.create import SmartListTagCreateCommand
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 

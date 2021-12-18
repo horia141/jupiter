@@ -1,16 +1,12 @@
 """A vacation."""
+import typing
 from dataclasses import dataclass, field
 
-import typing
-
-import pendulum
-from pendulum import UTC
-
-from domain.common.adate import ADate
-from domain.common.timestamp import Timestamp
-from domain.common.entity_name import EntityName
+from domain.adate import ADate
+from domain.entity_name import EntityName
+from domain.errors import ServiceValidationError
+from domain.timestamp import Timestamp
 from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
-from service.errors import ServiceValidationError
 
 
 @dataclass()
@@ -40,10 +36,6 @@ class Vacation(AggregateRoot):
             archived: bool, name: EntityName, start_date: ADate, end_date: ADate,
             created_time: Timestamp) -> 'Vacation':
         """Create a vacation."""
-        if isinstance(start_date, pendulum.DateTime):
-            raise ServiceValidationError(f"Vacation '{start_date}' should just start on a day")
-        if isinstance(end_date, pendulum.DateTime):
-            raise ServiceValidationError(f"Vacation '{end_date}' should just start on a day")
         if start_date >= end_date:
             raise ServiceValidationError("Cannot set a start date after the end date")
 
@@ -74,8 +66,6 @@ class Vacation(AggregateRoot):
         """Change the start date of a metric."""
         if self._start_date == start_date:
             return self
-        if isinstance(start_date, pendulum.DateTime):
-            raise ServiceValidationError(f"Vacation '{start_date}' should just start on a day")
         if start_date >= self._end_date:
             raise ServiceValidationError("Cannot set a start date after the end date")
         self._start_date = start_date
@@ -86,8 +76,6 @@ class Vacation(AggregateRoot):
         """Change the start date of a metric."""
         if self._end_date == end_date:
             return self
-        if isinstance(end_date, pendulum.DateTime):
-            raise ServiceValidationError(f"Vacation '{end_date}' should just start on a day")
         if end_date <= self._start_date:
             raise ServiceValidationError("Cannot set an end date before the start date")
         self._end_date = end_date
@@ -96,16 +84,8 @@ class Vacation(AggregateRoot):
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this vacation."""
-        if isinstance(start_date, pendulum.DateTime):
-            vacation_start_date = pendulum.DateTime(
-                self.start_date.year, self.start_date.month, self.start_date.day, tzinfo=UTC)
-        else:
-            vacation_start_date = self.start_date
-        if isinstance(end_date, pendulum.DateTime):
-            vacation_end_date = pendulum.DateTime(
-                self.end_date.year, self.end_date.month, self.end_date.day, tzinfo=UTC).end_of("day")
-        else:
-            vacation_end_date = self.end_date
+        vacation_start_date = self._start_date.start_of_day()
+        vacation_end_date = self._end_date.end_of_day()
         return typing.cast(bool, vacation_start_date <= start_date) and \
                typing.cast(bool, end_date <= vacation_end_date)
 

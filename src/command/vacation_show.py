@@ -4,8 +4,8 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from domain.common.adate import ADate
-from domain.vacations.commands.vacation_find import VacationFindCommand
+from domain.adate import ADate
+from use_cases.vacations.find import VacationFindCommand
 from models.framework import EntityId
 from utils.global_properties import GlobalProperties
 

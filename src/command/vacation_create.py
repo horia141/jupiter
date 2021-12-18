@@ -5,9 +5,9 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from domain.common.adate import ADate
-from domain.common.entity_name import EntityName
-from domain.vacations.commands.vacation_create import VacationCreateCommand
+from domain.adate import ADate
+from domain.entity_name import EntityName
+from use_cases.vacations.create import VacationCreateCommand
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)

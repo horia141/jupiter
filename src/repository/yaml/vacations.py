@@ -7,10 +7,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import ClassVar, Iterable, Optional, Final
 
-import pendulum
-
-from domain.common.adate import ADate
-from domain.common.entity_name import EntityName
+from domain.adate import ADate
+from domain.entity_name import EntityName
 from domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationEngine
 from domain.vacations.infra.vacation_repository import VacationRepository
 from domain.vacations.vacation import Vacation
@@ -25,8 +23,8 @@ LOGGER = logging.getLogger(__name__)
 class _VacationRow(BaseEntityRow):
     """A vacation."""
     name: EntityName
-    start_date: pendulum.Date
-    end_date: pendulum.Date
+    start_date: ADate
+    end_date: ADate
 
 
 class YamlVacationRepository(VacationRepository):

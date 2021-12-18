@@ -13,12 +13,12 @@ from sqlalchemy.engine import Result, Connection
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import Engine
 
-from domain.common.difficulty import Difficulty
-from domain.common.eisen import Eisen
-from domain.common.entity_name import EntityName
-from domain.common.recurring_task_gen_params import RecurringTaskGenParams
-from domain.common.recurring_task_period import RecurringTaskPeriod
-from domain.common.timestamp import Timestamp
+from domain.difficulty import Difficulty
+from domain.eisen import Eisen
+from domain.entity_name import EntityName
+from domain.recurring_task_gen_params import RecurringTaskGenParams
+from domain.recurring_task_period import RecurringTaskPeriod
+from domain.timestamp import Timestamp
 from domain.prm.infra.person_repository import PersonRepository
 from domain.prm.infra.prm_database_repository import PrmDatabaseRepository
 from domain.prm.infra.prm_engine import PrmUnitOfWork, PrmEngine
@@ -81,7 +81,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
 
-    def load(self) -> PrmDatabase:
+    def find(self) -> PrmDatabase:
         """Load the PRM database."""
         query_stmt = select(self._prm_database_table)
         result = self._connection.execute(query_stmt).first()

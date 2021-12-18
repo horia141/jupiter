@@ -16,6 +16,11 @@ class InboxTaskSource(Value, enum.Enum):
     METRIC = "metric"
     PERSON = "person"
 
+    @property
+    def is_from_script(self) -> bool:
+        """Whether this source indicates the task was generated from a script or not."""
+        return not (self is InboxTaskSource.USER or self is InboxTaskSource.BIG_PLAN)
+
     def for_notion(self) -> str:
         """A prettier version of the value for Notion."""
         return " ".join(s.capitalize() for s in str(self.value).split("-"))

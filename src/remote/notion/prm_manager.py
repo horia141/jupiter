@@ -4,13 +4,14 @@ from typing import Iterable, ClassVar, cast, Dict, Final
 
 from notion.collection import CollectionRowBlock
 
-from domain.common.difficulty import Difficulty
-from domain.common.eisen import Eisen
-from domain.common.recurring_task_period import RecurringTaskPeriod
-from domain.common.timestamp import Timestamp
+from domain.difficulty import Difficulty
+from domain.eisen import Eisen
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person_relationship import PersonRelationship
+from domain.recurring_task_period import RecurringTaskPeriod
+from domain.timestamp import Timestamp
+from domain.workspaces.notion_workspace import NotionWorkspace
 from models.framework import EntityId, JSONDictType, NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
@@ -289,11 +290,11 @@ class NotionPrmManager(PrmNotionManager):
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_root_notion_structure(self, parent_page: NotionPageLink) -> None:
+    def upsert_root_notion_structure(self, notion_workspace: NotionWorkspace) -> None:
         """Upsert the root Notion structure."""
         self._collections_manager.upsert_collection(
             key=NotionLockKey(self._KEY),
-            parent_page=parent_page,
+            parent_page=NotionPageLink(notion_workspace.notion_id),
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,

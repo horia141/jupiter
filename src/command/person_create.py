@@ -4,16 +4,16 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from domain.common.difficulty import Difficulty
-from domain.common.eisen import Eisen
-from domain.common.entity_name import EntityName
-from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
-from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
-from domain.common.recurring_task_period import RecurringTaskPeriod
-from domain.prm.commands.person_create import PersonCreateCommand
+from domain.difficulty import Difficulty
+from domain.eisen import Eisen
+from domain.entity_name import EntityName
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
+from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.recurring_task_period import RecurringTaskPeriod
+from use_cases.prm.person.create import PersonCreateCommand
 
 LOGGER = logging.getLogger(__name__)
 

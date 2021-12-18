@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional, ClassVar, Dict
 
-from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
-from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.recurring_task_period import RecurringTaskPeriod
 from models.frame.value import Value
 from models.errors import ModelValidationError
 

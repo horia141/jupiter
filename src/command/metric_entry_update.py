@@ -5,8 +5,8 @@ from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 import command.command as command
-from domain.common.adate import ADate
-from domain.metrics.commands.metric_entry_update import MetricEntryUpdateCommand
+from domain.adate import ADate
+from use_cases.metrics.entry.update import MetricEntryUpdateCommand
 from models.framework import UpdateAction, EntityId
 
 LOGGER = logging.getLogger(__name__)

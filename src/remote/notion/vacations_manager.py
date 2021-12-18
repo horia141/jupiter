@@ -1,16 +1,16 @@
 """The centralised point for interacting with Notion vacations."""
 import logging
-import typing
-from dataclasses import dataclass
-from typing import Final, Optional, ClassVar, Iterable
+from typing import Final, ClassVar, Iterable
 
 from notion.collection import CollectionRowBlock
 
+from domain.adate import ADate
+from domain.timestamp import Timestamp
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from domain.vacations.notion_vacation import NotionVacation
 from domain.vacations.vacation import Vacation
-from domain.common.adate import ADate
-from domain.common.timestamp import Timestamp
-from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from domain.workspaces.notion_workspace import NotionWorkspace
+from models.framework import EntityId, JSONDictType, NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
@@ -18,17 +18,6 @@ from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
-
-
-@dataclass()
-class _VacationNotionRow(BaseNotionRow):
-    """A vacation row on Notion side."""
-
-    name: str
-    archived: bool
-    start_date: Optional[ADate]
-    end_date: Optional[ADate]
-    last_edited_time: Timestamp
 
 
 class NotionVacationsManager(VacationNotionManager):
@@ -139,11 +128,11 @@ class NotionVacationsManager(VacationNotionManager):
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_root_page(self, parent_page_link: NotionPageLink) -> None:
+    def upsert_root_page(self, notion_workspace: NotionWorkspace) -> None:
         """Upsert the root page for the vacations section."""
         self._collections_manager.upsert_collection(
             key=NotionLockKey(self._KEY),
-            parent_page=parent_page_link,
+            parent_page=NotionPageLink(notion_workspace.notion_id),
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -151,21 +140,22 @@ class NotionVacationsManager(VacationNotionManager):
                 "database_view_id": self._DATABASE_VIEW_SCHEMA
             })
 
-    def upsert_vacation(self, vacation: Vacation) -> None:
+    def upsert_vacation(self, vacation: Vacation) -> NotionVacation:
         """Create a vacation."""
-        new_vacation_row = _VacationNotionRow(
-            name=str(vacation.name),
-            archived=vacation.archived,
-            start_date=vacation.start_date,
-            end_date=vacation.end_date,
-            last_edited_time=self._time_provider.get_current_time(),
-            ref_id=str(vacation.ref_id),
-            notion_id=typing.cast(NotionId, None))
-        self._collections_manager.upsert_collection_item(
+        new_notion_vacation = NotionVacation.new_notion_row(vacation)
+        return self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{vacation.ref_id}"),
             collection_key=NotionLockKey(self._KEY),
-            new_row=new_vacation_row,
-            copy_row_to_notion_row=self.copy_row_to_notion_row)
+            new_row=new_notion_vacation,
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
+
+    def save_vacation(self, vacation: NotionVacation) -> NotionVacation:
+        """Update a Notion-side vacation with new data."""
+        return self._collections_manager.save(
+            key=NotionLockKey(f"{vacation.ref_id}"),
+            collection_key=NotionLockKey(self._KEY),
+            row=vacation,
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
 
     def remove_vacation(self, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
@@ -173,30 +163,20 @@ class NotionVacationsManager(VacationNotionManager):
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY))
 
-    # Old stuff
-
-    def load_all_vacations(self) -> Iterable[_VacationNotionRow]:
+    def load_all_vacations(self) -> Iterable[NotionVacation]:
         """Retrieve all the Notion-side vacation items."""
         return self._collections_manager.load_all(
             collection_key=NotionLockKey(self._KEY),
-            copy_notion_row_to_row=self.copy_notion_row_to_row)
-
-    def save_vacation(self, ref_id: EntityId, new_vacation_row: _VacationNotionRow) -> _VacationNotionRow:
-        """Update a Notion-side vacation with new data."""
-        return self._collections_manager.save(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(self._KEY),
-            row=new_vacation_row,
-            copy_row_to_notion_row=self.copy_row_to_notion_row)
-
-    def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids for the vacations."""
-        return self._collections_manager.load_all_saved_notion_ids(
-            collection_key=NotionLockKey(self._KEY))
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def load_all_saved_vacation_ref_ids(self) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the vacations."""
         return self._collections_manager.load_all_saved_ref_ids(
+            collection_key=NotionLockKey(self._KEY))
+
+    def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for the vacations."""
+        return self._collections_manager.load_all_saved_notion_ids(
             collection_key=NotionLockKey(self._KEY))
 
     def drop_all_vacations(self) -> None:
@@ -212,8 +192,8 @@ class NotionVacationsManager(VacationNotionManager):
             ref_id=ref_id,
             notion_id=notion_id)
 
-    def copy_row_to_notion_row(
-            self, client: NotionClient, row: _VacationNotionRow, notion_row: CollectionRowBlock) -> CollectionRowBlock:
+    def _copy_row_to_notion_row(
+            self, client: NotionClient, row: NotionVacation, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
             notion_row.title = row.name
@@ -226,9 +206,9 @@ class NotionVacationsManager(VacationNotionManager):
 
         return notion_row
 
-    def copy_notion_row_to_row(self, vacation_notion_row: CollectionRowBlock) -> _VacationNotionRow:
+    def _copy_notion_row_to_row(self, vacation_notion_row: CollectionRowBlock) -> NotionVacation:
         """Transform the live system data to something suitable for basic storage."""
-        return _VacationNotionRow(
+        return NotionVacation(
             notion_id=vacation_notion_row.id,
             name=vacation_notion_row.title,
             archived=vacation_notion_row.archived or False,

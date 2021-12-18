@@ -1,17 +1,13 @@
 """Command for showing metrics."""
 import logging
 from argparse import Namespace, ArgumentParser
-from typing import Final, TYPE_CHECKING, cast
+from typing import Final, cast
 
 import command.command as command
-from domain.common.adate import ADate
-from domain.metrics.commands.metric_find import MetricFindCommand
+from domain.adate import ADate
 from domain.metrics.metric_key import MetricKey
+from use_cases.metrics.find import MetricFindCommand
 from utils.global_properties import GlobalProperties
-
-# pylint: disable=import-error
-if TYPE_CHECKING:
-    from _typeshed import SupportsLessThan
 
 LOGGER = logging.getLogger(__name__)
 
@@ -73,7 +69,7 @@ class MetricShow(command.Command):
                   if metric.collection_params else '' +
                   (f' #{metric.metric_unit.for_notion()}' if metric.metric_unit else ''))
 
-            for metric_entry in sorted(metric_entries, key=lambda me: cast(SupportsLessThan, me.collection_time)):
+            for metric_entry in sorted(metric_entries, key=lambda me: me.collection_time):
                 print(f"  - id={metric_entry.ref_id}" +
                       (f" {ADate.to_user_str(self._global_properties.timezone, metric_entry.collection_time)}") +
                       f" val={metric_entry.value}")
@@ -82,5 +78,5 @@ class MetricShow(command.Command):
                 print(f"  Collection Tasks:")
                 for inbox_task in sorted(
                         metric_response_entry.metric_collection_inbox_tasks,
-                        key=lambda it: cast(SupportsLessThan, it.due_date)):
+                        key=lambda it: cast(ADate, it.due_date)):
                     print(f"    -id={inbox_task.ref_id} {inbox_task.name} {inbox_task.status.for_notion()}")

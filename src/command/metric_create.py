@@ -3,17 +3,17 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.common.difficulty import Difficulty
-from domain.common.eisen import Eisen
-from domain.common.entity_name import EntityName
-from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
-from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
-from domain.common.recurring_task_period import RecurringTaskPeriod
-from domain.metrics.commands.metric_create import MetricCreateCommand
+from domain.difficulty import Difficulty
+from domain.eisen import Eisen
+from domain.entity_name import EntityName
 from domain.metrics.metric_key import MetricKey
 from domain.metrics.metric_unit import MetricUnit
 from domain.projects.project_key import ProjectKey
+from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.recurring_task_period import RecurringTaskPeriod
+from use_cases.metrics.create import MetricCreateCommand
 
 
 class MetricCreate(command.Command):
@@ -44,7 +44,7 @@ class MetricCreate(command.Command):
         parser.add_argument("--collection-period", dest="collection_period", required=False,
                             choices=RecurringTaskPeriod.all_values(),
                             help="The period at which a metric should be recorded")
-        parser.add_argument("--collection-eisen", dest="ecollection_eisen", default=[], action="append",
+        parser.add_argument("--collection-eisen", dest="collection_eisen", default=[], action="append",
                             choices=Eisen.all_values(),
                             help="The Eisenhower matrix values to use for collection tasks")
         parser.add_argument("--collection-difficulty", dest="collection_difficulty",
@@ -79,7 +79,7 @@ class MetricCreate(command.Command):
             if args.collection_difficulty else None
         collection_actionable_from_day = RecurringTaskDueAtDay.from_raw(
             collection_period, args.collection_actionable_from_day) \
-            if args.actionable_from_day and collection_period else None
+            if args.collection_actionable_from_day and collection_period else None
         collection_actionable_from_month = RecurringTaskDueAtMonth.from_raw(
             collection_period, args.collection_actionable_from_month) \
             if args.collection_actionable_from_month and collection_period else None

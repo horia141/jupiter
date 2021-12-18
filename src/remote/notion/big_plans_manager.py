@@ -1,18 +1,24 @@
 """The centralised point for interacting with Notion big plans."""
 import logging
 import uuid
-from dataclasses import dataclass
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
 from notion.collection import CollectionRowBlock
 
+from domain.adate import ADate
+from domain.big_plans.big_plan_collection import BigPlanCollection
 from domain.big_plans.big_plan_status import BigPlanStatus
-from domain.common.adate import ADate
-from domain.common.entity_name import EntityName
-from domain.common.timestamp import Timestamp
+from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
+from domain.big_plans.notion_big_plan import NotionBigPlan
+from domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
+from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
-from remote.notion.common import NotionLockKey, NotionPageLink, NotionCollectionLink, format_name_for_option
+from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
+from domain.projects.notion_project import NotionProject
+from domain.projects.project import Project
+from domain.timestamp import Timestamp
+from models.framework import EntityId, JSONDictType, NotionId
+from remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
 from utils.global_properties import GlobalProperties
@@ -21,23 +27,7 @@ from utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass()
-class BigPlanNotionCollection(BaseNotionRow):
-    """A big plan collection on Notion side."""
-
-
-@dataclass()
-class BigPlanNotionRow(BaseNotionRow):
-    """A big plan on Notion side."""
-
-    name: str
-    archived: bool
-    status: Optional[str]
-    due_date: Optional[ADate]
-    last_edited_time: Timestamp
-
-
-class NotionBigPlansManager:
+class NotionBigPlansManager(BigPlanNotionManager):
     """The centralised point for interacting with Notion big plans."""
 
     _KEY: ClassVar[str] = "big-plans"
@@ -234,11 +224,12 @@ class NotionBigPlansManager:
         self._collections_manager = collections_manager
 
     def upsert_big_plan_collection(
-            self, project_ref_id: EntityId, parent_page_link: NotionPageLink) -> BigPlanNotionCollection:
+            self, project: Project, notion_project: NotionProject,
+            big_plan_collection: BigPlanCollection) -> NotionBigPlanCollection:
         """Upsert the Notion-side big plan."""
         collection_link = self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            parent_page=parent_page_link,
+            key=NotionLockKey(f"{self._KEY}:{project.ref_id}"),
+            parent_page=NotionPageLink(notion_project.notion_id),
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -247,34 +238,25 @@ class NotionBigPlansManager:
                 "database_view_id": NotionBigPlansManager._DATABASE_VIEW_SCHEMA
             })
 
-        return BigPlanNotionCollection(
-            ref_id=str(project_ref_id),
-            notion_id=collection_link.collection_id)
+        return NotionBigPlanCollection(
+            notion_id=collection_link.collection_id,
+            ref_id=big_plan_collection.ref_id)
 
-    def remove_big_plans_collection(self, project_ref_id: EntityId) -> None:
+    def remove_big_plans_collection(self, big_plan_collection: BigPlanCollection) -> None:
         """Remove the Notion-side structure for this collection."""
-        return self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+        return self._collections_manager.remove_collection(
+            NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"))
 
-    def upsert_big_plan(
-            self, project_ref_id: EntityId, inbox_collection_link: NotionCollectionLink, name: EntityName,
-            archived: bool, due_date: Optional[ADate], status: str, ref_id: EntityId) -> BigPlanNotionRow:
+    def upsert_big_plan(self, big_plan_collection: BigPlanCollection, big_plan: NotionBigPlan,
+                        inbox_collection_link: NotionInboxTaskCollection) -> NotionBigPlan:
         """Upsert a big plan."""
-        new_row = BigPlanNotionRow(
-            name=str(name),
-            archived=archived,
-            status=status,
-            due_date=due_date,
-            last_edited_time=self._time_provider.get_current_time(),
-            ref_id=str(ref_id),
-            notion_id=cast(NotionId, None))
-        self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            new_row=new_row,
+        return self._collections_manager.upsert_collection_item(
+            key=NotionLockKey(f"{big_plan.ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"),
+            new_row=big_plan,
             copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
-        return new_row
 
-    def link_local_and_notion_entries(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+    def link_local_and_notion_big_plan(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
         self._collections_manager.quick_link_local_and_notion_entries(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
@@ -282,33 +264,33 @@ class NotionBigPlansManager:
             ref_id=ref_id,
             notion_id=notion_id)
 
-    def load_all_big_plans(self, project_ref_id: EntityId) -> Iterable[BigPlanNotionRow]:
+    def load_all_big_plans(self, big_plan_collection: BigPlanCollection) -> Iterable[NotionBigPlan]:
         """Retrieve all the Notion-side big plans."""
         return self._collections_manager.load_all(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
-    def load_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> BigPlanNotionRow:
+    def load_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> NotionBigPlan:
         """Retrieve the Notion-side big plan associated with a particular entity."""
         return self._collections_manager.load(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
-    def archive_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
+    def remove_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular big plans."""
         self._collections_manager.quick_archive(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             key=NotionLockKey(f"{ref_id}"))
 
     def save_big_plan(
-            self, project_ref_id: EntityId, ref_id: EntityId, new_big_plan_row: BigPlanNotionRow,
-            inbox_collection_link: Optional[NotionCollectionLink] = None) -> BigPlanNotionRow:
+            self, project_ref_id: EntityId, big_plan: NotionBigPlan,
+            inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionBigPlan:
         """Update the Notion-side big plan with new data."""
         return self._collections_manager.save(
-            key=NotionLockKey(f"{ref_id}"),
+            key=NotionLockKey(f"{big_plan.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            row=new_big_plan_row,
+            row=big_plan,
             copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
 
     def load_all_saved_big_plans_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
@@ -332,8 +314,8 @@ class NotionBigPlansManager:
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def _copy_row_to_notion_row(
-            self, client: NotionClient, row: BigPlanNotionRow, notion_row: CollectionRowBlock,
-            inbox_collection_link: Optional[NotionCollectionLink]) -> CollectionRowBlock:
+            self, client: NotionClient, row: NotionBigPlan, notion_row: CollectionRowBlock,
+            inbox_collection_link: Optional[NotionInboxTaskCollection]) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
             notion_row.title = row.name
@@ -349,15 +331,15 @@ class NotionBigPlansManager:
             LOGGER.info(f"Creating views structure for plan {notion_row}")
 
             client.attach_view_block_as_child_of_block(
-                notion_row, 0, inbox_collection_link.collection_id,
+                notion_row, 0, inbox_collection_link.notion_id,
                 self._get_view_schema_for_big_plan_desc(format_name_for_option(EntityName(row.name))))
 
         return notion_row
 
-    def _copy_notion_row_to_row(self, big_plan_notion_row: CollectionRowBlock) -> BigPlanNotionRow:
+    def _copy_notion_row_to_row(self, big_plan_notion_row: CollectionRowBlock) -> NotionBigPlan:
         """Transform the live system data to something suitable for basic storage."""
         # pylint: disable=no-self-use
-        return BigPlanNotionRow(
+        return NotionBigPlan(
             notion_id=big_plan_notion_row.id,
             name=big_plan_notion_row.title,
             archived=big_plan_notion_row.archived,

@@ -7,7 +7,7 @@ from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final, Set, List
 import typing
 
-from domain.common.url import URL
+from domain.url import URL
 from domain.smart_lists.infra.smart_list_engine import SmartListUnitOfWork, SmartListEngine
 from domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
 from domain.smart_lists.infra.smart_list_repository import SmartListRepository
@@ -16,7 +16,7 @@ from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
-from domain.common.entity_name import EntityName
+from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
 from models.framework import EntityId, JSONDictType
 from models.errors import RepositoryError
@@ -106,8 +106,6 @@ class YamlSmartListRepository(SmartListRepository):
     def remove(self, ref_id: EntityId) -> SmartList:
         """Hard remove a smart list - an irreversible operation."""
         return self._row_to_entity(self._storage.remove(ref_id=ref_id))
-
-    # Old stuff
 
     @staticmethod
     def storage_schema() -> JSONDictType:

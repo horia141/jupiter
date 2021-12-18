@@ -4,11 +4,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar, Final, cast
 
-from domain.common.entity_name import EntityName
-from remote.notion.common import CollectionError, NotionPageLink
+from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
+from domain.workspaces.notion_workspace import NotionWorkspace
+from domain.workspaces.workspace import Workspace
+from models.framework import JSONDictType, NotionId, EntityId
+from remote.notion.common import CollectionError
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredIndividualStorage
-from models.framework import JSONDictType, NotionId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -18,34 +20,28 @@ class MissingWorkspaceScreenError(CollectionError):
 
 
 @dataclass()
-class WorkspaceScreen:
-    """The workspace screen on Notion side."""
-
-    name: str
-
-
-@dataclass()
-class WorkspaceLock:
+class _WorkspaceLock:
     """Link to Notion-side entities for the workspace."""
 
+    ref_id: EntityId
     page_id: NotionId
 
 
-class WorkspaceSingleton:
+class NotionWorkspacesManager(WorkspaceNotionManager):
     """A single structure on Notion side for vacations."""
 
     _WORKSPACES_LOCK_FILE_PATH: ClassVar[Path] = Path("./workspaces.lock.yaml")
 
     _connection: Final[NotionConnection]
-    _structured_storage: Final[StructuredIndividualStorage[WorkspaceLock]]
+    _structured_storage: Final[StructuredIndividualStorage[_WorkspaceLock]]
 
     def __init__(self, connection: NotionConnection) -> None:
         """Constructor."""
         self._connection = connection
         self._structured_storage = StructuredIndividualStorage(self._WORKSPACES_LOCK_FILE_PATH, self)
 
-    def upsert_notion_structure(self, name: EntityName) -> NotionPageLink:
-        """Create/update the Notion-side structure for this singleton."""
+    def upsert(self, workspace: Workspace) -> NotionWorkspace:
+        """Upsert the root Notion structure."""
         lock = self._structured_storage.load_optional()
         client = self._connection.get_notion_client()
 
@@ -53,32 +49,40 @@ class WorkspaceSingleton:
             page = client.get_regular_page(lock.page_id)
             LOGGER.info(f"Found the root page via id {page}")
         else:
-            page = client.create_regular_page(str(name))
+            page = client.create_regular_page(str(workspace.name))
             LOGGER.info(f"Created the root page {page}")
 
         # Change the title.
-        page.title = str(name)
+        page.title = str(workspace.name)
         LOGGER.info("Applied changes to root page on Notion side")
 
         # Saved local locks.
 
-        new_lock = WorkspaceLock(page_id=page.id)
+        new_lock = _WorkspaceLock(ref_id=workspace.ref_id, page_id=page.id)
         self._structured_storage.save(new_lock)
         LOGGER.info("Saved lock structure")
 
-        return NotionPageLink(page_id=page.id)
+        return NotionWorkspace(
+            name=str(workspace.name),
+            notion_id=page.id,
+            ref_id=workspace.ref_id)
 
-    def get_notion_structure(self) -> NotionPageLink:
-        """Retrieve the Notion-side structure link."""
-        lock = self._structured_storage.load_optional()
+    def save(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
+        """Change the root Notion structure."""
+        lock = self._structured_storage.load()
+        client = self._connection.get_notion_client()
 
-        if not lock:
-            raise MissingWorkspaceScreenError()
+        page = client.get_regular_page(lock.page_id)
+        LOGGER.info(f"Found the root page via id {page}")
 
-        return NotionPageLink(page_id=lock.page_id)
+        # Change the title.
+        page.title = notion_workspace.name
+        LOGGER.info("Applied changes to root page on Notion side")
 
-    def load_workspace_screen(self) -> WorkspaceScreen:
-        """Retrieve the Notion workspace representation."""
+        return notion_workspace
+
+    def load(self) -> NotionWorkspace:
+        """Retrieve the workspace from Notion side."""
         lock = self._structured_storage.load_optional()
         if lock is None:
             raise MissingWorkspaceScreenError()
@@ -87,18 +91,10 @@ class WorkspaceSingleton:
 
         page = client.get_regular_page(lock.page_id)
 
-        return WorkspaceScreen(name=page.title)
-
-    def save_workspace_screen(self, new_workspace_screen: WorkspaceScreen) -> WorkspaceScreen:
-        """Update the Notion workspace with new data."""
-        lock = self._structured_storage.load()
-        client = self._connection.get_notion_client()
-
-        page = client.get_regular_page(lock.page_id)
-
-        page.title = new_workspace_screen.name
-
-        return new_workspace_screen
+        return NotionWorkspace(
+            name=page.title,
+            notion_id=page.id,
+            ref_id=lock.ref_id)
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -106,18 +102,22 @@ class WorkspaceSingleton:
         return {
             "type": "object",
             "properties": {
+                "ref_id": {"type": "string"},
                 "page_id": {"type": "string"}
             }
         }
 
     @staticmethod
-    def storage_to_live(storage_form: JSONDictType) -> WorkspaceLock:
+    def storage_to_live(storage_form: JSONDictType) -> _WorkspaceLock:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return WorkspaceLock(page_id=NotionId(cast(str, storage_form["page_id"])))
+        return _WorkspaceLock(
+            ref_id=EntityId.from_raw(cast(str, storage_form["ref_id"])),
+            page_id=NotionId(cast(str, storage_form["page_id"])))
 
     @staticmethod
-    def live_to_storage(live_form: WorkspaceLock) -> JSONDictType:
+    def live_to_storage(live_form: _WorkspaceLock) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "page_id": live_form.page_id
+            "ref_id": str(live_form.ref_id),
+            "page_id": str(live_form.page_id)
         }

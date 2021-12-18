@@ -1,5 +1,5 @@
 """The key for a smart list which acts as both name and unique identifier."""
-from domain.common.entity_key import EntityKey
+from domain.entity_key import EntityKey
 
 
 class SmartListKey(EntityKey):

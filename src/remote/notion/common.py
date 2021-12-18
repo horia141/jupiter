@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import NewType, List, Optional
 
-from domain.common.entity_name import EntityName
+from domain.entity_name import EntityName
 from models.framework import NotionId
 
 NotionLockKey = NewType("NotionLockKey", str)

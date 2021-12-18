@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from command.command import Command
-from domain.prm.commands.prm_database_update import PrmDatabaseUpdateCommand
+from use_cases.prm.update import PrmDatabaseUpdateCommand
 from domain.projects.project_key import ProjectKey
 from models.framework import UpdateAction
 

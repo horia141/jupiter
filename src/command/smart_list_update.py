@@ -4,10 +4,10 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.common.entity_name import EntityName
-from domain.smart_lists.commands.smart_list_update import SmartListUpdateCommand
+from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
 from models.framework import UpdateAction
+from use_cases.smart_lists.update import SmartListUpdateCommand
 
 LOGGER = logging.getLogger(__name__)
 

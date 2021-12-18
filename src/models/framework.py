@@ -1,6 +1,7 @@
 """Helpers for working with entities."""
 import abc
 import dataclasses
+import inspect
 import re
 import typing
 from contextlib import contextmanager
@@ -11,7 +12,7 @@ from typing import TypeVar, Generic, List, Optional, Iterator, Iterable, Final, 
 
 from pendulum import Date, DateTime
 
-from domain.common.timestamp import Timestamp
+from domain.timestamp import Timestamp
 from models.errors import ModelValidationError
 from models.frame.value import Value
 
@@ -87,6 +88,13 @@ class UpdateAction(Generic[UpdateActionType]):
         """An update action where the value needs to be changed to a new value."""
         return UpdateAction[UpdateActionType](should_change=True, value=value)
 
+    def or_else(self, value_if_should_not_change: UpdateActionType) -> UpdateActionType:
+        """Return the value of the action if it should change or the argument if it should not."""
+        if self._should_change:
+            return typing.cast(UpdateActionType, self._value)
+        else:
+            return value_if_should_not_change
+
     @property
     def should_change(self) -> bool:
         """Whether the value should change or not."""
@@ -137,6 +145,42 @@ class Event:
             else:
                 raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__}")
         return process_primitive(self, "root")
+
+EventType = TypeVar('EventType', bound='Event2')
+
+# TODO(horia141): this is the real event class
+@dataclass(frozen=True)
+class Event2(Event):
+    """An event for an aggregate root."""
+
+    frame_args: Dict[str, object]
+
+    @staticmethod
+    def make_event_from_frame_args(
+            event_type: typing.Type[EventType], timestamp: Timestamp, **kwargs: object) -> EventType:
+        """Construct the data for an event from the arguments of the method which calls this one."""
+        frame = inspect.currentframe()
+        if frame is None:
+            raise Exception("There's no recovery from stuff like this - part one")
+
+        try:
+            parent_frame = frame.f_back
+            if parent_frame is None:
+                raise Exception("There's no recovery from stuff like this - part two")
+
+            try:
+                args = inspect.getargvalues(parent_frame) # pylint: disable=deprecated-method
+                frame_args = {}
+                for arg_name in args.args:
+                    frame_args[arg_name] = args.locals[arg_name]
+                for kwarg_name, kwargs_value in kwargs.items():
+                    frame_args[kwarg_name] = kwargs_value
+                new_event = event_type(timestamp=timestamp, frame_args=frame_args)
+                return new_event
+            finally:
+                del parent_frame
+        finally:
+            del frame
 
 
 @dataclass()
@@ -257,6 +301,8 @@ class Engine(Generic[UnitOfWorkType], abc.ABC):
 
 NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
 NotionRowNewAggregateRootExtraInfo = TypeVar('NotionRowNewAggregateRootExtraInfo')
+NotionRowDirectExtraInfo = TypeVar('NotionRowDirectExtraInfo')
+NotionRowInverseExtraInfo = TypeVar('NotionRowInverseExtraInfo')
 
 
 NotionId = NewType("NotionId", str)
@@ -269,10 +315,36 @@ class BaseNotionRow:
     notion_id: NotionId
     ref_id: Optional[str]
 
+@dataclass()
+class NotionEntity(Generic[NotionRowAggregateRoot]):
+    """Base class for Notion-side entities."""
+
+    notion_id: NotionId
+    ref_id: EntityId
+
+    @staticmethod
+    def new_notion_row(
+            aggregate_root: NotionRowAggregateRoot) \
+            -> 'NotionEntity[NotionRowAggregateRoot]':
+        """Construct a new Notion row from a ggiven aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def join_with_aggregate_root(
+            self, aggregate_root: NotionRowAggregateRoot) \
+            -> 'NotionEntity[NotionRowAggregateRoot]':
+        """Add to this Notion row from a given aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def apply_to_aggregate_root(
+            self, aggregate_root: NotionRowAggregateRoot,
+            modification_time: Timestamp) -> NotionRowAggregateRoot:
+        """Obtain the aggregate root form of this, with a possible error."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
 # This is actually an ABC.
 @dataclass()
 class NotionRow(Generic[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraInfo], BaseNotionRow):
-    """Base class for Notion-side entities."""
+    """Base class for Notion-side collection entities."""
 
     last_edited_time: Timestamp
 
@@ -296,5 +368,35 @@ class NotionRow(Generic[NotionRowAggregateRoot, NotionRowNewAggregateRootExtraIn
     def apply_to_aggregate_root(
             self, aggregate_root: NotionRowAggregateRoot,
             extra_info: NotionRowNewAggregateRootExtraInfo) -> NotionRowAggregateRoot:
+        """Obtain the aggregate root form of this, with a possible error."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+
+@dataclass()
+class NotionRow2(Generic[NotionRowAggregateRoot, NotionRowDirectExtraInfo, NotionRowInverseExtraInfo], BaseNotionRow):
+    """Base class for Notion-side collection entities."""
+
+    last_edited_time: Timestamp
+
+    @staticmethod
+    def new_notion_row(
+            aggregate_root: NotionRowAggregateRoot, extra_info: NotionRowDirectExtraInfo) \
+            -> 'NotionRow2[NotionRowAggregateRoot, NotionRowDirectExtraInfo, NotionRowInverseExtraInfo]':
+        """Construct a new Notion row from a given aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def join_with_aggregate_root(
+            self, aggregate_root: NotionRowAggregateRoot, extra_info: NotionRowDirectExtraInfo) \
+            -> 'NotionRow2[NotionRowAggregateRoot, NotionRowDirectExtraInfo, NotionRowInverseExtraInfo]':
+        """Add to this Notion row from a given aggregate root."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def new_aggregate_root(self, extra_info: NotionRowInverseExtraInfo) -> NotionRowAggregateRoot:
+        """Construct a new aggregate root from this notion row."""
+        raise NotImplementedError("Can't use a base NotionRow class.")
+
+    def apply_to_aggregate_root(
+            self, aggregate_root: NotionRowAggregateRoot,
+            extra_info: NotionRowInverseExtraInfo) -> NotionRowAggregateRoot:
         """Obtain the aggregate root form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionRow class.")

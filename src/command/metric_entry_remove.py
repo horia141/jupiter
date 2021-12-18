@@ -5,7 +5,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.metrics.commands.metric_entry_remove import MetricEntryRemoveCommand
+from use_cases.metrics.entry.remove import MetricEntryRemoveCommand
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)

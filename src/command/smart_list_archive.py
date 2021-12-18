@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.smart_lists.commands.smart_list_archive import SmartListArchiveCommand
+from use_cases.smart_lists.archive import SmartListArchiveCommand
 from domain.smart_lists.smart_list_key import SmartListKey
 
 LOGGER = logging.getLogger(__name__)

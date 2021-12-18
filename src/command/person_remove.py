@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.prm.commands.person_remove import PersonRemoveCommand
+from use_cases.prm.person.remove import PersonRemoveCommand
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)

@@ -7,15 +7,15 @@ import pendulum
 from pendulum import UTC
 from pendulum.tz.timezone import Timezone
 
-from domain.common.recurring_task_due_at_day import RecurringTaskDueAtDay
-from domain.common.recurring_task_due_at_month import RecurringTaskDueAtMonth
-from domain.common.recurring_task_due_at_time import RecurringTaskDueAtTime
-from domain.common.recurring_task_skip_rule import RecurringTaskSkipRule
-from domain.common.timezone import Timezone as DomainTimezone
-from domain.common.entity_name import EntityName
-from domain.common.adate import ADate
-from domain.common.timestamp import Timestamp
-from domain.common.recurring_task_period import RecurringTaskPeriod
+from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
+from domain.recurring_task_skip_rule import RecurringTaskSkipRule
+from domain.timezone import Timezone as DomainTimezone
+from domain.entity_name import EntityName
+from domain.adate import ADate
+from domain.timestamp import Timestamp
+from domain.recurring_task_period import RecurringTaskPeriod
 
 
 class Schedule(abc.ABC):
@@ -303,7 +303,7 @@ class WeeklySchedule(Schedule):
         return ADate.from_date(self._date.start_of("week"))
 
     @property
-    def end_day(self) -> pendulum.Date:
+    def end_day(self) -> ADate:
         """The end day of the interval represented by the schedule block."""
         return ADate.from_date(self._date.end_of("week"))
 

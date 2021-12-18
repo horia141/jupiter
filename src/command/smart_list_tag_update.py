@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.smart_lists.commands.smart_list_tag_update import SmartListTagUpdateCommand
+from use_cases.smart_lists.tag.update import SmartListTagUpdateCommand
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import UpdateAction, EntityId
 

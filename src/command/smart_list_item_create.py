@@ -4,11 +4,11 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.common.entity_name import EntityName
-from domain.common.url import URL
-from domain.smart_lists.commands.smart_list_item_create import SmartListItemCreateCommand
+from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
+from domain.url import URL
+from use_cases.smart_lists.item.create import SmartListItemCreateCommand
 
 LOGGER = logging.getLogger(__name__)
 

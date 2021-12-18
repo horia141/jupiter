@@ -3,7 +3,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.metrics.commands.metric_archive import MetricArchiveCommand
+from use_cases.metrics.archive import MetricArchiveCommand
 from domain.metrics.metric_key import MetricKey
 
 

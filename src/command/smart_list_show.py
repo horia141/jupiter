@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.smart_lists.commands.smart_list_find import SmartListFindCommand
+from use_cases.smart_lists.find import SmartListFindCommand
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 
@@ -54,7 +54,7 @@ class SmartListShow(command.Command):
         elif not args.show_done and args.show_not_done:
             filter_is_done = False
         filter_tag_names = [SmartListTagName.from_raw(t) for t in args.filter_tag_names] \
-            if len(args.filter_tags) > 0 else None
+            if len(args.filter_tag_names) > 0 else None
         response = self._command.execute(SmartListFindCommand.Args(
             allow_archived=show_archived, filter_keys=keys, filter_is_done=filter_is_done,
             filter_tag_names=filter_tag_names))

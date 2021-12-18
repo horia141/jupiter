@@ -5,7 +5,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.metrics.commands.metric_entry_archive import MetricEntryArchiveCommand
+from use_cases.metrics.entry.archive import MetricEntryArchiveCommand
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)

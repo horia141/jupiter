@@ -6,7 +6,7 @@ from typing import cast, Optional
 
 import dotenv
 
-from domain.common.timezone import Timezone
+from domain.timezone import Timezone
 
 
 @dataclass(frozen=True)

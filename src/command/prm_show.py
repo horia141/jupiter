@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from command.command import Command
-from domain.prm.commands.prm_database_find import PrmDatabaseFindCommand
+from use_cases.prm.find import PrmDatabaseFindCommand
 from models.framework import EntityId
 
 

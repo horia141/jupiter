@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from controllers.workspaces import WorkspacesController
+from use_cases.workspaces.find import WorkspaceFindCommand
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,11 +13,11 @@ LOGGER = logging.getLogger(__name__)
 class WorkspaceShow(command.Command):
     """Command class for showing the workspace."""
 
-    _workspaces_controller: Final[WorkspacesController]
+    _command: Final[WorkspaceFindCommand]
 
-    def __init__(self, workspaces_controller: WorkspacesController) -> None:
+    def __init__(self, the_command: WorkspaceFindCommand) -> None:
         """Constructor."""
-        self._workspaces_controller = workspaces_controller
+        self._command = the_command
 
     @staticmethod
     def name() -> str:
@@ -34,6 +34,6 @@ class WorkspaceShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        response = self._workspaces_controller.load_workspace()
+        response = self._command.execute(None)
         print(f'{response.workspace.name} timezone={response.workspace.timezone}' +
               (f' default project is "{response.default_project.name}"' if response.default_project else ''))

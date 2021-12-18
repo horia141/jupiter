@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from command import command
-from domain.smart_lists.commands.smart_list_tag_remove import SmartListTagRemoveCommand
+from use_cases.smart_lists.tag.remove import SmartListTagRemoveCommand
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)

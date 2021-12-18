@@ -5,9 +5,9 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from domain.common.adate import ADate
-from domain.metrics.commands.metric_entry_create import MetricEntryCreateCommand
+from domain.adate import ADate
 from domain.metrics.metric_key import MetricKey
+from use_cases.metrics.entry.create import MetricEntryCreateCommand
 
 LOGGER = logging.getLogger(__name__)
 

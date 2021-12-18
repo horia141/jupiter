@@ -1,0 +1,1 @@
+"""Inbox tasks infra classes."""

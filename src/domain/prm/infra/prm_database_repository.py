@@ -17,5 +17,5 @@ class PrmDatabaseRepository(Repository, abc.ABC):
         """Save a PRM database - it should already exist."""
 
     @abc.abstractmethod
-    def load(self) -> PrmDatabase:
+    def find(self) -> PrmDatabase:
         """Load the PRM database."""

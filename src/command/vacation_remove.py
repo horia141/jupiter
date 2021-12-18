@@ -4,7 +4,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from domain.vacations.commands.vacation_remove import VacationRemoveCommand
+from use_cases.vacations.remove import VacationRemoveCommand
 from models.framework import EntityId
 
 LOGGER = logging.getLogger(__name__)

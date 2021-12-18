@@ -3,15 +3,15 @@ import abc
 from typing import Iterable
 
 from domain.prm.notion_person import NotionPerson
+from domain.workspaces.notion_workspace import NotionWorkspace
 from models.framework import EntityId, NotionId
-from remote.notion.common import NotionPageLink
 
 
 class PrmNotionManager(abc.ABC):
     """A manager of Notion-side persons."""
 
     @abc.abstractmethod
-    def upsert_root_notion_structure(self, parent_page: NotionPageLink) -> None:
+    def upsert_root_notion_structure(self, notion_workspace: NotionWorkspace) -> None:
         """Upsert the root Notion structure."""
 
     @abc.abstractmethod

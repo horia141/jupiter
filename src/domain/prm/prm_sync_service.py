@@ -3,13 +3,13 @@ import logging
 import typing
 from typing import Final, Iterable, Dict, Optional
 
-from domain.common.sync_prefer import SyncPrefer
+from domain.errors import ServiceError
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
+from domain.sync_prefer import SyncPrefer
 from models.framework import EntityId
-from service.errors import ServiceError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class PrmSyncService:
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
         with self._prm_engine.get_unit_of_work() as uow:
-            prm_database = uow.prm_database_repository.load()
+            prm_database = uow.prm_database_repository.find()
             all_persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=filter_ref_ids)
         all_persons_set: Dict[EntityId, Person] = {v.ref_id: v for v in all_persons}
 
@@ -65,7 +65,7 @@ class PrmSyncService:
                 LOGGER.info(f"Linked the new person with local entries")
 
                 notion_person = notion_person.join_with_aggregate_root(new_person)
-                self._prm_notion_manager.upsert_person(notion_person)
+                self._prm_notion_manager.save_person(notion_person)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_person}")
 
                 all_notion_persons_set[new_person.ref_id] = notion_person

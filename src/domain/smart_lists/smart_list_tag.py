@@ -1,7 +1,7 @@
 """A smart list tag."""
 from dataclasses import dataclass, field
 
-from domain.common.timestamp import Timestamp
+from domain.timestamp import Timestamp
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
 
