@@ -2,9 +2,10 @@
 from dataclasses import dataclass
 from typing import NewType, List, Optional
 
+from domain.entity_name import EntityName
+from models.framework import NotionId
 
 NotionLockKey = NewType("NotionLockKey", str)
-NotionId = NewType("NotionId", str)
 
 
 class CollectionError(Exception):
@@ -47,20 +48,11 @@ class NotionCollectionLinkExtra:
     name: str
 
 
-@dataclass()
-class NotionCollectionTagLink:
-    """Info about a particular tag in a collection."""
-    notion_id: NotionId
-    collection_id: NotionId
-    name: str
-    ref_id: Optional[str]
-
-
-def format_name_for_option(option_name: str) -> str:
+def format_name_for_option(option_name: EntityName) -> str:
     """Nicely format the name of an option."""
     output = ""
     last_char = None
-    for char in option_name:
+    for char in str(option_name):
         if char.isalnum() or (char == " " and last_char != " "):
             output += char
             last_char = char

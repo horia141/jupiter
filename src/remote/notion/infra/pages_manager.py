@@ -1,14 +1,14 @@
 """The handler of ad-hoc pages on Notion side."""
+import typing
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Optional, Final
 
-import typing
-
-from remote.notion.common import NotionPageLink, NotionId, NotionLockKey, NotionPageLinkExtra
+from models.framework import JSONDictType, NotionId
+from remote.notion.common import NotionPageLink, NotionLockKey, NotionPageLinkExtra
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import JSONDictType, BaseRecordRow, RecordsStorage
+from utils.storage import BaseRecordRow, RecordsStorage
 from utils.time_provider import TimeProvider
 
 
@@ -51,22 +51,23 @@ class PagesManager:
 
         if found_page_lock_row:
             page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
-            page_block.title = name
+            if page_block.alive:
+                page_block.title = name
 
-            if page_block.get("parent_id") != parent_page.page_id:
-                # Kind of expensive operation here!
-                page_block.move_to(notion_client.get_regular_page(parent_page.page_id))
+                if page_block.get("parent_id") != parent_page.page_id:
+                    # Kind of expensive operation here!
+                    page_block.move_to(notion_client.get_regular_page(parent_page.page_id))
 
-            self._storage.update(found_page_lock_row)
+                self._storage.update(found_page_lock_row)
 
-            return NotionPageLink(page_id=page_block.id)
-        else:
-            parent_page_block = notion_client.get_regular_page(parent_page.page_id)
-            new_page_block = notion_client.create_regular_page(name, parent_page_block)
+                return NotionPageLink(page_id=page_block.id)
 
-            self._storage.create(_PageLockRow(key=key, page_id=new_page_block.id))
+        parent_page_block = notion_client.get_regular_page(parent_page.page_id)
+        new_page_block = notion_client.create_regular_page(name, parent_page_block)
 
-            return NotionPageLink(page_id=new_page_block.id)
+        self._storage.create(_PageLockRow(key=key, page_id=new_page_block.id))
+
+        return NotionPageLink(page_id=new_page_block.id)
 
     def remove_page(self, key: NotionLockKey) -> NotionPageLink:
         """Remove a page with a given key."""

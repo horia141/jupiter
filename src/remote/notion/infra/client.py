@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from typing import Final, Optional, Iterable, List
 
 from notion.block import PageBlock, CollectionViewPageBlock, Block, CollectionViewBlock
-from notion.client import NotionClient as BaseNotionClient
+from notion.client import NotionClient as BaseNotionClient, Transaction
 from notion.collection import CollectionView, Collection, QueryResult, CollectionRowBlock
 from notion.space import Space
 
-from models.basic import WorkspaceSpaceId, WorkspaceToken
-from remote.notion.common import NotionId
-from utils.storage import JSONDictType
+from domain.workspaces.notion_token import NotionToken
+from domain.workspaces.notion_space_id import NotionSpaceId
+from models.framework import JSONDictType, NotionId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ class NotionClientException(Exception):
 @dataclass(frozen=True)
 class NotionClientConfig:
     """Configuration for the notion client."""
-    space_id: WorkspaceSpaceId
-    token: WorkspaceToken
+    space_id: NotionSpaceId
+    token: NotionToken
 
 
 @enum.unique
@@ -55,8 +55,12 @@ class NotionClient:
 
     def __init__(self, config: NotionClientConfig):
         """Constructor."""
-        self._client = BaseNotionClient(token_v2=config.token)
-        self._space = self._client.get_space(space_id=config.space_id)
+        self._client = BaseNotionClient(token_v2=str(config.token))
+        self._space = self._client.get_space(space_id=str(config.space_id))
+
+    def with_transaction(self) -> Transaction:
+        """Start a transaction context manager."""
+        return self._client.as_atomic_transaction()
 
     # Page structures.
 

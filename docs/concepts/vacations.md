@@ -3,11 +3,15 @@
 A _vacation_ is a set period of time when some scheduled tasks aren't scheduled. Vacations are attached to the
 workspace. They can be created both via Jupiter commands and in Notion.
 
+In the workspace, you can see the vacations:
+
+![Vacations](../assets/concepts-workspace.png)
+
 After creating a workspace you'll have an empty set of vacations. Adding to them you can obtain something like:
 
-![Workspace image](../assets/concepts-vacations.png)
+![Vacations](../assets/concepts-vacations.png)
 
-Alternatively you can see vacations via `vacations-show` like so:
+Alternatively you can see vacations via `vacation-show` like so:
 
 ```bash
 $ jupiter vacations-show
@@ -29,12 +33,11 @@ start date.
 
 You can:
 
-* Create a vacation via `vacations-add`, or by creating a new row in the "Vacations" page.
-* Remove a vacation via `vacations-remove`, or by removing the row in the "Vacations" page.
-* Change the name of a vacations via `vacations-set-name`, or by changing the name of the row in the "Vacations" page.
-* Change the start date of a vacation via `vacations-set-start-date`, or by changing it in the "Vacations" page. The
+* Create a vacation via `vacation-add`, or by creating a new row in the "Vacations" page.
+* Remove a vacation via `vacation-remove`, or by removing the row in the "Vacations" page.
+* Change the name of a vacations via `vacation-update`, or by changing the name of the row in the "Vacations" page.
+* Change the start date of a vacation via `vacation-update`, or by changing it in the "Vacations" page. The
   start date cannot be after the end date, and either the command or the sync will fail if it is.
-* Change the end date of a vacation via `vacations-set-end-date`, or by changing it in the "Vacations" page. The
+* Change the end date of a vacation via `vacation-update`, or by changing it in the "Vacations" page. The
   end date cannot be before the start date, and either the command or the sync will fail if it is.
-* Synchronise changes between the local store and Notion via `vacations-sync`.
-* See a summary of the workspace via `vacations-show`.
+* See a summary of the workspace via `vacation-show`.

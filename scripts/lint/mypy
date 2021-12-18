@@ -32,3 +32,12 @@ ignore_missing_imports = True
 
 [mypy-nested_dataclasses.*]
 ignore_missing_imports = True
+
+[mypy-sqlalchemy.*]
+ignore_missing_imports = True
+
+[mypy-alembic.*]
+ignore_missing_imports = True
+
+[mypy-icecream.*]
+ignore_missing_imports = True

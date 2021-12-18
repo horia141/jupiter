@@ -17,6 +17,7 @@ cloc \
   requirements.txt \
   requirements-dev.txt \
   scripts/ \
+  migrations/ \
   src/
 
 libyear -r requirements.txt

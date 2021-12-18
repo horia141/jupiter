@@ -46,8 +46,8 @@ $ docker run \
     horia141/jupiter:latest workspace-init \
     --name "Plans" \
     --timezone "YOUR_TIMEZONE_HERE" \
-    --space-id="YOUR_SPACE_ID_HERE" \
-    --token="YOUR_TOKEN_HERE"
+    --notion-space-id="YOUR_SPACE_ID_HERE" \
+    --notion-token="YOUR_TOKEN_HERE"
 $ git add . # Adds everything in the directory
 $ git commit -a -m "Initial commit"
 ```

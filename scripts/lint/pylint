@@ -141,7 +141,8 @@ disable=print-statement,
         comprehension-escape,
         no-else-return,
         no-elif-return,
-        duplicate-code
+        duplicate-code,
+        fixme # TODO: Revert this
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -428,7 +429,7 @@ good-names=i,
            _
 
 # Include a hint for the correct naming format with invalid-name.
-include-naming-hint=no
+include-naming-hint=yes
 
 # Naming style matching correct inline iteration names.
 inlinevar-naming-style=any
@@ -552,10 +553,10 @@ max-args=32
 max-attributes=32
 
 # Maximum number of boolean expressions in an if statement (see R0916).
-max-bool-expr=5
+max-bool-expr=10
 
 # Maximum number of branch for function / method body.
-max-branches=40
+max-branches=64
 
 # Maximum number of locals for function / method body.
 max-locals=64
@@ -567,7 +568,7 @@ max-parents=7
 max-public-methods=64
 
 # Maximum number of return / yield for function / method body.
-max-returns=6
+max-returns=16
 
 # Maximum number of statements in function / method body.
 max-statements=200

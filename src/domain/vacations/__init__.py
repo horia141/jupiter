@@ -1,0 +1,1 @@
+"""Domain logic for vacations."""
