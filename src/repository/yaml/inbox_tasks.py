@@ -95,8 +95,7 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
         return [self._row_to_entity(itr) for itr in self._storage.find_all(
             allow_archived=allow_archived,
             ref_id=In(*filter_ref_ids) if filter_ref_ids else None,
-            project_ref_id=In(
-                *filter_project_ref_ids) if filter_project_ref_ids else None)]
+            project_ref_id=In(*filter_project_ref_ids) if filter_project_ref_ids else None)]
 
     def remove(self, ref_id: EntityId) -> InboxTaskCollection:
         """Hard remove an inbox task collection - an irreversible operation."""

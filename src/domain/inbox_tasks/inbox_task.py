@@ -160,7 +160,7 @@ class InboxTask(AggregateRoot):
         return inbox_task
 
     @staticmethod
-    def new_inbox_task_for_person(
+    def new_inbox_task_for_person_catch_up(
             inbox_task_collection_ref_id: EntityId, name: EntityName, person_ref_id: EntityId,
             recurring_task_timeline: str, eisen: List[Eisen],
             difficulty: Optional[Difficulty], recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
@@ -174,7 +174,7 @@ class InboxTask(AggregateRoot):
             _last_modified_time=created_time,
             _events=[],
             _inbox_task_collection_ref_id=inbox_task_collection_ref_id,
-            _source=InboxTaskSource.PERSON,
+            _source=InboxTaskSource.PERSON_CATCH_UP,
             _big_plan_ref_id=None,
             _recurring_task_ref_id=None,
             _metric_ref_id=None,
@@ -184,6 +184,41 @@ class InboxTask(AggregateRoot):
             _eisen=eisen,
             _difficulty=difficulty,
             _actionable_date=actionable_date,
+            _due_date=due_date,
+            _recurring_timeline=recurring_task_timeline,
+            _recurring_type=RecurringTaskType.CHORE,
+            _recurring_gen_right_now=recurring_task_gen_right_now,
+            _accepted_time=created_time,
+            _working_time=None,
+            _completed_time=None)
+        inbox_task.record_event(Event2.make_event_from_frame_args(InboxTask.Created, created_time))
+
+        return inbox_task
+
+    @staticmethod
+    def new_inbox_task_for_person_birthday(
+            inbox_task_collection_ref_id: EntityId, name: EntityName, person_ref_id: EntityId,
+            recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp, preparation_days_cnt: int,
+            due_date: ADate, created_time: Timestamp) -> 'InboxTask':
+        """Create an inbox task."""
+        inbox_task = InboxTask(
+            _ref_id=BAD_REF_ID,
+            _archived=False,
+            _created_time=created_time,
+            _archived_time=None,
+            _last_modified_time=created_time,
+            _events=[],
+            _inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            _source=InboxTaskSource.PERSON_BIRTHDAY,
+            _big_plan_ref_id=None,
+            _recurring_task_ref_id=None,
+            _metric_ref_id=None,
+            _person_ref_id=person_ref_id,
+            _name=InboxTask._build_name_for_birthday_task(name),
+            _status=InboxTaskStatus.RECURRING,
+            _eisen=[Eisen.IMPORTANT],
+            _difficulty=Difficulty.EASY,
+            _actionable_date=due_date.subtract_days(preparation_days_cnt),
             _due_date=due_date,
             _recurring_timeline=recurring_task_timeline,
             _recurring_type=RecurringTaskType.CHORE,
@@ -258,7 +293,7 @@ class InboxTask(AggregateRoot):
         if self._source is not InboxTaskSource.METRIC:
             raise ServiceValidationError(
                 f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
-        self._name = name
+        self._name = self._build_name_for_collection_task(name)
         self._actionable_date = actionable_date
         self._due_date = due_time
         self._eisen = eisen
@@ -267,18 +302,32 @@ class InboxTask(AggregateRoot):
         self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
         return self
 
-    def update_link_to_person(
+    def update_link_to_person_catch_up(
             self, name: EntityName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a person."""
-        if self._source is not InboxTaskSource.PERSON:
+        if self._source is not InboxTaskSource.PERSON_CATCH_UP:
             raise ServiceValidationError(
                 f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
-        self._name = name
+        self._name = self._build_name_for_catch_up_task(name)
         self._actionable_date = actionable_date
         self._due_date = due_time
         self._eisen = eisen
         self._difficulty = difficulty
+        self._recurring_timeline = recurring_timeline
+        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        return self
+
+    def update_link_to_person_birthday(
+            self, name: EntityName, recurring_timeline: str, preparation_days_cnt: int,
+            due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
+        """Update all the info associated with a person."""
+        if self._source is not InboxTaskSource.PERSON_BIRTHDAY:
+            raise ServiceValidationError(
+                f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
+        self._name = self._build_name_for_birthday_task(name)
+        self._actionable_date = due_time.subtract_days(preparation_days_cnt)
+        self._due_date = due_time
         self._recurring_timeline = recurring_timeline
         self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
         return self
@@ -497,6 +546,10 @@ class InboxTask(AggregateRoot):
     @staticmethod
     def _build_name_for_catch_up_task(name: EntityName) -> EntityName:
         return EntityName.from_raw(f"Catch up with {name}")
+
+    @staticmethod
+    def _build_name_for_birthday_task(name: EntityName) -> EntityName:
+        return EntityName.from_raw(f"Wish happy birthday to {name}")
 
     @staticmethod
     def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:

@@ -24,7 +24,8 @@ class Report(command.Command):
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.RECURRING_TASK,
         InboxTaskSource.METRIC,
-        InboxTaskSource.PERSON
+        InboxTaskSource.PERSON_CATCH_UP,
+        InboxTaskSource.PERSON_BIRTHDAY
     ]
 
     _global_properties: Final[GlobalProperties]

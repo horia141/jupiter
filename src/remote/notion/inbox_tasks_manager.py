@@ -95,9 +95,13 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": InboxTaskSource.METRIC.for_notion(),
             "color": "red"
         },
-        "Person": {
-            "name": InboxTaskSource.PERSON.for_notion(),
+        "Person Catchup": {
+            "name": InboxTaskSource.PERSON_CATCH_UP.for_notion(),
             "color": "purple"
+        },
+        "Person Birthday": {
+            "name": InboxTaskSource.PERSON_BIRTHDAY.for_notion(),
+            "color": "orange"
         }
     }
 

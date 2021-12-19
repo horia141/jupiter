@@ -108,6 +108,13 @@ class ADate(Value):
         else:
             return cast(str, adate._surely_the_date.to_date_string())
 
+    def subtract_days(self, days_cnt: int) -> 'ADate':
+        """Subtract these number of days from this date."""
+        if self._the_datetime is not None:
+            return ADate.from_date_and_time(self._the_datetime.subtract(days=days_cnt))
+        else:
+            return ADate.from_date(self._surely_the_date.subtract(days=days_cnt))
+
     def start_of_day(self) -> 'ADate':
         """The start of the day."""
         if self._the_datetime is not None:

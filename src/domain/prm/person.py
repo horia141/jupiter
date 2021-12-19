@@ -107,6 +107,16 @@ class Person(AggregateRoot):
         return self
 
     @property
+    def preparation_days_cnt_for_birthday(self) -> int:
+        """How many days in advance to prepare for the birthday of this person."""
+        if self._relationship == PersonRelationship.FAMILY:
+            return 28
+        elif self._relationship == PersonRelationship.FRIEND:
+            return 14
+        else:
+            return 2
+
+    @property
     def name(self) -> EntityName:
         """The name of the person."""
         return self._name

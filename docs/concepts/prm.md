@@ -44,10 +44,14 @@ with [metrics collection](metrics.md).
   setup, and they have the same meanings as the [recurring task](recurring-tasks.md) counterparts.
 * If the period is missing, then no generation occurs, and the whole parameter set is ignored.
 
-A person can have a birthday. It needs to be specified with the format of `12 Apr`. An
-inbox task is defined yearly for this.
+A person can have a birthday. It needs to be specified with the format like `12 Apr`. An
+inbox task is defined yearly for this and also generated.
 
 * If the birthday is missing, the no generation occurs.
+* The birthday has an actionable date so it doesn't clog up the inbox. It becomes visible like:
+  * `28` days in advance for family
+  * `14` days in advance for friends
+  * `2` days in advance for everyone else
 
 In general, you're going to persons from Notion, and use [sync](notion-local-sync.md) to bring them
 over to the [local store](local-storage.md).

@@ -8,6 +8,7 @@ from domain.big_plan_essentials import BigPlanEssentials
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from domain.big_plans.service.big_plan_sync_service import BigPlanSyncService
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -20,12 +21,16 @@ from domain.metrics.metric_key import MetricKey
 from domain.metrics.metric_sync_service import MetricSyncService
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.person_birthday import PersonBirthday
 from domain.prm.prm_sync_service import PrmSyncService
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.infra.project_notion_manager import ProjectNotionManager
 from domain.projects.project_key import ProjectKey
 from domain.projects.project_sync_service import ProjectSyncService
+from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
+from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_gen_params import RecurringTaskGenParams
+from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from domain.recurring_tasks.service.recurring_task_sync_service import RecurringTaskSyncService
@@ -417,7 +422,11 @@ class SyncCommand(Command['SyncCommand.Args', None]):
             all_persons_by_ref_id = {p.ref_id: p for p in persons}
             with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                 all_person_catch_up_tasks = inbox_task_uow.inbox_task_repository.find_all(
-                    allow_archived=True, filter_person_ref_ids=[p.ref_id for p in all_persons])
+                    allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
+                    filter_person_ref_ids=[p.ref_id for p in all_persons])
+                all_person_birthday_tasks = inbox_task_uow.inbox_task_repository.find_all(
+                    allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
+                    filter_person_ref_ids=[p.ref_id for p in all_persons])
 
             for inbox_task in all_person_catch_up_tasks:
                 if inbox_task.archived:
@@ -439,17 +448,55 @@ class SyncCommand(Command['SyncCommand.Args', None]):
                         typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                         None, catch_up_params.actionable_from_day, catch_up_params.actionable_from_month,
                         catch_up_params.due_at_time, catch_up_params.due_at_day, catch_up_params.due_at_month)
-                    inbox_task.update_link_to_person(name=schedule.full_name, recurring_timeline=schedule.timeline,
-                                                     eisen=catch_up_params.eisen, difficulty=catch_up_params.difficulty,
-                                                     actionable_date=schedule.actionable_date,
-                                                     due_time=schedule.due_time,
-                                                     modification_time=self._time_provider.get_current_time())
+                    inbox_task.update_link_to_person_catch_up(
+                        name=schedule.full_name, recurring_timeline=schedule.timeline,
+                        eisen=catch_up_params.eisen, difficulty=catch_up_params.difficulty,
+                        actionable_date=schedule.actionable_date,
+                        due_time=schedule.due_time,
+                        modification_time=self._time_provider.get_current_time())
 
                     with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                         inbox_task_uow.inbox_task_repository.save(inbox_task)
 
                     notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id,
                                                                                         inbox_task.ref_id)
+                    notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
+                        inbox_task, NotionInboxTask.DirectInfo(None))
+                    self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                    LOGGER.info("Applied Notion changes")
+
+            for inbox_task in all_person_birthday_tasks:
+                if inbox_task.archived:
+                    continue
+                person = all_persons_by_ref_id[typing.cast(EntityId, inbox_task.person_ref_id)]
+                if args.filter_person_ref_ids is not None and person.ref_id not in args.filter_person_ref_ids:
+                    LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
+                    continue
+                LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
+                if person.archived:
+                    if not inbox_task.archived:
+                        InboxTaskArchiveService(
+                            self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager)\
+                            .do_it(inbox_task)
+                else:
+                    birthday = typing.cast(PersonBirthday, person.birthday)
+                    schedule = schedules.get_schedule(
+                        RecurringTaskPeriod.YEARLY, person.name,
+                        typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
+                        None, None, None, None,
+                        RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, birthday.day),
+                        RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, birthday.month))
+                    inbox_task.update_link_to_person_birthday(
+                        name=schedule.full_name, recurring_timeline=schedule.timeline,
+                        preparation_days_cnt=person.preparation_days_cnt_for_birthday,
+                        due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
+
+                    with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
+                        inbox_task_uow.inbox_task_repository.save(inbox_task)
+
+                    notion_inbox_task = \
+                        self._inbox_task_notion_manager.load_inbox_task(
+                            inbox_task.project_ref_id, inbox_task.ref_id)
                     notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                         inbox_task, NotionInboxTask.DirectInfo(None))
                     self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)

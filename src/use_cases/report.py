@@ -219,7 +219,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
                       and it.recurring_task_ref_id in args.filter_recurring_task_ref_ids)))
                 or (it.source is InboxTaskSource.METRIC and
                     (not (args.filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))
-                or (it.source is InboxTaskSource.PERSON and
+                or ((it.source is InboxTaskSource.PERSON_CATCH_UP or it.source is InboxTaskSource.PERSON_BIRTHDAY) and
                     (not (args.filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))]
 
         with self._big_plan_engine.get_unit_of_work() as big_plan_uow:

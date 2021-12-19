@@ -14,7 +14,8 @@ class InboxTaskSource(Value, enum.Enum):
     BIG_PLAN = "big-plan"
     RECURRING_TASK = "recurring-task"
     METRIC = "metric"
-    PERSON = "person"
+    PERSON_CATCH_UP = "person-catch-up"
+    PERSON_BIRTHDAY = "person-birthday"
 
     @property
     def is_from_script(self) -> bool:

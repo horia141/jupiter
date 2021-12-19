@@ -7,6 +7,7 @@ from typing import Final, Optional, List
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
+from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -158,10 +159,11 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
         notion_person = notion_person.join_with_aggregate_root(person)
         self._prm_notion_manager.save_person(notion_person)
 
-        # Change the inbox tasks
+        # Change the catch up inbox tasks
         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
             person_catch_up_tasks = inbox_task_uow.inbox_task_repository.find_all(
-                allow_archived=True, filter_person_ref_ids=[person.ref_id])
+                allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
+                filter_person_ref_ids=[person.ref_id])
 
         if person.catch_up_params is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
@@ -178,11 +180,50 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
                     person.catch_up_params.due_at_time, person.catch_up_params.due_at_day,
                     person.catch_up_params.due_at_month)
 
-                inbox_task.update_link_to_person(name=schedule.full_name, recurring_timeline=schedule.timeline,
-                                                 eisen=person.catch_up_params.eisen,
-                                                 difficulty=person.catch_up_params.difficulty,
-                                                 actionable_date=schedule.actionable_date, due_time=schedule.due_time,
-                                                 modification_time=self._time_provider.get_current_time())
+                inbox_task.update_link_to_person_catch_up(
+                    name=schedule.full_name, recurring_timeline=schedule.timeline,
+                    eisen=person.catch_up_params.eisen,
+                    difficulty=person.catch_up_params.difficulty,
+                    actionable_date=schedule.actionable_date, due_time=schedule.due_time,
+                    modification_time=self._time_provider.get_current_time())
+                # Situation 2a: we're handling the same project.
+                with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
+                    inbox_task_uow.inbox_task_repository.save(inbox_task)
+
+                notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id,
+                                                                                    inbox_task.ref_id)
+                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
+                    inbox_task, NotionInboxTask.DirectInfo(None))
+                self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                LOGGER.info("Applied Notion changes")
+
+        # Change the birthday inbox tasks
+        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
+            person_birthday_tasks = inbox_task_uow.inbox_task_repository.find_all(
+                allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
+                filter_person_ref_ids=[person.ref_id])
+
+        if person.birthday is None:
+            # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
+            for inbox_task in person_birthday_tasks:
+                InboxTaskArchiveService(
+                    self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager)\
+                    .do_it(inbox_task)
+        else:
+            # Situation 2: we need to update the existing persons.
+            for inbox_task in person_birthday_tasks:
+                schedule = schedules.get_schedule(
+                    RecurringTaskPeriod.YEARLY, person.name,
+                    typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
+                    self._global_properties.timezone,
+                    None, None, None, None,
+                    RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, person.birthday.day),
+                    RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, person.birthday.month))
+
+                inbox_task.update_link_to_person_birthday(
+                    name=schedule.full_name, recurring_timeline=schedule.timeline,
+                    preparation_days_cnt=person.preparation_days_cnt_for_birthday, due_time=schedule.due_time,
+                    modification_time=self._time_provider.get_current_time())
                 # Situation 2a: we're handling the same project.
                 with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                     inbox_task_uow.inbox_task_repository.save(inbox_task)

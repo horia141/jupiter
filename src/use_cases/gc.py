@@ -262,8 +262,8 @@ class GCCommand(Command['GCCommand.Args', None]):
                 allowed_person_ref_ids = self._prm_notion_manager.load_all_saved_person_ref_ids()
 
                 with self._prm_engine.get_unit_of_work() as prm_uow:
-                    persons = prm_uow.person_repository.find_all(allow_archived=True,
-                                                                 filter_ref_ids=allowed_person_ref_ids)
+                    persons = \
+                        prm_uow.person_repository.find_all(allow_archived=True, filter_ref_ids=allowed_person_ref_ids)
                 self._do_drop_all_archived_persons(persons)
 
     def _archive_done_inbox_tasks_for_project(self, project: Project) -> None:
