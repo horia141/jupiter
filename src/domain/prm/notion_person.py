@@ -17,9 +17,14 @@ from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 from remote.notion.common import clean_eisenhower
 
 
-@dataclass()
-class NotionPerson(NotionRow[Person, None, EntityId]):
+@dataclass(frozen=True)
+class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
     """A person on Notion-side."""
+
+    @dataclass(frozen=True)
+    class InverseExtraInfo:
+        """Inverse info."""
+        project_ref_id: EntityId
 
     name: str
     archived: bool
@@ -89,7 +94,7 @@ class NotionPerson(NotionRow[Person, None, EntityId]):
             if aggregate_root.catch_up_params and aggregate_root.catch_up_params.due_at_month else None,
             birthday=str(aggregate_root.birthday) if aggregate_root.birthday else None)
 
-    def new_aggregate_root(self, extra_info: EntityId) -> Person:
+    def new_aggregate_root(self, extra_info: InverseExtraInfo) -> Person:
         """Construct a new aggregate root from this notion row."""
         person_name = EntityName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
@@ -97,7 +102,7 @@ class NotionPerson(NotionRow[Person, None, EntityId]):
         if self.catch_up_period is not None:
             catch_up_period = RecurringTaskPeriod.from_raw(self.catch_up_period)
             person_catch_up_params = RecurringTaskGenParams(
-                project_ref_id=extra_info,
+                project_ref_id=extra_info.project_ref_id,
                 period=catch_up_period,
                 eisen=[Eisen.from_raw(e) for e in clean_eisenhower(self.catch_up_eisen)],
                 difficulty=Difficulty.from_raw(self.catch_up_difficulty)
@@ -121,7 +126,7 @@ class NotionPerson(NotionRow[Person, None, EntityId]):
             birthday=person_birthday,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: Person, extra_info: EntityId) -> Person:
+    def apply_to_aggregate_root(self, aggregate_root: Person, extra_info: InverseExtraInfo) -> Person:
         """Obtain the aggregate root form of this, with a possible error."""
         person_name = EntityName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
@@ -129,7 +134,7 @@ class NotionPerson(NotionRow[Person, None, EntityId]):
         if self.catch_up_period is not None:
             catch_up_period = RecurringTaskPeriod.from_raw(self.catch_up_period)
             person_catch_up_params = RecurringTaskGenParams(
-                project_ref_id=extra_info,
+                project_ref_id=extra_info.project_ref_id,
                 period=catch_up_period,
                 eisen=[Eisen.from_raw(e) for e in
                        clean_eisenhower(self.catch_up_eisen)],

@@ -6,11 +6,11 @@ from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.InverseExtraInfo']):
     """A smart list tag on Notion-side."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class InverseExtraInfo:
         """Extra info for the Notion to app copy."""
         smart_list_ref_id: EntityId

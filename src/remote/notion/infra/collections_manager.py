@@ -484,7 +484,7 @@ class CollectionsManager:
             notion_row = client.create_collection_row(collection)
             LOGGER.info(f"Created new row on Notion side with id={notion_row.id}")
 
-        new_row.notion_id = notion_row.id
+        new_row = dataclasses.replace(notion_row, notion_id=notion_row.id)
 
         new_lock = _CollectionItemLockRow(
             key=item_key,

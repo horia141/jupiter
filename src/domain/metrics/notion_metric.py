@@ -7,7 +7,7 @@ from domain.timestamp import Timestamp
 from models.framework import NotionEntity, BAD_NOTION_ID
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionMetric(NotionEntity[Metric]):
     """A metric on Notion-side."""
 

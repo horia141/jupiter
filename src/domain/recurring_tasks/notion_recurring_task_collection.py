@@ -6,7 +6,7 @@ from domain.timestamp import Timestamp
 from models.framework import NotionEntity, BAD_NOTION_ID
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionRecurringTaskCollection(NotionEntity[RecurringTaskCollection]):
     """A recurring task collection on Notion-side."""
 

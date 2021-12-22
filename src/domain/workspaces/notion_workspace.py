@@ -7,7 +7,7 @@ from domain.workspaces.workspace import Workspace
 from models.framework import BAD_NOTION_ID, NotionEntity
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionWorkspace(NotionEntity[Workspace]):
     """The workspace on Notion-side."""
 

@@ -9,7 +9,7 @@ from domain.vacations.vacation import Vacation
 from models.framework import BAD_NOTION_ID, NotionRow
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionVacation(NotionRow[Vacation, None, None]):
     """A vacation on Notion-side."""
 

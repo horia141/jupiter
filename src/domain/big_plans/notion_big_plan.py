@@ -9,7 +9,7 @@ from domain.entity_name import EntityName
 from models.framework import BAD_NOTION_ID, NotionRow, EntityId
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
     """A big plan on Notion-side."""
 

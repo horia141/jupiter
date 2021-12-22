@@ -10,17 +10,17 @@ from domain.url import URL
 from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionSmartListItem(
         NotionRow[SmartListItem, 'NotionSmartListItem.DirectExtraInfo', 'NotionSmartListItem.InverseExtraInfo']):
     """A smart list item on Notion-side."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class DirectExtraInfo:
         """Extra info for the app to Notion copy."""
         tags_by_ref_id: Dict[EntityId, SmartListTag]
 
-    @dataclass()
+    @dataclass(frozen=True)
     class InverseExtraInfo:
         """Extra info for the Notion to app copy."""
         smart_list_ref_id: EntityId

@@ -6,7 +6,7 @@ from domain.timestamp import Timestamp
 from models.framework import NotionEntity, BAD_NOTION_ID
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionInboxTaskCollection(NotionEntity[InboxTaskCollection]):
     """A inbox task collection on Notion-side."""
 

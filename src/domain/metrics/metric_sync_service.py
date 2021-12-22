@@ -7,6 +7,7 @@ from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
+from domain.metrics.notion_metric_entry import NotionMetricEntry
 from domain.sync_prefer import SyncPrefer
 from domain.timestamp import Timestamp
 from models.framework import EntityId
@@ -85,7 +86,8 @@ class MetricSyncService:
 
             if notion_metric_ref_id is None or notion_metric_entry.ref_id == "":
                 # If the metric entry doesn't exist locally, we create it.
-                new_metric_entry = notion_metric_entry.new_aggregate_root(metric.ref_id)
+                new_metric_entry = \
+                    notion_metric_entry.new_aggregate_root(NotionMetricEntry.InverseExtraInfo(metric.ref_id))
                 with self._metric_engine.get_unit_of_work() as uow:
                     new_metric_entry = uow.metric_entry_repository.create(new_metric_entry)
                 LOGGER.info(f"Found new metric entry from Notion '{new_metric_entry.collection_time}'")
@@ -110,7 +112,9 @@ class MetricSyncService:
                         LOGGER.info(f"Skipping '{notion_metric_entry.collection_time}' because it was not modified")
                         continue
 
-                    updated_metric_entry = notion_metric_entry.apply_to_aggregate_root(metric_entry, metric.ref_id)
+                    updated_metric_entry = \
+                        notion_metric_entry.apply_to_aggregate_root(
+                            metric_entry, NotionMetricEntry.InverseExtraInfo(metric.ref_id))
 
                     with self._metric_engine.get_unit_of_work() as uow:
                         uow.metric_entry_repository.save(updated_metric_entry)

@@ -7,9 +7,14 @@ from domain.metrics.metric_entry import MetricEntry
 from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 
 
-@dataclass()
-class NotionMetricEntry(NotionRow[MetricEntry, None, EntityId]):
+@dataclass(frozen=True)
+class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseExtraInfo']):
     """A metric entry on Notion-side."""
+
+    @dataclass(frozen=True)
+    class InverseExtraInfo:
+        """Inverse info."""
+        metric_ref_id: EntityId
 
     archived: bool
     collection_time: ADate
@@ -39,17 +44,17 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, EntityId]):
             value=aggregate_root.value,
             notes=aggregate_root.notes)
 
-    def new_aggregate_root(self, extra_info: EntityId) -> MetricEntry:
+    def new_aggregate_root(self, extra_info: InverseExtraInfo) -> MetricEntry:
         """Create a new metric entry from this."""
         return MetricEntry.new_metric_entry(
             archived=self.archived,
-            metric_ref_id=extra_info,
+            metric_ref_id=extra_info.metric_ref_id,
             collection_time=self.collection_time,
             value=self.value,
             notes=self.notes,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: EntityId) -> MetricEntry:
+    def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: InverseExtraInfo) -> MetricEntry:
         """Apply to an already existing metric entry."""
         aggregate_root.change_archived(self.archived, self.last_edited_time)
         aggregate_root.change_collection_time(self.collection_time, self.last_edited_time)

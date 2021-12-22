@@ -17,7 +17,7 @@ from domain.recurring_tasks.recurring_task import RecurringTask
 from models.framework import NotionRow, EntityId, BAD_NOTION_ID
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.InverseExtraInfo']):
     """A recurring task on Notion-side."""
 

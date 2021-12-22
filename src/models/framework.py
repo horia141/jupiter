@@ -307,14 +307,15 @@ NotionRowInverseExtraInfo = TypeVar('NotionRowInverseExtraInfo')
 NotionId = NewType("NotionId", str)
 BAD_NOTION_ID = NotionId("bad-notion-id")
 
-@dataclass()
+
+@dataclass(frozen=True)
 class BaseNotionRow:
     """A basic item type, which must contain a Notion id and an local id."""
 
     notion_id: NotionId
     ref_id: Optional[str]
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionEntity(Generic[NotionRowAggregateRoot]):
     """Base class for Notion-side entities."""
 
@@ -340,8 +341,9 @@ class NotionEntity(Generic[NotionRowAggregateRoot]):
         """Obtain the aggregate root form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionRow class.")
 
+
 # This is actually an ABC.
-@dataclass()
+@dataclass(frozen=True)
 class NotionRow(Generic[NotionRowAggregateRoot, NotionRowDirectExtraInfo, NotionRowInverseExtraInfo], BaseNotionRow):
     """Base class for Notion-side collection entities."""
 

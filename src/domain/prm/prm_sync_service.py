@@ -56,7 +56,9 @@ class PrmSyncService:
             LOGGER.info(f"Syncing '{notion_person.name}' (id={notion_person.notion_id})")
 
             if notion_person.ref_id is None or notion_person.ref_id == "":
-                new_person = notion_person.new_aggregate_root(prm_database.catch_up_project_ref_id)
+                new_person = \
+                    notion_person.new_aggregate_root(
+                        NotionPerson.InverseExtraInfo(prm_database.catch_up_project_ref_id))
 
                 with self._prm_engine.get_unit_of_work() as uow:
                     new_person = uow.person_repository.create(new_person)
@@ -79,7 +81,9 @@ class PrmSyncService:
                         LOGGER.info(f"Skipping {notion_person.name} because it was not modified")
                         continue
 
-                    updated_person = notion_person.apply_to_aggregate_root(person, prm_database.catch_up_project_ref_id)
+                    updated_person = \
+                        notion_person.apply_to_aggregate_root(
+                            person, NotionPerson.InverseExtraInfo(prm_database.catch_up_project_ref_id))
 
                     with self._prm_engine.get_unit_of_work() as uow:
                         uow.person_repository.save(updated_person)

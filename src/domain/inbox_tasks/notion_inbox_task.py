@@ -14,16 +14,16 @@ from models.framework import NotionRow, BAD_NOTION_ID, EntityId
 from remote.notion.common import format_name_for_option
 
 
-@dataclass()
+@dataclass(frozen=True)
 class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'NotionInboxTask.InverseInfo']):
     """A inbox task on Notion-side."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class DirectInfo:
         """Info when copying from the app to Notion."""
         big_plan_name: Optional[EntityName]
 
-    @dataclass()
+    @dataclass(frozen=True)
     class InverseInfo:
         """Info when copying from Notion to the app."""
         inbox_task_collection_ref_id: EntityId
