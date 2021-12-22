@@ -166,7 +166,7 @@ class NotionMetricManager(MetricNotionManager):
 
     def load_metric(self, metric: Metric) -> NotionMetric:
         """Load a metric collection."""
-        metric_link = self._collections_manager.get_collection(
+        metric_link = self._collections_manager.load_collection(
             key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
 
         return NotionMetric(
@@ -197,7 +197,7 @@ class NotionMetricManager(MetricNotionManager):
     def save_metric_entry(
             self, metric: Metric, metric_entry: NotionMetricEntry) -> NotionMetricEntry:
         """Update the Notion-side metric with new data."""
-        return self._collections_manager.save(
+        return self._collections_manager.save_collection_item(
             key=NotionLockKey(f"{metric_entry.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
             row=metric_entry,
@@ -205,20 +205,20 @@ class NotionMetricManager(MetricNotionManager):
 
     def load_all_metric_entries(self, metric: Metric) -> typing.Iterable[NotionMetricEntry]:
         """Retrieve all the Notion-side metric entrys."""
-        return self._collections_manager.load_all(
+        return self._collections_manager.load_all_collection_items(
             collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def remove_metric_entry(self, metric_ref_id: EntityId, metric_entry_ref_id: typing.Optional[EntityId]) -> None:
         """Remove a metric on Notion-side."""
-        self._collections_manager.hard_remove(
+        self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{metric_entry_ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"))
 
     def link_local_and_notion_entries_for_metric(
             self, metric_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries(
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
             ref_id=ref_id,
@@ -226,17 +226,18 @@ class NotionMetricManager(MetricNotionManager):
 
     def load_all_saved_metric_entries_ref_ids(self, metric: Metric) -> typing.Iterable[EntityId]:
         """Retrieve all the saved ref ids for the metric entries."""
-        return self._collections_manager.load_all_saved_ref_ids(
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
 
     def load_all_saved_metric_entries_notion_ids(self, metric: Metric) -> typing.Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these metrics entries."""
-        return self._collections_manager.load_all_saved_notion_ids(
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
 
     def drop_all_metric_entries(self, metric: Metric) -> None:
         """Remove all metric entries Notion-side."""
-        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionMetricEntry, notion_row: CollectionRowBlock) -> CollectionRowBlock:

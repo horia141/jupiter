@@ -312,7 +312,7 @@ class NotionPrmManager(PrmNotionManager):
 
     def save_person(self, notion_person: NotionPerson) -> None:
         """Save an already existing person on Notion-side."""
-        self._collections_manager.save(
+        self._collections_manager.save_collection_item(
             key=NotionLockKey(f"{notion_person.ref_id}"),
             collection_key=NotionLockKey(self._KEY),
             row=notion_person,
@@ -320,41 +320,41 @@ class NotionPrmManager(PrmNotionManager):
 
     def remove_person(self, ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
-        self._collections_manager.hard_remove(
+        self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY))
 
     def load_person(self, ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
-        return self._collections_manager.load(
+        return self._collections_manager.load_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY),
             copy_notion_row_to_row=self.copy_notion_row_to_row)
 
     def load_all_persons(self) -> Iterable[NotionPerson]:
         """Retrieve all persons from Notion-side."""
-        return self._collections_manager.load_all(
+        return self._collections_manager.load_all_collection_items(
             collection_key=NotionLockKey(self._KEY),
             copy_notion_row_to_row=self.copy_notion_row_to_row)
 
     def load_all_saved_person_ref_ids(self) -> Iterable[EntityId]:
         """Load ids of all persons we know about from Notion side."""
-        return self._collections_manager.load_all_saved_ref_ids(
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
             collection_key=NotionLockKey(self._KEY))
 
     def load_all_saved_person_notion_ids(self) -> Iterable[NotionId]:
         """Load ids of all persons we know about from Notion side."""
-        return self._collections_manager.load_all_saved_notion_ids(
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(self._KEY))
 
     def drop_all_persons(self) -> None:
         """Drop all persons on Notion-side."""
-        self._collections_manager.drop_all(
+        self._collections_manager.drop_all_collection_items(
             collection_key=NotionLockKey(self._KEY))
 
     def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local and Notion version of the entities."""
-        self._collections_manager.quick_link_local_and_notion_entries(
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY),
             ref_id=ref_id,

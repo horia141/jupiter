@@ -178,6 +178,16 @@ class CollectionsManager:
 
         return NotionCollectionLink(page_id=page.id, collection_id=collection.id)
 
+    def load_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
+        """Retrive the Notion-side structure for this collection."""
+        lock = self._collections_storage.load(key)
+        client = self._connection.get_notion_client()
+        page = client.get_collection_page_by_id(lock.page_id)
+        return NotionCollectionLinkExtra(
+            page_id=lock.page_id,
+            collection_id=lock.collection_id,
+            name=page.title)
+
     def remove_collection(self, key: NotionLockKey) -> None:
         """Remove the Notion-side structure for this collection."""
         lock = self._collections_storage.load(key)
@@ -187,16 +197,6 @@ class CollectionsManager:
         page.remove()
 
         self._collections_storage.remove(key)
-
-    def get_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
-        """Retrive the Notion-side structure for this collection."""
-        lock = self._collections_storage.load(key)
-        client = self._connection.get_notion_client()
-        page = client.get_collection_page_by_id(lock.page_id)
-        return NotionCollectionLinkExtra(
-            page_id=lock.page_id,
-            collection_id=lock.collection_id,
-            name=page.title)
 
     def update_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
         """Just updates the name and schema for the collection and asks no questions."""
@@ -404,7 +404,7 @@ class CollectionsManager:
 
         collection.set("schema", schema)
 
-    def quick_link_local_and_notion_collection_field_tags(
+    def quick_link_local_and_notion_collection_field_tag(
             self, key: NotionLockKey, collection_key: NotionLockKey, field: str, ref_id: EntityId,
             notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
@@ -424,7 +424,7 @@ class CollectionsManager:
         else:
             self._collection_field_tags_storage.create(new_lock)
 
-    def hard_remove_collection_field_tag(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
+    def remove_collection_field_tag(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         tag_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
@@ -503,7 +503,7 @@ class CollectionsManager:
 
         return new_row
 
-    def quick_link_local_and_notion_entries(
+    def quick_link_local_and_notion_entries_for_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
         item_key = self._build_compound_key(collection_key, key)
@@ -519,7 +519,7 @@ class CollectionsManager:
         else:
             self._collection_items_storage.create(new_lock)
 
-    def quick_archive(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
+    def quick_archive_collection_item(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Remove a particular entity."""
         item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
@@ -530,7 +530,7 @@ class CollectionsManager:
         notion_row = client.get_collection_row(collection, lock.row_id)
         notion_row.archived = True
 
-    def load_all(
+    def load_all_collection_items(
             self, collection_key: NotionLockKey,
             copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> Iterable[ItemType]:
         """Retrieve all the Notion-side entitys."""
@@ -542,7 +542,7 @@ class CollectionsManager:
 
         return [copy_notion_row_to_row(nr) for nr in all_notion_rows]
 
-    def load(
+    def load_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey,
             copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> ItemType:
         """Retrieve the Notion-side entity associated with a particular entity."""
@@ -555,7 +555,7 @@ class CollectionsManager:
         notion_row = client.get_collection_row(collection, lock.row_id)
         return copy_notion_row_to_row(notion_row)
 
-    def save(
+    def save_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemType,
             copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> ItemType:
         """Update the Notion-side entity with new data."""
@@ -573,17 +573,17 @@ class CollectionsManager:
 
         return row
 
-    def load_all_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
+    def load_all_collection_items_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids."""
         return [r.row_id for r
                 in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
 
-    def load_all_saved_ref_ids(self, collection_key: NotionLockKey) -> Iterable[EntityId]:
+    def load_all_collection_items_saved_ref_ids(self, collection_key: NotionLockKey) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids."""
         return [r.ref_id for r
                 in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
 
-    def drop_all(self, collection_key: NotionLockKey) -> None:
+    def drop_all_collection_items(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""
         collection_lock = self._collections_storage.load(collection_key)
         client = self._connection.get_notion_client()
@@ -598,7 +598,7 @@ class CollectionsManager:
         for item in self._collection_items_storage.find_all(collection_key=Eq(collection_key)):
             self._collection_items_storage.remove(item.key)
 
-    def hard_remove(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
+    def remove_collection_item(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)

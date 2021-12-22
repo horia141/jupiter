@@ -276,7 +276,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     def load_smart_list(self, ref_id: EntityId) -> NotionSmartList:
         """Load a smart list collection."""
-        smart_list_link = self._collections_manager.get_collection(
+        smart_list_link = self._collections_manager.load_collection(
             key=NotionLockKey(f"{self._KEY}:{ref_id}"))
 
         return NotionSmartList(
@@ -304,7 +304,7 @@ class NotionSmartListsManager(SmartListNotionManager):
     def remove_smart_list_tag(
             self, smart_list_ref_id: EntityId, smart_list_tag_ref_id: typing.Optional[EntityId]) -> None:
         """Remove a smart list tag on Notion-side."""
-        self._collections_manager.hard_remove_collection_field_tag(
+        self._collections_manager.remove_collection_field_tag(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             key=NotionLockKey(f"{smart_list_tag_ref_id}"))
 
@@ -342,7 +342,7 @@ class NotionSmartListsManager(SmartListNotionManager):
     def link_local_and_notion_tag_for_smart_list(
             self, smart_list_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local tag with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_collection_field_tags(
+        self._collections_manager.quick_link_local_and_notion_collection_field_tag(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             key=NotionLockKey(f"{ref_id}"),
             field="tags",
@@ -368,20 +368,20 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     def remove_smart_list_item(self, smart_list_item: SmartListItem) -> None:
         """Remove a smart list item on Notion-side."""
-        self._collections_manager.hard_remove(
+        self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{smart_list_item.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_item.smart_list_ref_id}"))
 
     def load_all_smart_list_items(self, smart_list: SmartList) -> typing.Iterable[NotionSmartListItem]:
         """Retrieve all the Notion-side smart list items."""
-        return self._collections_manager.load_all(
+        return self._collections_manager.load_all_collection_items(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def save_smart_list_item(
             self, smart_list: SmartList, smart_list_item: NotionSmartListItem) -> NotionSmartListItem:
         """Update the Notion-side smart list with new data."""
-        return self._collections_manager.save(
+        return self._collections_manager.save_collection_item(
             key=NotionLockKey(f"{smart_list_item.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
             row=smart_list_item,
@@ -389,22 +389,23 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     def load_all_saved_smart_list_items_notion_ids(self, smart_list: SmartList) -> typing.Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these smart lists items."""
-        return self._collections_manager.load_all_saved_notion_ids(
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"))
 
     def load_all_saved_smart_list_items_ref_ids(self, smart_list: SmartList) -> typing.Iterable[EntityId]:
         """Retrieve all the saved ref ids for the smart list items."""
-        return self._collections_manager.load_all_saved_ref_ids(
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"))
 
     def drop_all_smart_list_items(self, smart_list: SmartList) -> None:
         """Remove all smart list items Notion-side."""
-        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"))
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"))
 
     def link_local_and_notion_entries_for_smart_list(
             self, smart_list_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries(
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             ref_id=ref_id,

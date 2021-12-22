@@ -258,7 +258,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
 
     def link_local_and_notion_big_plan(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries(
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
@@ -266,20 +266,20 @@ class NotionBigPlansManager(BigPlanNotionManager):
 
     def load_all_big_plans(self, big_plan_collection: BigPlanCollection) -> Iterable[NotionBigPlan]:
         """Retrieve all the Notion-side big plans."""
-        return self._collections_manager.load_all(
+        return self._collections_manager.load_all_collection_items(
             collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def load_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> NotionBigPlan:
         """Retrieve the Notion-side big plan associated with a particular entity."""
-        return self._collections_manager.load(
+        return self._collections_manager.load_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def remove_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular big plans."""
-        self._collections_manager.quick_archive(
+        self._collections_manager.quick_archive_collection_item(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             key=NotionLockKey(f"{ref_id}"))
 
@@ -287,7 +287,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
             self, project_ref_id: EntityId, big_plan: NotionBigPlan,
             inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionBigPlan:
         """Update the Notion-side big plan with new data."""
-        return self._collections_manager.save(
+        return self._collections_manager.save_collection_item(
             key=NotionLockKey(f"{big_plan.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             row=big_plan,
@@ -295,21 +295,22 @@ class NotionBigPlansManager(BigPlanNotionManager):
 
     def load_all_saved_big_plans_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collections_manager.load_all_saved_notion_ids(
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def load_all_saved_big_plans_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the big plans tasks."""
-        return self._collections_manager.load_all_saved_ref_ids(
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def drop_all_big_plans(self, project_ref_id: EntityId) -> None:
         """Remove all big plans Notion-side."""
-        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.hard_remove(
+        self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 

@@ -151,7 +151,7 @@ class NotionVacationsManager(VacationNotionManager):
 
     def save_vacation(self, vacation: NotionVacation) -> NotionVacation:
         """Update a Notion-side vacation with new data."""
-        return self._collections_manager.save(
+        return self._collections_manager.save_collection_item(
             key=NotionLockKey(f"{vacation.ref_id}"),
             collection_key=NotionLockKey(self._KEY),
             row=vacation,
@@ -159,34 +159,34 @@ class NotionVacationsManager(VacationNotionManager):
 
     def remove_vacation(self, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.hard_remove(
+        self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY))
 
     def load_all_vacations(self) -> Iterable[NotionVacation]:
         """Retrieve all the Notion-side vacation items."""
-        return self._collections_manager.load_all(
+        return self._collections_manager.load_all_collection_items(
             collection_key=NotionLockKey(self._KEY),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def load_all_saved_vacation_ref_ids(self) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the vacations."""
-        return self._collections_manager.load_all_saved_ref_ids(
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
             collection_key=NotionLockKey(self._KEY))
 
     def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for the vacations."""
-        return self._collections_manager.load_all_saved_notion_ids(
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(self._KEY))
 
     def drop_all_vacations(self) -> None:
         """Remove all vacations Notion-side."""
-        self._collections_manager.drop_all(
+        self._collections_manager.drop_all_collection_items(
             collection_key=NotionLockKey(self._KEY))
 
     def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries(
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY),
             ref_id=ref_id,

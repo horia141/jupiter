@@ -461,7 +461,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
     def link_local_and_notion_recurring_task(
             self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries(
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
@@ -470,20 +470,20 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
     def load_all_recurring_tasks(
             self, recurring_task_collection: RecurringTaskCollection) -> Iterable[NotionRecurringTask]:
         """Retrieve all the Notion-side recurring tasks."""
-        return self._collections_manager.load_all(
+        return self._collections_manager.load_all_collection_items(
             collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection.project_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def load_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> NotionRecurringTask:
         """Retrieve the Notion-side recurring task associated with a particular entity."""
-        return self._collections_manager.load(
+        return self._collections_manager.load_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def remove_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular recurring tasks."""
-        self._collections_manager.quick_archive(
+        self._collections_manager.quick_archive_collection_item(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             key=NotionLockKey(f"{ref_id}"))
 
@@ -491,7 +491,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             self, project_ref_id: EntityId, recurring_task: NotionRecurringTask,
             inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionRecurringTask:
         """Update the Notion-side recurring task with new data."""
-        return self._collections_manager.save(
+        return self._collections_manager.save_collection_item(
             key=NotionLockKey(f"{recurring_task.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
             row=recurring_task,
@@ -499,21 +499,22 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
 
     def load_all_saved_recurring_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collections_manager.load_all_saved_notion_ids(
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def load_all_saved_recurring_tasks_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the recurring tasks tasks."""
-        return self._collections_manager.load_all_saved_ref_ids(
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def drop_all_recurring_tasks(self, project_ref_id: EntityId) -> None:
         """Remove all recurring tasks Notion-side."""
-        self._collections_manager.drop_all(collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
     def hard_remove_recurring_task(self, project_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.hard_remove(
+        self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
 
