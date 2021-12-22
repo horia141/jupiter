@@ -76,5 +76,5 @@ class PersonCreateCommand(Command['PersonCreateCommand.Args', None]):
             birthday=args.birthday, created_time=self._time_provider.get_current_time())
         with self._prm_engine.get_unit_of_work() as uow:
             person = uow.person_repository.create(person)
-        notion_person = NotionPerson.new_notion_row(person)
+        notion_person = NotionPerson.new_notion_row(person, None)
         self._prm_notion_manager.upsert_person(notion_person)

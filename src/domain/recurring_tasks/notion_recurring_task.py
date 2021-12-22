@@ -14,11 +14,11 @@ from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
 from domain.recurring_tasks.recurring_task import RecurringTask
-from models.framework import NotionRow2, EntityId, BAD_NOTION_ID
+from models.framework import NotionRow, EntityId, BAD_NOTION_ID
 
 
 @dataclass()
-class NotionRecurringTask(NotionRow2[RecurringTask, None, 'NotionRecurringTask.InverseExtraInfo']):
+class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.InverseExtraInfo']):
     """A recurring task on Notion-side."""
 
     @dataclass(frozen=True)

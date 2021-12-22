@@ -7,12 +7,12 @@ from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.url import URL
-from models.framework import BAD_NOTION_ID, EntityId, NotionRow2
+from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 
 
 @dataclass()
 class NotionSmartListItem(
-        NotionRow2[SmartListItem, 'NotionSmartListItem.DirectExtraInfo', 'NotionSmartListItem.InverseExtraInfo']):
+        NotionRow[SmartListItem, 'NotionSmartListItem.DirectExtraInfo', 'NotionSmartListItem.InverseExtraInfo']):
     """A smart list item on Notion-side."""
 
     @dataclass()

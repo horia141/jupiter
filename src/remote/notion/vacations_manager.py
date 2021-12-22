@@ -142,7 +142,7 @@ class NotionVacationsManager(VacationNotionManager):
 
     def upsert_vacation(self, vacation: Vacation) -> NotionVacation:
         """Create a vacation."""
-        new_notion_vacation = NotionVacation.new_notion_row(vacation)
+        new_notion_vacation = NotionVacation.new_notion_row(vacation, None)
         return self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{vacation.ref_id}"),
             collection_key=NotionLockKey(self._KEY),

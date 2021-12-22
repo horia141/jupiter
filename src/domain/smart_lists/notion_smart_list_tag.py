@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
-from models.framework import BAD_NOTION_ID, EntityId, NotionRow2
+from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 
 
 @dataclass()
-class NotionSmartListTag(NotionRow2[SmartListTag, None, 'NotionSmartListTag.InverseExtraInfo']):
+class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.InverseExtraInfo']):
     """A smart list tag on Notion-side."""
 
     @dataclass()

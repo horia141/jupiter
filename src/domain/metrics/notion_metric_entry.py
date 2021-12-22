@@ -4,11 +4,11 @@ from typing import Optional
 
 from domain.adate import ADate
 from domain.metrics.metric_entry import MetricEntry
-from models.framework import NotionRow, BAD_NOTION_ID, EntityId
+from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 
 
 @dataclass()
-class NotionMetricEntry(NotionRow[MetricEntry, EntityId]):
+class NotionMetricEntry(NotionRow[MetricEntry, None, EntityId]):
     """A metric entry on Notion-side."""
 
     archived: bool
@@ -17,7 +17,7 @@ class NotionMetricEntry(NotionRow[MetricEntry, EntityId]):
     notes: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: MetricEntry) -> 'NotionMetricEntry':
+    def new_notion_row(aggregate_root: MetricEntry, extra_info: None) -> 'NotionMetricEntry':
         """Construct a new Notion row from a given metric entry."""
         return NotionMetricEntry(
             notion_id=BAD_NOTION_ID,
@@ -28,7 +28,7 @@ class NotionMetricEntry(NotionRow[MetricEntry, EntityId]):
             value=aggregate_root.value,
             notes=aggregate_root.notes)
 
-    def join_with_aggregate_root(self, aggregate_root: MetricEntry) -> 'NotionMetricEntry':
+    def join_with_aggregate_root(self, aggregate_root: MetricEntry, extra_info: None) -> 'NotionMetricEntry':
         """Construct a Notion row from this and a metric entry."""
         return NotionMetricEntry(
             notion_id=self.notion_id,

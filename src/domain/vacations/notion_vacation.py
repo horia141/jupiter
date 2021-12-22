@@ -6,11 +6,11 @@ from domain.adate import ADate
 from domain.entity_name import EntityName
 from domain.errors import ServiceValidationError
 from domain.vacations.vacation import Vacation
-from models.framework import NotionRow, BAD_NOTION_ID
+from models.framework import BAD_NOTION_ID, NotionRow
 
 
 @dataclass()
-class NotionVacation(NotionRow[Vacation, None]):
+class NotionVacation(NotionRow[Vacation, None, None]):
     """A vacation on Notion-side."""
 
     name: str
@@ -19,7 +19,7 @@ class NotionVacation(NotionRow[Vacation, None]):
     end_date: Optional[ADate]
 
     @staticmethod
-    def new_notion_row(aggregate_root: Vacation) -> 'NotionVacation':
+    def new_notion_row(aggregate_root: Vacation, extra_info: None) -> 'NotionVacation':
         """Construct a new Notion row from a given vacation."""
         return NotionVacation(
             notion_id=BAD_NOTION_ID,
@@ -30,7 +30,7 @@ class NotionVacation(NotionRow[Vacation, None]):
             start_date=aggregate_root.start_date,
             end_date=aggregate_root.end_date)
 
-    def join_with_aggregate_root(self, aggregate_root: Vacation) -> 'NotionVacation':
+    def join_with_aggregate_root(self, aggregate_root: Vacation, extra_info: None) -> 'NotionVacation':
         """Construct a Notion row from this and a vacation."""
         return NotionVacation(
             notion_id=self.notion_id,

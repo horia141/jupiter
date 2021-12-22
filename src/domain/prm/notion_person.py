@@ -5,20 +5,20 @@ from typing import Optional, List
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
+from domain.prm.person import Person
+from domain.prm.person_birthday import PersonBirthday
+from domain.prm.person_relationship import PersonRelationship
 from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
-from domain.prm.person import Person
-from domain.prm.person_birthday import PersonBirthday
-from domain.prm.person_relationship import PersonRelationship
-from models.framework import NotionRow, BAD_NOTION_ID, EntityId
+from models.framework import BAD_NOTION_ID, EntityId, NotionRow
 from remote.notion.common import clean_eisenhower
 
 
 @dataclass()
-class NotionPerson(NotionRow[Person, EntityId]):
+class NotionPerson(NotionRow[Person, None, EntityId]):
     """A person on Notion-side."""
 
     name: str
@@ -35,7 +35,7 @@ class NotionPerson(NotionRow[Person, EntityId]):
     birthday: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: Person) -> 'NotionPerson':
+    def new_notion_row(aggregate_root: Person, extra_info: None) -> 'NotionPerson':
         """Construct a new Notion row from a given aggregate root."""
         return NotionPerson(
             notion_id=BAD_NOTION_ID,
@@ -62,7 +62,7 @@ class NotionPerson(NotionRow[Person, EntityId]):
             if aggregate_root.catch_up_params and aggregate_root.catch_up_params.due_at_month else None,
             birthday=str(aggregate_root.birthday) if aggregate_root.birthday else None)
 
-    def join_with_aggregate_root(self, aggregate_root: Person) -> 'NotionPerson':
+    def join_with_aggregate_root(self, aggregate_root: Person, extra_info: None) -> 'NotionPerson':
         """Construct a Notion row from a given aggregate root."""
         return NotionPerson(
             notion_id=self.notion_id,

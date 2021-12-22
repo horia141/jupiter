@@ -10,12 +10,12 @@ from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from models.errors import ModelValidationError
-from models.framework import NotionRow2, BAD_NOTION_ID, EntityId
+from models.framework import NotionRow, BAD_NOTION_ID, EntityId
 from remote.notion.common import format_name_for_option
 
 
 @dataclass()
-class NotionInboxTask(NotionRow2[InboxTask, 'NotionInboxTask.DirectInfo', 'NotionInboxTask.InverseInfo']):
+class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'NotionInboxTask.InverseInfo']):
     """A inbox task on Notion-side."""
 
     @dataclass()

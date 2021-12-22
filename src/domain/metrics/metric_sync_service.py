@@ -94,7 +94,7 @@ class MetricSyncService:
                     metric.ref_id, new_metric_entry.ref_id, notion_metric_entry.notion_id)
                 LOGGER.info(f"Linked the new metric entry with local entries")
 
-                notion_metric_entry = notion_metric_entry.join_with_aggregate_root(new_metric_entry)
+                notion_metric_entry = notion_metric_entry.join_with_aggregate_root(new_metric_entry, None)
                 self._metric_notion_manager.save_metric_entry(metric, notion_metric_entry)
                 LOGGER.info(f"Applied changes on Notion side too")
 
@@ -121,7 +121,7 @@ class MetricSyncService:
                         LOGGER.info(f"Skipping '{notion_metric_entry.collection_time}' because it was not modified")
                         continue
 
-                    updated_notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry)
+                    updated_notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry, None)
                     self._metric_notion_manager.save_metric_entry(metric, updated_notion_metric_entry)
                     LOGGER.info(f"Changed metric entry '{notion_metric_entry.collection_time}' from local")
                 else:

@@ -6,11 +6,11 @@ from domain.adate import ADate
 from domain.big_plans.big_plan import BigPlan
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.entity_name import EntityName
-from models.framework import BAD_NOTION_ID, NotionRow2, EntityId
+from models.framework import BAD_NOTION_ID, NotionRow, EntityId
 
 
 @dataclass()
-class NotionBigPlan(NotionRow2[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
+class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
     """A big plan on Notion-side."""
 
     @dataclass(frozen=True)

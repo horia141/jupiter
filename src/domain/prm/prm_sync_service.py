@@ -64,7 +64,7 @@ class PrmSyncService:
                 self._prm_notion_manager.link_local_and_notion_entries(new_person.ref_id, notion_person.notion_id)
                 LOGGER.info(f"Linked the new person with local entries")
 
-                notion_person = notion_person.join_with_aggregate_root(new_person)
+                notion_person = notion_person.join_with_aggregate_root(new_person, None)
                 self._prm_notion_manager.save_person(notion_person)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_person}")
 
@@ -89,7 +89,7 @@ class PrmSyncService:
                         LOGGER.info(f"Skipping {notion_person.name} because it was not modified")
                         continue
 
-                    updated_notion_person = notion_person.join_with_aggregate_root(person)
+                    updated_notion_person = notion_person.join_with_aggregate_root(person, None)
 
                     self._prm_notion_manager.save_person(updated_notion_person)
                     LOGGER.info(f"Changed person with id={notion_person.ref_id} from local")
@@ -113,7 +113,7 @@ class PrmSyncService:
                 continue
 
             # If the person does not exist on Notion side, we create it.
-            notion_person = NotionPerson.new_notion_row(person)
+            notion_person = NotionPerson.new_notion_row(person, None)
             self._prm_notion_manager.upsert_person(notion_person)
             LOGGER.info(f"Created new person on Notion side {person.name}")
 

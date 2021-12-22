@@ -156,7 +156,7 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
             uow.person_repository.save(person)
 
         notion_person = self._prm_notion_manager.load_person(person.ref_id)
-        notion_person = notion_person.join_with_aggregate_root(person)
+        notion_person = notion_person.join_with_aggregate_root(person, None)
         self._prm_notion_manager.save_person(notion_person)
 
         # Change the catch up inbox tasks

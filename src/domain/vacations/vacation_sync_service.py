@@ -63,7 +63,7 @@ class VacationSyncService:
                     new_vacation.ref_id, notion_vacation.notion_id)
                 LOGGER.info(f"Linked the new vacation with local entries")
 
-                notion_vacation = notion_vacation.join_with_aggregate_root(new_vacation)
+                notion_vacation = notion_vacation.join_with_aggregate_root(new_vacation, None)
                 self._vacation_notion_manager.save_vacation(notion_vacation)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_vacation}")
 
@@ -91,7 +91,7 @@ class VacationSyncService:
                         LOGGER.info(f"Skipping {notion_vacation.name} because it was not modified")
                         continue
 
-                    update_notion_vacation = notion_vacation.join_with_aggregate_root(vacation)
+                    update_notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
 
                     self._vacation_notion_manager.save_vacation(update_notion_vacation)
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from local")
