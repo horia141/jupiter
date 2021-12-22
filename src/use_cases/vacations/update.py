@@ -36,7 +36,7 @@ class VacationUpdateCommand(Command['VacationUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._vacation_engine.get_unit_of_work() as uow:
-            vacation = uow.vacation_repository.get_by_id(args.ref_id)
+            vacation = uow.vacation_repository.load_by_id(args.ref_id)
 
             if args.name.should_change:
                 vacation.change_name(args.name.value, self._time_provider.get_current_time())

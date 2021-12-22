@@ -162,7 +162,7 @@ class GenCommand(Command['GenCommand.Args', None]):
 
         if SyncTarget.PRM in args.gen_targets:
             with self._prm_engine.get_unit_of_work() as prm_uow:
-                prm_database = prm_uow.prm_database_repository.find()
+                prm_database = prm_uow.prm_database_repository.load()
                 all_persons = prm_uow.person_repository.find_all(filter_ref_ids=args.filter_person_ref_ids)
 
             project = all_projects_by_ref_id[prm_database.catch_up_project_ref_id]

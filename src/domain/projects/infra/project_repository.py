@@ -19,11 +19,11 @@ class ProjectRepository(abc.ABC):
         """Store a particular project with all new properties."""
 
     @abc.abstractmethod
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
         """Retrieve a particular project by its key."""
 
     @abc.abstractmethod
-    def get_by_key(self, key: ProjectKey) -> Project:
+    def load_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project by its key."""
 
     @abc.abstractmethod

@@ -37,10 +37,10 @@ class ProjectUpdateCommand(Command['ProjectUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._project_engine.get_unit_of_work() as uow:
-            project = uow.project_repository.get_by_key(args.key)
+            project = uow.project_repository.load_by_key(args.key)
             if args.name.should_change:
                 project.change_name(args.name.value, self._time_provider.get_current_time())
             uow.project_repository.save(project)
         LOGGER.info("Applied local changes")
-        self._project_notion_manager.upsert(project)
+        self._project_notion_manager.upsert_project(project)
         LOGGER.info("Applied Notion changes")

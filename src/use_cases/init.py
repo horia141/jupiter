@@ -84,7 +84,7 @@ class InitCommand(Command['InitCommand.Args', None]):
             new_workspace = workspace_uow.workspace_repository.create(new_workspace)
         LOGGER.info("Applied local changes")
 
-        new_notion_workspace = self._workspace_notion_manager.upsert(new_workspace)
+        new_notion_workspace = self._workspace_notion_manager.upsert_workspace(new_workspace)
         LOGGER.info("Apply Notion changes")
 
         LOGGER.info("Creating vacations")
@@ -97,7 +97,7 @@ class InitCommand(Command['InitCommand.Args', None]):
                     args.first_project_key, args.first_project_name, self._time_provider.get_current_time())
             new_default_project = project_uow.project_repository.create(new_default_project)
             LOGGER.info("Created first project")
-        self._project_notion_manager.upsert(new_default_project)
+        self._project_notion_manager.upsert_project(new_default_project)
         LOGGER.info("Created first project on Notion side")
         with self._workspace_engine.get_unit_of_work() as workspace_uow_two:
             new_workspace.change_default_project(new_default_project.ref_id, self._time_provider.get_current_time())

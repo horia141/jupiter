@@ -33,7 +33,7 @@ class PrmSyncService:
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
         with self._prm_engine.get_unit_of_work() as uow:
-            prm_database = uow.prm_database_repository.find()
+            prm_database = uow.prm_database_repository.load()
             all_persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=filter_ref_ids)
         all_persons_set: Dict[EntityId, Person] = {v.ref_id: v for v in all_persons}
 

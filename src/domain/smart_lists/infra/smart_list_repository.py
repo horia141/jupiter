@@ -19,11 +19,11 @@ class SmartListRepository(Repository, abc.ABC):
         """Save a smart list - it should already exist."""
 
     @abc.abstractmethod
-    def get_by_key(self, key: SmartListKey) -> SmartList:
+    def load_by_key(self, key: SmartListKey) -> SmartList:
         """Find a smart list by key."""
 
     @abc.abstractmethod
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartList:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartList:
         """Find a smart list by id."""
 
     @abc.abstractmethod

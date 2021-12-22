@@ -67,10 +67,10 @@ class ProjectArchiveCommand(Command['ProjectArchiveCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._project_engine.get_unit_of_work() as project_uow:
-            project = project_uow.project_repository.get_by_key(args.key)
+            project = project_uow.project_repository.load_by_key(args.key)
 
         with self._workspace_engine.get_unit_of_work() as workspace_uow:
-            workspace = workspace_uow.workspace_repository.find()
+            workspace = workspace_uow.workspace_repository.load()
         if workspace.default_project_ref_id == project.ref_id:
             raise ServiceError("Cannot archive project because it is the default workspace one")
         with self._metric_engine.get_unit_of_work() as metric_uow:
@@ -81,7 +81,7 @@ class ProjectArchiveCommand(Command['ProjectArchiveCommand.Args', None]):
                     "Cannot archive project because it is the collection project " +
                     f"for metric '{metric.name} archived={metric.archived}'")
         with self._prm_engine.get_unit_of_work() as prm_uow:
-            prm_database = prm_uow.prm_database_repository.find()
+            prm_database = prm_uow.prm_database_repository.load()
         if prm_database.catch_up_project_ref_id == project.ref_id:
             raise ServiceError("Cannot archive project because it is the collection project for the PRM database")
 
@@ -115,5 +115,5 @@ class ProjectArchiveCommand(Command['ProjectArchiveCommand.Args', None]):
         with self._project_engine.get_unit_of_work() as project_uow_s:
             project_uow_s.project_repository.save(project)
         LOGGER.info("Applied local changes")
-        self._project_notion_manager.archive(project)
+        self._project_notion_manager.remove(project)
         LOGGER.info("Applied Notion changes")

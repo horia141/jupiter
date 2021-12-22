@@ -31,7 +31,7 @@ class ProjectSyncService:
             projects = uow.project_repository.find_all(filter_keys=filter_project_keys)
 
         for project in projects:
-            notion_project = self._project_notion_manager.load_by_id(project.ref_id)
+            notion_project = self._project_notion_manager.load_project(project.ref_id)
 
             if sync_prefer == SyncPrefer.NOTION:
                 updated_project = notion_project.apply_to_aggregate_root(project, right_now)
@@ -41,7 +41,7 @@ class ProjectSyncService:
                 LOGGER.info("Changed project from Notion")
             elif sync_prefer == SyncPrefer.LOCAL:
                 updated_notion_project = notion_project.join_with_aggregate_root(project)
-                self._project_notion_manager.save(updated_notion_project)
+                self._project_notion_manager.save_project(updated_notion_project)
                 LOGGER.info("Applied changes on Notion side")
             else:
                 raise Exception(f"Invalid preference {sync_prefer}")

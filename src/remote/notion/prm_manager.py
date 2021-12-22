@@ -324,7 +324,7 @@ class NotionPrmManager(PrmNotionManager):
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(self._KEY))
 
-    def load_person_by_ref_id(self, ref_id: EntityId) -> NotionPerson:
+    def load_person(self, ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
         return self._collections_manager.load(
             key=NotionLockKey(f"{ref_id}"),

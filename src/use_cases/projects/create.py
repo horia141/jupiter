@@ -65,7 +65,7 @@ class ProjectCreateCommand(Command['ProjectCreateCommand.Args', None]):
         with self._project_engine.get_unit_of_work() as project_uow:
             new_project = project_uow.project_repository.create(new_project)
         LOGGER.info("Applied local changes")
-        new_notion_project = self._project_notion_manager.upsert(new_project)
+        new_notion_project = self._project_notion_manager.upsert_project(new_project)
         LOGGER.info("Applied Notion changes")
         new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
             new_project.ref_id, self._time_provider.get_current_time())

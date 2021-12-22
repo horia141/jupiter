@@ -38,7 +38,7 @@ class MetricArchiveCommand(Command[MetricKey, None]):
     def execute(self, args: MetricKey) -> None:
         """Execute the command's action."""
         with self._metric_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.get_by_key(args)
+            metric = uow.metric_repository.load_by_key(args)
 
             for metric_entry in uow.metric_entry_repository.find_all_for_metric(metric.ref_id):
                 metric_entry.mark_archived(archived_time=self._time_provider.get_current_time())

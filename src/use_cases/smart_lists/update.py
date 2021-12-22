@@ -34,7 +34,7 @@ class SmartListUpdateCommand(Command['SmartListUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._smart_list_engine.get_unit_of_work() as uow:
-            smart_list = uow.smart_list_repository.get_by_key(args.key)
+            smart_list = uow.smart_list_repository.load_by_key(args.key)
 
             if args.name.should_change:
                 smart_list.change_name(args.name.value, self._time_provider.get_current_time())

@@ -40,7 +40,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         self._connection = connection
         self._structured_storage = StructuredIndividualStorage(self._WORKSPACES_LOCK_FILE_PATH, self)
 
-    def upsert(self, workspace: Workspace) -> NotionWorkspace:
+    def upsert_workspace(self, workspace: Workspace) -> NotionWorkspace:
         """Upsert the root Notion structure."""
         lock = self._structured_storage.load_optional()
         client = self._connection.get_notion_client()
@@ -67,7 +67,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
             notion_id=page.id,
             ref_id=workspace.ref_id)
 
-    def save(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
+    def save_workspace(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
         """Change the root Notion structure."""
         lock = self._structured_storage.load()
         client = self._connection.get_notion_client()
@@ -81,7 +81,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
 
         return notion_workspace
 
-    def load(self) -> NotionWorkspace:
+    def load_workspace(self) -> NotionWorkspace:
         """Retrieve the workspace from Notion side."""
         lock = self._structured_storage.load_optional()
         if lock is None:

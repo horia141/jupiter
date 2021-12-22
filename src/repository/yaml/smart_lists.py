@@ -82,12 +82,12 @@ class YamlSmartListRepository(SmartListRepository):
         smart_list_row = self._storage.update(smart_list_row)
         return self._row_to_entity(smart_list_row)
 
-    def get_by_key(self, key: SmartListKey) -> SmartList:
+    def load_by_key(self, key: SmartListKey) -> SmartList:
         """Find a smart list by key."""
         smart_list_row = self._storage.find_first(allow_archived=False, key=Eq(key))
         return self._row_to_entity(smart_list_row)
 
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartList:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartList:
         """Find a smart list by id."""
         return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
 

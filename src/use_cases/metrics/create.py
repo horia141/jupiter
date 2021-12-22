@@ -68,11 +68,11 @@ class MetricCreateCommand(Command['MetricCreateCommand.Args', None]):
         if args.collection_period is not None:
             if args.collection_project_key is not None:
                 with self._project_engine_.get_unit_of_work() as project_uow:
-                    project = project_uow.project_repository.get_by_key(args.collection_project_key)
+                    project = project_uow.project_repository.load_by_key(args.collection_project_key)
                 project_ref_id = project.ref_id
             else:
                 with self._workspace_engine.get_unit_of_work() as uow:
-                    workspace = uow.workspace_repository.find()
+                    workspace = uow.workspace_repository.load()
                 project_ref_id = workspace.default_project_ref_id
             collection_params = RecurringTaskGenParams(
                 project_ref_id=project_ref_id,

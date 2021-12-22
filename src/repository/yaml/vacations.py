@@ -72,7 +72,7 @@ class YamlVacationRepository(VacationRepository):
         vacation_row = self._storage.update(vacation_row)
         return self._row_to_entity(vacation_row)
 
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Find a vacation by id."""
         return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
 

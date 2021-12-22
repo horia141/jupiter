@@ -19,11 +19,11 @@ class MetricRepository(Repository, abc.ABC):
         """Save a metric - it should already exist."""
 
     @abc.abstractmethod
-    def get_by_key(self, key: MetricKey) -> Metric:
+    def load_by_key(self, key: MetricKey) -> Metric:
         """Find a metric by key."""
 
     @abc.abstractmethod
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
         """Find a metric by id."""
 
     @abc.abstractmethod

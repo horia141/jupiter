@@ -69,7 +69,7 @@ class BigPlanUpdateCommand(Command['BigPlanUpdateCommand.Args', None]):
             big_plan_uow.big_plan_repository.save(big_plan)
 
         with self._project_engine.get_unit_of_work() as project_uow:
-            project = project_uow.project_repository.get_by_id(big_plan.project_ref_id)
+            project = project_uow.project_repository.load_by_id(big_plan.project_ref_id)
 
         notion_big_plan = self._big_plan_notion_manager.load_big_plan(big_plan.project_ref_id, big_plan.ref_id)
         notion_big_plan = notion_big_plan.join_with_aggregate_root(big_plan, None)

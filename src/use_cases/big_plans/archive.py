@@ -72,7 +72,7 @@ class BigPlanArchiveCommand(Command['BigPlanArchiveCommand.Args', None]):
         LOGGER.info(f"Archived the big plan")
 
         with self._project_engine.get_unit_of_work() as project_uow:
-            project = project_uow.project_repository.get_by_id(big_plan.project_ref_id)
+            project = project_uow.project_repository.load_by_id(big_plan.project_ref_id)
 
         InboxTaskBigPlanRefOptionsUpdateService(self._big_plan_engine, self._inbox_task_notion_manager).sync(project)
         LOGGER.info(f"Updated the schema for the associated inbox")

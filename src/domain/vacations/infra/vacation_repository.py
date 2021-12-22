@@ -18,7 +18,7 @@ class VacationRepository(Repository, abc.ABC):
         """Save a vacation - it should already exist."""
 
     @abc.abstractmethod
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Find a vacation by id."""
 
     @abc.abstractmethod

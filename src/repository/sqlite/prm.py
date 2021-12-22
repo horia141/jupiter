@@ -81,7 +81,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
 
-    def find(self) -> PrmDatabase:
+    def load(self) -> PrmDatabase:
         """Load the PRM database."""
         query_stmt = select(self._prm_database_table)
         result = self._connection.execute(query_stmt).first()
@@ -195,7 +195,7 @@ class SqlitePersonRepository(PersonRepository):
         upsert_events(self._connection, self._person_event_table, person)
         return person
 
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Person:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Person:
         """Find a person by id."""
         query_stmt = select(self._person_table).where(self._person_table.c.ref_id == ref_id.as_int())
         if not allow_archived:

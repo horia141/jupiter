@@ -36,7 +36,7 @@ class PersonRemoveCommand(Command[EntityId, None]):
     def execute(self, args: EntityId) -> None:
         """Execute the command's action."""
         with self._prm_engine.get_unit_of_work() as uow:
-            person = uow.person_repository.get_by_id(args)
+            person = uow.person_repository.load_by_id(args)
 
         PersonRemoveService(
             self._time_provider, self._prm_engine, self._prm_notion_manager, self._inbox_task_engine,

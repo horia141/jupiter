@@ -15,17 +15,17 @@ class ProjectNotionManager(abc.ABC):
         """Upsert the root page of all projects."""
 
     @abc.abstractmethod
-    def upsert(self, project: Project) -> NotionProject:
+    def upsert_project(self, project: Project) -> NotionProject:
         """Upsert a single project."""
 
     @abc.abstractmethod
-    def save(self, project: NotionProject) -> NotionProject:
+    def save_project(self, project: NotionProject) -> NotionProject:
         """Save a project which already exists."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId) -> NotionProject:
+    def load_project(self, ref_id: EntityId) -> NotionProject:
         """Load a project by its entity id."""
 
     @abc.abstractmethod
-    def archive(self, project: Project) -> None:
+    def remove(self, project: Project) -> None:
         """Archive a project."""

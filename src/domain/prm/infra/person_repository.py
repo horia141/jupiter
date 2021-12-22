@@ -18,7 +18,7 @@ class PersonRepository(Repository, abc.ABC):
         """Save a person - it should already exist."""
 
     @abc.abstractmethod
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Person:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Person:
         """Find a person by id."""
 
     @abc.abstractmethod

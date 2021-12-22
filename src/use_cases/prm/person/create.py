@@ -58,7 +58,7 @@ class PersonCreateCommand(Command['PersonCreateCommand.Args', None]):
         catch_up_params = None
         if args.catch_up_period is not None:
             with self._prm_engine.get_unit_of_work() as uow:
-                prm_database = uow.prm_database_repository.find()
+                prm_database = uow.prm_database_repository.load()
                 project_ref_id = prm_database.catch_up_project_ref_id
             catch_up_params = RecurringTaskGenParams(
                 project_ref_id=project_ref_id,

@@ -41,7 +41,7 @@ class SmartListItemCreateCommand(Command['SmartListItemCreateCommand.Args', None
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._smart_list_engine.get_unit_of_work() as uow:
-            smart_list = uow.smart_list_repository.get_by_key(args.smart_list_key)
+            smart_list = uow.smart_list_repository.load_by_key(args.smart_list_key)
             smart_list_tags = \
                 {t.tag_name: t
                  for t in uow.smart_list_tag_repository.find_all_for_smart_list(

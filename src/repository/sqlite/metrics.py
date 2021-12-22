@@ -139,7 +139,7 @@ class SqliteMetricRepository(MetricRepository):
         upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
-    def get_by_key(self, key: MetricKey) -> Metric:
+    def load_by_key(self, key: MetricKey) -> Metric:
         """Find a metric by key."""
         query_stmt = select(self._metric_table).where(self._metric_table.c.the_key == str(key))
         result = self._connection.execute(query_stmt).first()
@@ -147,7 +147,7 @@ class SqliteMetricRepository(MetricRepository):
             raise StructuredStorageError(f"Metric identified by key={key} does not exist or is archived")
         return self._row_to_entity(result)
 
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
         """Find a metric by id."""
         query_stmt = select(self._metric_table).where(self._metric_table.c.ref_id == ref_id.as_int())
         if not allow_archived:

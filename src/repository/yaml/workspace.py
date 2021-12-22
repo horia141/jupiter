@@ -74,7 +74,7 @@ class YamlWorkspaceRepository(WorkspaceRepository):
         self._structured_storage.save(new_workspace_row)
         return workspace
 
-    def find(self) -> Workspace:
+    def load(self) -> Workspace:
         """Find the workspace."""
         workspace_row = self._structured_storage.load_optional()
         if workspace_row is None:

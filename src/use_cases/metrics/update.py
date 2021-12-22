@@ -78,7 +78,7 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._metric_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.get_by_key(args.key)
+            metric = uow.metric_repository.load_by_key(args.key)
 
             # Change the metrics
             if args.name.should_change:
@@ -102,11 +102,11 @@ class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
                     if args.collection_project_key.should_change:
                         if args.collection_project_key.value is not None:
                             with self._project_engine.get_unit_of_work() as project_uow:
-                                project = project_uow.project_repository.get_by_key(args.collection_project_key.value)
+                                project = project_uow.project_repository.load_by_key(args.collection_project_key.value)
                             new_collection_project_ref_id = project.ref_id
                         else:
                             with self._workspace_engine.get_unit_of_work() as workspace_uow:
-                                workspace = workspace_uow.workspace_repository.find()
+                                workspace = workspace_uow.workspace_repository.load()
                             new_collection_project_ref_id = workspace.default_project_ref_id
                     elif metric.collection_params is not None:
                         new_collection_project_ref_id = metric.collection_params.project_ref_id

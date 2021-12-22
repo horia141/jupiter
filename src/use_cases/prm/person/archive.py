@@ -37,7 +37,7 @@ class PersonArchiveCommand(Command[EntityId, None]):
     def execute(self, args: EntityId) -> None:
         """Execute the command's action."""
         with self._prm_engine.get_unit_of_work() as uow:
-            person = uow.person_repository.get_by_id(args)
+            person = uow.person_repository.load_by_id(args)
 
             person.mark_archived(archived_time=self._time_provider.get_current_time())
             uow.person_repository.save(person)

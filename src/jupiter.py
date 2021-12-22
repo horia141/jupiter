@@ -167,7 +167,7 @@ def main() -> None:
 
     timezone: Optional[Timezone] = None
     try:
-        workspace = workspaces_repository.find()
+        workspace = workspaces_repository.load()
         timezone = workspace.timezone
     except MissingWorkspaceRepositoryError:
         timezone = None

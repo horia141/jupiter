@@ -30,7 +30,7 @@ class VacationArchiveCommand(Command[EntityId, None]):
     def execute(self, args: EntityId) -> None:
         """Execute the command's action."""
         with self._vacation_engine.get_unit_of_work() as uow:
-            vacation = uow.vacation_repository.get_by_id(args)
+            vacation = uow.vacation_repository.load_by_id(args)
             vacation.mark_archived(archived_time=self._time_provider.get_current_time())
             uow.vacation_repository.save(vacation)
 

@@ -54,11 +54,11 @@ class BigPlanCreateCommand(Command['BigPlanCreateCommand.Args', None]):
         """Execute the command's action."""
         if args.project_key is not None:
             with self._project_engine.get_unit_of_work() as project_uow:
-                project = project_uow.project_repository.get_by_key(args.project_key)
+                project = project_uow.project_repository.load_by_key(args.project_key)
             project_ref_id = project.ref_id
         else:
             with self._workspace_engine.get_unit_of_work() as workspace_uow:
-                workspace = workspace_uow.workspace_repository.find()
+                workspace = workspace_uow.workspace_repository.load()
             project_ref_id = workspace.default_project_ref_id
 
         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:

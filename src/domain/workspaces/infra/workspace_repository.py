@@ -16,5 +16,5 @@ class WorkspaceRepository(abc.ABC):
         """Save a workspace."""
 
     @abc.abstractmethod
-    def find(self) -> Workspace:
+    def load(self) -> Workspace:
         """Loads the workspace."""

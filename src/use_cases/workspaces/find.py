@@ -31,7 +31,7 @@ class WorkspaceFindCommand(Command[None, 'WorkspaceFindCommand.Response']):
     def execute(self, args: None) -> 'Response':
         """Execute the command's action."""
         with self._workspace_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.find()
+            workspace = uow.workspace_repository.load()
         with self._project_engine.get_unit_of_work() as project_uow:
-            default_project = project_uow.project_repository.get_by_id(workspace.default_project_ref_id)
+            default_project = project_uow.project_repository.load_by_id(workspace.default_project_ref_id)
         return self.Response(workspace=workspace, default_project=default_project)

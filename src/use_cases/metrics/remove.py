@@ -36,7 +36,7 @@ class MetricRemoveCommand(Command[MetricKey, None]):
     def execute(self, args: MetricKey) -> None:
         """Execute the command's action."""
         with self._metric_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.get_by_key(args)
+            metric = uow.metric_repository.load_by_key(args)
 
         MetricRemoveService(self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager,
                             self._metric_engine, self._metric_notion_manager).execute(metric)

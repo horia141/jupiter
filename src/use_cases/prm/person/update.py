@@ -71,7 +71,7 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._prm_engine.get_unit_of_work() as uow:
-            person = uow.person_repository.get_by_id(args.ref_id)
+            person = uow.person_repository.load_by_id(args.ref_id)
 
             # Change the person.
             if args.name.should_change:
@@ -93,7 +93,7 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
                     new_catch_up_period = person.catch_up_params.period
 
                 if new_catch_up_period is not None:
-                    prm_database = uow.prm_database_repository.find()
+                    prm_database = uow.prm_database_repository.load()
                     new_catch_up_project_ref_id = prm_database.catch_up_project_ref_id
 
                     new_catch_up_eisen = []
@@ -155,7 +155,7 @@ class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
 
             uow.person_repository.save(person)
 
-        notion_person = self._prm_notion_manager.load_person_by_ref_id(person.ref_id)
+        notion_person = self._prm_notion_manager.load_person(person.ref_id)
         notion_person = notion_person.join_with_aggregate_root(person)
         self._prm_notion_manager.save_person(notion_person)
 

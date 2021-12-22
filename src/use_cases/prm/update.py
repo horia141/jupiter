@@ -48,17 +48,17 @@ class PrmDatabaseUpdateCommand(Command['PrmDatabaseUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._prm_engine.get_unit_of_work() as uow:
-            prm_database = uow.prm_database_repository.find()
+            prm_database = uow.prm_database_repository.load()
             old_catch_up_project_ref_id = prm_database.catch_up_project_ref_id
 
             if args.catch_up_project_key.should_change:
                 if args.catch_up_project_key.value is not None:
                     with self._project_engine.get_unit_of_work() as project_uow:
-                        project = project_uow.project_repository.get_by_key(args.catch_up_project_key.value)
+                        project = project_uow.project_repository.load_by_key(args.catch_up_project_key.value)
                     catch_up_project_ref_id = project.ref_id
                 else:
                     with self._workspace_engine.get_unit_of_work() as workspace_uow:
-                        workspace = workspace_uow.workspace_repository.find()
+                        workspace = workspace_uow.workspace_repository.load()
                     catch_up_project_ref_id = workspace.default_project_ref_id
 
                 prm_database.change_catch_up_project_ref_id(

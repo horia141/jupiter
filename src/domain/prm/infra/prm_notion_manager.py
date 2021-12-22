@@ -27,7 +27,7 @@ class PrmNotionManager(abc.ABC):
         """Remove a person on Notion-side."""
 
     @abc.abstractmethod
-    def load_person_by_ref_id(self, ref_id: EntityId) -> NotionPerson:
+    def load_person(self, ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
 
     @abc.abstractmethod

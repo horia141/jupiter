@@ -68,7 +68,7 @@ class MetricFindCommand(Command['MetricFindCommand.Args', 'MetricFindCommand.Res
                     continue
                 with self._project_engine.get_unit_of_work() as project_uow:
                     projects_by_ref_id[metric.ref_id] = \
-                        project_uow.project_repository.get_by_id(metric.collection_params.project_ref_id)
+                        project_uow.project_repository.load_by_id(metric.collection_params.project_ref_id)
             for metric_entry in metric_entries:
                 if metric_entry.metric_ref_id not in metric_entries_by_ref_ids:
                     metric_entries_by_ref_ids[metric_entry.metric_ref_id] = [metric_entry]

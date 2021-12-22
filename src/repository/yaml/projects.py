@@ -78,11 +78,11 @@ class YamlProjectRepository(ProjectRepository):
         project_row = self._storage.update(project_row, archived_time_action=TimeFieldAction.DO_NOTHING)
         return self._row_to_entity(project_row)
 
-    def get_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
         """Retrieve a particular project by its key."""
         return self._row_to_entity(self._storage.load(ref_id, allow_archived))
 
-    def get_by_key(self, key: ProjectKey) -> Project:
+    def load_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project by its key."""
         return self._row_to_entity(self._storage.find_first(allow_archived=False, key=Eq(key)))
 

@@ -138,7 +138,7 @@ class SyncCommand(Command['SyncCommand.Args', None]):
             frozenset(args.filter_recurring_task_ref_ids) if args.filter_recurring_task_ref_ids else None
         sync_targets = frozenset(args.sync_targets)
 
-        notion_workspace = self._workspace_notion_manager.load()
+        notion_workspace = self._workspace_notion_manager.load_workspace()
 
         if SyncTarget.WORKSPACE in args.sync_targets:
             if SyncTarget.STRUCTURE in args.sync_targets:
@@ -195,7 +195,7 @@ class SyncCommand(Command['SyncCommand.Args', None]):
                 if SyncTarget.STRUCTURE in sync_targets:
                     LOGGER.info(f"Recreating project {project.name} structure")
 
-                    notion_project = self._project_notion_manager.upsert(project)
+                    notion_project = self._project_notion_manager.upsert_project(project)
                     LOGGER.info("Recreating inbox tasks")
 
                     self._inbox_task_notion_manager.upsert_inbox_task_collection(

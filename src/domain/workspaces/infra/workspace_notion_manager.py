@@ -9,13 +9,13 @@ class WorkspaceNotionManager(abc.ABC):
     """The centralised point for workspace work on Notion-side."""
 
     @abc.abstractmethod
-    def upsert(self, workspace: Workspace) -> NotionWorkspace:
+    def upsert_workspace(self, workspace: Workspace) -> NotionWorkspace:
         """Upsert the root Notion structure."""
 
     @abc.abstractmethod
-    def save(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
+    def save_workspace(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
         """Save the root Notion structure."""
 
     @abc.abstractmethod
-    def load(self) -> NotionWorkspace:
+    def load_workspace(self) -> NotionWorkspace:
         """Retrieve the workspace from Notion side."""

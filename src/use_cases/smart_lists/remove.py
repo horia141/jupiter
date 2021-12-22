@@ -31,7 +31,7 @@ class SmartListRemoveCommand(Command[SmartListKey, None]):
     def execute(self, args: SmartListKey) -> None:
         """Execute the command's action."""
         with self._smart_list_engine.get_unit_of_work() as uow:
-            smart_list = uow.smart_list_repository.get_by_key(args)
+            smart_list = uow.smart_list_repository.load_by_key(args)
 
             for smart_list_tag in uow.smart_list_tag_repository.find_all_for_smart_list(
                     smart_list.ref_id, allow_archived=True):

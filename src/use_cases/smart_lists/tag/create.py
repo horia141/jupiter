@@ -35,7 +35,7 @@ class SmartListTagCreateCommand(Command['SmartListTagCreateCommand.Args', None])
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._smart_list_engine.get_unit_of_work() as uow:
-            metric = uow.smart_list_repository.get_by_key(args.smart_list_key)
+            metric = uow.smart_list_repository.load_by_key(args.smart_list_key)
             smart_list_tag = SmartListTag.new_smart_list_tag(
                 smart_list_ref_id=metric.ref_id, tag_name=args.tag_name,
                 created_time=self._time_provider.get_current_time())

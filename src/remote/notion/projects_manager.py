@@ -26,7 +26,7 @@ class NotionProjectsManager(ProjectNotionManager):
         """Upsert the root page of all projects."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, NotionPageLink(workspace.notion_id))
 
-    def upsert(self, project: Project) -> NotionProject:
+    def upsert_project(self, project: Project) -> NotionProject:
         """Upsert a single project."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         project_page = \
@@ -35,17 +35,17 @@ class NotionProjectsManager(ProjectNotionManager):
 
         return NotionProject(name=str(project.name), ref_id=project.ref_id, notion_id=project_page.page_id)
 
-    def save(self, project: NotionProject) -> NotionProject:
+    def save_project(self, project: NotionProject) -> NotionProject:
         """Save a project which already exists."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         self._pages_manager.upsert_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"), project.name, root_page)
         return project
 
-    def load_by_id(self, ref_id: EntityId) -> NotionProject:
+    def load_project(self, ref_id: EntityId) -> NotionProject:
         """Load a project by its entity id."""
         project_page = self._pages_manager.get_page_extra(NotionLockKey(f"{self._KEY}:{ref_id}"))
         return NotionProject(name=project_page.name, ref_id=ref_id, notion_id=project_page.page_id)
 
-    def archive(self, project: Project) -> None:
+    def remove(self, project: Project) -> None:
         """Archive a project."""
         self._pages_manager.remove_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"))

@@ -39,7 +39,7 @@ class WorkspaceUpdateCommand(Command['WorkspaceUpdateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._workspace_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.find()
+            workspace = uow.workspace_repository.load()
 
             if args.name.should_change:
                 workspace.change_name(args.name.value, self._time_provider.get_current_time())
@@ -47,9 +47,9 @@ class WorkspaceUpdateCommand(Command['WorkspaceUpdateCommand.Args', None]):
                 workspace.change_timezone(args.timezone.value, self._time_provider.get_current_time())
             if args.default_project_key.should_change:
                 with self._project_engine.get_unit_of_work() as project_uow:
-                    project = project_uow.project_repository.get_by_key(args.default_project_key.value)
+                    project = project_uow.project_repository.load_by_key(args.default_project_key.value)
                 workspace.change_default_project(project.ref_id, self._time_provider.get_current_time())
 
             uow.workspace_repository.save(workspace)
 
-        self._notion_manager.upsert(workspace)
+        self._notion_manager.upsert_workspace(workspace)

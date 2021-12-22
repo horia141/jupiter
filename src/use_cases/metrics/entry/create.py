@@ -37,7 +37,7 @@ class MetricEntryCreateCommand(Command['MetricEntryCreateCommand.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._metric_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.get_by_key(args.metric_key)
+            metric = uow.metric_repository.load_by_key(args.metric_key)
             collection_time = args.collection_time \
                 if args.collection_time else ADate.from_timestamp(self._time_provider.get_current_time())
             metric_entry = MetricEntry.new_metric_entry(

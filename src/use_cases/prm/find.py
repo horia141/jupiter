@@ -41,8 +41,8 @@ class PrmDatabaseFindCommand(Command['PrmDatabaseFindCommand.Args', 'PrmDatabase
         """Execute the command's action."""
         with self._prm_engine.get_unit_of_work() as prm_uow:
             with self._project_engine.get_unit_of_work() as project_uow:
-                prm_database = prm_uow.prm_database_repository.find()
-                catch_up_project = project_uow.project_repository.get_by_id(prm_database.catch_up_project_ref_id)
+                prm_database = prm_uow.prm_database_repository.load()
+                catch_up_project = project_uow.project_repository.load_by_id(prm_database.catch_up_project_ref_id)
                 persons = prm_uow.person_repository.find_all(
                     allow_archived=args.allow_archived, filter_ref_ids=args.filter_person_ref_ids)
 

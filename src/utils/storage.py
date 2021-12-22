@@ -486,25 +486,6 @@ class EntitiesStorage(Generic[EntityRowType]):
 
         return entity
 
-    def archive(self, ref_id: EntityId) -> EntityRowType:
-        """Archive an entity identified by the ref id."""
-        if ref_id == BAD_REF_ID:
-            raise RuntimeError(f"Cannot archive entity without a good id")
-
-        shard_id = self._get_shard_id(ref_id)
-
-        next_idx, entities = self._load(shard_id)
-
-        for entity in entities:
-            if entity.ref_id == ref_id:
-                entity.archived = True
-                entity.last_modified_time = self._time_provider.get_current_time()
-                entity.archived_time = self._time_provider.get_current_time()
-                self._save(shard_id, next_idx, entities)
-                return entity
-
-        raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
-
     def remove(self, ref_id: EntityId) -> EntityRowType:
         """Remove the entity identified by the ref id."""
         if ref_id == BAD_REF_ID:
