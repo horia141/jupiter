@@ -10,11 +10,10 @@ from notion.collection import CollectionRowBlock
 from domain.adate import ADate
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
-from domain.inbox_task_big_plan_label import InboxTaskBigPlanLabel
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, InboxTaskBigPlanLabel
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from domain.projects.notion_project import NotionProject

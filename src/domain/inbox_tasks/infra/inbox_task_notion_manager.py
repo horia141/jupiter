@@ -1,14 +1,23 @@
 """A manager of Notion-side inbox tasks."""
 import abc
+import uuid
+from dataclasses import dataclass
 from typing import Optional, Iterable
 
-from domain.inbox_task_big_plan_label import InboxTaskBigPlanLabel
+from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
 from models.framework import EntityId, NotionId
+
+
+@dataclass(frozen=True)
+class InboxTaskBigPlanLabel:
+    """A value for an inbox task big plan label."""
+    notion_link_uuid: uuid.UUID
+    name: EntityName
 
 
 class InboxTaskNotionManager(abc.ABC):

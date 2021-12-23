@@ -2,8 +2,7 @@
 from typing import Final
 
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
-from domain.inbox_task_big_plan_label import InboxTaskBigPlanLabel
-from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, InboxTaskBigPlanLabel
 from domain.projects.project import Project
 
 
