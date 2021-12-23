@@ -7,7 +7,8 @@ from domain.big_plans.big_plan import BigPlan
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.entity_name import EntityName
 from framework.base.entity_id import EntityId
-from framework.notion import NotionRow, BAD_NOTION_ID
+from framework.notion import NotionRow
+from framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

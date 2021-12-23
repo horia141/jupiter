@@ -6,7 +6,7 @@ from domain.vacations.notion_vacation import NotionVacation
 from domain.vacations.vacation import Vacation
 from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 
 
 class VacationNotionManager(abc.ABC):

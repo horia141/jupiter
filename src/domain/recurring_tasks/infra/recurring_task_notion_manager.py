@@ -9,7 +9,7 @@ from domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
 from framework.base.entity_id import EntityId
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 
 
 class RecurringTaskNotionManager(abc.ABC):

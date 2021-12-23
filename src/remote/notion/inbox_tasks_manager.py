@@ -23,7 +23,7 @@ from domain.recurring_task_type import RecurringTaskType
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option, \
     clean_eisenhower
 from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow
@@ -1109,7 +1109,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
     def _copy_notion_row_to_row(self, inbox_task_notion_row: CollectionRowBlock) -> NotionInboxTask:
         """Transform the live system data to something suitable for basic storage."""
         return NotionInboxTask(
-            notion_id=inbox_task_notion_row.id,
+            notion_id=NotionId.from_raw(inbox_task_notion_row.id),
             source=inbox_task_notion_row.source,
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,

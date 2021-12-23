@@ -12,7 +12,7 @@ from notion.space import Space
 from domain.workspaces.notion_token import NotionToken
 from domain.workspaces.notion_space_id import NotionSpaceId
 from framework.json import JSONDictType
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 
 LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class NotionClient:
 
     def get_regular_page(self, page_id: NotionId) -> PageBlock:
         """Find a page from a space, with a given id."""
-        the_block: Block = self._client.get_block(page_id)
+        the_block: Block = self._client.get_block(str(page_id))
         if not isinstance(the_block, PageBlock):
             raise NotionClientException(f"A block with id={page_id} is not a page")
         return the_block
@@ -93,7 +93,7 @@ class NotionClient:
 
     def get_collection_page_by_id(self, page_id: NotionId) -> CollectionViewPageBlock:
         """Retrieve an existing collection page."""
-        collection_page = self._client.get_block(page_id)
+        collection_page = self._client.get_block(str(page_id))
         if not isinstance(collection_page, CollectionViewPageBlock):
             raise NotionClientException(f"Page with id={page_id} is not a collection page")
         return collection_page
@@ -103,7 +103,7 @@ class NotionClient:
             schema: JSONDictType) -> CollectionView:
         """Attach a view to a collection."""
         if view_id:
-            view = self._client.get_collection_view(view_id, collection=collection)
+            view = self._client.get_collection_view(str(view_id), collection=collection)
             LOGGER.info(f"Found the collection {schema['name']} with view {view_id}")
         else:
             view = self._client.get_collection_view(
@@ -138,15 +138,15 @@ class NotionClient:
         """Retrieve an existing collection."""
         collection_page = self.get_collection_page_by_id(collection_page_id)
         collection = collection_page.collection
-        if collection.id != collection_id:
+        if collection.id != str(collection_id):
             raise NotionClientException(
-                f"Mismatch between page {collection_page_id} collection and selected one {collection_id}")
+                f"Mismatch between page {collection.id} collection and selected one {collection_id}")
         # Hack for notion-py. If we don't get all the collection views for a particular collection like this one
         # rather than just a single one, there's gonna be some deep code somewhere which will assume all of
         # them are present and croak! The code when you add an element to a collection, and you wanna assume
         # it's gonna be added to all view in some order!
         for view_id in all_view_ids:
-            _ = self._client.get_collection_view(view_id, collection=collection)
+            _ = self._client.get_collection_view(str(view_id), collection=collection)
         return collection
 
     @staticmethod
@@ -157,10 +157,10 @@ class NotionClient:
 
     def get_collection_row(self, collection: Collection, row_id: NotionId) -> CollectionRowBlock:
         """Retrieve a particular row from a collection."""
-        collection_row = self._client.get_block(row_id)
+        collection_row = self._client.get_block(str(row_id))
         if not isinstance(collection_row, CollectionRowBlock):
             raise NotionClientException(f"Entity with id={row_id} is not a collection row")
-        if collection_row.parent.id != collection.id:
+        if collection_row.parent.id != str(collection.id):
             raise NotionClientException(f"Row with id={row_id} does not belong to collection {collection.id}")
         return collection_row
 
@@ -168,7 +168,7 @@ class NotionClient:
         """Return all rows for a particular collection."""
         LOGGER.info(f"Querying the collection {collection.name} via view {view_id}")
         return self._client \
-            .get_collection_view(view_id, collection=collection) \
+            .get_collection_view(str(view_id), collection=collection) \
             .build_query() \
             .execute()
 
@@ -214,10 +214,10 @@ class NotionClient:
                 view = view_block.views.add_new(view_type="table")
         else:
             view_block = notion_row.children.add_new(CollectionViewBlock)
-            view_block.set("collection_id", collection_id)
+            view_block.set("collection_id", str(collection_id))
             view = view_block.views.add_new(view_type="table")
 
-        view_block.set("collection_id", collection_id)
+        view_block.set("collection_id", str(collection_id))
 
         self._client.submit_transaction([{
             "id": view.id,

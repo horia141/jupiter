@@ -15,7 +15,8 @@ from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
 from domain.recurring_tasks.recurring_task import RecurringTask
 from framework.base.entity_id import EntityId
-from framework.notion import NotionRow, BAD_NOTION_ID
+from framework.notion import NotionRow
+from framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

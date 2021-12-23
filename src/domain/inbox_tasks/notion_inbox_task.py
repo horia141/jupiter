@@ -11,7 +11,8 @@ from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from framework.errors import ModelValidationError
 from framework.base.entity_id import EntityId
-from framework.notion import NotionRow, BAD_NOTION_ID
+from framework.notion import NotionRow
+from framework.base.notion_id import BAD_NOTION_ID
 from remote.notion.common import format_name_for_option
 
 

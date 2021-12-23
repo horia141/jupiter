@@ -19,7 +19,7 @@ from domain.projects.project import Project
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
@@ -343,7 +343,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
         """Transform the live system data to something suitable for basic storage."""
         # pylint: disable=no-self-use
         return NotionBigPlan(
-            notion_id=big_plan_notion_row.id,
+            notion_id=NotionId.from_raw(big_plan_notion_row.id),
             name=big_plan_notion_row.title,
             archived=big_plan_notion_row.archived,
             status=big_plan_notion_row.status,

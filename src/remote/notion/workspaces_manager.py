@@ -9,7 +9,7 @@ from domain.workspaces.notion_workspace import NotionWorkspace
 from domain.workspaces.workspace import Workspace
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import CollectionError
 from remote.notion.infra.connection import NotionConnection
 from repository.yaml.infra.storage import StructuredIndividualStorage
@@ -66,7 +66,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
 
         return NotionWorkspace(
             name=str(workspace.name),
-            notion_id=page.id,
+            notion_id=NotionId.from_raw(page.id),
             ref_id=workspace.ref_id)
 
     def save_workspace(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
@@ -95,7 +95,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
 
         return NotionWorkspace(
             name=page.title,
-            notion_id=page.id,
+            notion_id=NotionId.from_raw(page.id),
             ref_id=lock.ref_id)
 
     @staticmethod
@@ -114,7 +114,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _WorkspaceLock(
             ref_id=EntityId.from_raw(cast(str, storage_form["ref_id"])),
-            page_id=NotionId(cast(str, storage_form["page_id"])))
+            page_id=NotionId.from_raw(cast(str, storage_form["page_id"])))
 
     @staticmethod
     def live_to_storage(live_form: _WorkspaceLock) -> JSONDictType:

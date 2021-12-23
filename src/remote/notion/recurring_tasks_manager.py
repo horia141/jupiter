@@ -21,7 +21,7 @@ from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollec
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, clean_eisenhower
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
 from remote.notion.infra.collections_manager import CollectionsManager
@@ -561,7 +561,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
     def _copy_notion_row_to_row(self, recurring_task_notion_row: CollectionRowBlock) -> NotionRecurringTask:
         """Transform the live system data to something suitable for basic storage."""
         return NotionRecurringTask(
-            notion_id=recurring_task_notion_row.id,
+            notion_id=NotionId.from_raw(recurring_task_notion_row.id),
             name=recurring_task_notion_row.title,
             archived=recurring_task_notion_row.archived,
             period=recurring_task_notion_row.period,

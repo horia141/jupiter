@@ -15,7 +15,7 @@ from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
 from remote.notion.infra.collections_manager import CollectionsManager
@@ -263,4 +263,4 @@ class NotionMetricManager(MetricNotionManager):
             archived=notion_row.archived,
             last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
             ref_id=notion_row.ref_id,
-            notion_id=notion_row.id)
+            notion_id=NotionId.from_raw(notion_row.id))

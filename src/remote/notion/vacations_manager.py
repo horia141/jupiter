@@ -12,7 +12,7 @@ from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager
@@ -211,7 +211,7 @@ class NotionVacationsManager(VacationNotionManager):
     def _copy_notion_row_to_row(self, vacation_notion_row: CollectionRowBlock) -> NotionVacation:
         """Transform the live system data to something suitable for basic storage."""
         return NotionVacation(
-            notion_id=vacation_notion_row.id,
+            notion_id=NotionId.from_raw(vacation_notion_row.id),
             name=vacation_notion_row.title,
             archived=vacation_notion_row.archived or False,
             start_date=ADate.from_notion(self._global_properties.timezone, vacation_notion_row.start_date)

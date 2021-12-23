@@ -2,7 +2,6 @@
 import dataclasses
 import hashlib
 import logging
-import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -13,7 +12,8 @@ from notion.collection import CollectionRowBlock
 
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from framework.notion import BaseNotionRow, NotionId
+from framework.notion import BaseNotionRow
+from framework.base.notion_id import NotionId
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra
@@ -265,9 +265,9 @@ class CollectionsManager:
                 LOGGER.info(f'Could not find "{tag}" ({lock.tag_id})')
 
         if tag_id is None:
-            tag_id = NotionId(str(uuid.uuid4()))
+            tag_id = NotionId.make_brand_new()
             field_schema["options"].append({
-                "id": tag_id,
+                "id": str(tag_id),
                 "value": tag,
                 "color": self._get_stable_color(tag_key)
             })
@@ -322,9 +322,9 @@ class CollectionsManager:
         return [
             _NotionCollectionTagLink(
                 collection_id=collection.id,
-                notion_id=NotionId(option["id"]),
+                notion_id=NotionId.from_raw(option["id"]),
                 name=option["value"],
-                ref_id=tag_links_lock_by_tag_id.get(NotionId(option["id"]), None))
+                ref_id=tag_links_lock_by_tag_id.get(NotionId.from_raw(option["id"]), None))
             for option in field_schema["options"]]
 
     def save_collection_field_tag(
@@ -681,17 +681,17 @@ class CollectionsManager:
             """Transform the data reconstructed from basic storage into something useful for the live system."""
             return _CollectionLockRow(
                 key=NotionLockKey(typing.cast(str, storage_form["key"])),
-                page_id=NotionId(typing.cast(str, storage_form["page_id"])),
-                collection_id=NotionId(cast(str, storage_form["collection_id"])),
-                view_ids={k: NotionId(v) for (k, v) in cast(Dict[str, str], storage_form["view_ids"]).items()})
+                page_id=NotionId.from_raw(typing.cast(str, storage_form["page_id"])),
+                collection_id=NotionId.from_raw(cast(str, storage_form["collection_id"])),
+                view_ids={k: NotionId.from_raw(v) for (k, v) in cast(Dict[str, str], storage_form["view_ids"]).items()})
 
         @staticmethod
         def live_to_storage(live_form: _CollectionLockRow) -> JSONDictType:
             """Transform the live system data to something suitable for basic storage."""
             return {
-                "page_id": live_form.page_id,
-                "collection_id": live_form.collection_id,
-                "view_ids": live_form.view_ids,
+                "page_id": str(live_form.page_id),
+                "collection_id": str(live_form.collection_id),
+                "view_ids": {k: str(v) for (k, v) in live_form.view_ids.items()},
             }
 
     class _CollectionFieldTagsStorageProtocol:
@@ -714,7 +714,7 @@ class CollectionsManager:
                 collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
                 ref_id=EntityId.from_raw(typing.cast(str, storage_form["ref_id"])),
                 field=typing.cast(str, storage_form["field"]),
-                tag_id=NotionId(typing.cast(str, storage_form["tag_id"])))
+                tag_id=NotionId.from_raw(typing.cast(str, storage_form["tag_id"])))
 
         @staticmethod
         def live_to_storage(live_form: _CollectionFieldTagLockRow) -> JSONDictType:
@@ -722,7 +722,7 @@ class CollectionsManager:
             return {
                 "collection_key": live_form.collection_key,
                 "ref_id": str(live_form.ref_id),
-                "tag_id": live_form.tag_id,
+                "tag_id": str(live_form.tag_id),
                 "field": live_form.field
             }
 
@@ -746,7 +746,7 @@ class CollectionsManager:
                 key=NotionLockKey(typing.cast(str, storage_form["key"])),
                 collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
                 ref_id=EntityId.from_raw(typing.cast(str, storage_form["ref_id"])),
-                row_id=NotionId(typing.cast(str, storage_form["row_id"])))
+                row_id=NotionId.from_raw(typing.cast(str, storage_form["row_id"])))
 
         @staticmethod
         def live_to_storage(live_form: _CollectionItemLockRow) -> JSONDictType:
@@ -754,7 +754,7 @@ class CollectionsManager:
             return {
                 "collection_key": live_form.collection_key,
                 "ref_id": str(live_form.ref_id),
-                "row_id": live_form.row_id
+                "row_id": str(live_form.row_id)
             }
 
     @staticmethod

@@ -6,7 +6,7 @@ from types import TracebackType
 from typing import Optional, Final
 
 from framework.json import JSONDictType
-from framework.notion import NotionId
+from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionPageLinkExtra
 from remote.notion.infra.connection import NotionConnection
 from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage
@@ -105,11 +105,11 @@ class PagesManager:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _PageLockRow(
             key=NotionLockKey(typing.cast(str, storage_form["key"])),
-            page_id=NotionId(typing.cast(str, storage_form["page_id"])))
+            page_id=NotionId.from_raw(typing.cast(str, storage_form["page_id"])))
 
     @staticmethod
     def live_to_storage(live_form: _PageLockRow) -> JSONDictType:
         """Transform the live system data to something suitable for basic storage."""
         return {
-            "page_id": live_form.page_id
+            "page_id": str(live_form.page_id)
         }

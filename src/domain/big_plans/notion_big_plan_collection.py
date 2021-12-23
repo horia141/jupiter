@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 from domain.big_plans.big_plan_collection import BigPlanCollection
 from framework.base.timestamp import Timestamp
-from framework.notion import NotionEntity, BAD_NOTION_ID
+from framework.notion import NotionEntity
+from framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

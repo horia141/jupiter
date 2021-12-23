@@ -1,19 +1,17 @@
 """Framework level elements for the Notion concepts."""
 import dataclasses
 from dataclasses import dataclass
-from typing import Optional, Generic, NewType, TypeVar, cast
+import typing
+from typing import Optional, Generic, TypeVar
 
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId
+from framework.base.notion_id import NotionId
 from framework.base.timestamp import Timestamp
 
 NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
 NotionRowDirectExtraInfo = TypeVar('NotionRowDirectExtraInfo')
 NotionRowInverseExtraInfo = TypeVar('NotionRowInverseExtraInfo')
-
-
-NotionId = NewType("NotionId", str)
-BAD_NOTION_ID = NotionId("bad-notion-id")
 
 
 @dataclass(frozen=True)
@@ -24,7 +22,7 @@ class BaseNotionRow:
     ref_id: Optional[str]
 
 
-_NotionEntitySubclass = TypeVar('_NotionEntitySubclass', bound='NotionEntity[Any]')
+_NotionEntitySubclass = TypeVar('_NotionEntitySubclass', bound='NotionEntity[typing.Any]')
 
 
 @dataclass(frozen=True)
@@ -45,7 +43,7 @@ class NotionEntity(Generic[NotionRowAggregateRoot]):
             self: _NotionEntitySubclass, aggregate_root: NotionRowAggregateRoot) \
             -> _NotionEntitySubclass:
         """Add to this Notion row from a given aggregate root."""
-        return cast(
+        return typing.cast(
             _NotionEntitySubclass,
             dataclasses.replace(self.new_notion_row(aggregate_root), notion_id=self.notion_id))
 
@@ -56,7 +54,7 @@ class NotionEntity(Generic[NotionRowAggregateRoot]):
         raise NotImplementedError("Can't use a base NotionRow class.")
 
 
-_NotionRowSubclass = TypeVar('_NotionRowSubclass', bound='NotionRow[Any, Any, Any]')
+_NotionRowSubclass = TypeVar('_NotionRowSubclass', bound='NotionRow[typing.Any, typing.Any, typing.Any]')
 
 
 @dataclass(frozen=True)
@@ -76,7 +74,7 @@ class NotionRow(Generic[NotionRowAggregateRoot, NotionRowDirectExtraInfo, Notion
             self: _NotionRowSubclass, aggregate_root: NotionRowAggregateRoot, extra_info: NotionRowDirectExtraInfo) \
             -> _NotionRowSubclass:
         """Add to this Notion row from a given aggregate root."""
-        return cast(
+        return typing.cast(
             _NotionRowSubclass,
             dataclasses.replace(self.new_notion_row(aggregate_root, extra_info), notion_id=self.notion_id))
 

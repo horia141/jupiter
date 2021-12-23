@@ -5,7 +5,8 @@ from typing import Optional
 from domain.adate import ADate
 from domain.metrics.metric_entry import MetricEntry
 from framework.base.entity_id import EntityId
-from framework.notion import NotionRow, BAD_NOTION_ID
+from framework.notion import NotionRow
+from framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)
