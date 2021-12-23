@@ -8,7 +8,7 @@ from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 
 @dataclass()

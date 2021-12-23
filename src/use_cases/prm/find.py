@@ -7,7 +7,7 @@ from domain.prm.person import Person
 from domain.prm.prm_database import PrmDatabase
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 
 

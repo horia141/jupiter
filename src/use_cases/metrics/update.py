@@ -4,6 +4,7 @@ import typing
 from dataclasses import dataclass
 from typing import Final, Optional
 
+from domain import schedules
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
@@ -23,9 +24,8 @@ from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
-from domain.timestamp import Timestamp
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from domain import schedules
+from framework.base.timestamp import Timestamp
 from framework.update_action import UpdateAction
 from framework.use_case import UseCase
 from utils.global_properties import GlobalProperties

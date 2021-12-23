@@ -10,10 +10,10 @@ from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person_relationship import PersonRelationship
 from domain.recurring_task_period import RecurringTaskPeriod
-from domain.timestamp import Timestamp
 from domain.workspaces.notion_workspace import NotionWorkspace
+from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
 from framework.notion import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient

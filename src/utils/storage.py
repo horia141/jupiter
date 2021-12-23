@@ -15,9 +15,9 @@ import pendulum
 import yaml
 from framework.value import Value
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

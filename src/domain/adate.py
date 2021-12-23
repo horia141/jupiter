@@ -8,8 +8,8 @@ from notion.collection import NotionDate
 import pendulum
 from pendulum import UTC
 
-from domain.timestamp import Timestamp
 from domain.timezone import Timezone
+from framework.base.timestamp import Timestamp
 from framework.errors import ModelValidationError
 from framework.value import Value
 

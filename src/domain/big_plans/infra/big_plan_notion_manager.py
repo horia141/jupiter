@@ -8,7 +8,7 @@ from domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
 from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import NotionId
 
 

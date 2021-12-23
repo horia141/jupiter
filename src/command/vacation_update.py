@@ -7,7 +7,7 @@ from domain.adate import ADate
 from domain.entity_name import EntityName
 from use_cases.vacations.update import VacationUpdateUseCase
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 
 

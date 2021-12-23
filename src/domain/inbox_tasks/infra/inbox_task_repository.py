@@ -5,7 +5,7 @@ from typing import Optional, Iterable
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 

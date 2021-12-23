@@ -20,7 +20,7 @@ from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionMana
 from domain.workspaces.notion_space_id import NotionSpaceId
 from domain.workspaces.notion_token import NotionToken
 from domain.workspaces.workspace import Workspace
-from framework.entity_id import BAD_REF_ID
+from framework.base.entity_id import BAD_REF_ID
 from framework.use_case import UseCase
 from remote.notion.infra.connection import NotionConnection
 from utils.time_provider import TimeProvider

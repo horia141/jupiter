@@ -4,7 +4,7 @@ from typing import Iterable
 
 from domain.prm.notion_person import NotionPerson
 from domain.workspaces.notion_workspace import NotionWorkspace
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import NotionId
 
 

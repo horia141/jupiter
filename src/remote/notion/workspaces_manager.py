@@ -8,7 +8,7 @@ from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionMana
 from domain.workspaces.notion_workspace import NotionWorkspace
 from domain.workspaces.workspace import Workspace
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import NotionId
 from remote.notion.common import CollectionError
 from remote.notion.infra.connection import NotionConnection

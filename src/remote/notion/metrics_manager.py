@@ -11,10 +11,10 @@ from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.notion_metric import NotionMetric
 from domain.metrics.notion_metric_entry import NotionMetricEntry
-from domain.timestamp import Timestamp
 from domain.workspaces.notion_workspace import NotionWorkspace
+from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
 from framework.notion import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps

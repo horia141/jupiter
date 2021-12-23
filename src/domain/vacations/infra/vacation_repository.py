@@ -3,7 +3,7 @@ import abc
 from typing import Optional, List, Iterable
 
 from domain.vacations.vacation import Vacation
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 

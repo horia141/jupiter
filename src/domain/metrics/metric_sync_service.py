@@ -9,8 +9,8 @@ from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.notion_metric_entry import NotionMetricEntry
 from domain.sync_prefer import SyncPrefer
-from domain.timestamp import Timestamp
-from framework.entity_id import EntityId
+from framework.base.timestamp import Timestamp
+from framework.base.entity_id import EntityId
 from utils.storage import StructuredStorageError
 
 LOGGER = logging.getLogger(__name__)

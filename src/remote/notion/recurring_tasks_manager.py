@@ -18,9 +18,9 @@ from domain.recurring_tasks.infra.recurring_task_notion_manager import Recurring
 from domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, clean_eisenhower
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient

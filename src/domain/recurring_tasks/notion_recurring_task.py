@@ -14,7 +14,7 @@ from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
 from domain.recurring_tasks.recurring_task import RecurringTask
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import NotionRow, BAD_NOTION_ID
 
 

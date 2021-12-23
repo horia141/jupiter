@@ -9,7 +9,7 @@ from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from domain.sync_prefer import SyncPrefer
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

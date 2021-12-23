@@ -9,7 +9,7 @@ from typing import Final, ClassVar, Iterable, Optional
 
 from framework.errors import RepositoryError
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 from domain.entity_name import EntityName
 from domain.projects.infra.project_engine import ProjectUnitOfWork, ProjectEngine

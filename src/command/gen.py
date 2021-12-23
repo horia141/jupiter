@@ -9,8 +9,8 @@ from domain.metrics.metric_key import MetricKey
 from domain.projects.project_key import ProjectKey
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.sync_target import SyncTarget
-from domain.timestamp import Timestamp
-from framework.entity_id import EntityId
+from framework.base.timestamp import Timestamp
+from framework.base.entity_id import EntityId
 from use_cases.gen import GenUseCase
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider

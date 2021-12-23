@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Optional, Generic, NewType, TypeVar
 
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
 NotionRowDirectExtraInfo = TypeVar('NotionRowDirectExtraInfo')

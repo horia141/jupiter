@@ -8,7 +8,7 @@ from domain.recurring_tasks.infra.recurring_task_notion_manager import Recurring
 from domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.sync_prefer import SyncPrefer
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

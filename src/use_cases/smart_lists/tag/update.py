@@ -6,7 +6,7 @@ from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 

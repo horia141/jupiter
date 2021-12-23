@@ -4,7 +4,7 @@ from typing import Optional, Iterable
 
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 
 class ProjectRepository(abc.ABC):

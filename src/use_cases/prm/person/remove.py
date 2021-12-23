@@ -7,7 +7,7 @@ from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionMa
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.service.remove_service import PersonRemoveService
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 

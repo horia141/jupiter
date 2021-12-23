@@ -13,7 +13,7 @@ from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.metric_key import MetricKey
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 
 LOGGER = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ from domain.entity_name import EntityName
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 

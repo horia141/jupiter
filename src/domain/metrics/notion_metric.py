@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from domain.entity_name import EntityName
 from domain.metrics.metric import Metric
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.notion import NotionEntity, BAD_NOTION_ID
 
 

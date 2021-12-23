@@ -5,13 +5,13 @@ from typing import Final, ClassVar, Iterable
 from notion.collection import CollectionRowBlock
 
 from domain.adate import ADate
-from domain.timestamp import Timestamp
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.notion_vacation import NotionVacation
 from domain.vacations.vacation import Vacation
 from domain.workspaces.notion_workspace import NotionWorkspace
+from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
 from framework.notion import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow

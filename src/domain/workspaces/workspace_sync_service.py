@@ -3,10 +3,10 @@ import logging
 from typing import Final
 
 from domain.sync_prefer import SyncPrefer
-from domain.timestamp import Timestamp
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from domain.workspaces.workspace import Workspace
+from framework.base.timestamp import Timestamp
 
 LOGGER = logging.getLogger(__name__)
 

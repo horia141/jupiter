@@ -13,7 +13,7 @@ from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.prm.person.update import PersonUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)

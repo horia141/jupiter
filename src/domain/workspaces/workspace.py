@@ -2,12 +2,12 @@
 from dataclasses import dataclass, field
 
 from domain.entity_name import EntityName
-from domain.timestamp import Timestamp
 from domain.timezone import Timezone
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 from framework.event import Event
+from framework.update_action import UpdateAction
 
 
 @dataclass()

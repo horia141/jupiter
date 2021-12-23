@@ -15,10 +15,10 @@ from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId, BAD_REF_ID
+from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.event import Event2
 
 

@@ -9,7 +9,7 @@ from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
 from domain.projects.project_key import ProjectKey
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.inbox_tasks.create import InboxTaskCreateUseCase
 from utils.global_properties import GlobalProperties
 

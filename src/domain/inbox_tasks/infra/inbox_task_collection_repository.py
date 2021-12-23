@@ -3,7 +3,7 @@ import abc
 from typing import Optional, Iterable
 
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 

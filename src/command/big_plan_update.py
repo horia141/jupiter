@@ -7,7 +7,7 @@ from domain.adate import ADate
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.entity_name import EntityName
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.big_plans.update import BigPlanUpdateUseCase
 from utils.global_properties import GlobalProperties
 

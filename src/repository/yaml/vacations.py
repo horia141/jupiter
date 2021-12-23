@@ -13,7 +13,7 @@ from domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationE
 from domain.vacations.infra.vacation_repository import VacationRepository
 from domain.vacations.vacation import Vacation
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_provider import TimeProvider
 

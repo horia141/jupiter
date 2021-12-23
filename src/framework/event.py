@@ -8,7 +8,7 @@ from typing import TypeVar, Dict
 
 from pendulum import Date, DateTime
 
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.json import JSONValueType
 from framework.update_action import UpdateAction
 

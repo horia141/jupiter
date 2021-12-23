@@ -9,7 +9,7 @@ from domain.projects.project_key import ProjectKey
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.sync_prefer import SyncPrefer
 from domain.sync_target import SyncTarget
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.sync import SyncUseCase
 
 LOGGER = logging.getLogger(__name__)

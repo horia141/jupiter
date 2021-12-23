@@ -7,7 +7,7 @@ from domain.smart_lists.smart_list_item import SmartListItem
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.url import URL
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import NotionRow, BAD_NOTION_ID
 
 

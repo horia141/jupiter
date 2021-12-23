@@ -6,10 +6,10 @@ from domain.entity_name import EntityName
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.recurring_task_gen_params import RecurringTaskGenParams
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import BAD_REF_ID
+from framework.base.entity_id import BAD_REF_ID
 from framework.event import Event
 
 

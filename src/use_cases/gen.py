@@ -4,6 +4,7 @@ import typing
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
+from domain import schedules
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
@@ -25,12 +26,11 @@ from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.sync_target import SyncTarget
-from domain.timestamp import Timestamp
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.vacation import Vacation
-from domain import schedules
+from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 from framework.use_case import UseCase
-from framework.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 

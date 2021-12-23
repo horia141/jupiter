@@ -7,7 +7,7 @@ from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.adate import ADate
 from domain.entity_name import EntityName
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 

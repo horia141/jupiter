@@ -4,7 +4,7 @@ from typing import Final
 
 from command.command import Command
 from use_cases.prm.find import PrmDatabaseFindUseCase
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 
 class PrmShow(Command):

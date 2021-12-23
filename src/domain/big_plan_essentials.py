@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 
 from domain.entity_name import EntityName
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 
 @dataclass()

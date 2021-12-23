@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list import SmartList
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.notion import NotionEntity, BAD_NOTION_ID
 
 

@@ -6,7 +6,7 @@ from typing import Final
 import command.command as command
 from domain.adate import ADate
 from domain.projects.project_key import ProjectKey
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.recurring_tasks.find import RecurringTaskFindUseCase
 from utils.global_properties import GlobalProperties
 

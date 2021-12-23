@@ -14,7 +14,7 @@ from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from domain.inbox_tasks.service.big_plan_ref_options_update_service import InboxTaskBigPlanRefOptionsUpdateService
 from domain.projects.infra.project_engine import ProjectEngine
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 

@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional, List, Iterable
 
-from domain.timestamp import Timestamp
-from framework.entity_id import EntityId
+from framework.base.timestamp import Timestamp
+from framework.base.entity_id import EntityId
 from framework.event import Event
 
 

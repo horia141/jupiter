@@ -8,7 +8,7 @@ import command.command as command
 from domain.adate import ADate
 from use_cases.metrics.entry.update import MetricEntryUpdateUseCase
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 

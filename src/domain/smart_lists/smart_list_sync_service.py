@@ -10,8 +10,8 @@ from domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.sync_prefer import SyncPrefer
-from domain.timestamp import Timestamp
-from framework.entity_id import EntityId
+from framework.base.timestamp import Timestamp
+from framework.base.entity_id import EntityId
 from utils.storage import StructuredStorageError
 
 LOGGER = logging.getLogger(__name__)

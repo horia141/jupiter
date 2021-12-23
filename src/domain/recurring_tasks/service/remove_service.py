@@ -7,7 +7,7 @@ from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngi
 from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

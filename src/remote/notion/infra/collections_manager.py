@@ -12,7 +12,7 @@ from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, Cla
 from notion.collection import CollectionRowBlock
 
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.notion import BaseNotionRow, NotionId
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \

@@ -3,10 +3,10 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from domain.adate import ADate
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId, BAD_REF_ID
+from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.event import Event
 
 

@@ -2,12 +2,12 @@
 import logging
 from typing import Final, Iterable, Optional
 
-from domain.projects.project_key import ProjectKey
-from domain.sync_prefer import SyncPrefer
-from domain.timestamp import Timestamp
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.infra.project_notion_manager import ProjectNotionManager
 from domain.projects.project import Project
+from domain.projects.project_key import ProjectKey
+from domain.sync_prefer import SyncPrefer
+from framework.base.timestamp import Timestamp
 
 LOGGER = logging.getLogger(__name__)
 

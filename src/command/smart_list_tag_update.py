@@ -7,7 +7,7 @@ import command.command as command
 from use_cases.smart_lists.tag.update import SmartListTagUpdateUseCase
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 

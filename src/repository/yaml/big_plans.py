@@ -16,10 +16,10 @@ from domain.big_plans.infra.big_plan_collection_repository import BigPlanCollect
 from domain.big_plans.infra.big_plan_engine import BigPlanUnitOfWork, BigPlanEngine
 from domain.big_plans.infra.big_plan_repository import BigPlanRepository
 from domain.entity_name import EntityName
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.errors import RepositoryError
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 

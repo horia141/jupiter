@@ -8,7 +8,7 @@ from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
 
 

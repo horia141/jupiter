@@ -1,9 +1,9 @@
 """A recurring task collection."""
 from dataclasses import dataclass
 
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId, BAD_REF_ID
+from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.event import Event2
 
 

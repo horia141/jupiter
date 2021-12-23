@@ -8,14 +8,14 @@ from types import TracebackType
 from typing import Final, ClassVar, Optional
 
 from domain.entity_name import EntityName
-from domain.timestamp import Timestamp
 from domain.timezone import Timezone
 from domain.workspaces.infra.workspace_engine import WorkspaceUnitOfWork, WorkspaceEngine
 from domain.workspaces.infra.workspace_repository import WorkspaceRepository
 from domain.workspaces.workspace import Workspace
+from framework.base.entity_id import EntityId, BAD_REF_ID
+from framework.base.timestamp import Timestamp
 from framework.errors import RepositoryError
 from framework.json import JSONDictType
-from framework.entity_id import EntityId, BAD_REF_ID
 from utils.storage import StructuredIndividualStorage
 from utils.time_provider import TimeProvider
 

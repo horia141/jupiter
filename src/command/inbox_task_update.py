@@ -9,7 +9,7 @@ from domain.eisen import Eisen
 from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from utils.global_properties import GlobalProperties
 

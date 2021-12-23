@@ -6,7 +6,7 @@ from typing import Final
 
 import command.command as command
 from use_cases.metrics.entry.remove import MetricEntryRemoveUseCase
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 

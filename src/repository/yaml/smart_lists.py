@@ -19,7 +19,7 @@ from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from framework.errors import RepositoryError
 from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_provider import TimeProvider

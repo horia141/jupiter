@@ -4,7 +4,7 @@ from typing import Final
 import pendulum
 from pendulum import UTC
 
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 
 
 class TimeProvider:

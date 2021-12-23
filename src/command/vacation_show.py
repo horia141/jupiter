@@ -6,7 +6,7 @@ from typing import Final
 import command.command as command
 from domain.adate import ADate
 from use_cases.vacations.find import VacationFindUseCase
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)

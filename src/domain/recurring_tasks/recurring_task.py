@@ -11,10 +11,10 @@ from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.errors import ModelValidationError
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId, BAD_REF_ID
+from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.event import Event2
 
 

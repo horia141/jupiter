@@ -5,7 +5,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.inbox_tasks.archive import InboxTaskArchiveUseCase
 
 LOGGER = logging.getLogger(__name__)

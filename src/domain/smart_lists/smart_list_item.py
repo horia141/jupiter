@@ -2,13 +2,13 @@
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, List
 
-from domain.url import URL
-from domain.timestamp import Timestamp
 from domain.entity_name import EntityName
-from framework.update_action import UpdateAction
+from domain.url import URL
 from framework.aggregate_root import AggregateRoot
-from framework.entity_id import EntityId, BAD_REF_ID
+from framework.base.entity_id import EntityId, BAD_REF_ID
+from framework.base.timestamp import Timestamp
 from framework.event import Event
+from framework.update_action import UpdateAction
 
 
 @dataclass()

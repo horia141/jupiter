@@ -8,7 +8,7 @@ from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.url import URL
 from framework.update_action import UpdateAction
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from use_cases.smart_lists.item.update import SmartListItemUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)

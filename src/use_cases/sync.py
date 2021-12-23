@@ -4,6 +4,7 @@ import typing
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
+from domain import schedules
 from domain.big_plan_essentials import BigPlanEssentials
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
@@ -40,16 +41,15 @@ from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_sync_service import SmartListSyncService
 from domain.sync_prefer import SyncPrefer
 from domain.sync_target import SyncTarget
-from domain.timestamp import Timestamp
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation_sync_service import VacationSyncService
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from domain.workspaces.workspace_sync_service import WorkspaceSyncService
-from domain import schedules
+from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 from framework.use_case import UseCase
-from framework.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 

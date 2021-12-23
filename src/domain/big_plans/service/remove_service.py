@@ -7,7 +7,7 @@ from domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

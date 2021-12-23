@@ -19,10 +19,10 @@ from domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskC
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskUnitOfWork, InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
 from domain.recurring_task_type import RecurringTaskType
-from domain.timestamp import Timestamp
+from framework.base.timestamp import Timestamp
 from framework.errors import RepositoryError
 from framework.json import JSONDictType
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 

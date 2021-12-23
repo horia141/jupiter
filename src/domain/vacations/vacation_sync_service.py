@@ -8,7 +8,7 @@ from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.notion_vacation import NotionVacation
 from domain.vacations.vacation import Vacation
-from framework.entity_id import EntityId
+from framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
