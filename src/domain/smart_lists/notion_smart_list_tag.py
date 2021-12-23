@@ -27,14 +27,6 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
             last_edited_time=aggregate_root.last_modified_time,
             name=str(aggregate_root.tag_name))
 
-    def join_with_aggregate_root(self, aggregate_root: SmartListTag, extra_info: None) -> 'NotionSmartListTag':
-        """Construct a Notion row from this and a smart list tag."""
-        return NotionSmartListTag(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            name=str(aggregate_root.tag_name))
-
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> SmartListTag:
         """Create a new smart list tag from this."""
         return SmartListTag.new_smart_list_tag(

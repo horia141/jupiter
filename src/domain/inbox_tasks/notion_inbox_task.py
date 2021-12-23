@@ -79,33 +79,6 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             ADate.from_timestamp(aggregate_root.recurring_gen_right_now)
             if aggregate_root.recurring_gen_right_now else None)
 
-    def join_with_aggregate_root(self, aggregate_root: InboxTask, extra_info: DirectInfo) -> 'NotionInboxTask':
-        """Construct a Notion row from this and a inbox task."""
-        return NotionInboxTask(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            source=aggregate_root.source.for_notion(),
-            name=str(aggregate_root.name),
-            archived=aggregate_root.archived,
-            big_plan_ref_id=str(aggregate_root.big_plan_ref_id) if aggregate_root.big_plan_ref_id else None,
-            big_plan_name=format_name_for_option(extra_info.big_plan_name) if extra_info.big_plan_name else None,
-            recurring_task_ref_id=str(
-                aggregate_root.recurring_task_ref_id) if aggregate_root.recurring_task_ref_id else None,
-            metric_ref_id=str(aggregate_root.metric_ref_id) if aggregate_root.metric_ref_id else None,
-            person_ref_id=str(aggregate_root.person_ref_id) if aggregate_root.person_ref_id else None,
-            status=aggregate_root.status.for_notion(),
-            eisen=[e.for_notion() for e in aggregate_root.eisen],
-            difficulty=aggregate_root.difficulty.for_notion() if aggregate_root.difficulty else None,
-            actionable_date=aggregate_root.actionable_date,
-            due_date=aggregate_root.due_date,
-            from_script=aggregate_root.source.is_from_script,
-            recurring_timeline=aggregate_root.recurring_timeline,
-            recurring_period=aggregate_root.recurring_period.for_notion() if aggregate_root.recurring_period else None,
-            recurring_type=aggregate_root.recurring_type.for_notion() if aggregate_root.recurring_type else None,
-            recurring_gen_right_now=ADate.from_timestamp(
-                aggregate_root.recurring_gen_right_now) if aggregate_root.recurring_gen_right_now else None)
-
     def new_aggregate_root(self, extra_info: InverseInfo) -> InboxTask:
         """Create a new inbox task from this."""
         inbox_task_name = EntityName.from_raw(self.name)

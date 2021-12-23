@@ -21,13 +21,6 @@ class NotionProject(NotionEntity[Project]):
             ref_id=aggregate_root.ref_id,
             name=str(aggregate_root.name))
 
-    def join_with_aggregate_root(self, aggregate_root: Project) -> 'NotionProject':
-        """Apply a project to an existing Notion row."""
-        return NotionProject(
-            notion_id=self.notion_id,
-            ref_id=aggregate_root.ref_id,
-            name=str(aggregate_root.name))
-
     def apply_to_aggregate_root(self, aggregate_root: Project, modification_time: Timestamp) -> 'Project':
         """Apply an existing Notion row to a project."""
         project_name = EntityName.from_raw(self.name)

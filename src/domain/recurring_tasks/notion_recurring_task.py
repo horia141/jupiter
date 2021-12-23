@@ -75,35 +75,6 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             end_at_date=aggregate_root.end_at_date,
             suspended=aggregate_root.suspended)
 
-    def join_with_aggregate_root(self, aggregate_root: RecurringTask, extra_info: None) -> 'NotionRecurringTask':
-        """Construct a Notion row from this and a recurring task."""
-        return NotionRecurringTask(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            period=aggregate_root.period.for_notion(),
-            the_type=aggregate_root.the_type.for_notion(),
-            eisen=[e.for_notion() for e in aggregate_root.gen_params.eisen],
-            difficulty=
-            aggregate_root.gen_params.difficulty.for_notion() if aggregate_root.gen_params.difficulty else None,
-            actionable_from_day=
-            aggregate_root.gen_params.actionable_from_day.as_int()
-            if aggregate_root.gen_params.actionable_from_day else None,
-            actionable_from_month=
-            aggregate_root.gen_params.actionable_from_month.as_int()
-            if aggregate_root.gen_params.actionable_from_month else None,
-            due_at_time=str(aggregate_root.gen_params.due_at_time) if aggregate_root.gen_params.due_at_time else None,
-            due_at_day=aggregate_root.gen_params.due_at_day.as_int() if aggregate_root.gen_params.due_at_day else None,
-            due_at_month=
-            aggregate_root.gen_params.due_at_month.as_int() if aggregate_root.gen_params.due_at_month else None,
-            skip_rule=str(aggregate_root.skip_rule),
-            must_do=aggregate_root.must_do,
-            start_at_date=aggregate_root.start_at_date,
-            end_at_date=aggregate_root.end_at_date,
-            suspended=aggregate_root.suspended)
-
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> RecurringTask:
         """Create a new recurring task from this."""
         recurring_task_period = RecurringTaskPeriod.from_raw(self.period)

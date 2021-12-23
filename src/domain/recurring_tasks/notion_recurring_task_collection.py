@@ -17,12 +17,6 @@ class NotionRecurringTaskCollection(NotionEntity[RecurringTaskCollection]):
             notion_id=BAD_NOTION_ID,
             ref_id=aggregate_root.ref_id)
 
-    def join_with_aggregate_root(self, aggregate_root: RecurringTaskCollection) -> 'NotionRecurringTaskCollection':
-        """Add to this Notion row from a given aggregate root."""
-        return NotionRecurringTaskCollection(
-            notion_id=self.notion_id,
-            ref_id=aggregate_root.ref_id)
-
     def apply_to_aggregate_root(
             self, aggregate_root: RecurringTaskCollection, modification_time: Timestamp) -> RecurringTaskCollection:
         """Obtain the aggregate root form of this, with a possible error."""

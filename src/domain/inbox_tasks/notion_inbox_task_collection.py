@@ -17,12 +17,6 @@ class NotionInboxTaskCollection(NotionEntity[InboxTaskCollection]):
             notion_id=BAD_NOTION_ID,
             ref_id=aggregate_root.ref_id)
 
-    def join_with_aggregate_root(self, aggregate_root: InboxTaskCollection) -> 'NotionInboxTaskCollection':
-        """Add to this Notion row from a given aggregate root."""
-        return NotionInboxTaskCollection(
-            notion_id=self.notion_id,
-            ref_id=aggregate_root.ref_id)
-
     def apply_to_aggregate_root(
             self, aggregate_root: InboxTaskCollection, modification_time: Timestamp) -> InboxTaskCollection:
         """Obtain the aggregate root form of this, with a possible error."""

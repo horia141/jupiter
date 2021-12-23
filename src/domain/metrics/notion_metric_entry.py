@@ -34,17 +34,6 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
             value=aggregate_root.value,
             notes=aggregate_root.notes)
 
-    def join_with_aggregate_root(self, aggregate_root: MetricEntry, extra_info: None) -> 'NotionMetricEntry':
-        """Construct a Notion row from this and a metric entry."""
-        return NotionMetricEntry(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            collection_time=aggregate_root.collection_time,
-            archived=aggregate_root.archived,
-            value=aggregate_root.value,
-            notes=aggregate_root.notes)
-
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> MetricEntry:
         """Create a new metric entry from this."""
         return MetricEntry.new_metric_entry(

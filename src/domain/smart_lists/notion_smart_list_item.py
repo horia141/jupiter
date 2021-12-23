@@ -46,19 +46,6 @@ class NotionSmartListItem(
             tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in aggregate_root.tags],
             url=str(aggregate_root.url))
 
-    def join_with_aggregate_root(
-            self, aggregate_root: SmartListItem, extra_info: DirectExtraInfo) -> 'NotionSmartListItem':
-        """Construct a Notion row from this and a smart list item."""
-        return NotionSmartListItem(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            is_done=aggregate_root.is_done,
-            tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in aggregate_root.tags],
-            url=str(aggregate_root.url))
-
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> SmartListItem:
         """Create a new smart list item from this."""
         return SmartListItem.new_smart_list_item(

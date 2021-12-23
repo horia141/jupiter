@@ -30,17 +30,6 @@ class NotionVacation(NotionRow[Vacation, None, None]):
             start_date=aggregate_root.start_date,
             end_date=aggregate_root.end_date)
 
-    def join_with_aggregate_root(self, aggregate_root: Vacation, extra_info: None) -> 'NotionVacation':
-        """Construct a Notion row from this and a vacation."""
-        return NotionVacation(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            name=str(aggregate_root.name),
-            archived=aggregate_root.archived,
-            start_date=aggregate_root.start_date,
-            end_date=aggregate_root.end_date)
-
     def new_aggregate_root(self, extra_info: None) -> Vacation:
         """Create a new vacation from this."""
         vacation_name = EntityName.from_raw(self.name)

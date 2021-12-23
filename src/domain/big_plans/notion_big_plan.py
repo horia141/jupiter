@@ -36,17 +36,6 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
             status=aggregate_root.status.for_notion(),
             due_date=aggregate_root.due_date)
 
-    def join_with_aggregate_root(self, aggregate_root: BigPlan, extra_info: None) -> 'NotionBigPlan':
-        """Construct a Notion row from this and a big plan."""
-        return NotionBigPlan(
-            notion_id=self.notion_id,
-            ref_id=str(aggregate_root.ref_id),
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            status=aggregate_root.status.for_notion(),
-            due_date=aggregate_root.due_date)
-
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> BigPlan:
         """Create a new big plan from this."""
         return BigPlan.new_big_plan(

@@ -21,13 +21,6 @@ class NotionWorkspace(NotionEntity[Workspace]):
             ref_id=aggregate_root.ref_id,
             name=str(aggregate_root.name))
 
-    def join_with_aggregate_root(self, aggregate_root: Workspace) -> 'NotionWorkspace':
-        """Apply a workspace to an already existing Notion workspace."""
-        return NotionWorkspace(
-            notion_id=self.notion_id,
-            ref_id=aggregate_root.ref_id,
-            name=str(aggregate_root.name))
-
     def apply_to_aggregate_root(self, aggregate_root: Workspace, modification_time: Timestamp) -> 'Workspace':
         """Apply a Notion workspace to an already existing workspace."""
         workspace_name = EntityName.from_raw(self.name)

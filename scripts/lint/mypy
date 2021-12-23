@@ -18,6 +18,9 @@ implicit_reexport = False
 strict_equality = True
 pretty = True
 
+[mypy-framework.notion.*]
+disallow_any_explicit = False
+
 [mypy-jsonschema.*]
 ignore_missing_imports = True
 

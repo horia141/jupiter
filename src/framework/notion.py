@@ -1,10 +1,11 @@
 """Framework level elements for the Notion concepts."""
+import dataclasses
 from dataclasses import dataclass
-from typing import Optional, Generic, NewType, TypeVar
+from typing import Optional, Generic, NewType, TypeVar, cast
 
-from framework.base.timestamp import Timestamp
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId
+from framework.base.timestamp import Timestamp
 
 NotionRowAggregateRoot = TypeVar('NotionRowAggregateRoot', bound=AggregateRoot)
 NotionRowDirectExtraInfo = TypeVar('NotionRowDirectExtraInfo')
@@ -23,6 +24,9 @@ class BaseNotionRow:
     ref_id: Optional[str]
 
 
+_NotionEntitySubclass = TypeVar('_NotionEntitySubclass', bound='NotionEntity[Any]')
+
+
 @dataclass(frozen=True)
 class NotionEntity(Generic[NotionRowAggregateRoot]):
     """Base class for Notion-side entities."""
@@ -38,16 +42,21 @@ class NotionEntity(Generic[NotionRowAggregateRoot]):
         raise NotImplementedError("Can't use a base NotionRow class.")
 
     def join_with_aggregate_root(
-            self, aggregate_root: NotionRowAggregateRoot) \
-            -> 'NotionEntity[NotionRowAggregateRoot]':
+            self: _NotionEntitySubclass, aggregate_root: NotionRowAggregateRoot) \
+            -> _NotionEntitySubclass:
         """Add to this Notion row from a given aggregate root."""
-        raise NotImplementedError("Can't use a base NotionRow class.")
+        return cast(
+            _NotionEntitySubclass,
+            dataclasses.replace(self.new_notion_row(aggregate_root), notion_id=self.notion_id))
 
     def apply_to_aggregate_root(
             self, aggregate_root: NotionRowAggregateRoot,
             modification_time: Timestamp) -> NotionRowAggregateRoot:
         """Obtain the aggregate root form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionRow class.")
+
+
+_NotionRowSubclass = TypeVar('_NotionRowSubclass', bound='NotionRow[Any, Any, Any]')
 
 
 @dataclass(frozen=True)
@@ -64,10 +73,12 @@ class NotionRow(Generic[NotionRowAggregateRoot, NotionRowDirectExtraInfo, Notion
         raise NotImplementedError("Can't use a base NotionRow class.")
 
     def join_with_aggregate_root(
-            self, aggregate_root: NotionRowAggregateRoot, extra_info: NotionRowDirectExtraInfo) \
-            -> 'NotionRow[NotionRowAggregateRoot, NotionRowDirectExtraInfo, NotionRowInverseExtraInfo]':
+            self: _NotionRowSubclass, aggregate_root: NotionRowAggregateRoot, extra_info: NotionRowDirectExtraInfo) \
+            -> _NotionRowSubclass:
         """Add to this Notion row from a given aggregate root."""
-        raise NotImplementedError("Can't use a base NotionRow class.")
+        return cast(
+            _NotionRowSubclass,
+            dataclasses.replace(self.new_notion_row(aggregate_root, extra_info), notion_id=self.notion_id))
 
     def new_aggregate_root(self, extra_info: NotionRowInverseExtraInfo) -> NotionRowAggregateRoot:
         """Construct a new aggregate root from this notion row."""

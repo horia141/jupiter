@@ -21,13 +21,6 @@ class NotionMetric(NotionEntity[Metric]):
             ref_id=aggregate_root.ref_id,
             name=str(aggregate_root.name))
 
-    def join_with_aggregate_root(self, aggregate_root: Metric) -> 'NotionMetric':
-        """Add to this Notion row from a given aggregate root."""
-        return NotionMetric(
-            notion_id=self.notion_id,
-            ref_id=aggregate_root.ref_id,
-            name=str(aggregate_root.name))
-
     def apply_to_aggregate_root(self, aggregate_root: Metric, modification_time: Timestamp) -> Metric:
         """Obtain the aggregate root form of this, with a possible error."""
         workspace_name = EntityName.from_raw(self.name)
