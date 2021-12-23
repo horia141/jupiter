@@ -11,11 +11,13 @@ from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from models.framework import Command, EntityId, UpdateAction
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class InboxTaskUpdateCommand(Command['InboxTaskUpdateCommand.Args', None]):
+class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
     """The command for updating a inbox task."""
 
     @dataclass()

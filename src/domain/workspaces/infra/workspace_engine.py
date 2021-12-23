@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Iterator
 
 from domain.workspaces.infra.workspace_repository import WorkspaceRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class WorkspaceUnitOfWork(UnitOfWork, abc.ABC):

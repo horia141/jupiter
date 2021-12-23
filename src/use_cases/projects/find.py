@@ -5,10 +5,10 @@ from typing import Final, Optional, List
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
-from models.framework import Command
+from framework.use_case import UseCase
 
 
-class ProjectFindCommand(Command['ProjectFindCommand.Args', 'ProjectFindCommand.Response']):
+class ProjectFindUseCase(UseCase['ProjectFindUseCase.Args', 'ProjectFindUseCase.Response']):
     """The command for finding projects."""
 
     @dataclass()

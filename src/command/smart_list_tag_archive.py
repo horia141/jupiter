@@ -1,21 +1,21 @@
-"""Command for archiving a smart list tag."""
+"""UseCase for archiving a smart list tag."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.smart_lists.tag.archive import SmartListTagArchiveCommand
-from models.framework import EntityId
+from use_cases.smart_lists.tag.archive import SmartListTagArchiveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListTagArchive(command.Command):
-    """Command for archiving a smart list tag."""
+    """UseCase for archiving a smart list tag."""
 
-    _command: Final[SmartListTagArchiveCommand]
+    _command: Final[SmartListTagArchiveUseCase]
 
-    def __init__(self, the_command: SmartListTagArchiveCommand) -> None:
+    def __init__(self, the_command: SmartListTagArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

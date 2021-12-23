@@ -4,7 +4,8 @@ from typing import Final
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
@@ -12,7 +13,7 @@ from utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationArchiveCommand(Command[EntityId, None]):
+class VacationArchiveUseCase(UseCase[EntityId, None]):
     """The command for archiving a vacation."""
 
     _time_provider: Final[TimeProvider]

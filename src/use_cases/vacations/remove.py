@@ -4,14 +4,15 @@ from typing import Final
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-class VacationRemoveCommand(Command[EntityId, None]):
+class VacationRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a vacation."""
 
     _vacation_engine: Final[VacationEngine]

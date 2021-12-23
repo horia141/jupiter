@@ -10,6 +10,7 @@ import pendulum
 from nested_dataclasses import nested
 from pendulum import UTC
 
+from domain import schedules
 from domain.big_plans.big_plan import BigPlan
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
@@ -29,17 +30,16 @@ from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.recurring_task import RecurringTask
+from domain.schedules import Schedule
 from domain.timestamp import Timestamp
-from models import schedules
-from models.framework import Command
-from models.framework import EntityId
-from models.schedules import Schedule
+from framework.use_case import UseCase
+from framework.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
+class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
     """The command for reporting on progress."""
 
     @dataclass()
@@ -124,23 +124,23 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
     class PerProjectBreakdownItem:
         """The report for a particular project."""
         name: EntityName
-        inbox_tasks_summary: 'ReportCommand.InboxTasksSummary'
-        big_plans_summary: 'ReportCommand.WorkableSummary'
+        inbox_tasks_summary: 'ReportUseCase.InboxTasksSummary'
+        big_plans_summary: 'ReportUseCase.WorkableSummary'
 
     @nested()
     @dataclass()
     class PerPeriodBreakdownItem:
         """The report for a particular time period."""
         name: EntityName
-        inbox_tasks_summary: 'ReportCommand.InboxTasksSummary'
-        big_plans_summary: 'ReportCommand.WorkableSummary'
+        inbox_tasks_summary: 'ReportUseCase.InboxTasksSummary'
+        big_plans_summary: 'ReportUseCase.WorkableSummary'
 
     @nested()
     @dataclass()
     class PerBigPlanBreakdownItem:
         """The report for a particular big plan."""
         name: EntityName
-        summary: 'ReportCommand.BigPlanSummary'
+        summary: 'ReportUseCase.BigPlanSummary'
 
     @nested()
     @dataclass()
@@ -148,18 +148,18 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
         """The report for a particular recurring task."""
         name: EntityName
         the_type: RecurringTaskType
-        summary: 'ReportCommand.RecurringTaskSummary'
+        summary: 'ReportUseCase.RecurringTaskSummary'
 
     @nested()
     @dataclass()
     class Result:
         """Result of the run report call."""
-        global_inbox_tasks_summary: 'ReportCommand.InboxTasksSummary'
-        global_big_plans_summary: 'ReportCommand.WorkableSummary'
-        per_project_breakdown: List['ReportCommand.PerProjectBreakdownItem']
-        per_period_breakdown: Optional[List['ReportCommand.PerPeriodBreakdownItem']]
-        per_big_plan_breakdown: List['ReportCommand.PerBigPlanBreakdownItem']
-        per_recurring_task_breakdown: List['ReportCommand.PerRecurringTaskBreakdownItem']
+        global_inbox_tasks_summary: 'ReportUseCase.InboxTasksSummary'
+        global_big_plans_summary: 'ReportUseCase.WorkableSummary'
+        per_project_breakdown: List['ReportUseCase.PerProjectBreakdownItem']
+        per_period_breakdown: Optional[List['ReportUseCase.PerPeriodBreakdownItem']]
+        per_big_plan_breakdown: List['ReportUseCase.PerBigPlanBreakdownItem']
+        per_recurring_task_breakdown: List['ReportUseCase.PerRecurringTaskBreakdownItem']
 
     _global_properties: Final[GlobalProperties]
     _project_engine: Final[ProjectEngine]
@@ -259,11 +259,11 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
                 key=itemgetter(0)),
                     key=itemgetter(0))}
         per_project_breakdown = [
-            ReportCommand.PerProjectBreakdownItem(
+            ReportUseCase.PerProjectBreakdownItem(
                 name=s,
                 inbox_tasks_summary=v,
                 big_plans_summary=
-                per_project_big_plans_summary.get(s, ReportCommand.WorkableSummary(0, 0, 0, 0, 0, [], [])))
+                per_project_big_plans_summary.get(s, ReportUseCase.WorkableSummary(0, 0, 0, 0, 0, [], [])))
             for (s, v) in per_project_inbox_tasks_summary.items()]
 
         # Build per period breakdown
@@ -286,18 +286,18 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
             per_period_big_plans_summary = {
                 k: self._run_report_for_big_plan(v, all_big_plans) for (k, v) in all_schedules.items()}
             per_period_breakdown = [
-                ReportCommand.PerPeriodBreakdownItem(
+                ReportUseCase.PerPeriodBreakdownItem(
                     name=k,
                     inbox_tasks_summary=v,
                     big_plans_summary=
-                    per_period_big_plans_summary.get(k, ReportCommand.WorkableSummary(0, 0, 0, 0, 0, [], [])))
+                    per_period_big_plans_summary.get(k, ReportUseCase.WorkableSummary(0, 0, 0, 0, 0, [], [])))
                 for (k, v) in per_period_inbox_tasks_summary.items()]
 
         # Build per big plan breakdown
 
         # all_inbox_tasks.groupBy(it -> it.bigPlan.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_big_plan_breakdown = [
-            ReportCommand.PerBigPlanBreakdownItem(
+            ReportUseCase.PerBigPlanBreakdownItem(
                 k, self._run_report_for_inbox_tasks_for_big_plan(schedule, (vx[1] for vx in v)))
             for (k, v) in
             groupby(sorted(
@@ -309,7 +309,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
 
         # all_inbox_tasks.groupBy(it -> it.recurringTask.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_recurring_task_breakdown = [
-            ReportCommand.PerRecurringTaskBreakdownItem(
+            ReportUseCase.PerRecurringTaskBreakdownItem(
                 name=all_recurring_tasks_by_ref_id[k].name,
                 the_type=all_recurring_tasks_by_ref_id[k].the_type,
                 summary=self._run_report_for_inbox_for_recurring_tasks(
@@ -321,7 +321,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
                 key=itemgetter(0)),
                     key=itemgetter(0))]
 
-        return ReportCommand.Result(
+        return ReportUseCase.Result(
             global_inbox_tasks_summary=global_inbox_tasks_summary,
             global_big_plans_summary=global_big_plans_summary,
             per_project_breakdown=per_project_breakdown,
@@ -367,20 +367,20 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
                 accepted_cnt_total += 1
                 accepted_per_source_cnt[inbox_task.source] += 1
 
-        return ReportCommand.InboxTasksSummary(
-            created=ReportCommand.InboxTasksSummary.NestedResult(
+        return ReportUseCase.InboxTasksSummary(
+            created=ReportUseCase.InboxTasksSummary.NestedResult(
                 total_cnt=created_cnt_total,
                 per_source_cnt=created_per_source_cnt),
-            accepted=ReportCommand.InboxTasksSummary.NestedResult(
+            accepted=ReportUseCase.InboxTasksSummary.NestedResult(
                 total_cnt=accepted_cnt_total,
                 per_source_cnt=accepted_per_source_cnt),
-            working=ReportCommand.InboxTasksSummary.NestedResult(
+            working=ReportUseCase.InboxTasksSummary.NestedResult(
                 total_cnt=working_cnt_total,
                 per_source_cnt=working_per_source_cnt),
-            not_done=ReportCommand.InboxTasksSummary.NestedResult(
+            not_done=ReportUseCase.InboxTasksSummary.NestedResult(
                 total_cnt=not_done_cnt_total,
                 per_source_cnt=not_done_per_source_cnt),
-            done=ReportCommand.InboxTasksSummary.NestedResult(
+            done=ReportUseCase.InboxTasksSummary.NestedResult(
                 total_cnt=done_cnt_total,
                 per_source_cnt=done_per_source_cnt))
 
@@ -410,7 +410,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
                     and schedule.contains_timestamp(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
-        return ReportCommand.BigPlanSummary(
+        return ReportUseCase.BigPlanSummary(
             created_cnt=created_cnt,
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
@@ -427,7 +427,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
         def _build_bigger_periods_and_schedules() -> List[Tuple[RecurringTaskPeriod, Schedule]]:
             the_bigger_periods_and_schedules = []
             the_current_period = recurring_task_period
-            the_bigger_period = ReportCommand._one_bigger_than_period(the_current_period)
+            the_bigger_period = ReportUseCase._one_bigger_than_period(the_current_period)
 
             while the_current_period != the_bigger_period:
                 the_bigger_schedule = schedules.get_schedule(
@@ -436,7 +436,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
 
                 the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))
                 the_current_period = the_bigger_period
-                the_bigger_period = ReportCommand._one_bigger_than_period(the_current_period)
+                the_bigger_period = ReportUseCase._one_bigger_than_period(the_current_period)
 
             return the_bigger_periods_and_schedules
 
@@ -530,7 +530,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
             one_streak_size_histogram[one_current_streak_size] = \
                 one_streak_size_histogram.get(one_current_streak_size, 0) + 1
 
-        return ReportCommand.RecurringTaskSummary(
+        return ReportUseCase.RecurringTaskSummary(
             created_cnt=created_cnt,
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,
@@ -578,7 +578,7 @@ class ReportCommand(Command['ReportCommand.Args', 'ReportCommand.Result']):
             elif big_plan.status.is_accepted and schedule.contains_timestamp(cast(Timestamp, big_plan.accepted_time)):
                 accepted_cnt += 1
 
-        return ReportCommand.WorkableSummary(
+        return ReportUseCase.WorkableSummary(
             created_cnt=created_cnt,
             accepted_cnt=accepted_cnt,
             working_cnt=working_cnt,

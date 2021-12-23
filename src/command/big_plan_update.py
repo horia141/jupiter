@@ -1,4 +1,4 @@
-"""Command for updating big plans."""
+"""UseCase for updating big plans."""
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
@@ -6,18 +6,19 @@ import command.command as command
 from domain.adate import ADate
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.entity_name import EntityName
-from models.framework import UpdateAction, EntityId
-from use_cases.big_plans.update import BigPlanUpdateCommand
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from use_cases.big_plans.update import BigPlanUpdateUseCase
 from utils.global_properties import GlobalProperties
 
 
 class BigPlanUpdate(command.Command):
-    """Command class for updating big plans."""
+    """UseCase class for updating big plans."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[BigPlanUpdateCommand]
+    _command: Final[BigPlanUpdateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: BigPlanUpdateCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: BigPlanUpdateUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -62,4 +63,4 @@ class BigPlanUpdate(command.Command):
             due_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.due_date))
         else:
             due_date = UpdateAction.do_nothing()
-        self._command.execute(BigPlanUpdateCommand.Args(ref_id, name, status, due_date))
+        self._command.execute(BigPlanUpdateUseCase.Args(ref_id, name, status, due_date))

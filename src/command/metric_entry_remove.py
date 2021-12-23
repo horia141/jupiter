@@ -1,22 +1,22 @@
-"""Command for hard removing a metric entry."""
+"""UseCase for hard removing a metric entry."""
 
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.metrics.entry.remove import MetricEntryRemoveCommand
-from models.framework import EntityId
+from use_cases.metrics.entry.remove import MetricEntryRemoveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MetricEntryRemove(command.Command):
-    """Command for hard removing a metric."""
+    """UseCase for hard removing a metric."""
 
-    _the_command: Final[MetricEntryRemoveCommand]
+    _the_command: Final[MetricEntryRemoveUseCase]
 
-    def __init__(self, the_command: MetricEntryRemoveCommand) -> None:
+    def __init__(self, the_command: MetricEntryRemoveUseCase) -> None:
         """Constructor."""
         self._the_command = the_command
 

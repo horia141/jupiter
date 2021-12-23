@@ -1,4 +1,4 @@
-"""Command for creating a metric entry."""
+"""UseCase for creating a metric entry."""
 
 import logging
 from argparse import Namespace, ArgumentParser
@@ -7,17 +7,17 @@ from typing import Final
 import command.command as command
 from domain.adate import ADate
 from domain.metrics.metric_key import MetricKey
-from use_cases.metrics.entry.create import MetricEntryCreateCommand
+from use_cases.metrics.entry.create import MetricEntryCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MetricEntryCreate(command.Command):
-    """Command for creating a metric entry."""
+    """UseCase for creating a metric entry."""
 
-    _command: Final[MetricEntryCreateCommand]
+    _command: Final[MetricEntryCreateUseCase]
 
-    def __init__(self, the_command: MetricEntryCreateCommand) -> None:
+    def __init__(self, the_command: MetricEntryCreateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -48,5 +48,5 @@ class MetricEntryCreate(command.Command):
             if args.collection_time else None
         value = args.value
         notes = args.notes
-        self._command.execute(MetricEntryCreateCommand.Args(
+        self._command.execute(MetricEntryCreateUseCase.Args(
             metric_key=metric_key, collection_time=collection_time, value=value, notes=notes))

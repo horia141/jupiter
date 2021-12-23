@@ -4,8 +4,8 @@ from typing import Optional, ClassVar, Dict
 
 from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_period import RecurringTaskPeriod
-from models.frame.value import Value
-from models.errors import ModelValidationError
+from framework.value import Value
+from framework.errors import ModelValidationError
 
 
 @dataclass()

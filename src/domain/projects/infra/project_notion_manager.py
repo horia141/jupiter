@@ -4,7 +4,7 @@ import abc
 from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
 from domain.workspaces.notion_workspace import NotionWorkspace
-from models.framework import EntityId
+from framework.entity_id import EntityId
 
 
 class ProjectNotionManager(abc.ABC):

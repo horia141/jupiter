@@ -12,7 +12,8 @@ from domain.entity_name import EntityName
 from domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationEngine
 from domain.vacations.infra.vacation_repository import VacationRepository
 from domain.vacations.vacation import Vacation
-from models.framework import EntityId, JSONDictType
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
 from utils.storage import BaseEntityRow, EntitiesStorage, In
 from utils.time_provider import TimeProvider
 

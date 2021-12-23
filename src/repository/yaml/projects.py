@@ -1,21 +1,22 @@
 """Repository for projects."""
-from contextlib import contextmanager
-from dataclasses import dataclass
 import logging
 import typing
+from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, Optional
+
+from framework.errors import RepositoryError
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
 
 from domain.entity_name import EntityName
 from domain.projects.infra.project_engine import ProjectUnitOfWork, ProjectEngine
 from domain.projects.infra.project_repository import ProjectRepository
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
-from models.framework import EntityId, JSONDictType
-from models.errors import RepositoryError
 from utils.storage import BaseEntityRow, EntitiesStorage, Eq, In
-from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ class YamlProjectRepository(ProjectRepository):
     def save(self, project: Project) -> Project:
         """Store a particular project with all new properties."""
         project_row = self._entity_to_row(project)
-        project_row = self._storage.update(project_row, archived_time_action=TimeFieldAction.DO_NOTHING)
+        project_row = self._storage.update(project_row)
         return self._row_to_entity(project_row)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:

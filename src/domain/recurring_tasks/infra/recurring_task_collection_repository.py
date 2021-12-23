@@ -3,7 +3,8 @@ import abc
 from typing import Optional, Iterable
 
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
-from models.framework import Repository, EntityId
+from framework.entity_id import EntityId
+from framework.storage import Repository
 
 
 class RecurringTaskCollectionRepository(Repository, abc.ABC):

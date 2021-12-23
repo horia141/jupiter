@@ -1,4 +1,4 @@
-"""Command for generating reports of progress."""
+"""UseCase for generating reports of progress."""
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
@@ -9,15 +9,15 @@ from domain.projects.project_key import ProjectKey
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
 from domain.timestamp import Timestamp
-from models.errors import ModelValidationError
-from models.framework import EntityId
-from use_cases.report import ReportCommand
+from framework.errors import ModelValidationError
+from framework.entity_id import EntityId
+from use_cases.report import ReportUseCase
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 
 class Report(command.Command):
-    """Command class for reporting progress."""
+    """UseCase class for reporting progress."""
 
     _SOURCES_TO_REPORT = [
         InboxTaskSource.USER,
@@ -30,11 +30,11 @@ class Report(command.Command):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _command: Final[ReportCommand]
+    _command: Final[ReportUseCase]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            the_command: ReportCommand) -> None:
+            the_command: ReportUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -114,7 +114,7 @@ class Report(command.Command):
             else:
                 breakdown_period = self._check_period_against_breakdown_period(breakdown_period_raw, period)
 
-        response = self._command.execute(ReportCommand.Args(
+        response = self._command.execute(ReportUseCase.Args(
             right_now=right_now,
             filter_project_keys=project_keys,
             filter_sources=sources,

@@ -1,4 +1,4 @@
-"""Command for creating a metric."""
+"""UseCase for creating a metric."""
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
@@ -13,15 +13,15 @@ from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
-from use_cases.metrics.create import MetricCreateCommand
+from use_cases.metrics.create import MetricCreateUseCase
 
 
 class MetricCreate(command.Command):
-    """Command for creating a metric."""
+    """UseCase for creating a metric."""
 
-    _command: Final[MetricCreateCommand]
+    _command: Final[MetricCreateUseCase]
 
-    def __init__(self, the_command: MetricCreateCommand) -> None:
+    def __init__(self, the_command: MetricCreateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -93,7 +93,7 @@ class MetricCreate(command.Command):
             RecurringTaskDueAtMonth.from_raw(collection_period, args.collection_due_at_month) \
             if args.collection_due_at_month and collection_period else None
         metric_unit = MetricUnit.from_raw(args.metric_unit) if args.metric_unit else None
-        self._command.execute(MetricCreateCommand.Args(
+        self._command.execute(MetricCreateUseCase.Args(
             key=metric_key,
             name=name,
             collection_project_key=collection_project_key,

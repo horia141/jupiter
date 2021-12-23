@@ -1,21 +1,21 @@
-"""Command for showing the workspace."""
+"""UseCase for showing the workspace."""
 
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from use_cases.workspaces.find import WorkspaceFindCommand
+from use_cases.workspaces.find import WorkspaceFindUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceShow(command.Command):
-    """Command class for showing the workspace."""
+    """UseCase class for showing the workspace."""
 
-    _command: Final[WorkspaceFindCommand]
+    _command: Final[WorkspaceFindUseCase]
 
-    def __init__(self, the_command: WorkspaceFindCommand) -> None:
+    def __init__(self, the_command: WorkspaceFindUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

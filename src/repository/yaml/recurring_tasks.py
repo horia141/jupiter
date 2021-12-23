@@ -25,8 +25,9 @@ from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngi
 from domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
-from models.errors import RepositoryError
-from models.framework import EntityId, JSONDictType, BAD_REF_ID
+from framework.errors import RepositoryError
+from framework.json import JSONDictType
+from framework.entity_id import EntityId, BAD_REF_ID
 from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 

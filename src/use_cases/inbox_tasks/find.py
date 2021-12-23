@@ -15,10 +15,11 @@ from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.recurring_task import RecurringTask
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 
 
-class InboxTaskFindCommand(Command['InboxTaskFindCommand.Args', 'InboxTaskFindCommand.Result']):
+class InboxTaskFindUseCase(UseCase['InboxTaskFindUseCase.Args', 'InboxTaskFindUseCase.Result']):
     """The command for finding a inbox task."""
 
     @dataclass()
@@ -40,7 +41,7 @@ class InboxTaskFindCommand(Command['InboxTaskFindCommand.Args', 'InboxTaskFindCo
     @dataclass()
     class Result:
         """Result."""
-        inbox_tasks: Iterable['InboxTaskFindCommand.ResultEntry']
+        inbox_tasks: Iterable['InboxTaskFindUseCase.ResultEntry']
 
     _project_engine: Final[ProjectEngine]
     _inbox_task_engine: Final[InboxTaskEngine]
@@ -92,9 +93,9 @@ class InboxTaskFindCommand(Command['InboxTaskFindCommand.Args', 'InboxTaskFindCo
             persons = prm_uow.person_repository.find_all(
                 filter_ref_ids=(it.person_ref_id for it in inbox_tasks if it.person_ref_id is not None))
         persons_map = {p.ref_id: p for p in persons}
-        return InboxTaskFindCommand.Result(
+        return InboxTaskFindUseCase.Result(
             inbox_tasks=[
-                InboxTaskFindCommand.ResultEntry(
+                InboxTaskFindUseCase.ResultEntry(
                     inbox_task=it,
                     big_plan=big_plans_map[it.big_plan_ref_id] if it.big_plan_ref_id is not None else None,
                     recurring_task=recurring_tasks_map[it.recurring_task_ref_id]

@@ -1,4 +1,4 @@
-"""Command for updating a person."""
+"""UseCase for updating a person."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional, List
@@ -12,18 +12,19 @@ from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
-from models.framework import UpdateAction, EntityId
-from use_cases.prm.person.update import PersonUpdateCommand
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from use_cases.prm.person.update import PersonUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class PersonUpdate(command.Command):
-    """Command class for updating a person."""
+    """UseCase class for updating a person."""
 
-    _command: Final[PersonUpdateCommand]
+    _command: Final[PersonUpdateUseCase]
 
-    def __init__(self, the_command: PersonUpdateCommand):
+    def __init__(self, the_command: PersonUpdateUseCase):
         """Constructor."""
         self._command = the_command
 
@@ -221,7 +222,7 @@ class PersonUpdate(command.Command):
         else:
             birthday = UpdateAction.do_nothing()
 
-        self._command.execute(PersonUpdateCommand.Args(
+        self._command.execute(PersonUpdateUseCase.Args(
             ref_id=ref_id,
             name=name,
             relationship=relationship,

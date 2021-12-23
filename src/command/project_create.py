@@ -1,4 +1,4 @@
-"""Command for creating projects."""
+"""UseCase for creating projects."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -6,17 +6,17 @@ from typing import Final
 import command.command as command
 from domain.entity_name import EntityName
 from domain.projects.project_key import ProjectKey
-from use_cases.projects.create import ProjectCreateCommand
+from use_cases.projects.create import ProjectCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ProjectCreate(command.Command):
-    """Command class for creating projects."""
+    """UseCase class for creating projects."""
 
-    _command: Final[ProjectCreateCommand]
+    _command: Final[ProjectCreateUseCase]
 
-    def __init__(self, the_command: ProjectCreateCommand) -> None:
+    def __init__(self, the_command: ProjectCreateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -39,4 +39,4 @@ class ProjectCreate(command.Command):
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key)
         project_name = EntityName.from_raw(args.name)
-        self._command.execute(ProjectCreateCommand.Args(key=project_key, name=project_name))
+        self._command.execute(ProjectCreateUseCase.Args(key=project_key, name=project_name))

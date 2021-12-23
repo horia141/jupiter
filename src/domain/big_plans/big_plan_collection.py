@@ -2,7 +2,9 @@
 from dataclasses import dataclass
 
 from domain.timestamp import Timestamp
-from models.framework import AggregateRoot, EntityId, BAD_REF_ID, Event2
+from framework.aggregate_root import AggregateRoot
+from framework.entity_id import EntityId, BAD_REF_ID
+from framework.event import Event2
 
 
 @dataclass()

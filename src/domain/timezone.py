@@ -6,8 +6,8 @@ from typing import Optional
 import pendulum
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 
 @dataclass(frozen=True)

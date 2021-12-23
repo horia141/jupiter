@@ -1,4 +1,4 @@
-"""Command for adding a vacation."""
+"""UseCase for adding a vacation."""
 
 import logging
 from argparse import ArgumentParser, Namespace
@@ -7,19 +7,19 @@ from typing import Final
 import command.command as command
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from use_cases.vacations.create import VacationCreateCommand
+from use_cases.vacations.create import VacationCreateUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class VacationCreate(command.Command):
-    """Command class for adding a vacation."""
+    """UseCase class for adding a vacation."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[VacationCreateCommand]
+    _command: Final[VacationCreateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: VacationCreateCommand):
+    def __init__(self, global_properties: GlobalProperties, the_command: VacationCreateUseCase):
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -46,5 +46,5 @@ class VacationCreate(command.Command):
         start_date = ADate.from_raw(self._global_properties.timezone, args.start_date)
         end_date = ADate.from_raw(self._global_properties.timezone, args.end_date)
 
-        self._command.execute(VacationCreateCommand.Args(
+        self._command.execute(VacationCreateUseCase.Args(
             name=name, start_date=start_date, end_date=end_date))

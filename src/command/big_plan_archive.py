@@ -1,18 +1,18 @@
-"""Command for archiving a big plan."""
+"""UseCase for archiving a big plan."""
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.big_plans.archive import BigPlanArchiveCommand
+from framework.entity_id import EntityId
+from use_cases.big_plans.archive import BigPlanArchiveUseCase
 
 
 class BigPlanArchive(command.Command):
-    """Command class for archiving a big plan."""
+    """UseCase class for archiving a big plan."""
 
-    _command: Final[BigPlanArchiveCommand]
+    _command: Final[BigPlanArchiveUseCase]
 
-    def __init__(self, the_command: BigPlanArchiveCommand) -> None:
+    def __init__(self, the_command: BigPlanArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -33,4 +33,4 @@ class BigPlanArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(BigPlanArchiveCommand.Args(ref_id))
+        self._command.execute(BigPlanArchiveUseCase.Args(ref_id))

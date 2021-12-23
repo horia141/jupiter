@@ -2,7 +2,7 @@
 import abc
 
 from domain.prm.prm_database import PrmDatabase
-from models.framework import Repository
+from framework.storage import Repository
 
 
 class PrmDatabaseRepository(Repository, abc.ABC):

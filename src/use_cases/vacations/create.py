@@ -7,11 +7,11 @@ from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class VacationCreateCommand(Command['VacationCreateCommand.Args', None]):
+class VacationCreateUseCase(UseCase['VacationCreateUseCase.Args', None]):
     """The command for creating a vacation."""
 
     @dataclass()

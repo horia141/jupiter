@@ -13,8 +13,9 @@ from domain.timezone import Timezone
 from domain.workspaces.infra.workspace_engine import WorkspaceUnitOfWork, WorkspaceEngine
 from domain.workspaces.infra.workspace_repository import WorkspaceRepository
 from domain.workspaces.workspace import Workspace
-from models.errors import RepositoryError
-from models.framework import EntityId, JSONDictType, BAD_REF_ID
+from framework.errors import RepositoryError
+from framework.json import JSONDictType
+from framework.entity_id import EntityId, BAD_REF_ID
 from utils.storage import StructuredIndividualStorage
 from utils.time_provider import TimeProvider
 

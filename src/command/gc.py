@@ -1,4 +1,4 @@
-"""Command for archiving done tasks."""
+"""UseCase for archiving done tasks."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -6,17 +6,17 @@ from typing import Final
 import command.command as command
 from domain.projects.project_key import ProjectKey
 from domain.sync_target import SyncTarget
-from use_cases.gc import GCCommand
+from use_cases.gc import GCUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class GC(command.Command):
-    """Command class for archiving done tasks."""
+    """UseCase class for archiving done tasks."""
 
-    _command: Final[GCCommand]
+    _command: Final[GCUseCase]
 
-    def __init__(self, the_command: GCCommand) -> None:
+    def __init__(self, the_command: GCUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -51,6 +51,6 @@ class GC(command.Command):
         do_archival = args.do_archival
         do_anti_entropy = args.do_anti_entropy
         do_notion_cleanup = args.do_notion_cleanup
-        self._command.execute(GCCommand.Args(
+        self._command.execute(GCUseCase.Args(
             sync_targets=gc_targets, project_keys=project_keys, do_archival=do_archival,
             do_anti_entropy=do_anti_entropy, do_notion_cleanup=do_notion_cleanup))

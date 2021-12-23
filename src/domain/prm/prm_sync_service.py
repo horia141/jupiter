@@ -9,7 +9,7 @@ from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person import Person
 from domain.sync_prefer import SyncPrefer
-from models.framework import EntityId
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 

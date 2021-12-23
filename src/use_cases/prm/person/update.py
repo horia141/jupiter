@@ -22,15 +22,17 @@ from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.timestamp import Timestamp
-from models import schedules
-from models.framework import Command, UpdateAction, EntityId
+from domain import schedules
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PersonUpdateCommand(Command['PersonUpdateCommand.Args', None]):
+class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
     """The command for updating a person."""
 
     @dataclass()

@@ -4,8 +4,8 @@ from functools import total_ordering
 from typing import Optional
 from urllib.parse import urlparse
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 
 @dataclass(frozen=True)

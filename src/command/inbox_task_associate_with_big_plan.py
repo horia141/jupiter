@@ -1,22 +1,22 @@
-"""Command for associating an inbox task with a big plan."""
+"""UseCase for associating an inbox task with a big plan."""
 
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.inbox_tasks.associate_with_big_plan import InboxTaskAssociateWithBigPlanCommand
+from framework.entity_id import EntityId
+from use_cases.inbox_tasks.associate_with_big_plan import InboxTaskAssociateWithBigPlanUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskAssociateWithBigPlan(command.Command):
-    """Command class for associating an inbox task with a big plan."""
+    """UseCase class for associating an inbox task with a big plan."""
 
-    _command: Final[InboxTaskAssociateWithBigPlanCommand]
+    _command: Final[InboxTaskAssociateWithBigPlanUseCase]
 
-    def __init__(self, the_command: InboxTaskAssociateWithBigPlanCommand) -> None:
+    def __init__(self, the_command: InboxTaskAssociateWithBigPlanUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -41,4 +41,4 @@ class InboxTaskAssociateWithBigPlan(command.Command):
         ref_id = EntityId.from_raw(args.ref_id)
         big_plan_ref_id = EntityId.from_raw(args.big_plan_ref_id)\
             if args.big_plan_ref_id else None
-        self._command.execute(InboxTaskAssociateWithBigPlanCommand.Args(ref_id, big_plan_ref_id))
+        self._command.execute(InboxTaskAssociateWithBigPlanUseCase.Args(ref_id, big_plan_ref_id))

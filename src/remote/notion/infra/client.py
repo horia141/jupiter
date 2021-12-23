@@ -11,7 +11,8 @@ from notion.space import Space
 
 from domain.workspaces.notion_token import NotionToken
 from domain.workspaces.notion_space_id import NotionSpaceId
-from models.framework import JSONDictType, NotionId
+from framework.json import JSONDictType
+from framework.notion import NotionId
 
 LOGGER = logging.getLogger(__name__)
 

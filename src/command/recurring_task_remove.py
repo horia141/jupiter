@@ -1,21 +1,21 @@
-"""Command for hard removing recurring tasks."""
+"""UseCase for hard removing recurring tasks."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.recurring_tasks.remove import RecurringTaskRemoveCommand
+from framework.entity_id import EntityId
+from use_cases.recurring_tasks.remove import RecurringTaskRemoveUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RecurringTaskRemove(command.Command):
-    """Command class for hard removing recurring tasks."""
+    """UseCase class for hard removing recurring tasks."""
 
-    _command: Final[RecurringTaskRemoveCommand]
+    _command: Final[RecurringTaskRemoveUseCase]
 
-    def __init__(self, the_command: RecurringTaskRemoveCommand) -> None:
+    def __init__(self, the_command: RecurringTaskRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -38,4 +38,4 @@ class RecurringTaskRemove(command.Command):
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(RecurringTaskRemoveCommand.Args(ref_id))
+        self._command.execute(RecurringTaskRemoveUseCase.Args(ref_id))

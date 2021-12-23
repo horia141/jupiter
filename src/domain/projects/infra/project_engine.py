@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Iterator
 
 from domain.projects.infra.project_repository import ProjectRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class ProjectUnitOfWork(UnitOfWork, abc.ABC):

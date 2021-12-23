@@ -1,18 +1,18 @@
-"""Command for showing the PRM database."""
+"""UseCase for showing the PRM database."""
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from command.command import Command
-from use_cases.prm.find import PrmDatabaseFindCommand
-from models.framework import EntityId
+from use_cases.prm.find import PrmDatabaseFindUseCase
+from framework.entity_id import EntityId
 
 
 class PrmShow(Command):
-    """Command for showing the PRM database."""
+    """UseCase for showing the PRM database."""
 
-    _command: Final[PrmDatabaseFindCommand]
+    _command: Final[PrmDatabaseFindUseCase]
 
-    def __init__(self, the_command: PrmDatabaseFindCommand):
+    def __init__(self, the_command: PrmDatabaseFindUseCase):
         """Constructor."""
         self._command = the_command
 
@@ -37,7 +37,7 @@ class PrmShow(Command):
             if len(args.ref_ids) > 0 else None
 
         response = self._command.execute(
-            PrmDatabaseFindCommand.Args(allow_archived=False, filter_person_ref_ids=ref_ids))
+            PrmDatabaseFindUseCase.Args(allow_archived=False, filter_person_ref_ids=ref_ids))
 
         print(f"The catch up project is {response.catch_up_project.name}")
 

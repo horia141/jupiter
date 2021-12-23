@@ -15,7 +15,9 @@ from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.timestamp import Timestamp
 from domain.workspaces.notion_workspace import NotionWorkspace
-from models.framework import EntityId, JSONDictType, NotionId
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager

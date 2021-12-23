@@ -3,8 +3,8 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 
 @enum.unique

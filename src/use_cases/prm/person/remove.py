@@ -7,13 +7,14 @@ from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionMa
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.service.remove_service import PersonRemoveService
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PersonRemoveCommand(Command[EntityId, None]):
+class PersonRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a person."""
 
     _time_provider: Final[TimeProvider]

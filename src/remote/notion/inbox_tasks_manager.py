@@ -21,7 +21,9 @@ from domain.projects.project import Project
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
 from domain.timestamp import Timestamp
-from models.framework import EntityId, JSONDictType, NotionId
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option, \
     clean_eisenhower
 from remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow

@@ -5,7 +5,10 @@ from typing import Iterable, Optional, List
 from domain.url import URL
 from domain.timestamp import Timestamp
 from domain.entity_name import EntityName
-from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
+from framework.update_action import UpdateAction
+from framework.aggregate_root import AggregateRoot
+from framework.entity_id import EntityId, BAD_REF_ID
+from framework.event import Event
 
 
 @dataclass()

@@ -19,11 +19,11 @@ from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class MetricCreateCommand(Command['MetricCreateCommand.Args', None]):
+class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
     """The command for creating a metric."""
 
     @dataclass()

@@ -5,7 +5,7 @@ from typing import Iterator
 
 from domain.prm.infra.person_repository import PersonRepository
 from domain.prm.infra.prm_database_repository import PrmDatabaseRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class PrmUnitOfWork(UnitOfWork, abc.ABC):

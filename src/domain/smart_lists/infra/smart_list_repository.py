@@ -4,7 +4,8 @@ from typing import Optional, List, Iterable
 
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_key import SmartListKey
-from models.framework import Repository, EntityId
+from framework.entity_id import EntityId
+from framework.storage import Repository
 
 
 class SmartListRepository(Repository, abc.ABC):

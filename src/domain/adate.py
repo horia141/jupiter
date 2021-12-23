@@ -10,8 +10,8 @@ from pendulum import UTC
 
 from domain.timestamp import Timestamp
 from domain.timezone import Timezone
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 
 @dataclass(frozen=True)

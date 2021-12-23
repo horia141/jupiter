@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Iterator
 
 from domain.vacations.infra.vacation_repository import VacationRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class VacationUnitOfWork(UnitOfWork, abc.ABC):

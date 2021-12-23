@@ -1,22 +1,22 @@
-"""Command for hard remove inbox tasks."""
+"""UseCase for hard remove inbox tasks."""
 
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.inbox_tasks.remove import InboxTaskRemoveCommand
+from framework.entity_id import EntityId
+from use_cases.inbox_tasks.remove import InboxTaskRemoveUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskRemove(command.Command):
-    """Command class for hard removing inbox tasks."""
+    """UseCase class for hard removing inbox tasks."""
 
-    _command: Final[InboxTaskRemoveCommand]
+    _command: Final[InboxTaskRemoveUseCase]
 
-    def __init__(self, the_command: InboxTaskRemoveCommand) -> None:
+    def __init__(self, the_command: InboxTaskRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -39,4 +39,4 @@ class InboxTaskRemove(command.Command):
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(InboxTaskRemoveCommand.Args(ref_id))
+        self._command.execute(InboxTaskRemoveUseCase.Args(ref_id))

@@ -13,12 +13,13 @@ from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.metric_key import MetricKey
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricFindCommand(Command['MetricFindCommand.Args', 'MetricFindCommand.Response']):
+class MetricFindUseCase(UseCase['MetricFindUseCase.Args', 'MetricFindUseCase.Response']):
     """The command for finding metrics."""
 
     @dataclass()
@@ -40,7 +41,7 @@ class MetricFindCommand(Command['MetricFindCommand.Args', 'MetricFindCommand.Res
     class Response:
         """Response object."""
 
-        metrics: List['MetricFindCommand.ResponseEntry']
+        metrics: List['MetricFindUseCase.ResponseEntry']
 
     _project_engine: Final[ProjectEngine]
     _inbox_task_engine: Final[InboxTaskEngine]

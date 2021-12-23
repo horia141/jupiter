@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
 from domain.timestamp import Timestamp
-from models.framework import NotionEntity, BAD_NOTION_ID
+from framework.notion import NotionEntity, BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

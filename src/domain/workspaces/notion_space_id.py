@@ -3,8 +3,8 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Final, Pattern
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 _NOTION_SPACE_ID_RE: Final[Pattern[str]] = re.compile(r"^[0-9a-z-]{36}$")
 

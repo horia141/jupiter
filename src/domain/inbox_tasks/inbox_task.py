@@ -16,7 +16,10 @@ from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
 from domain.timestamp import Timestamp
-from models.framework import AggregateRoot, EntityId, BAD_REF_ID, Event2, UpdateAction
+from framework.update_action import UpdateAction
+from framework.aggregate_root import AggregateRoot
+from framework.entity_id import EntityId, BAD_REF_ID
+from framework.event import Event2
 
 
 @dataclass()

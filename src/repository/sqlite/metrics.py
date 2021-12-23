@@ -31,8 +31,8 @@ from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.metric_key import MetricKey
 from domain.metrics.metric_unit import MetricUnit
-from models.errors import RepositoryError
-from models.framework import EntityId, BAD_REF_ID
+from framework.errors import RepositoryError
+from framework.entity_id import EntityId, BAD_REF_ID
 from repository.sqlite.events import build_event_table, upsert_events
 from utils.storage import StructuredStorageError
 

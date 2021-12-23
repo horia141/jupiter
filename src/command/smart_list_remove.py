@@ -1,21 +1,21 @@
-"""Command for hard removing a smart list."""
+"""UseCase for hard removing a smart list."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.smart_lists.remove import SmartListRemoveCommand
+from use_cases.smart_lists.remove import SmartListRemoveUseCase
 from domain.smart_lists.smart_list_key import SmartListKey
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListsRemove(command.Command):
-    """Command for hard removing of a smart list."""
+    """UseCase for hard removing of a smart list."""
 
-    _command: Final[SmartListRemoveCommand]
+    _command: Final[SmartListRemoveUseCase]
 
-    def __init__(self, the_command: SmartListRemoveCommand) -> None:
+    def __init__(self, the_command: SmartListRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

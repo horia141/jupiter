@@ -1,22 +1,22 @@
-"""Command for removing a vacation."""
+"""UseCase for removing a vacation."""
 
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from use_cases.vacations.archive import VacationArchiveCommand
-from models.framework import EntityId
+from use_cases.vacations.archive import VacationArchiveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class VacationArchive(command.Command):
-    """Command class for removing a vacation."""
+    """UseCase class for removing a vacation."""
 
-    _command: Final[VacationArchiveCommand]
+    _command: Final[VacationArchiveUseCase]
 
-    def __init__(self, the_command: VacationArchiveCommand) -> None:
+    def __init__(self, the_command: VacationArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

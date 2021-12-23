@@ -1,21 +1,21 @@
-"""Command for suspending of a recurring task."""
+"""UseCase for suspending of a recurring task."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.recurring_tasks.suspend import RecurringTaskSuspendCommand
+from framework.entity_id import EntityId
+from use_cases.recurring_tasks.suspend import RecurringTaskSuspendUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RecurringTaskSuspend(command.Command):
-    """Command class for suspending a recurring task."""
+    """UseCase class for suspending a recurring task."""
 
-    _command: Final[RecurringTaskSuspendCommand]
+    _command: Final[RecurringTaskSuspendUseCase]
 
-    def __init__(self, the_command: RecurringTaskSuspendCommand) -> None:
+    def __init__(self, the_command: RecurringTaskSuspendUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -37,4 +37,4 @@ class RecurringTaskSuspend(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(RecurringTaskSuspendCommand.Args(ref_id, True))
+        self._command.execute(RecurringTaskSuspendUseCase.Args(ref_id, True))

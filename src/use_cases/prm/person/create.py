@@ -17,13 +17,13 @@ from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PersonCreateCommand(Command['PersonCreateCommand.Args', None]):
+class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
     """The command for creating a person."""
 
     @dataclass()

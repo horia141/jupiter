@@ -1,4 +1,4 @@
-"""Command for updating inbox tasks."""
+"""UseCase for updating inbox tasks."""
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional, List
 
@@ -8,18 +8,19 @@ from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from models.framework import UpdateAction, EntityId
-from use_cases.inbox_tasks.update import InboxTaskUpdateCommand
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from utils.global_properties import GlobalProperties
 
 
 class InboxTaskUpdate(command.Command):
-    """Command class for updating inbox tasks."""
+    """UseCase class for updating inbox tasks."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[InboxTaskUpdateCommand]
+    _command: Final[InboxTaskUpdateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: InboxTaskUpdateCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: InboxTaskUpdateUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -109,7 +110,7 @@ class InboxTaskUpdate(command.Command):
             due_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.due_date))
         else:
             due_date = UpdateAction.do_nothing()
-        self._command.execute(InboxTaskUpdateCommand.Args(
+        self._command.execute(InboxTaskUpdateUseCase.Args(
             ref_id=ref_id,
             name=name,
             status=status,

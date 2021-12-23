@@ -13,11 +13,11 @@ from typing import Final, Dict, Protocol, TypeVar, Generic, Optional, List, Tupl
 import jsonschema as js
 import pendulum
 import yaml
+from framework.value import Value
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
 
 from domain.timestamp import Timestamp
-from models.framework import EntityId, JSONDictType
-from models.frame.value import Value
-from utils.time_field_action import TimeFieldAction
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -503,9 +503,7 @@ class EntitiesStorage(Generic[EntityRowType]):
 
         raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
 
-    def update(
-            self, new_entity: EntityRowType,
-            archived_time_action: TimeFieldAction = TimeFieldAction.DO_NOTHING) -> EntityRowType:
+    def update(self, new_entity: EntityRowType) -> EntityRowType:
         """Update an existing entity."""
         if new_entity.ref_id == BAD_REF_ID:
             raise RuntimeError(f"Cannot update entity without a good id")
@@ -517,7 +515,6 @@ class EntitiesStorage(Generic[EntityRowType]):
         for entity_idx, entity in enumerate(entities):
             if entity.ref_id == new_entity.ref_id:
                 new_entity.last_modified_time = self._time_provider.get_current_time()
-                archived_time_action.act(new_entity, "archived_time", self._time_provider.get_current_time())
                 entities[entity_idx] = new_entity
                 self._save(shard_id, next_idx, entities)
                 return new_entity

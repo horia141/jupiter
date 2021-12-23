@@ -1,18 +1,18 @@
-"""Command for archiving a metric."""
+"""UseCase for archiving a metric."""
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.metrics.archive import MetricArchiveCommand
+from use_cases.metrics.archive import MetricArchiveUseCase
 from domain.metrics.metric_key import MetricKey
 
 
 class MetricArchive(command.Command):
-    """Command for creating a metric."""
+    """UseCase for creating a metric."""
 
-    _command: Final[MetricArchiveCommand]
+    _command: Final[MetricArchiveUseCase]
 
-    def __init__(self, the_command: MetricArchiveCommand) -> None:
+    def __init__(self, the_command: MetricArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

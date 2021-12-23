@@ -5,7 +5,7 @@ from typing import Iterator
 
 from domain.recurring_tasks.infra.recurring_task_collection_repository import RecurringTaskCollectionRepository
 from domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class RecurringTaskUnitOfWork(UnitOfWork, abc.ABC):

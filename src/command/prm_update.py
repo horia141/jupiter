@@ -1,19 +1,19 @@
-"""Command for updating the PRM database."""
+"""UseCase for updating the PRM database."""
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from command.command import Command
-from use_cases.prm.update import PrmDatabaseUpdateCommand
+from use_cases.prm.update import PrmDatabaseUpdateUseCase
 from domain.projects.project_key import ProjectKey
-from models.framework import UpdateAction
+from framework.update_action import UpdateAction
 
 
 class PrmUpdate(Command):
-    """Command for updating the PRM database."""
+    """UseCase for updating the PRM database."""
 
-    _command: Final[PrmDatabaseUpdateCommand]
+    _command: Final[PrmDatabaseUpdateUseCase]
 
-    def __init__(self, the_command: PrmDatabaseUpdateCommand):
+    def __init__(self, the_command: PrmDatabaseUpdateUseCase):
         """Constructor."""
         self._command = the_command
 
@@ -48,4 +48,4 @@ class PrmUpdate(Command):
         else:
             catch_up_project_key = UpdateAction.do_nothing()
 
-        self._command.execute(PrmDatabaseUpdateCommand.Args(catch_up_project_key=catch_up_project_key))
+        self._command.execute(PrmDatabaseUpdateUseCase.Args(catch_up_project_key=catch_up_project_key))

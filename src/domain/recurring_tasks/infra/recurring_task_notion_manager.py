@@ -8,7 +8,8 @@ from domain.projects.project import Project
 from domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
-from models.framework import EntityId, NotionId
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 
 
 class RecurringTaskNotionManager(abc.ABC):

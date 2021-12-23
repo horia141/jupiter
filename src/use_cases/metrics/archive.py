@@ -8,14 +8,14 @@ from domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_key import MetricKey
-from models.framework import Command
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricArchiveCommand(Command[MetricKey, None]):
+class MetricArchiveUseCase(UseCase[MetricKey, None]):
     """The command for archiving a metric."""
 
     _time_provider: Final[TimeProvider]

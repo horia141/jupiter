@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
-from models.errors import ModelValidationError
+from framework.errors import ModelValidationError
 
 
 @enum.unique

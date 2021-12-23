@@ -1,4 +1,4 @@
-"""Command for creating a smart list item."""
+"""UseCase for creating a smart list item."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
@@ -8,17 +8,17 @@ from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.url import URL
-from use_cases.smart_lists.item.create import SmartListItemCreateCommand
+from use_cases.smart_lists.item.create import SmartListItemCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListItemCreate(command.Command):
-    """Command for creating a smart list item."""
+    """UseCase for creating a smart list item."""
 
-    _command: Final[SmartListItemCreateCommand]
+    _command: Final[SmartListItemCreateUseCase]
 
-    def __init__(self, the_command: SmartListItemCreateCommand) -> None:
+    def __init__(self, the_command: SmartListItemCreateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -50,5 +50,5 @@ class SmartListItemCreate(command.Command):
         is_done = args.is_done
         tag_names = [SmartListTagName.from_raw(t) for t in args.tag_names]
         url = URL.from_raw(args.url) if args.url else None
-        self._command.execute(SmartListItemCreateCommand.Args(
+        self._command.execute(SmartListItemCreateUseCase.Args(
             smart_list_key=smart_list_key, name=name, is_done=is_done, tag_names=tag_names, url=url))

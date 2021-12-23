@@ -1,4 +1,4 @@
-"""Command for updating the workspace."""
+"""UseCase for updating the workspace."""
 
 import logging
 from argparse import ArgumentParser, Namespace
@@ -9,20 +9,20 @@ from domain.entity_name import EntityName
 from domain.projects.project_key import ProjectKey
 from domain.timezone import Timezone
 from domain.workspaces.notion_token import NotionToken
-from models.framework import UpdateAction
+from framework.update_action import UpdateAction
 from remote.notion.infra.connection import NotionConnection
-from use_cases.workspaces.update import WorkspaceUpdateCommand
+from use_cases.workspaces.update import WorkspaceUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceUpdate(command.Command):
-    """Command class for updating the workspace."""
+    """UseCase class for updating the workspace."""
 
     _notion_connection: Final[NotionConnection]
-    _command: Final[WorkspaceUpdateCommand]
+    _command: Final[WorkspaceUpdateUseCase]
 
-    def __init__(self, notion_connection: NotionConnection, the_command: WorkspaceUpdateCommand) -> None:
+    def __init__(self, notion_connection: NotionConnection, the_command: WorkspaceUpdateUseCase) -> None:
         """Constructor."""
         self._notion_connection = notion_connection
         self._command = the_command
@@ -61,7 +61,7 @@ class WorkspaceUpdate(command.Command):
             default_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.default_project_key))
         else:
             default_project_key = UpdateAction.do_nothing()
-        self._command.execute(WorkspaceUpdateCommand.Args(
+        self._command.execute(WorkspaceUpdateUseCase.Args(
             name=name, timezone=timezone, default_project_key=default_project_key))
         # This is quite the hack for now!
         if args.notion_token is not None:

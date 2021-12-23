@@ -1,22 +1,22 @@
-"""Command for archiving a metric entry."""
+"""UseCase for archiving a metric entry."""
 
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.metrics.entry.archive import MetricEntryArchiveCommand
-from models.framework import EntityId
+from use_cases.metrics.entry.archive import MetricEntryArchiveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MetricEntryArchive(command.Command):
-    """Command for archiving a metric entry."""
+    """UseCase for archiving a metric entry."""
 
-    _command: Final[MetricEntryArchiveCommand]
+    _command: Final[MetricEntryArchiveUseCase]
 
-    def __init__(self, the_command: MetricEntryArchiveCommand) -> None:
+    def __init__(self, the_command: MetricEntryArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

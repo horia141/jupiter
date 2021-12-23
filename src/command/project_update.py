@@ -1,4 +1,4 @@
-"""Command for creating projects."""
+"""UseCase for creating projects."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -6,18 +6,18 @@ from typing import Final
 import command.command as command
 from domain.entity_name import EntityName
 from domain.projects.project_key import ProjectKey
-from models.framework import UpdateAction
-from use_cases.projects.update import ProjectUpdateCommand
+from framework.update_action import UpdateAction
+from use_cases.projects.update import ProjectUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ProjectUpdate(command.Command):
-    """Command class for updating projects."""
+    """UseCase class for updating projects."""
 
-    _command: Final[ProjectUpdateCommand]
+    _command: Final[ProjectUpdateUseCase]
 
-    def __init__(self, the_command: ProjectUpdateCommand) -> None:
+    def __init__(self, the_command: ProjectUpdateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -43,4 +43,4 @@ class ProjectUpdate(command.Command):
             project_name = UpdateAction.change_to(EntityName.from_raw(args.name))
         else:
             project_name = UpdateAction.do_nothing()
-        self._command.execute(ProjectUpdateCommand.Args(key=project_key, name=project_name))
+        self._command.execute(ProjectUpdateUseCase.Args(key=project_key, name=project_name))

@@ -1,4 +1,4 @@
-"""Command for updating a recurring task."""
+"""UseCase for updating a recurring task."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional, List
@@ -14,21 +14,22 @@ from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
-from models.framework import UpdateAction, EntityId
-from use_cases.recurring_tasks.update import RecurringTaskUpdateCommand
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from use_cases.recurring_tasks.update import RecurringTaskUpdateUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RecurringTaskUpdate(command.Command):
-    """Command class for creating a recurring task."""
+    """UseCase class for creating a recurring task."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[RecurringTaskUpdateCommand]
+    _command: Final[RecurringTaskUpdateUseCase]
 
     def __init__(
-            self, global_properties: GlobalProperties, the_command: RecurringTaskUpdateCommand) -> None:
+            self, global_properties: GlobalProperties, the_command: RecurringTaskUpdateUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -216,7 +217,7 @@ class RecurringTaskUpdate(command.Command):
             skip_rule = UpdateAction.change_to(RecurringTaskSkipRule.from_raw(args.skip_rule))
         else:
             skip_rule = UpdateAction.do_nothing()
-        self._command.execute(RecurringTaskUpdateCommand.Args(
+        self._command.execute(RecurringTaskUpdateUseCase.Args(
             ref_id=ref_id,
             name=name,
             period=period,

@@ -7,7 +7,10 @@ from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.timestamp import Timestamp
-from models.framework import AggregateRoot, Event, UpdateAction, BAD_REF_ID
+from framework.update_action import UpdateAction
+from framework.aggregate_root import AggregateRoot
+from framework.entity_id import BAD_REF_ID
+from framework.event import Event
 
 
 @dataclass()

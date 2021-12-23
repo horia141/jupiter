@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 
 @dataclass(frozen=True)

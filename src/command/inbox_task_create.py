@@ -1,4 +1,4 @@
-"""Command for creating an inbox task."""
+"""UseCase for creating an inbox task."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
@@ -9,20 +9,20 @@ from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
 from domain.projects.project_key import ProjectKey
-from models.framework import EntityId
-from use_cases.inbox_tasks.create import InboxTaskCreateCommand
+from framework.entity_id import EntityId
+from use_cases.inbox_tasks.create import InboxTaskCreateUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskCreate(command.Command):
-    """Command class for creating inbox tasks."""
+    """UseCase class for creating inbox tasks."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[InboxTaskCreateCommand]
+    _command: Final[InboxTaskCreateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: InboxTaskCreateCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: InboxTaskCreateUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -62,7 +62,7 @@ class InboxTaskCreate(command.Command):
         actionable_date = ADate.from_raw(self._global_properties.timezone, args.actionable_date) \
             if args.due_date else None
         due_date = ADate.from_raw(self._global_properties.timezone, args.due_date) if args.due_date else None
-        self._command.execute(InboxTaskCreateCommand.Args(
+        self._command.execute(InboxTaskCreateUseCase.Args(
             project_key=project_key,
             name=name,
             big_plan_ref_id=big_plan_ref_id,

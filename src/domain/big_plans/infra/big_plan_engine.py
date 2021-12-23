@@ -5,7 +5,7 @@ from typing import Iterator
 
 from domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository
 from domain.big_plans.infra.big_plan_repository import BigPlanRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class BigPlanUnitOfWork(UnitOfWork, abc.ABC):

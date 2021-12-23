@@ -5,7 +5,8 @@ from typing import Iterable
 from domain.vacations.notion_vacation import NotionVacation
 from domain.vacations.vacation import Vacation
 from domain.workspaces.notion_workspace import NotionWorkspace
-from models.framework import EntityId, NotionId
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 
 
 class VacationNotionManager(abc.ABC):

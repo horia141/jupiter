@@ -28,16 +28,16 @@ from domain.sync_target import SyncTarget
 from domain.timestamp import Timestamp
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.vacation import Vacation
-from models import schedules
-from models.framework import Command
-from models.framework import EntityId
+from domain import schedules
+from framework.use_case import UseCase
+from framework.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GenCommand(Command['GenCommand.Args', None]):
+class GenUseCase(UseCase['GenUseCase.Args', None]):
     """The command for generating new tasks."""
 
     @dataclass()

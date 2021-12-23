@@ -1,4 +1,4 @@
-"""Command for adding a recurring task."""
+"""UseCase for adding a recurring task."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
@@ -15,20 +15,20 @@ from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
-from use_cases.recurring_tasks.create import RecurringTaskCreateCommand
+from use_cases.recurring_tasks.create import RecurringTaskCreateUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RecurringTaskCreate(command.Command):
-    """Command class for creating a recurring task."""
+    """UseCase class for creating a recurring task."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[RecurringTaskCreateCommand]
+    _command: Final[RecurringTaskCreateUseCase]
 
     def __init__(
-            self, global_properties: GlobalProperties, the_command: RecurringTaskCreateCommand) -> None:
+            self, global_properties: GlobalProperties, the_command: RecurringTaskCreateUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -98,7 +98,7 @@ class RecurringTaskCreate(command.Command):
             if args.start_at_date else None
         end_at_date = ADate.from_raw(self._global_properties.timezone, args.end_at_date) \
             if args.end_at_date else None
-        self._command.execute(RecurringTaskCreateCommand.Args(
+        self._command.execute(RecurringTaskCreateUseCase.Args(
             project_key=project_key,
             name=name,
             period=period,

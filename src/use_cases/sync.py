@@ -47,16 +47,16 @@ from domain.vacations.vacation_sync_service import VacationSyncService
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from domain.workspaces.workspace_sync_service import WorkspaceSyncService
-from models import schedules
-from models.framework import Command
-from models.framework import EntityId
+from domain import schedules
+from framework.use_case import UseCase
+from framework.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SyncCommand(Command['SyncCommand.Args', None]):
+class SyncUseCase(UseCase['SyncUseCase.Args', None]):
     """Synchronise between Notion and local."""
 
     @dataclass()

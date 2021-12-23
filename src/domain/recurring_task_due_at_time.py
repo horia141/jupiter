@@ -3,8 +3,8 @@ import re
 from dataclasses import dataclass
 from typing import Final, Optional, Pattern
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 _DUE_AT_TIME_RE: Final[Pattern[str]] = re.compile(r"^[0-9][0-9]:[0-9][0-9]$")
 

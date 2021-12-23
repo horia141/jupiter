@@ -1,10 +1,10 @@
-"""Command for creating a smart list tag."""
+"""UseCase for creating a smart list tag."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.smart_lists.tag.create import SmartListTagCreateCommand
+from use_cases.smart_lists.tag.create import SmartListTagCreateUseCase
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 
@@ -12,11 +12,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SmartListTagCreate(command.Command):
-    """Command for creating a smart list tag."""
+    """UseCase for creating a smart list tag."""
 
-    _command: Final[SmartListTagCreateCommand]
+    _command: Final[SmartListTagCreateUseCase]
 
-    def __init__(self, the_command: SmartListTagCreateCommand) -> None:
+    def __init__(self, the_command: SmartListTagCreateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -40,4 +40,4 @@ class SmartListTagCreate(command.Command):
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         tag_name = SmartListTagName.from_raw(args.name)
-        self._command.execute(SmartListTagCreateCommand.Args(smart_list_key=smart_list_key, tag_name=tag_name))
+        self._command.execute(SmartListTagCreateUseCase.Args(smart_list_key=smart_list_key, tag_name=tag_name))

@@ -6,7 +6,7 @@ from typing import Iterator
 from domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
 from domain.smart_lists.infra.smart_list_repository import SmartListRepository
 from domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class SmartListUnitOfWork(UnitOfWork, abc.ABC):

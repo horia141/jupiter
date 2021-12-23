@@ -16,13 +16,13 @@ from domain.projects.project_key import ProjectKey
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ProjectArchiveCommand(Command['ProjectArchiveCommand.Args', None]):
+class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
     """The command for archiving a project."""
 
     @dataclass()

@@ -7,14 +7,15 @@ from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionMa
 from domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PersonArchiveCommand(Command[EntityId, None]):
+class PersonArchiveUseCase(UseCase[EntityId, None]):
     """The command for archiving a person."""
 
     _time_provider: Final[TimeProvider]

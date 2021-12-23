@@ -1,21 +1,21 @@
-"""Command for archiving a smart list."""
+"""UseCase for archiving a smart list."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.smart_lists.archive import SmartListArchiveCommand
+from use_cases.smart_lists.archive import SmartListArchiveUseCase
 from domain.smart_lists.smart_list_key import SmartListKey
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListArchive(command.Command):
-    """Command for archiving of a smart list."""
+    """UseCase for archiving of a smart list."""
 
-    _command: Final[SmartListArchiveCommand]
+    _command: Final[SmartListArchiveUseCase]
 
-    def __init__(self, the_command: SmartListArchiveCommand) -> None:
+    def __init__(self, the_command: SmartListArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

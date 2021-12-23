@@ -1,4 +1,4 @@
-"""Command for initialising the workspace."""
+"""UseCase for initialising the workspace."""
 import logging
 from dataclasses import dataclass
 from typing import Final
@@ -20,15 +20,16 @@ from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionMana
 from domain.workspaces.notion_space_id import NotionSpaceId
 from domain.workspaces.notion_token import NotionToken
 from domain.workspaces.workspace import Workspace
-from models.framework import Command, BAD_REF_ID
+from framework.entity_id import BAD_REF_ID
+from framework.use_case import UseCase
 from remote.notion.infra.connection import NotionConnection
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class InitCommand(Command['InitCommand.Args', None]):
-    """Command for initialising the workspace."""
+class InitUseCase(UseCase['InitUseCase.Args', None]):
+    """UseCase for initialising the workspace."""
 
     @dataclass()
     class Args:

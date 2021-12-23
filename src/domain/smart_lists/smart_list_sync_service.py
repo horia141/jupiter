@@ -11,7 +11,7 @@ from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.sync_prefer import SyncPrefer
 from domain.timestamp import Timestamp
-from models.framework import EntityId
+from framework.entity_id import EntityId
 from utils.storage import StructuredStorageError
 
 LOGGER = logging.getLogger(__name__)

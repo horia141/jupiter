@@ -17,8 +17,9 @@ from domain.big_plans.infra.big_plan_engine import BigPlanUnitOfWork, BigPlanEng
 from domain.big_plans.infra.big_plan_repository import BigPlanRepository
 from domain.entity_name import EntityName
 from domain.timestamp import Timestamp
-from models.errors import RepositoryError
-from models.framework import EntityId, JSONDictType
+from framework.errors import RepositoryError
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
 from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 

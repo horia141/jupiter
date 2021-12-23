@@ -7,7 +7,9 @@ from typing import ClassVar, Final, cast
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from domain.workspaces.notion_workspace import NotionWorkspace
 from domain.workspaces.workspace import Workspace
-from models.framework import JSONDictType, NotionId, EntityId
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 from remote.notion.common import CollectionError
 from remote.notion.infra.connection import NotionConnection
 from utils.storage import StructuredIndividualStorage

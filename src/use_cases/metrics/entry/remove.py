@@ -4,14 +4,15 @@ from typing import Final
 
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricEntryRemoveCommand(Command[EntityId, None]):
+class MetricEntryRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a metric entry."""
 
     _metric_engine: Final[MetricEngine]

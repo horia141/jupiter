@@ -23,13 +23,13 @@ from domain.recurring_tasks.infra.recurring_task_notion_manager import Recurring
 from domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class RecurringTaskCreateCommand(Command['RecurringTaskCreateCommand.Args', None]):
+class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None]):
     """The command for creating a recurring task."""
 
     @dataclass()

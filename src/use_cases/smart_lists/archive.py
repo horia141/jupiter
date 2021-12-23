@@ -5,7 +5,7 @@ from typing import Final
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from domain.smart_lists.smart_list_key import SmartListKey
-from models.framework import Command
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
@@ -13,7 +13,7 @@ from utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListArchiveCommand(Command[SmartListKey, None]):
+class SmartListArchiveUseCase(UseCase[SmartListKey, None]):
     """The command for archiving a smart list."""
 
     _time_provider: Final[TimeProvider]

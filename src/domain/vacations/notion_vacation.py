@@ -6,7 +6,7 @@ from domain.adate import ADate
 from domain.entity_name import EntityName
 from domain.errors import ServiceValidationError
 from domain.vacations.vacation import Vacation
-from models.framework import BAD_NOTION_ID, NotionRow
+from framework.notion import NotionRow, BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

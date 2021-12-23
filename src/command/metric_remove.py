@@ -1,18 +1,18 @@
-"""Command for removing a metric."""
+"""UseCase for removing a metric."""
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.metrics.remove import MetricRemoveCommand
+from use_cases.metrics.remove import MetricRemoveUseCase
 from domain.metrics.metric_key import MetricKey
 
 
 class MetricRemove(command.Command):
-    """Command for hard removing a metric."""
+    """UseCase for hard removing a metric."""
 
-    _command: Final[MetricRemoveCommand]
+    _command: Final[MetricRemoveUseCase]
 
-    def __init__(self, the_command: MetricRemoveCommand) -> None:
+    def __init__(self, the_command: MetricRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

@@ -1,4 +1,4 @@
-"""Command for initialising a workspace."""
+"""UseCase for initialising a workspace."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -9,17 +9,17 @@ from domain.projects.project_key import ProjectKey
 from domain.timezone import Timezone
 from domain.workspaces.notion_space_id import NotionSpaceId
 from domain.workspaces.notion_token import NotionToken
-from use_cases.init import InitCommand
+from use_cases.init import InitUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Initialize(command.Command):
-    """Command class for initialising a workspace."""
+    """UseCase class for initialising a workspace."""
 
-    _command: Final[InitCommand]
+    _command: Final[InitUseCase]
 
-    def __init__(self, the_command: InitCommand) -> None:
+    def __init__(self, the_command: InitUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -57,6 +57,6 @@ class Initialize(command.Command):
         first_project_key = ProjectKey.from_raw(args.first_project_key)
         first_project_name = EntityName.from_raw(args.first_project_name)
 
-        self._command.execute(InitCommand.Args(
+        self._command.execute(InitUseCase.Args(
             name=name, timezone=timezone, notion_space_id=notion_space_id, notion_token=notion_token,
             first_project_key=first_project_key, first_project_name=first_project_name))

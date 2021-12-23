@@ -1,22 +1,23 @@
-"""Command for updating a vacation's properties."""
+"""UseCase for updating a vacation's properties."""
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from use_cases.vacations.update import VacationUpdateCommand
-from models.framework import UpdateAction, EntityId
+from use_cases.vacations.update import VacationUpdateUseCase
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
 from utils.global_properties import GlobalProperties
 
 
 class VacationUpdate(command.Command):
-    """Command for updating a vacation's properties."""
+    """UseCase for updating a vacation's properties."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[VacationUpdateCommand]
+    _command: Final[VacationUpdateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: VacationUpdateCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: VacationUpdateUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -53,5 +54,5 @@ class VacationUpdate(command.Command):
             end_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.end_date))
         else:
             end_date = UpdateAction.do_nothing()
-        self._command.execute(VacationUpdateCommand.Args(
+        self._command.execute(VacationUpdateUseCase.Args(
             ref_id=ref_id, name=name, start_date=start_date, end_date=end_date))

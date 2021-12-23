@@ -7,7 +7,7 @@ import requests
 
 from domain.workspaces.notion_token import NotionToken
 from domain.workspaces.notion_space_id import NotionSpaceId
-from models.framework import JSONDictType
+from framework.json import JSONDictType
 from remote.notion.infra.client import NotionClient, NotionClientConfig
 from utils.storage import StructuredIndividualStorage
 

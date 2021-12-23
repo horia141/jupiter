@@ -1,4 +1,4 @@
-"""Command for showing the inbox tasks."""
+"""UseCase for showing the inbox tasks."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -7,21 +7,21 @@ import command.command as command
 from domain.adate import ADate
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.projects.project_key import ProjectKey
-from models.framework import EntityId
-from use_cases.inbox_tasks.find import InboxTaskFindCommand
+from framework.entity_id import EntityId
+from use_cases.inbox_tasks.find import InboxTaskFindUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskShow(command.Command):
-    """Command class for showing the inbox tasks."""
+    """UseCase class for showing the inbox tasks."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[InboxTaskFindCommand]
+    _command: Final[InboxTaskFindUseCase]
 
     def __init__(
-            self, global_properties: GlobalProperties, the_command: InboxTaskFindCommand) -> None:
+            self, global_properties: GlobalProperties, the_command: InboxTaskFindUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -54,7 +54,7 @@ class InboxTaskShow(command.Command):
         project_keys = [ProjectKey.from_raw(p) for p in args.project_keys] if len(args.project_keys) > 0 else None
         sources = [InboxTaskSource.from_raw(s) for s in args.sources]\
             if len(args.sources) > 0 else None
-        response = self._command.execute(InboxTaskFindCommand.Args(
+        response = self._command.execute(InboxTaskFindUseCase.Args(
             filter_ref_ids=ref_ids, filter_project_keys=project_keys, filter_sources=sources))
 
         for inbox_task_entry in response.inbox_tasks:

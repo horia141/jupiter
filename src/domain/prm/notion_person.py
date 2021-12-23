@@ -13,7 +13,8 @@ from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
-from models.framework import BAD_NOTION_ID, EntityId, NotionRow
+from framework.entity_id import EntityId
+from framework.notion import NotionRow, BAD_NOTION_ID
 from remote.notion.common import clean_eisenhower
 
 

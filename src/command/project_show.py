@@ -1,21 +1,21 @@
-"""Command for showing the projects."""
+"""UseCase for showing the projects."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
 from domain.projects.project_key import ProjectKey
-from use_cases.projects.find import ProjectFindCommand
+from use_cases.projects.find import ProjectFindUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ProjectShow(command.Command):
-    """Command class for showing the projects."""
+    """UseCase class for showing the projects."""
 
-    _command: Final[ProjectFindCommand]
+    _command: Final[ProjectFindUseCase]
 
-    def __init__(self, the_command: ProjectFindCommand) -> None:
+    def __init__(self, the_command: ProjectFindUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -41,7 +41,7 @@ class ProjectShow(command.Command):
         show_archived = args.show_archived
         project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
         response = \
-            self._command.execute(ProjectFindCommand.Args(allow_archived=show_archived, filter_keys=project_keys))
+            self._command.execute(ProjectFindUseCase.Args(allow_archived=show_archived, filter_keys=project_keys))
 
         for project in response.projects:
             print(f'{project.key}: {project.name}')

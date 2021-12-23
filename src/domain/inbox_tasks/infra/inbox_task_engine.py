@@ -5,7 +5,7 @@ from typing import Iterator
 
 from domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository
 from domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class InboxTaskUnitOfWork(UnitOfWork, abc.ABC):

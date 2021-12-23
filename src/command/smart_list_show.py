@@ -1,10 +1,10 @@
-"""Command for showing a smart list."""
+"""UseCase for showing a smart list."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.smart_lists.find import SmartListFindCommand
+from use_cases.smart_lists.find import SmartListFindUseCase
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 
@@ -12,11 +12,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SmartListShow(command.Command):
-    """Command for showing the smart list."""
+    """UseCase for showing the smart list."""
 
-    _command: Final[SmartListFindCommand]
+    _command: Final[SmartListFindUseCase]
 
-    def __init__(self, the_command: SmartListFindCommand) -> None:
+    def __init__(self, the_command: SmartListFindUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -55,7 +55,7 @@ class SmartListShow(command.Command):
             filter_is_done = False
         filter_tag_names = [SmartListTagName.from_raw(t) for t in args.filter_tag_names] \
             if len(args.filter_tag_names) > 0 else None
-        response = self._command.execute(SmartListFindCommand.Args(
+        response = self._command.execute(SmartListFindUseCase.Args(
             allow_archived=show_archived, filter_keys=keys, filter_is_done=filter_is_done,
             filter_tag_names=filter_tag_names))
 

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from domain.entity_name import EntityName
 from domain.projects.project import Project
 from domain.timestamp import Timestamp
-from models.framework import NotionEntity, BAD_NOTION_ID
+from framework.notion import NotionEntity, BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

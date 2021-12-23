@@ -39,7 +39,7 @@ from domain.sync_target import SyncTarget
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
-from models.framework import Command
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 from utils.storage import StructuredStorageError
 from utils.time_provider import TimeProvider
@@ -47,7 +47,7 @@ from utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-class GCCommand(Command['GCCommand.Args', None]):
+class GCUseCase(UseCase['GCUseCase.Args', None]):
     """The command for doing a garbage collection run."""
 
     @dataclass()

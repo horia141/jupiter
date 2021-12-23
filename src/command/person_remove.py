@@ -1,21 +1,21 @@
-"""Command for removing a person."""
+"""UseCase for removing a person."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.prm.person.remove import PersonRemoveCommand
-from models.framework import EntityId
+from use_cases.prm.person.remove import PersonRemoveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class PersonRemove(command.Command):
-    """Command for removing a person."""
+    """UseCase for removing a person."""
 
-    _command: Final[PersonRemoveCommand]
+    _command: Final[PersonRemoveUseCase]
 
-    def __init__(self, the_command: PersonRemoveCommand) -> None:
+    def __init__(self, the_command: PersonRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

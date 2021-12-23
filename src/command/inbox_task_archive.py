@@ -1,22 +1,22 @@
-"""Command for archiving an inbox task."""
+"""UseCase for archiving an inbox task."""
 
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.inbox_tasks.archive import InboxTaskArchiveCommand
+from framework.entity_id import EntityId
+from use_cases.inbox_tasks.archive import InboxTaskArchiveUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskArchive(command.Command):
-    """Command class for archiving an inbox task."""
+    """UseCase class for archiving an inbox task."""
 
-    _command: Final[InboxTaskArchiveCommand]
+    _command: Final[InboxTaskArchiveUseCase]
 
-    def __init__(self, the_command: InboxTaskArchiveCommand) -> None:
+    def __init__(self, the_command: InboxTaskArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -37,4 +37,4 @@ class InboxTaskArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(InboxTaskArchiveCommand.Args(ref_id))
+        self._command.execute(InboxTaskArchiveUseCase.Args(ref_id))

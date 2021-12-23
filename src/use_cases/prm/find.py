@@ -7,10 +7,11 @@ from domain.prm.person import Person
 from domain.prm.prm_database import PrmDatabase
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 
 
-class PrmDatabaseFindCommand(Command['PrmDatabaseFindCommand.Args', 'PrmDatabaseFindCommand.Response']):
+class PrmDatabaseFindUseCase(UseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabaseFindUseCase.Response']):
     """The command for finding the PRM Database."""
 
     @dataclass()
@@ -37,7 +38,7 @@ class PrmDatabaseFindCommand(Command['PrmDatabaseFindCommand.Args', 'PrmDatabase
         self._prm_engine = prm_engine
         self._project_engine = project_engine
 
-    def execute(self, args: Args) -> 'PrmDatabaseFindCommand.Response':
+    def execute(self, args: Args) -> 'PrmDatabaseFindUseCase.Response':
         """Execute the command's action."""
         with self._prm_engine.get_unit_of_work() as prm_uow:
             with self._project_engine.get_unit_of_work() as project_uow:

@@ -1,18 +1,18 @@
-"""Command for hard remove big plans."""
+"""UseCase for hard remove big plans."""
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.big_plans.remove import BigPlanRemoveCommand
+from framework.entity_id import EntityId
+from use_cases.big_plans.remove import BigPlanRemoveUseCase
 
 
 class BigPlanRemove(command.Command):
-    """Command class for hard removing big plans."""
+    """UseCase class for hard removing big plans."""
 
-    _command: Final[BigPlanRemoveCommand]
+    _command: Final[BigPlanRemoveUseCase]
 
-    def __init__(self, the_command: BigPlanRemoveCommand) -> None:
+    def __init__(self, the_command: BigPlanRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -35,4 +35,4 @@ class BigPlanRemove(command.Command):
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(BigPlanRemoveCommand.Args(ref_id))
+        self._command.execute(BigPlanRemoveUseCase.Args(ref_id))

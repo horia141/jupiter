@@ -8,10 +8,11 @@ from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.recurring_task import RecurringTask
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 
 
-class RecurringTaskFindCommand(Command['RecurringTaskFindCommand.Args', 'RecurringTaskFindCommand.Result']):
+class RecurringTaskFindUseCase(UseCase['RecurringTaskFindUseCase.Args', 'RecurringTaskFindUseCase.Result']):
     """The command for finding a recurring task."""
 
     @dataclass()
@@ -30,7 +31,7 @@ class RecurringTaskFindCommand(Command['RecurringTaskFindCommand.Args', 'Recurri
     @dataclass()
     class Result:
         """The result."""
-        recurring_tasks: Iterable['RecurringTaskFindCommand.ResultEntry']
+        recurring_tasks: Iterable['RecurringTaskFindUseCase.ResultEntry']
 
     _project_engine: Final[ProjectEngine]
     _inbox_task_engine: Final[InboxTaskEngine]
@@ -63,9 +64,9 @@ class RecurringTaskFindCommand(Command['RecurringTaskFindCommand.Args', 'Recurri
             inbox_tasks = inbox_task_uow.inbox_task_repository.find_all(
                 allow_archived=True, filter_recurring_task_ref_ids=(bp.ref_id for bp in recurring_tasks))
 
-        return RecurringTaskFindCommand.Result(
+        return RecurringTaskFindUseCase.Result(
             recurring_tasks=[
-                RecurringTaskFindCommand.ResultEntry(
+                RecurringTaskFindUseCase.ResultEntry(
                     recurring_task=rt,
                     inbox_tasks=[it for it in inbox_tasks if it.recurring_task_ref_id == rt.ref_id])
                 for rt in recurring_tasks])

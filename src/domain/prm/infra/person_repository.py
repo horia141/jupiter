@@ -3,7 +3,8 @@ import abc
 from typing import Optional, Iterable, List
 
 from domain.prm.person import Person
-from models.framework import Repository, EntityId
+from framework.entity_id import EntityId
+from framework.storage import Repository
 
 
 class PersonRepository(Repository, abc.ABC):

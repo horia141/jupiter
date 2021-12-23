@@ -10,7 +10,8 @@ from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
-from models.framework import EntityId, NotionId
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 
 
 @dataclass(frozen=True)

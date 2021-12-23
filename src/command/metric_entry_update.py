@@ -1,4 +1,4 @@
-"""Command for updating a metric entry's properties."""
+"""UseCase for updating a metric entry's properties."""
 
 import logging
 from argparse import Namespace, ArgumentParser
@@ -6,18 +6,19 @@ from typing import Final, Optional
 
 import command.command as command
 from domain.adate import ADate
-from use_cases.metrics.entry.update import MetricEntryUpdateCommand
-from models.framework import UpdateAction, EntityId
+from use_cases.metrics.entry.update import MetricEntryUpdateUseCase
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MetricEntryUpdate(command.Command):
-    """Command for updating a metric entry's properties."""
+    """UseCase for updating a metric entry's properties."""
 
-    _command: Final[MetricEntryUpdateCommand]
+    _command: Final[MetricEntryUpdateUseCase]
 
-    def __init__(self, the_command: MetricEntryUpdateCommand) -> None:
+    def __init__(self, the_command: MetricEntryUpdateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -56,5 +57,5 @@ class MetricEntryUpdate(command.Command):
             notes = UpdateAction.change_to(args.notes)
         else:
             notes = UpdateAction.do_nothing()
-        self._command.execute(MetricEntryUpdateCommand.Args(
+        self._command.execute(MetricEntryUpdateUseCase.Args(
             ref_id=ref_id, collection_time=collection_time, value=value, notes=notes))

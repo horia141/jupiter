@@ -3,8 +3,8 @@ import re
 from dataclasses import dataclass
 from typing import Final, Pattern, Optional
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 _NOTION_TOKEN_RE: Final[Pattern[str]] = re.compile(r"^[0-9a-f]+$")
 

@@ -11,7 +11,9 @@ from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, Cla
 
 from notion.collection import CollectionRowBlock
 
-from models.framework import BaseNotionRow, EntityId, JSONDictType, NotionId
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
+from framework.notion import BaseNotionRow, NotionId
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
 from remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra

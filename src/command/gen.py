@@ -1,4 +1,4 @@
-"""Command for creating recurring tasks."""
+"""UseCase for creating recurring tasks."""
 
 import logging
 from argparse import ArgumentParser, Namespace
@@ -10,8 +10,8 @@ from domain.projects.project_key import ProjectKey
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.sync_target import SyncTarget
 from domain.timestamp import Timestamp
-from models.framework import EntityId
-from use_cases.gen import GenCommand
+from framework.entity_id import EntityId
+from use_cases.gen import GenUseCase
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
@@ -19,15 +19,15 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Gen(command.Command):
-    """Command class for creating recurring tasks."""
+    """UseCase class for creating recurring tasks."""
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _command: Final[GenCommand]
+    _command: Final[GenUseCase]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            the_command: GenCommand) -> None:
+            the_command: GenUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -81,7 +81,7 @@ class Gen(command.Command):
                                   for p in args.period) \
             if len(args.period) > 0 else None
         sync_even_if_not_modified: bool = args.sync_even_if_not_modified
-        self._command.execute(GenCommand.Args(
+        self._command.execute(GenUseCase.Args(
             right_now=right_now,
             gen_targets=gen_targets,
             filter_project_keys=project_keys,

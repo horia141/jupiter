@@ -3,7 +3,7 @@ from sqlalchemy import Table, MetaData, Column, Integer, ForeignKey, DateTime, S
 from sqlalchemy.dialects.sqlite import insert as sqliteInsert
 from sqlalchemy.engine import Connection
 
-from models.framework import AggregateRoot
+from framework.aggregate_root import AggregateRoot
 
 
 def build_event_table(entity_table: Table, metadata: MetaData) -> Table:

@@ -9,11 +9,11 @@ from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class SmartListCreateCommand(Command['SmartListCreateCommand.Args', None]):
+class SmartListCreateUseCase(UseCase['SmartListCreateUseCase.Args', None]):
     """The command for creating a smart list."""
 
     @dataclass()

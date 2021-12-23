@@ -8,11 +8,13 @@ from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionMa
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.entity_name import EntityName
-from models.framework import Command, UpdateAction, EntityId
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class SmartListItemUpdateCommand(Command['SmartListItemUpdateCommand.Args', None]):
+class SmartListItemUpdateUseCase(UseCase['SmartListItemUpdateUseCase.Args', None]):
     """The command for updating a smart list item."""
 
     @dataclass()

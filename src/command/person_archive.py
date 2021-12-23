@@ -1,22 +1,22 @@
-"""Command for archiving a person."""
+"""UseCase for archiving a person."""
 
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.prm.person.archive import PersonArchiveCommand
-from models.framework import EntityId
+from use_cases.prm.person.archive import PersonArchiveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class PersonArchive(command.Command):
-    """Command for archiving a person."""
+    """UseCase for archiving a person."""
 
-    _command: Final[PersonArchiveCommand]
+    _command: Final[PersonArchiveUseCase]
 
-    def __init__(self, the_command: PersonArchiveCommand) -> None:
+    def __init__(self, the_command: PersonArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

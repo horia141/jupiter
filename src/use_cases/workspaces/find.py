@@ -6,10 +6,10 @@ from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from domain.workspaces.workspace import Workspace
-from models.framework import Command
+from framework.use_case import UseCase
 
 
-class WorkspaceFindCommand(Command[None, 'WorkspaceFindCommand.Response']):
+class WorkspaceFindUseCase(UseCase[None, 'WorkspaceFindUseCase.Response']):
     """The command for finding workspaces."""
 
     @dataclass()

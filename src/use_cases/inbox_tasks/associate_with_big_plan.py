@@ -8,13 +8,14 @@ from domain.entity_name import EntityName
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class InboxTaskAssociateWithBigPlanCommand(Command['InboxTaskAssociateWithBigPlanCommand.Args', None]):
+class InboxTaskAssociateWithBigPlanUseCase(UseCase['InboxTaskAssociateWithBigPlanUseCase.Args', None]):
     """The command for associating a inbox task with a big plan."""
 
     @dataclass()

@@ -6,11 +6,13 @@ from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from models.framework import Command, UpdateAction, EntityId
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class VacationUpdateCommand(Command['VacationUpdateCommand.Args', None]):
+class VacationUpdateUseCase(UseCase['VacationUpdateUseCase.Args', None]):
     """The command for updating a vacation's properties."""
 
     @dataclass()

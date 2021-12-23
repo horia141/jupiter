@@ -1,4 +1,4 @@
-"""Command-level properties."""
+"""UseCase-level properties."""
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,7 +11,7 @@ from domain.timezone import Timezone
 
 @dataclass(frozen=True)
 class GlobalProperties:
-    """Command-level properties."""
+    """UseCase-level properties."""
 
     description: str
     version: str

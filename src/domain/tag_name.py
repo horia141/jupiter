@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Final, Pattern, Optional, TypeVar, Type
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 

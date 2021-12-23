@@ -1,4 +1,4 @@
-"""Command for updating a workspace."""
+"""UseCase for updating a workspace."""
 from dataclasses import dataclass
 from typing import Final
 
@@ -8,12 +8,13 @@ from domain.projects.project_key import ProjectKey
 from domain.timezone import Timezone
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
-from models.framework import Command, UpdateAction
+from framework.update_action import UpdateAction
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class WorkspaceUpdateCommand(Command['WorkspaceUpdateCommand.Args', None]):
-    """Command for updating a workspace."""
+class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
+    """UseCase for updating a workspace."""
 
     @dataclass()
     class Args:

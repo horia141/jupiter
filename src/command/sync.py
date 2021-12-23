@@ -1,4 +1,4 @@
-"""Command for syncing the local and Notion-side data."""
+"""UseCase for syncing the local and Notion-side data."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -9,18 +9,18 @@ from domain.projects.project_key import ProjectKey
 from domain.smart_lists.smart_list_key import SmartListKey
 from domain.sync_prefer import SyncPrefer
 from domain.sync_target import SyncTarget
-from models.framework import EntityId
-from use_cases.sync import SyncCommand
+from framework.entity_id import EntityId
+from use_cases.sync import SyncUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Sync(command.Command):
-    """Command class for syncing the local and Notion-side data."""
+    """UseCase class for syncing the local and Notion-side data."""
 
-    _command: Final[SyncCommand]
+    _command: Final[SyncUseCase]
 
-    def __init__(self, the_command: SyncCommand) -> None:
+    def __init__(self, the_command: SyncUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -96,7 +96,7 @@ class Sync(command.Command):
         sync_prefer = SyncPrefer.from_raw(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
-        self._command.execute(SyncCommand.Args(
+        self._command.execute(SyncUseCase.Args(
             sync_targets=sync_targets,
             drop_all_notion=drop_all_notion,
             sync_even_if_not_modified=sync_even_if_not_modified,

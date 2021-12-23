@@ -8,8 +8,8 @@ import pendulum
 from pendulum import UTC
 
 from domain.timezone import Timezone
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 
 @total_ordering

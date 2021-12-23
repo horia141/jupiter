@@ -1,4 +1,4 @@
-"""Command for showing metrics."""
+"""UseCase for showing metrics."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, cast
@@ -6,19 +6,19 @@ from typing import Final, cast
 import command.command as command
 from domain.adate import ADate
 from domain.metrics.metric_key import MetricKey
-from use_cases.metrics.find import MetricFindCommand
+from use_cases.metrics.find import MetricFindUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class MetricShow(command.Command):
-    """Command for showing metrics."""
+    """UseCase for showing metrics."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[MetricFindCommand]
+    _command: Final[MetricFindUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: MetricFindCommand) -> None:
+    def __init__(self, global_properties: GlobalProperties, the_command: MetricFindUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -42,7 +42,7 @@ class MetricShow(command.Command):
         """Callback to execute when the command is invoked."""
         metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] \
             if len(args.metric_keys) > 0 else None
-        response = self._command.execute(MetricFindCommand.Args(allow_archived=False, filter_keys=metric_keys))
+        response = self._command.execute(MetricFindUseCase.Args(allow_archived=False, filter_keys=metric_keys))
 
         for metric_response_entry in response.metrics:
             metric = metric_response_entry.metric

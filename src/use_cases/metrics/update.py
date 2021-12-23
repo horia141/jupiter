@@ -25,15 +25,16 @@ from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.timestamp import Timestamp
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from models import schedules
-from models.framework import Command, UpdateAction
+from domain import schedules
+from framework.update_action import UpdateAction
+from framework.use_case import UseCase
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricUpdateCommand(Command['MetricUpdateCommand.Args', None]):
+class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
     """The command for updating a metric's properties."""
 
     @dataclass()

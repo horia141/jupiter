@@ -26,8 +26,8 @@ from domain.prm.person import Person
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.prm.prm_database import PrmDatabase
-from models.errors import RepositoryError
-from models.framework import EntityId, BAD_REF_ID
+from framework.errors import RepositoryError
+from framework.entity_id import EntityId, BAD_REF_ID
 from repository.sqlite.events import build_event_table, upsert_events
 from utils.storage import StructuredStorageError
 

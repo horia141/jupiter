@@ -20,15 +20,17 @@ from domain.recurring_task_type import RecurringTaskType
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from domain.timestamp import Timestamp
-from models import schedules
-from models.framework import Command, UpdateAction, EntityId
+from domain import schedules
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class RecurringTaskUpdateCommand(Command['RecurringTaskUpdateCommand.Args', None]):
+class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None]):
     """The command for updating a recurring task."""
 
     @dataclass()

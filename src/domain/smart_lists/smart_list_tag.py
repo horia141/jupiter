@@ -3,7 +3,10 @@ from dataclasses import dataclass, field
 
 from domain.timestamp import Timestamp
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
-from models.framework import AggregateRoot, Event, UpdateAction, EntityId, BAD_REF_ID
+from framework.update_action import UpdateAction
+from framework.aggregate_root import AggregateRoot
+from framework.entity_id import EntityId, BAD_REF_ID
+from framework.event import Event
 
 
 @dataclass()

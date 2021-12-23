@@ -4,7 +4,8 @@ from typing import Optional, List, Iterable
 
 from domain.metrics.metric import Metric
 from domain.metrics.metric_key import MetricKey
-from models.framework import Repository, EntityId
+from framework.entity_id import EntityId
+from framework.storage import Repository
 
 
 class MetricRepository(Repository, abc.ABC):

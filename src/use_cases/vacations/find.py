@@ -4,10 +4,11 @@ from typing import Final, Optional, List
 
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.vacation import Vacation
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 
 
-class VacationFindCommand(Command['VacationFindCommand.Args', 'VacationFindCommand.Response']):
+class VacationFindUseCase(UseCase['VacationFindUseCase.Args', 'VacationFindUseCase.Response']):
     """The command for finding vacations."""
 
     @dataclass()

@@ -1,4 +1,4 @@
-"""Command for adding a person."""
+"""UseCase for adding a person."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -13,17 +13,17 @@ from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
-from use_cases.prm.person.create import PersonCreateCommand
+from use_cases.prm.person.create import PersonCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class PersonCreate(command.Command):
-    """Command class for adding a person."""
+    """UseCase class for adding a person."""
 
-    _command: Final[PersonCreateCommand]
+    _command: Final[PersonCreateUseCase]
 
-    def __init__(self, the_command: PersonCreateCommand):
+    def __init__(self, the_command: PersonCreateUseCase):
         """Constructor."""
         self._command = the_command
 
@@ -91,7 +91,7 @@ class PersonCreate(command.Command):
                 if args.catch_up_due_at_month and catch_up_period else None
         birthday = PersonBirthday.from_raw(args.birthday) if args.birthday else None
 
-        self._command.execute(PersonCreateCommand.Args(
+        self._command.execute(PersonCreateUseCase.Args(
             name=name,
             relationship=relationship,
             catch_up_period=catch_up_period,

@@ -1,4 +1,4 @@
-"""Command for updating a metric's properties."""
+"""UseCase for updating a metric's properties."""
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional, List
 
@@ -12,16 +12,16 @@ from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_period import RecurringTaskPeriod
-from models.framework import UpdateAction
-from use_cases.metrics.update import MetricUpdateCommand
+from framework.update_action import UpdateAction
+from use_cases.metrics.update import MetricUpdateUseCase
 
 
 class MetricUpdate(command.Command):
-    """Command for updating a metric's properties."""
+    """UseCase for updating a metric's properties."""
 
-    _command: Final[MetricUpdateCommand]
+    _command: Final[MetricUpdateUseCase]
 
-    def __init__(self, the_command: MetricUpdateCommand) -> None:
+    def __init__(self, the_command: MetricUpdateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -207,7 +207,7 @@ class MetricUpdate(command.Command):
         else:
             collection_due_at_month = UpdateAction.do_nothing()
         self._command.execute(
-            MetricUpdateCommand.Args(
+            MetricUpdateUseCase.Args(
                 key=metric_key,
                 name=name,
                 collection_project_key=collection_project_key,

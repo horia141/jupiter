@@ -7,13 +7,14 @@ from domain.entity_name import EntityName
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.infra.project_notion_manager import ProjectNotionManager
 from domain.projects.project_key import ProjectKey
-from models.framework import Command, UpdateAction
+from framework.update_action import UpdateAction
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ProjectUpdateCommand(Command['ProjectUpdateCommand.Args', None]):
+class ProjectUpdateUseCase(UseCase['ProjectUpdateUseCase.Args', None]):
     """The command for updating a project."""
 
     @dataclass()

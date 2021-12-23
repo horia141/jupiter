@@ -1,4 +1,4 @@
-"""Command for updating a smart list."""
+"""UseCase for updating a smart list."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
@@ -6,18 +6,18 @@ from typing import Final
 import command.command as command
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
-from models.framework import UpdateAction
-from use_cases.smart_lists.update import SmartListUpdateCommand
+from framework.update_action import UpdateAction
+from use_cases.smart_lists.update import SmartListUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListUpdate(command.Command):
-    """Command for updating a smart list."""
+    """UseCase for updating a smart list."""
 
-    _command: Final[SmartListUpdateCommand]
+    _command: Final[SmartListUpdateUseCase]
 
-    def __init__(self, the_command: SmartListUpdateCommand) -> None:
+    def __init__(self, the_command: SmartListUpdateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -43,4 +43,4 @@ class SmartListUpdate(command.Command):
             name = UpdateAction.change_to(EntityName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
-        self._command.execute(SmartListUpdateCommand.Args(key=smart_list_key, name=name))
+        self._command.execute(SmartListUpdateUseCase.Args(key=smart_list_key, name=name))

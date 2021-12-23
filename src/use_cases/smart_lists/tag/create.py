@@ -7,11 +7,11 @@ from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionMa
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.smart_lists.smart_list_key import SmartListKey
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class SmartListTagCreateCommand(Command['SmartListTagCreateCommand.Args', None]):
+class SmartListTagCreateUseCase(UseCase['SmartListTagCreateUseCase.Args', None]):
     """The command for creating a smart list tag."""
 
     @dataclass()

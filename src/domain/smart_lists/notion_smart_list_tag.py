@@ -3,7 +3,8 @@ from dataclasses import dataclass
 
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
-from models.framework import BAD_NOTION_ID, EntityId, NotionRow
+from framework.entity_id import EntityId
+from framework.notion import NotionRow, BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

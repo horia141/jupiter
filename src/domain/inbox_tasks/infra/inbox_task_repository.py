@@ -5,7 +5,8 @@ from typing import Optional, Iterable
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from models.framework import Repository, EntityId
+from framework.entity_id import EntityId
+from framework.storage import Repository
 
 
 class InboxTaskRepository(Repository, abc.ABC):

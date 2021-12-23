@@ -91,67 +91,67 @@ from repository.yaml.recurring_tasks import YamlRecurringTaskEngine
 from repository.yaml.smart_lists import YamlSmartListEngine
 from repository.yaml.vacations import YamlVacationEngine
 from repository.yaml.workspace import YamlWorkspaceRepository, MissingWorkspaceRepositoryError, YamlWorkspaceEngine
-from use_cases.big_plans.archive import BigPlanArchiveCommand
-from use_cases.big_plans.create import BigPlanCreateCommand
-from use_cases.big_plans.find import BigPlanFindCommand
-from use_cases.big_plans.remove import BigPlanRemoveCommand
-from use_cases.big_plans.update import BigPlanUpdateCommand
-from use_cases.gc import GCCommand
-from use_cases.gen import GenCommand
-from use_cases.inbox_tasks.archive import InboxTaskArchiveCommand
-from use_cases.inbox_tasks.associate_with_big_plan import InboxTaskAssociateWithBigPlanCommand
-from use_cases.inbox_tasks.create import InboxTaskCreateCommand
-from use_cases.inbox_tasks.find import InboxTaskFindCommand
-from use_cases.inbox_tasks.remove import InboxTaskRemoveCommand
-from use_cases.inbox_tasks.update import InboxTaskUpdateCommand
-from use_cases.init import InitCommand
-from use_cases.metrics.archive import MetricArchiveCommand
-from use_cases.metrics.create import MetricCreateCommand
-from use_cases.metrics.entry.archive import MetricEntryArchiveCommand
-from use_cases.metrics.entry.create import MetricEntryCreateCommand
-from use_cases.metrics.entry.remove import MetricEntryRemoveCommand
-from use_cases.metrics.entry.update import MetricEntryUpdateCommand
-from use_cases.metrics.find import MetricFindCommand
-from use_cases.metrics.remove import MetricRemoveCommand
-from use_cases.metrics.update import MetricUpdateCommand
-from use_cases.prm.find import PrmDatabaseFindCommand
-from use_cases.prm.person.archive import PersonArchiveCommand
-from use_cases.prm.person.create import PersonCreateCommand
-from use_cases.prm.person.remove import PersonRemoveCommand
-from use_cases.prm.person.update import PersonUpdateCommand
-from use_cases.prm.update import PrmDatabaseUpdateCommand
-from use_cases.projects.archive import ProjectArchiveCommand
-from use_cases.projects.create import ProjectCreateCommand
-from use_cases.projects.find import ProjectFindCommand
-from use_cases.projects.update import ProjectUpdateCommand
-from use_cases.recurring_tasks.archive import RecurringTaskArchiveCommand
-from use_cases.recurring_tasks.create import RecurringTaskCreateCommand
-from use_cases.recurring_tasks.find import RecurringTaskFindCommand
-from use_cases.recurring_tasks.remove import RecurringTaskRemoveCommand
-from use_cases.recurring_tasks.suspend import RecurringTaskSuspendCommand
-from use_cases.recurring_tasks.update import RecurringTaskUpdateCommand
-from use_cases.report import ReportCommand
-from use_cases.smart_lists.archive import SmartListArchiveCommand
-from use_cases.smart_lists.create import SmartListCreateCommand
-from use_cases.smart_lists.find import SmartListFindCommand
-from use_cases.smart_lists.item.archive import SmartListItemArchiveCommand
-from use_cases.smart_lists.item.create import SmartListItemCreateCommand
-from use_cases.smart_lists.item.remove import SmartListItemRemoveCommand
-from use_cases.smart_lists.item.update import SmartListItemUpdateCommand
-from use_cases.smart_lists.remove import SmartListRemoveCommand
-from use_cases.smart_lists.tag.archive import SmartListTagArchiveCommand
-from use_cases.smart_lists.tag.create import SmartListTagCreateCommand
-from use_cases.smart_lists.tag.remove import SmartListTagRemoveCommand
-from use_cases.smart_lists.tag.update import SmartListTagUpdateCommand
-from use_cases.smart_lists.update import SmartListUpdateCommand
-from use_cases.sync import SyncCommand
-from use_cases.vacations.archive import VacationArchiveCommand
-from use_cases.vacations.create import VacationCreateCommand
-from use_cases.vacations.find import VacationFindCommand
-from use_cases.vacations.remove import VacationRemoveCommand
-from use_cases.vacations.update import VacationUpdateCommand
-from use_cases.workspaces.find import WorkspaceFindCommand
-from use_cases.workspaces.update import WorkspaceUpdateCommand
+from use_cases.big_plans.archive import BigPlanArchiveUseCase
+from use_cases.big_plans.create import BigPlanCreateUseCase
+from use_cases.big_plans.find import BigPlanFindUseCase
+from use_cases.big_plans.remove import BigPlanRemoveUseCase
+from use_cases.big_plans.update import BigPlanUpdateUseCase
+from use_cases.gc import GCUseCase
+from use_cases.gen import GenUseCase
+from use_cases.inbox_tasks.archive import InboxTaskArchiveUseCase
+from use_cases.inbox_tasks.associate_with_big_plan import InboxTaskAssociateWithBigPlanUseCase
+from use_cases.inbox_tasks.create import InboxTaskCreateUseCase
+from use_cases.inbox_tasks.find import InboxTaskFindUseCase
+from use_cases.inbox_tasks.remove import InboxTaskRemoveUseCase
+from use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
+from use_cases.init import InitUseCase
+from use_cases.metrics.archive import MetricArchiveUseCase
+from use_cases.metrics.create import MetricCreateUseCase
+from use_cases.metrics.entry.archive import MetricEntryArchiveUseCase
+from use_cases.metrics.entry.create import MetricEntryCreateUseCase
+from use_cases.metrics.entry.remove import MetricEntryRemoveUseCase
+from use_cases.metrics.entry.update import MetricEntryUpdateUseCase
+from use_cases.metrics.find import MetricFindUseCase
+from use_cases.metrics.remove import MetricRemoveUseCase
+from use_cases.metrics.update import MetricUpdateUseCase
+from use_cases.prm.find import PrmDatabaseFindUseCase
+from use_cases.prm.person.archive import PersonArchiveUseCase
+from use_cases.prm.person.create import PersonCreateUseCase
+from use_cases.prm.person.remove import PersonRemoveUseCase
+from use_cases.prm.person.update import PersonUpdateUseCase
+from use_cases.prm.update import PrmDatabaseUpdateUseCase
+from use_cases.projects.archive import ProjectArchiveUseCase
+from use_cases.projects.create import ProjectCreateUseCase
+from use_cases.projects.find import ProjectFindUseCase
+from use_cases.projects.update import ProjectUpdateUseCase
+from use_cases.recurring_tasks.archive import RecurringTaskArchiveUseCase
+from use_cases.recurring_tasks.create import RecurringTaskCreateUseCase
+from use_cases.recurring_tasks.find import RecurringTaskFindUseCase
+from use_cases.recurring_tasks.remove import RecurringTaskRemoveUseCase
+from use_cases.recurring_tasks.suspend import RecurringTaskSuspendUseCase
+from use_cases.recurring_tasks.update import RecurringTaskUpdateUseCase
+from use_cases.report import ReportUseCase
+from use_cases.smart_lists.archive import SmartListArchiveUseCase
+from use_cases.smart_lists.create import SmartListCreateUseCase
+from use_cases.smart_lists.find import SmartListFindUseCase
+from use_cases.smart_lists.item.archive import SmartListItemArchiveUseCase
+from use_cases.smart_lists.item.create import SmartListItemCreateUseCase
+from use_cases.smart_lists.item.remove import SmartListItemRemoveUseCase
+from use_cases.smart_lists.item.update import SmartListItemUpdateUseCase
+from use_cases.smart_lists.remove import SmartListRemoveUseCase
+from use_cases.smart_lists.tag.archive import SmartListTagArchiveUseCase
+from use_cases.smart_lists.tag.create import SmartListTagCreateUseCase
+from use_cases.smart_lists.tag.remove import SmartListTagRemoveUseCase
+from use_cases.smart_lists.tag.update import SmartListTagUpdateUseCase
+from use_cases.smart_lists.update import SmartListUpdateUseCase
+from use_cases.sync import SyncUseCase
+from use_cases.vacations.archive import VacationArchiveUseCase
+from use_cases.vacations.create import VacationCreateUseCase
+from use_cases.vacations.find import VacationFindUseCase
+from use_cases.vacations.remove import VacationRemoveUseCase
+from use_cases.vacations.update import VacationUpdateUseCase
+from use_cases.workspaces.find import WorkspaceFindUseCase
+from use_cases.workspaces.update import WorkspaceUpdateUseCase
 from utils.global_properties import build_global_properties
 from utils.time_provider import TimeProvider
 
@@ -206,12 +206,12 @@ def main() -> None:
 
         commands = {
             # Complex commands.
-            Initialize(InitCommand(
+            Initialize(InitUseCase(
                 time_provider, notion_connection, yaml_workspace_engine, notion_workspace_manager,
                 notion_vacation_manager, yaml_project_engine, notion_projects_manager,
                 notion_smart_list_manager, notion_metric_manager, sqlite_prm_engine,
                 notion_prm_manager)),
-            Sync(SyncCommand(
+            Sync(SyncUseCase(
                 global_properties, time_provider, yaml_workspace_engine, notion_workspace_manager,
                 yaml_vacation_engine, notion_vacation_manager, yaml_project_engine,
                 notion_projects_manager, yaml_inbox_task_engine, notion_inbox_tasks_manager,
@@ -219,189 +219,189 @@ def main() -> None:
                 notion_big_plans_manager, yaml_smart_list_engine, notion_smart_list_manager,
                 sqlite_metric_engine, notion_metric_manager, sqlite_prm_engine, notion_prm_manager)),
             Gen(global_properties, time_provider,
-                GenCommand(
+                GenUseCase(
                     global_properties, time_provider, yaml_project_engine, yaml_vacation_engine, yaml_inbox_task_engine,
                     notion_inbox_tasks_manager, yaml_recurring_task_engine, sqlite_metric_engine, sqlite_prm_engine)),
             Report(
                 global_properties, time_provider,
-                ReportCommand(
+                ReportUseCase(
                     global_properties, yaml_project_engine, yaml_inbox_task_engine,
                     yaml_recurring_task_engine, yaml_big_plan_engine, sqlite_metric_engine, sqlite_prm_engine)),
-            GC(GCCommand(
+            GC(GCUseCase(
                 time_provider, yaml_vacation_engine, notion_vacation_manager, yaml_project_engine,
                 yaml_inbox_task_engine, notion_inbox_tasks_manager, yaml_recurring_task_engine,
                 notion_recurring_tasks_manager, yaml_big_plan_engine, notion_big_plans_manager,
                 yaml_smart_list_engine, notion_smart_list_manager, sqlite_metric_engine, notion_metric_manager,
                 sqlite_prm_engine, notion_prm_manager)),
             # CRUD Commands.
-            WorkspaceUpdate(notion_connection, WorkspaceUpdateCommand(
+            WorkspaceUpdate(notion_connection, WorkspaceUpdateUseCase(
                 time_provider, yaml_workspace_engine, notion_workspace_manager, yaml_project_engine)),
-            WorkspaceShow(WorkspaceFindCommand(yaml_workspace_engine, yaml_project_engine)),
-            VacationCreate(global_properties, VacationCreateCommand(
+            WorkspaceShow(WorkspaceFindUseCase(yaml_workspace_engine, yaml_project_engine)),
+            VacationCreate(global_properties, VacationCreateUseCase(
                 time_provider, yaml_vacation_engine, notion_vacation_manager)),
-            VacationArchive(VacationArchiveCommand(
+            VacationArchive(VacationArchiveUseCase(
                 time_provider, yaml_vacation_engine, notion_vacation_manager)),
-            VacationUpdate(global_properties, VacationUpdateCommand(
+            VacationUpdate(global_properties, VacationUpdateUseCase(
                 time_provider, yaml_vacation_engine, notion_vacation_manager)),
-            VacationRemove(VacationRemoveCommand(
+            VacationRemove(VacationRemoveUseCase(
                 yaml_vacation_engine, notion_vacation_manager)),
-            VacationsShow(global_properties, VacationFindCommand(yaml_vacation_engine)),
-            ProjectCreate(ProjectCreateCommand(
+            VacationsShow(global_properties, VacationFindUseCase(yaml_vacation_engine)),
+            ProjectCreate(ProjectCreateUseCase(
                 time_provider, yaml_project_engine, notion_projects_manager,
                 yaml_inbox_task_engine, notion_inbox_tasks_manager,
                 yaml_recurring_task_engine, notion_recurring_tasks_manager,
                 yaml_big_plan_engine, notion_big_plans_manager)),
-            ProjectUpdate(ProjectUpdateCommand(
+            ProjectUpdate(ProjectUpdateUseCase(
                 time_provider, yaml_project_engine, notion_projects_manager)),
-            ProjectArchive(ProjectArchiveCommand(
+            ProjectArchive(ProjectArchiveUseCase(
                 time_provider, yaml_workspace_engine, yaml_project_engine, notion_projects_manager,
                 yaml_inbox_task_engine, notion_inbox_tasks_manager,
                 yaml_recurring_task_engine, notion_recurring_tasks_manager,
                 yaml_big_plan_engine, notion_big_plans_manager, sqlite_metric_engine, sqlite_prm_engine)),
-            ProjectShow(ProjectFindCommand(yaml_project_engine)),
+            ProjectShow(ProjectFindUseCase(yaml_project_engine)),
             InboxTaskCreate(
                 global_properties,
-                InboxTaskCreateCommand(
+                InboxTaskCreateUseCase(
                     time_provider, yaml_workspace_engine, yaml_project_engine, yaml_inbox_task_engine,
                     notion_inbox_tasks_manager, yaml_big_plan_engine)),
             InboxTaskArchive(
-                InboxTaskArchiveCommand(time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager)),
+                InboxTaskArchiveUseCase(time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager)),
             InboxTaskAssociateWithBigPlan(
-                InboxTaskAssociateWithBigPlanCommand(
+                InboxTaskAssociateWithBigPlanUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager, yaml_big_plan_engine)),
             InboxTaskRemove(
-                InboxTaskRemoveCommand(time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager)),
+                InboxTaskRemoveUseCase(time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager)),
             InboxTaskUpdate(
                 global_properties,
-                InboxTaskUpdateCommand(
+                InboxTaskUpdateUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager, yaml_big_plan_engine)),
             InboxTaskShow(
                 global_properties,
-                InboxTaskFindCommand(
+                InboxTaskFindUseCase(
                     yaml_project_engine, yaml_inbox_task_engine, yaml_recurring_task_engine, yaml_big_plan_engine,
                     sqlite_metric_engine, sqlite_prm_engine)),
             RecurringTaskCreate(
                 global_properties,
-                RecurringTaskCreateCommand(
+                RecurringTaskCreateUseCase(
                     time_provider, yaml_workspace_engine, yaml_project_engine, yaml_inbox_task_engine,
                     notion_inbox_tasks_manager, yaml_recurring_task_engine, notion_recurring_tasks_manager)),
             RecurringTaskArchive(
-                RecurringTaskArchiveCommand(
+                RecurringTaskArchiveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager, yaml_recurring_task_engine,
                     notion_recurring_tasks_manager)),
             RecurringTaskSuspend(
-                RecurringTaskSuspendCommand(
+                RecurringTaskSuspendUseCase(
                     time_provider, yaml_recurring_task_engine, notion_recurring_tasks_manager)),
             RecurringTaskUnsuspend(
-                RecurringTaskSuspendCommand(time_provider, yaml_recurring_task_engine, notion_recurring_tasks_manager)),
+                RecurringTaskSuspendUseCase(time_provider, yaml_recurring_task_engine, notion_recurring_tasks_manager)),
             RecurringTaskRemove(
-                RecurringTaskRemoveCommand(
+                RecurringTaskRemoveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_recurring_task_engine, notion_recurring_tasks_manager)),
             RecurringTaskUpdate(
                 global_properties,
-                RecurringTaskUpdateCommand(
+                RecurringTaskUpdateUseCase(
                     global_properties, time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_recurring_task_engine, notion_recurring_tasks_manager)),
             RecurringTaskShow(
                 global_properties,
-                RecurringTaskFindCommand(
+                RecurringTaskFindUseCase(
                     yaml_project_engine, yaml_inbox_task_engine, yaml_recurring_task_engine)),
             BigPlanCreate(
                 global_properties,
-                BigPlanCreateCommand(
+                BigPlanCreateUseCase(
                     time_provider, yaml_workspace_engine, yaml_project_engine, yaml_inbox_task_engine,
                     notion_inbox_tasks_manager, yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanArchive(
-                BigPlanArchiveCommand(
+                BigPlanArchiveUseCase(
                     time_provider, yaml_project_engine, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanRemove(
-                BigPlanRemoveCommand(
+                BigPlanRemoveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanUpdate(
                 global_properties,
-                BigPlanUpdateCommand(
+                BigPlanUpdateUseCase(
                     time_provider, yaml_project_engine, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanShow(
                 global_properties,
-                BigPlanFindCommand(yaml_project_engine, yaml_inbox_task_engine, yaml_big_plan_engine)),
-            SmartListCreate(SmartListCreateCommand(
+                BigPlanFindUseCase(yaml_project_engine, yaml_inbox_task_engine, yaml_big_plan_engine)),
+            SmartListCreate(SmartListCreateUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListArchive(SmartListArchiveCommand(
+            SmartListArchive(SmartListArchiveUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListUpdate(SmartListUpdateCommand(
+            SmartListUpdate(SmartListUpdateUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListShow(SmartListFindCommand(
+            SmartListShow(SmartListFindUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListsRemove(SmartListRemoveCommand(
+            SmartListsRemove(SmartListRemoveUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListTagCreate(SmartListTagCreateCommand(
+            SmartListTagCreate(SmartListTagCreateUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListTagArchive(SmartListTagArchiveCommand(
+            SmartListTagArchive(SmartListTagArchiveUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListTagUpdate(SmartListTagUpdateCommand(
+            SmartListTagUpdate(SmartListTagUpdateUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListTagRemove(SmartListTagRemoveCommand(
+            SmartListTagRemove(SmartListTagRemoveUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListItemCreate(SmartListItemCreateCommand(
+            SmartListItemCreate(SmartListItemCreateUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListItemArchive(SmartListItemArchiveCommand(
+            SmartListItemArchive(SmartListItemArchiveUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListItemUpdate(SmartListItemUpdateCommand(
+            SmartListItemUpdate(SmartListItemUpdateUseCase(
                 time_provider, yaml_smart_list_engine, notion_smart_list_manager)),
-            SmartListItemRemove(SmartListItemRemoveCommand(
+            SmartListItemRemove(SmartListItemRemoveUseCase(
                 yaml_smart_list_engine, notion_smart_list_manager)),
             MetricCreate(
-                MetricCreateCommand(
+                MetricCreateUseCase(
                     time_provider, sqlite_metric_engine, notion_metric_manager, yaml_workspace_engine,
                     yaml_project_engine)),
             MetricArchive(
-                MetricArchiveCommand(
+                MetricArchiveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager, sqlite_metric_engine,
                     notion_metric_manager)),
             MetricUpdate(
-                MetricUpdateCommand(
+                MetricUpdateUseCase(
                     global_properties, time_provider, yaml_workspace_engine, yaml_project_engine,
                     yaml_inbox_task_engine, notion_inbox_tasks_manager, sqlite_metric_engine, notion_metric_manager)),
             MetricShow(
                 global_properties,
-                MetricFindCommand(
+                MetricFindUseCase(
                     yaml_project_engine, yaml_inbox_task_engine, sqlite_metric_engine)),
             MetricRemove(
-                MetricRemoveCommand(
+                MetricRemoveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     sqlite_metric_engine, notion_metric_manager)),
-            MetricEntryCreate(MetricEntryCreateCommand(
+            MetricEntryCreate(MetricEntryCreateUseCase(
                 time_provider, sqlite_metric_engine, notion_metric_manager)),
-            MetricEntryArchive(MetricEntryArchiveCommand(
+            MetricEntryArchive(MetricEntryArchiveUseCase(
                 time_provider, sqlite_metric_engine, notion_metric_manager)),
-            MetricEntryUpdate(MetricEntryUpdateCommand(
+            MetricEntryUpdate(MetricEntryUpdateUseCase(
                 time_provider, sqlite_metric_engine, notion_metric_manager)),
-            MetricEntryRemove(MetricEntryRemoveCommand(
+            MetricEntryRemove(MetricEntryRemoveUseCase(
                 sqlite_metric_engine, notion_metric_manager)),
             PrmUpdate(
-                PrmDatabaseUpdateCommand(
+                PrmDatabaseUpdateUseCase(
                     time_provider, yaml_workspace_engine, yaml_project_engine, yaml_inbox_task_engine,
                     notion_inbox_tasks_manager, sqlite_prm_engine, notion_prm_manager)),
             PrmShow(
-                PrmDatabaseFindCommand(
+                PrmDatabaseFindUseCase(
                     sqlite_prm_engine, yaml_project_engine)),
             PersonCreate(
-                PersonCreateCommand(
+                PersonCreateUseCase(
                     time_provider, sqlite_prm_engine, notion_prm_manager)),
             PersonArchive(
-                PersonArchiveCommand(
+                PersonArchiveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     sqlite_prm_engine, notion_prm_manager)),
             PersonUpdate(
-                PersonUpdateCommand(
+                PersonUpdateUseCase(
                     global_properties, time_provider, yaml_inbox_task_engine,
                     notion_inbox_tasks_manager, sqlite_prm_engine, notion_prm_manager)),
             PersonRemove(
-                PersonRemoveCommand(
+                PersonRemoveUseCase(
                     time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     sqlite_prm_engine, notion_prm_manager))
         }

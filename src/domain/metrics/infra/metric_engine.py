@@ -5,7 +5,7 @@ from typing import Iterator
 
 from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from domain.metrics.infra.metric_repository import MetricRepository
-from models.framework import UnitOfWork, Engine
+from framework.storage import UnitOfWork, Engine
 
 
 class MetricUnitOfWork(UnitOfWork, abc.ABC):

@@ -7,11 +7,11 @@ from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_entry import MetricEntry
 from domain.adate import ADate
 from domain.metrics.metric_key import MetricKey
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class MetricEntryCreateCommand(Command['MetricEntryCreateCommand.Args', None]):
+class MetricEntryCreateUseCase(UseCase['MetricEntryCreateUseCase.Args', None]):
     """The command for creating a metric entry."""
 
     @dataclass()

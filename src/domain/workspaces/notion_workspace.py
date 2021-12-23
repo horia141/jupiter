@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from domain.entity_name import EntityName
 from domain.timestamp import Timestamp
 from domain.workspaces.workspace import Workspace
-from models.framework import BAD_NOTION_ID, NotionEntity
+from framework.notion import NotionEntity, BAD_NOTION_ID
 
 
 @dataclass(frozen=True)

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import Final, Optional, Dict, Tuple
 
 from domain.recurring_task_period import RecurringTaskPeriod
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 _RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
     RecurringTaskPeriod.DAILY: (0, 0),

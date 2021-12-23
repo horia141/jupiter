@@ -1,21 +1,21 @@
-"""Command for removing a project."""
+"""UseCase for removing a project."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from domain.projects.project_key import ProjectKey
-from use_cases.projects.archive import ProjectArchiveCommand
+from use_cases.projects.archive import ProjectArchiveUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class ProjectArchive(command.Command):
-    """Command class for archiving a project."""
+    """UseCase class for archiving a project."""
 
-    _command: Final[ProjectArchiveCommand]
+    _command: Final[ProjectArchiveUseCase]
 
-    def __init__(self, the_command: ProjectArchiveCommand) -> None:
+    def __init__(self, the_command: ProjectArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -36,4 +36,4 @@ class ProjectArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key)
-        self._command.execute(ProjectArchiveCommand.Args(key=project_key))
+        self._command.execute(ProjectArchiveUseCase.Args(key=project_key))

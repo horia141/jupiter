@@ -1,21 +1,21 @@
-"""Command for hard removing a smart list item."""
+"""UseCase for hard removing a smart list item."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import command.command as command
-from use_cases.smart_lists.item.remove import SmartListItemRemoveCommand
-from models.framework import EntityId
+from use_cases.smart_lists.item.remove import SmartListItemRemoveUseCase
+from framework.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListItemRemove(command.Command):
-    """Command for hard removing of a smart list item."""
+    """UseCase for hard removing of a smart list item."""
 
-    _command: Final[SmartListItemRemoveCommand]
+    _command: Final[SmartListItemRemoveUseCase]
 
-    def __init__(self, the_command: SmartListItemRemoveCommand) -> None:
+    def __init__(self, the_command: SmartListItemRemoveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 

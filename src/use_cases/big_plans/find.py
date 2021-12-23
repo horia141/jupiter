@@ -8,10 +8,11 @@ from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 
 
-class BigPlanFindCommand(Command['BigPlanFindCommand.Args', 'BigPlanFindCommand.Result']):
+class BigPlanFindUseCase(UseCase['BigPlanFindUseCase.Args', 'BigPlanFindUseCase.Result']):
     """The command for finding a big plan."""
 
     @dataclass()
@@ -30,7 +31,7 @@ class BigPlanFindCommand(Command['BigPlanFindCommand.Args', 'BigPlanFindCommand.
     @dataclass()
     class Result:
         """Result."""
-        big_plans: Iterable['BigPlanFindCommand.ResultEntry']
+        big_plans: Iterable['BigPlanFindUseCase.ResultEntry']
 
     _project_engine: Final[ProjectEngine]
     _inbox_task_engine: Final[InboxTaskEngine]
@@ -63,8 +64,8 @@ class BigPlanFindCommand(Command['BigPlanFindCommand.Args', 'BigPlanFindCommand.
             inbox_tasks = inbox_task_uow.inbox_task_repository.find_all(
                 allow_archived=True, filter_big_plan_ref_ids=(bp.ref_id for bp in big_plans))
 
-        return BigPlanFindCommand.Result(
-            big_plans=[BigPlanFindCommand.ResultEntry(
+        return BigPlanFindUseCase.Result(
+            big_plans=[BigPlanFindUseCase.ResultEntry(
                 big_plan=bp,
                 inbox_tasks=[it for it in inbox_tasks if it.big_plan_ref_id == bp.ref_id])
                        for bp in big_plans])

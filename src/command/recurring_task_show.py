@@ -1,4 +1,4 @@
-"""Command for showing the recurring tasks."""
+"""UseCase for showing the recurring tasks."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
@@ -6,21 +6,21 @@ from typing import Final
 import command.command as command
 from domain.adate import ADate
 from domain.projects.project_key import ProjectKey
-from models.framework import EntityId
-from use_cases.recurring_tasks.find import RecurringTaskFindCommand
+from framework.entity_id import EntityId
+from use_cases.recurring_tasks.find import RecurringTaskFindUseCase
 from utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RecurringTaskShow(command.Command):
-    """Command class for showing the recurring tasks."""
+    """UseCase class for showing the recurring tasks."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[RecurringTaskFindCommand]
+    _command: Final[RecurringTaskFindUseCase]
 
     def __init__(
-            self, global_properties: GlobalProperties, the_command: RecurringTaskFindCommand) -> None:
+            self, global_properties: GlobalProperties, the_command: RecurringTaskFindUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -48,7 +48,7 @@ class RecurringTaskShow(command.Command):
             if len(args.ref_ids) > 0 else None
         project_keys = [ProjectKey.from_raw(p) for p in args.project_keys] \
             if len(args.project_keys) > 0 else None
-        response = self._command.execute(RecurringTaskFindCommand.Args(
+        response = self._command.execute(RecurringTaskFindUseCase.Args(
             show_archived=False, filter_ref_ids=ref_ids, filter_project_keys=project_keys))
 
         for recurring_task_entry in response.recurring_tasks:

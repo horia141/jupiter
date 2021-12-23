@@ -5,11 +5,12 @@ from typing import Final
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.service.remove_service import InboxTaskRemoveService
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class InboxTaskRemoveCommand(Command['InboxTaskRemoveCommand.Args', None]):
+class InboxTaskRemoveUseCase(UseCase['InboxTaskRemoveUseCase.Args', None]):
     """The command for removing a inbox task."""
 
     @dataclass()

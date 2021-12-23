@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Pattern, Final, Optional, TypeVar, Type
 
-from models.errors import ModelValidationError
-from models.frame.value import Value
+from framework.errors import ModelValidationError
+from framework.value import Value
 
 _ENTITY_KEY_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
 

@@ -17,7 +17,9 @@ from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskColle
 from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
 from domain.timestamp import Timestamp
-from models.framework import EntityId, JSONDictType, NotionId
+from framework.json import JSONDictType
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager

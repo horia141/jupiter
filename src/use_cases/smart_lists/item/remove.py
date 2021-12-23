@@ -4,14 +4,15 @@ from typing import Final
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
-from models.framework import Command, EntityId
+from framework.entity_id import EntityId
+from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SmartListItemRemoveCommand(Command[EntityId, None]):
+class SmartListItemRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a smart list item."""
 
     _smart_list_engine: Final[SmartListEngine]

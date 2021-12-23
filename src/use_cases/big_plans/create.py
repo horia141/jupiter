@@ -15,11 +15,11 @@ from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionMa
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 
-class BigPlanCreateCommand(Command['BigPlanCreateCommand.Args', None]):
+class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
     """The command for creating a big plan."""
 
     @dataclass()

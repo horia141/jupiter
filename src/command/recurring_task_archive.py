@@ -1,21 +1,21 @@
-"""Command for removing a recurring task."""
+"""UseCase for removing a recurring task."""
 import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
-from models.framework import EntityId
-from use_cases.recurring_tasks.archive import RecurringTaskArchiveCommand
+from framework.entity_id import EntityId
+from use_cases.recurring_tasks.archive import RecurringTaskArchiveUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class RecurringTaskArchive(command.Command):
-    """Command class for removing a recurring task."""
+    """UseCase class for removing a recurring task."""
 
-    _command: Final[RecurringTaskArchiveCommand]
+    _command: Final[RecurringTaskArchiveUseCase]
 
-    def __init__(self, the_command: RecurringTaskArchiveCommand) -> None:
+    def __init__(self, the_command: RecurringTaskArchiveUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -36,4 +36,4 @@ class RecurringTaskArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(RecurringTaskArchiveCommand.Args(ref_id))
+        self._command.execute(RecurringTaskArchiveUseCase.Args(ref_id))

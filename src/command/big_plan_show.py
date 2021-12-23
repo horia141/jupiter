@@ -1,23 +1,23 @@
-"""Command for showing the big plans."""
+"""UseCase for showing the big plans."""
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import command.command as command
 from domain.adate import ADate
 from domain.projects.project_key import ProjectKey
-from models.framework import EntityId
-from use_cases.big_plans.find import BigPlanFindCommand
+from framework.entity_id import EntityId
+from use_cases.big_plans.find import BigPlanFindUseCase
 from utils.global_properties import GlobalProperties
 
 
 class BigPlanShow(command.Command):
-    """Command class for showing the big plans."""
+    """UseCase class for showing the big plans."""
 
     _global_properties: Final[GlobalProperties]
-    _command: Final[BigPlanFindCommand]
+    _command: Final[BigPlanFindUseCase]
 
     def __init__(
-            self, global_properties: GlobalProperties, the_command: BigPlanFindCommand) -> None:
+            self, global_properties: GlobalProperties, the_command: BigPlanFindUseCase) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -44,7 +44,7 @@ class BigPlanShow(command.Command):
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]\
             if len(args.ref_ids) > 0 else None
         project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
-        result = self._command.execute(BigPlanFindCommand.Args(
+        result = self._command.execute(BigPlanFindUseCase.Args(
             allow_archived=False, filter_ref_ids=ref_ids, filter_project_keys=project_keys))
 
         for big_plan_entry in result.big_plans:

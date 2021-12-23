@@ -4,7 +4,8 @@ from typing import Optional, Iterable
 
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
-from models.framework import Repository, EntityId
+from framework.entity_id import EntityId
+from framework.storage import Repository
 
 
 class RecurringTaskRepository(Repository, abc.ABC):

@@ -1,4 +1,4 @@
-"""Command for creating a smart list."""
+"""UseCase for creating a smart list."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
@@ -6,17 +6,17 @@ from typing import Final
 import command.command as command
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
-from use_cases.smart_lists.create import SmartListCreateCommand
+from use_cases.smart_lists.create import SmartListCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListCreate(command.Command):
-    """Command for creating a smart list."""
+    """UseCase for creating a smart list."""
 
-    _command: Final[SmartListCreateCommand]
+    _command: Final[SmartListCreateUseCase]
 
-    def __init__(self, the_command: SmartListCreateCommand) -> None:
+    def __init__(self, the_command: SmartListCreateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -39,4 +39,4 @@ class SmartListCreate(command.Command):
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         name = EntityName.from_raw(args.name)
-        self._command.execute(SmartListCreateCommand.Args(key=smart_list_key, name=name))
+        self._command.execute(SmartListCreateUseCase.Args(key=smart_list_key, name=name))

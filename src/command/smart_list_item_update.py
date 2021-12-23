@@ -1,4 +1,4 @@
-"""Command for updating a smart list item."""
+"""UseCase for updating a smart list item."""
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
@@ -7,18 +7,19 @@ import command.command as command
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.url import URL
-from models.framework import UpdateAction, EntityId
-from use_cases.smart_lists.item.update import SmartListItemUpdateCommand
+from framework.update_action import UpdateAction
+from framework.entity_id import EntityId
+from use_cases.smart_lists.item.update import SmartListItemUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SmartListItemUpdate(command.Command):
-    """Command for updating a smart list item."""
+    """UseCase for updating a smart list item."""
 
-    _command: Final[SmartListItemUpdateCommand]
+    _command: Final[SmartListItemUpdateUseCase]
 
-    def __init__(self, the_command: SmartListItemUpdateCommand) -> None:
+    def __init__(self, the_command: SmartListItemUpdateUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -71,5 +72,5 @@ class SmartListItemUpdate(command.Command):
             url = UpdateAction.change_to(URL.from_raw(args.url))
         else:
             url = UpdateAction.do_nothing()
-        self._command.execute(SmartListItemUpdateCommand.Args(
+        self._command.execute(SmartListItemUpdateUseCase.Args(
             ref_id=ref_id, name=name, tags=tags, is_done=is_done, url=url))

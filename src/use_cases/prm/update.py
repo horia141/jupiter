@@ -11,13 +11,14 @@ from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
-from models.framework import Command, UpdateAction
+from framework.update_action import UpdateAction
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PrmDatabaseUpdateCommand(Command['PrmDatabaseUpdateCommand.Args', None]):
+class PrmDatabaseUpdateUseCase(UseCase['PrmDatabaseUpdateUseCase.Args', None]):
     """The command for updating a PRM database."""
 
     @dataclass()

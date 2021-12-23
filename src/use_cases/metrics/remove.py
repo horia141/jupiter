@@ -8,13 +8,13 @@ from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_key import MetricKey
 from domain.metrics.service.remove_service import MetricRemoveService
-from models.framework import Command
+from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricRemoveCommand(Command[MetricKey, None]):
+class MetricRemoveUseCase(UseCase[MetricKey, None]):
     """The command for removing a metric."""
 
     _time_provider: Final[TimeProvider]

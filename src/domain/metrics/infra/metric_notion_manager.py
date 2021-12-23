@@ -7,7 +7,8 @@ from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.notion_metric import NotionMetric
 from domain.metrics.notion_metric_entry import NotionMetricEntry
 from domain.workspaces.notion_workspace import NotionWorkspace
-from models.framework import EntityId, NotionId
+from framework.entity_id import EntityId
+from framework.notion import NotionId
 
 
 class MetricNotionManager(abc.ABC):
