@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Iterable, Optional
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class RecurringTaskPeriod(Value, enum.Enum):
+class RecurringTaskPeriod(enum.Enum):
     """A period for a particular task."""
     DAILY = "daily"
     WEEKLY = "weekly"

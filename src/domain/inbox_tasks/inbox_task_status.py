@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Optional, Iterable
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class InboxTaskStatus(Value, enum.Enum):
+class InboxTaskStatus(enum.Enum):
     """The status of an inbox task."""
     # Created
     NOT_STARTED = "not-started"

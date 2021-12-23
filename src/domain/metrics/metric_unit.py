@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Optional, Iterable
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class MetricUnit(Value, enum.Enum):
+class MetricUnit(enum.Enum):
     """The unit for a metric."""
 
     COUNT = "count"

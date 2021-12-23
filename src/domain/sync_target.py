@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Iterable, Optional
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class SyncTarget(Value, enum.Enum):
+class SyncTarget(enum.Enum):
     """What exactly to sync."""
     STRUCTURE = "structure"
     WORKSPACE = "workspace"

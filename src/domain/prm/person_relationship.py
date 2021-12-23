@@ -3,12 +3,11 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.value import Value
 from framework.errors import ModelValidationError
 
 
 @enum.unique
-class PersonRelationship(Value, enum.Enum):
+class PersonRelationship(enum.Enum):
     """The relationship the user has with a person."""
     FAMILY = "family"
     FRIEND = "friend"

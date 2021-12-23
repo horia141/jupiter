@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Iterable, Optional
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class BigPlanStatus(Value, enum.Enum):
+class BigPlanStatus(enum.Enum):
     """The status of a big plan."""
     # Created
     NOT_STARTED = "not-started"

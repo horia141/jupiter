@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Optional, Iterable
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class RecurringTaskType(Value, enum.Enum):
+class RecurringTaskType(enum.Enum):
     """The type of recurring class."""
     CHORE = "chore"
     HABIT = "habit"

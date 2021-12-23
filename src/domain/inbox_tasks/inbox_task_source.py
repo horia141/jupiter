@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Optional, Iterable
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class InboxTaskSource(Value, enum.Enum):
+class InboxTaskSource(enum.Enum):
     """The origin of an inbox task."""
     USER = "user"
     BIG_PLAN = "big-plan"

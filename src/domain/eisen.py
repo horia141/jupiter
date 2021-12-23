@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Optional, Iterable
 
 from framework.errors import ModelValidationError
-from framework.value import Value
 
 
 @enum.unique
-class Eisen(Value, enum.Enum):
+class Eisen(enum.Enum):
     """The Eisenhower status of a particular task."""
     IMPORTANT = "important"
     URGENT = "urgent"
