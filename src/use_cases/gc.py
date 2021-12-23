@@ -41,7 +41,7 @@ from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from domain.vacations.vacation import Vacation
 from framework.use_case import UseCase
 from remote.notion.common import CollectionEntityNotFound
-from utils.storage import StructuredStorageError
+from repository.yaml.infra.storage import StructuredStorageError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

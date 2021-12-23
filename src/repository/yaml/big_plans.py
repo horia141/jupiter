@@ -20,7 +20,7 @@ from framework.base.timestamp import Timestamp
 from framework.errors import RepositoryError
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

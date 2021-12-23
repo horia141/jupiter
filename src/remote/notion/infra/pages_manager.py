@@ -9,7 +9,7 @@ from framework.json import JSONDictType
 from framework.notion import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionPageLinkExtra
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import BaseRecordRow, RecordsStorage
+from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage
 from utils.time_provider import TimeProvider
 
 

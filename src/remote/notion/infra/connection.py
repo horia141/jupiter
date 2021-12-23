@@ -9,7 +9,7 @@ from domain.workspaces.notion_token import NotionToken
 from domain.workspaces.notion_space_id import NotionSpaceId
 from framework.json import JSONDictType
 from remote.notion.infra.client import NotionClient, NotionClientConfig
-from utils.storage import StructuredIndividualStorage
+from repository.yaml.infra.storage import StructuredIndividualStorage
 
 
 class MissingNotionConnectionError(Exception):

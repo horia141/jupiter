@@ -18,7 +18,7 @@ from remote.notion.infra.client import NotionClient, NotionCollectionSchemaPrope
 from remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
+from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

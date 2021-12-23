@@ -21,7 +21,7 @@ from domain.smart_lists.smart_list_key import SmartListKey
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
 from framework.errors import RepositoryError
-from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

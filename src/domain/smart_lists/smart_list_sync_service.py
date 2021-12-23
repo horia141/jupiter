@@ -12,7 +12,7 @@ from domain.smart_lists.smart_list_item import SmartListItem
 from domain.sync_prefer import SyncPrefer
 from framework.base.timestamp import Timestamp
 from framework.base.entity_id import EntityId
-from utils.storage import StructuredStorageError
+from repository.yaml.infra.storage import StructuredStorageError
 
 LOGGER = logging.getLogger(__name__)
 

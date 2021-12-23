@@ -28,8 +28,8 @@ from domain.recurring_task_period import RecurringTaskPeriod
 from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.base.timestamp import Timestamp
 from framework.errors import RepositoryError
-from repository.sqlite.events import build_event_table, upsert_events
-from utils.storage import StructuredStorageError
+from repository.sqlite.infra.events import build_event_table, upsert_events
+from repository.yaml.infra.storage import StructuredStorageError
 
 
 class SqlitePrmDatabaseRepository(PrmDatabaseRepository):

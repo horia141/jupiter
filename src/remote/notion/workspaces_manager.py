@@ -12,7 +12,7 @@ from framework.base.entity_id import EntityId
 from framework.notion import NotionId
 from remote.notion.common import CollectionError
 from remote.notion.infra.connection import NotionConnection
-from utils.storage import StructuredIndividualStorage
+from repository.yaml.infra.storage import StructuredIndividualStorage
 
 LOGGER = logging.getLogger(__name__)
 

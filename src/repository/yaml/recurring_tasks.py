@@ -28,7 +28,7 @@ from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollec
 from framework.errors import RepositoryError
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId, BAD_REF_ID
-from utils.storage import BaseEntityRow, EntitiesStorage, In, Eq
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)

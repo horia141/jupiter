@@ -16,7 +16,7 @@ from domain.projects.infra.project_engine import ProjectUnitOfWork, ProjectEngin
 from domain.projects.infra.project_repository import ProjectRepository
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
-from utils.storage import BaseEntityRow, EntitiesStorage, Eq, In
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, Eq, In
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
