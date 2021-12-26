@@ -1,13 +1,11 @@
 """A smart list."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.entity_name import EntityName
 from domain.smart_lists.smart_list_key import SmartListKey
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import BAD_REF_ID
 from framework.base.timestamp import Timestamp
-from framework.event import Event
-from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -17,13 +15,10 @@ class SmartList(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        key: SmartListKey
-        name: EntityName
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
 
     _key: SmartListKey
     _name: EntityName
@@ -40,7 +35,7 @@ class SmartList(AggregateRoot):
             _events=[],
             _key=key,
             _name=name)
-        smart_list.record_event(SmartList.Created(key=key, name=name, timestamp=created_time))
+        smart_list.record_event(SmartList.Created.make_event_from_frame_args(created_time))
 
         return smart_list
 
@@ -49,7 +44,7 @@ class SmartList(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(SmartList.Updated(name=UpdateAction.change_to(name), timestamp=modification_time))
+        self.record_event(SmartList.Updated.make_event_from_frame_args(timestamp=modification_time))
         return self
 
     @property

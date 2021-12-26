@@ -1,12 +1,10 @@
 """A smart list tag."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.base.timestamp import Timestamp
-from framework.event import Event
-from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -16,13 +14,10 @@ class SmartListTag(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        smart_list_ref_id: EntityId
-        tag_name: SmartListTagName
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        tag_name: UpdateAction[SmartListTagName] = field(default_factory=UpdateAction.do_nothing)
 
     _smart_list_ref_id: EntityId
     _tag_name: SmartListTagName
@@ -40,8 +35,7 @@ class SmartListTag(AggregateRoot):
             _events=[],
             _smart_list_ref_id=smart_list_ref_id,
             _tag_name=tag_name)
-        smart_list_tag.record_event(
-            SmartListTag.Created(smart_list_ref_id=smart_list_ref_id, tag_name=tag_name, timestamp=created_time))
+        smart_list_tag.record_event(SmartListTag.Created.make_event_from_frame_args(created_time))
 
         return smart_list_tag
 
@@ -50,7 +44,7 @@ class SmartListTag(AggregateRoot):
         if self._tag_name == tag_name:
             return self
         self._tag_name = tag_name
-        self.record_event(SmartListTag.Updated(tag_name=UpdateAction.change_to(tag_name), timestamp=modification_time))
+        self.record_event(SmartListTag.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

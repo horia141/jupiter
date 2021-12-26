@@ -18,7 +18,6 @@ from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.base.timestamp import Timestamp
 from framework.errors import InputValidationError
-from framework.event import Event2
 from framework.update_action import UpdateAction
 
 
@@ -27,11 +26,11 @@ class InboxTask(AggregateRoot):
     """An inbox task."""
 
     @dataclass(frozen=True)
-    class Created(Event2):
+    class Created(AggregateRoot.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(Event2):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
 
     _inbox_task_collection_ref_id: EntityId
@@ -86,7 +85,7 @@ class InboxTask(AggregateRoot):
             _accepted_time=created_time if status.is_accepted_or_more else None,
             _working_time=created_time if status.is_working_or_more else None,
             _completed_time=created_time if status.is_completed else None)
-        inbox_task.record_event(Event2.make_event_from_frame_args(InboxTask.Created, created_time))
+        inbox_task.record_event(InboxTask.Created.make_event_from_frame_args(created_time))
 
         return inbox_task
 
@@ -122,7 +121,7 @@ class InboxTask(AggregateRoot):
             _accepted_time=created_time,
             _working_time=None,
             _completed_time=None)
-        inbox_task.record_event(Event2.make_event_from_frame_args(InboxTask.Created, created_time))
+        inbox_task.record_event(InboxTask.Created.make_event_from_frame_args(created_time))
 
         return inbox_task
 
@@ -158,7 +157,7 @@ class InboxTask(AggregateRoot):
             _accepted_time=created_time,
             _working_time=None,
             _completed_time=None)
-        inbox_task.record_event(Event2.make_event_from_frame_args(InboxTask.Created, created_time))
+        inbox_task.record_event(InboxTask.Created.make_event_from_frame_args(created_time))
 
         return inbox_task
 
@@ -194,7 +193,7 @@ class InboxTask(AggregateRoot):
             _accepted_time=created_time,
             _working_time=None,
             _completed_time=None)
-        inbox_task.record_event(Event2.make_event_from_frame_args(InboxTask.Created, created_time))
+        inbox_task.record_event(InboxTask.Created.make_event_from_frame_args(created_time))
 
         return inbox_task
 
@@ -229,7 +228,7 @@ class InboxTask(AggregateRoot):
             _accepted_time=created_time,
             _working_time=None,
             _completed_time=None)
-        inbox_task.record_event(Event2.make_event_from_frame_args(InboxTask.Created, created_time))
+        inbox_task.record_event(InboxTask.Created.make_event_from_frame_args(created_time))
 
         return inbox_task
 
@@ -238,7 +237,7 @@ class InboxTask(AggregateRoot):
         if self._inbox_task_collection_ref_id == inbox_task_collection.ref_id:
             return self
         self._inbox_task_collection_ref_id = inbox_task_collection.ref_id
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def associate_with_big_plan(
@@ -256,7 +255,7 @@ class InboxTask(AggregateRoot):
 
         self._source = InboxTaskSource.BIG_PLAN
         self._big_plan_ref_id = big_plan_ref_id
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def update_link_to_big_plan(self, big_plan_ref_id: EntityId, modification_time: Timestamp) -> 'InboxTask':
@@ -266,7 +265,7 @@ class InboxTask(AggregateRoot):
         if self._big_plan_ref_id != big_plan_ref_id:
             raise InputValidationError(f"Cannot reassociate a task which is not with the big plan '{self._name}'")
 
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def update_link_to_recurring_task(self, name: EntityName, timeline: str, the_type: RecurringTaskType,
@@ -283,7 +282,7 @@ class InboxTask(AggregateRoot):
         self._difficulty = difficulty
         self._recurring_timeline = timeline
         self._recurring_type = the_type
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def update_link_to_metric(
@@ -299,7 +298,7 @@ class InboxTask(AggregateRoot):
         self._eisen = eisen
         self._difficulty = difficulty
         self._recurring_timeline = recurring_timeline
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def update_link_to_person_catch_up(
@@ -315,7 +314,7 @@ class InboxTask(AggregateRoot):
         self._eisen = eisen
         self._difficulty = difficulty
         self._recurring_timeline = recurring_timeline
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def update_link_to_person_birthday(
@@ -329,7 +328,7 @@ class InboxTask(AggregateRoot):
         self._actionable_date = due_time.subtract_days(preparation_days_cnt)
         self._due_date = due_time
         self._recurring_timeline = recurring_timeline
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_name(self, name: EntityName, modification_time: Timestamp) -> 'InboxTask':
@@ -340,7 +339,7 @@ class InboxTask(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_status(self, status: InboxTaskStatus, modification_time: Timestamp) -> 'InboxTask':
@@ -379,8 +378,8 @@ class InboxTask(AggregateRoot):
             updated_completed_time = UpdateAction.do_nothing()
 
         self._status = status
-        self.record_event(Event2.make_event_from_frame_args(
-            InboxTask.Updated, modification_time, updated_accepted_time=updated_accepted_time,
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(
+            modification_time, updated_accepted_time=updated_accepted_time,
             updated_working_time=updated_working_time, updated_completed_time=updated_completed_time))
         return self
 
@@ -390,7 +389,7 @@ class InboxTask(AggregateRoot):
         if self._actionable_date == actionable_date:
             return self
         self._actionable_date = actionable_date
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_due_date(self, due_date: Optional[ADate], modification_time: Timestamp) -> 'InboxTask':
@@ -399,7 +398,7 @@ class InboxTask(AggregateRoot):
         if self._due_date == due_date:
             return self
         self._due_date = due_date
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_eisen(self, eisen: List[Eisen], modification_time: Timestamp) -> 'InboxTask':
@@ -409,7 +408,7 @@ class InboxTask(AggregateRoot):
         if set(self._eisen) == set(eisen):
             return self
         self._eisen = eisen
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_difficulty(self, difficulty: Optional[Difficulty], modification_time: Timestamp) -> 'InboxTask':
@@ -419,7 +418,7 @@ class InboxTask(AggregateRoot):
         if self._difficulty == difficulty:
             return self
         self._difficulty = difficulty
-        self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
+        self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

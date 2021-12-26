@@ -14,7 +14,6 @@ from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.base.timestamp import Timestamp
 from framework.errors import InputValidationError
-from framework.event import Event2
 
 
 @dataclass()
@@ -22,11 +21,11 @@ class RecurringTask(AggregateRoot):
     """A recurring task."""
 
     @dataclass(frozen=True)
-    class Created(Event2):
+    class Created(AggregateRoot.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(Event2):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
 
     _recurring_task_collection_ref_id: EntityId
@@ -74,7 +73,7 @@ class RecurringTask(AggregateRoot):
             _start_at_date=start_at_date if start_at_date else today,
             _end_at_date=end_at_date,
             _suspended=suspended)
-        recurring_task.record_event(Event2.make_event_from_frame_args(RecurringTask.Created, created_time))
+        recurring_task.record_event(RecurringTask.Created.make_event_from_frame_args(created_time))
 
         return recurring_task
 
@@ -83,7 +82,7 @@ class RecurringTask(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_period(self, period: RecurringTaskPeriod, modification_time: Timestamp) -> 'RecurringTask':
@@ -91,7 +90,7 @@ class RecurringTask(AggregateRoot):
         if self._period == period:
             return self
         self._period = period
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_type(self, the_type: RecurringTaskType, modification_time: Timestamp) -> 'RecurringTask':
@@ -99,7 +98,7 @@ class RecurringTask(AggregateRoot):
         if self._the_type == the_type:
             return self
         self._the_type = the_type
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_gen_params(self, gen_params: RecurringTaskGenParams, modification_time: Timestamp) -> 'RecurringTask':
@@ -110,7 +109,7 @@ class RecurringTask(AggregateRoot):
         if self._gen_params == gen_params:
             return self
         self._gen_params = gen_params
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_must_do(self, must_do: bool, modification_time: Timestamp) -> 'RecurringTask':
@@ -118,7 +117,7 @@ class RecurringTask(AggregateRoot):
         if self._must_do == must_do:
             return self
         self._must_do = must_do
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_skip_rule(
@@ -127,7 +126,7 @@ class RecurringTask(AggregateRoot):
         if self._skip_rule == skip_rule:
             return self
         self._skip_rule = skip_rule
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_active_interval(
@@ -142,7 +141,7 @@ class RecurringTask(AggregateRoot):
             return self
         self._start_at_date = start_at_date
         self._end_at_date = end_at_date
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_suspended(self, suspended: bool, modification_time: Timestamp) -> 'RecurringTask':
@@ -150,7 +149,7 @@ class RecurringTask(AggregateRoot):
         if self._suspended == suspended:
             return self
         self._suspended = suspended
-        self.record_event(Event2.make_event_from_frame_args(RecurringTask.Updated, modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:

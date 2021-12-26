@@ -1,13 +1,11 @@
 """A metric entry."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from domain.adate import ADate
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
-from framework.event import Event
+from framework.base.timestamp import Timestamp
 
 
 @dataclass()
@@ -17,18 +15,10 @@ class MetricEntry(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        metric_ref_id: EntityId
-        collection_time: ADate
-        value: float
-        notes: Optional[str]
-        archived: bool
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        collection_time: UpdateAction[ADate] = field(default_factory=UpdateAction.do_nothing)
-        value: UpdateAction[float] = field(default_factory=UpdateAction.do_nothing)
-        notes: UpdateAction[Optional[str]] = field(default_factory=UpdateAction.do_nothing)
 
     _metric_ref_id: EntityId
     _collection_time: ADate
@@ -51,10 +41,7 @@ class MetricEntry(AggregateRoot):
             _collection_time=collection_time,
             _value=value,
             _notes=notes)
-        metric_entry.record_event(
-            MetricEntry.Created(
-                timestamp=created_time, metric_ref_id=metric_ref_id, collection_time=collection_time,
-                value=value, notes=notes, archived=archived))
+        metric_entry.record_event(MetricEntry.Created.make_event_from_frame_args(created_time))
         return metric_entry
 
     def change_collection_time(self, collection_time: ADate, modification_time: Timestamp) -> 'MetricEntry':
@@ -62,8 +49,7 @@ class MetricEntry(AggregateRoot):
         if self._collection_time == collection_time:
             return self
         self._collection_time = collection_time
-        self.record_event(MetricEntry.Updated(
-            collection_time=UpdateAction.change_to(collection_time), timestamp=modification_time))
+        self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_value(self, value: float, modification_time: Timestamp) -> 'MetricEntry':
@@ -71,8 +57,7 @@ class MetricEntry(AggregateRoot):
         if self._value == value:
             return self
         self._value = value
-        self.record_event(MetricEntry.Updated(
-            value=UpdateAction.change_to(value), timestamp=modification_time))
+        self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_notes(self, notes: Optional[str], modification_time: Timestamp) -> 'MetricEntry':
@@ -80,8 +65,7 @@ class MetricEntry(AggregateRoot):
         if self._notes == notes:
             return self
         self._notes = notes
-        self.record_event(MetricEntry.Updated(
-            notes=UpdateAction.change_to(notes), timestamp=modification_time))
+        self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

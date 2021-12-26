@@ -1,16 +1,14 @@
 """A person."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from domain.entity_name import EntityName
 from domain.prm.person_birthday import PersonBirthday
 from domain.prm.person_relationship import PersonRelationship
 from domain.recurring_task_gen_params import RecurringTaskGenParams
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import BAD_REF_ID
-from framework.event import Event
+from framework.base.timestamp import Timestamp
 
 
 @dataclass()
@@ -20,30 +18,22 @@ class Person(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        name: EntityName
-        relationship: PersonRelationship
-        catch_up_params: Optional[RecurringTaskGenParams]
-        birthday: Optional[PersonBirthday]
 
     @dataclass(frozen=True)
-    class ChangeName(Event):
+    class ChangeName(AggregateRoot.Updated):
         """Updated event."""
-        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
 
     @dataclass(frozen=True)
-    class ChangeRelationship(Event):
+    class ChangeRelationship(AggregateRoot.Updated):
         """Change relationship event."""
-        relationship: UpdateAction[PersonRelationship] = field(default_factory=UpdateAction.do_nothing)
 
     @dataclass(frozen=True)
-    class ChangeCatchUpParams(Event):
+    class ChangeCatchUpParams(AggregateRoot.Updated):
         """Change catch up params event."""
-        catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]] = field(default_factory=UpdateAction.do_nothing)
 
     @dataclass(frozen=True)
-    class ChangeBirthday(Event):
+    class ChangeBirthday(AggregateRoot.Updated):
         """Change birthday event."""
-        birthday: UpdateAction[Optional[PersonBirthday]] = field(default_factory=UpdateAction.do_nothing)
 
     _name: EntityName
     _relationship: PersonRelationship
@@ -66,9 +56,7 @@ class Person(AggregateRoot):
             _relationship=relationship,
             _catch_up_params=catch_up_params,
             _birthday=birthday)
-        person.record_event(Person.Created(
-            name=name, relationship=relationship, catch_up_params=catch_up_params, birthday=birthday,
-            timestamp=created_time))
+        person.record_event(Person.Created.make_event_from_frame_args(created_time))
 
         return person
 
@@ -77,8 +65,7 @@ class Person(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(Person.ChangeName(
-            name=UpdateAction.change_to(name), timestamp=modification_time))
+        self.record_event(Person.ChangeName.make_event_from_frame_args(modification_time))
         return self
 
     def change_relationship(self, relationship: PersonRelationship, modification_time: Timestamp) -> 'Person':
@@ -86,8 +73,7 @@ class Person(AggregateRoot):
         if self._relationship == relationship:
             return self
         self._relationship = relationship
-        self.record_event(Person.ChangeRelationship(
-            relationship=UpdateAction.change_to(relationship), timestamp=modification_time))
+        self.record_event(Person.ChangeRelationship.make_event_from_frame_args(modification_time))
         return self
 
     def change_catch_up_params(
@@ -96,8 +82,7 @@ class Person(AggregateRoot):
         if self._catch_up_params == catch_up_params:
             return self
         self._catch_up_params = catch_up_params
-        self.record_event(Person.ChangeCatchUpParams(
-            catch_up_params=UpdateAction.change_to(catch_up_params), timestamp=modification_time))
+        self.record_event(Person.ChangeCatchUpParams.make_event_from_frame_args(modification_time))
         return self
 
     def change_birthday(self, birthday: Optional[PersonBirthday], modification_time: Timestamp) -> 'Person':
@@ -105,8 +90,7 @@ class Person(AggregateRoot):
         if self._birthday == birthday:
             return self
         self._birthday = birthday
-        self.record_event(Person.ChangeBirthday(
-            birthday=UpdateAction.change_to(birthday), timestamp=modification_time))
+        self.record_event(Person.ChangeBirthday.make_event_from_frame_args(modification_time))
         return self
 
     @property

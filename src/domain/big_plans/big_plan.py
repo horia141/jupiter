@@ -6,11 +6,10 @@ from typing import Optional
 from domain.adate import ADate
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.entity_name import EntityName
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
-from framework.event import Event2
+from framework.base.timestamp import Timestamp
+from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -18,11 +17,11 @@ class BigPlan(AggregateRoot):
     """A big plan."""
 
     @dataclass(frozen=True)
-    class Created(Event2):
+    class Created(AggregateRoot.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(Event2):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
 
     _big_plan_collection_ref_id: EntityId
@@ -54,7 +53,7 @@ class BigPlan(AggregateRoot):
             _accepted_time=created_time if status.is_accepted_or_more else None,
             _working_time=created_time if status.is_working_or_more else None,
             _completed_time=created_time if status.is_completed else None)
-        big_plan.record_event(Event2.make_event_from_frame_args(BigPlan.Created, created_time))
+        big_plan.record_event(BigPlan.Created.make_event_from_frame_args(created_time))
 
         return big_plan
 
@@ -63,7 +62,7 @@ class BigPlan(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(Event2.make_event_from_frame_args(BigPlan.Updated, modification_time))
+        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_status(self, status: BigPlanStatus, modification_time: Timestamp) -> 'BigPlan':
@@ -101,8 +100,8 @@ class BigPlan(AggregateRoot):
         else:
             updated_completed_time = UpdateAction.do_nothing()
         self._status = status
-        self.record_event(Event2.make_event_from_frame_args(
-            BigPlan.Updated, modification_time, updated_accepted_time=updated_accepted_time,
+        self.record_event(BigPlan.Updated.make_event_from_frame_args(
+            modification_time, updated_accepted_time=updated_accepted_time,
             updated_working_time=updated_working_time, updated_completed_time=updated_completed_time))
         return self
 
@@ -111,7 +110,7 @@ class BigPlan(AggregateRoot):
         if self._due_date == due_date:
             return self
         self._due_date = due_date
-        self.record_event(Event2.make_event_from_frame_args(BigPlan.Updated, modification_time))
+        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

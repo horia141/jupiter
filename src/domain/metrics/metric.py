@@ -1,5 +1,5 @@
 """A metric."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from domain.entity_name import EntityName
@@ -9,8 +9,6 @@ from domain.recurring_task_gen_params import RecurringTaskGenParams
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import BAD_REF_ID
 from framework.base.timestamp import Timestamp
-from framework.event import Event
-from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -20,17 +18,10 @@ class Metric(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        key: MetricKey
-        name: EntityName
-        collection_params: Optional[RecurringTaskGenParams]
-        metric_unit: Optional[MetricUnit]
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
-        collection_params: UpdateAction[Optional[RecurringTaskGenParams]] \
-            = field(default_factory=UpdateAction.do_nothing)
 
     _key: MetricKey
     _name: EntityName
@@ -53,8 +44,7 @@ class Metric(AggregateRoot):
             _name=name,
             _collection_params=collection_params,
             _metric_unit=metric_unit)
-        metric.record_event(Metric.Created(
-            key=key, name=name, collection_params=collection_params, metric_unit=metric_unit, timestamp=created_time))
+        metric.record_event(Metric.Created.make_event_from_frame_args(created_time))
 
         return metric
 
@@ -63,7 +53,7 @@ class Metric(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(Metric.Updated(name=UpdateAction.change_to(name), timestamp=modification_time))
+        self.record_event(Metric.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_collection_params(
@@ -72,9 +62,7 @@ class Metric(AggregateRoot):
         if self._collection_params == collection_params:
             return self
         self._collection_params = collection_params
-        self.record_event(
-            Metric.Updated(
-                collection_params=UpdateAction.change_to(collection_params), timestamp=modification_time))
+        self.record_event(Metric.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

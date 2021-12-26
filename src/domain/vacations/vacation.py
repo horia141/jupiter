@@ -1,6 +1,6 @@
 """A vacation."""
 import typing
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.adate import ADate
 from domain.entity_name import EntityName
@@ -8,8 +8,6 @@ from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import BAD_REF_ID
 from framework.base.timestamp import Timestamp
 from framework.errors import InputValidationError
-from framework.event import Event
-from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -19,16 +17,10 @@ class Vacation(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        name: EntityName
-        start_date: ADate
-        end_date: ADate
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
-        start_date: UpdateAction[ADate] = field(default_factory=UpdateAction.do_nothing)
-        end_date: UpdateAction[ADate] = field(default_factory=UpdateAction.do_nothing)
 
     _name: EntityName
     _start_date: ADate
@@ -52,8 +44,7 @@ class Vacation(AggregateRoot):
             _name=name,
             _start_date=start_date,
             _end_date=end_date)
-        vacation.record_event(Vacation.Created(
-            name=name, start_date=start_date, end_date=end_date, timestamp=created_time))
+        vacation.record_event(Vacation.Created.make_event_from_frame_args(created_time))
 
         return vacation
 
@@ -62,7 +53,7 @@ class Vacation(AggregateRoot):
         if self._name == name:
             return self
         self._name = name
-        self.record_event(Vacation.Updated(name=UpdateAction.change_to(name), timestamp=modification_time))
+        self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_start_date(self, start_date: ADate, modification_time: Timestamp) -> 'Vacation':
@@ -72,7 +63,7 @@ class Vacation(AggregateRoot):
         if start_date >= self._end_date:
             raise InputValidationError("Cannot set a start date after the end date")
         self._start_date = start_date
-        self.record_event(Vacation.Updated(start_date=UpdateAction.change_to(start_date), timestamp=modification_time))
+        self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_end_date(self, end_date: ADate, modification_time: Timestamp) -> 'Vacation':
@@ -82,7 +73,7 @@ class Vacation(AggregateRoot):
         if end_date <= self._start_date:
             raise InputValidationError("Cannot set an end date before the start date")
         self._end_date = end_date
-        self.record_event(Vacation.Updated(end_date=UpdateAction.change_to(end_date), timestamp=modification_time))
+        self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:

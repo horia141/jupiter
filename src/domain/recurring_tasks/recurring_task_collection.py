@@ -1,10 +1,9 @@
 """A recurring task collection."""
 from dataclasses import dataclass
 
-from framework.base.timestamp import Timestamp
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
-from framework.event import Event2
+from framework.base.timestamp import Timestamp
 
 
 @dataclass()
@@ -12,7 +11,7 @@ class RecurringTaskCollection(AggregateRoot):
     """A recurring task collection."""
 
     @dataclass(frozen=True)
-    class Created(Event2):
+    class Created(AggregateRoot.Created):
         """Created event."""
 
     _project_ref_id: EntityId
@@ -29,7 +28,7 @@ class RecurringTaskCollection(AggregateRoot):
             _events=[],
             _project_ref_id=project_ref_id)
         recurring_task_collection.record_event(
-            Event2.make_event_from_frame_args(RecurringTaskCollection.Created, created_time))
+            RecurringTaskCollection.Created.make_event_from_frame_args(created_time))
 
         return recurring_task_collection
 

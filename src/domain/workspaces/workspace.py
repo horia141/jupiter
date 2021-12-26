@@ -1,13 +1,11 @@
 """The workspace where everything happens."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.entity_name import EntityName
 from domain.timezone import Timezone
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId
 from framework.base.timestamp import Timestamp
-from framework.event import Event
-from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -17,16 +15,10 @@ class Workspace(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        name: EntityName
-        timezone: Timezone
-        default_project_ref_id: EntityId
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
-        timezone: UpdateAction[Timezone] = field(default_factory=UpdateAction.do_nothing)
-        default_project_ref_id: UpdateAction[EntityId] = field(default_factory=UpdateAction.do_nothing)
 
     _name: EntityName
     _timezone: Timezone
@@ -47,30 +39,25 @@ class Workspace(AggregateRoot):
             _name=name,
             _timezone=timezone,
             _default_project_ref_id=default_project_ref_id)
-        workspace.record_event(Workspace.Created(
-            name=name, timezone=timezone, default_project_ref_id=default_project_ref_id, timestamp=created_time))
+        workspace.record_event(Workspace.Created.make_event_from_frame_args(created_time))
         return workspace
 
     def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Workspace':
         """Change the name of the workspace."""
         self._name = name
-        self.record_event(
-            Workspace.Updated(name=UpdateAction.change_to(name), timestamp=modification_time))
+        self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_timezone(self, timezone: Timezone, modification_time: Timestamp) -> 'Workspace':
         """Change the timezone of the workspace."""
         self._timezone = timezone
-        self.record_event(
-            Workspace.Updated(timezone=UpdateAction.change_to(timezone), timestamp=modification_time))
+        self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_default_project(self, default_project_ref_id: EntityId, modification_time: Timestamp) -> 'Workspace':
         """Change the default project of the workspace."""
         self._default_project_ref_id = default_project_ref_id
-        self.record_event(
-            Workspace.Updated(
-                default_project_ref_id=UpdateAction.change_to(default_project_ref_id), timestamp=modification_time))
+        self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

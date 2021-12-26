@@ -1,13 +1,11 @@
 """The project."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from domain.entity_name import EntityName
 from domain.projects.project_key import ProjectKey
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import BAD_REF_ID
-from framework.event import Event
+from framework.base.timestamp import Timestamp
 
 
 @dataclass()
@@ -17,13 +15,10 @@ class Project(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Created event."""
-        key: ProjectKey
-        name: EntityName
 
     @dataclass(frozen=True)
-    class Updated(Event):
+    class Updated(AggregateRoot.Updated):
         """Updated event."""
-        name: UpdateAction[EntityName] = field(default_factory=UpdateAction.do_nothing)
 
     _key: ProjectKey
     _name: EntityName
@@ -40,15 +35,14 @@ class Project(AggregateRoot):
             _events=[],
             _key=key,
             _name=name)
-        project.record_event(Project.Created(
-            key=key, name=name, timestamp=created_time))
+        project.record_event(Project.Created.make_event_from_frame_args(created_time))
         return project
 
     def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Project':
         """Change the name of the workspace."""
         self._name = name
         self.record_event(
-            Project.Updated(name=UpdateAction.change_to(name), timestamp=modification_time))
+            Project.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property

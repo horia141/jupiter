@@ -15,7 +15,8 @@ def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
         Column('timestamp', DateTime, primary_key=True),
         Column('session_index', Integer, primary_key=True),
         Column('name', String(32), primary_key=True),
-        Column('data', JSON, nullable=True),
+        Column('kind', String(16), nullable=False),
+        Column('data', JSON, nullable=False),
         keep_existing=True)
 
 
@@ -29,5 +30,6 @@ def upsert_events(connection: Connection, event_table: Table, aggreggate_root: A
                 timestamp=event.timestamp.to_db(),
                 session_index=event_idx,
                 name=str(event.__class__.__name__),
+                kind=event.kind.to_db(),
                 data=event.to_serializable_dict())
             .on_conflict_do_nothing(index_elements=['owner_ref_id', 'timestamp', 'session_index', 'name']))

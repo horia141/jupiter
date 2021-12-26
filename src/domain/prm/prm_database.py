@@ -1,11 +1,9 @@
 """The personal relationship database."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
-from framework.event import Event
+from framework.base.timestamp import Timestamp
 
 
 @dataclass()
@@ -15,12 +13,10 @@ class PrmDatabase(AggregateRoot):
     @dataclass(frozen=True)
     class Created(AggregateRoot.Created):
         """Create event."""
-        catch_up_project_ref_id: EntityId
 
     @dataclass(frozen=True)
-    class ChangeCatchUpProjectRefId(Event):
+    class ChangeCatchUpProjectRefId(AggregateRoot.Updated):
         """Change catch up project ref id."""
-        catch_up_project_ref_id: UpdateAction[EntityId] = field(default_factory=UpdateAction.do_nothing)
 
     _catch_up_project_ref_id: EntityId
 
@@ -35,8 +31,7 @@ class PrmDatabase(AggregateRoot):
             _last_modified_time=created_time,
             _events=[],
             _catch_up_project_ref_id=catch_up_project_ref_id)
-        person.record_event(PrmDatabase.Created(
-            catch_up_project_ref_id=catch_up_project_ref_id, timestamp=created_time))
+        person.record_event(PrmDatabase.Created.make_event_from_frame_args(created_time))
         return person
 
     def change_catch_up_project_ref_id(
@@ -45,8 +40,7 @@ class PrmDatabase(AggregateRoot):
         if self._catch_up_project_ref_id == catch_up_project_ref_id:
             return self
         self._catch_up_project_ref_id = catch_up_project_ref_id
-        self.record_event(PrmDatabase.ChangeCatchUpProjectRefId(
-            catch_up_project_ref_id=UpdateAction.change_to(catch_up_project_ref_id), timestamp=modified_time))
+        self.record_event(PrmDatabase.ChangeCatchUpProjectRefId.make_event_from_frame_args(modified_time))
         return self
 
     @property

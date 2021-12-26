@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Optional, List, Iterable
 
-from framework.base.timestamp import Timestamp
 from framework.base.entity_id import EntityId
-from framework.event import Event
+from framework.base.timestamp import Timestamp
+from framework.event import Event, EventKind
 
 
 @dataclass()
@@ -15,13 +15,37 @@ class AggregateRoot:
     class Created(Event):
         """Created event."""
 
+        @property
+        def kind(self) -> EventKind:
+            """The kind of the event."""
+            return EventKind.CREATE
+
+    @dataclass(frozen=True)
+    class Updated(Event):
+        """Updated event."""
+
+        @property
+        def kind(self) -> EventKind:
+            """The kind of the event."""
+            return EventKind.UPDATE
+
     @dataclass(frozen=True)
     class Archived(Event):
         """Archived event."""
 
+        @property
+        def kind(self) -> EventKind:
+            """The kind of the event."""
+            return EventKind.ARCHIVE
+
     @dataclass(frozen=True)
-    class Unarchived(Event):
-        """Unarchived event."""
+    class Restore(Event):
+        """Restore event."""
+
+        @property
+        def kind(self) -> EventKind:
+            """The kind of the event."""
+            return EventKind.RESTORE
 
     _ref_id: EntityId
     _archived: bool
@@ -38,7 +62,7 @@ class AggregateRoot:
         """Archive the root."""
         self._archived = True
         self._archived_time = archived_time
-        self.record_event(AggregateRoot.Archived(timestamp=archived_time))
+        self.record_event(AggregateRoot.Archived.make_event_from_frame_args(archived_time))
 
     def change_archived(self, archived: bool, archived_time: Timestamp) -> None:
         """Change the archival status."""
@@ -47,11 +71,11 @@ class AggregateRoot:
         elif not self._archived and archived:
             self._archived = True
             self._archived_time = archived_time
-            self.record_event(AggregateRoot.Archived(timestamp=archived_time))
+            self.record_event(AggregateRoot.Archived.make_event_from_frame_args(archived_time))
         elif self._archived and not archived:
             self._archived = False
             self._archived_time = None
-            self.record_event(AggregateRoot.Unarchived(timestamp=archived_time))
+            self.record_event(AggregateRoot.Restore.make_event_from_frame_args(archived_time))
         else:
             return
 
