@@ -1,13 +1,13 @@
 """The centralised point for interacting with Notion projects."""
 from typing import ClassVar, Final
 
-from domain.projects.infra.project_notion_manager import ProjectNotionManager
+from domain.projects.infra.project_notion_manager import ProjectNotionManager, NotionProjectNotFoundError
 from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
 from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
 from remote.notion.common import NotionPageLink, NotionLockKey
-from remote.notion.infra.pages_manager import PagesManager
+from remote.notion.infra.pages_manager import PagesManager, NotionPageNotFoundError
 
 
 class NotionProjectsManager(ProjectNotionManager):
@@ -38,14 +38,26 @@ class NotionProjectsManager(ProjectNotionManager):
     def save_project(self, project: NotionProject) -> NotionProject:
         """Save a project which already exists."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
-        self._pages_manager.upsert_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"), project.name, root_page)
+
+        try:
+            self._pages_manager.save_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"), project.name, root_page)
+        except NotionPageNotFoundError as err:
+            raise NotionProjectNotFoundError(f"Notion project with id {project.ref_id} could not be found") from err
+
         return project
 
     def load_project(self, ref_id: EntityId) -> NotionProject:
         """Load a project by its entity id."""
-        project_page = self._pages_manager.get_page_extra(NotionLockKey(f"{self._KEY}:{ref_id}"))
+        try:
+            project_page = self._pages_manager.get_page_extra(NotionLockKey(f"{self._KEY}:{ref_id}"))
+        except NotionPageNotFoundError as err:
+            raise NotionProjectNotFoundError(f"Notion project with id {ref_id} could not be found") from err
+
         return NotionProject(name=project_page.name, ref_id=ref_id, notion_id=project_page.page_id)
 
     def remove(self, project: Project) -> None:
         """Archive a project."""
-        self._pages_manager.remove_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"))
+        try:
+            self._pages_manager.remove_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"))
+        except NotionPageNotFoundError as err:
+            raise NotionProjectNotFoundError(f"Notion project with id {project.ref_id} could not be found") from err

@@ -3,7 +3,6 @@ import logging
 import typing
 from typing import Final, Iterable, Dict, Optional
 
-from domain.errors import ServiceError
 from domain.prm.infra.prm_engine import PrmEngine
 from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.notion_person import NotionPerson
@@ -98,7 +97,7 @@ class PrmSyncService:
                     self._prm_notion_manager.save_person(updated_notion_person)
                     LOGGER.info(f"Changed person with id={notion_person.ref_id} from local")
                 else:
-                    raise ServiceError(f"Invalid preference {sync_prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random person added by someone, where they completed themselves a ref_id. It's a bad

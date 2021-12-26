@@ -4,17 +4,16 @@ from typing import Optional
 
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from domain.errors import ServiceValidationError
 from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
-from framework.base.timestamp import Timestamp
-from framework.errors import ModelValidationError
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
+from framework.base.timestamp import Timestamp
+from framework.errors import InputValidationError
 from framework.event import Event2
 
 
@@ -54,9 +53,9 @@ class RecurringTask(AggregateRoot):
             gen_params.due_at_day, gen_params.due_at_month)
 
         if start_at_date is not None and end_at_date is not None and start_at_date >= end_at_date:
-            raise ServiceValidationError(f"Start date {start_at_date} is after {end_at_date}")
+            raise InputValidationError(f"Start date {start_at_date} is after {end_at_date}")
         if start_at_date is None and end_at_date is not None and end_at_date < today:
-            raise ServiceValidationError(f"End date {end_at_date} is before {today}")
+            raise InputValidationError(f"End date {end_at_date} is before {today}")
 
         recurring_task = RecurringTask(
             _ref_id=BAD_REF_ID,
@@ -136,9 +135,9 @@ class RecurringTask(AggregateRoot):
         """Change the active interval."""
         today = ADate.from_date(modification_time.as_date())
         if end_at_date is not None and start_at_date >= end_at_date:
-            raise ModelValidationError(f"Start date {start_at_date} is after end date {end_at_date}")
+            raise InputValidationError(f"Start date {start_at_date} is after end date {end_at_date}")
         if end_at_date is not None and end_at_date < today:
-            raise ModelValidationError(f"End date {end_at_date} is before start date {today}")
+            raise InputValidationError(f"End date {end_at_date} is before start date {today}")
         if self._start_at_date == start_at_date and self._end_at_date == end_at_date:
             return self
         self._start_at_date = start_at_date
@@ -235,8 +234,8 @@ class RecurringTask(AggregateRoot):
         due_at_day = due_at_day or RecurringTaskDueAtDay(1000)
         due_at_month = due_at_month or RecurringTaskDueAtMonth(1000)
         if actionable_from_month.as_int() > due_at_month.as_int():
-            raise ServiceValidationError(
+            raise InputValidationError(
                 f"Actionable month {actionable_from_month} should be before due month {due_at_month}")
         if actionable_from_month == due_at_month and actionable_from_day.as_int() > due_at_day.as_int():
-            raise ServiceValidationError(
+            raise InputValidationError(
                 f"Actionable day {actionable_from_day} should be before due day {due_at_day}")

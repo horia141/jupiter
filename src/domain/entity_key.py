@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Pattern, Final, Optional, TypeVar, Type
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 _ENTITY_KEY_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
@@ -25,15 +25,15 @@ class EntityKey(Value, abc.ABC):
     def from_raw(cls: Type[_EntityKeyType], entity_key_raw: Optional[str]) -> _EntityKeyType:
         """Validate and clean a entity key."""
         if not entity_key_raw:
-            raise ModelValidationError("Expected entity key key to be non-null")
+            raise InputValidationError("Expected entity key key to be non-null")
 
         entity_key_str: str = entity_key_raw.strip().lower()
 
         if len(entity_key_str) == 0:
-            raise ModelValidationError("Expected entity key to be non-empty")
+            raise InputValidationError("Expected entity key to be non-empty")
 
         if not _ENTITY_KEY_RE.match(entity_key_str):
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected entity key '{entity_key_raw}' to match '{_ENTITY_KEY_RE.pattern}'")
 
         return cls(entity_key_str)

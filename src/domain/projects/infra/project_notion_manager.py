@@ -7,6 +7,10 @@ from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
 
 
+class NotionProjectNotFoundError(Exception):
+    """Exception raised when a Notion project was not found."""
+
+
 class ProjectNotionManager(abc.ABC):
     """The centralised point of interaction with projects on Notion-side."""
 

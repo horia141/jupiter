@@ -8,6 +8,10 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 
 
+class NotionPersonNotFoundError(Exception):
+    """Exception raised when a Notion person was not found."""
+
+
 class PrmNotionManager(abc.ABC):
     """A manager of Notion-side persons."""
 

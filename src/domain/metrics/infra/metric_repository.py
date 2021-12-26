@@ -8,6 +8,14 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class MetricAlreadyExistsError(Exception):
+    """Error raised when trying to create a metric and it already exists."""
+
+
+class MetricNotFoundError(Exception):
+    """Error raised when a metric does not exist."""
+
+
 class MetricRepository(Repository, abc.ABC):
     """A repository of metrics."""
 

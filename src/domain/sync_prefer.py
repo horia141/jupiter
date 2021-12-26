@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -16,12 +16,12 @@ class SyncPrefer(enum.Enum):
     def from_raw(sync_prefer_raw: Optional[str]) -> 'SyncPrefer':
         """Validate and clean the big plan status."""
         if not sync_prefer_raw:
-            raise ModelValidationError("Expected sync prefer to be non-null")
+            raise InputValidationError("Expected sync prefer to be non-null")
 
         sync_prefer_str: str = sync_prefer_raw.strip().lower()
 
         if sync_prefer_str not in SyncPrefer.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected sync prefer '{sync_prefer_raw}' to be one of '{','.join(SyncPrefer.all_values())}'")
 
         return SyncPrefer(sync_prefer_str)

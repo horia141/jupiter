@@ -6,10 +6,9 @@ from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from domain.prm.infra.prm_engine import PrmEngine
-from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
-from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -54,5 +53,5 @@ class PersonArchiveUseCase(UseCase[EntityId, None]):
 
         try:
             self._prm_notion_manager.remove_person(person.ref_id)
-        except CollectionEntityNotFound:
+        except NotionPersonNotFoundError:
             LOGGER.warning("Skipping archival on Notion side because person was not found")

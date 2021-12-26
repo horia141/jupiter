@@ -6,10 +6,9 @@ from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from domain.metrics.metric_key import MetricKey
 from framework.use_case import UseCase
-from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -59,5 +58,5 @@ class MetricArchiveUseCase(UseCase[MetricKey, None]):
         # TODO(horia141): process Notion side entries too
         try:
             self._metric_notion_manager.remove_metric(metric)
-        except CollectionEntityNotFound:
+        except NotionMetricNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

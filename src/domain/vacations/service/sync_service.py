@@ -2,7 +2,6 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
-from domain.errors import ServiceError
 from domain.sync_prefer import SyncPrefer
 from domain.vacations.infra.vacation_engine import VacationEngine
 from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
@@ -96,7 +95,7 @@ class VacationSyncService:
                     self._vacation_notion_manager.save_vacation(update_notion_vacation)
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from local")
                 else:
-                    raise ServiceError(f"Invalid preference {sync_prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random vacation added by someone, where they completed themselves a ref_id. It's a bad

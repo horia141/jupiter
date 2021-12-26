@@ -9,6 +9,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class InboxTaskNotFoundError(Exception):
+    """Error raised when an inbox task does not exist."""
+
+
 class InboxTaskRepository(Repository, abc.ABC):
     """A repository of inbox tasks."""
 

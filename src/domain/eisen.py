@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -20,12 +20,12 @@ class Eisen(enum.Enum):
     def from_raw(eisen_raw: Optional[str]) -> 'Eisen':
         """Validate and clean a raw person relationship value."""
         if not eisen_raw:
-            raise ModelValidationError("Expected Eisenhower status to be non-null")
+            raise InputValidationError("Expected Eisenhower status to be non-null")
 
         eisen_str: str = eisen_raw.strip().lower()
 
         if eisen_str not in Eisen.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected Eisenhower status '{eisen_raw}' to be one of '{','.join(Eisen.all_values())}'")
 
         return Eisen(eisen_str)

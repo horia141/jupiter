@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -25,12 +25,12 @@ class PersonRelationship(enum.Enum):
     def from_raw(person_relationship_raw: Optional[str]) -> 'PersonRelationship':
         """Validate and clean a raw person relationship value."""
         if not person_relationship_raw:
-            raise ModelValidationError("Expected sync target to be non-null")
+            raise InputValidationError("Expected sync target to be non-null")
 
         person_relationship_str: str = '-'.join(person_relationship_raw.strip().lower().split())
 
         if person_relationship_str not in PersonRelationship.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected sync prefer '{person_relationship_raw}' to be one of " +
                 f"'{','.join(PersonRelationship.all_values())}'")
 

@@ -10,7 +10,7 @@ from pendulum import UTC
 
 from domain.timezone import Timezone
 from framework.base.timestamp import Timestamp
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 
@@ -41,7 +41,7 @@ class ADate(Value):
     def from_raw(timezone: Timezone, datetime_raw: Optional[str]) -> 'ADate':
         """Validate and clean an ADate."""
         if not datetime_raw:
-            raise ModelValidationError("Expected datetime to be non-null")
+            raise InputValidationError("Expected datetime to be non-null")
 
         try:
             adate = pendulum.parse(datetime_raw, tz=pendulum.timezone(str(timezone)), exact=True)
@@ -51,9 +51,9 @@ class ADate(Value):
             elif isinstance(adate, pendulum.Date):
                 return ADate(adate, None)
             else:
-                raise ModelValidationError(f"Expected datetime '{datetime_raw}' to be in a proper datetime format")
+                raise InputValidationError(f"Expected datetime '{datetime_raw}' to be in a proper datetime format")
         except pendulum.parsing.exceptions.ParserError as error:
-            raise ModelValidationError(f"Expected datetime '{datetime_raw}' to be in a proper format") from error
+            raise InputValidationError(f"Expected datetime '{datetime_raw}' to be in a proper format") from error
 
     @staticmethod
     def from_str(date_raw: str) -> 'ADate':

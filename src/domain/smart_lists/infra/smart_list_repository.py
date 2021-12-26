@@ -8,6 +8,14 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class SmartListAlreadyExistsError(Exception):
+    """Error raised when a smart list with the given key already exists."""
+
+
+class SmartListNotFoundError(Exception):
+    """Error raised when a smart list is not found."""
+
+
 class SmartListRepository(Repository, abc.ABC):
     """A repository of smart lists."""
 

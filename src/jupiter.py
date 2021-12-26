@@ -67,9 +67,20 @@ from command.vacation_show import VacationsShow
 from command.vacation_update import VacationUpdate
 from command.workspace_show import WorkspaceShow
 from command.workspace_update import WorkspaceUpdate
+from domain.big_plans.infra.big_plan_notion_manager import NotionBigPlanNotFoundError
+from domain.inbox_tasks.infra.inbox_task_notion_manager import NotionInboxTaskNotFoundError
+from domain.metrics.infra.metric_notion_manager import NotionMetricNotFoundError, NotionMetricEntryNotFoundError
+from domain.prm.infra.prm_notion_manager import NotionPersonNotFoundError
+from domain.projects.infra.project_notion_manager import NotionProjectNotFoundError
+from domain.recurring_tasks.infra.recurring_task_notion_manager import NotionRecurringTaskNotFoundError
+from domain.smart_lists.infra.smart_list_notion_manager import NotionSmartListNotFoundError, \
+    NotionSmartListTagNotFoundError, NotionSmartListItemNotFoundError
 from domain.timezone import Timezone
+from domain.vacations.infra.vacation_notion_manager import NotionVacationNotFoundError
+from domain.workspaces.infra.workspace_notion_manager import NotionWorkspaceNotFoundError
+from domain.workspaces.infra.workspace_repository import WorkspaceNotFoundError
+from framework.errors import InputValidationError
 from remote.notion.big_plans_manager import NotionBigPlansManager
-from remote.notion.common import CollectionEntityNotFound, CollectionEntityAlreadyExists
 from remote.notion.inbox_tasks_manager import NotionInboxTasksManager
 from remote.notion.infra.collections_manager import CollectionsManager
 from remote.notion.infra.connection import \
@@ -81,7 +92,7 @@ from remote.notion.projects_manager import NotionProjectsManager
 from remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from remote.notion.smart_lists_manager import NotionSmartListsManager
 from remote.notion.vacations_manager import NotionVacationsManager
-from remote.notion.workspaces_manager import NotionWorkspacesManager, MissingWorkspaceScreenError
+from remote.notion.workspaces_manager import NotionWorkspacesManager
 from repository.sqlite.metrics import SqliteMetricEngine
 from repository.sqlite.prm import SqlitePrmEngine
 from repository.yaml.big_plans import YamlBigPlanEngine
@@ -90,7 +101,7 @@ from repository.yaml.projects import YamlProjectEngine
 from repository.yaml.recurring_tasks import YamlRecurringTaskEngine
 from repository.yaml.smart_lists import YamlSmartListEngine
 from repository.yaml.vacations import YamlVacationEngine
-from repository.yaml.workspace import YamlWorkspaceRepository, MissingWorkspaceRepositoryError, YamlWorkspaceEngine
+from repository.yaml.workspace import YamlWorkspaceRepository, YamlWorkspaceEngine
 from use_cases.big_plans.archive import BigPlanArchiveUseCase
 from use_cases.big_plans.create import BigPlanCreateUseCase
 from use_cases.big_plans.find import BigPlanFindUseCase
@@ -169,7 +180,7 @@ def main() -> None:
     try:
         workspace = workspaces_repository.load()
         timezone = workspace.timezone
-    except MissingWorkspaceRepositoryError:
+    except WorkspaceNotFoundError:
         timezone = None
 
     global_properties = build_global_properties(timezone)
@@ -448,14 +459,18 @@ def main() -> None:
                     continue
                 command.run(args)
                 break
-        except (MissingWorkspaceRepositoryError, MissingNotionConnectionError, MissingWorkspaceScreenError):
+        except (WorkspaceNotFoundError, NotionWorkspaceNotFoundError, MissingNotionConnectionError):
             print(f"The Notion connection isn't setup, please run '{Initialize.name()}' to create a workspace!")
             print(f"For more information checkout: {global_properties.docs_init_workspace_url}")
         except OldTokenForNotionConnectionError:
             print(
                 f"The Notion connection's token has expired, please refresh it with '{WorkspaceUpdate.name()}'")
             print(f"For more information checkout: {global_properties.docs_update_expired_token_url}")
-        except (CollectionEntityNotFound, CollectionEntityAlreadyExists) as err:
+        except (NotionVacationNotFoundError, NotionProjectNotFoundError,
+                NotionInboxTaskNotFoundError, NotionRecurringTaskNotFoundError, NotionBigPlanNotFoundError,
+                NotionMetricNotFoundError, NotionMetricEntryNotFoundError,
+                NotionSmartListNotFoundError, NotionSmartListTagNotFoundError, NotionSmartListItemNotFoundError,
+                NotionPersonNotFoundError) as err:
             print(str(err))
             print(f"For more information checkout: {global_properties.docs_fix_data_inconsistencies_url}")
             raise err
@@ -483,7 +498,7 @@ def _map_log_level_to_log_class(log_level: str) -> int:
     elif log_level == "critical":
         return logging.CRITICAL
     else:
-        raise Exception(f"Invalid log level '{log_level}'")
+        raise InputValidationError(f"Invalid log level '{log_level}'")
 
 
 if __name__ == "__main__":

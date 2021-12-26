@@ -5,7 +5,7 @@ from typing import Optional, ClassVar, Dict
 from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from domain.recurring_task_period import RecurringTaskPeriod
 from framework.value import Value
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @dataclass()
@@ -36,19 +36,19 @@ class PersonBirthday(Value):
     def from_raw(birthday_str: Optional[str]) -> 'PersonBirthday':
         """Validate and clean a raw birthday given as 12 May."""
         if not birthday_str:
-            raise ModelValidationError("Expected birthday to be non null")
+            raise InputValidationError("Expected birthday to be non null")
 
         parts = birthday_str.strip().split(' ')
         if len(parts) != 2:
-            raise ModelValidationError(f"Invalid format for birthday '{birthday_str}'")
+            raise InputValidationError(f"Invalid format for birthday '{birthday_str}'")
 
         try:
             day = RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, int(parts[0], base=10))
             month = PersonBirthday._MONTH_NAME_INDEX[parts[1].capitalize()]
         except ValueError as err:
-            raise ModelValidationError(f"Invalid format for day part of birthday '{birthday_str}'") from err
+            raise InputValidationError(f"Invalid format for day part of birthday '{birthday_str}'") from err
         except KeyError:
-            raise ModelValidationError(f"Invalid format for month part of birthday '{birthday_str}'")
+            raise InputValidationError(f"Invalid format for month part of birthday '{birthday_str}'")
 
         return PersonBirthday(day.as_int(), month)
 

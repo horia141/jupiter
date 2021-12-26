@@ -5,17 +5,17 @@ from typing import Final, ClassVar, Iterable
 from notion.collection import CollectionRowBlock
 
 from domain.adate import ADate
-from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from domain.vacations.notion_vacation import NotionVacation
 from domain.vacations.vacation import Vacation
 from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
+from framework.base.notion_id import NotionId
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
-from remote.notion.infra.collections_manager import CollectionsManager
+from remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
@@ -153,17 +153,23 @@ class NotionVacationsManager(VacationNotionManager):
 
     def save_vacation(self, vacation: NotionVacation) -> NotionVacation:
         """Update a Notion-side vacation with new data."""
-        return self._collections_manager.save_collection_item(
-            key=NotionLockKey(f"{vacation.ref_id}"),
-            collection_key=NotionLockKey(self._KEY),
-            row=vacation,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        try:
+            return self._collections_manager.save_collection_item(
+                key=NotionLockKey(f"{vacation.ref_id}"),
+                collection_key=NotionLockKey(self._KEY),
+                row=vacation,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionVacationNotFoundError(f"Vacation with id {vacation.ref_id} could not be found") from err
 
     def remove_vacation(self, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(self._KEY))
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(self._KEY))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionVacationNotFoundError(f"Vacation with id {ref_id} could not be found") from err
 
     def load_all_vacations(self) -> Iterable[NotionVacation]:
         """Retrieve all the Notion-side vacation items."""

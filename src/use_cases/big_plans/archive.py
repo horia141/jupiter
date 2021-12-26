@@ -3,9 +3,8 @@ import logging
 from dataclasses import dataclass
 from typing import Final
 
-import remote
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
-from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
+from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
@@ -67,7 +66,7 @@ class BigPlanArchiveUseCase(UseCase['BigPlanArchiveUseCase.Args', None]):
         try:
             self._big_plan_notion_manager.remove_big_plan(big_plan.project_ref_id, args.ref_id)
             LOGGER.info("Applied Notion changes")
-        except remote.notion.common.CollectionEntityNotFound:
+        except NotionBigPlanNotFoundError:
             LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")
 
         LOGGER.info(f"Archived the big plan")

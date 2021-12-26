@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -34,12 +34,12 @@ class InboxTaskSource(enum.Enum):
     def from_raw(inbox_task_source_raw: Optional[str]) -> 'InboxTaskSource':
         """Validate and clean the big plan source."""
         if not inbox_task_source_raw:
-            raise ModelValidationError("Expected inbox task source to be non-null")
+            raise InputValidationError("Expected inbox task source to be non-null")
 
         inbox_task_source_str: str = '-'.join(inbox_task_source_raw.strip().lower().split(' '))
 
         if inbox_task_source_str not in InboxTaskSource.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected inbox task source '{inbox_task_source_raw}' to be " +
                 f"one of '{','.join(InboxTaskSource.all_values())}'")
 

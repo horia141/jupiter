@@ -4,21 +4,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar, Final, cast
 
-from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
+from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager, NotionWorkspaceNotFoundError
 from domain.workspaces.notion_workspace import NotionWorkspace
 from domain.workspaces.workspace import Workspace
-from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
-from remote.notion.common import CollectionError
+from framework.json import JSONDictType
+from remote.notion.infra.client import NotionPageBlockNotFound
 from remote.notion.infra.connection import NotionConnection
-from repository.yaml.infra.storage import StructuredIndividualStorage
+from repository.yaml.infra.storage import StructuredIndividualStorage, StorageEntityNotFoundError
 
 LOGGER = logging.getLogger(__name__)
-
-
-class MissingWorkspaceScreenError(CollectionError):
-    """Error raised when a workspace screen has not yet been created."""
 
 
 @dataclass()
@@ -71,10 +67,13 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
 
     def save_workspace(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
         """Change the root Notion structure."""
-        lock = self._structured_storage.load()
         client = self._connection.get_notion_client()
 
-        page = client.get_regular_page(lock.page_id)
+        try:
+            lock = self._structured_storage.load()
+            page = client.get_regular_page(lock.page_id)
+        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            raise NotionWorkspaceNotFoundError(f"Cannot find Notion workspace") from err
         LOGGER.info(f"Found the root page via id {page}")
 
         # Change the title.
@@ -85,13 +84,13 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
 
     def load_workspace(self) -> NotionWorkspace:
         """Retrieve the workspace from Notion side."""
-        lock = self._structured_storage.load_optional()
-        if lock is None:
-            raise MissingWorkspaceScreenError()
-
         client = self._connection.get_notion_client()
 
-        page = client.get_regular_page(lock.page_id)
+        try:
+            lock = self._structured_storage.load()
+            page = client.get_regular_page(lock.page_id)
+        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            raise NotionWorkspaceNotFoundError(f"Cannot find Notion workspace") from err
 
         return NotionWorkspace(
             name=page.title,

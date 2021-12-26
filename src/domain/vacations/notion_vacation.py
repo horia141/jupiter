@@ -4,10 +4,10 @@ from typing import Optional
 
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from domain.errors import ServiceValidationError
 from domain.vacations.vacation import Vacation
-from framework.notion import NotionRow
 from framework.base.notion_id import BAD_NOTION_ID
+from framework.errors import InputValidationError
+from framework.notion import NotionRow
 
 
 @dataclass(frozen=True)
@@ -35,9 +35,9 @@ class NotionVacation(NotionRow[Vacation, None, None]):
         """Create a new vacation from this."""
         vacation_name = EntityName.from_raw(self.name)
         if self.start_date is None:
-            raise ServiceValidationError(f"Vacation '{self.name}' should have a start date")
+            raise InputValidationError(f"Vacation '{self.name}' should have a start date")
         if self.end_date is None:
-            raise ServiceValidationError(f"Vacation '{self.name}' should have an end date")
+            raise InputValidationError(f"Vacation '{self.name}' should have an end date")
         return Vacation.new_vacation(
             archived=self.archived,
             name=vacation_name,
@@ -49,9 +49,9 @@ class NotionVacation(NotionRow[Vacation, None, None]):
         """Apply to an already existing vacation."""
         vacation_name = EntityName.from_raw(self.name)
         if self.start_date is None:
-            raise ServiceValidationError(f"Vacation '{self.name}' should have a start date")
+            raise InputValidationError(f"Vacation '{self.name}' should have a start date")
         if self.end_date is None:
-            raise ServiceValidationError(f"Vacation '{self.name}' should have an end date")
+            raise InputValidationError(f"Vacation '{self.name}' should have an end date")
         aggregate_root.change_archived(self.archived, self.last_edited_time)
         aggregate_root.change_name(vacation_name, self.last_edited_time)
         aggregate_root.change_start_date(self.start_date, self.last_edited_time)

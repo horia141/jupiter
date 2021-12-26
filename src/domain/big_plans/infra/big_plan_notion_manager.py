@@ -12,6 +12,14 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 
 
+class NotionBigPlanCollectionNotFoundError(Exception):
+    """Exception raised when a Notion big plan collection was not found."""
+
+
+class NotionBigPlanNotFoundError(Exception):
+    """Exception raised when a Notion big plan was not found."""
+
+
 class BigPlanNotionManager(abc.ABC):
     """A manager of Notion-side big plans."""
 

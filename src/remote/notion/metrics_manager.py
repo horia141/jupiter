@@ -6,19 +6,21 @@ from notion.client import NotionClient
 from notion.collection import CollectionRowBlock
 
 from domain.adate import ADate
-from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError, \
+    NotionMetricEntryNotFoundError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.notion_metric import NotionMetric
 from domain.metrics.notion_metric_entry import NotionMetricEntry
 from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
+from framework.base.notion_id import NotionId
 from framework.base.timestamp import Timestamp
 from framework.json import JSONDictType
-from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
-from remote.notion.infra.collections_manager import CollectionsManager
+from remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionNotFoundError, \
+    NotionCollectionItemNotFoundError
 from remote.notion.infra.pages_manager import PagesManager
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
@@ -160,16 +162,22 @@ class NotionMetricManager(MetricNotionManager):
 
     def save_metric(self, metric: NotionMetric) -> NotionMetric:
         """Save a metric collection."""
-        self._collections_manager.update_collection(
-            key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
-            new_name=metric.name,
-            new_schema=self._SCHEMA)
+        try:
+            self._collections_manager.save_collection(
+                key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
+                new_name=metric.name,
+                new_schema=self._SCHEMA)
+        except NotionCollectionNotFoundError as err:
+            raise NotionMetricNotFoundError(f"Could not find metric with id {metric.ref_id} locally") from err
         return metric
 
     def load_metric(self, metric: Metric) -> NotionMetric:
         """Load a metric collection."""
-        metric_link = self._collections_manager.load_collection(
-            key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
+        try:
+            metric_link = self._collections_manager.load_collection(
+                key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
+        except NotionCollectionNotFoundError as err:
+            raise NotionMetricNotFoundError(f"Could not find metric with id {metric.ref_id} locally") from err
 
         return NotionMetric(
             name=metric_link.name,
@@ -178,7 +186,10 @@ class NotionMetricManager(MetricNotionManager):
 
     def remove_metric(self, metric: Metric) -> None:
         """Remove a metric on Notion-side."""
-        self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
+        try:
+            self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{metric.ref_id}"))
+        except NotionCollectionNotFoundError as err:
+            raise NotionMetricNotFoundError(f"Could not find metric with id {metric.ref_id} locally") from err
 
     def upsert_metric_entry(self, metric_entry: MetricEntry) -> None:
         """Upsert a metric entry on Notion-side."""
@@ -199,11 +210,15 @@ class NotionMetricManager(MetricNotionManager):
     def save_metric_entry(
             self, metric: Metric, metric_entry: NotionMetricEntry) -> NotionMetricEntry:
         """Update the Notion-side metric with new data."""
-        return self._collections_manager.save_collection_item(
-            key=NotionLockKey(f"{metric_entry.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
-            row=metric_entry,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        try:
+            return self._collections_manager.save_collection_item(
+                key=NotionLockKey(f"{metric_entry.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
+                row=metric_entry,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionMetricEntryNotFoundError(
+                f"Notion metric entry with id {metric.ref_id} does not exist") from err
 
     def load_all_metric_entries(self, metric: Metric) -> typing.Iterable[NotionMetricEntry]:
         """Retrieve all the Notion-side metric entrys."""
@@ -213,9 +228,13 @@ class NotionMetricManager(MetricNotionManager):
 
     def remove_metric_entry(self, metric_ref_id: EntityId, metric_entry_ref_id: typing.Optional[EntityId]) -> None:
         """Remove a metric on Notion-side."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{metric_entry_ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"))
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{metric_entry_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionMetricEntryNotFoundError(
+                f"Notion metric entry with id {metric_ref_id} does not exist") from err
 
     def link_local_and_notion_entries_for_metric(
             self, metric_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:

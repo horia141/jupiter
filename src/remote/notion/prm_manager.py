@@ -6,7 +6,7 @@ from notion.collection import CollectionRowBlock
 
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
-from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from domain.prm.notion_person import NotionPerson
 from domain.prm.person_relationship import PersonRelationship
 from domain.recurring_task_period import RecurringTaskPeriod
@@ -17,7 +17,7 @@ from framework.json import JSONDictType
 from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
-from remote.notion.infra.collections_manager import CollectionsManager
+from remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
@@ -314,24 +314,33 @@ class NotionPrmManager(PrmNotionManager):
 
     def save_person(self, notion_person: NotionPerson) -> None:
         """Save an already existing person on Notion-side."""
-        self._collections_manager.save_collection_item(
-            key=NotionLockKey(f"{notion_person.ref_id}"),
-            collection_key=NotionLockKey(self._KEY),
-            row=notion_person,
-            copy_row_to_notion_row=self.copy_row_to_notion_row)
+        try:
+            self._collections_manager.save_collection_item(
+                key=NotionLockKey(f"{notion_person.ref_id}"),
+                collection_key=NotionLockKey(self._KEY),
+                row=notion_person,
+                copy_row_to_notion_row=self.copy_row_to_notion_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionPersonNotFoundError(f"Person with id {notion_person.ref_id} could not be found") from err
 
     def remove_person(self, ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(self._KEY))
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(self._KEY))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
 
     def load_person(self, ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
-        return self._collections_manager.load_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(self._KEY),
-            copy_notion_row_to_row=self.copy_notion_row_to_row)
+        try:
+            return self._collections_manager.load_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(self._KEY),
+                copy_notion_row_to_row=self.copy_notion_row_to_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
 
     def load_all_persons(self) -> Iterable[NotionPerson]:
         """Retrieve all persons from Notion-side."""

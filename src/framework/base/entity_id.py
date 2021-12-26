@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 _ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+$")
@@ -22,15 +22,15 @@ class EntityId(Value):
     def from_raw(entity_id_raw: Optional[str]) -> 'EntityId':
         """Validate and clean an entity id."""
         if not entity_id_raw:
-            raise ModelValidationError("Expected entity id to be non-null")
+            raise InputValidationError("Expected entity id to be non-null")
 
         entity_id: str = entity_id_raw.strip()
 
         if len(entity_id) == 0:
-            raise ModelValidationError("Expected entity id to be non-empty")
+            raise InputValidationError("Expected entity id to be non-empty")
 
         if not _ENTITY_ID_RE.match(entity_id):
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected entity id '{entity_id_raw}' to match '{_ENTITY_ID_RE.pattern}")
 
         return EntityId(entity_id)

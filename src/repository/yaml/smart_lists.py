@@ -1,27 +1,27 @@
 """Repository for smart lists."""
 import logging
+import typing
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final, Set, List
-import typing
 
-from domain.url import URL
+from domain.entity_name import EntityName
 from domain.smart_lists.infra.smart_list_engine import SmartListUnitOfWork, SmartListEngine
-from domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
-from domain.smart_lists.infra.smart_list_repository import SmartListRepository
-from domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository
+from domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository, SmartListItemNotFoundError
+from domain.smart_lists.infra.smart_list_repository import SmartListRepository, SmartListAlreadyExistsError, \
+    SmartListNotFoundError
+from domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository, SmartListTagNotFoundError
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
+from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
-from domain.entity_name import EntityName
-from domain.smart_lists.smart_list_key import SmartListKey
-from framework.json import JSONDictType
+from domain.url import URL
 from framework.base.entity_id import EntityId
-from framework.errors import RepositoryError
-from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect
+from framework.json import JSONDictType
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class YamlSmartListRepository(SmartListRepository):
         smart_list_rows = self._storage.find_all(allow_archived=True, key=Eq(smart_list.key))
 
         if len(smart_list_rows) > 0:
-            raise RepositoryError(f"Smart list with key='{smart_list.key}' already exists")
+            raise SmartListAlreadyExistsError(f"Smart list with key='{smart_list.key}' already exists")
 
         new_smart_list_row = self._storage.create(_SmartListRow(
             archived=smart_list.archived,
@@ -79,18 +79,27 @@ class YamlSmartListRepository(SmartListRepository):
 
     def save(self, smart_list: SmartList) -> SmartList:
         """Save a smart list - it should already exist."""
-        smart_list_row = self._entity_to_row(smart_list)
-        smart_list_row = self._storage.update(smart_list_row)
-        return self._row_to_entity(smart_list_row)
+        try:
+            smart_list_row = self._entity_to_row(smart_list)
+            smart_list_row = self._storage.update(smart_list_row)
+            return self._row_to_entity(smart_list_row)
+        except StorageEntityNotFoundError as err:
+            raise SmartListNotFoundError(f"Smart list with key {smart_list.key} does not exist") from err
 
     def load_by_key(self, key: SmartListKey) -> SmartList:
         """Find a smart list by key."""
-        smart_list_row = self._storage.find_first(allow_archived=False, key=Eq(key))
-        return self._row_to_entity(smart_list_row)
+        try:
+            smart_list_row = self._storage.find_first(allow_archived=False, key=Eq(key))
+            return self._row_to_entity(smart_list_row)
+        except StorageEntityNotFoundError as err:
+            raise SmartListNotFoundError(f"Smart list with key {key} does not exist") from err
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartList:
         """Find a smart list by id."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise SmartListNotFoundError(f"Smart list with id {ref_id} does not exist") from err
 
     def find_all(
             self,
@@ -106,7 +115,10 @@ class YamlSmartListRepository(SmartListRepository):
 
     def remove(self, ref_id: EntityId) -> SmartList:
         """Hard remove a smart list - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        except StorageEntityNotFoundError as err:
+            raise SmartListNotFoundError(f"Smart list with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -205,13 +217,19 @@ class YamlSmartListTagRepository(SmartListTagRepository):
 
     def save(self, smart_list_tag: SmartListTag) -> SmartListTag:
         """Save a smart list item - it should already exist."""
-        smart_list_tag_row = self._entity_to_row(smart_list_tag)
-        smart_list_tag_row = self._storage.update(smart_list_tag_row)
-        return self._row_to_entity(smart_list_tag_row)
+        try:
+            smart_list_tag_row = self._entity_to_row(smart_list_tag)
+            smart_list_tag_row = self._storage.update(smart_list_tag_row)
+            return self._row_to_entity(smart_list_tag_row)
+        except StorageEntityNotFoundError as err:
+            raise SmartListTagNotFoundError(f"Smart list tag with id {smart_list_tag.ref_id} does not exist") from err
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListTag:
         """Load a given smart list item."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise SmartListTagNotFoundError(f"Smart list tag with id {ref_id} does not exist") from err
 
     def find_all_for_smart_list(
             self, smart_list_ref_id: EntityId, allow_archived: bool = False,
@@ -238,7 +256,10 @@ class YamlSmartListTagRepository(SmartListTagRepository):
 
     def remove(self, ref_id: EntityId) -> SmartListTag:
         """Hard remove a smart list - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        except StorageEntityNotFoundError as err:
+            raise SmartListTagNotFoundError(f"Smart list tag with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -343,13 +364,20 @@ class YamlSmartListItemRepository(SmartListItemRepository):
 
     def save(self, smart_list_item: SmartListItem) -> SmartListItem:
         """Save a smart listitem - it should already exist."""
-        smart_list_item_row = self._entity_to_row(smart_list_item)
-        smart_list_item_row = self._storage.update(smart_list_item_row)
-        return self._row_to_entity(smart_list_item_row)
+        try:
+            smart_list_item_row = self._entity_to_row(smart_list_item)
+            smart_list_item_row = self._storage.update(smart_list_item_row)
+            return self._row_to_entity(smart_list_item_row)
+        except StorageEntityNotFoundError as err:
+            raise SmartListItemNotFoundError(
+                f"Smart list item with id {smart_list_item.ref_id} does not exist") from err
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListItem:
         """Load a given smart listitem."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise SmartListItemNotFoundError(f"Smart list item with id {ref_id} does not exist") from err
 
     def find_all_for_smart_list(self, smart_list_ref_id: EntityId, allow_archived: bool = False) -> List[SmartListItem]:
         """Retrieve all smart listitems for a given metric."""
@@ -375,7 +403,10 @@ class YamlSmartListItemRepository(SmartListItemRepository):
 
     def remove(self, ref_id: EntityId) -> SmartListItem:
         """Hard remove a smart list- an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        except StorageEntityNotFoundError as err:
+            raise SmartListItemNotFoundError(f"Smart list item with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:

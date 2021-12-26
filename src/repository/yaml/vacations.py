@@ -10,11 +10,11 @@ from typing import ClassVar, Iterable, Optional, Final
 from domain.adate import ADate
 from domain.entity_name import EntityName
 from domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationEngine
-from domain.vacations.infra.vacation_repository import VacationRepository
+from domain.vacations.infra.vacation_repository import VacationRepository, VacationNotFoundError
 from domain.vacations.vacation import Vacation
 from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -69,13 +69,19 @@ class YamlVacationRepository(VacationRepository):
 
     def save(self, vacation: Vacation) -> Vacation:
         """Save a vacation - it should already exist."""
-        vacation_row = self._entity_to_row(vacation)
-        vacation_row = self._storage.update(vacation_row)
-        return self._row_to_entity(vacation_row)
+        try:
+            vacation_row = self._entity_to_row(vacation)
+            vacation_row = self._storage.update(vacation_row)
+            return self._row_to_entity(vacation_row)
+        except StorageEntityNotFoundError as err:
+            raise VacationNotFoundError(f"Vacation with id {vacation.ref_id} does not exist") from err
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Find a vacation by id."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise VacationNotFoundError(f"Vacation with id {ref_id} does not exist") from err
 
     def find_all(
             self,
@@ -89,7 +95,10 @@ class YamlVacationRepository(VacationRepository):
 
     def remove(self, ref_id: EntityId) -> None:
         """Hard remove a vacation - an irreversible operation."""
-        self._storage.remove(ref_id=ref_id)
+        try:
+            self._storage.remove(ref_id=ref_id)
+        except StorageEntityNotFoundError as err:
+            raise VacationNotFoundError(f"Vacation with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:

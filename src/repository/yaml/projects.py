@@ -7,16 +7,14 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, Optional
 
-from framework.errors import RepositoryError
-from framework.json import JSONDictType
-from framework.base.entity_id import EntityId
-
 from domain.entity_name import EntityName
 from domain.projects.infra.project_engine import ProjectUnitOfWork, ProjectEngine
-from domain.projects.infra.project_repository import ProjectRepository
+from domain.projects.infra.project_repository import ProjectRepository, ProjectAlreadyExistsError, ProjectNotFoundError
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
-from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, Eq, In
+from framework.base.entity_id import EntityId
+from framework.json import JSONDictType
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, Eq, In, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -66,7 +64,7 @@ class YamlProjectRepository(ProjectRepository):
         project_rows = self._storage.find_all(allow_archived=True, key=Eq(project.key))
 
         if len(project_rows) > 0:
-            raise RepositoryError(f"Project with key='{project.key}' already exists")
+            raise ProjectAlreadyExistsError(f"Project with key='{project.key}' already exists")
 
         new_project_row = _ProjectRow(key=project.key, archived=project.archived, name=project.name)
         new_project_row = self._storage.create(new_project_row)
@@ -75,17 +73,26 @@ class YamlProjectRepository(ProjectRepository):
 
     def save(self, project: Project) -> Project:
         """Store a particular project with all new properties."""
-        project_row = self._entity_to_row(project)
-        project_row = self._storage.update(project_row)
-        return self._row_to_entity(project_row)
+        try:
+            project_row = self._entity_to_row(project)
+            project_row = self._storage.update(project_row)
+            return self._row_to_entity(project_row)
+        except StorageEntityNotFoundError as err:
+            raise ProjectNotFoundError(f"Project with key {project.key} does not exist") from err
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
         """Retrieve a particular project by its key."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise ProjectNotFoundError(f"Project with id {ref_id} does not exist") from err
 
     def load_by_key(self, key: ProjectKey) -> Project:
         """Retrieve a particular project by its key."""
-        return self._row_to_entity(self._storage.find_first(allow_archived=False, key=Eq(key)))
+        try:
+            return self._row_to_entity(self._storage.find_first(allow_archived=False, key=Eq(key)))
+        except StorageEntityNotFoundError as err:
+            raise ProjectNotFoundError(f"Project with key {key} does not exist") from err
 
     def find_all(
             self,

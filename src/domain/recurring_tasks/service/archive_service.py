@@ -2,12 +2,12 @@
 import logging
 from typing import Final
 
-import remote
-from domain.recurring_tasks.recurring_task import RecurringTask
-from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
-from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
-from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, NotionInboxTaskNotFoundError
+from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
+from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
+    NotionRecurringTaskNotFoundError
+from domain.recurring_tasks.recurring_task import RecurringTask
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class RecurringTaskArchiveService:
         try:
             self._recurring_task_notion_manager.remove_recurring_task(
                 recurring_task.project_ref_id, recurring_task.ref_id)
-        except remote.notion.common.CollectionEntityNotFound:
+        except NotionRecurringTaskNotFoundError:
             # If we can't find this locally it means it's already gone
             LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
@@ -62,6 +62,6 @@ class RecurringTaskArchiveService:
         for inbox_task in inbox_tasks_to_archive:
             try:
                 self._inbox_task_notion_manager.remove_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
-            except remote.notion.common.CollectionEntityNotFound:
+            except NotionInboxTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because inbox task was not found")

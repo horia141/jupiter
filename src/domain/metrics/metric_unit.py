@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -18,12 +18,12 @@ class MetricUnit(enum.Enum):
     def from_raw(metric_unit_raw: Optional[str]) -> 'MetricUnit':
         """Validate and clean an metric unit."""
         if not metric_unit_raw:
-            raise ModelValidationError("Expected metric unit to be non-null")
+            raise InputValidationError("Expected metric unit to be non-null")
 
         metric_unit_str: str = '-'.join(metric_unit_raw.strip().lower().split(' '))
 
         if metric_unit_str not in MetricUnit.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected metric unit '{metric_unit_raw}' to be " +
                 f"one of '{','.join(MetricUnit.all_values())}'")
 

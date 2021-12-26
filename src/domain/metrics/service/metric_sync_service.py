@@ -2,16 +2,14 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
-from domain.errors import ServiceError
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.notion_metric_entry import NotionMetricEntry
 from domain.sync_prefer import SyncPrefer
-from framework.base.timestamp import Timestamp
 from framework.base.entity_id import EntityId
-from repository.yaml.infra.storage import StructuredStorageError
+from framework.base.timestamp import Timestamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +45,7 @@ class MetricSyncService:
                 LOGGER.info("Applied local change")
             else:
                 raise Exception(f"Invalid preference {sync_prefer}")
-        except StructuredStorageError:
+        except NotionMetricNotFoundError:
             LOGGER.info("Trying to recreate the metric")
             self._metric_notion_manager.upsert_metric(metric)
 
@@ -129,7 +127,7 @@ class MetricSyncService:
                     self._metric_notion_manager.save_metric_entry(metric, updated_notion_metric_entry)
                     LOGGER.info(f"Changed metric entry '{notion_metric_entry.collection_time}' from local")
                 else:
-                    raise ServiceError(f"Invalid preference {sync_prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random metric entry added by someone, where they completed themselves a ref_id.

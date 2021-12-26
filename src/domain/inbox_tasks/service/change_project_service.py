@@ -2,10 +2,9 @@
 import logging
 from typing import Final
 
-import remote
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
-from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, NotionInboxTaskNotFoundError
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from framework.base.entity_id import EntityId
 from utils.time_provider import TimeProvider
@@ -34,7 +33,7 @@ class InboxTaskChangeProjectService:
         try:
             self._inbox_task_notion_manager.hard_remove_inbox_task(old_project_ref_id, inbox_task.ref_id)
             LOGGER.info("Applied Notion changes")
-        except remote.notion.common.CollectionEntityNotFound:
+        except NotionInboxTaskNotFoundError:
             LOGGER.info("Skipping hard removal on Notion side since inbox task could not be found")
 
         with self._inbox_task_engine.get_unit_of_work() as uow:

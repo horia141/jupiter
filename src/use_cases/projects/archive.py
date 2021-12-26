@@ -5,7 +5,6 @@ from typing import Final
 
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
-from domain.errors import ServiceError
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.metrics.infra.metric_engine import MetricEngine
@@ -16,6 +15,7 @@ from domain.projects.project_key import ProjectKey
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
+from framework.errors import InputValidationError
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
@@ -72,18 +72,19 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
         with self._workspace_engine.get_unit_of_work() as workspace_uow:
             workspace = workspace_uow.workspace_repository.load()
         if workspace.default_project_ref_id == project.ref_id:
-            raise ServiceError("Cannot archive project because it is the default workspace one")
+            raise InputValidationError("Cannot archive project because it is the default workspace one")
         with self._metric_engine.get_unit_of_work() as metric_uow:
             metrics = metric_uow.metric_repository.find_all(allow_archived=True)
         for metric in metrics:
             if metric.collection_params is not None and metric.collection_params.project_ref_id == project.ref_id:
-                raise ServiceError(
+                raise InputValidationError(
                     "Cannot archive project because it is the collection project " +
                     f"for metric '{metric.name} archived={metric.archived}'")
         with self._prm_engine.get_unit_of_work() as prm_uow:
             prm_database = prm_uow.prm_database_repository.load()
         if prm_database.catch_up_project_ref_id == project.ref_id:
-            raise ServiceError("Cannot archive project because it is the collection project for the PRM database")
+            raise InputValidationError(
+                "Cannot archive project because it is the collection project for the PRM database")
 
         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
             inbox_task_collection = inbox_task_uow.inbox_task_collection_repository.load_by_project(project.ref_id)

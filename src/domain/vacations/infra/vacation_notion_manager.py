@@ -9,6 +9,10 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 
 
+class NotionVacationNotFoundError(Exception):
+    """Exception raised when a Notion vacation was not found."""
+
+
 class VacationNotionManager(abc.ABC):
     """A manager of Notion-side vacations."""
 

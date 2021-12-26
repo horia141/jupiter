@@ -17,8 +17,16 @@ from framework.base.notion_id import NotionId
 LOGGER = logging.getLogger(__name__)
 
 
-class NotionClientException(Exception):
-    """Exception raised by the notion client."""
+class NotionPageBlockNotFound(Exception):
+    """Error raised when a Notion page is not found."""
+
+
+class NotionCollectionBlockNotFound(Exception):
+    """Error raised when a Notion collection is not found."""
+
+
+class NotionCollectionRowNotFound(Exception):
+    """Error raised when a Notion collection row is not found."""
 
 
 @dataclass(frozen=True)
@@ -67,7 +75,7 @@ class NotionClient:
 
     # 1.For big pages.
 
-    def  create_regular_page(self, name: str, parent_page: Optional[PageBlock] = None) -> PageBlock:
+    def create_regular_page(self, name: str, parent_page: Optional[PageBlock] = None) -> PageBlock:
         """Create a page in a space."""
         if parent_page is not None:
             new_page = parent_page.children.add_new(PageBlock)
@@ -78,9 +86,11 @@ class NotionClient:
 
     def get_regular_page(self, page_id: NotionId) -> PageBlock:
         """Find a page from a space, with a given id."""
-        the_block: Block = self._client.get_block(str(page_id))
+        the_block: Optional[Block] = self._client.get_block(str(page_id))
+        if the_block is None:
+            raise NotionPageBlockNotFound(f"A page block with id={page_id} could not be found")
         if not isinstance(the_block, PageBlock):
-            raise NotionClientException(f"A block with id={page_id} is not a page")
+            raise Exception(f"A block with id={page_id} is not a page")
         return the_block
 
     # 2.For collections.
@@ -94,8 +104,10 @@ class NotionClient:
     def get_collection_page_by_id(self, page_id: NotionId) -> CollectionViewPageBlock:
         """Retrieve an existing collection page."""
         collection_page = self._client.get_block(str(page_id))
+        if collection_page is None:
+            raise NotionCollectionBlockNotFound(f"A collection page with id={page_id} could not be found")
         if not isinstance(collection_page, CollectionViewPageBlock):
-            raise NotionClientException(f"Page with id={page_id} is not a collection page")
+            raise Exception(f"Page with id={page_id} is not a collection page")
         return collection_page
 
     def attach_view_to_collection_page(
@@ -139,8 +151,7 @@ class NotionClient:
         collection_page = self.get_collection_page_by_id(collection_page_id)
         collection = collection_page.collection
         if collection.id != str(collection_id):
-            raise NotionClientException(
-                f"Mismatch between page {collection.id} collection and selected one {collection_id}")
+            raise Exception(f"Mismatch between page {collection.id} collection and selected one {collection_id}")
         # Hack for notion-py. If we don't get all the collection views for a particular collection like this one
         # rather than just a single one, there's gonna be some deep code somewhere which will assume all of
         # them are present and croak! The code when you add an element to a collection, and you wanna assume
@@ -158,10 +169,12 @@ class NotionClient:
     def get_collection_row(self, collection: Collection, row_id: NotionId) -> CollectionRowBlock:
         """Retrieve a particular row from a collection."""
         collection_row = self._client.get_block(str(row_id))
+        if collection_row is None:
+            raise NotionCollectionRowNotFound(f"Collection row with id={row_id} could not be found")
         if not isinstance(collection_row, CollectionRowBlock):
-            raise NotionClientException(f"Entity with id={row_id} is not a collection row")
+            raise Exception(f"Collection row with id={row_id} is not a collection row")
         if collection_row.parent.id != str(collection.id):
-            raise NotionClientException(f"Row with id={row_id} does not belong to collection {collection.id}")
+            raise Exception(f"Collection row with id={row_id} does not belong to collection {collection.id}")
         return collection_row
 
     def get_collection_all_rows(self, collection: Collection, view_id: NotionId) -> QueryResult:

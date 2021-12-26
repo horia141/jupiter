@@ -8,7 +8,7 @@ import pendulum
 from pendulum import UTC
 
 from domain.timezone import Timezone
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 
@@ -33,7 +33,7 @@ class Timestamp(Value):
     def from_raw(timezone: Timezone, timestamp_raw: Optional[str]) -> 'Timestamp':
         """Validate and clean an optional timestamp."""
         if not timestamp_raw:
-            raise ModelValidationError("Expected timestamp to be non-null")
+            raise InputValidationError("Expected timestamp to be non-null")
 
         try:
             timestamp = pendulum.parse(timestamp_raw, tz=pendulum.timezone(str(timezone)), exact=True)
@@ -43,18 +43,18 @@ class Timestamp(Value):
             elif isinstance(timestamp, pendulum.Date):
                 timestamp = pendulum.DateTime(timestamp.year, timestamp.month, timestamp.day, tzinfo=UTC)
             else:
-                raise ModelValidationError(f"Expected datetime '{timestamp_raw}' to be in a proper datetime format")
+                raise InputValidationError(f"Expected datetime '{timestamp_raw}' to be in a proper datetime format")
 
             return Timestamp(timestamp)
         except pendulum.parsing.exceptions.ParserError as error:
-            raise ModelValidationError(f"Expected datetime '{timestamp_raw}' to be in a proper format") from error
+            raise InputValidationError(f"Expected datetime '{timestamp_raw}' to be in a proper format") from error
 
     @staticmethod
     def from_str(timestamp_raw: str) -> 'Timestamp':
         """Parse a timestamp from a string."""
         timestamp = pendulum.parse(timestamp_raw, tz=UTC, exact=True)
         if not isinstance(timestamp, pendulum.DateTime):
-            raise ModelValidationError(f"Expected timestamp '{timestamp_raw}' to be in a proper timestamp format")
+            raise InputValidationError(f"Expected timestamp '{timestamp_raw}' to be in a proper timestamp format")
         return Timestamp(timestamp)
 
     @staticmethod

@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -21,12 +21,12 @@ class Difficulty(enum.Enum):
     def from_raw(difficulty_raw: Optional[str]) -> 'Difficulty':
         """Validate and clean the difficulty."""
         if not difficulty_raw:
-            raise ModelValidationError("Expected difficulty to be non-null")
+            raise InputValidationError("Expected difficulty to be non-null")
 
         difficulty_str: str = difficulty_raw.strip().lower()
 
         if difficulty_str not in Difficulty.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected difficulty '{difficulty_raw}' to be one of '{','.join(Difficulty.all_values())}'")
 
         return Difficulty(difficulty_str)

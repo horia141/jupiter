@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 
@@ -24,12 +24,12 @@ class NotionId(Value):
     def from_raw(notion_id_raw: Optional[str]) -> 'NotionId':
         """Validate and clean an notion id."""
         if not notion_id_raw:
-            raise ModelValidationError("Expected Notion id to be non-null")
+            raise InputValidationError("Expected Notion id to be non-null")
 
         notion_id: str = notion_id_raw.strip()
 
         if len(notion_id) == 0:
-            raise ModelValidationError("Expected notion id to be non-empty")
+            raise InputValidationError("Expected notion id to be non-empty")
 
         return NotionId(notion_id)
 

@@ -13,18 +13,18 @@ from typing import Final, Dict, Protocol, TypeVar, Generic, Optional, List, Tupl
 import jsonschema as js
 import pendulum
 import yaml
-from framework.value import Value
-from framework.json import JSONDictType
-from framework.base.entity_id import EntityId
 
+from framework.base.entity_id import EntityId
 from framework.base.timestamp import Timestamp
+from framework.json import JSONDictType
+from framework.value import Value
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class StructuredStorageError(Exception):
-    """Exception raised by StructuredIndividualStorage class."""
+class StorageEntityNotFoundError(Exception):
+    """Exception raised when a particular entity is not found."""
 
 
 LiveType = TypeVar("LiveType")
@@ -134,24 +134,34 @@ class StructuredIndividualStorage(Generic[LiveType]):
         self._path = path
         self._protocol = protocol
 
+    def save(self, data_live: LiveType) -> None:
+        """Create the structured storage fully."""
+        with self._path.open("w") as store_file:
+            data_store = self._protocol.live_to_storage(data_live)
+            LOGGER.info("Transformed live to storage data")
+
+            js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
+            LOGGER.info("Checked new storage structure")
+
+            yaml.dump(data_store, store_file)
+            LOGGER.info("Saved storage")
+
     def load_optional(self) -> Optional[LiveType]:
         """Load the structured storage fully, but return None if nothing was previously saved."""
         try:
             with self._path.open("r") as store_file:
                 data_store = yaml.safe_load(store_file)
                 LOGGER.info("Loaded storage")
-
-                js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
-                LOGGER.info("Checked storage structure")
-
-                data_live = self._protocol.storage_to_live(data_store)
-                LOGGER.info("Transformed storage to live data")
-
-                return data_live
         except IOError:
             return None
-        except (ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+
+        js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
+        LOGGER.info("Checked storage structure")
+
+        data_live = self._protocol.storage_to_live(data_store)
+        LOGGER.info("Transformed storage to live data")
+
+        return data_live
 
     def load(self) -> LiveType:
         """Load the structured storage fully."""
@@ -159,31 +169,16 @@ class StructuredIndividualStorage(Generic[LiveType]):
             with self._path.open("r") as store_file:
                 data_store = yaml.safe_load(store_file)
                 LOGGER.info("Loaded storage")
+        except IOError as err:
+            raise StorageEntityNotFoundError from err
 
-                js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
-                LOGGER.info("Checked storage structure")
+        js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
+        LOGGER.info("Checked storage structure")
 
-                data_live = self._protocol.storage_to_live(data_store)
-                LOGGER.info("Transformed storage to live data")
+        data_live = self._protocol.storage_to_live(data_store)
+        LOGGER.info("Transformed storage to live data")
 
-                return data_live
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
-
-    def save(self, data_live: LiveType) -> None:
-        """Save the structured storage fully."""
-        try:
-            with self._path.open("w") as store_file:
-                data_store = self._protocol.live_to_storage(data_live)
-                LOGGER.info("Transformed live to storage data")
-
-                js.Draft6Validator(self._protocol.storage_schema()).validate(data_store)
-                LOGGER.info("Checked new storage structure")
-
-                yaml.dump(data_store, store_file)
-                LOGGER.info("Saved storage")
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+        return data_live
 
 
 BAD_REF_ID = EntityId("bad-entity-id")
@@ -274,7 +269,7 @@ class RecordsStorage(Generic[RecordRowType]):
                 self._save(next_idx, records)
                 return record
 
-        raise StructuredStorageError(f"Record identified by {key} does not exist")
+        raise StorageEntityNotFoundError(f"Record identified by {key} does not exist")
 
     def update(self, new_record: RecordRowType) -> RecordRowType:
         """Update an existing record."""
@@ -287,7 +282,7 @@ class RecordsStorage(Generic[RecordRowType]):
                 self._save(next_idx, records)
                 return new_record
 
-        raise StructuredStorageError(f"Record identified by {new_record.key} does not exist")
+        raise StorageEntityNotFoundError(f"Record identified by {new_record.key} does not exist")
 
     def load(self, key: str) -> RecordRowType:
         """Retrieve the record identified by the key."""
@@ -299,7 +294,7 @@ class RecordsStorage(Generic[RecordRowType]):
 
             return record
 
-        raise StructuredStorageError(f"Record identified by {key} does not exist")
+        raise StorageEntityNotFoundError(f"Record identified by {key} does not exist")
 
     def load_optional(self, key: str) -> Optional[RecordRowType]:
         """Retrieve the record identified by the ref id."""
@@ -328,7 +323,7 @@ class RecordsStorage(Generic[RecordRowType]):
                         if not filter_predicate.test(property_value):
                             break
                     except AttributeError:
-                        raise StructuredStorageError(
+                        raise Exception(
                             f"Record identified by {record.key} does not have property {filter_property_name}")
                 else:
                     yield record
@@ -336,38 +331,32 @@ class RecordsStorage(Generic[RecordRowType]):
         return list(_find_all())
 
     def _load(self) -> Tuple[int, List[RecordRowType]]:
-        try:
-            with self._path.open("r") as store_file:
-                data_store = yaml.safe_load(store_file)
-                LOGGER.info("Loaded storage")
+        with self._path.open("r") as store_file:
+            data_store = yaml.safe_load(store_file)
+            LOGGER.info("Loaded storage")
 
-                js.Draft6Validator(self._full_entity_schema).validate(data_store)
-                LOGGER.info("Checked storage structure")
+            js.Draft6Validator(self._full_entity_schema).validate(data_store)
+            LOGGER.info("Checked storage structure")
 
-                next_idx = data_store["next_idx"]
-                records = [self._full_storage_form_to_record(record) for record in data_store["records"]]
-                LOGGER.info("Transformed storage to live data")
+            next_idx = data_store["next_idx"]
+            records = [self._full_storage_form_to_record(record) for record in data_store["records"]]
+            LOGGER.info("Transformed storage to live data")
 
-                return next_idx, records
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+            return next_idx, records
 
     def _save(self, new_next_idx: int, new_records: List[RecordRowType]) -> None:
-        try:
-            with self._path.open("w") as store_file:
-                data_store = {
-                    "next_idx": new_next_idx,
-                    "records": [self._entity_to_full_storage_form(entity) for entity in new_records]
-                }
-                LOGGER.info("Transformed live to storage data")
+        with self._path.open("w") as store_file:
+            data_store = {
+                "next_idx": new_next_idx,
+                "records": [self._entity_to_full_storage_form(entity) for entity in new_records]
+            }
+            LOGGER.info("Transformed live to storage data")
 
-                js.Draft6Validator(self._full_entity_schema).validate(data_store)
-                LOGGER.info("Checked new storage structure")
+            js.Draft6Validator(self._full_entity_schema).validate(data_store)
+            LOGGER.info("Checked new storage structure")
 
-                yaml.dump(data_store, store_file)
-                LOGGER.info("Saved storage")
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+            yaml.dump(data_store, store_file)
+            LOGGER.info("Saved storage")
 
     def _full_storage_form_to_record(self, full_storage_form: JSONDictType) -> RecordRowType:
         record = self._protocol.storage_to_live(full_storage_form)
@@ -468,7 +457,7 @@ class EntitiesStorage(Generic[EntityRowType]):
     def create(self, entity: EntityRowType) -> EntityRowType:
         """Add a new entity to the storage and assign an id for it."""
         if entity.ref_id != BAD_REF_ID:
-            raise RuntimeError(f"Cannot insert entity with preassigned id {entity.ref_id}")
+            raise Exception(f"Cannot insert entity with preassigned id {entity.ref_id}")
 
         next_idx = self._load_metadata()
 
@@ -489,7 +478,7 @@ class EntitiesStorage(Generic[EntityRowType]):
     def remove(self, ref_id: EntityId) -> EntityRowType:
         """Remove the entity identified by the ref id."""
         if ref_id == BAD_REF_ID:
-            raise RuntimeError(f"Cannot remove entity without a good id")
+            raise Exception(f"Cannot remove entity without a good id")
 
         shard_id = self._get_shard_id(ref_id)
 
@@ -501,12 +490,12 @@ class EntitiesStorage(Generic[EntityRowType]):
                 self._save(shard_id, next_idx, entities)
                 return entity
 
-        raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
+        raise StorageEntityNotFoundError(f"Entity identified by {ref_id} does not exist")
 
     def update(self, new_entity: EntityRowType) -> EntityRowType:
         """Update an existing entity."""
         if new_entity.ref_id == BAD_REF_ID:
-            raise RuntimeError(f"Cannot update entity without a good id")
+            raise Exception(f"Cannot update entity without a good id")
 
         shard_id = self._get_shard_id(new_entity.ref_id)
 
@@ -519,7 +508,7 @@ class EntitiesStorage(Generic[EntityRowType]):
                 self._save(shard_id, next_idx, entities)
                 return new_entity
 
-        raise StructuredStorageError(f"Entity identified by {new_entity.ref_id} does not exist")
+        raise StorageEntityNotFoundError(f"Entity identified by {new_entity.ref_id} does not exist")
 
     def dump_all(self, entities: Iterable[EntityRowType]) -> None:
         """Dump and overwrite all entities."""
@@ -536,7 +525,7 @@ class EntitiesStorage(Generic[EntityRowType]):
     def load(self, ref_id: EntityId, allow_archived: bool = False) -> EntityRowType:
         """Retrieve the entity identified by the ref id."""
         if ref_id == BAD_REF_ID:
-            raise RuntimeError(f"Cannot remove entity without a good id")
+            raise Exception(f"Cannot remove entity without a good id")
 
         shard_id = self._get_shard_id(ref_id)
 
@@ -547,16 +536,16 @@ class EntitiesStorage(Generic[EntityRowType]):
                 continue
 
             if not allow_archived and entity.archived:
-                raise StructuredStorageError(f"Entity identified by {ref_id} is archived")
+                raise StorageEntityNotFoundError(f"Entity identified by {ref_id} is archived")
 
             return entity
 
-        raise StructuredStorageError(f"Entity identified by {ref_id} does not exist")
+        raise StorageEntityNotFoundError(f"Entity identified by {ref_id} does not exist")
 
     def load_optional(self, ref_id: EntityId, allow_archived: bool = False) -> Optional[EntityRowType]:
         """Retrieve the entity identified by the ref id."""
         if ref_id == BAD_REF_ID:
-            raise RuntimeError(f"Cannot remove entity without a good id")
+            raise Exception(f"Cannot remove entity without a good id")
 
         shard_id = self._get_shard_id(ref_id)
 
@@ -567,7 +556,7 @@ class EntitiesStorage(Generic[EntityRowType]):
                 continue
 
             if not allow_archived and entity.archived:
-                raise StructuredStorageError(f"Entity identified by {ref_id} is archived")
+                raise StorageEntityNotFoundError(f"Entity identified by {ref_id} is archived")
 
             return entity
 
@@ -589,7 +578,7 @@ class EntitiesStorage(Generic[EntityRowType]):
                         if not filter_predicate.test(property_value):
                             break
                     except AttributeError:
-                        raise StructuredStorageError(
+                        raise Exception(
                             f"Entity identified by {entity.ref_id} does not have property {filter_property_name}")
                 else:
                     if not allow_archived and entity.archived:
@@ -598,7 +587,7 @@ class EntitiesStorage(Generic[EntityRowType]):
                     return entity
 
         filter_expr = " & ".join(f"{v.as_operator_str(k)}" for k, v in kwargs.items() if v is not None)
-        raise StructuredStorageError(f"Entity identified by {filter_expr} is archived")
+        raise StorageEntityNotFoundError(f"Entity identified by {filter_expr} is archived")
 
     def find_all(
             self, allow_archived: bool = False, **kwargs: Optional[FindFilterPredicate]) -> List[EntityRowType]:
@@ -616,7 +605,7 @@ class EntitiesStorage(Generic[EntityRowType]):
                         if not filter_predicate.test(property_value):
                             break
                     except AttributeError:
-                        raise StructuredStorageError(
+                        raise Exception(
                             f"Entity identified by {entity.ref_id} does not have property {filter_property_name}")
                 else:
                     if not allow_archived and entity.archived:
@@ -627,68 +616,59 @@ class EntitiesStorage(Generic[EntityRowType]):
         return list(chain.from_iterable(_find_all(shard_id) for shard_id in self._get_all_shard_ids()))
 
     def _load_metadata(self) -> int:
-        try:
-            with self._get_metadata_path().open("r") as metadata_file:
-                metadata_store = yaml.safe_load(metadata_file)
-                LOGGER.info("Loaded metadata")
+        with self._get_metadata_path().open("r") as metadata_file:
+            metadata_store = yaml.safe_load(metadata_file)
+            LOGGER.info("Loaded metadata")
 
-                js.Draft6Validator(self._METADATA_SCHEMA).validate(metadata_store)
-                LOGGER.info("Checked metadata")
+            js.Draft6Validator(self._METADATA_SCHEMA).validate(metadata_store)
+            LOGGER.info("Checked metadata")
 
-                next_idx = typing.cast(int, metadata_store["next_idx"])
+            next_idx = typing.cast(int, metadata_store["next_idx"])
 
-                return next_idx
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+            return next_idx
 
     def _load(self, shard_id: int) -> Tuple[int, List[EntityRowType]]:
-        try:
-            with self._get_metadata_path().open("r") as metadata_file:
-                metadata_store = yaml.safe_load(metadata_file)
-                LOGGER.info("Loaded metadata")
+        with self._get_metadata_path().open("r") as metadata_file:
+            metadata_store = yaml.safe_load(metadata_file)
+            LOGGER.info("Loaded metadata")
 
-                js.Draft6Validator(self._METADATA_SCHEMA).validate(metadata_store)
-                LOGGER.info("Checked metadata")
+            js.Draft6Validator(self._METADATA_SCHEMA).validate(metadata_store)
+            LOGGER.info("Checked metadata")
 
-                next_idx = metadata_store["next_idx"]
+            next_idx = metadata_store["next_idx"]
 
-            with self._get_shard_path(shard_id).open("r") as shard_file:
-                shard_store = yaml.safe_load(shard_file)
-                LOGGER.info("Loaded shard")
+        with self._get_shard_path(shard_id).open("r") as shard_file:
+            shard_store = yaml.safe_load(shard_file)
+            LOGGER.info("Loaded shard")
 
-                js.Draft6Validator(self._full_entity_schema).validate(shard_store)
-                LOGGER.info("Checked shard")
-                entities = [self._full_storage_form_to_entity(entity) for entity in shard_store["entities"]]
-                LOGGER.info("Transformed storage to live data")
+            js.Draft6Validator(self._full_entity_schema).validate(shard_store)
+            LOGGER.info("Checked shard")
+            entities = [self._full_storage_form_to_entity(entity) for entity in shard_store["entities"]]
+            LOGGER.info("Transformed storage to live data")
 
-            return next_idx, entities
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+        return next_idx, entities
 
     def _save(self, shard_id: int, new_next_idx: int, new_entities: List[EntityRowType]) -> None:
         self._path.mkdir(exist_ok=True)
 
-        try:
-            with self._get_metadata_path().open("w") as metadata_file:
-                metadata = {
-                    "next_idx": new_next_idx
-                }
-                yaml.dump(metadata, metadata_file)
-                LOGGER.info("Saved metadata")
+        with self._get_metadata_path().open("w") as metadata_file:
+            metadata = {
+                "next_idx": new_next_idx
+            }
+            yaml.dump(metadata, metadata_file)
+            LOGGER.info("Saved metadata")
 
-            with self._get_shard_path(shard_id).open("w") as shard_file:
-                data_store = {
-                    "entities": [self._entity_to_full_storage_form(entity) for entity in new_entities]
-                }
-                LOGGER.info("Transformed live to storage data")
+        with self._get_shard_path(shard_id).open("w") as shard_file:
+            data_store = {
+                "entities": [self._entity_to_full_storage_form(entity) for entity in new_entities]
+            }
+            LOGGER.info("Transformed live to storage data")
 
-                js.Draft6Validator(self._full_entity_schema).validate(data_store)
-                LOGGER.info("Checked new storage structure")
+            js.Draft6Validator(self._full_entity_schema).validate(data_store)
+            LOGGER.info("Checked new storage structure")
 
-                yaml.dump(data_store, shard_file)
-                LOGGER.info("Saved storage")
-        except (IOError, ValueError, yaml.YAMLError, js.ValidationError) as error:
-            raise StructuredStorageError from error
+            yaml.dump(data_store, shard_file)
+            LOGGER.info("Saved storage")
 
     def _full_storage_form_to_entity(self, full_storage_form: JSONDictType) -> EntityRowType:
         entity = self._protocol.storage_to_live(full_storage_form)

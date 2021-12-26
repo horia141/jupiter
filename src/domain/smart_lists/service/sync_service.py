@@ -2,17 +2,15 @@
 import logging
 from typing import Final, Optional, Iterable
 
-from domain.errors import ServiceError
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
-from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
+from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, NotionSmartListNotFoundError
 from domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.sync_prefer import SyncPrefer
-from framework.base.timestamp import Timestamp
 from framework.base.entity_id import EntityId
-from repository.yaml.infra.storage import StructuredStorageError
+from framework.base.timestamp import Timestamp
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,7 +47,7 @@ class SmartListSyncService:
                 LOGGER.info("Applied local change")
             else:
                 raise Exception(f"Invalid preference {sync_prefer}")
-        except StructuredStorageError:
+        except NotionSmartListNotFoundError:
             LOGGER.info("Trying to recreate the smart list")
             self._smart_list_notion_manager.upsert_smart_list(smart_list)
 
@@ -114,7 +112,7 @@ class SmartListSyncService:
                     self._smart_list_notion_manager.save_smart_list_tag(smart_list, updated_notion_smart_list_tag)
                     LOGGER.info(f"Changed smart list tag '{notion_smart_list_tag.name}' from local")
                 else:
-                    raise ServiceError(f"Invalid preference {sync_prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random smart list tag added by someone, where they completed themselves a ref_id.
@@ -218,7 +216,7 @@ class SmartListSyncService:
                     self._smart_list_notion_manager.save_smart_list_item(smart_list, updated_notion_smart_list_item)
                     LOGGER.info(f"Changed smart list item '{notion_smart_list_item.name}' from local")
                 else:
-                    raise ServiceError(f"Invalid preference {sync_prefer}")
+                    raise Exception(f"Invalid preference {sync_prefer}")
             else:
                 # If we're here, one of two cases have happened:
                 # 1. This is some random smart list item added by someone, where they completed themselves a ref_id.

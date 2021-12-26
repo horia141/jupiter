@@ -4,12 +4,12 @@ from dataclasses import dataclass, field
 
 from domain.adate import ADate
 from domain.entity_name import EntityName
-from domain.errors import ServiceValidationError
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import BAD_REF_ID
+from framework.base.timestamp import Timestamp
+from framework.errors import InputValidationError
 from framework.event import Event
+from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -40,7 +40,7 @@ class Vacation(AggregateRoot):
             created_time: Timestamp) -> 'Vacation':
         """Create a vacation."""
         if start_date >= end_date:
-            raise ServiceValidationError("Cannot set a start date after the end date")
+            raise InputValidationError("Cannot set a start date after the end date")
 
         vacation = Vacation(
             _ref_id=BAD_REF_ID,
@@ -70,7 +70,7 @@ class Vacation(AggregateRoot):
         if self._start_date == start_date:
             return self
         if start_date >= self._end_date:
-            raise ServiceValidationError("Cannot set a start date after the end date")
+            raise InputValidationError("Cannot set a start date after the end date")
         self._start_date = start_date
         self.record_event(Vacation.Updated(start_date=UpdateAction.change_to(start_date), timestamp=modification_time))
         return self
@@ -80,7 +80,7 @@ class Vacation(AggregateRoot):
         if self._end_date == end_date:
             return self
         if end_date <= self._start_date:
-            raise ServiceValidationError("Cannot set an end date before the start date")
+            raise InputValidationError("Cannot set an end date before the start date")
         self._end_date = end_date
         self.record_event(Vacation.Updated(end_date=UpdateAction.change_to(end_date), timestamp=modification_time))
         return self

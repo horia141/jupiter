@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 
@@ -16,7 +16,7 @@ class RecurringTaskSkipRule(Value):
     def from_raw(recurring_task_skip_rule_raw: Optional[str]) -> 'RecurringTaskSkipRule':
         """Validate and clean the recurring task skip rule."""
         if not recurring_task_skip_rule_raw:
-            raise ModelValidationError("Expected the skip rule info to be non-null")
+            raise InputValidationError("Expected the skip rule info to be non-null")
 
         return RecurringTaskSkipRule(recurring_task_skip_rule_raw.strip().lower())
 

@@ -5,6 +5,10 @@ from domain.workspaces.notion_workspace import NotionWorkspace
 from domain.workspaces.workspace import Workspace
 
 
+class NotionWorkspaceNotFoundError(Exception):
+    """The Notion-side workspace was not found."""
+
+
 class WorkspaceNotionManager(abc.ABC):
     """The centralised point for workspace work on Notion-side."""
 

@@ -3,11 +3,9 @@ import logging
 from typing import Final
 
 from domain.vacations.infra.vacation_engine import VacationEngine
-from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
-from remote.notion.common import CollectionEntityNotFound
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,5 +29,5 @@ class VacationRemoveUseCase(UseCase[EntityId, None]):
 
         try:
             self._notion_manager.remove_vacation(args)
-        except CollectionEntityNotFound:
+        except NotionVacationNotFoundError:
             LOGGER.info("Skipping archival on Notion side because vacation was not found")

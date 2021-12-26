@@ -5,9 +5,9 @@ from typing import Optional, Final, List
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
-from domain.errors import ServiceError
 from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.infra.metric_repository import MetricAlreadyExistsError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_key import MetricKey
 from domain.metrics.metric_unit import MetricUnit
@@ -19,6 +19,7 @@ from domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
+from framework.errors import InputValidationError
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
@@ -62,7 +63,7 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         if args.collection_period is None and args.collection_project_key is not None:
-            raise ServiceError("Cannot specify a collection project if no period is given")
+            raise InputValidationError("Cannot specify a collection project if no period is given")
 
         collection_params = None
         if args.collection_period is not None:
@@ -85,8 +86,11 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
                 due_at_day=args.collection_due_at_day,
                 due_at_month=args.collection_due_at_month)
 
-        metric = Metric.new_metric(
-            args.key, args.name, collection_params, args.metric_unit, self._time_provider.get_current_time())
-        with self._metric_engine.get_unit_of_work() as metric_uow:
-            metric = metric_uow.metric_repository.create(metric)
-        self._notion_manager.upsert_metric(metric)
+        try:
+            metric = Metric.new_metric(
+                args.key, args.name, collection_params, args.metric_unit, self._time_provider.get_current_time())
+            with self._metric_engine.get_unit_of_work() as metric_uow:
+                metric = metric_uow.metric_repository.create(metric)
+            self._notion_manager.upsert_metric(metric)
+        except MetricAlreadyExistsError:
+            raise InputValidationError(f"Metric with key {metric.key} already exists")

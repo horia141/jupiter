@@ -11,6 +11,14 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 
 
+class NotionMetricNotFoundError(Exception):
+    """Error raised when a Notion-side metric does not exist (but should)."""
+
+
+class NotionMetricEntryNotFoundError(Exception):
+    """Error raised when a Notion-side metric entry does not exist (but should)."""
+
+
 class MetricNotionManager(abc.ABC):
     """A manager of Notion-side metrics."""
 

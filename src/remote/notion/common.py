@@ -8,18 +8,6 @@ from framework.base.notion_id import NotionId
 NotionLockKey = NewType("NotionLockKey", str)
 
 
-class CollectionError(Exception):
-    """Exception for Notion interactions."""
-
-
-class CollectionEntityAlreadyExists(CollectionError):
-    """Exception for when a particular entity already exists but should not."""
-
-
-class CollectionEntityNotFound(CollectionError):
-    """Exception for when a particular entity is not found."""
-
-
 @dataclass()
 class NotionPageLink:
     """A descriptor for a Notion page."""

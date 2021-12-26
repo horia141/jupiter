@@ -2,10 +2,9 @@
 import logging
 from typing import Final
 
-import remote
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
-from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, NotionInboxTaskNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -34,5 +33,5 @@ class InboxTaskRemoveService:
         # Apply Notion changes
         try:
             self._inbox_task_notion_manager.remove_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
-        except remote.notion.common.CollectionEntityNotFound:
+        except NotionInboxTaskNotFoundError:
             LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")

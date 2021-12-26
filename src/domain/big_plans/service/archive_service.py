@@ -2,12 +2,11 @@
 import logging
 from typing import Final
 
-import remote
 from domain.big_plans.big_plan import BigPlan
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
-from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
+from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
-from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, NotionInboxTaskNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ class BigPlanArchiveService:
 
         try:
             self._big_plan_notion_manager.remove_big_plan(big_plan.project_ref_id, big_plan.ref_id)
-        except remote.notion.common.CollectionEntityNotFound:
+        except NotionBigPlanNotFoundError:
             # If we can't find this locally it means it's already gone
             LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
@@ -62,6 +61,6 @@ class BigPlanArchiveService:
         for inbox_task in inbox_tasks_to_archive:
             try:
                 self._inbox_task_notion_manager.remove_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
-            except remote.notion.common.CollectionEntityNotFound:
+            except NotionInboxTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because inbox task was not found")

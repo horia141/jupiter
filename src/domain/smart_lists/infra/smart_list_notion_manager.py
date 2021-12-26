@@ -14,6 +14,18 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 
 
+class NotionSmartListNotFoundError(Exception):
+    """Exception raised when a Notion smart list was not found."""
+
+
+class NotionSmartListTagNotFoundError(Exception):
+    """Exception raised when a Notion smart list tag was not found."""
+
+
+class NotionSmartListItemNotFoundError(Exception):
+    """Exception raised when a Notion smart list item was not found."""
+
+
 class SmartListNotionManager(abc.ABC):
     """A manager of Notion-side smart lists."""
 

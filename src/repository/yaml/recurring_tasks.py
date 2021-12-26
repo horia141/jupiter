@@ -20,15 +20,15 @@ from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from domain.recurring_task_type import RecurringTaskType
-from domain.recurring_tasks.infra.recurring_task_collection_repository import RecurringTaskCollectionRepository
+from domain.recurring_tasks.infra.recurring_task_collection_repository import RecurringTaskCollectionRepository, \
+    RecurringTaskCollectionAlreadyExistsError, RecurringTaskCollectionNotFoundError
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine, RecurringTaskUnitOfWork
-from domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository
+from domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository, RecurringTaskNotFoundError
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
-from framework.errors import RepositoryError
-from framework.json import JSONDictType
 from framework.base.entity_id import EntityId, BAD_REF_ID
-from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq
+from framework.json import JSONDictType
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -75,8 +75,8 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
             self._storage.find_all(allow_archived=True, project_ref_id=Eq(recurring_task_collection.project_ref_id))
 
         if len(recurring_task_collection_rows) > 0:
-            raise RepositoryError(
-                f"Inbox task collection for project ='{recurring_task_collection.project_ref_id}' already exists")
+            raise RecurringTaskCollectionAlreadyExistsError(
+                f"Recurring task collection for project ='{recurring_task_collection.project_ref_id}' already exists")
 
         new_recurring_task_collection_row = self._storage.create(_RecurringTaskCollectionRow(
             archived=recurring_task_collection.archived,
@@ -86,9 +86,13 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
 
     def load_by_project(self, project_ref_id: EntityId) -> RecurringTaskCollection:
         """Find an recurring task collection by project ref id."""
-        recurring_task_collection_row = \
-            self._storage.find_first(allow_archived=False, project_ref_id=Eq(project_ref_id))
-        return self._row_to_entity(recurring_task_collection_row)
+        try:
+            recurring_task_collection_row = \
+                self._storage.find_first(allow_archived=False, project_ref_id=Eq(project_ref_id))
+            return self._row_to_entity(recurring_task_collection_row)
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskCollectionNotFoundError(
+                f"Recurring task collection for project with id {project_ref_id} does not exist") from err
 
     def find_all(
             self, allow_archived: bool = False,
@@ -103,7 +107,11 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
 
     def remove(self, ref_id: EntityId) -> RecurringTaskCollection:
         """Hard remove an recurring task collection - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskCollectionNotFoundError(
+                f"Recurring task collection with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -229,13 +237,21 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
 
     def save(self, recurring_task: RecurringTask) -> RecurringTask:
         """Save a recurring task - it should already exist."""
-        recurring_task_row = self._entity_to_row(recurring_task)
-        recurring_task_row = self._storage.update(recurring_task_row)
-        return self._row_to_entity(recurring_task_row)
+        try:
+            recurring_task_row = self._entity_to_row(recurring_task)
+            recurring_task_row = self._storage.update(recurring_task_row)
+            return self._row_to_entity(recurring_task_row)
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskNotFoundError(
+                f"Recurring task with id {recurring_task.ref_id} does not exist") from err
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> RecurringTask:
         """Load a recurring task by id."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskNotFoundError(
+                f"Recurring task with id {ref_id} does not exist") from err
 
     def find_all(
             self,
@@ -250,7 +266,11 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
 
     def remove(self, ref_id: EntityId) -> RecurringTask:
         """Hard remove a recurring task - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id))
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskNotFoundError(
+                f"Recurring task with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:

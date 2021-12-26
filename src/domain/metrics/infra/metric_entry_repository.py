@@ -7,6 +7,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class MetricEntryNotFoundError(Exception):
+    """Error raised when a metric entry does not exist."""
+
+
 class MetricEntryRepository(Repository, abc.ABC):
     """A repository of metric entries."""
 

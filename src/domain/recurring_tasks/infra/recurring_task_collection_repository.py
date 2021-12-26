@@ -7,6 +7,14 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class RecurringTaskCollectionAlreadyExistsError(Exception):
+    """Error raised when a recurring task collection with the given key already exists."""
+
+
+class RecurringTaskCollectionNotFoundError(Exception):
+    """Error raised when a recurring task collection is not found."""
+
+
 class RecurringTaskCollectionRepository(Repository, abc.ABC):
     """A repository of recurring task collections."""
 

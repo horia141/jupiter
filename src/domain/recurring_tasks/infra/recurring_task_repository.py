@@ -8,6 +8,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class RecurringTaskNotFoundError(Exception):
+    """Error raised when a recurring task is not found."""
+
+
 class RecurringTaskRepository(Repository, abc.ABC):
     """A repository of recurring tasks."""
 

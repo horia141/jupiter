@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final, Optional, Dict, Tuple
 
 from domain.recurring_task_period import RecurringTaskPeriod
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 _RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
@@ -25,12 +25,12 @@ class RecurringTaskDueAtDay(Value):
     def from_raw(period: RecurringTaskPeriod, recurring_task_due_at_day_raw: Optional[int]) -> 'RecurringTaskDueAtDay':
         """Validate and clean the recurring task due at day info."""
         if not recurring_task_due_at_day_raw:
-            raise ModelValidationError("Expected the due day info to be non-null")
+            raise InputValidationError("Expected the due day info to be non-null")
 
         bounds = _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period]
 
         if recurring_task_due_at_day_raw < bounds[0] or recurring_task_due_at_day_raw > bounds[1]:
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected the due day info for {period} period to be a value between {bounds[0]} and {bounds[1]}")
 
         return RecurringTaskDueAtDay(recurring_task_due_at_day_raw)

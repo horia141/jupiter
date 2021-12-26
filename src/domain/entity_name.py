@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Pattern, Final, Optional, TypeVar, Type
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
@@ -24,15 +24,15 @@ class EntityName(Value):
     def from_raw(cls: Type[_EntityNameType], entity_name_raw: Optional[str]) -> _EntityNameType:
         """Validate and clean a entity name."""
         if not entity_name_raw:
-            raise ModelValidationError("Expected entity name to be non-null")
+            raise InputValidationError("Expected entity name to be non-null")
 
         entity_name: str = " ".join(word for word in entity_name_raw.strip().split(" ") if len(word) > 0)
 
         if len(entity_name) == 0:
-            raise ModelValidationError("Expected entity name to be non-empty")
+            raise InputValidationError("Expected entity name to be non-empty")
 
         if not _ENTITY_NAME_RE.match(entity_name):
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected entity id '{entity_name_raw}' to match '{_ENTITY_NAME_RE.pattern}")
 
         return cls(entity_name)

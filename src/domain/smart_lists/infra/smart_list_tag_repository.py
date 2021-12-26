@@ -8,6 +8,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class SmartListTagNotFoundError(Exception):
+    """Error raised when a smart list tag is not found."""
+
+
 class SmartListTagRepository(Repository, abc.ABC):
     """A repository of smart list tags."""
 

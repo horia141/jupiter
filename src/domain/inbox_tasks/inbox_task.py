@@ -9,17 +9,17 @@ from domain.adate import ADate
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
-from domain.errors import ServiceValidationError
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
-from framework.base.timestamp import Timestamp
-from framework.update_action import UpdateAction
 from framework.aggregate_root import AggregateRoot
 from framework.base.entity_id import EntityId, BAD_REF_ID
+from framework.base.timestamp import Timestamp
+from framework.errors import InputValidationError
 from framework.event import Event2
+from framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -246,14 +246,13 @@ class InboxTask(AggregateRoot):
             big_plan_name: Optional[EntityName], modification_time: Timestamp) -> 'InboxTask':
         """Associate an inbox task with a big plan."""
         if big_plan_ref_id is None and big_plan_name is not None:
-            raise ServiceValidationError(f"Should have null name for null big plan for task with id='{self.ref_id}'")
+            raise InputValidationError(f"Should have null name for null big plan for task with id='{self.ref_id}'")
         if big_plan_ref_id is not None and big_plan_name is None:
-            raise ServiceValidationError(
+            raise InputValidationError(
                 f"Should have non-null name for non-null big plan for task with id='{self.ref_id}'")
 
         if not self._source.allow_user_changes:
-            raise ServiceValidationError(
-                f"Cannot modify name of task created from recurring task {self._name}")
+            raise Exception(f"Cannot modify name of task created from recurring task {self._name}")
 
         self._source = InboxTaskSource.BIG_PLAN
         self._big_plan_ref_id = big_plan_ref_id
@@ -263,11 +262,9 @@ class InboxTask(AggregateRoot):
     def update_link_to_big_plan(self, big_plan_ref_id: EntityId, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a big plan."""
         if self._source is not InboxTaskSource.BIG_PLAN:
-            raise ServiceValidationError(
-                f"Cannot reassociate a task which isn't a big plan one '{self._name}'")
+            raise InputValidationError(f"Cannot reassociate a task which isn't a big plan one '{self._name}'")
         if self._big_plan_ref_id != big_plan_ref_id:
-            raise ServiceValidationError(
-                f"Cannot reassociate a task which is not with the big plan '{self._name}'")
+            raise InputValidationError(f"Cannot reassociate a task which is not with the big plan '{self._name}'")
 
         self.record_event(Event2.make_event_from_frame_args(InboxTask.Updated, modification_time))
         return self
@@ -277,7 +274,7 @@ class InboxTask(AggregateRoot):
                                       difficulty: Optional[Difficulty], modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a recurring task."""
         if self._source is not InboxTaskSource.RECURRING_TASK:
-            raise ServiceValidationError(
+            raise Exception(
                 f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
         self._name = name
         self._actionable_date = actionable_date
@@ -294,7 +291,7 @@ class InboxTask(AggregateRoot):
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a metric."""
         if self._source is not InboxTaskSource.METRIC:
-            raise ServiceValidationError(
+            raise Exception(
                 f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
         self._name = self._build_name_for_collection_task(name)
         self._actionable_date = actionable_date
@@ -310,7 +307,7 @@ class InboxTask(AggregateRoot):
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a person."""
         if self._source is not InboxTaskSource.PERSON_CATCH_UP:
-            raise ServiceValidationError(
+            raise Exception(
                 f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
         self._name = self._build_name_for_catch_up_task(name)
         self._actionable_date = actionable_date
@@ -326,7 +323,7 @@ class InboxTask(AggregateRoot):
             due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a person."""
         if self._source is not InboxTaskSource.PERSON_BIRTHDAY:
-            raise ServiceValidationError(
+            raise Exception(
                 f"Cannot associate a task which is not recurring with a recurring one '{self._name}'")
         self._name = self._build_name_for_birthday_task(name)
         self._actionable_date = due_time.subtract_days(preparation_days_cnt)
@@ -338,7 +335,7 @@ class InboxTask(AggregateRoot):
     def change_name(self, name: EntityName, modification_time: Timestamp) -> 'InboxTask':
         """Change the name of the inbox task."""
         if not self._source.allow_user_changes:
-            raise ServiceValidationError(
+            raise Exception(
                 f"Cannot modify name of task created from recurring task {self._name}")
         if self._name == name:
             return self
@@ -408,8 +405,7 @@ class InboxTask(AggregateRoot):
     def change_eisen(self, eisen: List[Eisen], modification_time: Timestamp) -> 'InboxTask':
         """Change the eisen status of the inbox task."""
         if not self._source.allow_user_changes:
-            raise ServiceValidationError(
-                f"Cannot modify name of task created from recurring task {self._name}")
+            raise Exception(f"Cannot modify name of task created from recurring task {self._name}")
         if set(self._eisen) == set(eisen):
             return self
         self._eisen = eisen
@@ -419,8 +415,7 @@ class InboxTask(AggregateRoot):
     def change_difficulty(self, difficulty: Optional[Difficulty], modification_time: Timestamp) -> 'InboxTask':
         """Change the difficulty of the inbox task."""
         if not self._source.allow_user_changes:
-            raise ServiceValidationError(
-                f"Cannot modify name of task created from recurring task {self._name}")
+            raise Exception(f"Cannot modify name of task created from recurring task {self._name}")
         if self._difficulty == difficulty:
             return self
         self._difficulty = difficulty
@@ -565,5 +560,5 @@ class InboxTask(AggregateRoot):
             pendulum.DateTime(due_date.year, due_date.month, due_date.day, tzinfo=UTC)
 
         if actionable_date_ts > due_date_ts:
-            raise ServiceValidationError(
+            raise Exception(
                 f"The actionable date {actionable_date} should be before the due date {due_date}")

@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -23,12 +23,12 @@ class RecurringTaskPeriod(enum.Enum):
     def from_raw(recurring_task_period_raw: Optional[str]) -> 'RecurringTaskPeriod':
         """Validate and clean the recurring task period."""
         if not recurring_task_period_raw:
-            raise ModelValidationError("Expected recurring task period to be non-null")
+            raise InputValidationError("Expected recurring task period to be non-null")
 
         recurring_task_period_str: str = recurring_task_period_raw.strip().lower()
 
         if recurring_task_period_str not in RecurringTaskPeriod.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected recurring task period '{recurring_task_period_raw}' to be " +
                 f"one of '{','.join(RecurringTaskPeriod.all_values())}'")
 

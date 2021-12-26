@@ -8,7 +8,6 @@ from domain import schedules
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
-from domain.errors import ServiceError
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -26,6 +25,7 @@ from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from framework.base.timestamp import Timestamp
+from framework.errors import InputValidationError
 from framework.update_action import UpdateAction
 from framework.use_case import UseCase
 from utils.global_properties import GlobalProperties
@@ -112,7 +112,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     elif metric.collection_params is not None:
                         new_collection_project_ref_id = metric.collection_params.project_ref_id
                     else:
-                        raise ServiceError("Cannot specify a collection period and no project")
+                        raise InputValidationError("Cannot specify a collection period and no project")
 
                     new_collection_eisen = []
                     if args.collection_eisen.should_change:

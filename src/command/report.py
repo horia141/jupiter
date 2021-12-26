@@ -9,7 +9,7 @@ from domain.projects.project_key import ProjectKey
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
 from framework.base.timestamp import Timestamp
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.base.entity_id import EntityId
 from use_cases.report import ReportUseCase
 from utils.global_properties import GlobalProperties
@@ -321,7 +321,7 @@ class Report(command.Command):
         elif period == RecurringTaskPeriod.WEEKLY:
             return RecurringTaskPeriod.DAILY
         else:
-            raise ModelValidationError("Cannot breakdown daily by period")
+            raise InputValidationError("Cannot breakdown daily by period")
 
     @staticmethod
     def _check_period_against_breakdown_period(
@@ -329,5 +329,5 @@ class Report(command.Command):
         breakdown_period_idx = [v.value for v in RecurringTaskPeriod].index(breakdown_period.value)
         period_idx = [v.value for v in RecurringTaskPeriod].index(period.value)
         if breakdown_period_idx >= period_idx:
-            raise ModelValidationError(f"Cannot breakdown {period.for_notion()} with {breakdown_period.for_notion()}")
+            raise InputValidationError(f"Cannot breakdown {period.for_notion()} with {breakdown_period.for_notion()}")
         return breakdown_period

@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -24,12 +24,12 @@ class SyncTarget(enum.Enum):
     def from_raw(sync_target_raw: Optional[str]) -> 'SyncTarget':
         """Validate and clean the big plan status."""
         if not sync_target_raw:
-            raise ModelValidationError("Expected sync target to be non-null")
+            raise InputValidationError("Expected sync target to be non-null")
 
         sync_target_str: str = sync_target_raw.strip().lower()
 
         if sync_target_str not in SyncTarget.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected sync prefer '{sync_target_raw}' to be one of '{','.join(SyncTarget.all_values())}'")
 
         return SyncTarget(sync_target_str)

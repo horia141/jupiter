@@ -7,6 +7,14 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class BigPlanCollectionAlreadyExistsError(Exception):
+    """Error raised when a big plan collection already exists."""
+
+
+class BigPlanCollectionNotFoundError(Exception):
+    """Error raised when a big plan collection is not found."""
+
+
 class BigPlanCollectionRepository(Repository, abc.ABC):
     """A repository of big plan collections."""
 

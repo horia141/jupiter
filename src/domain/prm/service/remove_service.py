@@ -6,9 +6,8 @@ from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from domain.inbox_tasks.service.remove_service import InboxTaskRemoveService
 from domain.prm.infra.prm_engine import PrmEngine
-from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from domain.prm.person import Person
-from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -51,5 +50,5 @@ class PersonRemoveService:
 
         try:
             self._prm_notion_manager.remove_person(person.ref_id)
-        except CollectionEntityNotFound:
+        except NotionPersonNotFoundError:
             LOGGER.warning("Skipping removal on Notion side because person was not found")

@@ -7,6 +7,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class SmartListItemNotFoundError(Exception):
+    """Error raised when a smart list item is not found."""
+
+
 class SmartListItemRepository(Repository, abc.ABC):
     """A repository of smart list entries."""
 

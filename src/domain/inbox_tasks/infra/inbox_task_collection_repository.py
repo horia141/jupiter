@@ -7,6 +7,14 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class InboxTaskCollectionAlreadyExistsError(Exception):
+    """Error raised when trying to create an inbox task collection and it already exists."""
+
+
+class InboxTaskCollectionNotFoundError(Exception):
+    """Error raised when an inbox task collection does not exist."""
+
+
 class InboxTaskCollectionRepository(Repository, abc.ABC):
     """A repository of inbox task collections."""
 

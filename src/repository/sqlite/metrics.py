@@ -19,8 +19,8 @@ from domain.difficulty import Difficulty
 from domain.eisen import Eisen
 from domain.entity_name import EntityName
 from domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
-from domain.metrics.infra.metric_entry_repository import MetricEntryRepository
-from domain.metrics.infra.metric_repository import MetricRepository
+from domain.metrics.infra.metric_entry_repository import MetricEntryRepository, MetricEntryNotFoundError
+from domain.metrics.infra.metric_repository import MetricRepository, MetricAlreadyExistsError, MetricNotFoundError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.metric_key import MetricKey
@@ -32,9 +32,7 @@ from domain.recurring_task_gen_params import RecurringTaskGenParams
 from domain.recurring_task_period import RecurringTaskPeriod
 from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.base.timestamp import Timestamp
-from framework.errors import RepositoryError
 from repository.sqlite.infra.events import build_event_table, upsert_events
-from repository.yaml.infra.storage import StructuredStorageError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -102,14 +100,14 @@ class SqliteMetricRepository(MetricRepository):
                 if metric.collection_params and metric.collection_params.due_at_month else None,
                 metric_unit=metric.metric_unit.value if metric.metric_unit else None))
         except IntegrityError as err:
-            raise RepositoryError(f"Metric with key='{metric.key}' already exists") from err
+            raise MetricAlreadyExistsError(f"Metric with key {metric.key} already exists") from err
         metric.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
     def save(self, metric: Metric) -> Metric:
         """Save a metric - it should already exist."""
-        self._connection.execute(
+        result = self._connection.execute(
             update(self._metric_table)
             .where(self._metric_table.c.ref_id == metric.ref_id.as_int())
             .values(
@@ -136,6 +134,8 @@ class SqliteMetricRepository(MetricRepository):
                 collection_due_at_month=metric.collection_params.due_at_month.as_int()
                 if metric.collection_params and metric.collection_params.due_at_month else None,
                 metric_unit=metric.metric_unit.value if metric.metric_unit else None))
+        if result.rowcount == 0:
+            raise MetricNotFoundError(f"Metric with key {metric.key} does not exist")
         upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
@@ -144,7 +144,7 @@ class SqliteMetricRepository(MetricRepository):
         query_stmt = select(self._metric_table).where(self._metric_table.c.the_key == str(key))
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise StructuredStorageError(f"Metric identified by key={key} does not exist or is archived")
+            raise MetricNotFoundError(f"Metric with key {key} does not exist")
         return self._row_to_entity(result)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Metric:
@@ -154,7 +154,7 @@ class SqliteMetricRepository(MetricRepository):
             query_stmt = query_stmt.where(self._metric_table.c.archived.is_(False))
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise StructuredStorageError(f"Metric identified by {ref_id} does not exist or is archived")
+            raise MetricNotFoundError(f"Metric with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
     def find_all(
@@ -178,6 +178,8 @@ class SqliteMetricRepository(MetricRepository):
         """Hard remove a metric - an irreversible operation."""
         query_stmt = select(self._metric_table).where(self._metric_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
+        if result is None:
+            raise MetricNotFoundError(f"Metric with id {ref_id} does not exist")
         self._connection.execute(delete(self._metric_table).where(self._metric_table.c.ref_id == ref_id.as_int()))
         return self._row_to_entity(result)
 
@@ -257,7 +259,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
 
     def save(self, metric_entry: MetricEntry) -> MetricEntry:
         """Save a metric entry - it should already exist."""
-        self._connection.execute(
+        result = self._connection.execute(
             update(self._metric_entry_table)
             .where(self._metric_entry_table.c.ref_id == metric_entry.ref_id.as_int())
             .values(
@@ -269,6 +271,8 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
                 collection_time=metric_entry.collection_time.to_db(),
                 value=metric_entry.value,
                 notes=metric_entry.notes))
+        if result.rowcount == 0:
+            raise MetricEntryNotFoundError(f"Metric entry with id {metric_entry.ref_id} does not exist")
         upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
         return metric_entry
 
@@ -279,7 +283,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise StructuredStorageError(f"Metric entry identified by {ref_id} does not exist or is archived")
+            raise MetricEntryNotFoundError(f"Metric entry with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
     def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> List[MetricEntry]:
@@ -312,6 +316,8 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
         """Hard remove a metric entry - an irreversible operation."""
         query_stmt = select(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
+        if result is None:
+            raise MetricEntryNotFoundError(f"Metric entry with id {ref_id} does not exist")
         self._connection.execute(
             delete(self._metric_entry_table).where(self._metric_entry_table.c.ref_id == ref_id.as_int()))
         return self._row_to_entity(result)

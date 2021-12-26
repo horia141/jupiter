@@ -10,20 +10,16 @@ from typing import Final, ClassVar, Optional
 from domain.entity_name import EntityName
 from domain.timezone import Timezone
 from domain.workspaces.infra.workspace_engine import WorkspaceUnitOfWork, WorkspaceEngine
-from domain.workspaces.infra.workspace_repository import WorkspaceRepository
+from domain.workspaces.infra.workspace_repository import WorkspaceRepository, WorkspaceNotFoundError, \
+    WorkspaceAlreadyExistsError
 from domain.workspaces.workspace import Workspace
 from framework.base.entity_id import EntityId, BAD_REF_ID
 from framework.base.timestamp import Timestamp
-from framework.errors import RepositoryError
 from framework.json import JSONDictType
 from repository.yaml.infra.storage import StructuredIndividualStorage
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
-
-
-class MissingWorkspaceRepositoryError(RepositoryError):
-    """Error raised when there isn't a workspace defined."""
 
 
 @dataclass()
@@ -55,6 +51,9 @@ class YamlWorkspaceRepository(WorkspaceRepository):
 
     def create(self, workspace: Workspace) -> Workspace:
         """Create a new workspace."""
+        workspace_row = self._structured_storage.load_optional()
+        if workspace_row is not None:
+            raise WorkspaceAlreadyExistsError("A workspace already exists")
         new_workspace_row = _WorkspaceRow(
             name=workspace.name,
             timezone=workspace.timezone,
@@ -79,7 +78,7 @@ class YamlWorkspaceRepository(WorkspaceRepository):
         """Find the workspace."""
         workspace_row = self._structured_storage.load_optional()
         if workspace_row is None:
-            raise MissingWorkspaceRepositoryError()
+            raise WorkspaceNotFoundError(f"The workspace does not exist")
         return Workspace(
             _ref_id=BAD_REF_ID,
             _archived=False,

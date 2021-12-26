@@ -3,12 +3,10 @@ import logging
 from typing import Final
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
-from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
+from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, NotionSmartListNotFoundError
 from domain.smart_lists.smart_list_key import SmartListKey
 from framework.use_case import UseCase
-from remote.notion.common import CollectionEntityNotFound
 from utils.time_provider import TimeProvider
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,5 +46,5 @@ class SmartListArchiveUseCase(UseCase[SmartListKey, None]):
         try:
             self._notion_manager.remove_smart_list(smart_list)
             LOGGER.info("Applied Notion changes")
-        except CollectionEntityNotFound:
+        except NotionSmartListNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

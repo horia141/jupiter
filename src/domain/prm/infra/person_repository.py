@@ -7,6 +7,14 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class PersonAlreadyExistsError(Exception):
+    """Error raised when a person already exists."""
+
+
+class PersonNotFoundError(Exception):
+    """Error raised when a person is not found."""
+
+
 class PersonRepository(Repository, abc.ABC):
     """A repository of person."""
 

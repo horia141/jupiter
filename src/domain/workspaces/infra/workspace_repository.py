@@ -4,6 +4,14 @@ import abc
 from domain.workspaces.workspace import Workspace
 
 
+class WorkspaceAlreadyExistsError(Exception):
+    """Error raised when a workspace already exists."""
+
+
+class WorkspaceNotFoundError(Exception):
+    """Error raised when a workspace is not found."""
+
+
 class WorkspaceRepository(abc.ABC):
     """A repository for workspaces."""
 

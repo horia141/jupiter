@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Final, Pattern, Optional, TypeVar, Type
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
@@ -24,15 +24,15 @@ class TagName(Value):
     def from_raw(cls: Type[_TagNameType], tag_raw: Optional[str]) -> _TagNameType:
         """Validate and clean an tag."""
         if not tag_raw:
-            raise ModelValidationError("Expected tag to be non-null")
+            raise InputValidationError("Expected tag to be non-null")
 
         tag: str = " ".join(word for word in tag_raw.strip().split(" ") if len(word) > 0)
 
         if len(tag) == 0:
-            raise ModelValidationError("Expected tag to be non-empty")
+            raise InputValidationError("Expected tag to be non-empty")
 
         if not _TAG_RE.match(tag):
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected entity id '{tag_raw}' to match '{_TAG_RE.pattern}'")
 
         return cls(tag)

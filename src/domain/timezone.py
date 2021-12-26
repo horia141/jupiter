@@ -6,7 +6,7 @@ from typing import Optional
 import pendulum
 from pendulum.tz.zoneinfo.exceptions import InvalidTimezone
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 
@@ -21,14 +21,14 @@ class Timezone(Value):
     def from_raw(timezone_raw: Optional[str]) -> 'Timezone':
         """Validate and clean a timezone."""
         if not timezone_raw:
-            raise ModelValidationError("Expected timezone to be non-null")
+            raise InputValidationError("Expected timezone to be non-null")
 
         timezone_str: str = timezone_raw.strip()
 
         try:
             return Timezone(pendulum.timezone(timezone_str).name)
         except InvalidTimezone as err:
-            raise ModelValidationError(f"Invalid timezone '{timezone_raw}'") from err
+            raise InputValidationError(f"Invalid timezone '{timezone_raw}'") from err
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""

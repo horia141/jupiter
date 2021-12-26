@@ -12,15 +12,15 @@ from domain.adate import ADate
 from domain.big_plans.big_plan import BigPlan
 from domain.big_plans.big_plan_collection import BigPlanCollection
 from domain.big_plans.big_plan_status import BigPlanStatus
-from domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository
+from domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository, \
+    BigPlanCollectionAlreadyExistsError, BigPlanCollectionNotFoundError
 from domain.big_plans.infra.big_plan_engine import BigPlanUnitOfWork, BigPlanEngine
-from domain.big_plans.infra.big_plan_repository import BigPlanRepository
+from domain.big_plans.infra.big_plan_repository import BigPlanRepository, BigPlanNotFoundError
 from domain.entity_name import EntityName
-from framework.base.timestamp import Timestamp
-from framework.errors import RepositoryError
-from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq
+from framework.base.timestamp import Timestamp
+from framework.json import JSONDictType
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -67,8 +67,8 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
             self._storage.find_all(allow_archived=True, project_ref_id=Eq(big_plan_collection.project_ref_id))
 
         if len(big_plan_collection_rows) > 0:
-            raise RepositoryError(
-                f"Inbox task collection for project ='{big_plan_collection.project_ref_id}' already exists")
+            raise BigPlanCollectionAlreadyExistsError(
+                f"Big plan collection for project ='{big_plan_collection.project_ref_id}' already exists")
 
         new_big_plan_collection_row = self._storage.create(_BigPlanCollectionRow(
             archived=big_plan_collection.archived,
@@ -78,8 +78,12 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
 
     def load_by_project(self, project_ref_id: EntityId) -> BigPlanCollection:
         """Find an big plan collection by project ref id."""
-        big_plan_collection_row = \
-            self._storage.find_first(allow_archived=False, project_ref_id=Eq(project_ref_id))
+        try:
+            big_plan_collection_row = \
+                self._storage.find_first(allow_archived=False, project_ref_id=Eq(project_ref_id))
+        except StorageEntityNotFoundError as err:
+            raise BigPlanCollectionNotFoundError(
+                f"Big plan collection for project = '{project_ref_id}' was not found") from err
         return self._row_to_entity(big_plan_collection_row)
 
     def find_all(
@@ -95,7 +99,11 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
 
     def remove(self, ref_id: EntityId) -> BigPlanCollection:
         """Hard remove an big plan collection - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        except StorageEntityNotFoundError as err:
+            raise BigPlanCollectionNotFoundError(
+                f"Big plan collection with id = '{ref_id}' was not found") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -205,12 +213,18 @@ class YamlBigPlanRepository(BigPlanRepository):
     def save(self, big_plan: BigPlan) -> BigPlan:
         """Save a big plan - it should already exist."""
         big_plan_row = self._entity_to_row(big_plan)
-        big_plan_row = self._storage.update(big_plan_row)
+        try:
+            big_plan_row = self._storage.update(big_plan_row)
+        except StorageEntityNotFoundError as err:
+            raise BigPlanNotFoundError(f"Big plan with id {big_plan.ref_id} was not found") from err
         return self._row_to_entity(big_plan_row)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BigPlan:
         """Load a big plan by id."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise BigPlanNotFoundError(f"Big plan with id {ref_id} was not found") from err
 
     def find_all(
             self,
@@ -225,7 +239,10 @@ class YamlBigPlanRepository(BigPlanRepository):
 
     def remove(self, ref_id: EntityId) -> BigPlan:
         """Hard remove a big plan - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id))
+        except StorageEntityNotFoundError as err:
+            raise BigPlanNotFoundError(f"Big plan with id {ref_id} was not found") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:

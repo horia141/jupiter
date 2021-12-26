@@ -8,6 +8,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class BigPlanNotFoundError(Exception):
+    """Error raised when a big plan was not found."""
+
+
 class BigPlanRepository(Repository, abc.ABC):
     """A repository of big plans."""
 

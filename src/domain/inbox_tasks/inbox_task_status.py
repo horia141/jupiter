@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Optional, Iterable
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -54,12 +54,12 @@ class InboxTaskStatus(enum.Enum):
     def from_raw(inbox_task_status_raw: Optional[str]) -> 'InboxTaskStatus':
         """Validate and clean the big plan status."""
         if not inbox_task_status_raw:
-            raise ModelValidationError("Expected inbox task status to be non-null")
+            raise InputValidationError("Expected inbox task status to be non-null")
 
         inbox_task_status_str: str = '-'.join(inbox_task_status_raw.strip().lower().split(' '))
 
         if inbox_task_status_str not in InboxTaskStatus.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected inbox task status '{inbox_task_status_raw}' to be " +
                 f"one of '{','.join(InboxTaskStatus.all_values())}'")
 

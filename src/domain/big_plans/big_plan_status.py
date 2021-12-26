@@ -3,7 +3,7 @@ import enum
 from functools import lru_cache
 from typing import Iterable, Optional
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 
 
 @enum.unique
@@ -53,12 +53,12 @@ class BigPlanStatus(enum.Enum):
     def from_raw(big_plan_status_raw: Optional[str]) -> 'BigPlanStatus':
         """Validate and clean the big plan status."""
         if not big_plan_status_raw:
-            raise ModelValidationError("Expected big plan status to be non-null")
+            raise InputValidationError("Expected big plan status to be non-null")
 
         big_plan_status_str: str = '-'.join(big_plan_status_raw.strip().lower().split(' '))
 
         if big_plan_status_str not in BigPlanStatus.all_values():
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected big plan status '{big_plan_status_raw}' to be " +
                 f"one of '{','.join(BigPlanStatus.all_values())}'")
 

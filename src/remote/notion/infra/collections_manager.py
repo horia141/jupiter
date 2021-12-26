@@ -2,26 +2,39 @@
 import dataclasses
 import hashlib
 import logging
+import typing
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-import typing
 from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, ClassVar
 
 from notion.collection import CollectionRowBlock
 
-from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from framework.notion import BaseNotionRow
 from framework.base.notion_id import NotionId
-from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties
+from framework.json import JSONDictType
+from framework.notion import BaseNotionRow
 from remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \
     NotionCollectionLinkExtra
+from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, \
+    NotionCollectionBlockNotFound, NotionCollectionRowNotFound
 from remote.notion.infra.connection import NotionConnection
-from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage, Eq, StructuredStorageError
+from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage, Eq, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
+
+
+class NotionCollectionNotFoundError(Exception):
+    """Error raised when a particular collection cannot be found."""
+
+
+class NotionCollectionFieldTagNotFoundError(Exception):
+    """Error raised when a particular collection field tag cannot be found."""
+
+
+class NotionCollectionItemNotFoundError(Exception):
+    """Error raised when a particular collection item cannot be found."""
 
 
 ItemType = TypeVar("ItemType", bound=BaseNotionRow)
@@ -180,32 +193,17 @@ class CollectionsManager:
 
         return NotionCollectionLink(page_id=page.id, collection_id=collection.id)
 
-    def load_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
-        """Retrive the Notion-side structure for this collection."""
-        lock = self._collections_storage.load(key)
-        client = self._connection.get_notion_client()
-        page = client.get_collection_page_by_id(lock.page_id)
-        return NotionCollectionLinkExtra(
-            page_id=lock.page_id,
-            collection_id=lock.collection_id,
-            name=page.title)
-
-    def remove_collection(self, key: NotionLockKey) -> None:
-        """Remove the Notion-side structure for this collection."""
-        lock = self._collections_storage.load(key)
-        client = self._connection.get_notion_client()
-
-        page = client.get_collection_page_by_id(lock.page_id)
-        page.remove()
-
-        self._collections_storage.remove(key)
-
-    def update_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
+    def save_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
         """Just updates the name and schema for the collection and asks no questions."""
-        lock = self._collections_storage.load(key)
         client = self._connection.get_notion_client()
-        page = client.get_collection_page_by_id(lock.page_id)
-        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+
+        try:
+            lock = self._collections_storage.load(key)
+            page = client.get_collection_page_by_id(lock.page_id)
+            collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
+
         page.title = new_name
         collection.name = new_name
         old_schema = collection.get("schema")
@@ -213,16 +211,47 @@ class CollectionsManager:
         collection.set("schema", final_schema)
         LOGGER.info("Applied the most current schema to the collection")
 
-    def update_collection_no_merge(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
+    def save_collection_no_merge(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
         """Just updates the name and schema for the collection and asks no questions."""
-        lock = self._collections_storage.load(key)
         client = self._connection.get_notion_client()
-        page = client.get_collection_page_by_id(lock.page_id)
-        collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+
+        try:
+            lock = self._collections_storage.load(key)
+            page = client.get_collection_page_by_id(lock.page_id)
+            collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
+
         page.title = new_name
         collection.name = new_name
         collection.set("schema", new_schema)
         LOGGER.info("Applied the most current schema to the collection")
+
+    def load_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
+        """Retrive the Notion-side structure for this collection."""
+        client = self._connection.get_notion_client()
+
+        try:
+            lock = self._collections_storage.load(key)
+            page = client.get_collection_page_by_id(lock.page_id)
+        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
+        return NotionCollectionLinkExtra(
+            page_id=lock.page_id,
+            collection_id=lock.collection_id,
+            name=page.title)
+
+    def remove_collection(self, key: NotionLockKey) -> None:
+        """Remove the Notion-side structure for this collection."""
+        client = self._connection.get_notion_client()
+
+        try:
+            lock = self._collections_storage.load(key)
+            page = client.get_collection_page_by_id(lock.page_id)
+            page.remove()
+            self._collections_storage.remove(key)
+        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
     @staticmethod
     def _build_compound_key(collection_key: str, key: str) -> str:
@@ -333,7 +362,11 @@ class CollectionsManager:
         """Create a new tag for a Collection's field which has tags support."""
         collection_lock = self._collections_storage.load(collection_key)
         tag_key = self._build_compound_key(collection_key, key)
-        lock = self._collection_field_tags_storage.load(tag_key)
+        try:
+            lock = self._collection_field_tags_storage.load(tag_key)
+        except StorageEntityNotFoundError as err:
+            raise NotionCollectionFieldTagNotFoundError(
+                f"Collection field tag with key {key} could not be found") from err
 
         client = self._connection.get_notion_client()
         collection = client.get_collection(
@@ -359,7 +392,7 @@ class CollectionsManager:
                 LOGGER.info(f'Found tag "{tag}" ({lock.tag_id}) for field "{field}"')
                 break
         else:
-            raise Exception(f'Could not find "{tag}" ({lock.tag_id})')
+            raise NotionCollectionFieldTagNotFoundError(f'Could not find "{tag}" ({lock.tag_id})')
 
         collection.set("schema", schema)
 
@@ -430,7 +463,10 @@ class CollectionsManager:
         """Hard remove the Notion entity associated with a local entity."""
         tag_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
-        lock = self._collection_field_tags_storage.load(tag_key)
+        try:
+            lock = self._collection_field_tags_storage.load(tag_key)
+        except StorageEntityNotFoundError as err:
+            raise NotionCollectionFieldTagNotFoundError(f"Cannot find collection field tag with key {key}") from err
         client = self._connection.get_notion_client()
         collection = client.get_collection(
             collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
@@ -454,7 +490,7 @@ class CollectionsManager:
                 LOGGER.info(f'Found tag {lock.tag_id} for field "{lock.field}"')
                 break
         else:
-            LOGGER.info(f'Could not find tag for {lock.tag_id}')
+            raise NotionCollectionFieldTagNotFoundError(f"Cannot find collection field tag with key {key}")
 
         collection.set("schema", schema)
 
@@ -525,12 +561,39 @@ class CollectionsManager:
         """Remove a particular entity."""
         item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
-        lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
         collection = client.get_collection(
             collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
-        notion_row = client.get_collection_row(collection, lock.row_id)
+
+        try:
+            lock = self._collection_items_storage.load(item_key)
+            notion_row = client.get_collection_row(collection, lock.row_id)
+        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
+            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
         notion_row.archived = True
+
+    def save_collection_item(
+            self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemType,
+            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> ItemType:
+        """Update the Notion-side entity with new data."""
+        if row.ref_id is None:
+            raise Exception("Can only save over an entity which has a ref_id")
+
+        item_key = self._build_compound_key(collection_key, key)
+        collection_lock = self._collections_storage.load(collection_key)
+        client = self._connection.get_notion_client()
+        collection = \
+            client.get_collection(
+                collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        try:
+            lock = self._collection_items_storage.load(item_key)
+            notion_row = client.get_collection_row(collection, lock.row_id)
+        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
+            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
+
+        copy_row_to_notion_row(client, row, notion_row)
+
+        return row
 
     def load_all_collection_items(
             self, collection_key: NotionLockKey,
@@ -550,30 +613,17 @@ class CollectionsManager:
         """Retrieve the Notion-side entity associated with a particular entity."""
         item_key = self._build_compound_key(collection_key, key)
         collection_lock = self._collections_storage.load(collection_key)
-        lock = self._collection_items_storage.load(item_key)
         client = self._connection.get_notion_client()
-        collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
-                                           collection_lock.view_ids.values())
-        notion_row = client.get_collection_row(collection, lock.row_id)
+        collection = \
+            client.get_collection(
+                collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+
+        try:
+            lock = self._collection_items_storage.load(item_key)
+            notion_row = client.get_collection_row(collection, lock.row_id)
+        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
+            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
         return copy_notion_row_to_row(notion_row)
-
-    def save_collection_item(
-            self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemType,
-            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> ItemType:
-        """Update the Notion-side entity with new data."""
-        if row.ref_id is None:
-            raise Exception("Can only save over an entity which has a ref_id")
-
-        item_key = self._build_compound_key(collection_key, key)
-        collection_lock = self._collections_storage.load(collection_key)
-        lock = self._collection_items_storage.load(item_key)
-        client = self._connection.get_notion_client()
-        collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
-                                           collection_lock.view_ids.values())
-        notion_row = client.get_collection_row(collection, lock.row_id)
-        copy_row_to_notion_row(client, row, notion_row)
-
-        return row
 
     def load_all_collection_items_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids."""
@@ -603,18 +653,18 @@ class CollectionsManager:
     def remove_collection_item(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         item_key = self._build_compound_key(collection_key, key)
+        client = self._connection.get_notion_client()
         collection_lock = self._collections_storage.load(collection_key)
+        collection = \
+            client.get_collection(
+                collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
         try:
             lock = self._collection_items_storage.load(item_key)
-            client = self._connection.get_notion_client()
-            collection = client.get_collection(collection_lock.page_id, collection_lock.collection_id,
-                                               collection_lock.view_ids.values())
             notion_row = client.get_collection_row(collection, lock.row_id)
             notion_row.remove()
             self._collection_items_storage.remove(item_key)
-        except StructuredStorageError:
-            LOGGER.error(
-                f"Tried to hard remove Notion-side entity identified by {collection_key}:{key} but found nothing")
+        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
+            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
 
     @staticmethod
     def _merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:

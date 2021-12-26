@@ -3,11 +3,9 @@ import logging
 from typing import Final
 
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricEntryNotFoundError
 from framework.base.entity_id import EntityId
 from framework.use_case import UseCase
-from remote.notion.common import CollectionEntityNotFound
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,5 +29,5 @@ class MetricEntryRemoveUseCase(UseCase[EntityId, None]):
 
         try:
             self._notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
-        except CollectionEntityNotFound:
+        except NotionMetricEntryNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

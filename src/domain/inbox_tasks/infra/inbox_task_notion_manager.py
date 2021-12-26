@@ -14,6 +14,14 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 
 
+class NotionInboxTaskCollectionNotFoundError(Exception):
+    """Exception raised when a Notion inbox task collection was not found."""
+
+
+class NotionInboxTaskNotFoundError(Exception):
+    """Exception raised when a Notion inbox task was not found."""
+
+
 @dataclass(frozen=True)
 class InboxTaskBigPlanLabel:
     """A value for an inbox task big plan label."""

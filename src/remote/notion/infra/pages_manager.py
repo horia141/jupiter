@@ -8,9 +8,14 @@ from typing import Optional, Final
 from framework.json import JSONDictType
 from framework.base.notion_id import NotionId
 from remote.notion.common import NotionPageLink, NotionLockKey, NotionPageLinkExtra
+from remote.notion.infra.client import NotionPageBlockNotFound
 from remote.notion.infra.connection import NotionConnection
-from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage
+from repository.yaml.infra.storage import BaseRecordRow, RecordsStorage, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
+
+
+class NotionPageNotFoundError(Exception):
+    """Error raised when a Notion page does not exist."""
 
 
 @dataclass()
@@ -46,9 +51,9 @@ class PagesManager:
 
     def upsert_page(self, key: NotionLockKey, name: str, parent_page: NotionPageLink) -> NotionPageLink:
         """Create a page with a given name."""
-        found_page_lock_row = self._storage.load_optional(key)
-
         notion_client = self._connection.get_notion_client()
+
+        found_page_lock_row = self._storage.load_optional(key)
 
         if found_page_lock_row:
             page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
@@ -70,27 +75,57 @@ class PagesManager:
 
         return NotionPageLink(page_id=new_page_block.id)
 
-    def remove_page(self, key: NotionLockKey) -> NotionPageLink:
-        """Remove a page with a given key."""
-        found_page_lock_row = self._storage.load(key)
+    def save_page(self, key: NotionLockKey, name: str, parent_page: NotionPageLink) -> NotionPageLink:
+        """Save a page with a given name."""
         notion_client = self._connection.get_notion_client()
 
-        page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        try:
+            found_page_lock_row = self._storage.load(key)
+            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
+
+        page_block.title = name
+
+        if page_block.get("parent_id") != parent_page.page_id:
+            # Kind of expensive operation here!
+            page_block.move_to(notion_client.get_regular_page(parent_page.page_id))
+
+        self._storage.update(found_page_lock_row)
+
+        return NotionPageLink(page_id=page_block.id)
+
+    def remove_page(self, key: NotionLockKey) -> NotionPageLink:
+        """Remove a page with a given key."""
+        notion_client = self._connection.get_notion_client()
+
+        try:
+            found_page_lock_row = self._storage.load(key)
+            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
         page_block.remove()
 
         return NotionPageLink(page_id=found_page_lock_row.page_id)
 
     def get_page(self, key: NotionLockKey) -> NotionPageLink:
         """Get a page with a given key."""
-        found_page_lock_row = self._storage.load(key)
+        try:
+            found_page_lock_row = self._storage.load(key)
+        except StorageEntityNotFoundError as err:
+            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
         return NotionPageLink(page_id=found_page_lock_row.page_id)
 
     def get_page_extra(self, key: NotionLockKey) -> NotionPageLinkExtra:
         """Get a page with a given key."""
-        found_page_lock_row = self._storage.load(key)
         notion_client = self._connection.get_notion_client()
 
-        page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        try:
+            found_page_lock_row = self._storage.load(key)
+            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
+
         return NotionPageLinkExtra(page_id=found_page_lock_row.page_id, name=page_block.title)
 
     @staticmethod

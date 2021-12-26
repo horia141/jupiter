@@ -14,7 +14,8 @@ from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
-from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
+    NotionRecurringTaskCollectionNotFoundError, NotionRecurringTaskNotFoundError
 from domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
 from domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
@@ -24,7 +25,8 @@ from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 from remote.notion.common import NotionLockKey, NotionPageLink, clean_eisenhower
 from remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
-from remote.notion.infra.collections_manager import CollectionsManager
+from remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError, \
+    NotionCollectionNotFoundError
 from utils.global_properties import GlobalProperties
 from utils.time_provider import TimeProvider
 
@@ -447,8 +449,13 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
 
     def remove_recurring_tasks_collection(self, recurring_task_collection: RecurringTaskCollection) -> None:
         """Remove the Notion-side structure for this collection."""
-        return self._collections_manager.remove_collection(
-            NotionLockKey(f"{self._KEY}:{recurring_task_collection.project_ref_id}"))
+        try:
+            return self._collections_manager.remove_collection(
+                NotionLockKey(f"{self._KEY}:{recurring_task_collection.project_ref_id}"))
+        except NotionCollectionNotFoundError as err:
+            raise NotionRecurringTaskCollectionNotFoundError(
+                f"Notion recurring task collection with id {recurring_task_collection.ref_id} could not be found") \
+                from err
 
     def upsert_recurring_task(
             self, recurring_task_collection: RecurringTaskCollection, recurring_task: NotionRecurringTask,
@@ -478,26 +485,38 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
 
     def load_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> NotionRecurringTask:
         """Retrieve the Notion-side recurring task associated with a particular entity."""
-        return self._collections_manager.load_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
+        try:
+            return self._collections_manager.load_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+                copy_notion_row_to_row=self._copy_notion_row_to_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionRecurringTaskNotFoundError(
+                f"Notion recurring task with id {ref_id} could not be found") from err
 
     def remove_recurring_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a particular recurring tasks."""
-        self._collections_manager.quick_archive_collection_item(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            key=NotionLockKey(f"{ref_id}"))
+        try:
+            self._collections_manager.quick_archive_collection_item(
+                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+                key=NotionLockKey(f"{ref_id}"))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionRecurringTaskNotFoundError(
+                f"Notion recurring task with id {ref_id} could not be found") from err
 
     def save_recurring_task(
             self, project_ref_id: EntityId, recurring_task: NotionRecurringTask,
             inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionRecurringTask:
         """Update the Notion-side recurring task with new data."""
-        return self._collections_manager.save_collection_item(
-            key=NotionLockKey(f"{recurring_task.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            row=recurring_task,
-            copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+        try:
+            return self._collections_manager.save_collection_item(
+                key=NotionLockKey(f"{recurring_task.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+                row=recurring_task,
+                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionRecurringTaskNotFoundError(
+                f"Notion recurring task with id {recurring_task.ref_id} could not be found") from err
 
     def load_all_saved_recurring_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these tasks."""
@@ -516,9 +535,13 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
 
     def hard_remove_recurring_task(self, project_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionRecurringTaskNotFoundError(
+                f"Notion recurring task with id {ref_id} could not be found") from err
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionRecurringTask, notion_row: CollectionRowBlock,

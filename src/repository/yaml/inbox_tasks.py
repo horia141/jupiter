@@ -15,15 +15,15 @@ from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository
+from domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository, \
+    InboxTaskCollectionAlreadyExistsError, InboxTaskCollectionNotFoundError
 from domain.inbox_tasks.infra.inbox_task_engine import InboxTaskUnitOfWork, InboxTaskEngine
-from domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
+from domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository, InboxTaskNotFoundError
 from domain.recurring_task_type import RecurringTaskType
-from framework.base.timestamp import Timestamp
-from framework.errors import RepositoryError
-from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
-from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq
+from framework.base.timestamp import Timestamp
+from framework.json import JSONDictType
+from repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, StorageEntityNotFoundError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             self._storage.find_all(allow_archived=True, project_ref_id=Eq(inbox_task_collection.project_ref_id))
 
         if len(inbox_task_collection_rows) > 0:
-            raise RepositoryError(
+            raise InboxTaskCollectionAlreadyExistsError(
                 f"Inbox task collection for project ='{inbox_task_collection.project_ref_id}' already exists")
 
         new_inbox_task_collection_row = self._storage.create(_InboxTaskCollectionRow(
@@ -81,12 +81,20 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
 
     def load_by_id(self, ref_id: EntityId) -> InboxTaskCollection:
         """Load an inbox task collection by id."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=False))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=False))
+        except StorageEntityNotFoundError as err:
+            raise InboxTaskCollectionNotFoundError(f"Inbox task collection with id {ref_id} does not exist") from err
 
     def load_by_project(self, project_ref_id: EntityId) -> InboxTaskCollection:
         """Find an inbox task collection by project ref id."""
-        inbox_task_collection_row = self._storage.find_first(allow_archived=False, project_ref_id=Eq(project_ref_id))
-        return self._row_to_entity(inbox_task_collection_row)
+        try:
+            inbox_task_collection_row = \
+                self._storage.find_first(allow_archived=False, project_ref_id=Eq(project_ref_id))
+            return self._row_to_entity(inbox_task_collection_row)
+        except StorageEntityNotFoundError as err:
+            raise InboxTaskCollectionNotFoundError(
+                f"Inbox task collection for project id {project_ref_id} does not exist") from err
 
     def find_all(
             self, allow_archived: bool = False,
@@ -100,7 +108,10 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
 
     def remove(self, ref_id: EntityId) -> InboxTaskCollection:
         """Hard remove an inbox task collection - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id=ref_id))
+        except StorageEntityNotFoundError as err:
+            raise InboxTaskCollectionNotFoundError(f"Inbox task collection with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:
@@ -229,9 +240,12 @@ class YamlInboxTaskRepository(InboxTaskRepository):
 
     def save(self, inbox_task: InboxTask) -> InboxTask:
         """Save a inbox task - it should already exist."""
-        inbox_task_row = self._entity_to_row(inbox_task)
-        inbox_task_row = self._storage.update(inbox_task_row)
-        return self._row_to_entity(inbox_task_row)
+        try:
+            inbox_task_row = self._entity_to_row(inbox_task)
+            inbox_task_row = self._storage.update(inbox_task_row)
+            return self._row_to_entity(inbox_task_row)
+        except StorageEntityNotFoundError as err:
+            raise InboxTaskNotFoundError(f"Inbox task with id {inbox_task.ref_id} does not exist") from err
 
     def dump_all(self, inbox_tasks: Iterable[InboxTask]) -> None:
         """Save all inbox tasks - good for migrations."""
@@ -239,7 +253,10 @@ class YamlInboxTaskRepository(InboxTaskRepository):
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTask:
         """Load a inbox task by id."""
-        return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=allow_archived))
+        except StorageEntityNotFoundError as err:
+            raise InboxTaskNotFoundError(f"Inbox task with id {ref_id} does not exist") from err
 
     def find_all(
             self,
@@ -265,7 +282,10 @@ class YamlInboxTaskRepository(InboxTaskRepository):
 
     def remove(self, ref_id: EntityId) -> InboxTask:
         """Hard remove a inbox task - an irreversible operation."""
-        return self._row_to_entity(self._storage.remove(ref_id))
+        try:
+            return self._row_to_entity(self._storage.remove(ref_id))
+        except StorageEntityNotFoundError as err:
+            raise InboxTaskNotFoundError(f"Inbox task with id {ref_id} does not exist") from err
 
     @staticmethod
     def storage_schema() -> JSONDictType:

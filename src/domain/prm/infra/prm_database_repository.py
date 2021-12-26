@@ -5,6 +5,14 @@ from domain.prm.prm_database import PrmDatabase
 from framework.storage import Repository
 
 
+class PrmDatabaseAlreadyExistsError(Exception):
+    """Error raised when a PRM database already exists."""
+
+
+class PrmDatabaseNotFoundError(Exception):
+    """Error raised when the PRM database is not found."""
+
+
 class PrmDatabaseRepository(Repository, abc.ABC):
     """A repository of PRM databases."""
 

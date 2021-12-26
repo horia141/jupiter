@@ -3,10 +3,9 @@ import logging
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
-import remote
 from domain.big_plans.big_plan import BigPlan
 from domain.big_plans.infra.big_plan_engine import BigPlanEngine
-from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
+from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
 from domain.big_plans.service.archive_service import BigPlanArchiveService
 from domain.big_plans.service.remove_service import BigPlanRemoveService
 from domain.inbox_tasks.inbox_task import InboxTask
@@ -16,32 +15,33 @@ from domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from domain.inbox_tasks.service.big_plan_ref_options_update_service import InboxTaskBigPlanRefOptionsUpdateService
 from domain.inbox_tasks.service.remove_service import InboxTaskRemoveService
 from domain.metrics.infra.metric_engine import MetricEngine
-from domain.metrics.infra.metric_notion_manager import MetricNotionManager
+from domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError, \
+    NotionMetricEntryNotFoundError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
 from domain.metrics.service.remove_service import MetricRemoveService
 from domain.prm.infra.prm_engine import PrmEngine
-from domain.prm.infra.prm_notion_manager import PrmNotionManager
+from domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from domain.prm.person import Person
 from domain.prm.service.remove_service import PersonRemoveService
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
 from domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
-from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
+    NotionRecurringTaskNotFoundError
 from domain.recurring_tasks.recurring_task import RecurringTask
 from domain.recurring_tasks.service.remove_service import RecurringTaskRemoveService
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
-from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
+from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, NotionSmartListNotFoundError, \
+    NotionSmartListItemNotFoundError
 from domain.smart_lists.smart_list import SmartList
 from domain.smart_lists.smart_list_item import SmartListItem
 from domain.sync_target import SyncTarget
 from domain.vacations.infra.vacation_engine import VacationEngine
-from domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from domain.vacations.vacation import Vacation
 from framework.use_case import UseCase
-from remote.notion.common import CollectionEntityNotFound
-from repository.yaml.infra.storage import StructuredStorageError
 from utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -310,7 +310,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 try:
                     self._vacation_notion_manager.remove_vacation(vacation.ref_id)
                     LOGGER.info("Applied Notion changes")
-                except StructuredStorageError:
+                except NotionVacationNotFoundError:
                     LOGGER.info("Skipping removal on Notion side because vacation was not found")
                 continue
             vacations_names_set[vacation.name] = vacation
@@ -378,7 +378,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 try:
                     self._smart_list_notion_manager.remove_smart_list(smart_list)
                     LOGGER.info("Applied Notion changes")
-                except CollectionEntityNotFound:
+                except NotionSmartListNotFoundError:
                     LOGGER.info("Skipping removal on Notion side because smart list was not found")
                 continue
             smart_lists_name_set[smart_list.name] = smart_list
@@ -397,7 +397,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 try:
                     self._smart_list_notion_manager.remove_smart_list_item(smart_list_item)
                     LOGGER.info("Applied Notion changes")
-                except StructuredStorageError:
+                except NotionSmartListItemNotFoundError:
                     LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
                 continue
             smart_list_items_name_set[smart_list_item.name] = smart_list_item
@@ -430,7 +430,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 try:
                     self._metric_notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
                     LOGGER.info("Applied Notion changes")
-                except StructuredStorageError:
+                except NotionMetricEntryNotFoundError:
                     LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
                 continue
             metric_entries_collection_time_set[metric_entry.collection_time] = metric_entry
@@ -458,7 +458,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._vacation_notion_manager.remove_vacation(vacation.ref_id)
                 LOGGER.info("Applied Notion changes")
-            except StructuredStorageError:
+            except NotionVacationNotFoundError:
                 LOGGER.info("Skipping removal on Notion side because vacation was not found")
 
     def _do_drop_all_archived_big_plans(self, big_plans: Iterable[BigPlan]) -> None:
@@ -469,7 +469,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._big_plan_notion_manager.hard_remove_big_plan(big_plan.project_ref_id, big_plan.ref_id)
                 LOGGER.info("Applied Notion changes")
-            except remote.notion.common.CollectionEntityNotFound:
+            except NotionBigPlanNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping removal on Notion side because big plan was not found")
 
@@ -482,7 +482,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 self._recurring_task_notion_manager.hard_remove_recurring_task(
                     recurring_task.project_ref_id, recurring_task.ref_id)
                 LOGGER.info("Applied Notion changes")
-            except remote.notion.common.CollectionEntityNotFound:
+            except NotionRecurringTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping removal on Notion side because big plan was not found")
             #TODO(horia141): more can be done here surely!
@@ -495,7 +495,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._inbox_task_notion_manager.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
                 LOGGER.info("Applied Notion changes")
-            except remote.notion.common.CollectionEntityNotFound:
+            except NotionRecurringTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping removal on Notion side because inbox task was not found")
 
@@ -508,7 +508,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._smart_list_notion_manager.remove_smart_list(smart_list)
                 LOGGER.info("Applied Notion changes")
-            except CollectionEntityNotFound:
+            except NotionSmartListNotFoundError:
                 LOGGER.info("Skipping removal on Notion side because smart list was not found")
 
     def _do_drop_all_archived_smart_list_items(self, smart_list_items: Iterable[SmartListItem]) -> None:
@@ -519,7 +519,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._smart_list_notion_manager.remove_smart_list_item(smart_list_item)
                 LOGGER.info("Applied Notion changes")
-            except StructuredStorageError:
+            except NotionSmartListItemNotFoundError:
                 LOGGER.info("Skipping archival on Notion side because smart list was not found")
 
     def _do_drop_all_archived_metrics(self, metrics: Iterable[Metric]) -> None:
@@ -530,7 +530,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._metric_notion_manager.remove_metric(metric)
                 LOGGER.info("Applied Notion changes")
-            except CollectionEntityNotFound:
+            except NotionMetricNotFoundError:
                 LOGGER.info("Skipping archival on Notion side because metric was not found")
 
     def _do_drop_all_archived_metric_entries(self, metric_entries: Iterable[MetricEntry]) -> None:
@@ -541,12 +541,16 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             try:
                 self._metric_notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
                 LOGGER.info("Applied Notion changes")
-            except StructuredStorageError:
-                LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
+            except NotionMetricEntryNotFoundError:
+                LOGGER.info("Skipping the removal on Notion side because recurring task was not found")
 
     def _do_drop_all_archived_persons(self, persons: Iterable[Person]) -> None:
         for person in persons:
             if not person.archived:
                 continue
             LOGGER.info(f"Removed an archived person '{person.name}' on Notion side")
-            self._prm_notion_manager.remove_person(person.ref_id)
+            try:
+                self._prm_notion_manager.remove_person(person.ref_id)
+                LOGGER.info("Applied Notion changes")
+            except NotionPersonNotFoundError:
+                LOGGER.info("Skipping the removal on Notion side because person was not found")

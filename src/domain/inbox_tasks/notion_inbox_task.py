@@ -9,7 +9,7 @@ from domain.eisen import Eisen
 from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task import InboxTask
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.base.entity_id import EntityId
 from framework.notion import NotionRow
 from framework.base.notion_id import BAD_NOTION_ID
@@ -114,11 +114,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             big_plan = \
                 extra_info.all_big_plans_by_name[format_name_for_option(inbox_task_big_plan_name)]
         elif inbox_task_recurring_task_ref_id is not None:
-            raise ModelValidationError("Trying to create an inbox task for a recurring task from Notion")
+            raise InputValidationError("Trying to create an inbox task for a recurring task from Notion")
         elif inbox_task_metric_ref_id is not None:
-            raise ModelValidationError("Trying to create an inbox task for a metric from Notion")
+            raise InputValidationError("Trying to create an inbox task for a metric from Notion")
         elif inbox_task_person_ref_id is not None:
-            raise ModelValidationError("Trying to create an inbox task for a person from Notion")
+            raise InputValidationError("Trying to create an inbox task for a person from Notion")
 
         return InboxTask.new_inbox_task(
             inbox_task_collection_ref_id=extra_info.inbox_task_collection_ref_id,

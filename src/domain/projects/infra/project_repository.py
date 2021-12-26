@@ -7,6 +7,14 @@ from domain.projects.project_key import ProjectKey
 from framework.base.entity_id import EntityId
 
 
+class ProjectAlreadyExistsError(Exception):
+    """Error raised when a project with the given key already exists."""
+
+
+class ProjectNotFoundError(Exception):
+    """Error raised when a project is not found."""
+
+
 class ProjectRepository(abc.ABC):
     """A repository for projects."""
 

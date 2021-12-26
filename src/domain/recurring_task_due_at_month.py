@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final, Optional, Dict, Tuple
 
 from domain.recurring_task_period import RecurringTaskPeriod
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 _RECURRING_TASK_DUE_AT_MONTH_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, int]]] = {
@@ -26,12 +26,12 @@ class RecurringTaskDueAtMonth(Value):
             period: RecurringTaskPeriod, recurring_task_due_at_month_raw: Optional[int]) -> 'RecurringTaskDueAtMonth':
         """Validate and clean the recurring task due at month info."""
         if not recurring_task_due_at_month_raw:
-            raise ModelValidationError("Expected the due month info to be non-null")
+            raise InputValidationError("Expected the due month info to be non-null")
 
         bounds = _RECURRING_TASK_DUE_AT_MONTH_BOUNDS[period]
 
         if recurring_task_due_at_month_raw < bounds[0] or recurring_task_due_at_month_raw > bounds[1]:
-            raise ModelValidationError(
+            raise InputValidationError(
                 f"Expected the due month info for {period} period to be a value between {bounds[0]} and {bounds[1]}")
 
         return RecurringTaskDueAtMonth(recurring_task_due_at_month_raw)

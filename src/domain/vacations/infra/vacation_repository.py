@@ -7,6 +7,10 @@ from framework.base.entity_id import EntityId
 from framework.storage import Repository
 
 
+class VacationNotFoundError(Exception):
+    """Error raised when a vacation is not found."""
+
+
 class VacationRepository(Repository, abc.ABC):
     """A repository of vacations."""
 

@@ -4,7 +4,7 @@ from functools import total_ordering
 from typing import Optional
 from urllib.parse import urlparse
 
-from framework.errors import ModelValidationError
+from framework.errors import InputValidationError
 from framework.value import Value
 
 
@@ -19,14 +19,14 @@ class URL(Value):
     def from_raw(url_raw: Optional[str]) -> 'URL':
         """Validate and clean a url."""
         if not url_raw:
-            raise ModelValidationError("Expected url to be non-null")
+            raise InputValidationError("Expected url to be non-null")
 
         url_str: str = url_raw.strip()
 
         try:
             return URL(urlparse(url_str).geturl())
         except ValueError as err:
-            raise ModelValidationError(f"Invalid URL '{url_raw}'") from err
+            raise InputValidationError(f"Invalid URL '{url_raw}'") from err
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
