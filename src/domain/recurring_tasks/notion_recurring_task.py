@@ -30,7 +30,6 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
         recurring_task_collection_ref_id: EntityId
 
     name: str
-    archived: bool
     period: Optional[str]
     the_type: Optional[str]
     eisen: Optional[List[str]]

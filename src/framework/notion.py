@@ -20,6 +20,8 @@ class BaseNotionRow:
 
     notion_id: NotionId
     ref_id: Optional[str]
+    archived: bool
+    last_edited_time: Timestamp
 
 
 _NotionEntitySubclass = TypeVar('_NotionEntitySubclass', bound='NotionEntity[typing.Any]')
@@ -60,8 +62,6 @@ _NotionRowSubclass = TypeVar('_NotionRowSubclass', bound='NotionRow[typing.Any, 
 @dataclass(frozen=True)
 class NotionRow(Generic[NotionRowAggregateRoot, NotionRowDirectExtraInfo, NotionRowInverseExtraInfo], BaseNotionRow):
     """Base class for Notion-side collection entities."""
-
-    last_edited_time: Timestamp
 
     @staticmethod
     def new_notion_row(

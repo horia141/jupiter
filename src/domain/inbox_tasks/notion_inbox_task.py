@@ -34,7 +34,6 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
 
     source: str
     name: str
-    archived: bool
     big_plan_ref_id: Optional[str]
     big_plan_name: Optional[str]
     recurring_task_ref_id: Optional[str]

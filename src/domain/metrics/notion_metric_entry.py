@@ -18,7 +18,6 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
         """Inverse info."""
         metric_ref_id: EntityId
 
-    archived: bool
     collection_time: ADate
     value: float
     notes: Optional[str]

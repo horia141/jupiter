@@ -328,7 +328,7 @@ class NotionSmartListsManager(SmartListNotionManager):
     def load_all_smart_list_tags(self, smart_list: SmartList) -> typing.Iterable[NotionSmartListTag]:
         """Retrieve all the Notion-side smart list tags."""
         return [NotionSmartListTag(name=s.name, notion_id=s.notion_id, ref_id=s.tmp_ref_id_as_str,
-                                   last_edited_time=self._time_provider.get_current_time())
+                                   archived=False, last_edited_time=self._time_provider.get_current_time())
                 for s in self._collections_manager.load_all_collection_field_tags(
                     collection_key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
                     field="tags")]

@@ -25,6 +25,7 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
         return NotionSmartListTag(
             notion_id=BAD_NOTION_ID,
             ref_id=str(aggregate_root.ref_id),
+            archived=aggregate_root.archived,
             last_edited_time=aggregate_root.last_modified_time,
             name=str(aggregate_root.tag_name))
 

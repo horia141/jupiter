@@ -15,7 +15,6 @@ class NotionVacation(NotionRow[Vacation, None, None]):
     """A vacation on Notion-side."""
 
     name: str
-    archived: bool
     start_date: Optional[ADate]
     end_date: Optional[ADate]
 

@@ -29,7 +29,6 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
         project_ref_id: EntityId
 
     name: str
-    archived: bool
     relationship: Optional[str]
     catch_up_period: Optional[str]
     catch_up_eisen: Optional[List[str]]

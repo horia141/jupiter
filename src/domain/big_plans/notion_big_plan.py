@@ -20,7 +20,6 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
         """Extra info for the Notion to app sync."""
         big_plan_collection_ref_id: EntityId
 
-    archived: bool
     name: str
     status: str
     due_date: Optional[ADate]

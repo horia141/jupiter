@@ -28,7 +28,6 @@ class NotionSmartListItem(
         smart_list_ref_id: EntityId
         tags_by_name: Dict[SmartListTagName, SmartListTag]
 
-    archived: bool
     name: str
     is_done: bool
     tags: List[str]
