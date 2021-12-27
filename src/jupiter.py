@@ -325,7 +325,7 @@ def main() -> None:
                     notion_inbox_tasks_manager, yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanArchive(
                 BigPlanArchiveUseCase(
-                    time_provider, yaml_project_engine, yaml_inbox_task_engine, notion_inbox_tasks_manager,
+                    time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanRemove(
                 BigPlanRemoveUseCase(
@@ -334,7 +334,7 @@ def main() -> None:
             BigPlanUpdate(
                 global_properties,
                 BigPlanUpdateUseCase(
-                    time_provider, yaml_project_engine, yaml_inbox_task_engine, notion_inbox_tasks_manager,
+                    time_provider, yaml_inbox_task_engine, notion_inbox_tasks_manager,
                     yaml_big_plan_engine, notion_big_plans_manager)),
             BigPlanShow(
                 global_properties,

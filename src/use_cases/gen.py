@@ -281,9 +281,10 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(found_task.project_ref_id, found_task.ref_id)
+                self._inbox_task_notion_manager.load_inbox_task(
+                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
             notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.save_inbox_task(found_task.project_ref_id, notion_inbox_task)
+            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._inbox_task_engine.get_unit_of_work() as read_uow:
@@ -305,7 +306,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 inbox_task = read_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
 
     def _generate_collection_inbox_tasks_for_metric(
@@ -345,10 +346,10 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             with self._inbox_task_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
-            notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(found_task.project_ref_id,
+            notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(found_task.inbox_task_collection_ref_id,
                                                                                 found_task.ref_id)
             notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.save_inbox_task(found_task.project_ref_id, notion_inbox_task)
+            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
@@ -369,7 +370,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 inbox_task = inbox_task_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
 
     def _generate_catch_up_inbox_tasks_for_person(
@@ -410,9 +411,10 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(found_task.project_ref_id, found_task.ref_id)
+                self._inbox_task_notion_manager.load_inbox_task(
+                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
             notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.save_inbox_task(found_task.project_ref_id, notion_inbox_task)
+            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._inbox_task_engine.get_unit_of_work() as read_uow:
@@ -433,7 +435,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 inbox_task = read_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
 
     def _generate_birthday_inbox_task_for_person(
@@ -470,9 +472,10 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(found_task.project_ref_id, found_task.ref_id)
+                self._inbox_task_notion_manager.load_inbox_task(
+                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
             notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.save_inbox_task(found_task.project_ref_id, notion_inbox_task)
+            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._inbox_task_engine.get_unit_of_work() as read_uow:
@@ -491,5 +494,5 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 inbox_task = read_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")

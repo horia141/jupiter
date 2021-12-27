@@ -44,7 +44,7 @@ class RecurringTaskArchiveService:
 
         try:
             self._recurring_task_notion_manager.remove_recurring_task(
-                recurring_task.project_ref_id, recurring_task.ref_id)
+                recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
         except NotionRecurringTaskNotFoundError:
             # If we can't find this locally it means it's already gone
             LOGGER.info("Skipping archival on Notion side because big plan was not found")
@@ -61,7 +61,8 @@ class RecurringTaskArchiveService:
 
         for inbox_task in inbox_tasks_to_archive:
             try:
-                self._inbox_task_notion_manager.remove_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+                self._inbox_task_notion_manager.remove_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
             except NotionInboxTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping archival on Notion side because inbox task was not found")

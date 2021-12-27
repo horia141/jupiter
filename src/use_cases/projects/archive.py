@@ -92,7 +92,7 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                     filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id]):
                 inbox_task.mark_archived(self._time_provider.get_current_time())
                 inbox_task_uow.inbox_task_repository.save(inbox_task)
-        self._inbox_task_notion_manager.remove_inbox_tasks_collection(inbox_task_collection)
+        self._inbox_task_notion_manager.remove_inbox_tasks_collection(inbox_task_collection.ref_id)
 
         with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
             big_plan_collection = big_plan_uow.big_plan_collection_repository.load_by_project(project.ref_id)
@@ -100,7 +100,7 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                     filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id]):
                 big_plan.mark_archived(self._time_provider.get_current_time())
                 big_plan_uow.big_plan_repository.save(big_plan)
-        self._big_plan_notion_manager.remove_big_plans_collection(big_plan_collection)
+        self._big_plan_notion_manager.remove_big_plans_collection(big_plan_collection.ref_id)
 
         with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
             recurring_task_collection = \
@@ -109,12 +109,12 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                     filter_recurring_task_collection_ref_ids=[recurring_task_collection.ref_id]):
                 recurring_task.mark_archived(self._time_provider.get_current_time())
                 recurring_task_uow.recurring_task_repository.save(recurring_task)
-        self._recurring_task_notion_manager.remove_recurring_tasks_collection(recurring_task_collection)
+        self._recurring_task_notion_manager.remove_recurring_tasks_collection(recurring_task_collection.ref_id)
 
         project.mark_archived(self._time_provider.get_current_time())
 
         with self._project_engine.get_unit_of_work() as project_uow_s:
             project_uow_s.project_repository.save(project)
         LOGGER.info("Applied local changes")
-        self._project_notion_manager.remove(project)
+        self._project_notion_manager.remove_project(project.ref_id)
         LOGGER.info("Applied Notion changes")

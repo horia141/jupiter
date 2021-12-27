@@ -44,11 +44,11 @@ class BigPlanSyncService:
         all_big_plans_set: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
 
         if not drop_all_notion_side:
-            all_notion_big_plans = self._notion_manager.load_all_big_plans(big_plan_collection)
+            all_notion_big_plans = self._notion_manager.load_all_big_plans(big_plan_collection.ref_id)
             all_notion_big_plans_notion_ids = \
-                set(self._notion_manager.load_all_saved_big_plans_notion_ids(project_ref_id))
+                set(self._notion_manager.load_all_saved_big_plans_notion_ids(big_plan_collection.ref_id))
         else:
-            self._notion_manager.drop_all_big_plans(project_ref_id)
+            self._notion_manager.drop_all_big_plans(big_plan_collection.ref_id)
             all_notion_big_plans = {}
             all_notion_big_plans_notion_ids = set()
         all_notion_big_plans_set: Dict[EntityId, NotionBigPlan] = {}
@@ -76,11 +76,11 @@ class BigPlanSyncService:
                 LOGGER.info(f"Found new big plan from Notion {notion_big_plan.name}")
 
                 self._notion_manager.link_local_and_notion_big_plan(
-                    project_ref_id, new_big_plan.ref_id, notion_big_plan.notion_id)
+                    big_plan_collection.ref_id, new_big_plan.ref_id, notion_big_plan.notion_id)
                 LOGGER.info(f"Linked the new big plan with local entries")
 
                 notion_big_plan = notion_big_plan.join_with_aggregate_root(new_big_plan, None)
-                self._notion_manager.save_big_plan(project_ref_id, notion_big_plan, inbox_task_collection)
+                self._notion_manager.save_big_plan(big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_big_plan}")
 
                 all_big_plans_set[new_big_plan.ref_id] = new_big_plan
@@ -111,7 +111,8 @@ class BigPlanSyncService:
                         continue
 
                     updated_notion_big_plan = notion_big_plan.join_with_aggregate_root(big_plan, None)
-                    self._notion_manager.save_big_plan(project_ref_id, updated_notion_big_plan, inbox_task_collection)
+                    self._notion_manager.save_big_plan(
+                        big_plan_collection.ref_id, updated_notion_big_plan, inbox_task_collection)
                     LOGGER.info(f"Changed big plan with id={notion_big_plan.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -121,7 +122,7 @@ class BigPlanSyncService:
                 #    setup, and we remove it.
                 # 2. This is a big plan added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_big_plan(project_ref_id, notion_big_plan_ref_id)
+                self._notion_manager.remove_big_plan(big_plan_collection.ref_id, notion_big_plan_ref_id)
                 LOGGER.info(f"Removed dangling big plan in Notion {notion_big_plan}")
 
         LOGGER.info("Applied local changes")
@@ -137,7 +138,7 @@ class BigPlanSyncService:
                 continue
 
             notion_big_plan = NotionBigPlan.new_notion_row(big_plan, None)
-            self._notion_manager.upsert_big_plan(big_plan_collection, notion_big_plan, inbox_task_collection)
+            self._notion_manager.upsert_big_plan(big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
             LOGGER.info(f'Created Notion task for {big_plan.name}')
 
         return all_big_plans_set.values()

@@ -29,9 +29,9 @@ class InboxTaskChangeProjectService:
 
     def do_it(self, inbox_task: InboxTask, project_ref_id: EntityId) -> None:
         """Execute the service's action."""
-        old_project_ref_id = inbox_task.project_ref_id
         try:
-            self._inbox_task_notion_manager.hard_remove_inbox_task(old_project_ref_id, inbox_task.ref_id)
+            self._inbox_task_notion_manager.remove_inbox_task(
+                inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
             LOGGER.info("Applied Notion changes")
         except NotionInboxTaskNotFoundError:
             LOGGER.info("Skipping hard removal on Notion side since inbox task could not be found")
@@ -42,5 +42,5 @@ class InboxTaskChangeProjectService:
             uow.inbox_task_repository.save(inbox_task)
 
         notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
-        self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+        self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
         LOGGER.info("Applied Notion changes")

@@ -171,7 +171,9 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
 
             uow.metric_repository.save(metric)
 
-        self._metric_notion_manager.upsert_metric(metric)
+        notion_metric = self._metric_notion_manager.load_metric(metric.ref_id)
+        notion_metric = notion_metric.join_with_aggregate_root(metric)
+        self._metric_notion_manager.save_metric(notion_metric)
 
         # Change the inbox tasks
         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
@@ -208,10 +210,12 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     inbox_task_uow.inbox_task_repository.save(inbox_task)
 
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+                    self._inbox_task_notion_manager.load_inbox_task(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                     inbox_task, NotionInboxTask.DirectInfo(None))
-                self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")
 
                 if inbox_task.project_ref_id != metric.collection_params.project_ref_id:

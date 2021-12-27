@@ -4,6 +4,7 @@ from typing import Final, Optional, Iterable
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, NotionSmartListNotFoundError
+from domain.smart_lists.notion_smart_list import NotionSmartList
 from domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from domain.smart_lists.smart_list import SmartList
@@ -49,7 +50,8 @@ class SmartListSyncService:
                 raise Exception(f"Invalid preference {sync_prefer}")
         except NotionSmartListNotFoundError:
             LOGGER.info("Trying to recreate the smart list")
-            self._smart_list_notion_manager.upsert_smart_list(smart_list)
+            notion_smart_list = NotionSmartList.new_notion_row(smart_list)
+            self._smart_list_notion_manager.upsert_smart_list(notion_smart_list)
 
         # Synchronise the tags here.
         with self._smart_list_engine.get_unit_of_work() as uow:
@@ -60,11 +62,11 @@ class SmartListSyncService:
 
         if not drop_all_notion_side:
             all_notion_smart_list_tags = \
-                self._smart_list_notion_manager.load_all_smart_list_tags(smart_list)
+                self._smart_list_notion_manager.load_all_smart_list_tags(smart_list.ref_id)
             all_notion_smart_list_tags_notion_ids = \
-                set(self._smart_list_notion_manager.load_all_saved_smart_list_tags_notion_ids(smart_list))
+                set(self._smart_list_notion_manager.load_all_saved_smart_list_tags_notion_ids(smart_list.ref_id))
         else:
-            self._smart_list_notion_manager.drop_all_smart_list_tags(smart_list)
+            self._smart_list_notion_manager.drop_all_smart_list_tags(smart_list.ref_id)
             all_notion_smart_list_tags = []
             all_notion_smart_list_tags_notion_ids = set()
         notion_smart_list_tags_set = {}
@@ -87,7 +89,7 @@ class SmartListSyncService:
                 LOGGER.info(f"Linked the new smart list tag with local entries")
 
                 notion_smart_list_tag = notion_smart_list_tag.join_with_aggregate_root(new_smart_list_tag, None)
-                self._smart_list_notion_manager.save_smart_list_tag(smart_list, notion_smart_list_tag)
+                self._smart_list_notion_manager.save_smart_list_tag(smart_list.ref_id, notion_smart_list_tag)
                 LOGGER.info(f"Applied changes on Notion side too")
 
                 notion_smart_list_tags_set[new_smart_list_tag.ref_id] = notion_smart_list_tag
@@ -109,7 +111,8 @@ class SmartListSyncService:
                 elif sync_prefer == SyncPrefer.LOCAL:
                     updated_notion_smart_list_tag = \
                         notion_smart_list_tag.join_with_aggregate_root(smart_list_tag, None)
-                    self._smart_list_notion_manager.save_smart_list_tag(smart_list, updated_notion_smart_list_tag)
+                    self._smart_list_notion_manager.save_smart_list_tag(
+                        smart_list.ref_id, updated_notion_smart_list_tag)
                     LOGGER.info(f"Changed smart list tag '{notion_smart_list_tag.name}' from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -132,7 +135,8 @@ class SmartListSyncService:
                 continue
 
             # If the smart list item does not exist on Notion side, we create it.
-            self._smart_list_notion_manager.upsert_smart_list_tag(smart_list_tag)
+            notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
+            self._smart_list_notion_manager.upsert_smart_list_tag(smart_list.ref_id, notion_smart_list_tag)
             LOGGER.info(f"Created new smart list tag on Notion side '{smart_list_tag.tag_name}'")
 
         # Now synchronize the list items here.
@@ -147,11 +151,11 @@ class SmartListSyncService:
 
         if not drop_all_notion_side:
             all_notion_smart_list_items = \
-                self._smart_list_notion_manager.load_all_smart_list_items(smart_list)
+                self._smart_list_notion_manager.load_all_smart_list_items(smart_list.ref_id)
             all_notion_smart_list_items_notion_ids = \
-                set(self._smart_list_notion_manager.load_all_saved_smart_list_items_notion_ids(smart_list))
+                set(self._smart_list_notion_manager.load_all_saved_smart_list_items_notion_ids(smart_list.ref_id))
         else:
-            self._smart_list_notion_manager.drop_all_smart_list_items(smart_list)
+            self._smart_list_notion_manager.drop_all_smart_list_items(smart_list.ref_id)
             all_notion_smart_list_items = []
             all_notion_smart_list_items_notion_ids = set()
         all_notion_smart_list_items_set = {}
@@ -182,7 +186,7 @@ class SmartListSyncService:
 
                 notion_smart_list_item = notion_smart_list_item.join_with_aggregate_root(
                     new_smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
-                self._smart_list_notion_manager.save_smart_list_item(smart_list, notion_smart_list_item)
+                self._smart_list_notion_manager.save_smart_list_item(smart_list.ref_id, notion_smart_list_item)
                 LOGGER.info(f"Applied changes on Notion side too")
 
                 all_notion_smart_list_items_set[new_smart_list_item.ref_id] = \
@@ -213,7 +217,8 @@ class SmartListSyncService:
 
                     updated_notion_smart_list_item = notion_smart_list_item.join_with_aggregate_root(
                         smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
-                    self._smart_list_notion_manager.save_smart_list_item(smart_list, updated_notion_smart_list_item)
+                    self._smart_list_notion_manager.save_smart_list_item(
+                        smart_list.ref_id, updated_notion_smart_list_item)
                     LOGGER.info(f"Changed smart list item '{notion_smart_list_item.name}' from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -223,7 +228,7 @@ class SmartListSyncService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a smart list item added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._smart_list_notion_manager.remove_smart_list_item(smart_list_item)
+                self._smart_list_notion_manager.remove_smart_list_item(smart_list.ref_id, smart_list_item.ref_id)
                 LOGGER.info(f"Removed smart list item with id={notion_smart_list_item.ref_id} from Notion")
 
         for smart_list_item in all_smart_list_items:
@@ -234,8 +239,10 @@ class SmartListSyncService:
                 continue
 
             # If the smart list item does not exist on Notion side, we create it.
-            self._smart_list_notion_manager.upsert_smart_list_item(
-                smart_list_item, [all_smart_list_tags_set[t].tag_name for t in smart_list_item.tags])
+            notion_smart_list_item = \
+                NotionSmartListItem.new_notion_row(
+                    smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
+            self._smart_list_notion_manager.upsert_smart_list_item(smart_list.ref_id, notion_smart_list_item)
             LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item.name}'")
 
         # Done this way because it's a bit fasterr

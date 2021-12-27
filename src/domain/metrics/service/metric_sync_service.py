@@ -6,6 +6,7 @@ from domain.metrics.infra.metric_engine import MetricEngine
 from domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_entry import MetricEntry
+from domain.metrics.notion_metric import NotionMetric
 from domain.metrics.notion_metric_entry import NotionMetricEntry
 from domain.sync_prefer import SyncPrefer
 from framework.base.entity_id import EntityId
@@ -32,7 +33,7 @@ class MetricSyncService:
             sync_prefer: SyncPrefer) -> Iterable[MetricEntry]:
         """Synchronize a metric and its entries between Notion and local storage."""
         try:
-            notion_metric = self._metric_notion_manager.load_metric(metric)
+            notion_metric = self._metric_notion_manager.load_metric(metric.ref_id)
 
             if sync_prefer == SyncPrefer.LOCAL:
                 updated_notion_metric = notion_metric.join_with_aggregate_root(metric)
@@ -47,7 +48,8 @@ class MetricSyncService:
                 raise Exception(f"Invalid preference {sync_prefer}")
         except NotionMetricNotFoundError:
             LOGGER.info("Trying to recreate the metric")
-            self._metric_notion_manager.upsert_metric(metric)
+            notion_metric = NotionMetric.new_notion_row(metric)
+            self._metric_notion_manager.upsert_metric(notion_metric)
 
         # Now synchronize the list items here.
         filter_metric_entry_ref_ids_set = frozenset(filter_metric_entry_ref_ids) \
@@ -61,11 +63,11 @@ class MetricSyncService:
 
         if not drop_all_notion_side:
             all_notion_metric_entries = \
-                self._metric_notion_manager.load_all_metric_entries(metric)
+                self._metric_notion_manager.load_all_metric_entries(metric.ref_id)
             all_notion_metric_notion_ids = \
-                set(self._metric_notion_manager.load_all_saved_metric_entries_notion_ids(metric))
+                set(self._metric_notion_manager.load_all_saved_metric_entries_notion_ids(metric.ref_id))
         else:
-            self._metric_notion_manager.drop_all_metric_entries(metric)
+            self._metric_notion_manager.drop_all_metric_entries(metric.ref_id)
             all_notion_metric_entries = []
             all_notion_metric_notion_ids = set()
         notion_metric_entries_set = {}
@@ -95,7 +97,7 @@ class MetricSyncService:
                 LOGGER.info(f"Linked the new metric entry with local entries")
 
                 notion_metric_entry = notion_metric_entry.join_with_aggregate_root(new_metric_entry, None)
-                self._metric_notion_manager.save_metric_entry(metric, notion_metric_entry)
+                self._metric_notion_manager.save_metric_entry(metric.ref_id, notion_metric_entry)
                 LOGGER.info(f"Applied changes on Notion side too")
 
                 notion_metric_entries_set[new_metric_entry.ref_id] = notion_metric_entry
@@ -124,7 +126,7 @@ class MetricSyncService:
                         continue
 
                     updated_notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry, None)
-                    self._metric_notion_manager.save_metric_entry(metric, updated_notion_metric_entry)
+                    self._metric_notion_manager.save_metric_entry(metric.ref_id, updated_notion_metric_entry)
                     LOGGER.info(f"Changed metric entry '{notion_metric_entry.collection_time}' from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -147,7 +149,8 @@ class MetricSyncService:
                 continue
 
             # If the metric entry does not exist on Notion side, we create it.
-            self._metric_notion_manager.upsert_metric_entry(metric_entry)
+            notion_metric_entry = NotionMetricEntry.new_notion_row(metric_entry, None)
+            self._metric_notion_manager.upsert_metric_entry(metric.ref_id, notion_metric_entry)
             LOGGER.info(f"Created new metric entry on Notion side '{metric_entry.collection_time}'")
 
         return list(all_metric_entries_set.values())

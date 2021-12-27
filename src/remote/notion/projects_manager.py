@@ -3,7 +3,6 @@ from typing import ClassVar, Final
 
 from domain.projects.infra.project_notion_manager import ProjectNotionManager, NotionProjectNotFoundError
 from domain.projects.notion_project import NotionProject
-from domain.projects.project import Project
 from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
 from remote.notion.common import NotionPageLink, NotionLockKey
@@ -26,12 +25,12 @@ class NotionProjectsManager(ProjectNotionManager):
         """Upsert the root page of all projects."""
         self._pages_manager.upsert_page(NotionLockKey(self._KEY), self._PAGE_NAME, NotionPageLink(workspace.notion_id))
 
-    def upsert_project(self, project: Project) -> NotionProject:
+    def upsert_project(self, project: NotionProject) -> NotionProject:
         """Upsert a single project."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         project_page = \
             self._pages_manager.upsert_page(
-                NotionLockKey(f"{self._KEY}:{project.ref_id}"), str(project.name), root_page)
+                NotionLockKey(f"{self._KEY}:{project.ref_id}"), project.name, root_page)
 
         return NotionProject(name=str(project.name), ref_id=project.ref_id, notion_id=project_page.page_id)
 
@@ -55,9 +54,9 @@ class NotionProjectsManager(ProjectNotionManager):
 
         return NotionProject(name=project_page.name, ref_id=ref_id, notion_id=project_page.page_id)
 
-    def remove(self, project: Project) -> None:
+    def remove_project(self, ref_id: EntityId) -> None:
         """Archive a project."""
         try:
-            self._pages_manager.remove_page(NotionLockKey(f"{self._KEY}:{project.ref_id}"))
+            self._pages_manager.remove_page(NotionLockKey(f"{self._KEY}:{ref_id}"))
         except NotionPageNotFoundError as err:
-            raise NotionProjectNotFoundError(f"Notion project with id {project.ref_id} could not be found") from err
+            raise NotionProjectNotFoundError(f"Notion project with id {ref_id} could not be found") from err

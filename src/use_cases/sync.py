@@ -37,8 +37,8 @@ from domain.recurring_tasks.infra.recurring_task_notion_manager import Recurring
 from domain.recurring_tasks.service.recurring_task_sync_service import RecurringTaskSyncService
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
-from domain.smart_lists.smart_list_key import SmartListKey
 from domain.smart_lists.service.sync_service import SmartListSyncService
+from domain.smart_lists.smart_list_key import SmartListKey
 from domain.sync_prefer import SyncPrefer
 from domain.sync_target import SyncTarget
 from domain.vacations.infra.vacation_engine import VacationEngine
@@ -195,21 +195,36 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 if SyncTarget.STRUCTURE in sync_targets:
                     LOGGER.info(f"Recreating project {project.name} structure")
 
-                    notion_project = self._project_notion_manager.upsert_project(project)
+                    notion_project = self._project_notion_manager.load_project(project.ref_id)
+                    notion_project = notion_project.join_with_aggregate_root(project)
+                    notion_project = self._project_notion_manager.save_project(notion_project)
                     LOGGER.info("Recreating inbox tasks")
 
+                    notion_inbox_tasks_collection = \
+                        self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
+                    notion_inbox_tasks_collection = \
+                        notion_inbox_tasks_collection.join_with_aggregate_root(inbox_task_collection)
                     self._inbox_task_notion_manager.upsert_inbox_task_collection(
-                        project, notion_project, inbox_task_collection)
+                        notion_project, notion_inbox_tasks_collection)
                     LOGGER.info("Recreating recurring tasks")
+                    notion_recurring_task_collection = \
+                        self._recurring_task_notion_manager.load_recurring_task_collection(
+                            recurring_task_collection.ref_id)
+                    notion_recurring_task_collection = \
+                        notion_recurring_task_collection.join_with_aggregate_root(recurring_task_collection)
                     self._recurring_task_notion_manager.upsert_recurring_task_collection(
-                        project, notion_project, recurring_task_collection)
+                        notion_project, notion_recurring_task_collection)
                     LOGGER.info("Recreating big plans")
 
+                    notion_big_plan_collection = \
+                        self._big_plan_notion_manager.load_big_plan_collection(big_plan_collection.ref_id)
+                    notion_big_plan_collection = \
+                        notion_big_plan_collection.join_with_aggregate_root(big_plan_collection)
                     self._big_plan_notion_manager.upsert_big_plan_collection(
-                        project, notion_project, big_plan_collection)
+                        notion_project, notion_big_plan_collection)
 
                 notion_inbox_tasks_collection = \
-                    self._inbox_task_notion_manager.get_inbox_task_collection(inbox_task_collection)
+                    self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
 
                 if SyncTarget.PROJECTS in sync_targets:
                     LOGGER.info(f"Syncing project '{project.name}'")
@@ -224,7 +239,8 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             project.ref_id, args.drop_all_notion, notion_inbox_tasks_collection,
                             args.sync_even_if_not_modified, args.filter_big_plan_ref_ids, args.sync_prefer)
                     InboxTaskBigPlanRefOptionsUpdateService(
-                        self._big_plan_engine, self._inbox_task_notion_manager).sync(project)
+                        self._big_plan_engine, self._inbox_task_engine, self._inbox_task_notion_manager)\
+                        .sync(big_plan_collection)
                 else:
                     with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
                         big_plan_collection = \
@@ -304,11 +320,13 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                             inbox_task_uow.inbox_task_repository.save(inbox_task)
 
-                        notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id,
-                                                                                            inbox_task.ref_id)
+                        notion_inbox_task = \
+                            self._inbox_task_notion_manager.load_inbox_task(
+                                inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                         notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                             inbox_task, NotionInboxTask.DirectInfo(None))
-                        self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                        self._inbox_task_notion_manager.save_inbox_task(
+                            inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                         LOGGER.info("Applied Notion changes")
 
                 if SyncTarget.BIG_PLANS in sync_targets:
@@ -352,7 +370,9 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
 
                 if SyncTarget.STRUCTURE in sync_targets:
                     LOGGER.info(f"Recreating smart list '{smart_list.name}'")
-                    self._smart_list_notion_manager.upsert_smart_list(smart_list)
+                    notion_smart_list = self._smart_list_notion_manager.load_smart_list(smart_list.ref_id)
+                    notion_smart_list = notion_smart_list.join_with_aggregate_root(smart_list)
+                    self._smart_list_notion_manager.upsert_smart_list(notion_smart_list)
 
                 LOGGER.info(f"Syncing smart list '{smart_list.name}'")
                 smart_list_sync_service = SmartListSyncService(self._smart_list_engine, self._smart_list_notion_manager)
@@ -370,7 +390,9 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
 
                 if SyncTarget.STRUCTURE in sync_targets:
                     LOGGER.info(f"Recreating metric '{metric.name}'")
-                    self._metric_notion_manager.upsert_metric(metric)
+                    notion_metric = self._metric_notion_manager.load_metric(metric.ref_id)
+                    notion_metric = notion_metric.join_with_aggregate_root(metric)
+                    self._metric_notion_manager.save_metric(notion_metric)
 
                 LOGGER.info(f"Syncing metric '{metric.name}'")
                 metric_sync_service = MetricSyncService(self._metric_engine, self._metric_notion_manager)
@@ -406,11 +428,13 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                     inbox_task_uow.inbox_task_repository.save(inbox_task)
 
-                notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id,
-                                                                                    inbox_task.ref_id)
+                notion_inbox_task = \
+                    self._inbox_task_notion_manager.load_inbox_task(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                     inbox_task, NotionInboxTask.DirectInfo(None))
-                self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")
 
         if SyncTarget.PRM in sync_targets:
@@ -458,11 +482,13 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                     with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                         inbox_task_uow.inbox_task_repository.save(inbox_task)
 
-                    notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id,
-                                                                                        inbox_task.ref_id)
+                    notion_inbox_task = \
+                        self._inbox_task_notion_manager.load_inbox_task(
+                            inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                     notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                         inbox_task, NotionInboxTask.DirectInfo(None))
-                    self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                    self._inbox_task_notion_manager.save_inbox_task(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                     LOGGER.info("Applied Notion changes")
 
             for inbox_task in all_person_birthday_tasks:
@@ -496,8 +522,9 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
 
                     notion_inbox_task = \
                         self._inbox_task_notion_manager.load_inbox_task(
-                            inbox_task.project_ref_id, inbox_task.ref_id)
+                            inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                     notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                         inbox_task, NotionInboxTask.DirectInfo(None))
-                    self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                    self._inbox_task_notion_manager.save_inbox_task(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                     LOGGER.info("Applied Notion changes")

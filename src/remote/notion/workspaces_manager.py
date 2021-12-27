@@ -6,7 +6,6 @@ from typing import ClassVar, Final, cast
 
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager, NotionWorkspaceNotFoundError
 from domain.workspaces.notion_workspace import NotionWorkspace
-from domain.workspaces.workspace import Workspace
 from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
 from framework.json import JSONDictType
@@ -38,7 +37,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         self._connection = connection
         self._structured_storage = StructuredIndividualStorage(self._WORKSPACES_LOCK_FILE_PATH, self)
 
-    def upsert_workspace(self, workspace: Workspace) -> NotionWorkspace:
+    def upsert_workspace(self, workspace: NotionWorkspace) -> NotionWorkspace:
         """Upsert the root Notion structure."""
         lock = self._structured_storage.load_optional()
         client = self._connection.get_notion_client()
@@ -47,11 +46,11 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
             page = client.get_regular_page(lock.page_id)
             LOGGER.info(f"Found the root page via id {page}")
         else:
-            page = client.create_regular_page(str(workspace.name))
+            page = client.create_regular_page(workspace.name)
             LOGGER.info(f"Created the root page {page}")
 
         # Change the title.
-        page.title = str(workspace.name)
+        page.title = workspace.name
         LOGGER.info("Applied changes to root page on Notion side")
 
         # Saved local locks.
@@ -61,7 +60,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         LOGGER.info("Saved lock structure")
 
         return NotionWorkspace(
-            name=str(workspace.name),
+            name=workspace.name,
             notion_id=NotionId.from_raw(page.id),
             ref_id=workspace.ref_id)
 

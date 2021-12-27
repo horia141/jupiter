@@ -45,11 +45,11 @@ class InboxTaskSyncService:
         all_inbox_tasks_set = {rt.ref_id: rt for rt in all_inbox_tasks}
 
         if not drop_all_notion_side:
-            all_notion_inbox_tasks = self._notion_manager.load_all_inbox_tasks(inbox_task_collection)
+            all_notion_inbox_tasks = self._notion_manager.load_all_inbox_tasks(inbox_task_collection.ref_id)
             all_notion_inbox_tasks_notion_ids = \
-                set(self._notion_manager.load_all_saved_inbox_tasks_notion_ids(project_ref_id))
+                set(self._notion_manager.load_all_saved_inbox_tasks_notion_ids(inbox_task_collection.ref_id))
         else:
-            self._notion_manager.drop_all_inbox_tasks(project_ref_id)
+            self._notion_manager.drop_all_inbox_tasks(inbox_task_collection.ref_id)
             all_notion_inbox_tasks = {}
             all_notion_inbox_tasks_notion_ids = set()
         all_notion_inbox_tasks_set = {}
@@ -85,7 +85,7 @@ class InboxTaskSyncService:
                 LOGGER.info(f"Found new inbox task from Notion {notion_inbox_task.name}")
 
                 self._notion_manager.link_local_and_notion_inbox_task(
-                    project_ref_id, new_inbox_task.ref_id, notion_inbox_task.notion_id)
+                    inbox_task_collection.ref_id, new_inbox_task.ref_id, notion_inbox_task.notion_id)
                 LOGGER.info(f"Linked the new inbox task with local entries")
 
                 big_plan_name = \
@@ -93,7 +93,7 @@ class InboxTaskSyncService:
                 notion_inbox_task = \
                     notion_inbox_task.join_with_aggregate_root(
                         new_inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
-                self._notion_manager.save_inbox_task(project_ref_id, notion_inbox_task)
+                self._notion_manager.save_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
                 LOGGER.info(f"Applied changes on Notion side too as {notion_inbox_task}")
 
                 all_inbox_tasks_set[new_inbox_task.ref_id] = new_inbox_task
@@ -134,7 +134,7 @@ class InboxTaskSyncService:
                     updated_notion_inbox_task = \
                         notion_inbox_task.join_with_aggregate_root(
                             inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
-                    self._notion_manager.save_inbox_task(project_ref_id, updated_notion_inbox_task)
+                    self._notion_manager.save_inbox_task(inbox_task_collection.ref_id, updated_notion_inbox_task)
                     LOGGER.info(f"Changed inbox task with id={notion_inbox_task.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -144,7 +144,7 @@ class InboxTaskSyncService:
                 #    setup, and we remove it.
                 # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
                 #    duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_inbox_task(project_ref_id, notion_inbox_task_ref_id)
+                self._notion_manager.remove_inbox_task(inbox_task_collection.ref_id, notion_inbox_task_ref_id)
                 LOGGER.info(f"Removed dangling inbox task in Notion {notion_inbox_task}")
 
         LOGGER.info("Applied local changes")
@@ -162,7 +162,7 @@ class InboxTaskSyncService:
             big_plan_name = all_big_plans_map[inbox_task.big_plan_ref_id].name if inbox_task.big_plan_ref_id else None
 
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
-            self._notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+            self._notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
         return all_inbox_tasks_set.values()

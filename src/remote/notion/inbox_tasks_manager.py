@@ -10,7 +10,6 @@ from notion.collection import CollectionRowBlock
 from domain.adate import ADate
 from domain.difficulty import Difficulty
 from domain.eisen import Eisen
-from domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, InboxTaskBigPlanLabel, \
@@ -18,7 +17,6 @@ from domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionMa
 from domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from domain.projects.notion_project import NotionProject
-from domain.projects.project import Project
 from domain.recurring_task_period import RecurringTaskPeriod
 from domain.recurring_task_type import RecurringTaskType
 from framework.base.entity_id import EntityId
@@ -961,11 +959,11 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         self._collections_manager = collections_manager
 
     def upsert_inbox_task_collection(
-            self, project: Project, notion_project: NotionProject,
-            inbox_task_collection: InboxTaskCollection) -> NotionInboxTaskCollection:
+            self, notion_project: NotionProject,
+            inbox_task_collection: NotionInboxTaskCollection) -> NotionInboxTaskCollection:
         """Upsert the Notion-side inbox task."""
         collection_link = self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{project.ref_id}"),
+            key=NotionLockKey(f"{self._KEY}:{inbox_task_collection.ref_id}"),
             parent_page=NotionPageLink(notion_project.notion_id),
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
@@ -984,105 +982,28 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_id=collection_link.collection_id,
             ref_id=inbox_task_collection.ref_id)
 
-    def remove_inbox_tasks_collection(self, inbox_task_collection: InboxTaskCollection) -> None:
-        """Remove the Notion-side structure for this collection."""
-        try:
-            return self._collections_manager.remove_collection(
-                NotionLockKey(f"{self._KEY}:{inbox_task_collection.project_ref_id}"))
-        except NotionCollectionNotFoundError as err:
-            raise NotionInboxTaskCollectionNotFoundError(
-                f"Notion inbox task collection with id {inbox_task_collection.ref_id} was not found") from err
-
-    def get_inbox_task_collection(self, inbox_task_collection: InboxTaskCollection) -> NotionInboxTaskCollection:
+    def load_inbox_task_collection(self, ref_id: EntityId) -> NotionInboxTaskCollection:
         """Get the Notion collection for this inbox task collection."""
         try:
             return NotionInboxTaskCollection(
-                ref_id=inbox_task_collection.ref_id,
+                ref_id=ref_id,
                 notion_id=self._collections_manager.load_collection(
-                    NotionLockKey(f"{self._KEY}:{inbox_task_collection.project_ref_id}")).collection_id)
+                    NotionLockKey(f"{self._KEY}:{ref_id}")).collection_id)
         except NotionCollectionNotFoundError as err:
             raise NotionInboxTaskCollectionNotFoundError(
-                f"Notion inbox task collection with id {inbox_task_collection.ref_id} was not found") from err
+                f"Notion inbox task collection with id {ref_id} was not found") from err
 
-    def upsert_inbox_task(
-            self, inbox_task_collection: InboxTaskCollection, inbox_task: NotionInboxTask) -> NotionInboxTask:
-        """Upsert a inbox task."""
-        return self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{inbox_task.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection.project_ref_id}"),
-            new_row=inbox_task,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
-
-    def link_local_and_notion_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
-        """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            key=NotionLockKey(f"{ref_id}"),
-            ref_id=ref_id,
-            notion_id=notion_id)
-
-    def load_all_inbox_tasks(self, inbox_task_collection: InboxTaskCollection) -> Iterable[NotionInboxTask]:
-        """Retrieve all the Notion-side inbox tasks."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection.project_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
-
-    def load_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> NotionInboxTask:
-        """Retrieve the Notion-side inbox task associated with a particular entity."""
+    def remove_inbox_tasks_collection(self, ref_id: EntityId) -> None:
+        """Remove the Notion-side structure for this collection."""
         try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
-        except NotionCollectionItemNotFoundError as err:
-            raise NotionInboxTaskNotFoundError(
-                f"Notion inbox task with id {ref_id} was not found") from err
-
-    def remove_inbox_task(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
-        """Remove a particular inbox tasks."""
-        try:
-            self._collections_manager.quick_archive_collection_item(
-                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-                key=NotionLockKey(f"{ref_id}"))
-        except NotionCollectionItemNotFoundError as err:
-            raise NotionInboxTaskNotFoundError(
-                f"Notion inbox task with id {ref_id} was not found") from err
-
-    def save_inbox_task(self, project_ref_id: EntityId, inbox_task: NotionInboxTask) -> NotionInboxTask:
-        """Update the Notion-side inbox task with new data."""
-        try:
-            return self._collections_manager.save_collection_item(
-                key=NotionLockKey(f"{inbox_task.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-                row=inbox_task,
-                copy_row_to_notion_row=self._copy_row_to_notion_row)
-        except NotionCollectionItemNotFoundError as err:
-            raise NotionInboxTaskNotFoundError(
-                f"Notion inbox task with id {inbox_task.ref_id} was not found") from err
-
-    def load_all_saved_inbox_tasks_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
-
-    def load_all_saved_inbox_tasks_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids for the inbox tasks tasks."""
-        return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
-
-    def drop_all_inbox_tasks(self, project_ref_id: EntityId) -> None:
-        """Remove all inbox tasks Notion-side."""
-        self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
-
-    def hard_remove_inbox_task(self, project_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
-        """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+            return self._collections_manager.remove_collection(
+                NotionLockKey(f"{self._KEY}:{ref_id}"))
+        except NotionCollectionNotFoundError as err:
+            raise NotionInboxTaskCollectionNotFoundError(
+                f"Notion inbox task collection with id {ref_id} was not found") from err
 
     def upsert_inbox_tasks_big_plan_field_options(
-            self, project_ref_id: EntityId, big_plans_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
+            self, ref_id: EntityId, big_plans_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
         """Upsert the Notion-side structure for the 'big plan' select field."""
         inbox_big_plan_options = [{
             "color": self._get_stable_color(str(bp.notion_link_uuid)),
@@ -1094,8 +1015,76 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
 
         self._collections_manager.save_collection_no_merge(
-            NotionLockKey(f"{self._KEY}:{project_ref_id}"), self._PAGE_NAME, new_schema)
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, new_schema)
         LOGGER.info("Updated the schema for the associated inbox")
+
+    def upsert_inbox_task(
+            self, inbox_task_collection_ref_id: EntityId, inbox_task: NotionInboxTask) -> NotionInboxTask:
+        """Upsert a inbox task."""
+        return self._collections_manager.upsert_collection_item(
+            key=NotionLockKey(f"{inbox_task.ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"),
+            new_row=inbox_task,
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
+
+    def save_inbox_task(self, inbox_task_collection_ref_id: EntityId, inbox_task: NotionInboxTask) -> NotionInboxTask:
+        """Update the Notion-side inbox task with new data."""
+        try:
+            return self._collections_manager.save_collection_item(
+                key=NotionLockKey(f"{inbox_task.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"),
+                row=inbox_task,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionInboxTaskNotFoundError(
+                f"Notion inbox task with id {inbox_task.ref_id} was not found") from err
+
+    def load_all_inbox_tasks(self, inbox_task_collection_ref_id: EntityId) -> Iterable[NotionInboxTask]:
+        """Retrieve all the Notion-side inbox tasks."""
+        return self._collections_manager.load_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
+
+    def load_inbox_task(self, inbox_task_collection_ref_id: EntityId, ref_id: EntityId) -> NotionInboxTask:
+        """Retrieve the Notion-side inbox task associated with a particular entity."""
+        try:
+            return self._collections_manager.load_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"),
+                copy_notion_row_to_row=self._copy_notion_row_to_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionInboxTaskNotFoundError(
+                f"Notion inbox task with id {ref_id} was not found") from err
+
+    def remove_inbox_task(self, inbox_task_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
+        """Hard remove the Notion entity associated with a local entity."""
+        self._collections_manager.remove_collection_item(
+            key=NotionLockKey(f"{ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"))
+
+    def drop_all_inbox_tasks(self, inbox_task_collection_ref_id: EntityId) -> None:
+        """Remove all inbox tasks Notion-side."""
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"))
+
+    def link_local_and_notion_inbox_task(
+            self, inbox_task_collection_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"),
+            ref_id=ref_id,
+            notion_id=notion_id)
+
+    def load_all_saved_inbox_tasks_notion_ids(self, inbox_task_collection_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"))
+
+    def load_all_saved_inbox_tasks_ref_ids(self, inbox_task_collection_ref_id: EntityId) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the inbox tasks tasks."""
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"))
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionInboxTask, notion_row: CollectionRowBlock) -> CollectionRowBlock:

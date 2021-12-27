@@ -28,10 +28,6 @@ class PrmNotionManager(abc.ABC):
         """Save an already existing person on Notion-side."""
 
     @abc.abstractmethod
-    def remove_person(self, ref_id: EntityId) -> None:
-        """Remove a person on Notion-side."""
-
-    @abc.abstractmethod
     def load_person(self, ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
 
@@ -40,12 +36,8 @@ class PrmNotionManager(abc.ABC):
         """Retrieve all persons from Notion-side."""
 
     @abc.abstractmethod
-    def load_all_saved_person_ref_ids(self) -> Iterable[EntityId]:
-        """Load ids of all persons we know about from Notion side."""
-
-    @abc.abstractmethod
-    def load_all_saved_person_notion_ids(self) -> Iterable[NotionId]:
-        """Load ids of all persons we know about from Notion side."""
+    def remove_person(self, ref_id: EntityId) -> None:
+        """Remove a person on Notion-side."""
 
     @abc.abstractmethod
     def drop_all_persons(self) -> None:
@@ -54,3 +46,11 @@ class PrmNotionManager(abc.ABC):
     @abc.abstractmethod
     def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local and Notion version of the entities."""
+
+    @abc.abstractmethod
+    def load_all_saved_person_ref_ids(self) -> Iterable[EntityId]:
+        """Load ids of all persons we know about from Notion side."""
+
+    @abc.abstractmethod
+    def load_all_saved_person_notion_ids(self) -> Iterable[NotionId]:
+        """Load ids of all persons we know about from Notion side."""

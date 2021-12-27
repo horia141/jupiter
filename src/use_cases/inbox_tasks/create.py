@@ -91,5 +91,5 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
             inbox_task = inbox_task_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
             LOGGER.info("Applied local changes")
         notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
-        self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection, notion_inbox_task)
+        self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
         LOGGER.info("Applied Notion changes")

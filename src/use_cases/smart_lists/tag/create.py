@@ -4,6 +4,7 @@ from typing import Final
 
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
+from domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from domain.smart_lists.smart_list_tag import SmartListTag
 from domain.smart_lists.smart_list_tag_name import SmartListTagName
 from domain.smart_lists.smart_list_key import SmartListKey
@@ -40,4 +41,5 @@ class SmartListTagCreateUseCase(UseCase['SmartListTagCreateUseCase.Args', None])
                 smart_list_ref_id=metric.ref_id, tag_name=args.tag_name,
                 created_time=self._time_provider.get_current_time())
             smart_list_tag = uow.smart_list_tag_repository.create(smart_list_tag)
-        self._notion_manager.upsert_smart_list_tag(smart_list_tag)
+        notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
+        self._notion_manager.upsert_smart_list_tag(metric.ref_id, notion_smart_list_tag)

@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional, Final, List
 
+from domain.smart_lists.notion_smart_list_item import NotionSmartListItem
+from domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from domain.url import URL
 from domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
@@ -70,5 +72,11 @@ class SmartListItemUpdateUseCase(UseCase['SmartListItemUpdateUseCase.Args', None
             uow.smart_list_item_repository.save(smart_list_item)
 
         for smart_list_tag in smart_list_tags.values():
-            self._notion_manager.upsert_smart_list_tag(smart_list_tag)
-        self._notion_manager.upsert_smart_list_item(smart_list_item, smart_list_tags.keys())
+            notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
+            self._notion_manager.upsert_smart_list_tag(smart_list_item.smart_list_ref_id, notion_smart_list_tag)
+        notion_smart_list_item = \
+            self._notion_manager.load_smart_list_item(smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
+        notion_smart_list_item = notion_smart_list_item.join_with_aggregate_root(
+            smart_list_item,
+            NotionSmartListItem.DirectExtraInfo({t.ref_id: t for t in smart_list_tags.values()}))
+        self._notion_manager.save_smart_list_item(smart_list_item.smart_list_ref_id, notion_smart_list_item)

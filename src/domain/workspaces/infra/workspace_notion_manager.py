@@ -2,7 +2,6 @@
 import abc
 
 from domain.workspaces.notion_workspace import NotionWorkspace
-from domain.workspaces.workspace import Workspace
 
 
 class NotionWorkspaceNotFoundError(Exception):
@@ -13,7 +12,7 @@ class WorkspaceNotionManager(abc.ABC):
     """The centralised point for workspace work on Notion-side."""
 
     @abc.abstractmethod
-    def upsert_workspace(self, workspace: Workspace) -> NotionWorkspace:
+    def upsert_workspace(self, workspace: NotionWorkspace) -> NotionWorkspace:
         """Upsert the root Notion structure."""
 
     @abc.abstractmethod

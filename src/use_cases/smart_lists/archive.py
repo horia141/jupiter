@@ -44,7 +44,7 @@ class SmartListArchiveUseCase(UseCase[SmartListKey, None]):
             LOGGER.info("Applied local changes")
 
         try:
-            self._notion_manager.remove_smart_list(smart_list)
+            self._notion_manager.remove_smart_list(smart_list.ref_id)
             LOGGER.info("Applied Notion changes")
         except NotionSmartListNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

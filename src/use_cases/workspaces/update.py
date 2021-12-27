@@ -53,4 +53,6 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
 
             uow.workspace_repository.save(workspace)
 
-        self._notion_manager.upsert_workspace(workspace)
+        notion_workspace = self._notion_manager.load_workspace()
+        notion_workspace = notion_workspace.join_with_aggregate_root(workspace)
+        self._notion_manager.save_workspace(notion_workspace)

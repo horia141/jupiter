@@ -34,6 +34,6 @@ class SmartListItemArchiveUseCase(UseCase[EntityId, None]):
             uow.smart_list_item_repository.save(smart_list_item)
 
         try:
-            self._notion_manager.remove_smart_list_item(smart_list_item)
+            self._notion_manager.remove_smart_list_item(smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
         except NotionSmartListItemNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

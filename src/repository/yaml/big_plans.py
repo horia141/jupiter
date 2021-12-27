@@ -76,6 +76,13 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
         big_plan_collection.assign_ref_id(new_big_plan_collection_row.ref_id)
         return big_plan_collection
 
+    def load_by_id(self, ref_id: EntityId) -> BigPlanCollection:
+        """Load an inbox task collection by id."""
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=False))
+        except StorageEntityNotFoundError as err:
+            raise BigPlanCollectionNotFoundError(f"Big plan task collection with id {ref_id} does not exist") from err
+
     def load_by_project(self, project_ref_id: EntityId) -> BigPlanCollection:
         """Find an big plan collection by project ref id."""
         try:

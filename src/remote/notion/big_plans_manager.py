@@ -6,7 +6,6 @@ from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 from notion.collection import CollectionRowBlock
 
 from domain.adate import ADate
-from domain.big_plans.big_plan_collection import BigPlanCollection
 from domain.big_plans.big_plan_status import BigPlanStatus
 from domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanCollectionNotFoundError, \
     NotionBigPlanNotFoundError
@@ -16,11 +15,10 @@ from domain.entity_name import EntityName
 from domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from domain.projects.notion_project import NotionProject
-from domain.projects.project import Project
-from framework.base.timestamp import Timestamp
-from framework.json import JSONDictType
 from framework.base.entity_id import EntityId
 from framework.base.notion_id import NotionId
+from framework.base.timestamp import Timestamp
+from framework.json import JSONDictType
 from remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option
 from remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
 from remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionNotFoundError, \
@@ -228,11 +226,11 @@ class NotionBigPlansManager(BigPlanNotionManager):
         self._collections_manager = collections_manager
 
     def upsert_big_plan_collection(
-            self, project: Project, notion_project: NotionProject,
-            big_plan_collection: BigPlanCollection) -> NotionBigPlanCollection:
+            self, notion_project: NotionProject,
+            big_plan_collection: NotionBigPlanCollection) -> NotionBigPlanCollection:
         """Upsert the Notion-side big plan."""
         collection_link = self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{project.ref_id}"),
+            key=NotionLockKey(f"{self._KEY}:{big_plan_collection.ref_id}"),
             parent_page=NotionPageLink(notion_project.notion_id),
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
@@ -246,93 +244,98 @@ class NotionBigPlansManager(BigPlanNotionManager):
             notion_id=collection_link.collection_id,
             ref_id=big_plan_collection.ref_id)
 
-    def remove_big_plans_collection(self, big_plan_collection: BigPlanCollection) -> None:
+    def load_big_plan_collection(self, ref_id: EntityId) -> NotionBigPlanCollection:
+        """Upsert the Notion-side big plan."""
+        try:
+            big_plan_collection_link = self._collections_manager.load_collection(
+                key=NotionLockKey(f"{self._KEY}:{ref_id}"))
+        except NotionCollectionNotFoundError as err:
+            raise NotionBigPlanCollectionNotFoundError(
+                f"Could not find big plan collection with id {ref_id} locally") from err
+
+        return NotionBigPlanCollection(
+            ref_id=ref_id,
+            notion_id=big_plan_collection_link.collection_id)
+
+    def remove_big_plans_collection(self, ref_id: EntityId) -> None:
         """Remove the Notion-side structure for this collection."""
         try:
             return self._collections_manager.remove_collection(
-                NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"))
+                NotionLockKey(f"{self._KEY}:{ref_id}"))
         except NotionCollectionNotFoundError as err:
             raise NotionBigPlanCollectionNotFoundError(
-                f"Notion big plan collection with id {big_plan_collection.ref_id} could not be found") from err
+                f"Notion big plan collection with id {ref_id} could not be found") from err
 
-    def upsert_big_plan(self, big_plan_collection: BigPlanCollection, big_plan: NotionBigPlan,
-                        inbox_collection_link: NotionInboxTaskCollection) -> NotionBigPlan:
+    def upsert_big_plan(
+            self, big_plan_collection_ref_id: EntityId, big_plan: NotionBigPlan,
+            inbox_collection_link: NotionInboxTaskCollection) -> NotionBigPlan:
         """Upsert a big plan."""
         return self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{big_plan.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"),
             new_row=big_plan,
             copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
 
-    def link_local_and_notion_big_plan(self, project_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
-        """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-            key=NotionLockKey(f"{ref_id}"),
-            ref_id=ref_id,
-            notion_id=notion_id)
-
-    def load_all_big_plans(self, big_plan_collection: BigPlanCollection) -> Iterable[NotionBigPlan]:
-        """Retrieve all the Notion-side big plans."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection.project_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
-
-    def load_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> NotionBigPlan:
-        """Retrieve the Notion-side big plan associated with a particular entity."""
-        try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
-        except NotionCollectionItemNotFoundError as err:
-            raise NotionBigPlanNotFoundError(
-                f"Notion big plan with id {ref_id} could not be found") from err
-
-    def remove_big_plan(self, project_ref_id: EntityId, ref_id: EntityId) -> None:
-        """Remove a particular big plans."""
-        try:
-            self._collections_manager.quick_archive_collection_item(
-                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
-                key=NotionLockKey(f"{ref_id}"))
-        except NotionCollectionItemNotFoundError as err:
-            raise NotionBigPlanNotFoundError(
-                f"Notion big plan with id {ref_id} could not be found") from err
-
     def save_big_plan(
-            self, project_ref_id: EntityId, big_plan: NotionBigPlan,
+            self, big_plan_collection_ref_id: EntityId, big_plan: NotionBigPlan,
             inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionBigPlan:
         """Update the Notion-side big plan with new data."""
         try:
             return self._collections_manager.save_collection_item(
                 key=NotionLockKey(f"{big_plan.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"),
                 row=big_plan,
                 copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
         except NotionCollectionItemNotFoundError as err:
             raise NotionBigPlanNotFoundError(
                 f"Notion big plan with id {big_plan.ref_id} could not be found") from err
 
-    def load_all_saved_big_plans_notion_ids(self, project_ref_id: EntityId) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+    def load_big_plan(self, big_plan_collection_ref_id: EntityId, ref_id: EntityId) -> NotionBigPlan:
+        """Retrieve the Notion-side big plan associated with a particular entity."""
+        try:
+            return self._collections_manager.load_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"),
+                copy_notion_row_to_row=self._copy_notion_row_to_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionBigPlanNotFoundError(
+                f"Notion big plan with id {ref_id} could not be found") from err
 
-    def load_all_saved_big_plans_ref_ids(self, project_ref_id: EntityId) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids for the big plans tasks."""
-        return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+    def load_all_big_plans(self, big_plan_collection_ref_id: EntityId) -> Iterable[NotionBigPlan]:
+        """Retrieve all the Notion-side big plans."""
+        return self._collections_manager.load_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
 
-    def drop_all_big_plans(self, project_ref_id: EntityId) -> None:
-        """Remove all big plans Notion-side."""
-        self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
-
-    def hard_remove_big_plan(self, project_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
+    def remove_big_plan(self, big_plan_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         self._collections_manager.remove_collection_item(
             key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{project_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"))
+
+    def drop_all_big_plans(self, big_plan_collection_ref_id: EntityId) -> None:
+        """Remove all big plans Notion-side."""
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"))
+
+    def link_local_and_notion_big_plan(
+            self, big_plan_collection_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"),
+            key=NotionLockKey(f"{ref_id}"),
+            ref_id=ref_id,
+            notion_id=notion_id)
+
+    def load_all_saved_big_plans_notion_ids(self, big_plan_collection_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"))
+
+    def load_all_saved_big_plans_ref_ids(self, big_plan_collection_ref_id: EntityId) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the big plans tasks."""
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"))
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionBigPlan, notion_row: CollectionRowBlock,

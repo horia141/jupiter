@@ -126,10 +126,11 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     self._time_provider.get_current_time())
 
         notion_recurring_task = \
-            self._recurring_task_notion_manager.load_recurring_task(recurring_task.project_ref_id,
-                                                                    recurring_task.ref_id)
+            self._recurring_task_notion_manager.load_recurring_task(
+                recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
         notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
-        self._recurring_task_notion_manager.save_recurring_task(recurring_task.project_ref_id, notion_recurring_task)
+        self._recurring_task_notion_manager.save_recurring_task(
+            recurring_task.recurring_task_collection_ref_id, notion_recurring_task)
 
         if need_to_change_inbox_tasks:
             with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
@@ -145,18 +146,19 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,
                     recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
 
-                inbox_task.update_link_to_recurring_task(schedule.full_name, schedule.timeline, recurring_task.the_type,
-                                                         schedule.actionable_date, schedule.due_time,
-                                                         recurring_task.gen_params.eisen,
-                                                         recurring_task.gen_params.difficulty,
-                                                         self._time_provider.get_current_time())
+                inbox_task.update_link_to_recurring_task(
+                    schedule.full_name, schedule.timeline, recurring_task.the_type, schedule.actionable_date,
+                    schedule.due_time, recurring_task.gen_params.eisen, recurring_task.gen_params.difficulty,
+                    self._time_provider.get_current_time())
 
                 with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
                     inbox_task_uow.inbox_task_repository.save(inbox_task)
 
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+                    self._inbox_task_notion_manager.load_inbox_task(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
                     inbox_task, NotionInboxTask.DirectInfo(None))
-                self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

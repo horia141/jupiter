@@ -23,6 +23,10 @@ class BigPlanCollectionRepository(Repository, abc.ABC):
         """Create a big plan collection."""
 
     @abc.abstractmethod
+    def load_by_id(self, ref_id: EntityId) -> BigPlanCollection:
+        """Retrieve a big plan collection by its id."""
+
+    @abc.abstractmethod
     def load_by_project(self, project_ref_id: EntityId) -> BigPlanCollection:
         """Retrieve a big plan collection by its owning project id."""
 

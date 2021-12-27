@@ -142,7 +142,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                     self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
                 if args.do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting inbox tasks which were archived")
-                    allowed_ref_ids = self._inbox_task_notion_manager.load_all_saved_inbox_tasks_ref_ids(project.ref_id)
+                    allowed_ref_ids = \
+                        self._inbox_task_notion_manager.load_all_saved_inbox_tasks_ref_ids(inbox_task_collection.ref_id)
                     with self._inbox_task_engine.get_unit_of_work() as uow:
                         inbox_tasks = uow.inbox_task_repository.find_all(
                             allow_archived=True, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id],
@@ -162,7 +163,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 if args.do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting recurring tasks which were archived")
                     allowed_ref_ids = \
-                        self._recurring_task_notion_manager.load_all_saved_recurring_tasks_ref_ids(project.ref_id)
+                        self._recurring_task_notion_manager.load_all_saved_recurring_tasks_ref_ids(
+                            recurring_task_collection.ref_id)
                     with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
                         recurring_task_collection = \
                             recurring_task_uow.recurring_task_collection_repository.load_by_project(project.ref_id)
@@ -186,7 +188,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                     self._do_anti_entropy_for_big_plans(big_plans)
                 if args.do_notion_cleanup:
                     LOGGER.info(f"Garbage collecting big plans which were archived")
-                    allowed_ref_ids = self._big_plan_notion_manager.load_all_saved_big_plans_ref_ids(project.ref_id)
+                    allowed_ref_ids = \
+                        self._big_plan_notion_manager.load_all_saved_big_plans_ref_ids(big_plan_collection.ref_id)
                     with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
                         big_plans = \
                             big_plan_uow.big_plan_repository.find_all(
@@ -195,7 +198,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                     self._do_drop_all_archived_big_plans(big_plans)
 
                 InboxTaskBigPlanRefOptionsUpdateService(
-                    self._big_plan_engine, self._inbox_task_notion_manager).sync(project)
+                    self._big_plan_engine, self._inbox_task_engine, self._inbox_task_notion_manager)\
+                    .sync(big_plan_collection)
 
         if SyncTarget.SMART_LISTS in args.sync_targets:
             smart_lists: Iterable[SmartList] = []
@@ -218,7 +222,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 LOGGER.info(f"Garbage collecting smart list items which were archived")
                 for smart_list in smart_lists:
                     allowed_ref_ids = set(
-                        self._smart_list_notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list))
+                        self._smart_list_notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list.ref_id))
                     with self._smart_list_engine.get_unit_of_work() as smart_list_uow:
                         smart_list_items = smart_list_uow.smart_list_item_repository.find_all(
                             allow_archived=True, filter_ref_ids=allowed_ref_ids,
@@ -245,7 +249,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             if args.do_notion_cleanup:
                 LOGGER.info(f"Garbage collecting metric entries which were archived")
                 for metric in metrics:
-                    allowed_ref_ids = set(self._metric_notion_manager.load_all_saved_metric_entries_ref_ids(metric))
+                    allowed_ref_ids = \
+                        set(self._metric_notion_manager.load_all_saved_metric_entries_ref_ids(metric.ref_id))
                     with self._metric_engine.get_unit_of_work() as metric_uow:
                         metric_entries = metric_uow.metric_entry_repository.find_all(
                             allow_archived=True, filter_ref_ids=allowed_ref_ids, filter_metric_ref_ids=[metric.ref_id])
@@ -376,7 +381,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 LOGGER.info("Applied local changes")
 
                 try:
-                    self._smart_list_notion_manager.remove_smart_list(smart_list)
+                    self._smart_list_notion_manager.remove_smart_list(smart_list.ref_id)
                     LOGGER.info("Applied Notion changes")
                 except NotionSmartListNotFoundError:
                     LOGGER.info("Skipping removal on Notion side because smart list was not found")
@@ -395,7 +400,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                     LOGGER.info("Applied local changes")
 
                 try:
-                    self._smart_list_notion_manager.remove_smart_list_item(smart_list_item)
+                    self._smart_list_notion_manager.remove_smart_list_item(
+                        smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
                     LOGGER.info("Applied Notion changes")
                 except NotionSmartListItemNotFoundError:
                     LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
@@ -467,7 +473,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 continue
             LOGGER.info(f"Removed an archived big plan '{big_plan.name}' on Notion side")
             try:
-                self._big_plan_notion_manager.hard_remove_big_plan(big_plan.project_ref_id, big_plan.ref_id)
+                self._big_plan_notion_manager.remove_big_plan(big_plan.big_plan_collection_ref_id, big_plan.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionBigPlanNotFoundError:
                 # If we can't find this locally it means it's already gone
@@ -479,8 +485,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 continue
             LOGGER.info(f"Removed an archived recurring task '{recurring_task.name}' on Notion side")
             try:
-                self._recurring_task_notion_manager.hard_remove_recurring_task(
-                    recurring_task.project_ref_id, recurring_task.ref_id)
+                self._recurring_task_notion_manager.remove_recurring_task(
+                    recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionRecurringTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
@@ -493,7 +499,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 continue
             LOGGER.info(f"Removed an archived inbox tasks '{inbox_task.name}' on Notion side")
             try:
-                self._inbox_task_notion_manager.hard_remove_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+                self._inbox_task_notion_manager.remove_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionRecurringTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
@@ -506,7 +513,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
             LOGGER.info(f"Removed an archived smart list '{smart_list.name}' on Notion side")
 
             try:
-                self._smart_list_notion_manager.remove_smart_list(smart_list)
+                self._smart_list_notion_manager.remove_smart_list(smart_list.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionSmartListNotFoundError:
                 LOGGER.info("Skipping removal on Notion side because smart list was not found")
@@ -517,7 +524,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 continue
             LOGGER.info(f"Removed an archived smart list item '{smart_list_item.name}' on Notion side")
             try:
-                self._smart_list_notion_manager.remove_smart_list_item(smart_list_item)
+                self._smart_list_notion_manager.remove_smart_list_item(
+                    smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionSmartListItemNotFoundError:
                 LOGGER.info("Skipping archival on Notion side because smart list was not found")
@@ -528,7 +536,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 continue
             LOGGER.info(f"Removed an archived metric '{metric.name}' on Notion side")
             try:
-                self._metric_notion_manager.remove_metric(metric)
+                self._metric_notion_manager.remove_metric(metric.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionMetricNotFoundError:
                 LOGGER.info("Skipping archival on Notion side because metric was not found")

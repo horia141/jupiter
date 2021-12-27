@@ -57,6 +57,6 @@ class MetricArchiveUseCase(UseCase[MetricKey, None]):
 
         # TODO(horia141): process Notion side entries too
         try:
-            self._metric_notion_manager.remove_metric(metric)
+            self._metric_notion_manager.remove_metric(metric.ref_id)
         except NotionMetricNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

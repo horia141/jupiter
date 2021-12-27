@@ -48,4 +48,6 @@ class MetricEntryUpdateUseCase(UseCase['MetricEntryUpdateUseCase.Args', None]):
 
             uow.metric_entry_repository.save(metric_entry)
 
-        self._notion_manager.upsert_metric_entry(metric_entry)
+        notion_metric_entry = self._notion_manager.load_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
+        notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry, None)
+        self._notion_manager.save_metric_entry(metric_entry.metric_ref_id, notion_metric_entry)

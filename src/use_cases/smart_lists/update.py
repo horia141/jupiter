@@ -42,4 +42,6 @@ class SmartListUpdateUseCase(UseCase['SmartListUpdateUseCase.Args', None]):
 
             uow.smart_list_repository.save(smart_list)
 
-        self._notion_manager.upsert_smart_list(smart_list)
+        notion_smart_list = self._notion_manager.load_smart_list(smart_list.ref_id)
+        notion_smart_list = notion_smart_list.join_with_aggregate_root(smart_list)
+        self._notion_manager.save_smart_list(notion_smart_list)

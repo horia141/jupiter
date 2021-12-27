@@ -7,6 +7,7 @@ from domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from domain.metrics.metric_entry import MetricEntry
 from domain.adate import ADate
 from domain.metrics.metric_key import MetricKey
+from domain.metrics.notion_metric_entry import NotionMetricEntry
 from framework.use_case import UseCase
 from utils.time_provider import TimeProvider
 
@@ -44,4 +45,5 @@ class MetricEntryCreateUseCase(UseCase['MetricEntryCreateUseCase.Args', None]):
                 False, metric.ref_id, collection_time, args.value, args.notes,
                 self._time_provider.get_current_time())
             metric_entry = uow.metric_entry_repository.create(metric_entry)
-        self._notion_manager.upsert_metric_entry(metric_entry)
+        notion_metric_entry = NotionMetricEntry.new_notion_row(metric_entry, None)
+        self._notion_manager.upsert_metric_entry(metric.ref_id, notion_metric_entry)

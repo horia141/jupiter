@@ -86,7 +86,8 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
 
         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
             inbox_task_collection = inbox_task_uow.inbox_task_collection_repository.load_by_project(project_ref_id)
-        notion_inbox_task_collection = self._inbox_task_notion_manager.get_inbox_task_collection(inbox_task_collection)
+        notion_inbox_task_collection = \
+            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
 
         with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
             recurring_task_collection = \
@@ -119,5 +120,5 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
             LOGGER.info("Applied local changes")
         notion_recurring_task = NotionRecurringTask.new_notion_row(recurring_task, None)
         self._recurring_task_notion_manager.upsert_recurring_task(
-            recurring_task_collection, notion_recurring_task, notion_inbox_task_collection)
+            recurring_task_collection.ref_id, notion_recurring_task, notion_inbox_task_collection)
         LOGGER.info("Applied Notion changes")

@@ -43,5 +43,7 @@ class ProjectUpdateUseCase(UseCase['ProjectUpdateUseCase.Args', None]):
                 project.change_name(args.name.value, self._time_provider.get_current_time())
             uow.project_repository.save(project)
         LOGGER.info("Applied local changes")
-        self._project_notion_manager.upsert_project(project)
+        notion_project = self._project_notion_manager.load_project(project.ref_id)
+        notion_project = notion_project.join_with_aggregate_root(project)
+        self._project_notion_manager.save_project(notion_project)
         LOGGER.info("Applied Notion changes")

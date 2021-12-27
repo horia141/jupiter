@@ -45,11 +45,11 @@ class RecurringTaskSyncService:
         all_recurring_tasks_set: Dict[EntityId, RecurringTask] = {bp.ref_id: bp for bp in all_recurring_tasks}
 
         if not drop_all_notion_side:
-            all_notion_recurring_tasks = self._notion_manager.load_all_recurring_tasks(recurring_task_collection)
+            all_notion_recurring_tasks = self._notion_manager.load_all_recurring_tasks(recurring_task_collection.ref_id)
             all_notion_recurring_tasks_notion_ids = \
-                set(self._notion_manager.load_all_saved_recurring_tasks_notion_ids(project_ref_id))
+                set(self._notion_manager.load_all_saved_recurring_tasks_notion_ids(recurring_task_collection.ref_id))
         else:
-            self._notion_manager.drop_all_recurring_tasks(project_ref_id)
+            self._notion_manager.drop_all_recurring_tasks(recurring_task_collection.ref_id)
             all_notion_recurring_tasks = {}
             all_notion_recurring_tasks_notion_ids = set()
         all_notion_recurring_tasks_set: Dict[EntityId, NotionRecurringTask] = {}
@@ -80,11 +80,12 @@ class RecurringTaskSyncService:
                 LOGGER.info(f"Found new big plan from Notion {notion_recurring_task.name}")
 
                 self._notion_manager.link_local_and_notion_recurring_task(
-                    project_ref_id, new_recurring_task.ref_id, notion_recurring_task.notion_id)
+                    recurring_task_collection.ref_id, new_recurring_task.ref_id, notion_recurring_task.notion_id)
                 LOGGER.info(f"Linked the new big plan with local entries")
 
                 notion_recurring_task = notion_recurring_task.join_with_aggregate_root(new_recurring_task, None)
-                self._notion_manager.save_recurring_task(project_ref_id, notion_recurring_task, inbox_task_collection)
+                self._notion_manager.save_recurring_task(
+                    recurring_task_collection.ref_id, notion_recurring_task, inbox_task_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_recurring_task}")
 
                 all_recurring_tasks_set[new_recurring_task.ref_id] = new_recurring_task
@@ -114,7 +115,7 @@ class RecurringTaskSyncService:
                         updated_notion_recurring_task = \
                             notion_recurring_task.join_with_aggregate_root(updated_recurring_task, None)
                         self._notion_manager.save_recurring_task(
-                            project_ref_id, updated_notion_recurring_task, inbox_task_collection)
+                            recurring_task_collection.ref_id, updated_notion_recurring_task, inbox_task_collection)
                         LOGGER.info(f"Applies changes on Notion side too as {notion_recurring_task}")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
@@ -125,7 +126,7 @@ class RecurringTaskSyncService:
 
                     updated_notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
                     self._notion_manager.save_recurring_task(
-                        project_ref_id, updated_notion_recurring_task, inbox_task_collection)
+                        recurring_task_collection.ref_id, updated_notion_recurring_task, inbox_task_collection)
                     LOGGER.info(f"Changed big plan with id={notion_recurring_task.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -135,7 +136,8 @@ class RecurringTaskSyncService:
                 #    setup, and we remove it.
                 # 2. This is a big plan added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.hard_remove_recurring_task(project_ref_id, notion_recurring_task_ref_id)
+                self._notion_manager.remove_recurring_task(
+                    recurring_task_collection.ref_id, notion_recurring_task_ref_id)
                 LOGGER.info(f"Removed dangling big plan in Notion {notion_recurring_task}")
 
         LOGGER.info("Applied local changes")
@@ -152,7 +154,7 @@ class RecurringTaskSyncService:
 
             notion_recurring_task = NotionRecurringTask.new_notion_row(recurring_task, None)
             self._notion_manager.upsert_recurring_task(
-                recurring_task_collection, notion_recurring_task, inbox_task_collection)
+                recurring_task_collection.ref_id, notion_recurring_task, inbox_task_collection)
             LOGGER.info(f'Created Notion task for {recurring_task.name}')
 
         return all_recurring_tasks_set.values()

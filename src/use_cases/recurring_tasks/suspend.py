@@ -38,6 +38,7 @@ class RecurringTaskSuspendUseCase(UseCase['RecurringTaskSuspendUseCase.Args', No
             uow.recurring_task_repository.save(recurring_task)
 
         notion_recurring_task = self._recurring_task_notion_manager.load_recurring_task(
-            recurring_task.project_ref_id, recurring_task.ref_id)
+            recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
         notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
-        self._recurring_task_notion_manager.save_recurring_task(recurring_task.project_ref_id, notion_recurring_task)
+        self._recurring_task_notion_manager.save_recurring_task(
+            recurring_task.recurring_task_collection_ref_id, notion_recurring_task)

@@ -54,8 +54,8 @@ class InboxTaskAssociateWithBigPlanUseCase(UseCase['InboxTaskAssociateWithBigPla
             uow.inbox_task_repository.save(inbox_task)
 
         notion_inbox_task = \
-            self._inbox_task_notion_manager.load_inbox_task(inbox_task.project_ref_id, inbox_task.ref_id)
+            self._inbox_task_notion_manager.load_inbox_task(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
         notion_inbox_task = \
             notion_inbox_task.join_with_aggregate_root(inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
-        self._inbox_task_notion_manager.save_inbox_task(inbox_task.project_ref_id, notion_inbox_task)
+        self._inbox_task_notion_manager.save_inbox_task(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
         LOGGER.info("Applied Notion changes")

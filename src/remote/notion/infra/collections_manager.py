@@ -323,6 +323,44 @@ class CollectionsManager:
             name=tag,
             ref_id=ref_id)
 
+    def load_collection_field_tag(
+            self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
+            field: str) -> _NotionCollectionTagLink:
+        """Load a particular tag for a field in a collection."""
+        collection_lock = self._collections_storage.load(collection_key)
+        tag_key = self._build_compound_key(collection_key, key)
+        try:
+            lock = self._collection_field_tags_storage.load(tag_key)
+        except StorageEntityNotFoundError as err:
+            raise NotionCollectionFieldTagNotFoundError(
+                f"Collection field tag with key {key} could not be found") from err
+
+        client = self._connection.get_notion_client()
+        collection = client.get_collection(
+            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        schema = collection.get("schema")
+
+        if field not in schema:
+            raise Exception(f'Field "{field}" not in schema')
+
+        field_schema = schema[field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{field}" is not appropriate for tags')
+
+        if "options" not in field_schema:
+            field_schema["options"] = []
+
+        for option in field_schema["options"]:
+            if option["id"] == lock.tag_id:
+                return _NotionCollectionTagLink(
+                    collection_id=collection.id,
+                    notion_id=NotionId.from_raw(option["id"]),
+                    name=option["value"],
+                    ref_id=ref_id)
+
+        raise NotionCollectionFieldTagNotFoundError(f'Could not find tag with id {ref_id} ({lock.tag_id})')
+
     def load_all_collection_field_tags(
             self, collection_key: NotionLockKey, field: str) -> Iterable[_NotionCollectionTagLink]:
         """Load all tags for a field in a collection."""
@@ -556,21 +594,6 @@ class CollectionsManager:
             self._collection_items_storage.update(new_lock)
         else:
             self._collection_items_storage.create(new_lock)
-
-    def quick_archive_collection_item(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
-        """Remove a particular entity."""
-        item_key = self._build_compound_key(collection_key, key)
-        collection_lock = self._collections_storage.load(collection_key)
-        client = self._connection.get_notion_client()
-        collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
-
-        try:
-            lock = self._collection_items_storage.load(item_key)
-            notion_row = client.get_collection_row(collection, lock.row_id)
-        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
-            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
-        notion_row.archived = True
 
     def save_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemType,

@@ -11,6 +11,7 @@ from domain.metrics.infra.metric_repository import MetricAlreadyExistsError
 from domain.metrics.metric import Metric
 from domain.metrics.metric_key import MetricKey
 from domain.metrics.metric_unit import MetricUnit
+from domain.metrics.notion_metric import NotionMetric
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.project_key import ProjectKey
 from domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -91,6 +92,7 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
                 args.key, args.name, collection_params, args.metric_unit, self._time_provider.get_current_time())
             with self._metric_engine.get_unit_of_work() as metric_uow:
                 metric = metric_uow.metric_repository.create(metric)
-            self._notion_manager.upsert_metric(metric)
+            notion_metric = NotionMetric.new_notion_row(metric)
+            self._notion_manager.upsert_metric(notion_metric)
         except MetricAlreadyExistsError:
             raise InputValidationError(f"Metric with key {metric.key} already exists")

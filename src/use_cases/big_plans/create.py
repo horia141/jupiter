@@ -63,7 +63,8 @@ class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
 
         with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
             inbox_task_collection = inbox_task_uow.inbox_task_collection_repository.load_by_project(project_ref_id)
-        notion_inbox_tasks_collection = self._inbox_task_notion_manager.get_inbox_task_collection(inbox_task_collection)
+        notion_inbox_tasks_collection = \
+            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
 
         with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
             big_plan_collection = big_plan_uow.big_plan_collection_repository.load_by_project(project_ref_id)
@@ -78,6 +79,7 @@ class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
             big_plan = big_plan_uow.big_plan_repository.create(big_plan_collection, big_plan)
         notion_big_plan = NotionBigPlan.new_notion_row(big_plan, None)
         self._big_plan_notion_manager.upsert_big_plan(
-            big_plan_collection, notion_big_plan, notion_inbox_tasks_collection)
+            big_plan_collection.ref_id, notion_big_plan, notion_inbox_tasks_collection)
 
-        InboxTaskBigPlanRefOptionsUpdateService(self._big_plan_engine, self._inbox_task_notion_manager).sync(project)
+        InboxTaskBigPlanRefOptionsUpdateService(
+            self._big_plan_engine, self._inbox_task_engine, self._inbox_task_notion_manager).sync(big_plan_collection)

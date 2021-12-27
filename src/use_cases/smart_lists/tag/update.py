@@ -42,4 +42,7 @@ class SmartListTagUpdateUseCase(UseCase['SmartListTagUpdateUseCase.Args', None])
 
             uow.smart_list_tag_repository.save(smart_list_tag)
 
-        self._notion_manager.upsert_smart_list_tag(smart_list_tag)
+        notion_smart_list_tag = \
+            self._notion_manager.load_smart_list_tag(smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
+        notion_smart_list_tag = notion_smart_list_tag.join_with_aggregate_root(smart_list_tag, None)
+        self._notion_manager.save_smart_list_tag(smart_list_tag.smart_list_ref_id, notion_smart_list_tag)

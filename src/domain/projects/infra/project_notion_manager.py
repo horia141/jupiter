@@ -2,7 +2,6 @@
 import abc
 
 from domain.projects.notion_project import NotionProject
-from domain.projects.project import Project
 from domain.workspaces.notion_workspace import NotionWorkspace
 from framework.base.entity_id import EntityId
 
@@ -19,7 +18,7 @@ class ProjectNotionManager(abc.ABC):
         """Upsert the root page of all projects."""
 
     @abc.abstractmethod
-    def upsert_project(self, project: Project) -> NotionProject:
+    def upsert_project(self, project: NotionProject) -> NotionProject:
         """Upsert a single project."""
 
     @abc.abstractmethod
@@ -31,5 +30,5 @@ class ProjectNotionManager(abc.ABC):
         """Load a project by its entity id."""
 
     @abc.abstractmethod
-    def remove(self, project: Project) -> None:
+    def remove_project(self, ref_id: EntityId) -> None:
         """Archive a project."""

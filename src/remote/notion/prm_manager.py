@@ -310,7 +310,7 @@ class NotionPrmManager(PrmNotionManager):
             key=NotionLockKey(f"{notion_person.ref_id}"),
             collection_key=NotionLockKey(self._KEY),
             new_row=notion_person,
-            copy_row_to_notion_row=self.copy_row_to_notion_row)
+            copy_row_to_notion_row=self._copy_row_to_notion_row)
 
     def save_person(self, notion_person: NotionPerson) -> None:
         """Save an already existing person on Notion-side."""
@@ -319,9 +319,25 @@ class NotionPrmManager(PrmNotionManager):
                 key=NotionLockKey(f"{notion_person.ref_id}"),
                 collection_key=NotionLockKey(self._KEY),
                 row=notion_person,
-                copy_row_to_notion_row=self.copy_row_to_notion_row)
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
         except NotionCollectionItemNotFoundError as err:
             raise NotionPersonNotFoundError(f"Person with id {notion_person.ref_id} could not be found") from err
+
+    def load_person(self, ref_id: EntityId) -> NotionPerson:
+        """Retrieve a person from Notion-side."""
+        try:
+            return self._collections_manager.load_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(self._KEY),
+                copy_notion_row_to_row=self._copy_notion_row_to_row)
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
+
+    def load_all_persons(self) -> Iterable[NotionPerson]:
+        """Retrieve all persons from Notion-side."""
+        return self._collections_manager.load_all_collection_items(
+            collection_key=NotionLockKey(self._KEY),
+            copy_notion_row_to_row=self._copy_notion_row_to_row)
 
     def remove_person(self, ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
@@ -331,32 +347,6 @@ class NotionPrmManager(PrmNotionManager):
                 collection_key=NotionLockKey(self._KEY))
         except NotionCollectionItemNotFoundError as err:
             raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
-
-    def load_person(self, ref_id: EntityId) -> NotionPerson:
-        """Retrieve a person from Notion-side."""
-        try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(self._KEY),
-                copy_notion_row_to_row=self.copy_notion_row_to_row)
-        except NotionCollectionItemNotFoundError as err:
-            raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
-
-    def load_all_persons(self) -> Iterable[NotionPerson]:
-        """Retrieve all persons from Notion-side."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(self._KEY),
-            copy_notion_row_to_row=self.copy_notion_row_to_row)
-
-    def load_all_saved_person_ref_ids(self) -> Iterable[EntityId]:
-        """Load ids of all persons we know about from Notion side."""
-        return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(self._KEY))
-
-    def load_all_saved_person_notion_ids(self) -> Iterable[NotionId]:
-        """Load ids of all persons we know about from Notion side."""
-        return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(self._KEY))
 
     def drop_all_persons(self) -> None:
         """Drop all persons on Notion-side."""
@@ -371,7 +361,17 @@ class NotionPrmManager(PrmNotionManager):
             ref_id=ref_id,
             notion_id=notion_id)
 
-    def copy_row_to_notion_row(
+    def load_all_saved_person_ref_ids(self) -> Iterable[EntityId]:
+        """Load ids of all persons we know about from Notion side."""
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
+            collection_key=NotionLockKey(self._KEY))
+
+    def load_all_saved_person_notion_ids(self) -> Iterable[NotionId]:
+        """Load ids of all persons we know about from Notion side."""
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
+            collection_key=NotionLockKey(self._KEY))
+
+    def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionPerson, notion_row: CollectionRowBlock) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
@@ -392,7 +392,7 @@ class NotionPrmManager(PrmNotionManager):
 
         return notion_row
 
-    def copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> NotionPerson:
+    def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> NotionPerson:
         """Transform the live system data to something suitable for basic storage."""
         # pylint: disable=no-self-use
         return NotionPerson(

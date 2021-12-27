@@ -10,6 +10,7 @@ from domain.prm.infra.prm_notion_manager import PrmNotionManager
 from domain.prm.prm_database import PrmDatabase
 from domain.projects.infra.project_engine import ProjectEngine
 from domain.projects.infra.project_notion_manager import ProjectNotionManager
+from domain.projects.notion_project import NotionProject
 from domain.projects.project import Project
 from domain.projects.project_key import ProjectKey
 from domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
@@ -19,6 +20,7 @@ from domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from domain.workspaces.notion_space_id import NotionSpaceId
 from domain.workspaces.notion_token import NotionToken
+from domain.workspaces.notion_workspace import NotionWorkspace
 from domain.workspaces.workspace import Workspace
 from framework.base.entity_id import BAD_REF_ID
 from framework.use_case import UseCase
@@ -85,7 +87,8 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
             new_workspace = workspace_uow.workspace_repository.create(new_workspace)
         LOGGER.info("Applied local changes")
 
-        new_notion_workspace = self._workspace_notion_manager.upsert_workspace(new_workspace)
+        new_notion_workspace = NotionWorkspace.new_notion_row(new_workspace)
+        new_notion_workspace = self._workspace_notion_manager.upsert_workspace(new_notion_workspace)
         LOGGER.info("Apply Notion changes")
 
         LOGGER.info("Creating vacations")
@@ -98,7 +101,8 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
                     args.first_project_key, args.first_project_name, self._time_provider.get_current_time())
             new_default_project = project_uow.project_repository.create(new_default_project)
             LOGGER.info("Created first project")
-        self._project_notion_manager.upsert_project(new_default_project)
+        new_notion_default_project = NotionProject.new_notion_row(new_default_project)
+        self._project_notion_manager.upsert_project(new_notion_default_project)
         LOGGER.info("Created first project on Notion side")
         with self._workspace_engine.get_unit_of_work() as workspace_uow_two:
             new_workspace.change_default_project(new_default_project.ref_id, self._time_provider.get_current_time())
