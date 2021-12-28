@@ -16,9 +16,9 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('metric', sa.Column('collection_project_ref_id', sa.Integer, nullable=True))
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_column('metric', 'collection_project_ref_id')

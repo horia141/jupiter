@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from alembic import context
 
 try:
-    from src.utils.global_properties import build_global_properties
+    from jupiter.utils.global_properties import build_global_properties
 except ModuleNotFoundError:
-    from utils.global_properties import build_global_properties
+    from jupiter.utils.global_properties import build_global_properties
 
 
 coloredlogs.install(
@@ -15,7 +15,7 @@ coloredlogs.install(
     datefmt='%Y-%m-%d %H:%M:%S')
 
 
-def run_migrations_offline():
+def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -38,7 +38,7 @@ def run_migrations_offline():
         context.run_migrations()
 
 
-def run_migrations_online():
+def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine

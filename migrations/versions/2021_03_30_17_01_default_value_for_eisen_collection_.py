@@ -16,9 +16,9 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.execute("update metric set collection_eisen=json_array()")
 
 
-def downgrade():
+def downgrade() -> None:
     pass

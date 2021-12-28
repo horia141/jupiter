@@ -16,7 +16,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.execute("""
         alter table person_event
         add column kind VARCHAR(16);""")
@@ -79,5 +79,5 @@ def upgrade():
         where kind is Null;""")
 
 
-def downgrade():
+def downgrade() -> None:
     pass

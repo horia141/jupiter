@@ -16,7 +16,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('metric', sa.Column('collection_eisen', sa.JSON, nullable=True))
     op.add_column('metric', sa.Column('collection_difficulty', sa.String, nullable=True))
     op.add_column('metric', sa.Column('collection_actionable_from_day', sa.Integer, nullable=True))
@@ -26,7 +26,7 @@ def upgrade():
     op.add_column('metric', sa.Column('collection_due_at_month', sa.Integer, nullable=True))
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_column('metric', 'collection_eisen')
     op.drop_column('metric', 'collection_difficulty')
     op.drop_column('metric', 'collection_actionable_from_day')

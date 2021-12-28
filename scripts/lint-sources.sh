@@ -2,9 +2,9 @@
 
 set -ex
 
-mypy --config=./scripts/lint/mypy ./src
-pylint --jobs=8 --rcfile=./scripts/lint/pylint ./src
-pyflakes ./src
-bandit --configfile=./scripts/lint/bandit -r ./src
-pydocstyle --config=./scripts/lint/pydocstyle ./src
-vulture ./src --ignore-names COUNT,MONETARY_AMOUNT,WEIGHT
+mypy --config=./scripts/lint/mypy jupiter
+pylint --jobs=8 --rcfile=./scripts/lint/pylint jupiter
+pyflakes jupiter
+bandit --configfile=./scripts/lint/bandit -r jupiter
+pydocstyle --config=./scripts/lint/pydocstyle jupiter
+vulture jupiter --ignore-names COUNT,MONETARY_AMOUNT,WEIGHT

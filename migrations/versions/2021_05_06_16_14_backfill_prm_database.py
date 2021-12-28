@@ -18,7 +18,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     right_now = pendulum.now("UTC")
     op.execute(f"""
             insert into prm_database (ref_id, archived, created_time, last_modified_time, archived_time, catch_up_project_ref_id)
@@ -43,5 +43,5 @@ def upgrade():
                 and me.name = 'Created')""")
 
 
-def downgrade():
+def downgrade() -> None:
     pass

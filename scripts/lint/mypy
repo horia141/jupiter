@@ -1,5 +1,4 @@
 [mypy]
-mypy_path = ./src
 namespace_packages = True
 disallow_any_decorated = False
 disallow_any_explicit = True
@@ -18,7 +17,7 @@ implicit_reexport = False
 strict_equality = True
 pretty = True
 
-[mypy-framework.notion.*]
+[mypy-jupiter.framework.notion.*]
 disallow_any_explicit = False
 
 [mypy-jsonschema.*]
