@@ -23,6 +23,10 @@ class RecurringTaskCollectionRepository(Repository, abc.ABC):
         """Create a recurring task collection."""
 
     @abc.abstractmethod
+    def save(self, recurring_task_collection: RecurringTaskCollection) -> RecurringTaskCollection:
+        """Save a recurring task collection."""
+
+    @abc.abstractmethod
     def load_by_id(self, ref_id: EntityId) -> RecurringTaskCollection:
         """Retrieve a recurring task collection by its id."""
 

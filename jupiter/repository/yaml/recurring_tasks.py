@@ -84,6 +84,14 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
         recurring_task_collection.assign_ref_id(new_recurring_task_collection_row.ref_id)
         return recurring_task_collection
 
+    def save(self, recurring_task_collection: RecurringTaskCollection) -> RecurringTaskCollection:
+        """Save an inbox task collection collection."""
+        try:
+            return self._row_to_entity(self._storage.update(self._entity_to_row(recurring_task_collection)))
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskCollectionNotFoundError(
+                f"Recurring task task collection with id {recurring_task_collection.ref_id} does not exist") from err
+
     def load_by_id(self, ref_id: EntityId) -> RecurringTaskCollection:
         """Load an inbox task collection by id."""
         try:

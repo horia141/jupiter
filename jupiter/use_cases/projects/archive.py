@@ -66,12 +66,16 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                     "Cannot archive project because it is the collection project for the PRM database")
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
+
             inbox_tasks = \
                 uow.inbox_task_repository.find_all(filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
 
             for inbox_task in inbox_tasks:
                 inbox_task.mark_archived(self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)
+
+            inbox_task_collection.mark_archived(self._time_provider.get_current_time())
+            uow.inbox_task_collection_repository.save(inbox_task_collection)
 
             big_plan_collection = uow.big_plan_collection_repository.load_by_project(project.ref_id)
             big_plans = \
@@ -81,6 +85,9 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                 big_plan.mark_archived(self._time_provider.get_current_time())
                 uow.big_plan_repository.save(big_plan)
 
+            big_plan_collection.mark_archived(self._time_provider.get_current_time())
+            uow.big_plan_collection_repository.save(big_plan_collection)
+
             recurring_task_collection = uow.recurring_task_collection_repository.load_by_project(project.ref_id)
             recurring_tasks = \
                 uow.recurring_task_repository.find_all(
@@ -89,6 +96,9 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
             for recurring_task in recurring_tasks:
                 recurring_task.mark_archived(self._time_provider.get_current_time())
                 uow.recurring_task_repository.save(recurring_task)
+
+            recurring_task_collection.mark_archived(self._time_provider.get_current_time())
+            uow.recurring_task_collection_repository.save(recurring_task_collection)
 
             project.mark_archived(self._time_provider.get_current_time())
             uow.project_repository.save(project)

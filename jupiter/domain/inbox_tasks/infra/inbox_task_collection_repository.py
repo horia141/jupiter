@@ -23,6 +23,10 @@ class InboxTaskCollectionRepository(Repository, abc.ABC):
         """Create a inbox task collection."""
 
     @abc.abstractmethod
+    def save(self, inbox_task_collection: InboxTaskCollection) -> InboxTaskCollection:
+        """Save a big plan collection."""
+
+    @abc.abstractmethod
     def load_by_id(self, ref_id: EntityId) -> InboxTaskCollection:
         """Retrieve a inbox task collection by its id."""
 
