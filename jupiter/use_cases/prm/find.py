@@ -2,11 +2,10 @@
 from dataclasses import dataclass
 from typing import List, Optional, Final
 
-from jupiter.domain.prm.infra.prm_engine import PrmEngine
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.prm_database import PrmDatabase
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project import Project
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -20,7 +19,6 @@ class PrmDatabaseFindUseCase(UseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabase
         allow_archived: bool
         filter_person_ref_ids: Optional[List[EntityId]]
 
-
     @dataclass()
     class Response:
         """Response."""
@@ -29,23 +27,19 @@ class PrmDatabaseFindUseCase(UseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabase
         catch_up_project: Project
         persons: List[Person]
 
-    _prm_engine: Final[PrmEngine]
-    _project_engine: Final[ProjectEngine]
+    _storage_engine: Final[StorageEngine]
 
-    def __init__(
-            self, prm_engine: PrmEngine, project_engine: ProjectEngine) -> None:
+    def __init__(self, storage_engine: StorageEngine) -> None:
         """Constructor."""
-        self._prm_engine = prm_engine
-        self._project_engine = project_engine
+        self._storage_engine = storage_engine
 
     def execute(self, args: Args) -> 'PrmDatabaseFindUseCase.Response':
         """Execute the command's action."""
-        with self._prm_engine.get_unit_of_work() as prm_uow:
-            with self._project_engine.get_unit_of_work() as project_uow:
-                prm_database = prm_uow.prm_database_repository.load()
-                catch_up_project = project_uow.project_repository.load_by_id(prm_database.catch_up_project_ref_id)
-                persons = prm_uow.person_repository.find_all(
-                    allow_archived=args.allow_archived, filter_ref_ids=args.filter_person_ref_ids)
+        with self._storage_engine.get_unit_of_work() as uow:
+            prm_database = uow.prm_database_repository.load()
+            catch_up_project = uow.project_repository.load_by_id(prm_database.catch_up_project_ref_id)
+            persons = uow.person_repository.find_all(
+                allow_archived=args.allow_archived, filter_ref_ids=args.filter_person_ref_ids)
 
         return self.Response(
             prm_database=prm_database,

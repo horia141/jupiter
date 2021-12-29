@@ -8,22 +8,19 @@ from jupiter.domain import schedules
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.inbox_tasks.service.change_project_service import InboxTaskChangeProjectService
-from jupiter.domain.metrics.infra.metric_engine import MetricEngine
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.metrics.metric_key import MetricKey
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.workspaces.infra.workspace_engine import WorkspaceEngine
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.update_action import UpdateAction
@@ -54,31 +51,24 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _workspace_engine: Final[WorkspaceEngine]
-    _project_engine: Final[ProjectEngine]
-    _inbox_task_engine: Final[InboxTaskEngine]
+    _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _metric_engine: Final[MetricEngine]
     _metric_notion_manager: Final[MetricNotionManager]
 
-    def __init__(self, global_properties: GlobalProperties, time_provider: TimeProvider,
-                 workspace_engine: WorkspaceEngine, project_engine: ProjectEngine,
-                 inbox_task_engine: InboxTaskEngine, inbox_task_notion_manager: InboxTaskNotionManager,
-                 metric_engine: MetricEngine,
-                 metric_notion_manager: MetricNotionManager) -> None:
+    def __init__(
+            self, global_properties: GlobalProperties, time_provider: TimeProvider,
+            storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
-        self._workspace_engine = workspace_engine
-        self._project_engine = project_engine
-        self._inbox_task_engine = inbox_task_engine
+        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._metric_engine = metric_engine
         self._metric_notion_manager = metric_notion_manager
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        with self._metric_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             metric = uow.metric_repository.load_by_key(args.key)
 
             # Change the metrics
@@ -102,12 +92,10 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                 if new_collection_period is not None:
                     if args.collection_project_key.should_change:
                         if args.collection_project_key.value is not None:
-                            with self._project_engine.get_unit_of_work() as project_uow:
-                                project = project_uow.project_repository.load_by_key(args.collection_project_key.value)
+                            project = uow.project_repository.load_by_key(args.collection_project_key.value)
                             new_collection_project_ref_id = project.ref_id
                         else:
-                            with self._workspace_engine.get_unit_of_work() as workspace_uow:
-                                workspace = workspace_uow.workspace_repository.load()
+                            workspace = uow.workspace_repository.load()
                             new_collection_project_ref_id = workspace.default_project_ref_id
                     elif metric.collection_params is not None:
                         new_collection_project_ref_id = metric.collection_params.project_ref_id
@@ -171,27 +159,26 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
 
             uow.metric_repository.save(metric)
 
+            metric_collection_tasks = uow.inbox_task_repository.find_all(
+                allow_archived=True, filter_metric_ref_ids=[metric.ref_id])
+
         notion_metric = self._metric_notion_manager.load_metric(metric.ref_id)
         notion_metric = notion_metric.join_with_aggregate_root(metric)
         self._metric_notion_manager.save_metric(notion_metric)
 
         # Change the inbox tasks
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-            metric_collection_tasks = inbox_task_uow.inbox_task_repository.find_all(
-                allow_archived=True, filter_metric_ref_ids=[metric.ref_id])
-
         if metric.collection_params is None:
             # Situation 1: we need to get rid of any existing collection metrics because there's no collection anymore.
             inbox_task_archive_service = \
                 InboxTaskArchiveService(
-                    self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager)
+                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
             for inbox_task in metric_collection_tasks:
                 inbox_task_archive_service.do_it(inbox_task)
         else:
             # Situation 2: we need to update the existing metrics.
             inbox_task_change_project_service = \
                 InboxTaskChangeProjectService(
-                    self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager)
+                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
             for inbox_task in metric_collection_tasks:
                 schedule = schedules.get_schedule(
                     metric.collection_params.period, metric.name,
@@ -200,14 +187,13 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     metric.collection_params.due_at_time, metric.collection_params.due_at_day,
                     metric.collection_params.due_at_month)
 
-                inbox_task.update_link_to_metric(name=schedule.full_name, recurring_timeline=schedule.timeline,
-                                                 eisen=metric.collection_params.eisen,
-                                                 difficulty=metric.collection_params.difficulty,
-                                                 actionable_date=schedule.actionable_date, due_time=schedule.due_time,
-                                                 modification_time=self._time_provider.get_current_time())
+                inbox_task.update_link_to_metric(
+                    name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=metric.collection_params.eisen,
+                    difficulty=metric.collection_params.difficulty, actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
 
-                with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-                    inbox_task_uow.inbox_task_repository.save(inbox_task)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.save(inbox_task)
 
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(

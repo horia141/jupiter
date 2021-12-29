@@ -2,8 +2,8 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
-from jupiter.domain.vacations.infra.vacation_engine import VacationEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from jupiter.domain.vacations.notion_vacation import NotionVacation
 from jupiter.domain.vacations.vacation import Vacation
@@ -15,13 +15,13 @@ LOGGER = logging.getLogger(__name__)
 class VacationSyncService:
     """The service class for syncing the VACATION database between local and Notion."""
 
-    _vacation_engine: Final[VacationEngine]
+    _storage_engine: Final[StorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
 
     def __init__(
-            self, vacation_engine: VacationEngine, vacation_notion_manager: VacationNotionManager) -> None:
+            self, storage_engine: StorageEngine, vacation_notion_manager: VacationNotionManager) -> None:
         """Constructor."""
-        self._vacation_engine = vacation_engine
+        self._storage_engine = storage_engine
         self._vacation_notion_manager = vacation_notion_manager
 
     def sync(
@@ -30,7 +30,7 @@ class VacationSyncService:
         """Synchronise vacations between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
-        with self._vacation_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             all_vacations = uow.vacation_repository.find_all(allow_archived=True, filter_ref_ids=filter_ref_ids)
         all_vacations_set: Dict[EntityId, Vacation] = {v.ref_id: v for v in all_vacations}
 
@@ -55,7 +55,7 @@ class VacationSyncService:
             if notion_vacation_ref_id is None or notion_vacation.ref_id == "":
                 new_vacation = notion_vacation.new_aggregate_root(None)
 
-                with self._vacation_engine.get_unit_of_work() as uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     new_vacation = uow.vacation_repository.create(new_vacation)
 
                 self._vacation_notion_manager.link_local_and_notion_entries(
@@ -81,7 +81,7 @@ class VacationSyncService:
 
                     updated_vacation = notion_vacation.apply_to_aggregate_root(vacation, None)
 
-                    with self._vacation_engine.get_unit_of_work() as uow:
+                    with self._storage_engine.get_unit_of_work() as uow:
                         uow.vacation_repository.save(updated_vacation)
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:

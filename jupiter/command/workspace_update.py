@@ -61,8 +61,8 @@ class WorkspaceUpdate(command.Command):
             default_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.default_project_key))
         else:
             default_project_key = UpdateAction.do_nothing()
-        self._command.execute(WorkspaceUpdateUseCase.Args(
-            name=name, timezone=timezone, default_project_key=default_project_key))
         # This is quite the hack for now!
         if args.notion_token is not None:
             self._notion_connection.update_token(NotionToken.from_raw(args.notion_token))
+        self._command.execute(WorkspaceUpdateUseCase.Args(
+            name=name, timezone=timezone, default_project_key=default_project_key))

@@ -2,8 +2,8 @@
 import logging
 from typing import Final
 
-from jupiter.domain.metrics.infra.metric_engine import MetricEngine
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricEntryNotFoundError
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -13,18 +13,17 @@ LOGGER = logging.getLogger(__name__)
 class MetricEntryRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a metric entry."""
 
-    _metric_engine: Final[MetricEngine]
+    _storage_engine: Final[StorageEngine]
     _notion_manager: Final[MetricNotionManager]
 
-    def __init__(
-            self, metric_engune: MetricEngine, notion_manager: MetricNotionManager) -> None:
+    def __init__(self, storage_engine: StorageEngine, notion_manager: MetricNotionManager) -> None:
         """Constructor."""
-        self._metric_engine = metric_engune
+        self._storage_engine = storage_engine
         self._notion_manager = notion_manager
 
     def execute(self, args: EntityId) -> None:
         """Execute the command's action."""
-        with self._metric_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             metric_entry = uow.metric_entry_repository.remove(args)
 
         try:

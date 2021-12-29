@@ -1,7 +1,6 @@
 """Repository for vacations."""
 import logging
 import typing
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -9,11 +8,10 @@ from typing import ClassVar, Iterable, Optional, Final
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.vacations.infra.vacation_engine import VacationUnitOfWork, VacationEngine
 from jupiter.domain.vacations.infra.vacation_repository import VacationRepository, VacationNotFoundError
 from jupiter.domain.vacations.vacation import Vacation
-from jupiter.framework.json import JSONDictType
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.json import JSONDictType
 from jupiter.repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, StorageEntityNotFoundError
 from jupiter.utils.time_provider import TimeProvider
 
@@ -152,43 +150,3 @@ class YamlVacationRepository(VacationRepository):
             _name=row.name,
             _start_date=row.start_date,
             _end_date=row.end_date)
-
-
-class YamlVacationUnitOfWork(VacationUnitOfWork):
-    """A Yaml text file specific vacation unit of work."""
-
-    _vacation_repository: Final[YamlVacationRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._vacation_repository = YamlVacationRepository(time_provider)
-
-    def __enter__(self) -> 'YamlVacationUnitOfWork':
-        """Enter context."""
-        self._vacation_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def vacation_repository(self) -> VacationRepository:
-        """The vacation repository."""
-        return self._vacation_repository
-
-
-class YamlVacationEngine(VacationEngine):
-    """An Yaml text file specific vacation engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[VacationUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlVacationUnitOfWork(self._time_provider)

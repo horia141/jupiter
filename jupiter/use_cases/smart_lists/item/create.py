@@ -2,16 +2,16 @@
 from dataclasses import dataclass
 from typing import Optional, Final, List
 
+from jupiter.domain.entity_name import EntityName
+from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
-from jupiter.domain.url import URL
-from jupiter.domain.smart_lists.infra.smart_list_engine import SmartListEngine
-from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
+from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.domain.entity_name import EntityName
-from jupiter.domain.smart_lists.smart_list_key import SmartListKey
+from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.url import URL
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -29,20 +29,20 @@ class SmartListItemCreateUseCase(UseCase['SmartListItemCreateUseCase.Args', None
         url: Optional[URL]
 
     _time_provider: Final[TimeProvider]
-    _smart_list_engine: Final[SmartListEngine]
-    _notion_manager: Final[SmartListNotionManager]
+    _storage_engine: Final[StorageEngine]
+    _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, smart_list_engine: SmartListEngine,
-            notion_manager: SmartListNotionManager) -> None:
+            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._smart_list_engine = smart_list_engine
-        self._notion_manager = notion_manager
+        self._storage_engine = storage_engine
+        self._smart_list_notion_manager = smart_list_notion_manager
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        with self._smart_list_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             smart_list = uow.smart_list_repository.load_by_key(args.smart_list_key)
             smart_list_tags = \
                 {t.tag_name: t
@@ -63,9 +63,9 @@ class SmartListItemCreateUseCase(UseCase['SmartListItemCreateUseCase.Args', None
             smart_list_item = uow.smart_list_item_repository.create(smart_list_item)
         for smart_list_tag in smart_list_tags.values():
             notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
-            self._notion_manager.upsert_smart_list_tag(smart_list.ref_id, notion_smart_list_tag)
+            self._smart_list_notion_manager.upsert_smart_list_tag(smart_list.ref_id, notion_smart_list_tag)
         notion_smart_list_item = \
             NotionSmartListItem.new_notion_row(
                 smart_list_item,
                 NotionSmartListItem.DirectExtraInfo({t.ref_id: t for t in smart_list_tags.values()}))
-        self._notion_manager.upsert_smart_list_item(smart_list.ref_id, notion_smart_list_item)
+        self._smart_list_notion_manager.upsert_smart_list_item(smart_list.ref_id, notion_smart_list_item)

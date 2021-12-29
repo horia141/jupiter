@@ -1,24 +1,16 @@
 """SQLite based metrics repositories."""
-import json
 import logging
-from contextlib import contextmanager
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional, Iterable, List, Final, Iterator
+from typing import Optional, Iterable, List, Final
 
-from alembic import command
-from alembic.config import Config
-from sqlalchemy import create_engine, insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, Unicode, \
+from sqlalchemy import insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, Unicode, \
     ForeignKey, Float, UnicodeText, JSON, update, select, delete
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import Engine
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.metrics.infra.metric_engine import MetricUnitOfWork, MetricEngine
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository, MetricEntryNotFoundError
 from jupiter.domain.metrics.infra.metric_repository import MetricRepository, MetricAlreadyExistsError, \
     MetricNotFoundError
@@ -337,66 +329,3 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             _collection_time=ADate.from_db(row["collection_time"]),
             _value=row["value"],
             _notes=row["notes"])
-
-
-class SqliteMetricUnitOfWork(MetricUnitOfWork):
-    """A Sqlite specific metric unit of work."""
-
-    _metric_repository: Final[SqliteMetricRepository]
-    _metric_entry_repository: Final[SqliteMetricEntryRepository]
-
-    def __init__(
-            self, metric_repository: SqliteMetricRepository,
-            metric_entry_repository: SqliteMetricEntryRepository) -> None:
-        """Constructor."""
-        self._metric_repository = metric_repository
-        self._metric_entry_repository = metric_entry_repository
-
-    @property
-    def metric_repository(self) -> MetricRepository:
-        """The metric repository."""
-        return self._metric_repository
-
-    @property
-    def metric_entry_repository(self) -> MetricEntryRepository:
-        """The metric entry repository."""
-        return self._metric_entry_repository
-
-
-class SqliteMetricEngine(MetricEngine):
-    """An Sqlite specific metric engine."""
-
-    @dataclass(frozen=True)
-    class Config:
-        """Config for a Sqlite metric engine."""
-
-        sqlite_db_url: str
-        alembic_ini_path: Path
-        alembic_migrations_path: Path
-
-    _config: Final[Config]
-    _sql_engine: Final[Engine]
-    _metadata: Final[MetaData]
-
-    def __init__(self, config: Config) -> None:
-        """Constructor."""
-        self._config = config
-        self._sql_engine = create_engine(config.sqlite_db_url, future=True, json_serializer=json.dumps)
-        self._metadata = MetaData(bind=self._sql_engine)
-
-    def prepare(self) -> None:
-        """Prepare the environment for SQLite."""
-        with self._sql_engine.begin() as connection:
-            alembic_cfg = Config(str(self._config.alembic_ini_path))
-            alembic_cfg.set_section_option('alembic', 'script_location', str(self._config.alembic_migrations_path))
-            # pylint: disable=unsupported-assignment-operation
-            alembic_cfg.attributes['connection'] = connection
-            command.upgrade(alembic_cfg, 'head')
-
-    @contextmanager
-    def get_unit_of_work(self) -> Iterator[MetricUnitOfWork]:
-        """Get the unit of work."""
-        with self._sql_engine.begin() as connection:
-            metric_repository = SqliteMetricRepository(connection, self._metadata)
-            metric_entry_repository = SqliteMetricEntryRepository(connection, self._metadata)
-            yield SqliteMetricUnitOfWork(metric_repository, metric_entry_repository)

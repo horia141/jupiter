@@ -3,11 +3,10 @@ import logging
 from typing import Final
 
 from jupiter.domain.big_plans.big_plan import BigPlan
-from jupiter.domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskNotFoundError
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -17,20 +16,18 @@ class BigPlanArchiveService:
     """Shared logic for archiving a big plan."""
 
     _time_provider: Final[TimeProvider]
-    _inbox_task_engine: Final[InboxTaskEngine]
+    _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _big_plan_engine: Final[BigPlanEngine]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, inbox_task_engine: InboxTaskEngine,
-            inbox_task_notion_manager: InboxTaskNotionManager, big_plan_engine: BigPlanEngine,
+            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager,
             big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._inbox_task_engine = inbox_task_engine
+        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._big_plan_engine = big_plan_engine
         self._big_plan_notion_manager = big_plan_notion_manager
 
     def do_it(self, big_plan: BigPlan) -> None:
@@ -38,27 +35,27 @@ class BigPlanArchiveService:
         if big_plan.archived:
             return
 
-        big_plan.mark_archived(self._time_provider.get_current_time())
-        with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
-            big_plan_uow.big_plan_repository.save(big_plan)
+        with self._storage_engine.get_unit_of_work() as uow:
+            big_plan.mark_archived(self._time_provider.get_current_time())
+            uow.big_plan_repository.save(big_plan)
 
-        try:
-            self._big_plan_notion_manager.remove_big_plan(
-                big_plan.big_plan_collection_ref_id, big_plan.ref_id)
-        except NotionBigPlanNotFoundError:
-            # If we can't find this locally it means it's already gone
-            LOGGER.info("Skipping archival on Notion side because big plan was not found")
+            big_plan_collection = uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
 
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
             inbox_task_collection = \
-                inbox_task_uow.inbox_task_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
+                uow.inbox_task_collection_repository.load_by_project(big_plan_collection.project_ref_id)
             inbox_tasks_to_archive = \
-                inbox_task_uow.inbox_task_repository.find_all(
+                uow.inbox_task_repository.find_all(
                     allow_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id],
                     filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
             for inbox_task in inbox_tasks_to_archive:
                 inbox_task.mark_archived(self._time_provider.get_current_time())
-                inbox_task_uow.inbox_task_repository.save(inbox_task)
+                uow.inbox_task_repository.save(inbox_task)
+
+        try:
+            self._big_plan_notion_manager.remove_big_plan(big_plan.big_plan_collection_ref_id, big_plan.ref_id)
+        except NotionBigPlanNotFoundError:
+            # If we can't find this locally it means it's already gone
+            LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
         for inbox_task in inbox_tasks_to_archive:
             try:

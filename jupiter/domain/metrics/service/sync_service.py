@@ -2,12 +2,12 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
-from jupiter.domain.metrics.infra.metric_engine import MetricEngine
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.notion_metric import NotionMetric
 from jupiter.domain.metrics.notion_metric_entry import NotionMetricEntry
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -18,13 +18,13 @@ LOGGER = logging.getLogger(__name__)
 class MetricSyncService:
     """The service class for syncing the METRIC database between local and Notion."""
 
-    _metric_engine: Final[MetricEngine]
+    _storage_engine: Final[StorageEngine]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, metric_engine: MetricEngine, metric_notion_manager: MetricNotionManager) -> None:
+            self, storage_engine: StorageEngine, metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
-        self._metric_engine = metric_engine
+        self._storage_engine = storage_engine
         self._metric_notion_manager = metric_notion_manager
 
     def sync(
@@ -41,7 +41,7 @@ class MetricSyncService:
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
                 updated_metric = notion_metric.apply_to_aggregate_root(metric, right_now)
-                with self._metric_engine.get_unit_of_work() as uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     uow.metric_repository.save(updated_metric)
                 LOGGER.info("Applied local change")
             else:
@@ -55,7 +55,7 @@ class MetricSyncService:
         filter_metric_entry_ref_ids_set = frozenset(filter_metric_entry_ref_ids) \
             if filter_metric_entry_ref_ids else None
 
-        with self._metric_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             all_metric_entries = uow.metric_entry_repository.find_all(
                 allow_archived=True, filter_metric_ref_ids=[metric.ref_id],
                 filter_ref_ids=filter_metric_entry_ref_ids)
@@ -88,7 +88,7 @@ class MetricSyncService:
                 # If the metric entry doesn't exist locally, we create it.
                 new_metric_entry = \
                     notion_metric_entry.new_aggregate_root(NotionMetricEntry.InverseExtraInfo(metric.ref_id))
-                with self._metric_engine.get_unit_of_work() as uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     new_metric_entry = uow.metric_entry_repository.create(new_metric_entry)
                 LOGGER.info(f"Found new metric entry from Notion '{new_metric_entry.collection_time}'")
 
@@ -116,7 +116,7 @@ class MetricSyncService:
                         notion_metric_entry.apply_to_aggregate_root(
                             metric_entry, NotionMetricEntry.InverseExtraInfo(metric.ref_id))
 
-                    with self._metric_engine.get_unit_of_work() as uow:
+                    with self._storage_engine.get_unit_of_work() as uow:
                         uow.metric_entry_repository.save(updated_metric_entry)
                     LOGGER.info(f"Changed metric entry '{metric_entry.collection_time}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:

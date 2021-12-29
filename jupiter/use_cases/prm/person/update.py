@@ -9,11 +9,9 @@ from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
-from jupiter.domain.prm.infra.prm_engine import PrmEngine
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.prm.person_birthday import PersonBirthday
 from jupiter.domain.prm.person_relationship import PersonRelationship
@@ -22,6 +20,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -53,26 +52,24 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _prm_engine: Final[PrmEngine]
-    _prm_notion_manager: Final[PrmNotionManager]
-    _inbox_task_engine: Final[InboxTaskEngine]
+    _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
+    _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            inbox_task_engine: InboxTaskEngine, inbox_task_notion_manager: InboxTaskNotionManager,
-            prm_engine: PrmEngine, prm_notion_manager: PrmNotionManager) -> None:
+            self, global_properties: GlobalProperties, time_provider: TimeProvider, storage_engine: StorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager,
+            prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
-        self._inbox_task_engine = inbox_task_engine
+        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._prm_engine = prm_engine
         self._prm_notion_manager = prm_notion_manager
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        with self._prm_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             person = uow.person_repository.load_by_id(args.ref_id)
 
             # Change the person.
@@ -162,8 +159,8 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
         self._prm_notion_manager.save_person(notion_person)
 
         # Change the catch up inbox tasks
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-            person_catch_up_tasks = inbox_task_uow.inbox_task_repository.find_all(
+        with self._storage_engine.get_unit_of_work() as uow:
+            person_catch_up_tasks = uow.inbox_task_repository.find_all(
                 allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
                 filter_person_ref_ids=[person.ref_id])
 
@@ -171,7 +168,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
             for inbox_task in person_catch_up_tasks:
                 InboxTaskArchiveService(
-                    self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager).do_it(inbox_task)
+                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager).do_it(inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_catch_up_tasks:
@@ -189,8 +186,8 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     actionable_date=schedule.actionable_date, due_time=schedule.due_time,
                     modification_time=self._time_provider.get_current_time())
                 # Situation 2a: we're handling the same project.
-                with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-                    inbox_task_uow.inbox_task_repository.save(inbox_task)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.save(inbox_task)
 
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
@@ -202,8 +199,8 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                 LOGGER.info("Applied Notion changes")
 
         # Change the birthday inbox tasks
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-            person_birthday_tasks = inbox_task_uow.inbox_task_repository.find_all(
+        with self._storage_engine.get_unit_of_work() as uow:
+            person_birthday_tasks = uow.inbox_task_repository.find_all(
                 allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
                 filter_person_ref_ids=[person.ref_id])
 
@@ -211,7 +208,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
             for inbox_task in person_birthday_tasks:
                 InboxTaskArchiveService(
-                    self._time_provider, self._inbox_task_engine, self._inbox_task_notion_manager)\
+                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager)\
                     .do_it(inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
@@ -229,8 +226,8 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     preparation_days_cnt=person.preparation_days_cnt_for_birthday, due_time=schedule.due_time,
                     modification_time=self._time_provider.get_current_time())
                 # Situation 2a: we're handling the same project.
-                with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-                    inbox_task_uow.inbox_task_repository.save(inbox_task)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.save(inbox_task)
 
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(

@@ -1,7 +1,6 @@
 """Repository for recurring tasks."""
 import logging
 import typing
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -23,7 +22,6 @@ from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.infra.recurring_task_collection_repository \
     import RecurringTaskCollectionRepository, RecurringTaskCollectionAlreadyExistsError, \
     RecurringTaskCollectionNotFoundError
-from jupiter.domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine, RecurringTaskUnitOfWork
 from jupiter.domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository, \
     RecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
@@ -85,6 +83,14 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
             project_ref_id=recurring_task_collection.project_ref_id))
         recurring_task_collection.assign_ref_id(new_recurring_task_collection_row.ref_id)
         return recurring_task_collection
+
+    def load_by_id(self, ref_id: EntityId) -> RecurringTaskCollection:
+        """Load an inbox task collection by id."""
+        try:
+            return self._row_to_entity(self._storage.load(ref_id, allow_archived=False))
+        except StorageEntityNotFoundError as err:
+            raise RecurringTaskCollectionNotFoundError(
+                f"Recurring task collection with id {ref_id} does not exist") from err
 
     def load_by_project(self, project_ref_id: EntityId) -> RecurringTaskCollection:
         """Find an recurring task collection by project ref id."""
@@ -408,51 +414,3 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             _must_do=row.must_do,
             _start_at_date=row.start_at_date,
             _end_at_date=row.end_at_date)
-
-
-class YamlRecurringTaskUnitOfWork(RecurringTaskUnitOfWork):
-    """A Yaml text file specific recurring task unit of work."""
-
-    _recurring_task_collection_repository: Final[YamlRecurringTaskCollectionRepository]
-    _recurring_task_repository: Final[YamlRecurringTaskRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._recurring_task_collection_repository = YamlRecurringTaskCollectionRepository(time_provider)
-        self._recurring_task_repository = YamlRecurringTaskRepository(time_provider)
-
-    def __enter__(self) -> 'YamlRecurringTaskUnitOfWork':
-        """Enter context."""
-        self._recurring_task_collection_repository.initialize()
-        self._recurring_task_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def recurring_task_collection_repository(self) -> RecurringTaskCollectionRepository:
-        """The recurring task collection repository."""
-        return self._recurring_task_collection_repository
-
-    @property
-    def recurring_task_repository(self) -> RecurringTaskRepository:
-        """The recurring task repository."""
-        return self._recurring_task_repository
-
-
-class YamlRecurringTaskEngine(RecurringTaskEngine):
-    """An Yaml text file specific recurring task engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[RecurringTaskUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlRecurringTaskUnitOfWork(self._time_provider)

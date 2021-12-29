@@ -1,15 +1,12 @@
 """Repository for workspaces."""
 import logging
 import typing
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from types import TracebackType
-from typing import Final, ClassVar, Optional
+from typing import Final, ClassVar
 
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.timezone import Timezone
-from jupiter.domain.workspaces.infra.workspace_engine import WorkspaceUnitOfWork, WorkspaceEngine
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository, WorkspaceNotFoundError, \
     WorkspaceAlreadyExistsError
 from jupiter.domain.workspaces.workspace import Workspace
@@ -124,43 +121,3 @@ class YamlWorkspaceRepository(WorkspaceRepository):
             "created_time": str(live_form.created_time),
             "last_modified_time": str(live_form.last_modified_time)
         }
-
-
-class YamlWorkspaceUnitOfWork(WorkspaceUnitOfWork):
-    """The YAML storage workspace unit of work."""
-
-    _workspace_repository: Final[YamlWorkspaceRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._workspace_repository = YamlWorkspaceRepository(time_provider)
-
-    def __enter__(self) -> 'YamlWorkspaceUnitOfWork':
-        """Enter the context."""
-        self._workspace_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def workspace_repository(self) -> WorkspaceRepository:
-        """The workspace repository."""
-        return self._workspace_repository
-
-
-class YamlWorkspaceEngine(WorkspaceEngine):
-    """The YAML storage workspace engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[WorkspaceUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlWorkspaceUnitOfWork(self._time_provider)

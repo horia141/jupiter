@@ -1,14 +1,12 @@
 """Repository for projects."""
 import logging
 import typing
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, Optional
 
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.projects.infra.project_engine import ProjectUnitOfWork, ProjectEngine
 from jupiter.domain.projects.infra.project_repository import ProjectRepository, ProjectAlreadyExistsError, \
     ProjectNotFoundError
 from jupiter.domain.projects.project import Project
@@ -150,43 +148,3 @@ class YamlProjectRepository(ProjectRepository):
             _events=[],
             _key=row.key,
             _name=row.name)
-
-
-class YamlProjectUnitOfWork(ProjectUnitOfWork):
-    """The YAML storage unit of work."""
-
-    _project_repository: Final[YamlProjectRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Consturctor."""
-        self._project_repository = YamlProjectRepository(time_provider)
-
-    def __enter__(self) -> 'YamlProjectUnitOfWork':
-        """Enter context."""
-        self._project_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def project_repository(self) -> ProjectRepository:
-        """The projects repository."""
-        return self._project_repository
-
-
-class YamlProjectEngine(ProjectEngine):
-    """The YAML storage engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[ProjectUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlProjectUnitOfWork(self._time_provider)

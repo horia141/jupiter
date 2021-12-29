@@ -1,7 +1,6 @@
 """Repository for inbox tasks."""
 import logging
 import typing
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -17,7 +16,6 @@ from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository, \
     InboxTaskCollectionAlreadyExistsError, InboxTaskCollectionNotFoundError
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskUnitOfWork, InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository, InboxTaskNotFoundError
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.framework.base.entity_id import EntityId
@@ -439,51 +437,3 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             _accepted_time=row.accepted_time,
             _working_time=row.working_time,
             _completed_time=row.completed_time)
-
-
-class YamlInboxTaskUnitOfWork(InboxTaskUnitOfWork):
-    """A Yaml text file specific inbox task unit of work."""
-
-    _inbox_task_collection_repository: Final[YamlInboxTaskCollectionRepository]
-    _inbox_task_repository: Final[YamlInboxTaskRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._inbox_task_collection_repository = YamlInboxTaskCollectionRepository(time_provider)
-        self._inbox_task_repository = YamlInboxTaskRepository(time_provider)
-
-    def __enter__(self) -> 'YamlInboxTaskUnitOfWork':
-        """Enter context."""
-        self._inbox_task_collection_repository.initialize()
-        self._inbox_task_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def inbox_task_collection_repository(self) -> InboxTaskCollectionRepository:
-        """The inbox task collection repository."""
-        return self._inbox_task_collection_repository
-
-    @property
-    def inbox_task_repository(self) -> InboxTaskRepository:
-        """The inbox task repository."""
-        return self._inbox_task_repository
-
-
-class YamlInboxTaskEngine(InboxTaskEngine):
-    """An Yaml text file specific inbox task engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[InboxTaskUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlInboxTaskUnitOfWork(self._time_provider)

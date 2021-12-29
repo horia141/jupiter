@@ -3,10 +3,10 @@ import logging
 from typing import Final, Optional, Iterable, Dict
 
 from jupiter.domain.big_plans.big_plan import BigPlan
-from jupiter.domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.utils.time_provider import TimeProvider
@@ -18,15 +18,16 @@ class BigPlanSyncService:
     """The service class for dealing with big plans."""
 
     _time_provider: Final[TimeProvider]
-    _engine: Final[BigPlanEngine]
-    _notion_manager: Final[BigPlanNotionManager]
+    _storage_engine: Final[StorageEngine]
+    _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, engine: BigPlanEngine, notion_manager: BigPlanNotionManager) -> None:
+            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._engine = engine
-        self._notion_manager = notion_manager
+        self._storage_engine = storage_engine
+        self._big_plan_notion_manager = big_plan_notion_manager
 
     def big_plans_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,
@@ -35,7 +36,7 @@ class BigPlanSyncService:
         """Synchronise big plans between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
-        with self._engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             big_plan_collection = uow.big_plan_collection_repository.load_by_project(project_ref_id)
             all_big_plans = uow.big_plan_repository.find_all(
                 allow_archived=True, filter_ref_ids=filter_ref_ids,
@@ -44,11 +45,11 @@ class BigPlanSyncService:
         all_big_plans_set: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
 
         if not drop_all_notion_side:
-            all_notion_big_plans = self._notion_manager.load_all_big_plans(big_plan_collection.ref_id)
+            all_notion_big_plans = self._big_plan_notion_manager.load_all_big_plans(big_plan_collection.ref_id)
             all_notion_big_plans_notion_ids = \
-                set(self._notion_manager.load_all_saved_big_plans_notion_ids(big_plan_collection.ref_id))
+                set(self._big_plan_notion_manager.load_all_saved_big_plans_notion_ids(big_plan_collection.ref_id))
         else:
-            self._notion_manager.drop_all_big_plans(big_plan_collection.ref_id)
+            self._big_plan_notion_manager.drop_all_big_plans(big_plan_collection.ref_id)
             all_notion_big_plans = {}
             all_notion_big_plans_notion_ids = set()
         all_notion_big_plans_set: Dict[EntityId, NotionBigPlan] = {}
@@ -71,16 +72,17 @@ class BigPlanSyncService:
                 new_big_plan = \
                     notion_big_plan.new_aggregate_root(NotionBigPlan.InverseExtraInfo(big_plan_collection.ref_id))
 
-                with self._engine.get_unit_of_work() as save_uow:
+                with self._storage_engine.get_unit_of_work() as save_uow:
                     new_big_plan = save_uow.big_plan_repository.create(big_plan_collection, new_big_plan)
                 LOGGER.info(f"Found new big plan from Notion {notion_big_plan.name}")
 
-                self._notion_manager.link_local_and_notion_big_plan(
+                self._big_plan_notion_manager.link_local_and_notion_big_plan(
                     big_plan_collection.ref_id, new_big_plan.ref_id, notion_big_plan.notion_id)
                 LOGGER.info(f"Linked the new big plan with local entries")
 
                 notion_big_plan = notion_big_plan.join_with_aggregate_root(new_big_plan, None)
-                self._notion_manager.save_big_plan(big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
+                self._big_plan_notion_manager.save_big_plan(
+                    big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_big_plan}")
 
                 all_big_plans_set[new_big_plan.ref_id] = new_big_plan
@@ -100,7 +102,7 @@ class BigPlanSyncService:
                     updated_big_plan = \
                         notion_big_plan.apply_to_aggregate_root(
                             big_plan, NotionBigPlan.InverseExtraInfo(big_plan_collection.ref_id))
-                    with self._engine.get_unit_of_work() as save_uow:
+                    with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.big_plan_repository.save(updated_big_plan)
                     LOGGER.info(f"Changed big plan with id={notion_big_plan.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
@@ -111,7 +113,7 @@ class BigPlanSyncService:
                         continue
 
                     updated_notion_big_plan = notion_big_plan.join_with_aggregate_root(big_plan, None)
-                    self._notion_manager.save_big_plan(
+                    self._big_plan_notion_manager.save_big_plan(
                         big_plan_collection.ref_id, updated_notion_big_plan, inbox_task_collection)
                     LOGGER.info(f"Changed big plan with id={notion_big_plan.ref_id} from local")
                 else:
@@ -122,7 +124,7 @@ class BigPlanSyncService:
                 #    setup, and we remove it.
                 # 2. This is a big plan added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._notion_manager.remove_big_plan(big_plan_collection.ref_id, notion_big_plan_ref_id)
+                self._big_plan_notion_manager.remove_big_plan(big_plan_collection.ref_id, notion_big_plan_ref_id)
                 LOGGER.info(f"Removed dangling big plan in Notion {notion_big_plan}")
 
         LOGGER.info("Applied local changes")
@@ -138,7 +140,8 @@ class BigPlanSyncService:
                 continue
 
             notion_big_plan = NotionBigPlan.new_notion_row(big_plan, None)
-            self._notion_manager.upsert_big_plan(big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
+            self._big_plan_notion_manager.upsert_big_plan(
+                big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
             LOGGER.info(f'Created Notion task for {big_plan.name}')
 
         return all_big_plans_set.values()

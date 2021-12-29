@@ -13,27 +13,22 @@ from pendulum import UTC
 from jupiter.domain import schedules
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
-from jupiter.domain.metrics.infra.metric_engine import MetricEngine
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_key import MetricKey
-from jupiter.domain.prm.infra.prm_engine import PrmEngine
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_type import RecurringTaskType
-from jupiter.domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.schedules import Schedule
+from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.use_case import UseCase
-from jupiter.framework.base.entity_id import EntityId
 from jupiter.utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
@@ -162,49 +157,34 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         per_recurring_task_breakdown: List['ReportUseCase.PerRecurringTaskBreakdownItem']
 
     _global_properties: Final[GlobalProperties]
-    _project_engine: Final[ProjectEngine]
-    _inbox_task_engine: Final[InboxTaskEngine]
-    _recurring_task_engine: Final[RecurringTaskEngine]
-    _big_plan_engine: Final[BigPlanEngine]
-    _metric_engine: Final[MetricEngine]
-    _prm_engine: Final[PrmEngine]
+    _storage_engine: Final[StorageEngine]
 
-    def __init__(
-            self, global_properties: GlobalProperties, project_engine: ProjectEngine,
-            inbox_task_engine: InboxTaskEngine, recurring_task_engine: RecurringTaskEngine,
-            big_plan_engine: BigPlanEngine,
-            metric_engine: MetricEngine,
-            prm_engine: PrmEngine) -> None:
+    def __init__(self, global_properties: GlobalProperties, storage_engine: StorageEngine) -> None:
         """Constructor."""
         self._global_properties = global_properties
-        self._project_engine = project_engine
-        self._inbox_task_engine = inbox_task_engine
-        self._recurring_task_engine = recurring_task_engine
-        self._big_plan_engine = big_plan_engine
-        self._metric_engine = metric_engine
-        self._prm_engine = prm_engine
+        self._storage_engine = storage_engine
 
     def execute(self, args: Args) -> 'Result':
         """Execute the command."""
         today = args.right_now.value.date()
-        with self._project_engine.get_unit_of_work() as project_uow:
-            projects = project_uow.project_repository.find_all(filter_keys=args.filter_project_keys)
-        projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
-        with self._metric_engine.get_unit_of_work() as metric_uow:
-            metrics = metric_uow.metric_repository.find_all(allow_archived=True, filter_keys=args.filter_metric_keys)
-        metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
-        with self._prm_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
+            projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
+            projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
+
+            metrics = uow.metric_repository.find_all(allow_archived=True, filter_keys=args.filter_metric_keys)
+            metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
+
             persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=args.filter_person_ref_ids)
             persons_by_ref_id = {p.ref_id: p for p in persons}
-        schedule = schedules.get_schedule(
-            args.period, EntityName("Helper"), args.right_now, self._global_properties.timezone,
-            None, None, None, None, None, None)
 
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-            inbox_task_collections = inbox_task_uow.inbox_task_collection_repository.find_all(
+            schedule = schedules.get_schedule(
+                args.period, EntityName("Helper"), args.right_now, self._global_properties.timezone,
+                None, None, None, None, None, None)
+
+            inbox_task_collections = uow.inbox_task_collection_repository.find_all(
                 filter_project_ref_ids=[p.ref_id for p in projects])
             all_inbox_tasks = [
-                it for it in inbox_task_uow.inbox_task_repository.find_all(
+                it for it in uow.inbox_task_repository.find_all(
                     allow_archived=True,
                     filter_inbox_task_collection_ref_ids=[itc.ref_id for itc in inbox_task_collections],
                     filter_sources=args.filter_sources)
@@ -222,22 +202,21 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
                 or ((it.source is InboxTaskSource.PERSON_CATCH_UP or it.source is InboxTaskSource.PERSON_BIRTHDAY) and
                     (not (args.filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))]
 
-        with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
             big_plan_collections = \
-                big_plan_uow.big_plan_collection_repository.find_all(
+                uow.big_plan_collection_repository.find_all(
                     filter_project_ref_ids=[p.ref_id for p in projects])
-            all_big_plans = big_plan_uow.big_plan_repository.find_all(
+            all_big_plans = uow.big_plan_repository.find_all(
                 allow_archived=True, filter_ref_ids=args.filter_big_plan_ref_ids,
                 filter_big_plan_collection_ref_ids=[bpc.ref_id for bpc in big_plan_collections])
-        big_plans_by_ref_id: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
-        with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
+            big_plans_by_ref_id: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
+
             recurring_task_collections = \
-                recurring_task_uow.recurring_task_collection_repository.find_all(
+                uow.recurring_task_collection_repository.find_all(
                     filter_project_ref_ids=[p.ref_id for p in projects])
-            all_recurring_tasks = recurring_task_uow.recurring_task_repository.find_all(
+            all_recurring_tasks = uow.recurring_task_repository.find_all(
                 allow_archived=True, filter_ref_ids=args.filter_recurring_task_ref_ids,
                 filter_recurring_task_collection_ref_ids=[rtc.ref_id for rtc in recurring_task_collections])
-        all_recurring_tasks_by_ref_id: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
+            all_recurring_tasks_by_ref_id: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
 
         global_inbox_tasks_summary = self._run_report_for_inbox_tasks(schedule, all_inbox_tasks)
         global_big_plans_summary = self._run_report_for_big_plan(schedule, all_big_plans)

@@ -2,7 +2,6 @@
 import logging
 import typing
 import uuid
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -14,7 +13,6 @@ from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository, \
     BigPlanCollectionAlreadyExistsError, BigPlanCollectionNotFoundError
-from jupiter.domain.big_plans.infra.big_plan_engine import BigPlanUnitOfWork, BigPlanEngine
 from jupiter.domain.big_plans.infra.big_plan_repository import BigPlanRepository, BigPlanNotFoundError
 from jupiter.domain.entity_name import EntityName
 from jupiter.framework.base.entity_id import EntityId
@@ -334,51 +332,3 @@ class YamlBigPlanRepository(BigPlanRepository):
             _accepted_time=row.accepted_time,
             _working_time=row.working_time,
             _completed_time=row.completed_time)
-
-
-class YamlBigPlanUnitOfWork(BigPlanUnitOfWork):
-    """A Yaml text file specific big plan unit of work."""
-
-    _big_plan_collection_repository: Final[YamlBigPlanCollectionRepository]
-    _big_plan_repository: Final[YamlBigPlanRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._big_plan_collection_repository = YamlBigPlanCollectionRepository(time_provider)
-        self._big_plan_repository = YamlBigPlanRepository(time_provider)
-
-    def __enter__(self) -> 'YamlBigPlanUnitOfWork':
-        """Enter context."""
-        self._big_plan_collection_repository.initialize()
-        self._big_plan_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def big_plan_collection_repository(self) -> BigPlanCollectionRepository:
-        """The big plan collection repository."""
-        return self._big_plan_collection_repository
-
-    @property
-    def big_plan_repository(self) -> BigPlanRepository:
-        """The big plan repository."""
-        return self._big_plan_repository
-
-
-class YamlBigPlanEngine(BigPlanEngine):
-    """An Yaml text file specific big plan engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[BigPlanUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlBigPlanUnitOfWork(self._time_provider)

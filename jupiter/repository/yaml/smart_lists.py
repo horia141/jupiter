@@ -1,14 +1,12 @@
 """Repository for smart lists."""
 import logging
 import typing
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final, Set, List
 
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.smart_lists.infra.smart_list_engine import SmartListUnitOfWork, SmartListEngine
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository, \
     SmartListItemNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepository, SmartListAlreadyExistsError, \
@@ -22,7 +20,7 @@ from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.json import JSONDictType
-from jupiter.repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect,\
+from jupiter.repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, Intersect, \
     StorageEntityNotFoundError
 from jupiter.utils.time_provider import TimeProvider
 
@@ -475,59 +473,3 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             _is_done=row.is_done,
             _tags_ref_id=list(row.tag_ids),
             _url=row.url)
-
-
-class YamlSmartListUnitOfWork(SmartListUnitOfWork):
-    """A Yaml text file specific smart list unit of work."""
-
-    _smart_list_repository: Final[YamlSmartListRepository]
-    _smart_list_tag_reposiotry: Final[YamlSmartListTagRepository]
-    _smart_list_item_repository: Final[YamlSmartListItemRepository]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._smart_list_repository = YamlSmartListRepository(time_provider)
-        self._smart_list_tag_reposiotry = YamlSmartListTagRepository(time_provider)
-        self._smart_list_item_repository = YamlSmartListItemRepository(time_provider)
-
-    def __enter__(self) -> 'YamlSmartListUnitOfWork':
-        """Enter context."""
-        self._smart_list_repository.initialize()
-        self._smart_list_tag_reposiotry.initialize()
-        self._smart_list_item_repository.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-
-    @property
-    def smart_list_repository(self) -> SmartListRepository:
-        """The smart list repository."""
-        return self._smart_list_repository
-
-    @property
-    def smart_list_tag_repository(self) -> SmartListTagRepository:
-        """The smart list tag repository."""
-        return self._smart_list_tag_reposiotry
-
-    @property
-    def smart_list_item_repository(self) -> SmartListItemRepository:
-        """The smart list item repository."""
-        return self._smart_list_item_repository
-
-
-class YamlSmartListEngine(SmartListEngine):
-    """An Yaml text file specific smart list engine."""
-
-    _time_provider: Final[TimeProvider]
-
-    def __init__(self, time_provider: TimeProvider) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-
-    @contextmanager
-    def get_unit_of_work(self) -> typing.Iterator[SmartListUnitOfWork]:
-        """Get the unit of work."""
-        yield YamlSmartListUnitOfWork(self._time_provider)

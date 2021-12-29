@@ -2,7 +2,6 @@
 import logging
 from typing import Final, Optional, Iterable
 
-from jupiter.domain.smart_lists.infra.smart_list_engine import SmartListEngine
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListNotFoundError
 from jupiter.domain.smart_lists.notion_smart_list import NotionSmartList
@@ -10,6 +9,7 @@ from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListIte
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -20,13 +20,13 @@ LOGGER = logging.getLogger(__name__)
 class SmartListSyncService:
     """The service class for syncing smart lists."""
 
-    _smart_list_engine: Final[SmartListEngine]
+    _storage_engine: Final[StorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, smart_list_engine: SmartListEngine, smart_list_notion_manager: SmartListNotionManager) -> None:
+            self, storage_engine: StorageEngine, smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
-        self._smart_list_engine = smart_list_engine
+        self._storage_engine = storage_engine
         self._smart_list_notion_manager = smart_list_notion_manager
 
     def sync(
@@ -44,7 +44,7 @@ class SmartListSyncService:
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
                 updated_smart_list = notion_smart_list.apply_to_aggregate_root(smart_list, right_now)
-                with self._smart_list_engine.get_unit_of_work() as uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     uow.smart_list_repository.save(updated_smart_list)
                 LOGGER.info("Applied local change")
             else:
@@ -55,7 +55,7 @@ class SmartListSyncService:
             self._smart_list_notion_manager.upsert_smart_list(notion_smart_list)
 
         # Synchronise the tags here.
-        with self._smart_list_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             all_smart_list_tags = uow.smart_list_tag_repository.find_all(
                 allow_archived=True, filter_smart_list_ref_ids=[smart_list.ref_id])
         all_smart_list_tags_set = {slt.ref_id: slt for slt in all_smart_list_tags}
@@ -81,7 +81,7 @@ class SmartListSyncService:
                 # If the smart list tag doesn't exist locally, we create it.
                 new_smart_list_tag = \
                     notion_smart_list_tag.new_aggregate_root(NotionSmartListTag.InverseExtraInfo(smart_list.ref_id))
-                with self._smart_list_engine.get_unit_of_work() as uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     new_smart_list_tag = uow.smart_list_tag_repository.create(new_smart_list_tag)
                 LOGGER.info(f"Found new smart list tag from Notion '{new_smart_list_tag.tag_name}'")
 
@@ -106,7 +106,7 @@ class SmartListSyncService:
                     updated_smart_list_tag = \
                         notion_smart_list_tag.apply_to_aggregate_root(
                             smart_list_tag, NotionSmartListTag.InverseExtraInfo(smart_list.ref_id))
-                    with self._smart_list_engine.get_unit_of_work() as uow:
+                    with self._storage_engine.get_unit_of_work() as uow:
                         uow.smart_list_tag_repository.save(updated_smart_list_tag)
                     LOGGER.info(f"Changed smart list tag '{smart_list_tag.tag_name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
@@ -144,7 +144,7 @@ class SmartListSyncService:
         filter_smart_list_item_ref_ids_set = frozenset(filter_smart_list_item_ref_ids) \
             if filter_smart_list_item_ref_ids else None
 
-        with self._smart_list_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             all_smart_list_items = uow.smart_list_item_repository.find_all(
                 allow_archived=True, filter_smart_list_ref_ids=[smart_list.ref_id],
                 filter_ref_ids=filter_smart_list_item_ref_ids)
@@ -177,7 +177,7 @@ class SmartListSyncService:
                 new_smart_list_item = notion_smart_list_item.new_aggregate_root(
                     NotionSmartListItem.InverseExtraInfo(smart_list.ref_id, all_smart_list_tags_by_name))
 
-                with self._smart_list_engine.get_unit_of_work() as uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     new_smart_list_item = uow.smart_list_item_repository.create(new_smart_list_item)
                 LOGGER.info(f"Found new smart list item from Notion '{new_smart_list_item.name}'")
 
@@ -207,7 +207,7 @@ class SmartListSyncService:
                     updated_smart_list_item = notion_smart_list_item.apply_to_aggregate_root(
                         smart_list_item,
                         NotionSmartListItem.InverseExtraInfo(smart_list.ref_id, all_smart_list_tags_by_name))
-                    with self._smart_list_engine.get_unit_of_work() as uow:
+                    with self._storage_engine.get_unit_of_work() as uow:
                         uow.smart_list_item_repository.save(updated_smart_list_item)
                     LOGGER.info(f"Changed smart list item '{smart_list_item.name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:

@@ -8,7 +8,6 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -18,8 +17,8 @@ from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
-from jupiter.domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -54,29 +53,26 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _inbox_task_engine: Final[InboxTaskEngine]
+    _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _recurring_task_engine: Final[RecurringTaskEngine]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            inbox_task_engine: InboxTaskEngine, inbox_task_notion_manager: InboxTaskNotionManager,
-            recurring_task_engine: RecurringTaskEngine,
+            storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
-        self._inbox_task_engine = inbox_task_engine
+        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._recurring_task_engine = recurring_task_engine
         self._recurring_task_notion_manager = recurring_task_notion_manager
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         need_to_change_inbox_tasks = False
 
-        with self._recurring_task_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
 
             if args.name.should_change:
@@ -133,9 +129,9 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
             recurring_task.recurring_task_collection_ref_id, notion_recurring_task)
 
         if need_to_change_inbox_tasks:
-            with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
+            with self._storage_engine.get_unit_of_work() as uow:
                 all_inbox_tasks = \
-                    inbox_task_uow.inbox_task_repository.find_all(
+                    uow.inbox_task_repository.find_all(
                         allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
 
             for inbox_task in all_inbox_tasks:
@@ -151,8 +147,8 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     schedule.due_time, recurring_task.gen_params.eisen, recurring_task.gen_params.difficulty,
                     self._time_provider.get_current_time())
 
-                with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-                    inbox_task_uow.inbox_task_repository.save(inbox_task)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.save(inbox_task)
 
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(

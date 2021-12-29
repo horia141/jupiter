@@ -14,8 +14,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY migrations migrations
 COPY jupiter jupiter
+COPY jupiter/jupiter.py jupiter.py
 COPY Config Config
 
 # ENTRYPOINT ["python", "-m", "cProfile", "-s", "time", "jupiter/jupiter.py"]
 WORKDIR /data
-ENTRYPOINT ["python", "/jupiter/jupiter/jupiter.py"]
+ENTRYPOINT ["python", "/jupiter/jupiter.py"]

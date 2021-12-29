@@ -2,9 +2,8 @@
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project import Project
-from jupiter.domain.workspaces.infra.workspace_engine import WorkspaceEngine
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.use_case import UseCase
 
@@ -19,19 +18,15 @@ class WorkspaceFindUseCase(UseCase[None, 'WorkspaceFindUseCase.Response']):
         workspace: Workspace
         default_project: Project
 
-    _workspace_engine: Final[WorkspaceEngine]
-    _project_engine: Final[ProjectEngine]
+    _storage_engine: Final[StorageEngine]
 
-    def __init__(
-            self, workspace_engine: WorkspaceEngine, project_engine: ProjectEngine) -> None:
+    def __init__(self, storage_engine: StorageEngine) -> None:
         """Constructor."""
-        self._workspace_engine = workspace_engine
-        self._project_engine = project_engine
+        self._storage_engine = storage_engine
 
     def execute(self, args: None) -> 'Response':
         """Execute the command's action."""
-        with self._workspace_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
-        with self._project_engine.get_unit_of_work() as project_uow:
-            default_project = project_uow.project_repository.load_by_id(workspace.default_project_ref_id)
+            default_project = uow.project_repository.load_by_id(workspace.default_project_ref_id)
         return self.Response(workspace=workspace, default_project=default_project)

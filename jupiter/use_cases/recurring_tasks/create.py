@@ -7,9 +7,7 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -18,11 +16,10 @@ from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
-from jupiter.domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.workspaces.infra.workspace_engine import WorkspaceEngine
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -52,46 +49,34 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
         end_at_date: Optional[ADate]
 
     _time_provider: Final[TimeProvider]
-    _workspace_engine: Final[WorkspaceEngine]
-    _project_engine: Final[ProjectEngine]
-    _inbox_task_engine: Final[InboxTaskEngine]
+    _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _recurring_task_engine: Final[RecurringTaskEngine]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, workspace_engine: WorkspaceEngine,
-            project_engine: ProjectEngine, inbox_task_engine: InboxTaskEngine,
-            inbox_task_notion_manager: InboxTaskNotionManager, recurring_task_engine: RecurringTaskEngine,
+            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._workspace_engine = workspace_engine
-        self._project_engine = project_engine
-        self._inbox_task_engine = inbox_task_engine
+        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._recurring_task_engine = recurring_task_engine
         self._recurring_task_notion_manager = recurring_task_notion_manager
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        if args.project_key is not None:
-            with self._project_engine.get_unit_of_work() as project_uow:
-                project = project_uow.project_repository.load_by_key(args.project_key)
-            project_ref_id = project.ref_id
-        else:
-            with self._workspace_engine.get_unit_of_work() as workspace_uow:
-                workspace = workspace_uow.workspace_repository.load()
-            project_ref_id = workspace.default_project_ref_id
+        with self._storage_engine.get_unit_of_work() as uow:
+            if args.project_key is not None:
+                project = uow.project_repository.load_by_key(args.project_key)
+                project_ref_id = project.ref_id
+            else:
+                workspace = uow.workspace_repository.load()
+                project_ref_id = workspace.default_project_ref_id
 
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-            inbox_task_collection = inbox_task_uow.inbox_task_collection_repository.load_by_project(project_ref_id)
-        notion_inbox_task_collection = \
-            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project_ref_id)
 
-        with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
             recurring_task_collection = \
-                recurring_task_uow.recurring_task_collection_repository.load_by_project(project_ref_id)
+                uow.recurring_task_collection_repository.load_by_project(project_ref_id)
 
             recurring_task = RecurringTask.new_recurring_task(
                 recurring_task_collection_ref_id=recurring_task_collection.ref_id,
@@ -116,8 +101,12 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
                 suspended=False,
                 created_time=self._time_provider.get_current_time())
             recurring_task = \
-                recurring_task_uow.recurring_task_repository.create(recurring_task_collection, recurring_task)
+                uow.recurring_task_repository.create(recurring_task_collection, recurring_task)
             LOGGER.info("Applied local changes")
+
+        notion_inbox_task_collection = \
+            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
+
         notion_recurring_task = NotionRecurringTask.new_notion_row(recurring_task, None)
         self._recurring_task_notion_manager.upsert_recurring_task(
             recurring_task_collection.ref_id, notion_recurring_task, notion_inbox_task_collection)

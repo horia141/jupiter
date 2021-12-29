@@ -2,8 +2,8 @@
 import logging
 from typing import Final
 
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
-from jupiter.domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.base.timestamp import Timestamp
@@ -14,24 +14,24 @@ LOGGER = logging.getLogger(__name__)
 class WorkspaceSyncService:
     """The service class for syncing the Workspace."""
 
-    _workspace_engine: Final[WorkspaceEngine]
+    _storage_engine: Final[StorageEngine]
     _workspace_notion_manager: Final[WorkspaceNotionManager]
 
-    def __init__(self, workspace_engine: WorkspaceEngine, workspace_notion_manager: WorkspaceNotionManager) -> None:
+    def __init__(self, storage_engine: StorageEngine, workspace_notion_manager: WorkspaceNotionManager) -> None:
         """Constructor."""
-        self._workspace_engine = workspace_engine
+        self._storage_engine = storage_engine
         self._workspace_notion_manager = workspace_notion_manager
 
     def sync(self, right_now: Timestamp, sync_prefer: SyncPrefer) -> Workspace:
         """Execute the service's action."""
-        with self._workspace_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
         notion_workspace = self._workspace_notion_manager.load_workspace()
 
         if sync_prefer == SyncPrefer.NOTION:
             updated_workspace = notion_workspace.apply_to_aggregate_root(workspace, right_now)
 
-            with self._workspace_engine.get_unit_of_work() as uow:
+            with self._storage_engine.get_unit_of_work() as uow:
                 uow.workspace_repository.save(updated_workspace)
             LOGGER.info("Changed workspace from Notion")
         elif sync_prefer == SyncPrefer.LOCAL:

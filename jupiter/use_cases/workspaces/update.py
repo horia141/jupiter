@@ -3,10 +3,9 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.entity_name import EntityName
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.timezone import Timezone
-from jupiter.domain.workspaces.infra.workspace_engine import WorkspaceEngine
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
@@ -24,22 +23,20 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
         default_project_key: UpdateAction[ProjectKey]
 
     _time_provider: Final[TimeProvider]
-    _workspace_engine: Final[WorkspaceEngine]
-    _notion_manager: Final[WorkspaceNotionManager]
-    _project_engine: Final[ProjectEngine]
+    _storage_engine: Final[StorageEngine]
+    _workspace_notion_manager: Final[WorkspaceNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, workspace_engine: WorkspaceEngine,
-            notion_manager: WorkspaceNotionManager, project_engine: ProjectEngine) -> None:
+            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            workspace_notion_manager: WorkspaceNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._workspace_engine = workspace_engine
-        self._notion_manager = notion_manager
-        self._project_engine = project_engine
+        self._storage_engine = storage_engine
+        self._workspace_notion_manager = workspace_notion_manager
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        with self._workspace_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
 
             if args.name.should_change:
@@ -47,12 +44,11 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
             if args.timezone.should_change:
                 workspace.change_timezone(args.timezone.value, self._time_provider.get_current_time())
             if args.default_project_key.should_change:
-                with self._project_engine.get_unit_of_work() as project_uow:
-                    project = project_uow.project_repository.load_by_key(args.default_project_key.value)
+                project = uow.project_repository.load_by_key(args.default_project_key.value)
                 workspace.change_default_project(project.ref_id, self._time_provider.get_current_time())
 
             uow.workspace_repository.save(workspace)
 
-        notion_workspace = self._notion_manager.load_workspace()
+        notion_workspace = self._workspace_notion_manager.load_workspace()
         notion_workspace = notion_workspace.join_with_aggregate_root(workspace)
-        self._notion_manager.save_workspace(notion_workspace)
+        self._workspace_notion_manager.save_workspace(notion_workspace)

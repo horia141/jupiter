@@ -3,18 +3,13 @@ from dataclasses import dataclass
 from typing import Optional, Iterable, List, Final
 
 from jupiter.domain.big_plans.big_plan import BigPlan
-from jupiter.domain.big_plans.infra.big_plan_engine import BigPlanEngine
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
-from jupiter.domain.metrics.infra.metric_engine import MetricEngine
 from jupiter.domain.metrics.metric import Metric
-from jupiter.domain.prm.infra.prm_engine import PrmEngine
 from jupiter.domain.prm.person import Person
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -43,56 +38,43 @@ class InboxTaskFindUseCase(UseCase['InboxTaskFindUseCase.Args', 'InboxTaskFindUs
         """Result."""
         inbox_tasks: Iterable['InboxTaskFindUseCase.ResultEntry']
 
-    _project_engine: Final[ProjectEngine]
-    _inbox_task_engine: Final[InboxTaskEngine]
-    _recurring_task_engine: Final[RecurringTaskEngine]
-    _big_plan_engine: Final[BigPlanEngine]
-    _metric_engine: Final[MetricEngine]
-    _prm_engine: Final[PrmEngine]
+    _storage_engine: Final[StorageEngine]
 
-    def __init__(
-            self, project_engine: ProjectEngine,
-            inbox_task_engine: InboxTaskEngine, recurring_task_engine: RecurringTaskEngine,
-            big_plan_engine: BigPlanEngine, metric_engine: MetricEngine, prm_engine: PrmEngine) -> None:
+    def __init__(self, storage_engine: StorageEngine) -> None:
         """Constructor."""
-        self._project_engine = project_engine
-        self._inbox_task_engine = inbox_task_engine
-        self._recurring_task_engine = recurring_task_engine
-        self._big_plan_engine = big_plan_engine
-        self._metric_engine = metric_engine
-        self._prm_engine = prm_engine
+        self._storage_engine = storage_engine
 
     def execute(self, args: Args) -> 'Result':
         """Execute the command's action."""
-        filter_project_ref_ids: Optional[List[EntityId]] = None
-        if args.filter_project_keys:
-            with self._project_engine.get_unit_of_work() as project_uow:
-                projects = project_uow.project_repository.find_all(filter_keys=args.filter_project_keys)
-            filter_project_ref_ids = [p.ref_id for p in projects]
+        with self._storage_engine.get_unit_of_work() as uow:
+            filter_project_ref_ids: Optional[List[EntityId]] = None
+            if args.filter_project_keys:
+                projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
+                filter_project_ref_ids = [p.ref_id for p in projects]
 
-        with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
             inbox_task_collections = \
-                inbox_task_uow.inbox_task_collection_repository.find_all(filter_project_ref_ids=filter_project_ref_ids)
-            inbox_tasks = inbox_task_uow.inbox_task_repository.find_all(
+                uow.inbox_task_collection_repository.find_all(filter_project_ref_ids=filter_project_ref_ids)
+            inbox_tasks = uow.inbox_task_repository.find_all(
                 filter_ref_ids=args.filter_ref_ids,
                 filter_inbox_task_collection_ref_ids=[itc.ref_id for itc in inbox_task_collections],
                 filter_sources=args.filter_sources)
-        with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
-            recurring_tasks = recurring_task_uow.recurring_task_repository.find_all(
+
+            recurring_tasks = uow.recurring_task_repository.find_all(
                 filter_ref_ids=(it.recurring_task_ref_id for it in inbox_tasks if it.recurring_task_ref_id is not None))
-        recurring_tasks_map = {rt.ref_id: rt for rt in recurring_tasks}
-        with self._big_plan_engine.get_unit_of_work() as big_plan_uow:
-            big_plans = big_plan_uow.big_plan_repository.find_all(
+            recurring_tasks_map = {rt.ref_id: rt for rt in recurring_tasks}
+
+            big_plans = uow.big_plan_repository.find_all(
                 filter_ref_ids=(it.big_plan_ref_id for it in inbox_tasks if it.big_plan_ref_id is not None))
-        big_plans_map = {bp.ref_id: bp for bp in big_plans}
-        with self._metric_engine.get_unit_of_work() as metric_uow:
-            metrics = metric_uow.metric_repository.find_all(
+            big_plans_map = {bp.ref_id: bp for bp in big_plans}
+
+            metrics = uow.metric_repository.find_all(
                 filter_ref_ids=(it.metric_ref_id for it in inbox_tasks if it.metric_ref_id is not None))
-        metrics_map = {m.ref_id: m for m in metrics}
-        with self._prm_engine.get_unit_of_work() as prm_uow:
-            persons = prm_uow.person_repository.find_all(
+            metrics_map = {m.ref_id: m for m in metrics}
+
+            persons = uow.person_repository.find_all(
                 filter_ref_ids=(it.person_ref_id for it in inbox_tasks if it.person_ref_id is not None))
-        persons_map = {p.ref_id: p for p in persons}
+            persons_map = {p.ref_id: p for p in persons}
+
         return InboxTaskFindUseCase.Result(
             inbox_tasks=[
                 InboxTaskFindUseCase.ResultEntry(

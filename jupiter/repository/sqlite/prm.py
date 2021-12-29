@@ -1,17 +1,10 @@
 """SQLite based PRM database repositories."""
-import json
-from contextlib import contextmanager
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional, Iterable, List, Final, Iterator
+from typing import Optional, Iterable, List, Final
 
-from alembic import command
-from alembic.config import Config
-from sqlalchemy import create_engine, select, MetaData, Table, Column, Integer, Boolean, DateTime, update, insert, \
+from sqlalchemy import select, MetaData, Table, Column, Integer, Boolean, DateTime, update, insert, \
     Unicode, String, JSON, delete
 from sqlalchemy.engine import Result, Connection
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import Engine
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -19,7 +12,6 @@ from jupiter.domain.entity_name import EntityName
 from jupiter.domain.prm.infra.person_repository import PersonRepository, PersonAlreadyExistsError, PersonNotFoundError
 from jupiter.domain.prm.infra.prm_database_repository import PrmDatabaseRepository, PrmDatabaseAlreadyExistsError, \
     PrmDatabaseNotFoundError
-from jupiter.domain.prm.infra.prm_engine import PrmUnitOfWork, PrmEngine
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.person_birthday import PersonBirthday
 from jupiter.domain.prm.person_relationship import PersonRelationship
@@ -258,66 +250,3 @@ class SqlitePersonRepository(PersonRepository):
                 due_at_month=row["catch_up_due_at_month"])
             if row["catch_up_project_ref_id"] is not None and row["catch_up_period"] is not None else None,
             _birthday=PersonBirthday.from_raw(row["birthday"]) if row["birthday"] else None)
-
-
-class SqlitePrmUnitOfWork(PrmUnitOfWork):
-    """A Sqlite specific PRM database unit of work."""
-
-    _prm_database_repository: Final[SqlitePrmDatabaseRepository]
-    _person_repository: Final[SqlitePersonRepository]
-
-    def __init__(
-            self, prm_database_repository: SqlitePrmDatabaseRepository,
-            person_repository: SqlitePersonRepository) -> None:
-        """Constructor."""
-        self._prm_database_repository = prm_database_repository
-        self._person_repository = person_repository
-
-    @property
-    def prm_database_repository(self) -> PrmDatabaseRepository:
-        """The PRM database repository."""
-        return self._prm_database_repository
-
-    @property
-    def person_repository(self) -> PersonRepository:
-        """The person repository."""
-        return self._person_repository
-
-
-class SqlitePrmEngine(PrmEngine):
-    """An Sqlite specific PRM database engine."""
-
-    @dataclass(frozen=True)
-    class Config:
-        """Config for a Sqlite PRM database engine."""
-
-        sqlite_db_url: str
-        alembic_ini_path: Path
-        alembic_migrations_path: Path
-
-    _config: Final[Config]
-    _sql_engine: Final[Engine]
-    _metadata: Final[MetaData]
-
-    def __init__(self, config: Config) -> None:
-        """Constructor."""
-        self._config = config
-        self._sql_engine = create_engine(config.sqlite_db_url, future=True, json_serializer=json.dumps)
-        self._metadata = MetaData(bind=self._sql_engine)
-
-    def prepare(self) -> None:
-        """Prepare the environment for SQLite."""
-        with self._sql_engine.begin() as connection:
-            alembic_cfg = Config(str(self._config.alembic_ini_path))
-            alembic_cfg.set_section_option('alembic', 'script_location', str(self._config.alembic_migrations_path))
-            # pylint: disable=unsupported-assignment-operation
-            alembic_cfg.attributes['connection'] = connection
-            command.upgrade(alembic_cfg, 'head')
-
-    @contextmanager
-    def get_unit_of_work(self) -> Iterator[PrmUnitOfWork]:
-        """Get the unit of work."""
-        with self._sql_engine.begin() as connection:
-            prm_database_repository = SqlitePrmDatabaseRepository(connection, self._metadata)
-            person_repository = SqlitePersonRepository(connection, self._metadata)
-            yield SqlitePrmUnitOfWork(prm_database_repository, person_repository)

@@ -7,26 +7,21 @@ from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 from jupiter.domain import schedules
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.domain.inbox_tasks.infra.inbox_task_engine import InboxTaskEngine
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from jupiter.domain.metrics.infra.metric_engine import MetricEngine
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_key import MetricKey
-from jupiter.domain.prm.infra.prm_engine import PrmEngine
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.person_birthday import PersonBirthday
-from jupiter.domain.projects.infra.project_engine import ProjectEngine
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.recurring_tasks.infra.recurring_task_engine import RecurringTaskEngine
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_target import SyncTarget
-from jupiter.domain.vacations.infra.vacation_engine import VacationEngine
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -54,54 +49,41 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _project_engine: Final[ProjectEngine]
-    _vacation_engine: Final[VacationEngine]
-    _inbox_task_engine: Final[InboxTaskEngine]
+    _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _recurring_task_engine: Final[RecurringTaskEngine]
-    _metric_engine: Final[MetricEngine]
-    _prm_engine: Final[PrmEngine]
 
     def __init__(
             self,
             global_properties: GlobalProperties, time_provider: TimeProvider,
-            project_engine: ProjectEngine, vacation_engine: VacationEngine,
-            inbox_task_engine: InboxTaskEngine, inbox_task_notion_manager: InboxTaskNotionManager,
-            recurring_task_engine: RecurringTaskEngine, metric_engine: MetricEngine, prm_engine: PrmEngine) -> None:
+            project_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
-        self._project_engine = project_engine
-        self._vacation_engine = vacation_engine
-        self._inbox_task_engine = inbox_task_engine
+        self._storage_engine = project_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._recurring_task_engine = recurring_task_engine
-        self._metric_engine = metric_engine
-        self._prm_engine = prm_engine
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        with self._vacation_engine.get_unit_of_work() as vacation_uow:
-            all_vacations = list(vacation_uow.vacation_repository.find_all())
-
-        with self._project_engine.get_unit_of_work() as project_uow:
-            all_projects = project_uow.project_repository.find_all()
-            all_syncable_projects = project_uow.project_repository.find_all(filter_keys=args.filter_project_keys)
-        all_projects_by_ref_id = {p.ref_id: p for p in all_projects}
+        with self._storage_engine.get_unit_of_work() as uow:
+            all_vacations = list(uow.vacation_repository.find_all())
+            all_projects = uow.project_repository.find_all()
+            all_syncable_projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
+            all_projects_by_ref_id = {p.ref_id: p for p in all_projects}
 
         if SyncTarget.PROJECTS in args.gen_targets:
             for project in all_syncable_projects:
                 LOGGER.info(f"Generating tasks for project '{project.name}'")
-                with self._recurring_task_engine.get_unit_of_work() as recurring_task_uow:
+                with self._storage_engine.get_unit_of_work() as uow:
                     recurring_task_collection = \
-                        recurring_task_uow.recurring_task_collection_repository.load_by_project(project.ref_id)
+                        uow.recurring_task_collection_repository.load_by_project(project.ref_id)
                     all_recurring_tasks = \
-                        list(recurring_task_uow.recurring_task_repository.find_all(
+                        list(uow.recurring_task_repository.find_all(
                             filter_ref_ids=args.filter_recurring_task_ref_ids,
                             filter_recurring_task_collection_ref_ids=[recurring_task_collection.ref_id]))
                 if len(all_recurring_tasks) == 0:
                     continue
-                with self._inbox_task_engine.get_unit_of_work() as uow:
+
+                with self._storage_engine.get_unit_of_work() as uow:
                     inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
                     all_collection_inbox_tasks = uow.inbox_task_repository.find_all(
                         allow_archived=True, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id],
@@ -127,55 +109,54 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                         sync_even_if_not_modified=args.sync_even_if_not_modified)
 
         if SyncTarget.METRICS in args.gen_targets:
-            with self._metric_engine.get_unit_of_work() as metric_uow:
-                all_metrics = metric_uow.metric_repository.find_all(filter_keys=args.filter_metric_keys)
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_metrics = uow.metric_repository.find_all(filter_keys=args.filter_metric_keys)
 
-                with self._inbox_task_engine.get_unit_of_work() as uow:
-                    all_collection_inbox_tasks = uow.inbox_task_repository.find_all(
-                        allow_archived=True,
-                        filter_metric_ref_ids=[m.ref_id for m in all_metrics])
+                all_collection_inbox_tasks = \
+                    uow.inbox_task_repository.find_all(
+                        allow_archived=True, filter_metric_ref_ids=[m.ref_id for m in all_metrics])
 
-                all_collection_inbox_tasks_by_metric_ref_id_and_timeline = {}
-                for inbox_task in all_collection_inbox_tasks:
-                    if inbox_task.metric_ref_id is None or inbox_task.recurring_timeline is None:
-                        raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
-                    all_collection_inbox_tasks_by_metric_ref_id_and_timeline[
-                        (inbox_task.metric_ref_id, inbox_task.recurring_timeline)] = inbox_task
+            all_collection_inbox_tasks_by_metric_ref_id_and_timeline = {}
 
-                for metric in all_metrics:
-                    if metric.collection_params is None:
-                        continue
-                    LOGGER.info(f"Generating collection tasks for metric '{metric.name}'")
+            for inbox_task in all_collection_inbox_tasks:
+                if inbox_task.metric_ref_id is None or inbox_task.recurring_timeline is None:
+                    raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
+                all_collection_inbox_tasks_by_metric_ref_id_and_timeline[
+                    (inbox_task.metric_ref_id, inbox_task.recurring_timeline)] = inbox_task
 
-                    # MyPy not smart enough to infer that if (not A and not B) then (A or B)
-                    project = all_projects_by_ref_id[metric.collection_params.project_ref_id]
+            for metric in all_metrics:
+                if metric.collection_params is None:
+                    continue
+                LOGGER.info(f"Generating collection tasks for metric '{metric.name}'")
 
-                    self._generate_collection_inbox_tasks_for_metric(
-                        project=project,
-                        right_now=args.right_now,
-                        period_filter=frozenset(args.filter_period) if args.filter_period else None,
-                        metric=metric,
-                        collection_params=metric.collection_params,
-                        all_inbox_tasks_by_metric_ref_id_and_timeline=
-                        all_collection_inbox_tasks_by_metric_ref_id_and_timeline,
-                        sync_even_if_not_modified=args.sync_even_if_not_modified)
+                # MyPy not smart enough to infer that if (not A and not B) then (A or B)
+                project = all_projects_by_ref_id[metric.collection_params.project_ref_id]
+
+                self._generate_collection_inbox_tasks_for_metric(
+                    project=project,
+                    right_now=args.right_now,
+                    period_filter=frozenset(args.filter_period) if args.filter_period else None,
+                    metric=metric,
+                    collection_params=metric.collection_params,
+                    all_inbox_tasks_by_metric_ref_id_and_timeline=
+                    all_collection_inbox_tasks_by_metric_ref_id_and_timeline,
+                    sync_even_if_not_modified=args.sync_even_if_not_modified)
 
         if SyncTarget.PRM in args.gen_targets:
-            with self._prm_engine.get_unit_of_work() as prm_uow:
-                prm_database = prm_uow.prm_database_repository.load()
-                all_persons = prm_uow.person_repository.find_all(filter_ref_ids=args.filter_person_ref_ids)
+            with self._storage_engine.get_unit_of_work() as uow:
+                prm_database = uow.prm_database_repository.load()
+                all_persons = uow.person_repository.find_all(filter_ref_ids=args.filter_person_ref_ids)
 
-            project = all_projects_by_ref_id[prm_database.catch_up_project_ref_id]
+                project = all_projects_by_ref_id[prm_database.catch_up_project_ref_id]
 
-            with self._inbox_task_engine.get_unit_of_work() as uow:
-                all_catch_up_inbox_tasks = uow.inbox_task_repository.find_all(
-                    allow_archived=True,
-                    filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
-                    filter_person_ref_ids=[m.ref_id for m in all_persons])
-                all_birthday_inbox_tasks = uow.inbox_task_repository.find_all(
-                    allow_archived=True,
-                    filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
-                    filter_person_ref_ids=[m.ref_id for m in all_persons])
+                all_catch_up_inbox_tasks = \
+                    uow.inbox_task_repository.find_all(
+                        allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
+                        filter_person_ref_ids=[m.ref_id for m in all_persons])
+                all_birthday_inbox_tasks = \
+                    uow.inbox_task_repository.find_all(
+                        allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
+                        filter_person_ref_ids=[m.ref_id for m in all_persons])
 
             all_catch_up_inbox_tasks_by_person_ref_id_and_timeline = {}
             for inbox_task in all_catch_up_inbox_tasks:
@@ -270,14 +251,13 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
-            found_task.update_link_to_recurring_task(name=schedule.full_name, timeline=schedule.timeline,
-                                                     the_type=recurring_task.the_type,
-                                                     actionable_date=schedule.actionable_date,
-                                                     due_time=schedule.due_time, eisen=recurring_task.gen_params.eisen,
-                                                     difficulty=recurring_task.gen_params.difficulty,
-                                                     modification_time=self._time_provider.get_current_time())
+            found_task.update_link_to_recurring_task(
+                name=schedule.full_name, timeline=schedule.timeline, the_type=recurring_task.the_type,
+                actionable_date=schedule.actionable_date, due_time=schedule.due_time,
+                eisen=recurring_task.gen_params.eisen, difficulty=recurring_task.gen_params.difficulty,
+                modification_time=self._time_provider.get_current_time())
 
-            with self._inbox_task_engine.get_unit_of_work() as uow:
+            with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = \
@@ -287,8 +267,8 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
-            with self._inbox_task_engine.get_unit_of_work() as read_uow:
-                inbox_task_collection = read_uow.inbox_task_collection_repository.load_by_project(project.ref_id)
+            with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
 
                 inbox_task = InboxTask.new_inbox_task_for_recurring_task(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -303,8 +283,9 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     due_date=schedule.due_time,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = read_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
+
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
             self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
@@ -338,12 +319,12 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
-            found_task.update_link_to_metric(name=schedule.full_name, recurring_timeline=schedule.timeline,
-                                             eisen=collection_params.eisen, difficulty=collection_params.difficulty,
-                                             actionable_date=schedule.actionable_date, due_time=schedule.due_time,
-                                             modification_time=self._time_provider.get_current_time())
+            found_task.update_link_to_metric(
+                name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=collection_params.eisen,
+                difficulty=collection_params.difficulty, actionable_date=schedule.actionable_date,
+                due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
 
-            with self._inbox_task_engine.get_unit_of_work() as uow:
+            with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = self._inbox_task_notion_manager.load_inbox_task(found_task.inbox_task_collection_ref_id,
@@ -352,8 +333,8 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
-            with self._inbox_task_engine.get_unit_of_work() as inbox_task_uow:
-                inbox_task_collection = inbox_task_uow.inbox_task_collection_repository.load_by_project(project.ref_id)
+            with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
 
                 inbox_task = InboxTask.new_inbox_task_for_metric(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -367,8 +348,9 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     due_date=schedule.due_time,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = inbox_task_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
+
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
             self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
@@ -407,7 +389,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 difficulty=catch_up_params.difficulty, actionable_date=schedule.actionable_date,
                 due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
 
-            with self._inbox_task_engine.get_unit_of_work() as uow:
+            with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = \
@@ -417,8 +399,8 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
-            with self._inbox_task_engine.get_unit_of_work() as read_uow:
-                inbox_task_collection = read_uow.inbox_task_collection_repository.load_by_project(project.ref_id)
+            with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
 
                 inbox_task = InboxTask.new_inbox_task_for_person_catch_up(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -432,8 +414,9 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     due_date=schedule.due_time,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = read_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
+
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
             self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
@@ -468,7 +451,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 preparation_days_cnt=person.preparation_days_cnt_for_birthday, due_time=schedule.due_time,
                 modification_time=self._time_provider.get_current_time())
 
-            with self._inbox_task_engine.get_unit_of_work() as uow:
+            with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
             notion_inbox_task = \
@@ -478,8 +461,8 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
-            with self._inbox_task_engine.get_unit_of_work() as read_uow:
-                inbox_task_collection = read_uow.inbox_task_collection_repository.load_by_project(project.ref_id)
+            with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
 
                 inbox_task = InboxTask.new_inbox_task_for_person_birthday(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -491,8 +474,9 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     due_date=schedule.due_time,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = read_uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
                 LOGGER.info("Applied local changes")
+
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
             self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")

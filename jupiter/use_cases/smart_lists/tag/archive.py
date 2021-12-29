@@ -2,9 +2,9 @@
 import logging
 from typing import Final
 
-from jupiter.domain.smart_lists.infra.smart_list_engine import SmartListEngine
-from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager,\
+from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListTagNotFoundError
+from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -16,20 +16,20 @@ class SmartListTagArchiveUseCase(UseCase[EntityId, None]):
     """The command for archiving a smart list tag."""
 
     _time_provider: Final[TimeProvider]
-    _smart_list_engine: Final[SmartListEngine]
-    _notion_manager: Final[SmartListNotionManager]
+    _storage_engine: Final[StorageEngine]
+    _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, smart_list_engune: SmartListEngine,
-            notion_manager: SmartListNotionManager) -> None:
+            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
-        self._smart_list_engine = smart_list_engune
-        self._notion_manager = notion_manager
+        self._storage_engine = storage_engine
+        self._smart_list_notion_manager = smart_list_notion_manager
 
     def execute(self, args: EntityId) -> None:
         """Execute the command's action."""
-        with self._smart_list_engine.get_unit_of_work() as uow:
+        with self._storage_engine.get_unit_of_work() as uow:
             smart_list_tag = uow.smart_list_tag_repository.load_by_id(args)
 
             smart_list_items = uow.smart_list_item_repository.find_all(
@@ -46,6 +46,7 @@ class SmartListTagArchiveUseCase(UseCase[EntityId, None]):
             uow.smart_list_tag_repository.save(smart_list_tag)
 
         try:
-            self._notion_manager.remove_smart_list_tag(smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
+            self._smart_list_notion_manager.remove_smart_list_tag(
+                smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
         except NotionSmartListTagNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")
