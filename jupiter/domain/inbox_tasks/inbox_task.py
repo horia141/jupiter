@@ -6,6 +6,7 @@ import pendulum
 from pendulum import UTC
 
 from jupiter.domain.adate import ADate
+from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
@@ -55,7 +56,7 @@ class InboxTask(AggregateRoot):
     @staticmethod
     def new_inbox_task(
             inbox_task_collection_ref_id: EntityId, archived: bool, name: EntityName, status: InboxTaskStatus,
-            big_plan_ref_id: Optional[EntityId], eisen: List[Eisen], difficulty: Optional[Difficulty],
+            big_plan: Optional[BigPlan], eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Created an inbox task."""
         InboxTask._check_actionable_and_due_dates(actionable_date, due_date)
@@ -68,8 +69,8 @@ class InboxTask(AggregateRoot):
             _last_modified_time=created_time,
             _events=[],
             _inbox_task_collection_ref_id=inbox_task_collection_ref_id,
-            _source=InboxTaskSource.USER if big_plan_ref_id is None else InboxTaskSource.BIG_PLAN,
-            _big_plan_ref_id=big_plan_ref_id,
+            _source=InboxTaskSource.USER if big_plan is None else InboxTaskSource.BIG_PLAN,
+            _big_plan_ref_id=big_plan.ref_id if big_plan else None,
             _recurring_task_ref_id=None,
             _metric_ref_id=None,
             _person_ref_id=None,
@@ -77,8 +78,8 @@ class InboxTask(AggregateRoot):
             _status=status,
             _eisen=eisen,
             _difficulty=difficulty,
-            _actionable_date=actionable_date,
-            _due_date=due_date,
+            _actionable_date=actionable_date or (big_plan.actionable_date if big_plan else None),
+            _due_date=due_date or (big_plan.due_date if big_plan else None),
             _recurring_timeline=None,
             _recurring_type=None,
             _recurring_gen_right_now=None,

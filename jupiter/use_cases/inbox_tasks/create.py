@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Final
 
 from jupiter.domain.adate import ADate
+from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
@@ -56,6 +57,7 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
                 workspace = uow.workspace_repository.load()
                 project_ref_id = workspace.default_project_ref_id
 
+            big_plan: Optional[BigPlan] = None
             big_plan_name: Optional[EntityName] = None
             if args.big_plan_ref_id:
                 big_plan = uow.big_plan_repository.load_by_id(args.big_plan_ref_id)
@@ -68,7 +70,7 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
                 archived=False,
                 name=args.name,
                 status=InboxTaskStatus.ACCEPTED,
-                big_plan_ref_id=args.big_plan_ref_id,
+                big_plan=big_plan,
                 eisen=args.eisen,
                 difficulty=args.difficulty,
                 actionable_date=args.actionable_date,

@@ -107,15 +107,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 if self.difficulty else None
 
         big_plan = None
-        inbox_task_actionable_date = self.actionable_date
-        inbox_task_due_date = self.due_date
         if inbox_task_big_plan_ref_id is not None:
             big_plan = extra_info.all_big_plans_map[inbox_task_big_plan_ref_id]
         elif inbox_task_big_plan_name is not None:
             big_plan = \
                 extra_info.all_big_plans_by_name[format_name_for_option(inbox_task_big_plan_name)]
-            inbox_task_actionable_date = inbox_task_actionable_date or big_plan.actionable_date
-            inbox_task_due_date = inbox_task_due_date or big_plan.due_date
         elif inbox_task_recurring_task_ref_id is not None:
             raise InputValidationError("Trying to create an inbox task for a recurring task from Notion")
         elif inbox_task_metric_ref_id is not None:
@@ -128,11 +124,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             archived=self.archived,
             name=inbox_task_name,
             status=inbox_task_status,
-            big_plan_ref_id=big_plan.ref_id if big_plan else None,
+            big_plan=big_plan,
             eisen=inbox_task_eisen,
             difficulty=inbox_task_difficulty,
-            actionable_date=inbox_task_actionable_date,
-            due_date=inbox_task_due_date,
+            actionable_date=self.actionable_date,
+            due_date=self.due_date,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: InboxTask, extra_info: InverseInfo) -> InboxTask:
