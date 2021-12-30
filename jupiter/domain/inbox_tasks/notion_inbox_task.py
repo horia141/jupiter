@@ -3,16 +3,16 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.big_plan_essentials import BigPlanEssentials
+from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.framework.errors import InputValidationError
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.errors import InputValidationError
+from jupiter.framework.notion import NotionRow
 from jupiter.remote.notion.common import format_name_for_option
 
 
@@ -29,8 +29,8 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
     class InverseInfo:
         """Info when copying from Notion to the app."""
         inbox_task_collection_ref_id: EntityId
-        all_big_plans_by_name: Dict[str, BigPlanEssentials]
-        all_big_plans_map: Dict[EntityId, BigPlanEssentials]
+        all_big_plans_by_name: Dict[str, BigPlan]
+        all_big_plans_map: Dict[EntityId, BigPlan]
 
     source: str
     name: str
@@ -107,11 +107,15 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 if self.difficulty else None
 
         big_plan = None
+        inbox_task_actionable_date = self.actionable_date
+        inbox_task_due_date = self.due_date
         if inbox_task_big_plan_ref_id is not None:
             big_plan = extra_info.all_big_plans_map[inbox_task_big_plan_ref_id]
         elif inbox_task_big_plan_name is not None:
             big_plan = \
                 extra_info.all_big_plans_by_name[format_name_for_option(inbox_task_big_plan_name)]
+            inbox_task_actionable_date = inbox_task_actionable_date or big_plan.actionable_date
+            inbox_task_due_date = inbox_task_due_date or big_plan.due_date
         elif inbox_task_recurring_task_ref_id is not None:
             raise InputValidationError("Trying to create an inbox task for a recurring task from Notion")
         elif inbox_task_metric_ref_id is not None:
@@ -127,8 +131,8 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             big_plan_ref_id=big_plan.ref_id if big_plan else None,
             eisen=inbox_task_eisen,
             difficulty=inbox_task_difficulty,
-            actionable_date=self.actionable_date,
-            due_date=self.due_date,
+            actionable_date=inbox_task_actionable_date,
+            due_date=inbox_task_due_date,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: InboxTask, extra_info: InverseInfo) -> InboxTask:

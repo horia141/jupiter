@@ -3,7 +3,7 @@ import logging
 from typing import Final, Iterable, Optional
 
 import jupiter.remote.notion
-from jupiter.domain.big_plan_essentials import BigPlanEssentials
+from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -32,7 +32,7 @@ class InboxTaskSyncService:
 
     def inbox_tasks_sync(
             self, project_ref_id: EntityId, drop_all_notion_side: bool,
-            all_big_plans: Iterable[BigPlanEssentials], sync_even_if_not_modified: bool,
+            all_big_plans: Iterable[BigPlan], sync_even_if_not_modified: bool,
             filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[InboxTask]:
         """Synchronise the inbox tasks between the Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None

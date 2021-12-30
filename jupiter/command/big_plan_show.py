@@ -53,6 +53,7 @@ class BigPlanShow(command.Command):
             print(f'id={big_plan.ref_id} {big_plan.name}' +
                   f' status={big_plan.status.value}' +
                   f' archived="{big_plan.archived}"' +
+                  f' actionable_date={ADate.to_user_str(self._global_properties.timezone, big_plan.actionable_date)}' +
                   f' due_date="{ADate.to_user_str(self._global_properties.timezone, big_plan.due_date)}"')
             print("  Tasks:")
             for inbox_task in inbox_tasks:

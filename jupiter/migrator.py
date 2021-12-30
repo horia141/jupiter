@@ -1,7 +1,7 @@
 """A temporary migrator."""
 import logging
 
-from jupiter.repository.yaml.inbox_tasks import YamlInboxTaskRepository
+from jupiter.repository.yaml.big_plans import YamlBigPlanRepository
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -11,9 +11,9 @@ def main() -> None:
     """Application main function."""
     time_provider = TimeProvider()
 
-    inbox_tasks_repository = YamlInboxTaskRepository(time_provider)
-    all_inbox_tasks = inbox_tasks_repository.find_all(allow_archived=True)
-    inbox_tasks_repository.dump_all(all_inbox_tasks)
+    repository = YamlBigPlanRepository(time_provider)
+    entities = repository.find_all(allow_archived=True)
+    repository.dump_all(entities)
 
 
 if __name__ == "__main__":

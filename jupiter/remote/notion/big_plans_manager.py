@@ -84,6 +84,10 @@ class NotionBigPlansManager(BigPlanNotionManager):
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _STATUS.values()]
         },
+        "actionable-date": {
+            "name": "Actionable Date",
+            "type": "date"
+        },
         "due-date": {
             "name": "Due Date",
             "type": "date"
@@ -105,6 +109,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
     _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
         NotionFieldProps("title", NotionFieldShow.SHOW),
         NotionFieldProps("status", NotionFieldShow.SHOW),
+        NotionFieldProps("actionable-date", NotionFieldShow.SHOW),
         NotionFieldProps("due-date", NotionFieldShow.SHOW),
         NotionFieldProps("archived", NotionFieldShow.SHOW),
         NotionFieldProps("ref-id", NotionFieldShow.SHOW),
@@ -139,6 +144,9 @@ class NotionBigPlansManager(BigPlanNotionManager):
         "board_properties": [{
             "property": "status",
             "visible": False
+        }, {
+            "property": "actionable-date",
+            "visible": True
         }, {
             "property": "due-date",
             "visible": True
@@ -182,6 +190,51 @@ class NotionBigPlansManager(BigPlanNotionManager):
         "format": _FORMAT
     }
 
+    _TIMELINE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Timeline",
+        "type": "timeline",
+        "query2": {
+            "timeline_by": "actionable-date",
+            "timeline_by_end": "due-date",
+            "aggregations": [{
+                "property": "title",
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": "True"
+                        }
+                    }
+                }]
+            }
+        },
+        "format": {
+            "timeline_show_table": True,
+            "timeline_properties": [{
+                "property": "title",
+                "visible": True
+            }, {
+                "property": "status",
+                "visible": True
+            }],
+            "timeline_table_properties": [{
+                "width": 200,
+                "property": "title",
+                "visible": True
+            }]
+        }
+    }
+
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Database",
         "type": "table",
@@ -197,6 +250,10 @@ class NotionBigPlansManager(BigPlanNotionManager):
             }, {
                 "width": 100,
                 "property": "status",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "actionable-date",
                 "visible": True
             }, {
                 "width": 100,
@@ -238,6 +295,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "kanban_all_view_id": NotionBigPlansManager._KANBAN_ALL_VIEW_SCHEMA,
+                "timeline_view_id": NotionBigPlansManager._TIMELINE_VIEW_SCHEMA,
                 "database_view_id": NotionBigPlansManager._DATABASE_VIEW_SCHEMA
             })
 
@@ -346,6 +404,8 @@ class NotionBigPlansManager(BigPlanNotionManager):
             notion_row.title = row.name
             notion_row.archived = row.archived
             notion_row.status = row.status
+            notion_row.actionable_date = \
+                row.actionable_date.to_notion(self._global_properties.timezone) if row.actionable_date else None
             notion_row.due_date = row.due_date.to_notion(self._global_properties.timezone) if row.due_date else None
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = row.ref_id
@@ -369,6 +429,8 @@ class NotionBigPlansManager(BigPlanNotionManager):
             name=big_plan_notion_row.title,
             archived=big_plan_notion_row.archived,
             status=big_plan_notion_row.status,
+            actionable_date=ADate.from_notion(self._global_properties.timezone, big_plan_notion_row.actionable_date)
+            if big_plan_notion_row.actionable_date else None,
             due_date=ADate.from_notion(self._global_properties.timezone, big_plan_notion_row.due_date)
             if big_plan_notion_row.due_date else None,
             last_edited_time=

@@ -39,6 +39,12 @@ class BigPlanUpdate(command.Command):
         parser.add_argument("--name", dest="name", required=False, help="The name of the big plan")
         parser.add_argument("--status", dest="status", required=False,
                             choices=BigPlanStatus.all_values(), help="The status of the big plan")
+        actionable_date = parser.add_mutually_exclusive_group()
+        actionable_date.add_argument(
+            "--actionable-date", dest="actionable_date", help="The actionable date of the big plan")
+        actionable_date.add_argument(
+            "--clear-actionable-date", dest="clear_actionable_date", default=False, action="store_const", const=True,
+            help="Clear the actionable date of the big plan")
         due_date = parser.add_mutually_exclusive_group()
         due_date.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
         due_date.add_argument(
@@ -56,6 +62,14 @@ class BigPlanUpdate(command.Command):
             status = UpdateAction.change_to(BigPlanStatus.from_raw(args.status))
         else:
             status = UpdateAction.do_nothing()
+        actionable_date: UpdateAction[Optional[ADate]]
+        if args.clear_actionable_date:
+            actionable_date = UpdateAction.change_to(None)
+        elif args.actionable_date:
+            actionable_date = \
+                UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.actionable_date))
+        else:
+            actionable_date = UpdateAction.do_nothing()
         due_date: UpdateAction[Optional[ADate]]
         if args.clear_due_date:
             due_date = UpdateAction.change_to(None)
@@ -63,4 +77,4 @@ class BigPlanUpdate(command.Command):
             due_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.due_date))
         else:
             due_date = UpdateAction.do_nothing()
-        self._command.execute(BigPlanUpdateUseCase.Args(ref_id, name, status, due_date))
+        self._command.execute(BigPlanUpdateUseCase.Args(ref_id, name, status, actionable_date, due_date))

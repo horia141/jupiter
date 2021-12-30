@@ -29,6 +29,7 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
         ref_id: EntityId
         name: UpdateAction[EntityName]
         status: UpdateAction[BigPlanStatus]
+        actionable_date: UpdateAction[Optional[ADate]]
         due_date: UpdateAction[Optional[ADate]]
 
     _time_provider: Final[TimeProvider]
@@ -61,6 +62,9 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
 
             if args.status.should_change:
                 big_plan.change_status(args.status.value, self._time_provider.get_current_time())
+
+            if args.actionable_date.should_change:
+                big_plan.change_actionable_date(args.actionable_date.value, self._time_provider.get_current_time())
 
             if args.due_date.should_change:
                 big_plan.change_due_date(args.due_date.value, self._time_provider.get_current_time())

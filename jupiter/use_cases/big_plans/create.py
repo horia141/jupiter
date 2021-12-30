@@ -25,6 +25,7 @@ class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
         """Args."""
         project_key: Optional[ProjectKey]
         name: EntityName
+        actionable_date: Optional[ADate]
         due_date: Optional[ADate]
 
     _time_provider: Final[TimeProvider]
@@ -61,6 +62,7 @@ class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
                 archived=False,
                 name=args.name,
                 status=BigPlanStatus.ACCEPTED,
+                actionable_date=args.actionable_date,
                 due_date=args.due_date,
                 created_time=self._time_provider.get_current_time())
             big_plan = uow.big_plan_repository.create(big_plan_collection, big_plan)

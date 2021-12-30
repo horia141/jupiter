@@ -23,11 +23,6 @@ class InboxTaskRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def save(self, inbox_task: InboxTask) -> InboxTask:
         """Save a inbox task - it should already exist."""
-
-    @abc.abstractmethod
-    def dump_all(self, inbox_tasks: Iterable[InboxTask]) -> None:
-        """Save all inbox tasks - good for migrations."""
-
     @abc.abstractmethod
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTask:
         """Load a inbox task by id."""

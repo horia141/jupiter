@@ -36,11 +36,14 @@ class BigPlanCreate(command.Command):
         parser.add_argument("--project", dest="project_key", required=False,
                             help="The key of the project")
         parser.add_argument("--name", dest="name", required=True, help="The name of the big plan")
+        parser.add_argument("--actionable-date", dest="actionable_date", help="The actionable date of the big plan")
         parser.add_argument("--due-date", dest="due_date", help="The due date of the big plan")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key) if args.project_key else None
         name = EntityName.from_raw(args.name)
+        actionable_date = \
+            ADate.from_raw(self._global_properties.timezone, args.actionable_date) if args.actionable_date else None
         due_date = ADate.from_raw(self._global_properties.timezone, args.due_date) if args.due_date else None
-        self._command.execute(BigPlanCreateUseCase.Args(project_key, name, due_date))
+        self._command.execute(BigPlanCreateUseCase.Args(project_key, name, actionable_date, due_date))

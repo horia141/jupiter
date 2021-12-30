@@ -22,6 +22,7 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
 
     name: str
     status: str
+    actionable_date: Optional[ADate]
     due_date: Optional[ADate]
 
     @staticmethod
@@ -34,6 +35,7 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
             archived=aggregate_root.archived,
             name=str(aggregate_root.name),
             status=aggregate_root.status.for_notion(),
+            actionable_date=aggregate_root.actionable_date,
             due_date=aggregate_root.due_date)
 
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> BigPlan:
@@ -43,6 +45,7 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
             big_plan_collection_ref_id=extra_info.big_plan_collection_ref_id,
             name=EntityName.from_raw(self.name),
             status=BigPlanStatus.from_raw(self.status),
+            actionable_date=self.actionable_date,
             due_date=self.due_date,
             created_time=self.last_edited_time)
 
@@ -51,5 +54,6 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
         aggregate_root.change_archived(self.archived, self.last_edited_time)
         aggregate_root.change_name(EntityName.from_raw(self.name), self.last_edited_time)
         aggregate_root.change_status(BigPlanStatus.from_raw(self.status), self.last_edited_time)
+        aggregate_root.change_actionable_date(self.actionable_date, self.last_edited_time)
         aggregate_root.change_due_date(self.due_date, self.last_edited_time)
         return aggregate_root

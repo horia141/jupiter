@@ -5,16 +5,15 @@ from dataclasses import dataclass
 from typing import Final, Optional, Iterable
 
 from jupiter.domain import schedules
-from jupiter.domain.big_plan_essentials import BigPlanEssentials
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
-from jupiter.domain.big_plans.service.big_plan_sync_service import BigPlanSyncService
+from jupiter.domain.big_plans.service.sync_service import BigPlanSyncService
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
     import InboxTaskBigPlanRefOptionsUpdateService
-from jupiter.domain.inbox_tasks.service.inbox_task_sync_service import InboxTaskSyncService
+from jupiter.domain.inbox_tasks.service.sync_service import InboxTaskSyncService
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.service.sync_service import MetricSyncService
@@ -29,7 +28,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
-from jupiter.domain.recurring_tasks.service.recurring_task_sync_service import RecurringTaskSyncService
+from jupiter.domain.recurring_tasks.service.sync_service import RecurringTaskSyncService
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.service.sync_service import SmartListSyncService
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
@@ -168,14 +167,15 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                     notion_project = self._project_notion_manager.load_project(project.ref_id)
                     notion_project = notion_project.join_with_aggregate_root(project)
                     notion_project = self._project_notion_manager.save_project(notion_project)
-                    LOGGER.info("Recreating inbox tasks")
 
+                    LOGGER.info("Recreating inbox tasks")
                     notion_inbox_tasks_collection = \
                         self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
                     notion_inbox_tasks_collection = \
                         notion_inbox_tasks_collection.join_with_aggregate_root(inbox_task_collection)
                     self._inbox_task_notion_manager.upsert_inbox_task_collection(
                         notion_project, notion_inbox_tasks_collection)
+
                     LOGGER.info("Recreating recurring tasks")
                     notion_recurring_task_collection = \
                         self._recurring_task_notion_manager.load_recurring_task_collection(
@@ -184,8 +184,8 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         notion_recurring_task_collection.join_with_aggregate_root(recurring_task_collection)
                     self._recurring_task_notion_manager.upsert_recurring_task_collection(
                         notion_project, notion_recurring_task_collection)
-                    LOGGER.info("Recreating big plans")
 
+                    LOGGER.info("Recreating big plans")
                     notion_big_plan_collection = \
                         self._big_plan_notion_manager.load_big_plan_collection(big_plan_collection.ref_id)
                     notion_big_plan_collection = \
@@ -244,7 +244,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             .inbox_tasks_sync(
                                 project.ref_id,
                                 args.drop_all_notion,
-                                [BigPlanEssentials(b.ref_id, b.name) for b in all_big_plans],
+                                all_big_plans,
                                 args.sync_even_if_not_modified,
                                 args.filter_inbox_task_ref_ids,
                                 args.sync_prefer)

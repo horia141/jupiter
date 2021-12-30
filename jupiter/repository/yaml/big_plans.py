@@ -169,6 +169,7 @@ class _BigPlanRow(BaseEntityRow):
     big_plan_collection_ref_id: EntityId
     name: EntityName
     status: BigPlanStatus
+    actionable_date: Optional[ADate]
     due_date: Optional[ADate]
     notion_link_uuid: uuid.UUID
     accepted_time: Optional[Timestamp]
@@ -215,6 +216,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             name=big_plan.name,
             archived=big_plan.archived,
             status=big_plan.status,
+            actionable_date=big_plan.actionable_date,
             due_date=big_plan.due_date,
             notion_link_uuid=big_plan.notion_link_uuid,
             accepted_time=big_plan.accepted_time,
@@ -231,6 +233,10 @@ class YamlBigPlanRepository(BigPlanRepository):
         except StorageEntityNotFoundError as err:
             raise BigPlanNotFoundError(f"Big plan with id {big_plan.ref_id} was not found") from err
         return self._row_to_entity(big_plan_row)
+
+    def dump_all(self, big_plan: Iterable[BigPlan]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in big_plan)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BigPlan:
         """Load a big plan by id."""
@@ -264,6 +270,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             "big_plan_collection_ref_id": {"type": "string"},
             "name": {"type": "string"},
             "status": {"type": "string"},
+            "actionable_date": {"type": ["string", "null"]},
             "due_date": {"type": ["string", "null"]},
             "accepted_time": {"type": ["string", "null"]},
             "working_time": {"type": ["string", "null"]},
@@ -278,6 +285,8 @@ class YamlBigPlanRepository(BigPlanRepository):
             name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]),
             status=BigPlanStatus(typing.cast(str, storage_form["status"])),
+            actionable_date=ADate.from_str(typing.cast(str, storage_form["actionable_date"]))
+            if storage_form["actionable_date"] else None,
             due_date=ADate.from_str(typing.cast(str, storage_form["due_date"]))
             if storage_form["due_date"] else None,
             notion_link_uuid=uuid.UUID(typing.cast(str, storage_form["notion_link_uuid"])),
@@ -295,6 +304,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             "big_plan_collection_ref_id": str(live_form.big_plan_collection_ref_id),
             "name": str(live_form.name),
             "status": live_form.status.value,
+            "actionable_date": str(live_form.actionable_date) if live_form.actionable_date else None,
             "due_date": str(live_form.due_date) if live_form.due_date else None,
             "notion_link_uuid": str(live_form.notion_link_uuid),
             "accepted_time": str(live_form.accepted_time)
@@ -312,6 +322,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             name=big_plan.name,
             archived=big_plan.archived,
             status=big_plan.status,
+            actionable_date=big_plan.actionable_date,
             due_date=big_plan.due_date,
             notion_link_uuid=big_plan.notion_link_uuid,
             accepted_time=big_plan.accepted_time,
@@ -335,6 +346,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             _big_plan_collection_ref_id=row.big_plan_collection_ref_id,
             _name=row.name,
             _status=row.status,
+            _actionable_date=row.actionable_date,
             _due_date=row.due_date,
             _notion_link_uuid=row.notion_link_uuid,
             _accepted_time=row.accepted_time,

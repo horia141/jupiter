@@ -27,6 +27,7 @@ class BigPlan(AggregateRoot):
     _big_plan_collection_ref_id: EntityId
     _name: EntityName
     _status: BigPlanStatus
+    _actionable_date: Optional[ADate]
     _due_date: Optional[ADate]
     _notion_link_uuid: uuid.UUID
     _accepted_time: Optional[Timestamp]
@@ -36,7 +37,7 @@ class BigPlan(AggregateRoot):
     @staticmethod
     def new_big_plan(
             archived: bool, big_plan_collection_ref_id: EntityId, name: EntityName, status: BigPlanStatus,
-            due_date: Optional[ADate], created_time: Timestamp) -> 'BigPlan':
+            actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'BigPlan':
         """Create a big plan."""
         big_plan = BigPlan(
             _ref_id=BAD_REF_ID,
@@ -48,6 +49,7 @@ class BigPlan(AggregateRoot):
             _big_plan_collection_ref_id=big_plan_collection_ref_id,
             _name=name,
             _status=status,
+            _actionable_date=actionable_date,
             _due_date=due_date,
             _notion_link_uuid=uuid.uuid4(),
             _accepted_time=created_time if status.is_accepted_or_more else None,
@@ -105,6 +107,14 @@ class BigPlan(AggregateRoot):
             updated_working_time=updated_working_time, updated_completed_time=updated_completed_time))
         return self
 
+    def change_actionable_date(self, actionable_date: Optional[ADate], modification_time: Timestamp) -> 'BigPlan':
+        """Change the actionable date of the big plan."""
+        if self._actionable_date == actionable_date:
+            return self
+        self._actionable_date = actionable_date
+        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time))
+        return self
+
     def change_due_date(self, due_date: Optional[ADate], modification_time: Timestamp) -> 'BigPlan':
         """Change the due date of the big plan."""
         if self._due_date == due_date:
@@ -133,6 +143,11 @@ class BigPlan(AggregateRoot):
     def status(self) -> BigPlanStatus:
         """The status of the big plan."""
         return self._status
+
+    @property
+    def actionable_date(self) -> Optional[ADate]:
+        """The actionable date of the big plan."""
+        return self._actionable_date
 
     @property
     def due_date(self) -> Optional[ADate]:
