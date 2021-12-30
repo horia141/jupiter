@@ -3,7 +3,7 @@ import logging
 import typing
 from typing import Final, Iterable, Dict, Optional
 
-from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
+from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from jupiter.domain.prm.notion_person import NotionPerson
 from jupiter.domain.prm.person import Person
 from jupiter.domain.storage_engine import StorageEngine
@@ -104,8 +104,11 @@ class PrmSyncService:
                 #    setup, and we remove it.
                 # 2. This is a person added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._prm_notion_manager.remove_person(typing.cast(EntityId, notion_person_ref_id))
-                LOGGER.info(f"Removed person with id={notion_person.ref_id} from Notion")
+                try:
+                    self._prm_notion_manager.remove_person(typing.cast(EntityId, notion_person_ref_id))
+                    LOGGER.info(f"Removed person with id={notion_person.ref_id} from Notion")
+                except NotionPersonNotFoundError:
+                    LOGGER.info(f"Skipped dangling person in Notion {notion_person}")
 
         # Explore local and apply to Notion now
         for person in all_persons:

@@ -3,7 +3,8 @@ import logging
 from typing import Final, Optional, Iterable, Dict
 
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
+    NotionRecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.storage_engine import StorageEngine
@@ -138,9 +139,12 @@ class RecurringTaskSyncService:
                 #    setup, and we remove it.
                 # 2. This is a big plan added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._recurring_task_notion_manager.remove_recurring_task(
-                    recurring_task_collection.ref_id, notion_recurring_task_ref_id)
-                LOGGER.info(f"Removed dangling big plan in Notion {notion_recurring_task}")
+                try:
+                    self._recurring_task_notion_manager.remove_recurring_task(
+                        recurring_task_collection.ref_id, notion_recurring_task_ref_id)
+                    LOGGER.info(f"Removed dangling recurring task in Notion {notion_recurring_task}")
+                except NotionRecurringTaskNotFoundError:
+                    LOGGER.info(f"Skipped dangling recurring task in Notion {notion_recurring_task}")
 
         LOGGER.info("Applied local changes")
 

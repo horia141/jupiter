@@ -2,7 +2,8 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
-from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
+from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError, \
+    NotionMetricEntryNotFoundError
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.notion_metric import NotionMetric
@@ -136,10 +137,13 @@ class MetricSyncService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a metric entry added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._metric_notion_manager.remove_metric_entry(
-                    metric.ref_id,
-                    EntityId.from_raw(notion_metric_entry.ref_id) if notion_metric_entry.ref_id else None)
-                LOGGER.info(f"Removed metric entry with id={notion_metric_entry.ref_id} from Notion")
+                try:
+                    self._metric_notion_manager.remove_metric_entry(
+                        metric.ref_id,
+                        EntityId.from_raw(notion_metric_entry.ref_id) if notion_metric_entry.ref_id else None)
+                    LOGGER.info(f"Removed metric entry with id={notion_metric_entry.ref_id} from Notion")
+                except NotionMetricEntryNotFoundError:
+                    LOGGER.info(f"Skipped dangling metric entry in Notion {notion_metric_entry}")
 
         for metric_entry in all_metric_entries:
             if metric_entry.ref_id in notion_metric_entries_set:

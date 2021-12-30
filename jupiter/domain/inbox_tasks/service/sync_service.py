@@ -5,7 +5,8 @@ from typing import Final, Iterable, Optional
 import jupiter.remote.notion
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
+    NotionInboxTaskNotFoundError
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
@@ -146,9 +147,12 @@ class InboxTaskSyncService:
                 #    setup, and we remove it.
                 # 2. This is a task added by the script, but which failed before local data could be saved. We'll have
                 #    duplicates in these cases, and they need to be removed.
-                self._inbox_task_notion_manager.remove_inbox_task(
-                    inbox_task_collection.ref_id, notion_inbox_task_ref_id)
-                LOGGER.info(f"Removed dangling inbox task in Notion {notion_inbox_task}")
+                try:
+                    self._inbox_task_notion_manager.remove_inbox_task(
+                        inbox_task_collection.ref_id, notion_inbox_task_ref_id)
+                    LOGGER.info(f"Removed dangling inbox task in Notion {notion_inbox_task}")
+                except NotionInboxTaskNotFoundError:
+                    LOGGER.info(f"Skipped dangling inbox task in Notion {notion_inbox_task}")
 
         LOGGER.info("Applied local changes")
 

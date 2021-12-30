@@ -681,6 +681,7 @@ class CollectionsManager:
         collection = \
             client.get_collection(
                 collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+
         try:
             lock = self._collection_items_storage.load(item_key)
             notion_row = client.get_collection_row(collection, lock.row_id)

@@ -368,9 +368,13 @@ class NotionBigPlansManager(BigPlanNotionManager):
 
     def remove_big_plan(self, big_plan_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"))
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{big_plan_collection_ref_id}"))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionBigPlanNotFoundError(
+                f"Notion big plan with id {ref_id} could not be found") from err
 
     def drop_all_big_plans(self, big_plan_collection_ref_id: EntityId) -> None:
         """Remove all big plans Notion-side."""

@@ -3,7 +3,7 @@ import logging
 from typing import Final, Optional, Iterable, Dict
 
 from jupiter.domain.big_plans.big_plan import BigPlan
-from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
+from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from jupiter.domain.storage_engine import StorageEngine
@@ -124,8 +124,11 @@ class BigPlanSyncService:
                 #    setup, and we remove it.
                 # 2. This is a big plan added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._big_plan_notion_manager.remove_big_plan(big_plan_collection.ref_id, notion_big_plan_ref_id)
-                LOGGER.info(f"Removed dangling big plan in Notion {notion_big_plan}")
+                try:
+                    self._big_plan_notion_manager.remove_big_plan(big_plan_collection.ref_id, notion_big_plan_ref_id)
+                    LOGGER.info(f"Removed dangling big plan in Notion {notion_big_plan}")
+                except NotionBigPlanNotFoundError:
+                    LOGGER.info(f"Skipped dangling big plan in Notion {notion_big_plan}")
 
         LOGGER.info("Applied local changes")
 

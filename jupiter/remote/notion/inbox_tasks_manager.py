@@ -1036,8 +1036,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 row=inbox_task,
                 copy_row_to_notion_row=self._copy_row_to_notion_row)
         except NotionCollectionItemNotFoundError as err:
-            raise NotionInboxTaskNotFoundError(
-                f"Notion inbox task with id {inbox_task.ref_id} was not found") from err
+            raise NotionInboxTaskNotFoundError(f"Notion inbox task with id {inbox_task.ref_id} was not found") from err
 
     def load_all_inbox_tasks(self, inbox_task_collection_ref_id: EntityId) -> Iterable[NotionInboxTask]:
         """Retrieve all the Notion-side inbox tasks."""
@@ -1058,9 +1057,12 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
 
     def remove_inbox_task(self, inbox_task_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        self._collections_manager.remove_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"))
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{inbox_task_collection_ref_id}"))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionInboxTaskNotFoundError(f"Notion inbox task with id {ref_id} was not found") from err
 
     def drop_all_inbox_tasks(self, inbox_task_collection_ref_id: EntityId) -> None:
         """Remove all inbox tasks Notion-side."""

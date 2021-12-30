@@ -4,7 +4,7 @@ from typing import Final, Iterable, Dict, Optional
 
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
-from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.notion_vacation import NotionVacation
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.base.entity_id import EntityId
@@ -102,8 +102,11 @@ class VacationSyncService:
                 #    setup, and we remove it.
                 # 2. This is a vacation added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._vacation_notion_manager.remove_vacation(notion_vacation_ref_id)
-                LOGGER.info(f"Removed vacation with id={notion_vacation.ref_id} from Notion")
+                try:
+                    self._vacation_notion_manager.remove_vacation(notion_vacation_ref_id)
+                    LOGGER.info(f"Removed vacation with id={notion_vacation.ref_id} from Notion")
+                except NotionVacationNotFoundError:
+                    LOGGER.info(f"Skipped dangling vacation in Notion {notion_vacation.ref_id}")
 
         # Explore local and apply to Notion now
         for vacation in all_vacations:

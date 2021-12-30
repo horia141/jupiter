@@ -3,7 +3,7 @@ import logging
 from typing import Final, Optional, Iterable
 
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
-    NotionSmartListNotFoundError
+    NotionSmartListNotFoundError, NotionSmartListTagNotFoundError, NotionSmartListItemNotFoundError
 from jupiter.domain.smart_lists.notion_smart_list import NotionSmartList
 from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
@@ -123,10 +123,13 @@ class SmartListSyncService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a smart list item added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._smart_list_notion_manager.remove_smart_list_tag(
-                    smart_list.ref_id,
-                    EntityId.from_raw(notion_smart_list_tag.ref_id) if notion_smart_list_tag.ref_id else None)
-                LOGGER.info(f"Removed smart list item with id={notion_smart_list_tag.ref_id} from Notion")
+                try:
+                    self._smart_list_notion_manager.remove_smart_list_tag(
+                        smart_list.ref_id,
+                        EntityId.from_raw(notion_smart_list_tag.ref_id) if notion_smart_list_tag.ref_id else None)
+                    LOGGER.info(f"Removed smart list item with id={notion_smart_list_tag.ref_id} from Notion")
+                except NotionSmartListTagNotFoundError:
+                    LOGGER.info(f"Skipped dangling smart list item in Notion {notion_smart_list_tag.ref_id}")
 
         for smart_list_tag in all_smart_list_tags:
             if smart_list_tag.ref_id in notion_smart_list_tags_set:
@@ -229,8 +232,11 @@ class SmartListSyncService:
                 #    It's a bad setup, and we remove it.
                 # 2. This is a smart list item added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
-                self._smart_list_notion_manager.remove_smart_list_item(smart_list.ref_id, smart_list_item.ref_id)
-                LOGGER.info(f"Removed smart list item with id={notion_smart_list_item.ref_id} from Notion")
+                try:
+                    self._smart_list_notion_manager.remove_smart_list_item(smart_list.ref_id, smart_list_item.ref_id)
+                    LOGGER.info(f"Removed smart list item with id={notion_smart_list_item.ref_id} from Notion")
+                except NotionSmartListItemNotFoundError:
+                    LOGGER.info(f"Skipped dangling smart list item in Notion {notion_smart_list_item.ref_id}")
 
         for smart_list_item in all_smart_list_items:
             if smart_list_item.ref_id in all_notion_smart_list_items_set:
