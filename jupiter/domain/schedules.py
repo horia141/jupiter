@@ -9,6 +9,7 @@ from pendulum.tz.timezone import Timezone
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.entity_name import EntityName
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -26,7 +27,7 @@ class Schedule(abc.ABC):
     _date: pendulum.Date
     _due_date: pendulum.Date
     _due_time: Optional[pendulum.DateTime]
-    _full_name: EntityName
+    _full_name: InboxTaskName
     _timeline: str
 
     def __str__(self) -> str:
@@ -161,7 +162,7 @@ class Schedule(abc.ABC):
             return ADate.from_date(self._due_date)
 
     @property
-    def full_name(self) -> EntityName:
+    def full_name(self) -> InboxTaskName:
         """The full name of the event with the schedule info in it."""
         return self._full_name
 
@@ -230,7 +231,7 @@ class DailySchedule(Schedule):
                 tz=timezone)
         else:
             self._due_time = None
-        self._full_name = EntityName("{name} {year}:{month}{day}".format(
+        self._full_name = InboxTaskName("{name} {year}:{month}{day}".format(
             name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now),
             day=right_now.value.day))
         self._timeline = self._generate_timeline(right_now)
@@ -287,7 +288,7 @@ class WeeklySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = EntityName("{name} {year}:W{week}".format(
+        self._full_name = InboxTaskName("{name} {year}:W{week}".format(
             name=name, year=self.year_two_digits(right_now), week=start_of_week.week_of_year))
         self._timeline = self._generate_timeline(start_of_week)
         self._should_skip = self._skip_helper(skip_rule, self._due_date.week_of_year) if skip_rule else False
@@ -341,7 +342,7 @@ class MonthlySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = EntityName("{name} {year}:{month}".format(
+        self._full_name = InboxTaskName("{name} {year}:{month}".format(
             name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now)))
         self._timeline = self._generate_timeline(Timestamp(start_of_month))
         self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
@@ -440,7 +441,7 @@ class QuarterlySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = EntityName("{name} {year}:{quarter}".format(
+        self._full_name = InboxTaskName("{name} {year}:{quarter}".format(
             name=name, year=self.year_two_digits(right_now), quarter=self.month_to_quarter(right_now)))
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = \
@@ -527,7 +528,7 @@ class YearlySchedule(Schedule):
                 "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
         else:
             self._due_time = None
-        self._full_name = EntityName("{name} {year}".format(name=name, year=self.year_two_digits(right_now)))
+        self._full_name = InboxTaskName("{name} {year}".format(name=name, year=self.year_two_digits(right_now)))
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = False
 

@@ -11,7 +11,6 @@ import pendulum
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -26,6 +25,7 @@ from jupiter.domain.recurring_tasks.infra.recurring_task_repository import Recur
     RecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.json import JSONDictType
 from jupiter.repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, Eq, StorageEntityNotFoundError
@@ -178,7 +178,7 @@ class _RecurringTaskRow(BaseEntityRow):
     """A recurring task."""
 
     recurring_task_collection_ref_id: EntityId
-    name: EntityName
+    name: RecurringTaskName
     period: RecurringTaskPeriod
     the_type: RecurringTaskType
     eisen: List[Eisen]
@@ -321,7 +321,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             recurring_task_collection_ref_id=
             EntityId(typing.cast(str, storage_form["recurring_task_collection_ref_id"])),
             archived=typing.cast(bool, storage_form["archived"]),
-            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            name=RecurringTaskName.from_raw(typing.cast(str, storage_form["name"])),
             period=RecurringTaskPeriod(typing.cast(str, storage_form["period"])),
             the_type=RecurringTaskType(typing.cast(str, storage_form["the_type"])),
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],

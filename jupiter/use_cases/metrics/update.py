@@ -7,13 +7,13 @@ from typing import Final, Optional
 from jupiter.domain import schedules
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.inbox_tasks.service.change_project_service import InboxTaskChangeProjectService
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -38,7 +38,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         key: MetricKey
-        name: UpdateAction[EntityName]
+        name: UpdateAction[MetricName]
         collection_project_key: UpdateAction[Optional[ProjectKey]]
         collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
         collection_eisen: UpdateAction[typing.List[Eisen]]

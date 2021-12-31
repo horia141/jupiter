@@ -5,8 +5,8 @@ from typing import Final
 import jupiter.command.command as command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -69,7 +69,7 @@ class MetricCreate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
-        name = EntityName.from_raw(args.name)
+        name = MetricName.from_raw(args.name)
         collection_project_key = ProjectKey.from_raw(args.collection_project_key) \
             if args.collection_project_key else None
         collection_period = RecurringTaskPeriod.from_raw(args.collection_period)\

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.vacations.vacation import Vacation
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.notion import NotionRow
@@ -32,7 +32,7 @@ class NotionVacation(NotionRow[Vacation, None, None]):
 
     def new_aggregate_root(self, extra_info: None) -> Vacation:
         """Create a new vacation from this."""
-        vacation_name = EntityName.from_raw(self.name)
+        vacation_name = VacationName.from_raw(self.name)
         if self.start_date is None:
             raise InputValidationError(f"Vacation '{self.name}' should have a start date")
         if self.end_date is None:
@@ -46,7 +46,7 @@ class NotionVacation(NotionRow[Vacation, None, None]):
 
     def apply_to_aggregate_root(self, aggregate_root: Vacation, extra_info: None) -> Vacation:
         """Apply to an already existing vacation."""
-        vacation_name = EntityName.from_raw(self.name)
+        vacation_name = VacationName.from_raw(self.name)
         if self.start_date is None:
             raise InputValidationError(f"Vacation '{self.name}' should have a start date")
         if self.end_date is None:

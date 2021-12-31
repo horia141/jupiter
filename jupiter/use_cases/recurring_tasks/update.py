@@ -7,7 +7,6 @@ from jupiter.domain import schedules
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -18,6 +17,7 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -36,7 +36,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[EntityName]
+        name: UpdateAction[RecurringTaskName]
         period: UpdateAction[RecurringTaskPeriod]
         the_type: UpdateAction[RecurringTaskType]
         eisen: UpdateAction[List[Eisen]]

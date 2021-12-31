@@ -10,13 +10,13 @@ from sqlalchemy.exc import IntegrityError
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository, MetricEntryNotFoundError
 from jupiter.domain.metrics.infra.metric_repository import MetricRepository, MetricAlreadyExistsError, \
     MetricNotFoundError
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -187,7 +187,7 @@ class SqliteMetricRepository(MetricRepository):
             _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
             _key=MetricKey.from_raw(row["the_key"]),
-            _name=EntityName.from_raw(row["name"]),
+            _name=MetricName.from_raw(row["name"]),
             _collection_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["collection_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["collection_period"]),

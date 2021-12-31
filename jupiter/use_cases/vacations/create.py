@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from jupiter.domain.vacations.vacation import Vacation
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -17,7 +17,7 @@ class VacationCreateUseCase(UseCase['VacationCreateUseCase.Args', None]):
     @dataclass()
     class Args:
         """Args."""
-        name: EntityName
+        name: VacationName
         start_date: ADate
         end_date: ADate
 

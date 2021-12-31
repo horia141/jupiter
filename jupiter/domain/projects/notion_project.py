@@ -1,11 +1,11 @@
 """A project on Notion-side."""
 from dataclasses import dataclass
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project import Project
+from jupiter.domain.projects.project_name import ProjectName
+from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.notion import NotionEntity
-from jupiter.framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,6 @@ class NotionProject(NotionEntity[Project]):
 
     def apply_to_aggregate_root(self, aggregate_root: Project, modification_time: Timestamp) -> 'Project':
         """Apply an existing Notion row to a project."""
-        project_name = EntityName.from_raw(self.name)
+        project_name = ProjectName.from_raw(self.name)
         aggregate_root.change_name(project_name, modification_time)
         return aggregate_root

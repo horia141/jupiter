@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
+from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
@@ -18,7 +18,7 @@ class SmartListUpdateUseCase(UseCase['SmartListUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         key: SmartListKey
-        name: UpdateAction[EntityName]
+        name: UpdateAction[SmartListName]
 
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]

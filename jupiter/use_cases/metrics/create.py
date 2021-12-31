@@ -4,11 +4,11 @@ from typing import Optional, Final, List
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.metrics.infra.metric_repository import MetricAlreadyExistsError
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.metrics.notion_metric import NotionMetric
 from jupiter.domain.projects.project_key import ProjectKey
@@ -30,7 +30,7 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
     class Args:
         """Args."""
         key: MetricKey
-        name: EntityName
+        name: MetricName
         collection_project_key: Optional[ProjectKey]
         collection_period: Optional[RecurringTaskPeriod]
         collection_eisen: List[Eisen]

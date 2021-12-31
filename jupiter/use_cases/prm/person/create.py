@@ -5,11 +5,11 @@ from typing import Final, Optional, List
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.prm.notion_person import NotionPerson
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.person_birthday import PersonBirthday
+from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -29,7 +29,7 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
     @dataclass()
     class Args:
         """Args."""
-        name: EntityName
+        name: PersonName
         relationship: PersonRelationship
         catch_up_period: Optional[RecurringTaskPeriod]
         catch_up_eisen: List[Eisen]

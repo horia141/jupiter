@@ -4,8 +4,8 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.projects.update import ProjectUpdateUseCase
 
@@ -40,7 +40,7 @@ class ProjectUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key)
         if args.name is not None:
-            project_name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            project_name = UpdateAction.change_to(ProjectName.from_raw(args.name))
         else:
             project_name = UpdateAction.do_nothing()
         self._command.execute(ProjectUpdateUseCase.Args(key=project_key, name=project_name))

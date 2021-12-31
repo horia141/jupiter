@@ -8,6 +8,7 @@ from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
@@ -81,7 +82,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
 
     def new_aggregate_root(self, extra_info: InverseInfo) -> InboxTask:
         """Create a new inbox task from this."""
-        inbox_task_name = EntityName.from_raw(self.name)
+        inbox_task_name = InboxTaskName.from_raw(self.name)
         inbox_task_big_plan_ref_id = \
             EntityId.from_raw(self.big_plan_ref_id) \
                 if self.big_plan_ref_id else None
@@ -138,7 +139,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             InboxTaskStatus.from_raw(self.status) if self.status else InboxTaskStatus.NOT_STARTED,
             self.last_edited_time)
         if aggregate_root.source.allow_user_changes:
-            aggregate_root.change_name(EntityName.from_raw(self.name), self.last_edited_time)
+            aggregate_root.change_name(InboxTaskName.from_raw(self.name), self.last_edited_time)
             aggregate_root.change_eisen(
                 [Eisen.from_raw(e) for e in self.eisen] if self.eisen else [], self.last_edited_time)
             aggregate_root.change_difficulty(

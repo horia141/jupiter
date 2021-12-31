@@ -6,8 +6,8 @@ from typing import Final
 import jupiter.command.command as command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.prm.person_birthday import PersonBirthday
+from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -68,7 +68,7 @@ class PersonCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        name = EntityName.from_raw(args.name)
+        name = PersonName.from_raw(args.name)
         relationship = PersonRelationship.from_raw(args.relationship)
         catch_up_period = RecurringTaskPeriod.from_raw(args.catch_up_period) \
             if args.catch_up_period else None

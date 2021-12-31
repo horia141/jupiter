@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.framework.aggregate_root import AggregateRoot
@@ -24,13 +24,13 @@ class Metric(AggregateRoot):
         """Updated event."""
 
     _key: MetricKey
-    _name: EntityName
+    _name: MetricName
     _collection_params: Optional[RecurringTaskGenParams]
     _metric_unit: Optional[MetricUnit]
 
     @staticmethod
     def new_metric(
-            key: MetricKey, name: EntityName, collection_params: Optional[RecurringTaskGenParams],
+            key: MetricKey, name: MetricName, collection_params: Optional[RecurringTaskGenParams],
             metric_unit: Optional[MetricUnit], created_time: Timestamp) -> 'Metric':
         """Create a metric."""
         metric = Metric(
@@ -48,7 +48,7 @@ class Metric(AggregateRoot):
 
         return metric
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Metric':
+    def change_name(self, name: MetricName, modification_time: Timestamp) -> 'Metric':
         """Change the name of the metric."""
         if self._name == name:
             return self
@@ -71,7 +71,7 @@ class Metric(AggregateRoot):
         return self._key
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> MetricName:
         """The name of the metric."""
         return self._name
 

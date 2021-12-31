@@ -12,6 +12,7 @@ from pendulum import UTC
 
 from jupiter.domain import schedules
 from jupiter.domain.big_plans.big_plan import BigPlan
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
@@ -24,6 +25,7 @@ from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.schedules import Schedule
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
@@ -77,8 +79,8 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         working_cnt: int
         not_done_cnt: int
         done_cnt: int
-        not_done_projects: List[EntityName]
-        done_projects: List[EntityName]
+        not_done_projects: List[BigPlanName]
+        done_projects: List[BigPlanName]
 
     @nested()
     @dataclass()
@@ -178,7 +180,7 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
             persons_by_ref_id = {p.ref_id: p for p in persons}
 
             schedule = schedules.get_schedule(
-                args.period, EntityName("Helper"), args.right_now, self._global_properties.timezone,
+                args.period, RecurringTaskName("Helper"), args.right_now, self._global_properties.timezone,
                 None, None, None, None, None, None)
 
             inbox_task_collections = uow.inbox_task_collection_repository.find_all(
@@ -255,7 +257,7 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
                 curr_date_as_time = \
                     Timestamp(pendulum.DateTime(curr_date.year, curr_date.month, curr_date.day, tzinfo=UTC))
                 phase_schedule = schedules.get_schedule(
-                    args.breakdown_period, EntityName("Sub-period"), curr_date_as_time,
+                    args.breakdown_period, RecurringTaskName("Sub-period"), curr_date_as_time,
                     self._global_properties.timezone, None, None, None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
                 curr_date = curr_date.next_day()
@@ -410,7 +412,7 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
 
             while the_current_period != the_bigger_period:
                 the_bigger_schedule = schedules.get_schedule(
-                    the_bigger_period, EntityName("Helper"), right_now, self._global_properties.timezone,
+                    the_bigger_period, RecurringTaskName("Helper"), right_now, self._global_properties.timezone,
                     None, None, None, None, None, None)
 
                 the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))

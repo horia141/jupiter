@@ -4,8 +4,8 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
+from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.smart_lists.update import SmartListUpdateUseCase
 
@@ -40,7 +40,7 @@ class SmartListUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         if args.name:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(SmartListName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         self._command.execute(SmartListUpdateUseCase.Args(key=smart_list_key, name=name))

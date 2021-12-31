@@ -4,11 +4,12 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.notion_space_id import NotionSpaceId
 from jupiter.domain.workspaces.notion_token import NotionToken
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.use_cases.init import InitUseCase
 
 LOGGER = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class Initialize(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
-            "--name", required=True, help="The plan name to use")
+            "--name", required=True, help="The workspace name to use")
         parser.add_argument(
             "--timezone", required=True, help="The timezone you're currently in")
         parser.add_argument(
@@ -50,12 +51,12 @@ class Initialize(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        name = EntityName.from_raw(args.name)
+        name = WorkspaceName.from_raw(args.name)
         timezone = Timezone.from_raw(args.timezone)
         notion_space_id = NotionSpaceId.from_raw(args.notion_space_id)
         notion_token = NotionToken.from_raw(args.notion_space_id)
         first_project_key = ProjectKey.from_raw(args.first_project_key)
-        first_project_name = EntityName.from_raw(args.first_project_name)
+        first_project_name = ProjectName.from_raw(args.first_project_name)
 
         self._command.execute(InitUseCase.Args(
             name=name, timezone=timezone, notion_space_id=notion_space_id, notion_token=notion_token,

@@ -5,8 +5,8 @@ from typing import Final, Optional, List
 import jupiter.command.command as command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -130,7 +130,7 @@ class MetricUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
         if args.name is not None:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(MetricName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         collection_project_key: UpdateAction[Optional[ProjectKey]]

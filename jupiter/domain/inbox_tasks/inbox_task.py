@@ -7,10 +7,11 @@ from pendulum import UTC
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
@@ -40,7 +41,7 @@ class InboxTask(AggregateRoot):
     _recurring_task_ref_id: Optional[EntityId]
     _metric_ref_id: Optional[EntityId]
     _person_ref_id: Optional[EntityId]
-    _name: EntityName
+    _name: InboxTaskName
     _status: InboxTaskStatus
     _eisen: List[Eisen]
     _difficulty: Optional[Difficulty]
@@ -55,7 +56,7 @@ class InboxTask(AggregateRoot):
 
     @staticmethod
     def new_inbox_task(
-            inbox_task_collection_ref_id: EntityId, archived: bool, name: EntityName, status: InboxTaskStatus,
+            inbox_task_collection_ref_id: EntityId, archived: bool, name: InboxTaskName, status: InboxTaskStatus,
             big_plan: Optional[BigPlan], eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Created an inbox task."""
@@ -92,7 +93,7 @@ class InboxTask(AggregateRoot):
 
     @staticmethod
     def new_inbox_task_for_recurring_task(
-            inbox_task_collection_ref_id: EntityId, name: EntityName, recurring_task_ref_id: EntityId,
+            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, recurring_task_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_type: RecurringTaskType,
             recurring_task_gen_right_now: Timestamp, eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
@@ -128,7 +129,7 @@ class InboxTask(AggregateRoot):
 
     @staticmethod
     def new_inbox_task_for_metric(
-            inbox_task_collection_ref_id: EntityId, name: EntityName, metric_ref_id: EntityId,
+            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, metric_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp, eisen: List[Eisen],
             difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
             due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
@@ -164,7 +165,7 @@ class InboxTask(AggregateRoot):
 
     @staticmethod
     def new_inbox_task_for_person_catch_up(
-            inbox_task_collection_ref_id: EntityId, name: EntityName, person_ref_id: EntityId,
+            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, person_ref_id: EntityId,
             recurring_task_timeline: str, eisen: List[Eisen],
             difficulty: Optional[Difficulty], recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
             due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
@@ -200,7 +201,7 @@ class InboxTask(AggregateRoot):
 
     @staticmethod
     def new_inbox_task_for_person_birthday(
-            inbox_task_collection_ref_id: EntityId, name: EntityName, person_ref_id: EntityId,
+            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, person_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp, preparation_days_cnt: int,
             due_date: ADate, created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
@@ -243,7 +244,7 @@ class InboxTask(AggregateRoot):
 
     def associate_with_big_plan(
             self, big_plan_ref_id: Optional[EntityId],
-            big_plan_name: Optional[EntityName], modification_time: Timestamp) -> 'InboxTask':
+            big_plan_name: Optional[BigPlanName], modification_time: Timestamp) -> 'InboxTask':
         """Associate an inbox task with a big plan."""
         if big_plan_ref_id is None and big_plan_name is not None:
             raise InputValidationError(f"Should have null name for null big plan for task with id='{self.ref_id}'")
@@ -269,9 +270,10 @@ class InboxTask(AggregateRoot):
         self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
-    def update_link_to_recurring_task(self, name: EntityName, timeline: str, the_type: RecurringTaskType,
-                                      actionable_date: Optional[ADate], due_time: ADate, eisen: List[Eisen],
-                                      difficulty: Optional[Difficulty], modification_time: Timestamp) -> 'InboxTask':
+    def update_link_to_recurring_task(
+            self, name: InboxTaskName, timeline: str, the_type: RecurringTaskType, actionable_date: Optional[ADate],
+            due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a recurring task."""
         if self._source is not InboxTaskSource.RECURRING_TASK:
             raise Exception(
@@ -287,7 +289,7 @@ class InboxTask(AggregateRoot):
         return self
 
     def update_link_to_metric(
-            self, name: EntityName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            self, name: InboxTaskName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a metric."""
         if self._source is not InboxTaskSource.METRIC:
@@ -303,7 +305,7 @@ class InboxTask(AggregateRoot):
         return self
 
     def update_link_to_person_catch_up(
-            self, name: EntityName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            self, name: InboxTaskName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a person."""
         if self._source is not InboxTaskSource.PERSON_CATCH_UP:
@@ -319,7 +321,7 @@ class InboxTask(AggregateRoot):
         return self
 
     def update_link_to_person_birthday(
-            self, name: EntityName, recurring_timeline: str, preparation_days_cnt: int,
+            self, name: InboxTaskName, recurring_timeline: str, preparation_days_cnt: int,
             due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a person."""
         if self._source is not InboxTaskSource.PERSON_BIRTHDAY:
@@ -332,7 +334,7 @@ class InboxTask(AggregateRoot):
         self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'InboxTask':
+    def change_name(self, name: InboxTaskName, modification_time: Timestamp) -> 'InboxTask':
         """Change the name of the inbox task."""
         if not self._source.allow_user_changes:
             raise Exception(
@@ -459,7 +461,7 @@ class InboxTask(AggregateRoot):
         return self._person_ref_id
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> InboxTaskName:
         """The name."""
         return self._name
 
@@ -538,16 +540,16 @@ class InboxTask(AggregateRoot):
         return self._completed_time
 
     @staticmethod
-    def _build_name_for_collection_task(name: EntityName) -> EntityName:
-        return EntityName.from_raw(f"Collect value for metric {name}")
+    def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:
+        return InboxTaskName.from_raw(f"Collect value for metric {name}")
 
     @staticmethod
-    def _build_name_for_catch_up_task(name: EntityName) -> EntityName:
-        return EntityName.from_raw(f"Catch up with {name}")
+    def _build_name_for_catch_up_task(name: InboxTaskName) -> InboxTaskName:
+        return InboxTaskName.from_raw(f"Catch up with {name}")
 
     @staticmethod
-    def _build_name_for_birthday_task(name: EntityName) -> EntityName:
-        return EntityName.from_raw(f"Wish happy birthday to {name}")
+    def _build_name_for_birthday_task(name: InboxTaskName) -> InboxTaskName:
+        return InboxTaskName.from_raw(f"Wish happy birthday to {name}")
 
     @staticmethod
     def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:

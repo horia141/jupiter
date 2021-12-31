@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional, List
 
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.url import URL
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
@@ -22,14 +22,14 @@ class SmartListItem(AggregateRoot):
         """Updated event."""
 
     _smart_list_ref_id: EntityId
-    _name: EntityName
+    _name: SmartListItemName
     _is_done: bool
     _tags_ref_id: List[EntityId]
     _url: Optional[URL]
 
     @staticmethod
     def new_smart_list_item(
-            archived: bool, smart_list_ref_id: EntityId, name: EntityName, is_done: bool,
+            archived: bool, smart_list_ref_id: EntityId, name: SmartListItemName, is_done: bool,
             tags_ref_id: List[EntityId], url: Optional[URL], created_time: Timestamp) -> 'SmartListItem':
         """Create a smart list item."""
         smart_list_item = SmartListItem(
@@ -47,7 +47,7 @@ class SmartListItem(AggregateRoot):
         smart_list_item.record_event(SmartListItem.Created.make_event_from_frame_args(created_time))
         return smart_list_item
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'SmartListItem':
+    def change_name(self, name: SmartListItemName, modification_time: Timestamp) -> 'SmartListItem':
         """Change the name of the smart list item."""
         if self._name == name:
             return self
@@ -85,7 +85,7 @@ class SmartListItem(AggregateRoot):
         return self._smart_list_ref_id
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> SmartListItemName:
         """The item name."""
         return self._name
 

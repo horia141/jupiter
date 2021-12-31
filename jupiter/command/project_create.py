@@ -4,8 +4,8 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.use_cases.projects.create import ProjectCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
@@ -38,5 +38,5 @@ class ProjectCreate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key)
-        project_name = EntityName.from_raw(args.name)
+        project_name = ProjectName.from_raw(args.name)
         self._command.execute(ProjectCreateUseCase.Args(key=project_key, name=project_name))

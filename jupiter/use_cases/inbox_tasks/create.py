@@ -9,6 +9,7 @@ from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -28,7 +29,7 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
     class Args:
         """Args."""
         project_key: Optional[ProjectKey]
-        name: EntityName
+        name: InboxTaskName
         big_plan_ref_id: Optional[EntityId]
         eisen: List[Eisen]
         difficulty: Optional[Difficulty]

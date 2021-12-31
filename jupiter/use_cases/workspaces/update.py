@@ -2,11 +2,11 @@
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -18,7 +18,7 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
     @dataclass()
     class Args:
         """Args."""
-        name: UpdateAction[EntityName]
+        name: UpdateAction[WorkspaceName]
         timezone: UpdateAction[Timezone]
         default_project_key: UpdateAction[ProjectKey]
 

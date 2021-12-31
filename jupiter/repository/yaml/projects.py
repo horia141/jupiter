@@ -6,11 +6,11 @@ from pathlib import Path
 from types import TracebackType
 from typing import Final, ClassVar, Iterable, Optional
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.infra.project_repository import ProjectRepository, ProjectAlreadyExistsError, \
     ProjectNotFoundError
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.json import JSONDictType
 from jupiter.repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, Eq, In, StorageEntityNotFoundError
@@ -24,7 +24,7 @@ class _ProjectRow(BaseEntityRow):
     """A project."""
 
     key: ProjectKey
-    name: EntityName
+    name: ProjectName
 
 
 @typing.final
@@ -115,7 +115,7 @@ class YamlProjectRepository(ProjectRepository):
         return _ProjectRow(
             key=ProjectKey.from_raw(typing.cast(str, storage_form["key"])),
             archived=typing.cast(bool, storage_form["archived"]),
-            name=EntityName.from_raw(typing.cast(str, storage_form["name"])))
+            name=ProjectName.from_raw(typing.cast(str, storage_form["name"])))
 
     @staticmethod
     def live_to_storage(live_form: _ProjectRow) -> JSONDictType:

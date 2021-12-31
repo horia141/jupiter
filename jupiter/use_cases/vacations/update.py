@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
@@ -19,7 +19,7 @@ class VacationUpdateUseCase(UseCase['VacationUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[EntityName]
+        name: UpdateAction[VacationName]
         start_date: UpdateAction[ADate]
         end_date: UpdateAction[ADate]
 

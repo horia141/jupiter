@@ -7,7 +7,7 @@ import jupiter.command.command as command
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.inbox_tasks.create import InboxTaskCreateUseCase
@@ -54,7 +54,7 @@ class InboxTaskCreate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key) if args.project_key else None
-        name = EntityName.from_raw(args.name)
+        name = InboxTaskName.from_raw(args.name)
         big_plan_ref_id = EntityId.from_raw(args.big_plan_ref_id) \
             if args.big_plan_ref_id else None
         eisen = [Eisen.from_raw(e) for e in args.eisen]

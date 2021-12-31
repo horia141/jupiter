@@ -6,7 +6,7 @@ from typing import Final
 
 import jupiter.command.command as command
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.use_cases.vacations.create import VacationCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
@@ -42,7 +42,7 @@ class VacationCreate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        name = EntityName.from_raw(args.name)
+        name = VacationName.from_raw(args.name)
         start_date = ADate.from_raw(self._global_properties.timezone, args.start_date)
         end_date = ADate.from_raw(self._global_properties.timezone, args.end_date)
 

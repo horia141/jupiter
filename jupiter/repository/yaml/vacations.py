@@ -7,9 +7,9 @@ from types import TracebackType
 from typing import ClassVar, Iterable, Optional, Final
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.vacations.infra.vacation_repository import VacationRepository, VacationNotFoundError
 from jupiter.domain.vacations.vacation import Vacation
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.json import JSONDictType
 from jupiter.repository.yaml.infra.storage import BaseEntityRow, EntitiesStorage, In, StorageEntityNotFoundError
@@ -21,7 +21,7 @@ LOGGER = logging.getLogger(__name__)
 @dataclass()
 class _VacationRow(BaseEntityRow):
     """A vacation."""
-    name: EntityName
+    name: VacationName
     start_date: ADate
     end_date: ADate
 
@@ -112,7 +112,7 @@ class YamlVacationRepository(VacationRepository):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _VacationRow(
             archived=typing.cast(bool, storage_form["archived"]),
-            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            name=VacationName.from_raw(typing.cast(str, storage_form["name"])),
             start_date=ADate.from_str(typing.cast(str, storage_form["start_date"])),
             end_date=ADate.from_str(typing.cast(str, storage_form["end_date"])))
 

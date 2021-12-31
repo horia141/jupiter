@@ -4,11 +4,11 @@ from typing import Optional
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.domain.entity_name import EntityName
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.notion import NotionRow
 
 
 @dataclass(frozen=True)
@@ -43,7 +43,7 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
         return BigPlan.new_big_plan(
             archived=self.archived,
             big_plan_collection_ref_id=extra_info.big_plan_collection_ref_id,
-            name=EntityName.from_raw(self.name),
+            name=BigPlanName.from_raw(self.name),
             status=BigPlanStatus.from_raw(self.status),
             actionable_date=self.actionable_date,
             due_date=self.due_date,
@@ -52,7 +52,7 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
     def apply_to_aggregate_root(self, aggregate_root: BigPlan, extra_info: InverseExtraInfo) -> BigPlan:
         """Apply to an already existing big plan."""
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(EntityName.from_raw(self.name), self.last_edited_time)
+        aggregate_root.change_name(BigPlanName.from_raw(self.name), self.last_edited_time)
         aggregate_root.change_status(BigPlanStatus.from_raw(self.status), self.last_edited_time)
         aggregate_root.change_actionable_date(self.actionable_date, self.last_edited_time)
         aggregate_root.change_due_date(self.due_date, self.last_edited_time)

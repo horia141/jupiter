@@ -10,11 +10,11 @@ from typing import Final, ClassVar, Iterable, Optional, Type
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository, \
     BigPlanCollectionAlreadyExistsError, BigPlanCollectionNotFoundError
 from jupiter.domain.big_plans.infra.big_plan_repository import BigPlanRepository, BigPlanNotFoundError
-from jupiter.domain.entity_name import EntityName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
@@ -167,7 +167,7 @@ class _BigPlanRow(BaseEntityRow):
     """A big plan."""
 
     big_plan_collection_ref_id: EntityId
-    name: EntityName
+    name: BigPlanName
     status: BigPlanStatus
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
@@ -282,7 +282,7 @@ class YamlBigPlanRepository(BigPlanRepository):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _BigPlanRow(
             big_plan_collection_ref_id=EntityId(typing.cast(str, storage_form["big_plan_collection_ref_id"])),
-            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            name=BigPlanName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]),
             status=BigPlanStatus(typing.cast(str, storage_form["status"])),
             actionable_date=ADate.from_str(typing.cast(str, storage_form["actionable_date"]))

@@ -1,8 +1,8 @@
 """A smart list."""
 from dataclasses import dataclass
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
+from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
@@ -21,10 +21,10 @@ class SmartList(AggregateRoot):
         """Updated event."""
 
     _key: SmartListKey
-    _name: EntityName
+    _name: SmartListName
 
     @staticmethod
-    def new_smart_list(key: SmartListKey, name: EntityName, created_time: Timestamp) -> 'SmartList':
+    def new_smart_list(key: SmartListKey, name: SmartListName, created_time: Timestamp) -> 'SmartList':
         """Create a smart list."""
         smart_list = SmartList(
             _ref_id=BAD_REF_ID,
@@ -39,7 +39,7 @@ class SmartList(AggregateRoot):
 
         return smart_list
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'SmartList':
+    def change_name(self, name: SmartListName, modification_time: Timestamp) -> 'SmartList':
         """Change the name of the smart list."""
         if self._name == name:
             return self
@@ -53,6 +53,6 @@ class SmartList(AggregateRoot):
         return self._key
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> SmartListName:
         """The name of the metric."""
         return self._name

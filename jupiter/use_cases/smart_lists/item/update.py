@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Optional, Final, List
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
+from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.storage_engine import StorageEngine
@@ -23,7 +23,7 @@ class SmartListItemUpdateUseCase(UseCase['SmartListItemUpdateUseCase.Args', None
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[EntityName]
+        name: UpdateAction[SmartListItemName]
         is_done: UpdateAction[bool]
         tags: UpdateAction[List[SmartListTagName]]
         url: UpdateAction[Optional[URL]]

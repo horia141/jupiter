@@ -4,11 +4,11 @@ from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
-from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.smart_lists.item.update import SmartListItemUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class SmartListItemUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(SmartListItemName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.is_done:

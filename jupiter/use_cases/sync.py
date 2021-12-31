@@ -281,11 +281,10 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,
                             recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
 
-                        inbox_task.update_link_to_recurring_task(schedule.full_name, schedule.timeline,
-                                                                 recurring_task.the_type, schedule.actionable_date,
-                                                                 schedule.due_time, recurring_task.gen_params.eisen,
-                                                                 recurring_task.gen_params.difficulty,
-                                                                 self._time_provider.get_current_time())
+                        inbox_task.update_link_to_recurring_task(
+                            schedule.full_name, schedule.timeline, recurring_task.the_type, schedule.actionable_date,
+                            schedule.due_time, recurring_task.gen_params.eisen, recurring_task.gen_params.difficulty,
+                            self._time_provider.get_current_time())
 
                         with self._storage_engine.get_unit_of_work() as uow:
                             uow.inbox_task_repository.save(inbox_task)
@@ -390,10 +389,10 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                     None, collection_params.actionable_from_day, collection_params.actionable_from_month,
                     collection_params.due_at_time, collection_params.due_at_day, collection_params.due_at_month)
-                inbox_task.update_link_to_metric(name=schedule.full_name, recurring_timeline=schedule.timeline,
-                                                 eisen=collection_params.eisen, difficulty=collection_params.difficulty,
-                                                 actionable_date=schedule.actionable_date, due_time=schedule.due_time,
-                                                 modification_time=self._time_provider.get_current_time())
+                inbox_task.update_link_to_metric(
+                    name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=collection_params.eisen,
+                    difficulty=collection_params.difficulty, actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)

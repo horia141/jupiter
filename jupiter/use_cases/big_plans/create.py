@@ -4,10 +4,10 @@ from typing import Final, Optional
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
     import InboxTaskBigPlanRefOptionsUpdateService
@@ -24,7 +24,7 @@ class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
     class Args:
         """Args."""
         project_key: Optional[ProjectKey]
-        name: EntityName
+        name: BigPlanName
         actionable_date: Optional[ADate]
         due_date: Optional[ADate]
 

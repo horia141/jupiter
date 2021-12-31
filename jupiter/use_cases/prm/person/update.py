@@ -7,13 +7,13 @@ from typing import Final, Optional, List
 from jupiter.domain import schedules
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.prm.person_birthday import PersonBirthday
+from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -38,7 +38,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[EntityName]
+        name: UpdateAction[PersonName]
         relationship: UpdateAction[PersonRelationship]
         catch_up_period: UpdateAction[Optional[RecurringTaskPeriod]]
         catch_up_eisen: UpdateAction[List[Eisen]]

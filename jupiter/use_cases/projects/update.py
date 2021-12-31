@@ -3,9 +3,9 @@ import logging
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionManager
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
@@ -21,7 +21,7 @@ class ProjectUpdateUseCase(UseCase['ProjectUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         key: ProjectKey
-        name: UpdateAction[EntityName]
+        name: UpdateAction[ProjectName]
 
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]

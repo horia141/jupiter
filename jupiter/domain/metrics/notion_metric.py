@@ -1,11 +1,11 @@
 """A metric on Notion-side."""
 from dataclasses import dataclass
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.metric import Metric
+from jupiter.domain.metrics.metric_name import MetricName
+from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.notion import NotionEntity
-from jupiter.framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,6 @@ class NotionMetric(NotionEntity[Metric]):
 
     def apply_to_aggregate_root(self, aggregate_root: Metric, modification_time: Timestamp) -> Metric:
         """Obtain the aggregate root form of this, with a possible error."""
-        workspace_name = EntityName.from_raw(self.name)
-        aggregate_root.change_name(workspace_name, modification_time)
+        metric_name = MetricName.from_raw(self.name)
+        aggregate_root.change_name(metric_name, modification_time)
         return aggregate_root

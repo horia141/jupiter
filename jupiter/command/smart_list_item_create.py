@@ -4,7 +4,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
@@ -46,7 +46,7 @@ class SmartListItemCreate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
-        name = EntityName.from_raw(args.name)
+        name = SmartListItemName.from_raw(args.name)
         is_done = args.is_done
         tag_names = [SmartListTagName.from_raw(t) for t in args.tag_names]
         url = URL.from_raw(args.url) if args.url else None

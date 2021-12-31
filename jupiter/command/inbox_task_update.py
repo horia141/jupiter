@@ -6,10 +6,10 @@ import jupiter.command.command as command
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
@@ -74,7 +74,7 @@ class InboxTaskUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.entity_id)
         if args.name:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(InboxTaskName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.status:

@@ -4,9 +4,9 @@ from typing import Optional, List
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.person_birthday import PersonBirthday
+from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -14,8 +14,8 @@ from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.notion import NotionRow
 from jupiter.remote.notion.common import clean_eisenhower
 
 
@@ -70,7 +70,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
 
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> Person:
         """Construct a new aggregate root from this notion row."""
-        person_name = EntityName.from_raw(self.name)
+        person_name = PersonName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
         person_catch_up_params = None
         if self.catch_up_period is not None:
@@ -102,7 +102,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
 
     def apply_to_aggregate_root(self, aggregate_root: Person, extra_info: InverseExtraInfo) -> Person:
         """Obtain the aggregate root form of this, with a possible error."""
-        person_name = EntityName.from_raw(self.name)
+        person_name = PersonName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
         person_catch_up_params = None
         if self.catch_up_period is not None:

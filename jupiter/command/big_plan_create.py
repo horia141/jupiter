@@ -4,7 +4,7 @@ from typing import Final
 
 import jupiter.command.command as command
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.big_plans.create import BigPlanCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
@@ -42,7 +42,7 @@ class BigPlanCreate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key) if args.project_key else None
-        name = EntityName.from_raw(args.name)
+        name = BigPlanName.from_raw(args.name)
         actionable_date = \
             ADate.from_raw(self._global_properties.timezone, args.actionable_date) if args.actionable_date else None
         due_date = ADate.from_raw(self._global_properties.timezone, args.due_date) if args.due_date else None

@@ -1,8 +1,8 @@
 """The project."""
 from dataclasses import dataclass
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
@@ -21,10 +21,10 @@ class Project(AggregateRoot):
         """Updated event."""
 
     _key: ProjectKey
-    _name: EntityName
+    _name: ProjectName
 
     @staticmethod
-    def new_project(key: ProjectKey, name: EntityName, created_time: Timestamp) -> 'Project':
+    def new_project(key: ProjectKey, name: ProjectName, created_time: Timestamp) -> 'Project':
         """Create a project."""
         project = Project(
             _ref_id=BAD_REF_ID,
@@ -38,7 +38,7 @@ class Project(AggregateRoot):
         project.record_event(Project.Created.make_event_from_frame_args(created_time))
         return project
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Project':
+    def change_name(self, name: ProjectName, modification_time: Timestamp) -> 'Project':
         """Change the name of the workspace."""
         self._name = name
         self.record_event(
@@ -51,6 +51,6 @@ class Project(AggregateRoot):
         return self._key
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> ProjectName:
         """The name of the project."""
         return self._name

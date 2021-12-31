@@ -7,15 +7,15 @@ import jupiter.command.command as command
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
-from jupiter.framework.update_action import UpdateAction
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.recurring_tasks.update import RecurringTaskUpdateUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
@@ -128,7 +128,7 @@ class RecurringTaskUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(RecurringTaskName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.period:

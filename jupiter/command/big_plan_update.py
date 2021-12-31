@@ -4,10 +4,10 @@ from typing import Final, Optional
 
 import jupiter.command.command as command
 from jupiter.domain.adate import ADate
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.domain.entity_name import EntityName
-from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.big_plans.update import BigPlanUpdateUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
@@ -55,7 +55,7 @@ class BigPlanUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.entity_id)
         if args.name:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(BigPlanName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.status:

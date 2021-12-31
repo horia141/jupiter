@@ -1,11 +1,11 @@
 """The workspace on Notion-side."""
 from dataclasses import dataclass
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.workspaces.workspace import Workspace
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
+from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.notion import NotionEntity
-from jupiter.framework.base.notion_id import BAD_NOTION_ID
 
 
 @dataclass(frozen=True)
@@ -24,6 +24,6 @@ class NotionWorkspace(NotionEntity[Workspace]):
 
     def apply_to_aggregate_root(self, aggregate_root: Workspace, modification_time: Timestamp) -> 'Workspace':
         """Apply a Notion workspace to an already existing workspace."""
-        workspace_name = EntityName.from_raw(self.name)
+        workspace_name = WorkspaceName.from_raw(self.name)
         aggregate_root.change_name(workspace_name, modification_time)
         return aggregate_root

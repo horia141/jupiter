@@ -3,7 +3,6 @@ import logging
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.prm.prm_database import PrmDatabase
@@ -11,6 +10,7 @@ from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionMa
 from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.timezone import Timezone
@@ -20,6 +20,7 @@ from jupiter.domain.workspaces.notion_space_id import NotionSpaceId
 from jupiter.domain.workspaces.notion_token import NotionToken
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.domain.workspaces.workspace import Workspace
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.use_case import UseCase
 from jupiter.remote.notion.infra.connection import NotionConnection
@@ -34,12 +35,12 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
     @dataclass()
     class Args:
         """Args."""
-        name: EntityName
+        name: WorkspaceName
         timezone: Timezone
         notion_space_id: NotionSpaceId
         notion_token: NotionToken
         first_project_key: ProjectKey
-        first_project_name: EntityName
+        first_project_name: ProjectName
 
     _time_provider: Final[TimeProvider]
     _notion_connection: Final[NotionConnection]

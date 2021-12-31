@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.domain.entity_name import EntityName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
@@ -25,7 +25,7 @@ class BigPlan(AggregateRoot):
         """Updated event."""
 
     _big_plan_collection_ref_id: EntityId
-    _name: EntityName
+    _name: BigPlanName
     _status: BigPlanStatus
     _actionable_date: Optional[ADate]
     _due_date: Optional[ADate]
@@ -36,7 +36,7 @@ class BigPlan(AggregateRoot):
 
     @staticmethod
     def new_big_plan(
-            archived: bool, big_plan_collection_ref_id: EntityId, name: EntityName, status: BigPlanStatus,
+            archived: bool, big_plan_collection_ref_id: EntityId, name: BigPlanName, status: BigPlanStatus,
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'BigPlan':
         """Create a big plan."""
         big_plan = BigPlan(
@@ -59,7 +59,7 @@ class BigPlan(AggregateRoot):
 
         return big_plan
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'BigPlan':
+    def change_name(self, name: BigPlanName, modification_time: Timestamp) -> 'BigPlan':
         """Change the name of the big plan."""
         if self._name == name:
             return self
@@ -135,7 +135,7 @@ class BigPlan(AggregateRoot):
         return self._big_plan_collection_ref_id
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> BigPlanName:
         """The name of the big plan."""
         return self._name
 

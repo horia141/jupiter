@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.prm.person_birthday import PersonBirthday
+from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.framework.aggregate_root import AggregateRoot
@@ -35,14 +35,14 @@ class Person(AggregateRoot):
     class ChangeBirthday(AggregateRoot.Updated):
         """Change birthday event."""
 
-    _name: EntityName
+    _name: PersonName
     _relationship: PersonRelationship
     _catch_up_params: Optional[RecurringTaskGenParams]
     _birthday: Optional[PersonBirthday]
 
     @staticmethod
     def new_person(
-            name: EntityName, relationship: PersonRelationship, catch_up_params: Optional[RecurringTaskGenParams],
+            name: PersonName, relationship: PersonRelationship, catch_up_params: Optional[RecurringTaskGenParams],
             birthday: Optional[PersonBirthday], created_time: Timestamp) -> 'Person':
         """Create a person."""
         person = Person(
@@ -60,7 +60,7 @@ class Person(AggregateRoot):
 
         return person
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Person':
+    def change_name(self, name: PersonName, modification_time: Timestamp) -> 'Person':
         """Change the name of the person."""
         if self._name == name:
             return self
@@ -104,7 +104,7 @@ class Person(AggregateRoot):
             return 2
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> PersonName:
         """The name of the person."""
         return self._name
 

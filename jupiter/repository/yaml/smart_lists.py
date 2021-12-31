@@ -6,7 +6,6 @@ from pathlib import Path
 from types import TracebackType
 from typing import Optional, Iterable, ClassVar, Final, Set, List
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository, \
     SmartListItemNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepository, SmartListAlreadyExistsError, \
@@ -14,7 +13,9 @@ from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepo
 from jupiter.domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository, SmartListTagNotFoundError
 from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
+from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
+from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
@@ -31,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 class _SmartListRow(BaseEntityRow):
     """A container for smart list items."""
     key: SmartListKey
-    name: EntityName
+    name: SmartListName
 
 
 class YamlSmartListRepository(SmartListRepository):
@@ -133,7 +134,7 @@ class YamlSmartListRepository(SmartListRepository):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _SmartListRow(
             key=SmartListKey.from_raw(typing.cast(str, storage_form["key"])),
-            name=EntityName(typing.cast(str, storage_form["name"])),
+            name=SmartListName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]))
 
     @staticmethod
@@ -315,7 +316,7 @@ class _SmartListItemRow(BaseEntityRow):
     """An item in a smart list."""
 
     smart_list_ref_id: EntityId
-    name: EntityName
+    name: SmartListItemName
     is_done: bool
     tag_ids: Set[EntityId]
     url: Optional[URL]
@@ -427,7 +428,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _SmartListItemRow(
             smart_list_ref_id=EntityId(typing.cast(str, storage_form["smart_list_ref_id"])),
-            name=EntityName(typing.cast(str, storage_form["name"])),
+            name=SmartListItemName.from_raw(typing.cast(str, storage_form["name"])),
             is_done=typing.cast(bool, storage_form["is_done"]),
             tag_ids=set(EntityId(tid) for tid in typing.cast(List[str], storage_form["tag_ids"])),
             url=URL.from_raw(typing.cast(str, storage_form["url"])) if storage_form["url"] is not None else None,

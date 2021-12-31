@@ -7,7 +7,6 @@ import jupiter.command.command as command
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -15,6 +14,7 @@ from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.use_cases.recurring_tasks.create import RecurringTaskCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
@@ -76,7 +76,7 @@ class RecurringTaskCreate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key) if args.project_key else None
-        name = EntityName.from_raw(args.name)
+        name = RecurringTaskName.from_raw(args.name)
         period = RecurringTaskPeriod.from_raw(args.period)
         the_type = RecurringTaskType.from_raw(args.the_type)
         eisen = [Eisen.from_raw(e) for e in args.eisen]

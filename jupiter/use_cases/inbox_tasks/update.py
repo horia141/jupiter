@@ -5,7 +5,7 @@ from typing import Optional, List, Final
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -23,7 +23,7 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[EntityName]
+        name: UpdateAction[InboxTaskName]
         status: UpdateAction[InboxTaskStatus]
         eisen: UpdateAction[List[Eisen]]
         difficulty: UpdateAction[Optional[Difficulty]]

@@ -1,8 +1,8 @@
 """The workspace where everything happens."""
 from dataclasses import dataclass
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.timezone import Timezone
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -20,13 +20,13 @@ class Workspace(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _name: EntityName
+    _name: WorkspaceName
     _timezone: Timezone
     _default_project_ref_id: EntityId
 
     @staticmethod
     def new_workspace(
-            name: EntityName, timezone: Timezone, default_project_ref_id: EntityId,
+            name: WorkspaceName, timezone: Timezone, default_project_ref_id: EntityId,
             created_time: Timestamp) -> 'Workspace':
         """Create a new workspace."""
         workspace = Workspace(
@@ -42,7 +42,7 @@ class Workspace(AggregateRoot):
         workspace.record_event(Workspace.Created.make_event_from_frame_args(created_time))
         return workspace
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Workspace':
+    def change_name(self, name: WorkspaceName, modification_time: Timestamp) -> 'Workspace':
         """Change the name of the workspace."""
         self._name = name
         self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
@@ -61,7 +61,7 @@ class Workspace(AggregateRoot):
         return self
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> WorkspaceName:
         """The name of the workspace."""
         return self._name
 

@@ -9,9 +9,9 @@ from typing import Final, ClassVar, Iterable, List, Optional
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
+from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository, \
@@ -173,7 +173,7 @@ class _InboxTaskRow(BaseEntityRow):
     recurring_task_ref_id: Optional[EntityId]
     metric_ref_id: Optional[EntityId]
     person_ref_id: Optional[EntityId]
-    name: EntityName
+    name: InboxTaskName
     archived: bool
     status: InboxTaskStatus
     eisen: List[Eisen]
@@ -337,7 +337,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             if storage_form["metric_ref_id"] else None,
             person_ref_id=EntityId(typing.cast(str, storage_form["person_ref_id"]))
             if storage_form.get("person_ref_id", None) else None,
-            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            name=InboxTaskName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]),
             status=InboxTaskStatus(typing.cast(str, storage_form["status"])),
             eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],

@@ -2,14 +2,14 @@
 from dataclasses import dataclass
 from typing import Optional, List, Dict
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
+from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.notion import NotionRow
 
 
 @dataclass(frozen=True)
@@ -51,7 +51,7 @@ class NotionSmartListItem(
         return SmartListItem.new_smart_list_item(
             archived=self.archived,
             smart_list_ref_id=extra_info.smart_list_ref_id,
-            name=EntityName.from_raw(self.name),
+            name=SmartListItemName.from_raw(self.name),
             is_done=self.is_done,
             tags_ref_id=[extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags],
             url=URL.from_raw(self.url) if self.url else None,
@@ -60,7 +60,7 @@ class NotionSmartListItem(
     def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseExtraInfo) -> SmartListItem:
         """Apply to an already existing smart list item."""
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(EntityName.from_raw(self.name), self.last_edited_time)
+        aggregate_root.change_name(SmartListItemName.from_raw(self.name), self.last_edited_time)
         aggregate_root.change_is_done(self.is_done, self.last_edited_time)
         aggregate_root.change_tags(
             [extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags], self.last_edited_time)

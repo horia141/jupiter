@@ -5,11 +5,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, ClassVar
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository, WorkspaceNotFoundError, \
     WorkspaceAlreadyExistsError
 from jupiter.domain.workspaces.workspace import Workspace
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 class _WorkspaceRow:
     """A workspace."""
 
-    name: EntityName
+    name: WorkspaceName
     timezone: Timezone
     default_project_ref_id: EntityId
     created_time: Timestamp
@@ -105,7 +105,7 @@ class YamlWorkspaceRepository(WorkspaceRepository):
     def storage_to_live(storage_form: JSONDictType) -> _WorkspaceRow:
         """Transform the data reconstructed from basic storage into something useful for the live system."""
         return _WorkspaceRow(
-            name=EntityName.from_raw(typing.cast(str, storage_form["name"])),
+            name=WorkspaceName.from_raw(typing.cast(str, storage_form["name"])),
             timezone=Timezone.from_raw(typing.cast(str, storage_form["timezone"])),
             default_project_ref_id=EntityId.from_raw(typing.cast(str, storage_form["default_project_ref_id"])),
             created_time=Timestamp.from_str(typing.cast(str, storage_form["created_time"])),

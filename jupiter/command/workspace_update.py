@@ -5,10 +5,10 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.notion_token import NotionToken
+from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.update_action import UpdateAction
 from jupiter.remote.notion.infra.connection import NotionConnection
 from jupiter.use_cases.workspaces.update import WorkspaceUpdateUseCase
@@ -50,7 +50,7 @@ class WorkspaceUpdate(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         if args.name is not None:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(WorkspaceName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.timezone is not None:

@@ -3,7 +3,7 @@ import typing
 from dataclasses import dataclass
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
@@ -22,13 +22,13 @@ class Vacation(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _name: EntityName
+    _name: VacationName
     _start_date: ADate
     _end_date: ADate
 
     @staticmethod
     def new_vacation(
-            archived: bool, name: EntityName, start_date: ADate, end_date: ADate,
+            archived: bool, name: VacationName, start_date: ADate, end_date: ADate,
             created_time: Timestamp) -> 'Vacation':
         """Create a vacation."""
         if start_date >= end_date:
@@ -48,7 +48,7 @@ class Vacation(AggregateRoot):
 
         return vacation
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'Vacation':
+    def change_name(self, name: VacationName, modification_time: Timestamp) -> 'Vacation':
         """Change the name of a metric."""
         if self._name == name:
             return self
@@ -84,7 +84,7 @@ class Vacation(AggregateRoot):
                typing.cast(bool, end_date <= vacation_end_date)
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> VacationName:
         """The name of the vacation."""
         return self._name
 

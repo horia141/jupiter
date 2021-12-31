@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from typing import Final, Optional
 
 from jupiter.domain.adate import ADate
+from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
@@ -27,7 +27,7 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
     class Args:
         """Args."""
         ref_id: EntityId
-        name: UpdateAction[EntityName]
+        name: UpdateAction[BigPlanName]
         status: UpdateAction[BigPlanStatus]
         actionable_date: UpdateAction[Optional[ADate]]
         due_date: UpdateAction[Optional[ADate]]

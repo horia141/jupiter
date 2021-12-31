@@ -6,7 +6,6 @@ from typing import Final
 from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
@@ -14,6 +13,7 @@ from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionMa
 from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from jupiter.domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
 from jupiter.domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
@@ -31,7 +31,7 @@ class ProjectCreateUseCase(UseCase['ProjectCreateUseCase.Args', None]):
     class Args:
         """Args."""
         key: ProjectKey
-        name: EntityName
+        name: ProjectName
 
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]

@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.notion_smart_list import NotionSmartList
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
+from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.storage_engine import StorageEngine
@@ -22,7 +22,7 @@ class SmartListCreateUseCase(UseCase['SmartListCreateUseCase.Args', None]):
     class Args:
         """Args."""
         key: SmartListKey
-        name: EntityName
+        name: SmartListName
 
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]

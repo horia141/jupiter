@@ -4,10 +4,10 @@ from typing import Final
 
 import jupiter.command.command as command
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
-from jupiter.use_cases.vacations.update import VacationUpdateUseCase
-from jupiter.framework.update_action import UpdateAction
+from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.update_action import UpdateAction
+from jupiter.use_cases.vacations.update import VacationUpdateUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
 
@@ -43,7 +43,7 @@ class VacationUpdate(command.Command):
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name is not None:
-            name = UpdateAction.change_to(EntityName.from_raw(args.name))
+            name = UpdateAction.change_to(VacationName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
         if args.start_date is not None:

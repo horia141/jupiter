@@ -8,12 +8,12 @@ from sqlalchemy.exc import IntegrityError
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.prm.infra.person_repository import PersonRepository, PersonAlreadyExistsError, PersonNotFoundError
 from jupiter.domain.prm.infra.prm_database_repository import PrmDatabaseRepository, PrmDatabaseAlreadyExistsError, \
     PrmDatabaseNotFoundError
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.person_birthday import PersonBirthday
+from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.prm.prm_database import PrmDatabase
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
@@ -235,7 +235,7 @@ class SqlitePersonRepository(PersonRepository):
             if row["archived_time"] else None,
             _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
-            _name=EntityName.from_raw(row["name"]),
+            _name=PersonName.from_raw(row["name"]),
             _relationship=PersonRelationship.from_raw(row["relationship"]),
             _catch_up_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])),

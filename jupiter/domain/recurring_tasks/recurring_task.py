@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
@@ -29,7 +29,7 @@ class RecurringTask(AggregateRoot):
         """Updated event."""
 
     _recurring_task_collection_ref_id: EntityId
-    _name: EntityName
+    _name: RecurringTaskName
     _period: RecurringTaskPeriod
     _the_type: RecurringTaskType
     _gen_params: RecurringTaskGenParams
@@ -41,7 +41,7 @@ class RecurringTask(AggregateRoot):
 
     @staticmethod
     def new_recurring_task(
-            recurring_task_collection_ref_id: EntityId, archived: bool, name: EntityName,
+            recurring_task_collection_ref_id: EntityId, archived: bool, name: RecurringTaskName,
             period: RecurringTaskPeriod, the_type: Optional[RecurringTaskType], gen_params: RecurringTaskGenParams,
             must_do: bool, skip_rule: Optional[RecurringTaskSkipRule], start_at_date: Optional[ADate],
             end_at_date: Optional[ADate], suspended: bool, created_time: Timestamp) -> 'RecurringTask':
@@ -77,7 +77,7 @@ class RecurringTask(AggregateRoot):
 
         return recurring_task
 
-    def change_name(self, name: EntityName, modification_time: Timestamp) -> 'RecurringTask':
+    def change_name(self, name: RecurringTaskName, modification_time: Timestamp) -> 'RecurringTask':
         """Change the name."""
         if self._name == name:
             return self
@@ -179,7 +179,7 @@ class RecurringTask(AggregateRoot):
         return self._recurring_task_collection_ref_id
 
     @property
-    def name(self) -> EntityName:
+    def name(self) -> RecurringTaskName:
         """The name."""
         return self._name
 

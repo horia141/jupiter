@@ -5,7 +5,6 @@ from typing import Optional, List
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -14,9 +13,10 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
+from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.notion import NotionRow
 
 
 @dataclass(frozen=True)
@@ -81,7 +81,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
         return RecurringTask.new_recurring_task(
             recurring_task_collection_ref_id=extra_info.recurring_task_collection_ref_id,
             archived=self.archived,
-            name=EntityName.from_raw(self.name),
+            name=RecurringTaskName.from_raw(self.name),
             period=RecurringTaskPeriod.from_raw(self.period),
             the_type=RecurringTaskType.from_raw(self.the_type),
             gen_params=RecurringTaskGenParams(
@@ -112,7 +112,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
         """Apply to an already existing recurring task."""
         recurring_task_period = RecurringTaskPeriod.from_raw(self.period)
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(EntityName.from_raw(self.name), self.last_edited_time)
+        aggregate_root.change_name(RecurringTaskName.from_raw(self.name), self.last_edited_time)
         aggregate_root.change_period(RecurringTaskPeriod.from_raw(self.period), self.last_edited_time)
         aggregate_root.change_type(RecurringTaskType.from_raw(self.the_type), self.last_edited_time)
         aggregate_root.change_gen_params(
