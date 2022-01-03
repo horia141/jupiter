@@ -1,7 +1,7 @@
 """The command for creating a recurring task."""
 import logging
 from dataclasses import dataclass
-from typing import Optional, List, Final
+from typing import Optional, Final
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
@@ -36,7 +36,7 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
         name: RecurringTaskName
         period: RecurringTaskPeriod
         the_type: RecurringTaskType
-        eisen: List[Eisen]
+        eisen: Optional[Eisen]
         difficulty: Optional[Difficulty]
         actionable_from_day: Optional[RecurringTaskDueAtDay]
         actionable_from_month: Optional[RecurringTaskDueAtMonth]
@@ -87,7 +87,7 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
                 gen_params=RecurringTaskGenParams(
                     project_ref_id=project.ref_id,
                     period=args.period,
-                    eisen=args.eisen,
+                    eisen=args.eisen if args.eisen else Eisen.REGULAR,
                     difficulty=args.difficulty,
                     actionable_from_day=args.actionable_from_day,
                     actionable_from_month=args.actionable_from_month,

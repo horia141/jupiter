@@ -54,14 +54,12 @@ class RecurringTaskShow(command.Command):
         for recurring_task_entry in response.recurring_tasks:
             recurring_task = recurring_task_entry.recurring_task
             inbox_tasks = recurring_task_entry.inbox_tasks
-            eisen_str = \
-                (",".join(e.value for e in recurring_task.gen_params.eisen)) if recurring_task.gen_params.eisen else ""
             difficulty_str = \
                 recurring_task.gen_params.difficulty.value if recurring_task.gen_params.difficulty else "none"
             print(f'id={recurring_task.ref_id} {recurring_task.name}' +
                   f' period={recurring_task.period.value}' +
                   f' type={recurring_task.the_type.value}' +
-                  f'\n    eisen="{eisen_str}"' +
+                  f'\n    eisen="{recurring_task.gen_params.eisen.value}"' +
                   f' difficulty={difficulty_str}' +
                   f' skip_rule={recurring_task.skip_rule or "none"}' +
                   f' suspended={recurring_task.suspended}' +

@@ -86,6 +86,7 @@ columns.
 There are multiple views for the inbox though right now:
 
 * _Kanban All_: views all tasks in the inbox as a Kanban board.
+* _Kanban With Eisen_: views all tasks in the inbox sa a Kanban board, split by the Eisenhower status.
 * _Database_: views all tasks in the inbox as a Excel-like table.
 * _Kanban Due $InPeriod Or Exceeded_: views all tasks due in a certain period
   (week or month) or those that have exceeded their deadlines as a Kanban board.
@@ -94,5 +95,7 @@ There are multiple views for the inbox though right now:
 
 Here’s a sneak peak at some views:
 ![Inbox database](../assets/concepts-inbox-database.png)
+
+![Inbox Image With Eisen](../assets/concepts-inbox-tasks-with-eisen.png)
 
 ![Inbox calendar](../assets/concepts-inbox-calendar.png)

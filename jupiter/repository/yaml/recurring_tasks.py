@@ -4,7 +4,7 @@ import typing
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Final, ClassVar, Iterable, List, Optional
+from typing import Final, ClassVar, Iterable, Optional
 
 import pendulum
 
@@ -181,7 +181,7 @@ class _RecurringTaskRow(BaseEntityRow):
     name: RecurringTaskName
     period: RecurringTaskPeriod
     the_type: RecurringTaskType
-    eisen: List[Eisen]
+    eisen: Eisen
     difficulty: Optional[Difficulty]
     actionable_from_day: Optional[RecurringTaskDueAtDay]
     actionable_from_month: Optional[RecurringTaskDueAtMonth]
@@ -236,7 +236,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             name=recurring_task.name,
             period=recurring_task.period,
             the_type=recurring_task.the_type,
-            eisen=list(recurring_task.gen_params.eisen),
+            eisen=recurring_task.gen_params.eisen,
             difficulty=recurring_task.gen_params.difficulty,
             actionable_from_day=recurring_task.gen_params.actionable_from_day,
             actionable_from_month=recurring_task.gen_params.actionable_from_month,
@@ -260,6 +260,10 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
         except StorageEntityNotFoundError as err:
             raise RecurringTaskNotFoundError(
                 f"Recurring task with id {recurring_task.ref_id} does not exist") from err
+
+    def dump_all(self, inbox_tasks: Iterable[RecurringTask]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> RecurringTask:
         """Load a recurring task by id."""
@@ -296,10 +300,11 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             "name": {"type": "string"},
             "period": {"type": "string"},
             "the_type": {"type": "string"},
-            "eisen": {
+            "eisen_old": {
                 "type": "array",
                 "entries": {"type": "string"}
             },
+            "eisen": {"type": ["string"]},
             "difficulty": {"type": ["string", "null"]},
             "actionable_from_day": {"type": ["number", "null"]},
             "actionable_from_month": {"type": ["number", "null"]},
@@ -324,7 +329,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             name=RecurringTaskName.from_raw(typing.cast(str, storage_form["name"])),
             period=RecurringTaskPeriod(typing.cast(str, storage_form["period"])),
             the_type=RecurringTaskType(typing.cast(str, storage_form["the_type"])),
-            eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
+            eisen=Eisen.from_raw(typing.cast(str, storage_form["eisen"])),
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"])) if storage_form["difficulty"] else None,
             actionable_from_day=RecurringTaskDueAtDay(typing.cast(int, storage_form["actionable_from_day"]))
             if storage_form.get("actionable_from_day", None) else None,
@@ -353,7 +358,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             "name": str(live_form.name),
             "period": live_form.period.value,
             "the_type": live_form.the_type.value,
-            "eisen": [e.value for e in live_form.eisen],
+            "eisen": live_form.eisen.value,
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
             "actionable_from_day": live_form.actionable_from_day.as_int() if live_form.actionable_from_day else None,
             "actionable_from_month":
@@ -376,7 +381,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             name=recurring_task.name,
             period=recurring_task.period,
             the_type=recurring_task.the_type,
-            eisen=list(recurring_task.gen_params.eisen),
+            eisen=recurring_task.gen_params.eisen,
             difficulty=recurring_task.gen_params.difficulty,
             actionable_from_day=recurring_task.gen_params.actionable_from_day,
             actionable_from_month=recurring_task.gen_params.actionable_from_month,

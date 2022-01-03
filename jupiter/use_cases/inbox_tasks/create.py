@@ -1,7 +1,7 @@
 """The command for creating a inbox task."""
 import logging
 from dataclasses import dataclass
-from typing import Optional, List, Final
+from typing import Optional, Final
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
@@ -31,7 +31,7 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
         project_key: Optional[ProjectKey]
         name: InboxTaskName
         big_plan_ref_id: Optional[EntityId]
-        eisen: List[Eisen]
+        eisen: Optional[Eisen]
         difficulty: Optional[Difficulty]
         actionable_date: Optional[ADate]
         due_date: Optional[ADate]

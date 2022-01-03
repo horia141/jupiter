@@ -44,8 +44,7 @@ class MetricCreate(command.Command):
         parser.add_argument("--collection-period", dest="collection_period", required=False,
                             choices=RecurringTaskPeriod.all_values(),
                             help="The period at which a metric should be recorded")
-        parser.add_argument("--collection-eisen", dest="collection_eisen", default=[], action="append",
-                            choices=Eisen.all_values(),
+        parser.add_argument("--collection-eisen", dest="collection_eisen", choices=Eisen.all_values(),
                             help="The Eisenhower matrix values to use for collection tasks")
         parser.add_argument("--collection-difficulty", dest="collection_difficulty",
                             choices=Difficulty.all_values(),
@@ -74,7 +73,7 @@ class MetricCreate(command.Command):
             if args.collection_project_key else None
         collection_period = RecurringTaskPeriod.from_raw(args.collection_period)\
             if args.collection_period else None
-        collection_eisen = [Eisen.from_raw(e) for e in args.collection_eisen]
+        collection_eisen = Eisen.from_raw(args.collection_eisen) if args.collection_eisen else None
         collection_difficulty = Difficulty.from_raw(args.collection_difficulty) \
             if args.collection_difficulty else None
         collection_actionable_from_day = RecurringTaskDueAtDay.from_raw(

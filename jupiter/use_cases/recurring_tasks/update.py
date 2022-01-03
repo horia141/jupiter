@@ -1,7 +1,7 @@
 """The command for updating a recurring task."""
 import logging
 from dataclasses import dataclass
-from typing import Optional, List, Final, cast
+from typing import Optional, Final, cast
 
 from jupiter.domain import schedules
 from jupiter.domain.adate import ADate
@@ -39,7 +39,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
         name: UpdateAction[RecurringTaskName]
         period: UpdateAction[RecurringTaskPeriod]
         the_type: UpdateAction[RecurringTaskType]
-        eisen: UpdateAction[List[Eisen]]
+        eisen: UpdateAction[Eisen]
         difficulty: UpdateAction[Optional[Difficulty]]
         actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]

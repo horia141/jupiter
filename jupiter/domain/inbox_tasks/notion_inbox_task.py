@@ -1,6 +1,6 @@
 """A inbox task on Notion-side."""
 from dataclasses import dataclass
-from typing import Optional, List, Dict
+from typing import Optional, Dict
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
@@ -41,7 +41,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
     metric_ref_id: Optional[str]
     person_ref_id: Optional[str]
     status: Optional[str]
-    eisen: Optional[List[str]]
+    eisen: Optional[str]
     difficulty: Optional[str]
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
@@ -68,7 +68,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             metric_ref_id=str(aggregate_root.metric_ref_id) if aggregate_root.metric_ref_id else None,
             person_ref_id=str(aggregate_root.person_ref_id) if aggregate_root.person_ref_id else None,
             status=aggregate_root.status.for_notion(),
-            eisen=[e.for_notion() for e in aggregate_root.eisen],
+            eisen=aggregate_root.eisen.for_notion(),
             difficulty=aggregate_root.difficulty.for_notion() if aggregate_root.difficulty else None,
             actionable_date=aggregate_root.actionable_date,
             due_date=aggregate_root.due_date,
@@ -101,8 +101,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             InboxTaskStatus.from_raw(self.status) \
                 if self.status else InboxTaskStatus.NOT_STARTED
         inbox_task_eisen = \
-            [Eisen.from_raw(e) for e in self.eisen] \
-                if self.eisen else []
+            Eisen.from_raw(self.eisen)  if self.eisen else Eisen.REGULAR
         inbox_task_difficulty = \
             Difficulty.from_raw(self.difficulty) \
                 if self.difficulty else None
@@ -141,7 +140,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
         if aggregate_root.source.allow_user_changes:
             aggregate_root.change_name(InboxTaskName.from_raw(self.name), self.last_edited_time)
             aggregate_root.change_eisen(
-                [Eisen.from_raw(e) for e in self.eisen] if self.eisen else [], self.last_edited_time)
+                Eisen.from_raw(self.eisen) if self.eisen else Eisen.REGULAR, self.last_edited_time)
             aggregate_root.change_difficulty(
                 Difficulty.from_raw(self.difficulty) if self.difficulty else None, self.last_edited_time)
             aggregate_root.change_actionable_date(self.actionable_date, self.last_edited_time)

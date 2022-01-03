@@ -9,8 +9,10 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class Eisen(enum.Enum):
     """The Eisenhower status of a particular task."""
+    IMPORTANT_AND_URGENT = "important-and-urgent"
     IMPORTANT = "important"
     URGENT = "urgent"
+    REGULAR = "regular"
 
     def for_notion(self) -> str:
         """A prettier version of the value for Notion."""

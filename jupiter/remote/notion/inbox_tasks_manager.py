@@ -3,7 +3,7 @@ import copy
 import hashlib
 import logging
 import uuid
-from typing import Final, ClassVar, cast, Dict, Optional, Iterable
+from typing import Final, ClassVar, cast, Dict, Optional, Iterable, List
 
 from notion.collection import CollectionRowBlock
 
@@ -23,8 +23,7 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option, \
-    clean_eisenhower
+from jupiter.remote.notion.common import NotionLockKey, NotionPageLink, format_name_for_option
 from jupiter.remote.notion.infra.client import NotionClient, NotionFieldProps, NotionFieldShow
 from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionNotFoundError, \
     NotionCollectionItemNotFoundError
@@ -49,12 +48,12 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         },
         "Accepted": {
             "name": InboxTaskStatus.ACCEPTED.for_notion(),
-            "color": "orange",
+            "color": "gray",
             "in_board": True
         },
         "Recurring": {
             "name": InboxTaskStatus.RECURRING.for_notion(),
-            "color": "orange",
+            "color": "gray",
             "in_board": True
         },
         "In Progress": {
@@ -107,6 +106,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
     }
 
     _EISENHOWER: ClassVar[JSONDictType] = {
+        "Important-And-Urgent": {
+            "name": Eisen.IMPORTANT_AND_URGENT.for_notion(),
+            "color": "green"
+        },
         "Urgent": {
             "name": Eisen.URGENT.for_notion(),
             "color": "red"
@@ -114,6 +117,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         "Important": {
             "name": Eisen.IMPORTANT.for_notion(),
             "color": "blue"
+        },
+        "Regular": {
+            "name": Eisen.REGULAR.for_notion(),
+            "color": "orange"
         }
     }
 
@@ -230,7 +237,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         },
         "eisen": {
             "name": "Eisenhower",
-            "type": "multi_select",
+            "type": "select",
             "options": [{
                 "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
@@ -330,6 +337,13 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             },
             "hidden": True
         }],
+        "board_columns_by": {
+            "property": "status",
+            "type": "select",
+            "sort": {"type": "manual"},
+            "hideEmptyGroups": False,
+            "disableBoardColorColumns": False
+        },
         "board_properties": [{
             "property": "ref-id",
             "visible": False
@@ -359,13 +373,122 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "actionable-date",
-            "visible": True
+            "visible": False
         }, {
             "property": "due-date",
             "visible": True
         }, {
             "property": "eisen",
             "visible": True
+        }, {
+            "property": "difficulty",
+            "visible": True
+        }, {
+            "property": "fromscript",
+            "visible": False
+        }, {
+            "property": "timeline",
+            "visible": False
+        }, {
+            "property": "period",
+            "visible": True
+        }, {
+            "property": "recurring-task-type",
+            "visible": True
+        }, {
+            "property": "recurring-task-gen-right-now",
+            "visible": False
+        }, {
+            "property": "last-edited-time",
+            "visible": False
+        }],
+        "board_cover_size": "small"
+    }
+
+    _KANBAN_WITH_EISEN_SUBGROUP_FORMAT: ClassVar[JSONDictType] = {
+        "board_groups": [{
+            "property": "status",
+            "type": "select",
+            "value": cast(Dict[str, str], v)["name"],
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "type": "select",
+            "hidden": True
+        }],
+        "board_groups2": [{
+            "property": "status",
+            "value": {
+                "type": "select",
+                "value": cast(Dict[str, str], v)["name"]
+            },
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "value": {
+                "type": "select"
+            },
+            "hidden": True
+        }],
+        "board_columns_by": {
+            "property": "status",
+            "type": "select",
+            "sort": {"type": "manual"},
+            "hideEmptyGroups": False,
+            "disableBoardColorColumns": False
+        },
+        "collection_group_by": {
+            "property": "eisen",
+            "sort": {
+                "type": "manual"
+            },
+            "type": "select"
+        },
+        "collection_groups": [{
+            "property": "eisen",
+            "value": {"type": "select", "value": cast(Dict[str, str], v)["name"]},
+            'hidden': False
+        } for v in _EISENHOWER.values()] + [{
+            "property": "eisen",
+            "value": {"type": "select"},
+            "hidden": True
+        }],
+        "board_properties": [{
+            "property": "ref-id",
+            "visible": False
+        }, {
+            "property": "status",
+            "visible": False
+        }, {
+            "property": "source",
+            "visible": True
+        }, {
+            "property": "archived",
+            "visible": False
+        }, {
+            "property": "big-plan-ref-id",
+            "visible": False
+        }, {
+            "property": "bigplan2",
+            "visible": True
+        }, {
+            "property": "recurring-task-ref-id",
+            "visible": False
+        }, {
+            "property": "metric-ref-id",
+            "visible": False
+        }, {
+            "property": "person-ref-id",
+            "visible": False
+        }, {
+            "property": "actionable-date",
+            "visible": False
+        }, {
+            "property": "due-date",
+            "visible": True
+        }, {
+            "property": "eisen",
+            "visible": False
         }, {
             "property": "difficulty",
             "visible": True
@@ -448,6 +571,65 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             }
         },
         "format": _KANBAN_FORMAT
+    }
+
+    _KANBAN_WITH_EISEN_SUBGROUPS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Kanban With Eisen",
+        "type": "board",
+        "query2": {
+            "group_by": "status",
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "eisen",
+                "direction": "ascending"
+            }, {
+                "property": "difficulty",
+                "direction": "ascending"
+            }, {
+                "property": "fromscript",
+                "direction": "ascending"
+            }, {
+                "property": "period",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": "True"
+                        }
+                    }
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "today"
+                            }
+                        }
+                    }, {
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }]
+            }
+        },
+        "format": _KANBAN_WITH_EISEN_SUBGROUP_FORMAT
     }
 
     _KANBAN_URGENT_VIEW_SCHEMA: ClassVar[JSONDictType] = {
@@ -970,6 +1152,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas={
                 "kanban_all_view_id": NotionInboxTasksManager._KANBAN_ALL_VIEW_SCHEMA,
+                "kanban_with_eisen_subgroup_view_id": NotionInboxTasksManager._KANBAN_WITH_EISEN_SUBGROUPS_VIEW_SCHEMA,
                 "kanban_urgent_view_id": NotionInboxTasksManager._KANBAN_URGENT_VIEW_SCHEMA,
                 "kanban_due_today_view_id": NotionInboxTasksManager._KANBAN_DUE_TODAY_VIEW_SCHEMA,
                 "kanban_due_this_week_view_id": NotionInboxTasksManager._KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA,
@@ -1132,7 +1315,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             metric_ref_id=inbox_task_notion_row.metric_id,
             person_ref_id=inbox_task_notion_row.person_id,
             status=inbox_task_notion_row.status,
-            eisen=clean_eisenhower(inbox_task_notion_row.eisenhower),
+            eisen=inbox_task_notion_row.eisenhower,
             difficulty=inbox_task_notion_row.difficulty,
             actionable_date=ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.actionable_date)
             if inbox_task_notion_row.actionable_date else None,

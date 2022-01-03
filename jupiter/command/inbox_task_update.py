@@ -1,6 +1,6 @@
 """UseCase for updating inbox tasks."""
 from argparse import ArgumentParser, Namespace
-from typing import Final, Optional, List
+from typing import Final, Optional
 
 import jupiter.command.command as command
 from jupiter.domain.adate import ADate
@@ -42,13 +42,9 @@ class InboxTaskUpdate(command.Command):
         parser.add_argument(
             "--status", dest="status", required=False,
             choices=InboxTaskStatus.all_values(), help="The status of the inbox task")
-        eisen = parser.add_mutually_exclusive_group()
-        eisen.add_argument(
-            "--eisen", dest="eisen", default=[], action="append",
-            choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
-        eisen.add_argument(
-            "--clear-eisen", dest="clear_eisen", default=False, action="store_const", const=True,
-            help="Clear the Eisenhower values of the inbox task")
+        parser.add_argument(
+            "--eisen", dest="eisen", choices=Eisen.all_values(),
+            help="The Eisenhower matrix values to use for the task")
         difficulty = parser.add_mutually_exclusive_group()
         difficulty.add_argument(
             "--difficulty", dest="difficulty", choices=Difficulty.all_values(),
@@ -81,11 +77,8 @@ class InboxTaskUpdate(command.Command):
             status = UpdateAction.change_to(InboxTaskStatus.from_raw(args.status))
         else:
             status = UpdateAction.do_nothing()
-        eisen: UpdateAction[List[Eisen]]
-        if args.clear_eisen:
-            eisen = UpdateAction.change_to([])
-        elif args.eisen:
-            eisen = UpdateAction.change_to([Eisen.from_raw(e) for e in args.eisen])
+        if args.eisen:
+            eisen = UpdateAction.change_to(Eisen.from_raw(args.eisen))
         else:
             eisen = UpdateAction.do_nothing()
         difficulty: UpdateAction[Optional[Difficulty]]

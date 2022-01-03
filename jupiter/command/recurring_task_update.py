@@ -1,7 +1,7 @@
 """UseCase for updating a recurring task."""
 import logging
 from argparse import Namespace, ArgumentParser
-from typing import Final, Optional, List
+from typing import Final, Optional
 
 import jupiter.command.command as command
 from jupiter.domain.adate import ADate
@@ -54,12 +54,8 @@ class RecurringTaskUpdate(command.Command):
         parser.add_argument("--type", dest="the_type", choices=RecurringTaskType.all_values(),
                             default=RecurringTaskType.CHORE.value, required=True,
                             help="The type of the recurring task")
-        eisen = parser.add_mutually_exclusive_group()
-        eisen.add_argument("--eisen", dest="eisen", default=[], action="append",
-                           choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
-        eisen.add_argument(
-            "--clear-eisen", dest="clear_eisen", default=False, action="store_const", const=True,
-            help="Clear the Eisenhower values of the recurring task")
+        parser.add_argument(
+            "--eisen", dest="eisen", choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
         difficulty = parser.add_mutually_exclusive_group()
         difficulty.add_argument("--difficulty", dest="difficulty", choices=Difficulty.all_values(),
                                 help="The difficulty to use for tasks")
@@ -139,11 +135,8 @@ class RecurringTaskUpdate(command.Command):
             the_type = UpdateAction.change_to(RecurringTaskType.from_raw(args.the_type))
         else:
             the_type = UpdateAction.do_nothing()
-        eisen: UpdateAction[List[Eisen]]
-        if args.clear_eisen:
-            eisen = UpdateAction.change_to([])
-        elif args.eisen:
-            eisen = UpdateAction.change_to([Eisen.from_raw(e) for e in args.eisen])
+        if args.eisen:
+            eisen = UpdateAction.change_to(Eisen.from_raw(args.eisen))
         else:
             eisen = UpdateAction.do_nothing()
         difficulty: UpdateAction[Optional[Difficulty]]

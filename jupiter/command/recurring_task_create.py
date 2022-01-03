@@ -52,8 +52,8 @@ class RecurringTaskCreate(command.Command):
         parser.add_argument("--type", dest="the_type", choices=RecurringTaskType.all_values(),
                             default=RecurringTaskType.CHORE.value, required=True,
                             help="The type of the recurring task")
-        parser.add_argument("--eisen", dest="eisen", default=[], action="append",
-                            choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
+        parser.add_argument("--eisen", dest="eisen", choices=Eisen.all_values(),
+                            help="The Eisenhower matrix values to use for task")
         parser.add_argument("--difficulty", dest="difficulty", choices=Difficulty.all_values(),
                             help="The difficulty to use for tasks")
         parser.add_argument("--actionable-from-day", type=int, dest="actionable_from_day", metavar="DAY",
@@ -79,7 +79,7 @@ class RecurringTaskCreate(command.Command):
         name = RecurringTaskName.from_raw(args.name)
         period = RecurringTaskPeriod.from_raw(args.period)
         the_type = RecurringTaskType.from_raw(args.the_type)
-        eisen = [Eisen.from_raw(e) for e in args.eisen]
+        eisen = Eisen.from_raw(args.eisen) if args.eisen else None
         difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
         actionable_from_day = RecurringTaskDueAtDay.from_raw(period, args.actionable_from_day) \
             if args.actionable_from_day else None

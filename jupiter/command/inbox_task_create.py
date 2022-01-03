@@ -44,8 +44,8 @@ class InboxTaskCreate(command.Command):
         parser.add_argument("--name", dest="name", required=True, help="The name of the inbox task")
         parser.add_argument("--big-plan-id", type=str, dest="big_plan_ref_id",
                             help="The id of a big plan to associate this task to.")
-        parser.add_argument("--eisen", dest="eisen", default=[], action="append",
-                            choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
+        parser.add_argument("--eisen", dest="eisen", choices=Eisen.all_values(),
+                            help="The Eisenhower matrix values to use for task")
         parser.add_argument("--difficulty", dest="difficulty", choices=Difficulty.all_values(),
                             help="The difficulty to use for tasks")
         parser.add_argument("--actionable-date", dest="actionable_date", help="The active date of the inbox task")
@@ -57,7 +57,7 @@ class InboxTaskCreate(command.Command):
         name = InboxTaskName.from_raw(args.name)
         big_plan_ref_id = EntityId.from_raw(args.big_plan_ref_id) \
             if args.big_plan_ref_id else None
-        eisen = [Eisen.from_raw(e) for e in args.eisen]
+        eisen = Eisen.from_raw(args.eise) if args.eise else None
         difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
         actionable_date = ADate.from_raw(self._global_properties.timezone, args.actionable_date) \
             if args.due_date else None

@@ -1,7 +1,7 @@
 """Create a person."""
 import logging
 from dataclasses import dataclass
-from typing import Final, Optional, List
+from typing import Final, Optional
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -32,7 +32,7 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
         name: PersonName
         relationship: PersonRelationship
         catch_up_period: Optional[RecurringTaskPeriod]
-        catch_up_eisen: List[Eisen]
+        catch_up_eisen: Optional[Eisen]
         catch_up_difficulty: Optional[Difficulty]
         catch_up_actionable_from_day: Optional[RecurringTaskDueAtDay]
         catch_up_actionable_from_month: Optional[RecurringTaskDueAtMonth]
@@ -63,7 +63,7 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
                 catch_up_params = RecurringTaskGenParams(
                     project_ref_id=project_ref_id,
                     period=args.catch_up_period,
-                    eisen=args.catch_up_eisen,
+                    eisen=args.catch_up_eisen if args.catch_up_eisen else Eisen.REGULAR,
                     difficulty=args.catch_up_difficulty,
                     actionable_from_day=args.catch_up_actionable_from_day,
                     actionable_from_month=args.catch_up_actionable_from_month,

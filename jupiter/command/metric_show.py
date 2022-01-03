@@ -52,7 +52,7 @@ class MetricShow(command.Command):
             print(f"{metric.key}: {metric.name}" +
                   (f" @{metric.collection_params.period.for_notion()} in " +
                    (f"{collection_project.name if collection_project else 'Default'}") +
-                   (f" eisen={','.join(e.for_notion() for e in metric.collection_params.eisen)}"
+                   (f" eisen={metric.collection_params.eisen.value}"
                     if metric.collection_params.eisen else '')) +
                   (f" difficulty={metric.collection_params.difficulty.for_notion()}"
                    if metric.collection_params.difficulty else '') +

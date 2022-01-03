@@ -1,6 +1,6 @@
 """The command for updating a inbox task."""
 from dataclasses import dataclass
-from typing import Optional, List, Final
+from typing import Optional, Final
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
@@ -25,7 +25,7 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
         ref_id: EntityId
         name: UpdateAction[InboxTaskName]
         status: UpdateAction[InboxTaskStatus]
-        eisen: UpdateAction[List[Eisen]]
+        eisen: UpdateAction[Eisen]
         difficulty: UpdateAction[Optional[Difficulty]]
         actionable_date: UpdateAction[Optional[ADate]]
         due_date: UpdateAction[Optional[ADate]]

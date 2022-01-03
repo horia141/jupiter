@@ -95,6 +95,10 @@ class NotionPrmManager(PrmNotionManager):
     }
 
     _EISENHOWER: ClassVar[JSONDictType] = {
+        "Important-And-Urgent": {
+            "name": Eisen.IMPORTANT_AND_URGENT.for_notion(),
+            "color": "green"
+        },
         "Urgent": {
             "name": Eisen.URGENT.for_notion(),
             "color": "red"
@@ -102,6 +106,10 @@ class NotionPrmManager(PrmNotionManager):
         "Important": {
             "name": Eisen.IMPORTANT.for_notion(),
             "color": "blue"
+        },
+        "Regular": {
+            "name": Eisen.REGULAR.for_notion(),
+            "color": "orange"
         }
     }
 
@@ -149,7 +157,7 @@ class NotionPrmManager(PrmNotionManager):
         },
         "catch-up-eisen": {
             "name": "Catch Up Eisenhower",
-            "type": "multi_select",
+            "type": "select",
             "options": [{
                 "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),

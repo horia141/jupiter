@@ -1,6 +1,6 @@
 """The command for creating a metric."""
 from dataclasses import dataclass
-from typing import Optional, Final, List
+from typing import Optional, Final
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -33,7 +33,7 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
         name: MetricName
         collection_project_key: Optional[ProjectKey]
         collection_period: Optional[RecurringTaskPeriod]
-        collection_eisen: List[Eisen]
+        collection_eisen: Optional[Eisen]
         collection_difficulty: Optional[Difficulty]
         collection_actionable_from_day: Optional[RecurringTaskDueAtDay]
         collection_actionable_from_month: Optional[RecurringTaskDueAtMonth]
@@ -71,7 +71,7 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
                 collection_params = RecurringTaskGenParams(
                     project_ref_id=project_ref_id,
                     period=args.collection_period,
-                    eisen=args.collection_eisen,
+                    eisen=args.collection_eisen if args.collection_eisen else Eisen.REGULAR,
                     difficulty=args.collection_difficulty,
                     actionable_from_day=args.collection_actionable_from_day,
                     actionable_from_month=args.collection_actionable_from_month,

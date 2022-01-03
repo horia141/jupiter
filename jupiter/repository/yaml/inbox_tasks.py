@@ -4,7 +4,7 @@ import typing
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Final, ClassVar, Iterable, List, Optional
+from typing import Final, ClassVar, Iterable, Optional
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
@@ -176,7 +176,7 @@ class _InboxTaskRow(BaseEntityRow):
     name: InboxTaskName
     archived: bool
     status: InboxTaskStatus
-    eisen: List[Eisen]
+    eisen: Eisen
     difficulty: Optional[Difficulty]
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
@@ -231,7 +231,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             name=inbox_task.name,
             archived=inbox_task.archived,
             status=inbox_task.status,
-            eisen=list(inbox_task.eisen),
+            eisen=inbox_task.eisen,
             difficulty=inbox_task.difficulty,
             actionable_date=inbox_task.actionable_date,
             due_date=inbox_task.due_date,
@@ -305,10 +305,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             "person_ref_id": {"type": ["string", "null"]},
             "name": {"type": "string"},
             "archived": {"type": "boolean"},
-            "eisen": {
-                "type": "array",
-                "entries": {"type": "string"}
-            },
+            "eisen": {"type": ["string"]},
             "difficulty": {"type": ["string", "null"]},
             "actionable_date": {"type": ["string", "null"]},
             "due_date": {"type": ["string", "null"]},
@@ -340,7 +337,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             name=InboxTaskName.from_raw(typing.cast(str, storage_form["name"])),
             archived=typing.cast(bool, storage_form["archived"]),
             status=InboxTaskStatus(typing.cast(str, storage_form["status"])),
-            eisen=[Eisen(e) for e in typing.cast(List[str], storage_form["eisen"])],
+            eisen=Eisen.from_raw(typing.cast(str, storage_form["eisen"])),
             difficulty=Difficulty(typing.cast(str, storage_form["difficulty"]))
             if storage_form["difficulty"] else None,
             actionable_date=ADate.from_str(typing.cast(str, storage_form["actionable_date"]))
@@ -373,7 +370,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             "person_ref_id": str(live_form.person_ref_id) if live_form.person_ref_id else None,
             "name": str(live_form.name),
             "status": live_form.status.value,
-            "eisen": [e.value for e in live_form.eisen],
+            "eisen": live_form.eisen.value,
             "difficulty": live_form.difficulty.value if live_form.difficulty else None,
             "actionable_date": str(live_form.actionable_date)
                                if live_form.actionable_date else None,

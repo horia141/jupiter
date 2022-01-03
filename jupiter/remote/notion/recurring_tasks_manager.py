@@ -21,7 +21,7 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionLockKey, NotionPageLink, clean_eisenhower
+from jupiter.remote.notion.common import NotionLockKey, NotionPageLink
 from jupiter.remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
 from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError, \
     NotionCollectionNotFoundError
@@ -80,6 +80,10 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
     }
 
     _EISENHOWER: ClassVar[JSONDictType] = {
+        "Important-And-Urgent": {
+            "name": Eisen.IMPORTANT_AND_URGENT.for_notion(),
+            "color": "green"
+        },
         "Urgent": {
             "name": Eisen.URGENT.for_notion(),
             "color": "red"
@@ -87,6 +91,10 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         "Important": {
             "name": Eisen.IMPORTANT.for_notion(),
             "color": "blue"
+        },
+        "Regular": {
+            "name": Eisen.REGULAR.for_notion(),
+            "color": "orange"
         }
     }
 
@@ -134,7 +142,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         },
         "eisen": {
             "name": "Eisenhower",
-            "type": "multi_select",
+            "type": "select",
             "options": [{
                 "color": cast(Dict[str, str], v)["color"],
                 "id": str(uuid.uuid4()),
@@ -590,7 +598,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             archived=recurring_task_notion_row.archived,
             period=recurring_task_notion_row.period,
             the_type=recurring_task_notion_row.the_type,
-            eisen=clean_eisenhower(recurring_task_notion_row.eisenhower),
+            eisen=recurring_task_notion_row.eisenhower,
             difficulty=recurring_task_notion_row.difficulty,
             actionable_from_day=recurring_task_notion_row.actionable_from_day,
             actionable_from_month=recurring_task_notion_row.actionable_from_month,

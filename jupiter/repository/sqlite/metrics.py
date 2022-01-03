@@ -3,7 +3,7 @@ import logging
 from typing import Optional, Iterable, List, Final
 
 from sqlalchemy import insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, Unicode, \
-    ForeignKey, Float, UnicodeText, JSON, update, select, delete
+    ForeignKey, Float, UnicodeText, update, select, delete
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
 
@@ -51,8 +51,8 @@ class SqliteMetricRepository(MetricRepository):
             Column('the_key', String(64), nullable=False, index=True, unique=True),
             Column('name', Unicode(), nullable=False),
             Column('collection_project_ref_id', Integer, nullable=True),
-            Column('collection_period', String(), nullable=True),
-            Column('collection_eisen', JSON, nullable=True),
+            Column('collection_period', String, nullable=True),
+            Column('collection_eisen', String, nullable=True),
             Column('collection_difficulty', String, nullable=True),
             Column('collection_actionable_from_day', Integer, nullable=True),
             Column('collection_actionable_from_month', Integer, nullable=True),
@@ -78,7 +78,7 @@ class SqliteMetricRepository(MetricRepository):
                 collection_project_ref_id=
                 metric.collection_params.project_ref_id.as_int() if metric.collection_params else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
-                collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
+                collection_eisen=metric.collection_params.eisen.value if metric.collection_params else None,
                 collection_difficulty=metric.collection_params.difficulty.value
                 if metric.collection_params and metric.collection_params.difficulty else None,
                 collection_actionable_from_day=metric.collection_params.actionable_from_day.as_int()
@@ -113,7 +113,7 @@ class SqliteMetricRepository(MetricRepository):
                 collection_project_ref_id=metric.collection_params.project_ref_id.as_int()
                 if metric.collection_params else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
-                collection_eisen=[e.value for e in metric.collection_params.eisen] if metric.collection_params else [],
+                collection_eisen=metric.collection_params.eisen.value if metric.collection_params else None,
                 collection_difficulty=metric.collection_params.difficulty.value
                 if metric.collection_params and metric.collection_params.difficulty else None,
                 collection_actionable_from_day=metric.collection_params.actionable_from_day.as_int()
@@ -191,7 +191,7 @@ class SqliteMetricRepository(MetricRepository):
             _collection_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["collection_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["collection_period"]),
-                eisen=[Eisen.from_raw(e) for e in row["collection_eisen"]],
+                eisen=Eisen.from_raw(row["collection_eisen"]),
                 difficulty=Difficulty.from_raw(row["collection_difficulty"])
                 if row["collection_difficulty"] else None,
                 actionable_from_day=RecurringTaskDueAtDay(row["collection_actionable_from_day"])

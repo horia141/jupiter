@@ -2,7 +2,7 @@
 from typing import Optional, Iterable, List, Final
 
 from sqlalchemy import select, MetaData, Table, Column, Integer, Boolean, DateTime, update, insert, \
-    Unicode, String, JSON, delete
+    Unicode, String, delete
 from sqlalchemy.engine import Result, Connection
 from sqlalchemy.exc import IntegrityError
 
@@ -119,8 +119,8 @@ class SqlitePersonRepository(PersonRepository):
             Column('name', Unicode(), nullable=False),
             Column('relationship', String(), nullable=False),
             Column('catch_up_project_ref_id', Integer, nullable=True),
-            Column('catch_up_period', String(), nullable=True),
-            Column('catch_up_eisen', JSON, nullable=True),
+            Column('catch_up_period', String, nullable=True),
+            Column('catch_up_eisen', String, nullable=True),
             Column('catch_up_difficulty', String, nullable=True),
             Column('catch_up_actionable_from_day', Integer, nullable=True),
             Column('catch_up_actionable_from_month', Integer, nullable=True),
@@ -145,7 +145,7 @@ class SqlitePersonRepository(PersonRepository):
                 catch_up_project_ref_id=
                 person.catch_up_params.project_ref_id.as_int() if person.catch_up_params else None,
                 catch_up_period=person.catch_up_params.period.value if person.catch_up_params else None,
-                catch_up_eisen=[e.value for e in person.catch_up_params.eisen] if person.catch_up_params else [],
+                catch_up_eisen=person.catch_up_params.eisen.value if person.catch_up_params else None,
                 catch_up_difficulty=person.catch_up_params.difficulty.value
                 if person.catch_up_params and person.catch_up_params.difficulty else None,
                 catch_up_actionable_from_day=person.catch_up_params.actionable_from_day
@@ -177,7 +177,7 @@ class SqlitePersonRepository(PersonRepository):
                 catch_up_project_ref_id=person.catch_up_params.project_ref_id.as_int()
                 if person.catch_up_params else None,
                 catch_up_period=person.catch_up_params.period.value if person.catch_up_params else None,
-                catch_up_eisen=[e.value for e in person.catch_up_params.eisen] if person.catch_up_params else [],
+                catch_up_eisen=person.catch_up_params.eisen.value if person.catch_up_params else None,
                 catch_up_difficulty=person.catch_up_params.difficulty.value
                 if person.catch_up_params and person.catch_up_params.difficulty else None,
                 catch_up_actionable_from_day=person.catch_up_params.actionable_from_day
@@ -240,7 +240,7 @@ class SqlitePersonRepository(PersonRepository):
             _catch_up_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["catch_up_period"]),
-                eisen=[Eisen.from_raw(e) for e in row["catch_up_eisen"]],
+                eisen=Eisen.from_raw(row["catch_up_eisen"]),
                 difficulty=Difficulty.from_raw(row["catch_up_difficulty"])
                 if row["catch_up_difficulty"] else None,
                 actionable_from_day=row["catch_up_actionable_from_day"],

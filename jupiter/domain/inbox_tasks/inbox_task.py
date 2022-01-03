@@ -1,6 +1,6 @@
 """An inbox task."""
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional
 
 import pendulum
 from pendulum import UTC
@@ -43,7 +43,7 @@ class InboxTask(AggregateRoot):
     _person_ref_id: Optional[EntityId]
     _name: InboxTaskName
     _status: InboxTaskStatus
-    _eisen: List[Eisen]
+    _eisen: Eisen
     _difficulty: Optional[Difficulty]
     _actionable_date: Optional[ADate]
     _due_date: Optional[ADate]
@@ -57,7 +57,7 @@ class InboxTask(AggregateRoot):
     @staticmethod
     def new_inbox_task(
             inbox_task_collection_ref_id: EntityId, archived: bool, name: InboxTaskName, status: InboxTaskStatus,
-            big_plan: Optional[BigPlan], eisen: List[Eisen], difficulty: Optional[Difficulty],
+            big_plan: Optional[BigPlan], eisen: Optional[Eisen], difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Created an inbox task."""
         InboxTask._check_actionable_and_due_dates(actionable_date, due_date)
@@ -77,7 +77,7 @@ class InboxTask(AggregateRoot):
             _person_ref_id=None,
             _name=name,
             _status=status,
-            _eisen=eisen,
+            _eisen=eisen if eisen else Eisen.REGULAR,
             _difficulty=difficulty,
             _actionable_date=actionable_date or (big_plan.actionable_date if big_plan else None),
             _due_date=due_date or (big_plan.due_date if big_plan else None),
@@ -95,7 +95,7 @@ class InboxTask(AggregateRoot):
     def new_inbox_task_for_recurring_task(
             inbox_task_collection_ref_id: EntityId, name: InboxTaskName, recurring_task_ref_id: EntityId,
             recurring_task_timeline: str, recurring_task_type: RecurringTaskType,
-            recurring_task_gen_right_now: Timestamp, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            recurring_task_gen_right_now: Timestamp, eisen: Eisen, difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
         inbox_task = InboxTask(
@@ -130,7 +130,7 @@ class InboxTask(AggregateRoot):
     @staticmethod
     def new_inbox_task_for_metric(
             inbox_task_collection_ref_id: EntityId, name: InboxTaskName, metric_ref_id: EntityId,
-            recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp, eisen: List[Eisen],
+            recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp, eisen: Eisen,
             difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
             due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
@@ -166,7 +166,7 @@ class InboxTask(AggregateRoot):
     @staticmethod
     def new_inbox_task_for_person_catch_up(
             inbox_task_collection_ref_id: EntityId, name: InboxTaskName, person_ref_id: EntityId,
-            recurring_task_timeline: str, eisen: List[Eisen],
+            recurring_task_timeline: str, eisen: Eisen,
             difficulty: Optional[Difficulty], recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
             due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
@@ -220,7 +220,7 @@ class InboxTask(AggregateRoot):
             _person_ref_id=person_ref_id,
             _name=InboxTask._build_name_for_birthday_task(name),
             _status=InboxTaskStatus.RECURRING,
-            _eisen=[Eisen.IMPORTANT],
+            _eisen=Eisen.IMPORTANT,
             _difficulty=Difficulty.EASY,
             _actionable_date=due_date.subtract_days(preparation_days_cnt),
             _due_date=due_date,
@@ -272,7 +272,7 @@ class InboxTask(AggregateRoot):
 
     def update_link_to_recurring_task(
             self, name: InboxTaskName, timeline: str, the_type: RecurringTaskType, actionable_date: Optional[ADate],
-            due_time: ADate, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            due_time: ADate, eisen: Eisen, difficulty: Optional[Difficulty],
             modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a recurring task."""
         if self._source is not InboxTaskSource.RECURRING_TASK:
@@ -289,7 +289,7 @@ class InboxTask(AggregateRoot):
         return self
 
     def update_link_to_metric(
-            self, name: InboxTaskName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            self, name: InboxTaskName, recurring_timeline: str, eisen: Eisen, difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a metric."""
         if self._source is not InboxTaskSource.METRIC:
@@ -305,7 +305,7 @@ class InboxTask(AggregateRoot):
         return self
 
     def update_link_to_person_catch_up(
-            self, name: InboxTaskName, recurring_timeline: str, eisen: List[Eisen], difficulty: Optional[Difficulty],
+            self, name: InboxTaskName, recurring_timeline: str, eisen: Eisen, difficulty: Optional[Difficulty],
             actionable_date: Optional[ADate], due_time: ADate, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a person."""
         if self._source is not InboxTaskSource.PERSON_CATCH_UP:
@@ -404,11 +404,11 @@ class InboxTask(AggregateRoot):
         self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
-    def change_eisen(self, eisen: List[Eisen], modification_time: Timestamp) -> 'InboxTask':
+    def change_eisen(self, eisen: Eisen, modification_time: Timestamp) -> 'InboxTask':
         """Change the eisen status of the inbox task."""
         if not self._source.allow_user_changes:
             raise Exception(f"Cannot modify name of task created from recurring task {self._name}")
-        if set(self._eisen) == set(eisen):
+        if self._eisen == eisen:
             return self
         self._eisen = eisen
         self.record_event(InboxTask.Updated.make_event_from_frame_args(modification_time))
@@ -471,10 +471,9 @@ class InboxTask(AggregateRoot):
         return self._status
 
     @property
-    def eisen(self) -> List[Eisen]:
+    def eisen(self) -> Eisen:
         """The Eisenhower categories for this inbox task."""
         return self._eisen
-
 
     @property
     def difficulty(self) -> Optional[Difficulty]:

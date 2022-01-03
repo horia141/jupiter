@@ -1,6 +1,6 @@
 """A person on Notion-side."""
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -16,7 +16,6 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.notion import NotionRow
-from jupiter.remote.notion.common import clean_eisenhower
 
 
 @dataclass(frozen=True)
@@ -31,7 +30,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
     name: str
     relationship: Optional[str]
     catch_up_period: Optional[str]
-    catch_up_eisen: Optional[List[str]]
+    catch_up_eisen: Optional[str]
     catch_up_difficulty: Optional[str]
     catch_up_actionable_from_day: Optional[int]
     catch_up_actionable_from_month: Optional[int]
@@ -52,7 +51,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
             relationship=aggregate_root.relationship.for_notion(),
             catch_up_period=aggregate_root.catch_up_params.period.for_notion()
             if aggregate_root.catch_up_params else None,
-            catch_up_eisen=[e.for_notion() for e in aggregate_root.catch_up_params.eisen]
+            catch_up_eisen=aggregate_root.catch_up_params.eisen.for_notion()
             if aggregate_root.catch_up_params else None,
             catch_up_difficulty=aggregate_root.catch_up_params.difficulty.for_notion()
             if aggregate_root.catch_up_params and aggregate_root.catch_up_params.difficulty else None,
@@ -78,7 +77,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
             person_catch_up_params = RecurringTaskGenParams(
                 project_ref_id=extra_info.project_ref_id,
                 period=catch_up_period,
-                eisen=[Eisen.from_raw(e) for e in clean_eisenhower(self.catch_up_eisen)],
+                eisen=Eisen.from_raw(self.catch_up_eisen) if self.catch_up_eisen else Eisen.REGULAR,
                 difficulty=Difficulty.from_raw(self.catch_up_difficulty)
                 if self.catch_up_difficulty else None,
                 actionable_from_day=RecurringTaskDueAtDay.from_raw(catch_up_period, self.catch_up_actionable_from_day)
@@ -110,10 +109,8 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
             person_catch_up_params = RecurringTaskGenParams(
                 project_ref_id=extra_info.project_ref_id,
                 period=catch_up_period,
-                eisen=[Eisen.from_raw(e) for e in
-                       clean_eisenhower(self.catch_up_eisen)],
-                difficulty=Difficulty.from_raw(
-                    self.catch_up_difficulty) if self.catch_up_difficulty else None,
+                eisen=Eisen.from_raw(self.catch_up_eisen) if self.catch_up_eisen else Eisen.REGULAR,
+                difficulty=Difficulty.from_raw(self.catch_up_difficulty) if self.catch_up_difficulty else None,
                 actionable_from_day=RecurringTaskDueAtDay.from_raw(catch_up_period, self.catch_up_actionable_from_day)
                 if self.catch_up_actionable_from_day else None,
                 actionable_from_month=RecurringTaskDueAtMonth.from_raw(catch_up_period, self.catch_up_due_at_month)

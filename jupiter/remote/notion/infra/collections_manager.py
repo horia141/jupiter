@@ -3,6 +3,7 @@ import dataclasses
 import hashlib
 import logging
 import typing
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
@@ -717,19 +718,15 @@ class CollectionsManager:
                     combined_schema[schema_item_name] = {
                         "name": schema_item["name"],
                         "type": schema_item["type"],
-                        "options": typing.cast(typing.List[Dict[str, str]], old_v.get("options", []))
+                        "options": deepcopy(schema_item["options"])
                     }
 
-                    for option in schema_item["options"]:
-                        old_option = next(
-                            (old_o
-                             for old_o in combined_schema[schema_item_name]["options"]
-                             if old_o["value"] == option["value"]),
-                            None)
-                        if old_option is not None:
-                            old_option["color"] = option["color"]
-                        else:
-                            combined_schema[schema_item_name]["options"].append(option)
+                    old_options = typing.cast(typing.List[Dict[str, str]], old_v.get("options", []))
+                    for option in combined_schema[schema_item_name]["options"]:
+                        for old_option in old_options:
+                            if option["value"] == old_option["value"]:
+                                option["id"] = old_option["id"]
+                                break
                 else:
                     combined_schema[schema_item_name] = schema_item
             else:

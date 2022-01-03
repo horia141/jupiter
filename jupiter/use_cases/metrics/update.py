@@ -41,7 +41,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
         name: UpdateAction[MetricName]
         collection_project_key: UpdateAction[Optional[ProjectKey]]
         collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
-        collection_eisen: UpdateAction[typing.List[Eisen]]
+        collection_eisen: UpdateAction[Eisen]
         collection_difficulty: UpdateAction[Optional[Difficulty]]
         collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
@@ -102,7 +102,6 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     else:
                         raise InputValidationError("Cannot specify a collection period and no project")
 
-                    new_collection_eisen = []
                     if args.collection_eisen.should_change:
                         new_collection_eisen = args.collection_eisen.value
                     elif metric.collection_params is not None:

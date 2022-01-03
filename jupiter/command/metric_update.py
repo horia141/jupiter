@@ -1,6 +1,6 @@
 """UseCase for updating a metric's properties."""
 from argparse import Namespace, ArgumentParser
-from typing import Final, Optional, List
+from typing import Final, Optional
 
 import jupiter.command.command as command
 from jupiter.domain.difficulty import Difficulty
@@ -55,22 +55,19 @@ class MetricUpdate(command.Command):
         collection_period_group.add_argument(
             "--clear-collection-period", dest="clear_collection_period", default=False,
             action="store_const", const=True, help="Clear the collection period")
-        collection_period_eisen = parser.add_mutually_exclusive_group()
-        collection_period_eisen.add_argument(
-            "--collection-eisen", dest="collection_eisen", default=[], action="append",
-            choices=Eisen.all_values(),
+        parser.add_argument(
+            "--collection-eisen", dest="collection_eisen", choices=Eisen.all_values(),
             help="The Eisenhower matrix values to use for collection tasks")
-        collection_period_eisen.add_argument(
-            "--clear-collection-eisen", dest="clear_collection_eisen", default=False,
-            action="store_const", const=True, help="Clear the collection eisen")
         collection_period_difficulty = parser.add_mutually_exclusive_group()
-        collection_period_difficulty.add_argument("--collection-difficulty", dest="collection_difficulty",
-                                                  choices=Difficulty.all_values(),
-                                                  help="The difficulty to use for collection tasks")
-        collection_period_difficulty.add_argument("--clear-collection-difficulty", dest="clear_collection_difficulty",
-                                                  default=False,
-                                                  action="store_const", const=True,
-                                                  help="Clear the collection difficulty")
+        collection_period_difficulty.add_argument(
+            "--collection-difficulty", dest="collection_difficulty",
+            choices=Difficulty.all_values(),
+            help="The difficulty to use for collection tasks")
+        collection_period_difficulty.add_argument(
+            "--clear-collection-difficulty", dest="clear_collection_difficulty",
+            default=False,
+            action="store_const", const=True,
+            help="Clear the collection difficulty")
         collection_period_actionable_from_day = parser.add_mutually_exclusive_group()
         collection_period_actionable_from_day.add_argument(
             "--collection-actionable-from-day", type=int,
@@ -148,12 +145,8 @@ class MetricUpdate(command.Command):
                 RecurringTaskPeriod.from_raw(args.collection_period))
         else:
             collection_period = UpdateAction.do_nothing()
-        collection_eisen: UpdateAction[List[Eisen]]
-        if args.clear_collection_eisen:
-            collection_eisen = UpdateAction.change_to([])
-        elif len(args.collection_eisen) > 0:
-            collection_eisen = UpdateAction.change_to(
-                [Eisen.from_raw(e) for e in args.collection_eisen])
+        if args.collection_eisen is not None:
+            collection_eisen = UpdateAction.change_to(Eisen.from_raw(args.collection_eisen))
         else:
             collection_eisen = UpdateAction.do_nothing()
         collection_difficulty: UpdateAction[Optional[Difficulty]]

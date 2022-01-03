@@ -1,6 +1,6 @@
 """A recurring task on Notion-side."""
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
@@ -32,7 +32,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
     name: str
     period: Optional[str]
     the_type: Optional[str]
-    eisen: Optional[List[str]]
+    eisen: Optional[str]
     difficulty: Optional[str]
     actionable_from_day: Optional[int]
     actionable_from_month: Optional[int]
@@ -56,7 +56,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             name=str(aggregate_root.name),
             period=aggregate_root.period.for_notion(),
             the_type=aggregate_root.the_type.for_notion(),
-            eisen=[e.for_notion() for e in aggregate_root.gen_params.eisen],
+            eisen=aggregate_root.gen_params.eisen.for_notion(),
             difficulty=
             aggregate_root.gen_params.difficulty.for_notion() if aggregate_root.gen_params.difficulty else None,
             actionable_from_day=
@@ -87,7 +87,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             gen_params=RecurringTaskGenParams(
                 project_ref_id=extra_info.project_ref_id,
                 period=RecurringTaskPeriod.from_raw(self.period),
-                eisen=[Eisen.from_raw(e) for e in self.eisen] if self.eisen else [],
+                eisen=Eisen.from_raw(self.eisen) if self.eisen else Eisen.REGULAR,
                 difficulty=Difficulty.from_raw(self.difficulty) if self.difficulty else None,
                 actionable_from_day=
                 RecurringTaskDueAtDay.from_raw(recurring_task_period, self.actionable_from_day)
@@ -119,7 +119,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             RecurringTaskGenParams(
                 project_ref_id=extra_info.project_ref_id,
                 period=RecurringTaskPeriod.from_raw(self.period),
-                eisen=[Eisen.from_raw(e) for e in self.eisen] if self.eisen else [],
+                eisen=Eisen.from_raw(self.eisen) if self.eisen else Eisen.REGULAR,
                 difficulty=Difficulty.from_raw(self.difficulty) if self.difficulty else None,
                 actionable_from_day=
                 RecurringTaskDueAtDay.from_raw(recurring_task_period, self.actionable_from_day)

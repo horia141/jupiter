@@ -2,7 +2,7 @@
 import logging
 import typing
 from dataclasses import dataclass
-from typing import Final, Optional, List
+from typing import Final, Optional
 
 from jupiter.domain import schedules
 from jupiter.domain.difficulty import Difficulty
@@ -41,7 +41,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
         name: UpdateAction[PersonName]
         relationship: UpdateAction[PersonRelationship]
         catch_up_period: UpdateAction[Optional[RecurringTaskPeriod]]
-        catch_up_eisen: UpdateAction[List[Eisen]]
+        catch_up_eisen: UpdateAction[Eisen]
         catch_up_difficulty: UpdateAction[Optional[Difficulty]]
         catch_up_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         catch_up_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
@@ -95,7 +95,6 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     prm_database = uow.prm_database_repository.load()
                     new_catch_up_project_ref_id = prm_database.catch_up_project_ref_id
 
-                    new_catch_up_eisen = []
                     if args.catch_up_eisen.should_change:
                         new_catch_up_eisen = args.catch_up_eisen.value
                     elif person.catch_up_params is not None:

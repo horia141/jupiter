@@ -1,6 +1,6 @@
 """Common types for Notion."""
 from dataclasses import dataclass
-from typing import NewType, List, Optional
+from typing import NewType
 
 from jupiter.domain.entity_name import EntityName
 from jupiter.framework.base.notion_id import NotionId
@@ -45,10 +45,3 @@ def format_name_for_option(option_name: EntityName) -> str:
             output += char
             last_char = char
     return output
-
-
-def clean_eisenhower(raw_eisen: Optional[List[str]]) -> List[str]:
-    """Clean the raw Eisenhower values from Notion."""
-    if raw_eisen is None:
-        return []
-    return [e for e in raw_eisen if e != '']

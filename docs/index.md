@@ -20,6 +20,8 @@ Here's a picture from the "inbox" view:
 
 ![Inbox image](assets/concepts-inbox.png)
 
+![Inbox Image With Eisen](assets/concepts-inbox-tasks-with-eisen.png)
+
 And here's one for the "big plans timeline" view:
 
 ![Big Plans Timeline](assets/concepts-big-plans-timeline.png)

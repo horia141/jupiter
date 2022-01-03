@@ -69,5 +69,5 @@ class InboxTaskShow(command.Command):
                   (f' recurring_task="{recurring_task.name}"' if recurring_task else "") +
                   f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"' +
                   f'\n    created_time="{inbox_task.created_time}"' +
-                  f' eisen={",".join(e.for_notion() for e in inbox_task.eisen)}' +
+                  f' eisen={inbox_task.eisen.for_notion()}' +
                   f' difficulty={inbox_task.difficulty.for_notion() if inbox_task.difficulty else ""}')
