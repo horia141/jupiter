@@ -6,6 +6,7 @@ from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.notion import NotionEntity
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,9 @@ class NotionWorkspace(NotionEntity[Workspace]):
 
     def apply_to_aggregate_root(self, aggregate_root: Workspace, modification_time: Timestamp) -> 'Workspace':
         """Apply a Notion workspace to an already existing workspace."""
-        workspace_name = WorkspaceName.from_raw(self.name)
-        aggregate_root.change_name(workspace_name, modification_time)
+        workspace_name = UpdateAction.change_to(WorkspaceName.from_raw(self.name))
+        aggregate_root = aggregate_root.update(
+            name=workspace_name,
+            timezone=UpdateAction.do_nothing(),
+            modification_time=modification_time)
         return aggregate_root

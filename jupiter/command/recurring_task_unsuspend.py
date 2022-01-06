@@ -5,7 +5,7 @@ from typing import Final
 
 import jupiter.command.command as command
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.use_cases.recurring_tasks.suspend import RecurringTaskSuspendUseCase
+from jupiter.use_cases.recurring_tasks.unsuspend import RecurringTaskUnsuspendUseCase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,9 +13,9 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTaskUnsuspend(command.Command):
     """UseCase class for unsuspending a recurring task."""
 
-    _command: Final[RecurringTaskSuspendUseCase]
+    _command: Final[RecurringTaskUnsuspendUseCase]
 
-    def __init__(self, the_command: RecurringTaskSuspendUseCase) -> None:
+    def __init__(self, the_command: RecurringTaskUnsuspendUseCase) -> None:
         """Constructor."""
         self._command = the_command
 
@@ -37,4 +37,4 @@ class RecurringTaskUnsuspend(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(RecurringTaskSuspendUseCase.Args(ref_id, False))
+        self._command.execute(RecurringTaskUnsuspendUseCase.Args(ref_id))

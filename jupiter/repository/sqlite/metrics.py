@@ -186,9 +186,9 @@ class SqliteMetricRepository(MetricRepository):
             if row["archived_time"] else None,
             _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
-            _key=MetricKey.from_raw(row["the_key"]),
-            _name=MetricName.from_raw(row["name"]),
-            _collection_params=RecurringTaskGenParams(
+            key=MetricKey.from_raw(row["the_key"]),
+            name=MetricName.from_raw(row["name"]),
+            collection_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["collection_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["collection_period"]),
                 eisen=Eisen.from_raw(row["collection_eisen"]),
@@ -205,7 +205,7 @@ class SqliteMetricRepository(MetricRepository):
                 due_at_month=RecurringTaskDueAtMonth(row["collection_due_at_month"])
                 if row["collection_due_at_month"] is not None else None)
             if row["collection_project_ref_id"] is not None and row["collection_period"] is not None else None,
-            _metric_unit=MetricUnit.from_raw(row["metric_unit"])
+            metric_unit=MetricUnit.from_raw(row["metric_unit"])
             if row["metric_unit"] else None)
 
 
@@ -325,7 +325,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             if row["archived_time"] else None,
             _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
-            _metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])),
-            _collection_time=ADate.from_db(row["collection_time"]),
-            _value=row["value"],
-            _notes=row["notes"])
+            metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])),
+            collection_time=ADate.from_db(row["collection_time"]),
+            value=row["value"],
+            notes=row["notes"])

@@ -5,7 +5,6 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 import jupiter.command.command as command
-from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.notion_token import NotionToken
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
@@ -44,8 +43,6 @@ class WorkspaceUpdate(command.Command):
         parser.add_argument(
             "--timezone", required=False, help="The timezone you're currently in")
         parser.add_argument("--notion-token", dest="notion_token", required=False, help="The Notion token")
-        parser.add_argument(
-            "--default-project-key", dest="default_project_key", required=False, help="The key of the default project")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -57,12 +54,7 @@ class WorkspaceUpdate(command.Command):
             timezone = UpdateAction.change_to(Timezone.from_raw(args.timezone))
         else:
             timezone = UpdateAction.do_nothing()
-        if args.default_project_key is not None:
-            default_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.default_project_key))
-        else:
-            default_project_key = UpdateAction.do_nothing()
         # This is quite the hack for now!
         if args.notion_token is not None:
             self._notion_connection.update_token(NotionToken.from_raw(args.notion_token))
-        self._command.execute(WorkspaceUpdateUseCase.Args(
-            name=name, timezone=timezone, default_project_key=default_project_key))
+        self._command.execute(WorkspaceUpdateUseCase.Args(name=name, timezone=timezone))

@@ -6,6 +6,7 @@ from jupiter.domain.adate import ADate
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -20,10 +21,10 @@ class MetricEntry(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _metric_ref_id: EntityId
-    _collection_time: ADate
-    _value: float
-    _notes: Optional[str]
+    metric_ref_id: EntityId
+    collection_time: ADate
+    value: float
+    notes: Optional[str]
 
     @staticmethod
     def new_metric_entry(
@@ -37,53 +38,19 @@ class MetricEntry(AggregateRoot):
             _archived_time=created_time if archived else None,
             _last_modified_time=created_time,
             _events=[],
-            _metric_ref_id=metric_ref_id,
-            _collection_time=collection_time,
-            _value=value,
-            _notes=notes)
+            metric_ref_id=metric_ref_id,
+            collection_time=collection_time,
+            value=value,
+            notes=notes)
         metric_entry.record_event(MetricEntry.Created.make_event_from_frame_args(created_time))
         return metric_entry
 
-    def change_collection_time(self, collection_time: ADate, modification_time: Timestamp) -> 'MetricEntry':
-        """Change the collection time for the metric entry."""
-        if self._collection_time == collection_time:
-            return self
-        self._collection_time = collection_time
+    def update(
+            self, collection_time: UpdateAction[ADate], value: UpdateAction[float], notes: UpdateAction[Optional[str]],
+            modification_time: Timestamp) -> 'MetricEntry':
+        """Change the metric entry."""
+        self.collection_time = collection_time.or_else(self.collection_time)
+        self.value = value.or_else(self.value)
+        self.notes = notes.or_else(self.notes)
         self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
         return self
-
-    def change_value(self, value: float, modification_time: Timestamp) -> 'MetricEntry':
-        """Change the value for the metric entry."""
-        if self._value == value:
-            return self
-        self._value = value
-        self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_notes(self, notes: Optional[str], modification_time: Timestamp) -> 'MetricEntry':
-        """Change the value for the metric entry."""
-        if self._notes == notes:
-            return self
-        self._notes = notes
-        self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    @property
-    def metric_ref_id(self) -> EntityId:
-        """The ref id of the owning metric."""
-        return self._metric_ref_id
-
-    @property
-    def collection_time(self) -> ADate:
-        """The collection time of the metric entry."""
-        return self._collection_time
-
-    @property
-    def value(self) -> float:
-        """The value of the metric entry."""
-        return self._value
-
-    @property
-    def notes(self) -> Optional[str]:
-        """The notes for the metric entry."""
-        return self._notes

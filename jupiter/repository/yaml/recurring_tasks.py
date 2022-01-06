@@ -170,7 +170,7 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _project_ref_id=row.project_ref_id)
+            project_ref_id=row.project_ref_id)
 
 
 @dataclass()
@@ -408,11 +408,11 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _recurring_task_collection_ref_id=row.recurring_task_collection_ref_id,
-            _name=row.name,
-            _period=row.period,
-            _the_type=row.the_type,
-            _gen_params=RecurringTaskGenParams(
+            recurring_task_collection_ref_id=row.recurring_task_collection_ref_id,
+            name=row.name,
+            period=row.period,
+            the_type=row.the_type,
+            gen_params=RecurringTaskGenParams(
                 project_ref_id=BAD_REF_ID,
                 period=row.period,
                 eisen=row.eisen,
@@ -422,8 +422,8 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
                 due_at_time=row.due_at_time,
                 due_at_day=row.due_at_day,
                 due_at_month=row.due_at_month),
-            _suspended=row.suspended,
-            _skip_rule=row.skip_rule,
-            _must_do=row.must_do,
-            _start_at_date=row.start_at_date,
-            _end_at_date=row.end_at_date)
+            suspended=row.suspended,
+            skip_rule=row.skip_rule,
+            must_do=row.must_do,
+            start_at_date=row.start_at_date,
+            end_at_date=row.end_at_date)

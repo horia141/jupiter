@@ -6,6 +6,7 @@ from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.notion import NotionEntity
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -25,5 +26,5 @@ class NotionProject(NotionEntity[Project]):
     def apply_to_aggregate_root(self, aggregate_root: Project, modification_time: Timestamp) -> 'Project':
         """Apply an existing Notion row to a project."""
         project_name = ProjectName.from_raw(self.name)
-        aggregate_root.change_name(project_name, modification_time)
+        aggregate_root.update(UpdateAction.change_to(project_name), modification_time)
         return aggregate_root

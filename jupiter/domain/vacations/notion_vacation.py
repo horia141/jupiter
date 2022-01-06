@@ -8,6 +8,7 @@ from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.notion import NotionRow
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -51,8 +52,10 @@ class NotionVacation(NotionRow[Vacation, None, None]):
             raise InputValidationError(f"Vacation '{self.name}' should have a start date")
         if self.end_date is None:
             raise InputValidationError(f"Vacation '{self.name}' should have an end date")
+        aggregate_root.update(
+            name=UpdateAction.change_to(vacation_name),
+            start_date=UpdateAction.change_to(self.start_date),
+            end_date=UpdateAction.change_to(self.end_date),
+            modification_time=self.last_edited_time)
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(vacation_name, self.last_edited_time)
-        aggregate_root.change_start_date(self.start_date, self.last_edited_time)
-        aggregate_root.change_end_date(self.end_date, self.last_edited_time)
         return aggregate_root

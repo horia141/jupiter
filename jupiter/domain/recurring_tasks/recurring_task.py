@@ -14,6 +14,7 @@ from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -28,16 +29,24 @@ class RecurringTask(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _recurring_task_collection_ref_id: EntityId
-    _name: RecurringTaskName
-    _period: RecurringTaskPeriod
-    _the_type: RecurringTaskType
-    _gen_params: RecurringTaskGenParams
-    _suspended: bool
-    _skip_rule: Optional[RecurringTaskSkipRule]
-    _must_do: bool
-    _start_at_date: ADate
-    _end_at_date: Optional[ADate]
+    @dataclass(frozen=True)
+    class Suspended(AggregateRoot.Updated):
+        """Suspended event."""
+
+    @dataclass(frozen=True)
+    class Unsuspended(AggregateRoot.Updated):
+        """Unsuspend event."""
+
+    recurring_task_collection_ref_id: EntityId
+    name: RecurringTaskName
+    period: RecurringTaskPeriod
+    the_type: RecurringTaskType
+    gen_params: RecurringTaskGenParams
+    suspended: bool
+    skip_rule: Optional[RecurringTaskSkipRule]
+    must_do: bool
+    start_at_date: ADate
+    end_at_date: Optional[ADate]
 
     @staticmethod
     def new_recurring_task(
@@ -63,99 +72,74 @@ class RecurringTask(AggregateRoot):
             _archived_time=created_time if archived else None,
             _last_modified_time=created_time,
             _events=[],
-            _recurring_task_collection_ref_id=recurring_task_collection_ref_id,
-            _name=name,
-            _period=period,
-            _the_type=the_type or RecurringTaskType.CHORE,
-            _gen_params=gen_params,
-            _must_do=must_do,
-            _skip_rule=skip_rule,
-            _start_at_date=start_at_date if start_at_date else today,
-            _end_at_date=end_at_date,
-            _suspended=suspended)
+            recurring_task_collection_ref_id=recurring_task_collection_ref_id,
+            name=name,
+            period=period,
+            the_type=the_type or RecurringTaskType.CHORE,
+            gen_params=gen_params,
+            must_do=must_do,
+            skip_rule=skip_rule,
+            start_at_date=start_at_date if start_at_date else today,
+            end_at_date=end_at_date,
+            suspended=suspended)
         recurring_task.record_event(RecurringTask.Created.make_event_from_frame_args(created_time))
 
         return recurring_task
 
-    def change_name(self, name: RecurringTaskName, modification_time: Timestamp) -> 'RecurringTask':
-        """Change the name."""
-        if self._name == name:
-            return self
-        self._name = name
+    def update(
+            self, name: UpdateAction[RecurringTaskName], period: UpdateAction[RecurringTaskPeriod],
+            the_type: UpdateAction[RecurringTaskType], gen_params: UpdateAction[RecurringTaskGenParams],
+            must_do: UpdateAction[bool], skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]],
+            start_at_date: UpdateAction[ADate], end_at_date: UpdateAction[Optional[ADate]],
+            modification_time: Timestamp) -> 'RecurringTask':
+        """Update the recurring task."""
+        self.name = name.or_else(self.name)
+        self.period = period.or_else(self.period)
+        self.the_type = the_type.or_else(self.the_type)
+
+        if gen_params.should_change:
+            RecurringTask._check_actionable_and_due_date_configs(
+                gen_params.value.actionable_from_day, gen_params.value.actionable_from_month,
+                gen_params.value.due_at_day, gen_params.value.due_at_month)
+            self.gen_params = gen_params.value
+
+        self.must_do = must_do.or_else(self.must_do)
+        self.skip_rule = skip_rule.or_else(self.skip_rule)
+
+        if start_at_date.should_change or end_at_date.should_change:
+            the_start_at_date = start_at_date.or_else(self.start_at_date)
+            the_end_at_date = end_at_date.or_else(self.end_at_date)
+            today = ADate.from_date(modification_time.as_date())
+            if the_end_at_date is not None and the_start_at_date >= end_at_date:
+                raise InputValidationError(f"Start date {the_start_at_date} is after end date {the_end_at_date}")
+            if the_end_at_date is not None and the_end_at_date < today:
+                raise InputValidationError(f"End date {the_end_at_date} is before start date {today}")
+            self.start_at_date = the_start_at_date
+            self.end_at_date = the_end_at_date
+
         self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
         return self
 
-    def change_period(self, period: RecurringTaskPeriod, modification_time: Timestamp) -> 'RecurringTask':
-        """Change the period."""
-        if self._period == period:
+    def suspend(self, modification_time: Timestamp) -> 'RecurringTask':
+        """Suspend the recurring task."""
+        if self.suspended:
             return self
-        self._period = period
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
+        self.suspended = True
+        self.record_event(RecurringTask.Suspended.make_event_from_frame_args(modification_time))
         return self
 
-    def change_type(self, the_type: RecurringTaskType, modification_time: Timestamp) -> 'RecurringTask':
-        """Change the type."""
-        if self._the_type == the_type:
+    def unsuspend(self, modification_time: Timestamp) -> 'RecurringTask':
+        """Unsuspend the recurring task."""
+        if self.suspended:
             return self
-        self._the_type = the_type
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_gen_params(self, gen_params: RecurringTaskGenParams, modification_time: Timestamp) -> 'RecurringTask':
-        """Change the generation params."""
-        RecurringTask._check_actionable_and_due_date_configs(
-            gen_params.actionable_from_day, gen_params.actionable_from_month,
-            gen_params.due_at_day, gen_params.due_at_month)
-        if self._gen_params == gen_params:
-            return self
-        self._gen_params = gen_params
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_must_do(self, must_do: bool, modification_time: Timestamp) -> 'RecurringTask':
-        """Change the must do status."""
-        if self._must_do == must_do:
-            return self
-        self._must_do = must_do
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_skip_rule(
-            self, skip_rule: Optional[RecurringTaskSkipRule], modification_time: Timestamp) -> 'RecurringTask':
-        """Change the skip rule."""
-        if self._skip_rule == skip_rule:
-            return self
-        self._skip_rule = skip_rule
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_active_interval(
-            self, start_at_date: ADate, end_at_date: Optional[ADate], modification_time: Timestamp) -> 'RecurringTask':
-        """Change the active interval."""
-        today = ADate.from_date(modification_time.as_date())
-        if end_at_date is not None and start_at_date >= end_at_date:
-            raise InputValidationError(f"Start date {start_at_date} is after end date {end_at_date}")
-        if end_at_date is not None and end_at_date < today:
-            raise InputValidationError(f"End date {end_at_date} is before start date {today}")
-        if self._start_at_date == start_at_date and self._end_at_date == end_at_date:
-            return self
-        self._start_at_date = start_at_date
-        self._end_at_date = end_at_date
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_suspended(self, suspended: bool, modification_time: Timestamp) -> 'RecurringTask':
-        """Change the suspended time."""
-        if self._suspended == suspended:
-            return self
-        self._suspended = suspended
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
+        self.suspended = False
+        self.record_event(RecurringTask.Unsuspended.make_event_from_frame_args(modification_time))
         return self
 
     def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this active interval."""
-        recurring_task_start_date = self._start_at_date
-        recurring_task_end_date = self._end_at_date.end_of_day() if self._end_at_date else None
+        recurring_task_start_date = self.start_at_date
+        recurring_task_end_date = self.end_at_date.end_of_day() if self.end_at_date else None
 
         if recurring_task_end_date is None:
             # Just a start date interval, so at least the end date should be in it
@@ -170,58 +154,7 @@ class RecurringTask(AggregateRoot):
     def project_ref_id(self) -> EntityId:
         """The project id this task belongs to."""
         # TODO(horia141): fix this uglyness
-        return self._recurring_task_collection_ref_id
-
-    @property
-    def recurring_task_collection_ref_id(self) -> EntityId:
-        """The recurring task collection this one belongs to."""
-        # TODO(horia141): fix this uglyness
-        return self._recurring_task_collection_ref_id
-
-    @property
-    def name(self) -> RecurringTaskName:
-        """The name."""
-        return self._name
-
-    @property
-    def period(self) -> RecurringTaskPeriod:
-        """The period."""
-        return self._period
-
-    @property
-    def the_type(self) -> RecurringTaskType:
-        """The type of the task."""
-        return self._the_type
-
-    @property
-    def gen_params(self) -> RecurringTaskGenParams:
-        """The gen params."""
-        return self._gen_params
-
-    @property
-    def suspended(self) -> bool:
-        """Whether the task is suspended or not."""
-        return self._suspended
-
-    @property
-    def skip_rule(self) -> Optional[RecurringTaskSkipRule]:
-        """A skip rule for the task."""
-        return self._skip_rule
-
-    @property
-    def must_do(self) -> bool:
-        """The must do status for the task."""
-        return self._must_do
-
-    @property
-    def start_at_date(self) -> ADate:
-        """When the recurring task is usable."""
-        return self._start_at_date
-
-    @property
-    def end_at_date(self) -> Optional[ADate]:
-        """When the recurring task should not generate inbox tasks anymore."""
-        return self._end_at_date
+        return self.recurring_task_collection_ref_id
 
     @staticmethod
     def _check_actionable_and_due_date_configs(

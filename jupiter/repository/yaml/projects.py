@@ -146,5 +146,5 @@ class YamlProjectRepository(ProjectRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _key=row.key,
-            _name=row.name)
+            key=row.key,
+            name=row.name)

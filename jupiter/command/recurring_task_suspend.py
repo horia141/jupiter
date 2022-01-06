@@ -37,4 +37,4 @@ class RecurringTaskSuspend(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(RecurringTaskSuspendUseCase.Args(ref_id, True))
+        self._command.execute(RecurringTaskSuspendUseCase.Args(ref_id))

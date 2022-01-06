@@ -67,6 +67,6 @@ class SmartListShow(command.Command):
             for smart_list_item in smart_list_entry.smart_list_items:
                 print(f'  - id={smart_list_item.ref_id} {smart_list_item.name}' +
                       (' [x] ' if smart_list_item.is_done else ' [ ] ') +
-                      (' '.join(f'#{smart_list_tags_set[t].tag_name}' for t in smart_list_item.tags)) +
+                      (' '.join(f'#{smart_list_tags_set[t].tag_name}' for t in smart_list_item.tags_ref_id)) +
                       (f' url={smart_list_item.url}' if smart_list_item.url else '') +
                       f'{"archived=" + str(smart_list_item.archived) if show_archived else ""}')

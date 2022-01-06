@@ -160,7 +160,7 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _project_ref_id=row.project_ref_id)
+            project_ref_id=row.project_ref_id)
 
 
 @dataclass()
@@ -424,21 +424,21 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _inbox_task_collection_ref_id=row.inbox_task_collection_ref_id,
-            _source=row.source,
-            _big_plan_ref_id=row.big_plan_ref_id,
-            _recurring_task_ref_id=row.recurring_task_ref_id,
-            _metric_ref_id=row.metric_ref_id,
-            _person_ref_id=row.person_ref_id,
-            _name=row.name,
-            _status=row.status,
-            _eisen=row.eisen,
-            _difficulty=row.difficulty,
-            _actionable_date=row.actionable_date,
-            _due_date=row.due_date,
-            _recurring_timeline=row.recurring_timeline,
-            _recurring_type=row.recurring_type,
-            _recurring_gen_right_now=row.recurring_gen_right_now,
-            _accepted_time=row.accepted_time,
-            _working_time=row.working_time,
-            _completed_time=row.completed_time)
+            inbox_task_collection_ref_id=row.inbox_task_collection_ref_id,
+            source=row.source,
+            big_plan_ref_id=row.big_plan_ref_id,
+            recurring_task_ref_id=row.recurring_task_ref_id,
+            metric_ref_id=row.metric_ref_id,
+            person_ref_id=row.person_ref_id,
+            name=row.name,
+            status=row.status,
+            eisen=row.eisen,
+            difficulty=row.difficulty,
+            actionable_date=row.actionable_date,
+            due_date=row.due_date,
+            recurring_timeline=row.recurring_timeline,
+            recurring_type=row.recurring_type,
+            recurring_gen_right_now=row.recurring_gen_right_now,
+            accepted_time=row.accepted_time,
+            working_time=row.working_time,
+            completed_time=row.completed_time)

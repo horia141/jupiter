@@ -10,6 +10,7 @@ from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.notion import NotionRow
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -43,7 +44,7 @@ class NotionSmartListItem(
             archived=aggregate_root.archived,
             name=str(aggregate_root.name),
             is_done=aggregate_root.is_done,
-            tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in aggregate_root.tags],
+            tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in aggregate_root.tags_ref_id],
             url=str(aggregate_root.url))
 
     def new_aggregate_root(self, extra_info: InverseExtraInfo) -> SmartListItem:
@@ -59,10 +60,12 @@ class NotionSmartListItem(
 
     def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseExtraInfo) -> SmartListItem:
         """Apply to an already existing smart list item."""
+        aggregate_root.update(
+            name=UpdateAction.change_to(SmartListItemName.from_raw(self.name)),
+            is_done=UpdateAction.change_to(self.is_done),
+            tags_ref_id=
+            UpdateAction.change_to([extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags]),
+            url=UpdateAction.change_to(URL.from_raw(self.url) if self.url else None),
+            modification_time=self.last_edited_time)
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(SmartListItemName.from_raw(self.name), self.last_edited_time)
-        aggregate_root.change_is_done(self.is_done, self.last_edited_time)
-        aggregate_root.change_tags(
-            [extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags], self.last_edited_time)
-        aggregate_root.change_url(URL.from_raw(self.url) if self.url else None, self.last_edited_time)
         return aggregate_root

@@ -9,6 +9,7 @@ from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.notion import NotionRow
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -51,9 +52,11 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
 
     def apply_to_aggregate_root(self, aggregate_root: BigPlan, extra_info: InverseExtraInfo) -> BigPlan:
         """Apply to an already existing big plan."""
+        aggregate_root.update(
+            name=UpdateAction.change_to(BigPlanName.from_raw(self.name)),
+            status=UpdateAction.change_to(BigPlanStatus.from_raw(self.status)),
+            actionable_date=UpdateAction.change_to(self.actionable_date),
+            due_date=UpdateAction.change_to(self.due_date),
+            modification_time=self.last_edited_time)
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(BigPlanName.from_raw(self.name), self.last_edited_time)
-        aggregate_root.change_status(BigPlanStatus.from_raw(self.status), self.last_edited_time)
-        aggregate_root.change_actionable_date(self.actionable_date, self.last_edited_time)
-        aggregate_root.change_due_date(self.due_date, self.last_edited_time)
         return aggregate_root

@@ -6,6 +6,7 @@ from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -38,5 +39,5 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
 
     def apply_to_aggregate_root(self, aggregate_root: SmartListTag, extra_info: InverseExtraInfo) -> SmartListTag:
         """Apply to an already existing smart list tag."""
-        aggregate_root.change_tag_name(SmartListTagName.from_raw(self.name), self.last_edited_time)
+        aggregate_root.update(UpdateAction.change_to(SmartListTagName.from_raw(self.name)), self.last_edited_time)
         return aggregate_root

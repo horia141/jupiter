@@ -56,18 +56,9 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
             big_plan_collection = \
                 uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
 
-            if args.name.should_change:
-                should_change_name_on_notion_side = True
-                big_plan.change_name(args.name.value, self._time_provider.get_current_time())
-
-            if args.status.should_change:
-                big_plan.change_status(args.status.value, self._time_provider.get_current_time())
-
-            if args.actionable_date.should_change:
-                big_plan.change_actionable_date(args.actionable_date.value, self._time_provider.get_current_time())
-
-            if args.due_date.should_change:
-                big_plan.change_due_date(args.due_date.value, self._time_provider.get_current_time())
+            big_plan.update(
+                name=args.name, status=args.status, actionable_date=args.actionable_date, due_date=args.due_date,
+                modification_time=self._time_provider.get_current_time())
 
             uow.big_plan_repository.save(big_plan)
 

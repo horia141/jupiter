@@ -39,8 +39,7 @@ class ProjectUpdateUseCase(UseCase['ProjectUpdateUseCase.Args', None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             project = uow.project_repository.load_by_key(args.key)
-            if args.name.should_change:
-                project.change_name(args.name.value, self._time_provider.get_current_time())
+            project.update(args.name, self._time_provider.get_current_time())
             uow.project_repository.save(project)
         LOGGER.info("Applied local changes")
         notion_project = self._project_notion_manager.load_project(project.ref_id)

@@ -83,9 +83,9 @@ class YamlWorkspaceRepository(WorkspaceRepository):
             _archived_time=None,
             _last_modified_time=workspace_row.last_modified_time,
             _events=[],
-            _name=workspace_row.name,
-            _timezone=workspace_row.timezone,
-            _default_project_ref_id=workspace_row.default_project_ref_id)
+            name=workspace_row.name,
+            timezone=workspace_row.timezone,
+            default_project_ref_id=workspace_row.default_project_ref_id)
 
     @staticmethod
     def storage_schema() -> JSONDictType:

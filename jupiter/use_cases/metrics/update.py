@@ -72,8 +72,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
             metric = uow.metric_repository.load_by_key(args.key)
 
             # Change the metrics
-            if args.name.should_change:
-                metric.change_name(args.name.value, self._time_provider.get_current_time())
+            collection_params: UpdateAction[Optional[RecurringTaskGenParams]]
             if args.collection_project_key.should_change \
                     or args.collection_period.should_change \
                     or args.collection_eisen.should_change \
@@ -143,7 +142,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     elif metric.collection_params is not None:
                         new_collection_due_at_month = metric.collection_params.due_at_month
 
-                    collection_params = RecurringTaskGenParams(
+                    collection_params = UpdateAction.change_to(RecurringTaskGenParams(
                         project_ref_id=new_collection_project_ref_id,
                         period=new_collection_period,
                         eisen=new_collection_eisen,
@@ -152,9 +151,15 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                         actionable_from_month=new_collection_actionable_from_month,
                         due_at_time=new_collection_due_at_time,
                         due_at_day=new_collection_due_at_day,
-                        due_at_month=new_collection_due_at_month)
+                        due_at_month=new_collection_due_at_month))
+                else:
+                    collection_params = UpdateAction.change_to(None)
+            else:
+                collection_params = UpdateAction.do_nothing()
 
-                metric.change_collection_params(collection_params, self._time_provider.get_current_time())
+            metric.update(
+                name=args.name, collection_params=collection_params,
+                modification_time=self._time_provider.get_current_time())
 
             uow.metric_repository.save(metric)
 

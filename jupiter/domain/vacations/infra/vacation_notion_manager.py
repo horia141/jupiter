@@ -3,7 +3,6 @@ import abc
 from typing import Iterable
 
 from jupiter.domain.vacations.notion_vacation import NotionVacation
-from jupiter.domain.vacations.vacation import Vacation
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
@@ -21,7 +20,7 @@ class VacationNotionManager(abc.ABC):
         """Upsert the root page structure for vacations."""
 
     @abc.abstractmethod
-    def upsert_vacation(self, vacation: Vacation) -> NotionVacation:
+    def upsert_vacation(self, vacation: NotionVacation) -> NotionVacation:
         """Upsert a vacation on Notion-side."""
 
     @abc.abstractmethod
@@ -29,12 +28,20 @@ class VacationNotionManager(abc.ABC):
         """Upsert a vacation on Notion-side."""
 
     @abc.abstractmethod
-    def remove_vacation(self, ref_id: EntityId) -> None:
-        """Remove a vacation on Notion-side."""
+    def load_vacation(self, ref_id: EntityId) -> NotionVacation:
+        """Load a Notion-side vacation."""
 
     @abc.abstractmethod
     def load_all_vacations(self) -> Iterable[NotionVacation]:
         """Load all Notion-side vacations."""
+
+    @abc.abstractmethod
+    def remove_vacation(self, ref_id: EntityId) -> None:
+        """Remove a vacation on Notion-side."""
+
+    @abc.abstractmethod
+    def drop_all_vacations(self) -> None:
+        """Remove all vacations on Notion-side."""
 
     @abc.abstractmethod
     def load_all_saved_vacation_ref_ids(self) -> Iterable[EntityId]:
@@ -43,10 +50,6 @@ class VacationNotionManager(abc.ABC):
     @abc.abstractmethod
     def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
         """Load ids of all vacations we know about from Notion side."""
-
-    @abc.abstractmethod
-    def drop_all_vacations(self) -> None:
-        """Remove all vacations on Notion-side."""
 
     @abc.abstractmethod
     def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:

@@ -39,12 +39,9 @@ class MetricEntryUpdateUseCase(UseCase['MetricEntryUpdateUseCase.Args', None]):
         with self._storage_engine.get_unit_of_work() as uow:
             metric_entry = uow.metric_entry_repository.load_by_id(args.ref_id)
 
-            if args.collection_time.should_change:
-                metric_entry.change_collection_time(args.collection_time.value, self._time_provider.get_current_time())
-            if args.value.should_change:
-                metric_entry.change_value(args.value.value, self._time_provider.get_current_time())
-            if args.notes.should_change:
-                metric_entry.change_notes(args.notes.value, self._time_provider.get_current_time())
+            metric_entry = metric_entry.update(
+                collection_time=args.collection_time, value=args.value, notes=args.notes,
+                modification_time=self._time_provider.get_current_time())
 
             uow.metric_entry_repository.save(metric_entry)
 

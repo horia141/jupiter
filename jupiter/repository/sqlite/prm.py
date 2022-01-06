@@ -95,7 +95,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
             if row["archived_time"] else None,
             _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
-            _catch_up_project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])))
+            catch_up_project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])))
 
 
 class SqlitePersonRepository(PersonRepository):
@@ -235,9 +235,9 @@ class SqlitePersonRepository(PersonRepository):
             if row["archived_time"] else None,
             _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             _events=[],
-            _name=PersonName.from_raw(row["name"]),
-            _relationship=PersonRelationship.from_raw(row["relationship"]),
-            _catch_up_params=RecurringTaskGenParams(
+            name=PersonName.from_raw(row["name"]),
+            relationship=PersonRelationship.from_raw(row["relationship"]),
+            catch_up_params=RecurringTaskGenParams(
                 project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["catch_up_period"]),
                 eisen=Eisen.from_raw(row["catch_up_eisen"]),
@@ -249,4 +249,4 @@ class SqlitePersonRepository(PersonRepository):
                 due_at_day=row["catch_up_due_at_day"],
                 due_at_month=row["catch_up_due_at_month"])
             if row["catch_up_project_ref_id"] is not None and row["catch_up_period"] is not None else None,
-            _birthday=PersonBirthday.from_raw(row["birthday"]) if row["birthday"] else None)
+            birthday=PersonBirthday.from_raw(row["birthday"]) if row["birthday"] else None)

@@ -3,7 +3,7 @@ import copy
 import hashlib
 import logging
 import uuid
-from typing import Final, ClassVar, cast, Dict, Optional, Iterable, List
+from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
 from notion.collection import CollectionRowBlock
 

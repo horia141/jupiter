@@ -8,20 +8,19 @@ from jupiter.domain.inbox_tasks.service.change_project_service import InboxTaskC
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import StorageEngine
-from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PrmDatabaseUpdateUseCase(UseCase['PrmDatabaseUpdateUseCase.Args', None]):
+class PrmDatabaseChangeCatchUpProjectUseCase(UseCase['PrmDatabaseChangeCatchUpProjectUseCase.Args', None]):
     """The command for updating a PRM database."""
 
     @dataclass()
     class Args:
         """Args."""
-        catch_up_project_key: UpdateAction[Optional[ProjectKey]]
+        catch_up_project_key: Optional[ProjectKey]
 
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]
@@ -44,18 +43,15 @@ class PrmDatabaseUpdateUseCase(UseCase['PrmDatabaseUpdateUseCase.Args', None]):
             prm_database = uow.prm_database_repository.load()
             old_catch_up_project_ref_id = prm_database.catch_up_project_ref_id
 
-            if args.catch_up_project_key.should_change:
-                if args.catch_up_project_key.value is not None:
-                    project = uow.project_repository.load_by_key(args.catch_up_project_key.value)
-                    catch_up_project_ref_id = project.ref_id
-                else:
-                    workspace = uow.workspace_repository.load()
-                    catch_up_project_ref_id = workspace.default_project_ref_id
-
-                prm_database.change_catch_up_project_ref_id(
-                    catch_up_project_ref_id, self._time_provider.get_current_time())
+            if args.catch_up_project_key is not None:
+                project = uow.project_repository.load_by_key(args.catch_up_project_key)
+                catch_up_project_ref_id = project.ref_id
             else:
-                catch_up_project_ref_id = old_catch_up_project_ref_id
+                workspace = uow.workspace_repository.load()
+                catch_up_project_ref_id = workspace.default_project_ref_id
+
+            prm_database.change_catch_up_project(
+                catch_up_project_ref_id, self._time_provider.get_current_time())
 
             uow.prm_database_repository.save(prm_database)
 
@@ -64,9 +60,7 @@ class PrmDatabaseUpdateUseCase(UseCase['PrmDatabaseUpdateUseCase.Args', None]):
             for person in persons:
                 if person.catch_up_params is None:
                     continue
-                person.change_catch_up_params(
-                    person.catch_up_params.with_new_project_ref_id(
-                        catch_up_project_ref_id), self._time_provider.get_current_time())
+                person.change_catch_up_project(catch_up_project_ref_id, self._time_provider.get_current_time())
                 uow.person_repository.save(person)
 
         if old_catch_up_project_ref_id != catch_up_project_ref_id and len(persons) > 0:

@@ -5,12 +5,14 @@ from typing import Optional, Final
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.inbox_tasks.inbox_task import CannotModifyGeneratedTaskError
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.errors import InputValidationError
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -47,18 +49,13 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
 
-            if args.name.should_change:
-                inbox_task.change_name(args.name.value, self._time_provider.get_current_time())
-            if args.status.should_change:
-                inbox_task.change_status(args.status.value, self._time_provider.get_current_time())
-            if args.eisen.should_change:
-                inbox_task.change_eisen(args.eisen.value, self._time_provider.get_current_time())
-            if args.difficulty.should_change:
-                inbox_task.change_difficulty(args.difficulty.value, self._time_provider.get_current_time())
-            if args.actionable_date.should_change:
-                inbox_task.change_actionable_date(args.actionable_date.value, self._time_provider.get_current_time())
-            if args.due_date.should_change:
-                inbox_task.change_due_date(args.due_date.value, self._time_provider.get_current_time())
+            try:
+                inbox_task.update(
+                    name=args.name, status=args.status, eisen=args.eisen, difficulty=args.difficulty,
+                    actionable_date=args.actionable_date, due_date=args.due_date,
+                    modification_time=self._time_provider.get_current_time())
+            except CannotModifyGeneratedTaskError as err:
+                raise InputValidationError(f"Modifing a generated task's field {err.field} is not possible") from err
 
             uow.inbox_task_repository.save(inbox_task)
 

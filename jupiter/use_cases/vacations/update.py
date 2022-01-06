@@ -40,13 +40,12 @@ class VacationUpdateUseCase(UseCase['VacationUpdateUseCase.Args', None]):
         with self._storage_engine.get_unit_of_work() as uow:
             vacation = uow.vacation_repository.load_by_id(args.ref_id)
 
-            if args.name.should_change:
-                vacation.change_name(args.name.value, self._time_provider.get_current_time())
-            if args.start_date.should_change:
-                vacation.change_start_date(args.start_date.value, self._time_provider.get_current_time())
-            if args.end_date.should_change:
-                vacation.change_end_date(args.end_date.value, self._time_provider.get_current_time())
+            vacation = vacation.update(
+                name=args.name, start_date=args.start_date, end_date=args.end_date,
+                modification_time=self._time_provider.get_current_time())
 
             uow.vacation_repository.save(vacation)
 
-        self._vacation_notion_manager.upsert_vacation(vacation)
+        notion_vacation = self._vacation_notion_manager.load_vacation(args.ref_id)
+        notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
+        self._vacation_notion_manager.save_vacation(notion_vacation)

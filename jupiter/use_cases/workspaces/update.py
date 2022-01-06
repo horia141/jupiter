@@ -2,7 +2,6 @@
 from dataclasses import dataclass
 from typing import Final
 
-from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
@@ -20,7 +19,6 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
         """Args."""
         name: UpdateAction[WorkspaceName]
         timezone: UpdateAction[Timezone]
-        default_project_key: UpdateAction[ProjectKey]
 
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]
@@ -39,13 +37,8 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
 
-            if args.name.should_change:
-                workspace.change_name(args.name.value, self._time_provider.get_current_time())
-            if args.timezone.should_change:
-                workspace.change_timezone(args.timezone.value, self._time_provider.get_current_time())
-            if args.default_project_key.should_change:
-                project = uow.project_repository.load_by_key(args.default_project_key.value)
-                workspace.change_default_project(project.ref_id, self._time_provider.get_current_time())
+            workspace = workspace.update(
+                name=args.name, timezone=args.timezone, modification_time=self._time_provider.get_current_time())
 
             uow.workspace_repository.save(workspace)
 

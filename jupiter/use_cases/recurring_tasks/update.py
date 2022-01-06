@@ -75,17 +75,17 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
 
-            if args.name.should_change:
-                need_to_change_inbox_tasks = True
-                recurring_task.change_name(args.name.value, self._time_provider.get_current_time())
-
-            if args.period.should_change:
-                need_to_change_inbox_tasks = True
-                recurring_task.change_period(args.period.value, self._time_provider.get_current_time())
-
-            if args.the_type.should_change:
-                need_to_change_inbox_tasks = True
-                recurring_task.change_type(args.the_type.value, self._time_provider.get_current_time())
+            need_to_change_inbox_tasks = \
+                args.name.should_change or \
+                args.period.should_change or \
+                args.the_type.should_change or \
+                args.eisen.should_change or \
+                args.difficulty.should_change or \
+                args.actionable_from_day.should_change or \
+                args.actionable_from_month.should_change or \
+                args.due_at_time.should_change or \
+                args.due_at_day.should_change or \
+                args.due_at_month.should_change
 
             if args.eisen.should_change or \
                 args.difficulty.should_change or \
@@ -95,31 +95,25 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                 args.due_at_day.should_change or \
                 args.due_at_month.should_change:
                 need_to_change_inbox_tasks = True
-                recurring_task.change_gen_params(
-                    RecurringTaskGenParams(
-                        recurring_task.project_ref_id,
-                        recurring_task.period,
-                        args.eisen.or_else(recurring_task.gen_params.eisen),
-                        args.difficulty.or_else(recurring_task.gen_params.difficulty),
-                        args.actionable_from_day.or_else(recurring_task.gen_params.actionable_from_day),
-                        args.actionable_from_month.or_else(recurring_task.gen_params.actionable_from_month),
-                        args.due_at_time.or_else(recurring_task.gen_params.due_at_time),
-                        args.due_at_day.or_else(recurring_task.gen_params.due_at_day),
-                        args.due_at_month.or_else(recurring_task.gen_params.due_at_month)
-                    ),
-                    self._time_provider.get_current_time())
+                recurring_task_gen_params = \
+                    UpdateAction.change_to(
+                        RecurringTaskGenParams(
+                            recurring_task.project_ref_id,
+                            recurring_task.period,
+                            args.eisen.or_else(recurring_task.gen_params.eisen),
+                            args.difficulty.or_else(recurring_task.gen_params.difficulty),
+                            args.actionable_from_day.or_else(recurring_task.gen_params.actionable_from_day),
+                            args.actionable_from_month.or_else(recurring_task.gen_params.actionable_from_month),
+                            args.due_at_time.or_else(recurring_task.gen_params.due_at_time),
+                            args.due_at_day.or_else(recurring_task.gen_params.due_at_day),
+                            args.due_at_month.or_else(recurring_task.gen_params.due_at_month)))
+            else:
+                recurring_task_gen_params = UpdateAction.do_nothing()
 
-            if args.must_do.should_change:
-                recurring_task.change_must_do(args.must_do.value, self._time_provider.get_current_time())
-
-            if args.skip_rule.should_change:
-                recurring_task.change_skip_rule(args.skip_rule.value, self._time_provider.get_current_time())
-
-            if args.start_at_date.should_change or args.end_at_date.should_change:
-                recurring_task.change_active_interval(
-                    args.start_at_date.or_else(recurring_task.start_at_date),
-                    args.end_at_date.or_else(recurring_task.end_at_date),
-                    self._time_provider.get_current_time())
+            recurring_task.update(
+                name=args.name, period=args.period, the_type=args.the_type, gen_params=recurring_task_gen_params,
+                must_do=args.must_do, skip_rule=args.skip_rule, start_at_date=args.start_at_date,
+                end_at_date=args.end_at_date, modification_time=self._time_provider.get_current_time())
 
         notion_recurring_task = \
             self._recurring_task_notion_manager.load_recurring_task(

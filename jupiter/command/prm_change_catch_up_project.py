@@ -3,29 +3,28 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command.command import Command
-from jupiter.use_cases.prm.update import PrmDatabaseUpdateUseCase
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.framework.update_action import UpdateAction
+from jupiter.use_cases.prm.change_catch_up_project import PrmDatabaseChangeCatchUpProjectUseCase
 
 
-class PrmUpdate(Command):
+class PrmChangeCatchUpProject(Command):
     """UseCase for updating the PRM database."""
 
-    _command: Final[PrmDatabaseUpdateUseCase]
+    _command: Final[PrmDatabaseChangeCatchUpProjectUseCase]
 
-    def __init__(self, the_command: PrmDatabaseUpdateUseCase):
+    def __init__(self, the_command: PrmDatabaseChangeCatchUpProjectUseCase):
         """Constructor."""
         self._command = the_command
 
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "prm-update"
+        return "prm-change-catch-up-project"
 
     @staticmethod
     def description() -> str:
         """The description of the command."""
-        return "Update the PRM database"
+        return "Change the catch up project database"
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
@@ -40,12 +39,10 @@ class PrmUpdate(Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        catch_up_project_key: UpdateAction[Optional[ProjectKey]]
+        catch_up_project_key: Optional[ProjectKey]
         if args.clear_catch_up_project_key:
-            catch_up_project_key = UpdateAction.change_to(None)
-        elif args.catch_up_project_key is not None:
-            catch_up_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.catch_up_project_key))
+            catch_up_project_key = None
         else:
-            catch_up_project_key = UpdateAction.do_nothing()
+            catch_up_project_key = ProjectKey.from_raw(args.catch_up_project_key)
 
-        self._command.execute(PrmDatabaseUpdateUseCase.Args(catch_up_project_key=catch_up_project_key))
+        self._command.execute(PrmDatabaseChangeCatchUpProjectUseCase.Args(catch_up_project_key=catch_up_project_key))

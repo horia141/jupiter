@@ -7,7 +7,6 @@ from notion.collection import CollectionRowBlock
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.notion_vacation import NotionVacation
-from jupiter.domain.vacations.vacation import Vacation
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
@@ -143,13 +142,12 @@ class NotionVacationsManager(VacationNotionManager):
                 "database_view_id": self._DATABASE_VIEW_SCHEMA
             })
 
-    def upsert_vacation(self, vacation: Vacation) -> NotionVacation:
+    def upsert_vacation(self, vacation: NotionVacation) -> NotionVacation:
         """Create a vacation."""
-        new_notion_vacation = NotionVacation.new_notion_row(vacation, None)
         return self._collections_manager.upsert_collection_item(
             key=NotionLockKey(f"{vacation.ref_id}"),
             collection_key=NotionLockKey(self._KEY),
-            new_row=new_notion_vacation,
+            new_row=vacation,
             copy_row_to_notion_row=self._copy_row_to_notion_row)
 
     def save_vacation(self, vacation: NotionVacation) -> NotionVacation:
@@ -163,12 +161,13 @@ class NotionVacationsManager(VacationNotionManager):
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {vacation.ref_id} could not be found") from err
 
-    def remove_vacation(self, ref_id: EntityId) -> None:
-        """Hard remove the Notion entity associated with a local entity."""
+    def load_vacation(self, ref_id: EntityId) -> NotionVacation:
+        """Load a Notion-side vacation."""
         try:
-            self._collections_manager.remove_collection_item(
+            return self._collections_manager.load_collection_item(
                 key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(self._KEY))
+                collection_key=NotionLockKey(f"{self._KEY}"),
+                copy_notion_row_to_row=self._copy_notion_row_to_row)
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {ref_id} could not be found") from err
 
@@ -178,6 +177,20 @@ class NotionVacationsManager(VacationNotionManager):
             collection_key=NotionLockKey(self._KEY),
             copy_notion_row_to_row=self._copy_notion_row_to_row)
 
+    def remove_vacation(self, ref_id: EntityId) -> None:
+        """Hard remove the Notion entity associated with a local entity."""
+        try:
+            self._collections_manager.remove_collection_item(
+                key=NotionLockKey(f"{ref_id}"),
+                collection_key=NotionLockKey(self._KEY))
+        except NotionCollectionItemNotFoundError as err:
+            raise NotionVacationNotFoundError(f"Vacation with id {ref_id} could not be found") from err
+
+    def drop_all_vacations(self) -> None:
+        """Remove all vacations Notion-side."""
+        self._collections_manager.drop_all_collection_items(
+            collection_key=NotionLockKey(self._KEY))
+
     def load_all_saved_vacation_ref_ids(self) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the vacations."""
         return self._collections_manager.load_all_collection_items_saved_ref_ids(
@@ -186,11 +199,6 @@ class NotionVacationsManager(VacationNotionManager):
     def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for the vacations."""
         return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(self._KEY))
-
-    def drop_all_vacations(self) -> None:
-        """Remove all vacations Notion-side."""
-        self._collections_manager.drop_all_collection_items(
             collection_key=NotionLockKey(self._KEY))
 
     def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:

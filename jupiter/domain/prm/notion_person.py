@@ -16,6 +16,7 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.notion import NotionRow
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -123,10 +124,10 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
                 if self.catch_up_due_at_month else None)
         person_birthday = PersonBirthday.from_raw(self.birthday) if self.birthday else None
 
+        aggregate_root.update(
+            name=UpdateAction.change_to(person_name), relationship=UpdateAction.change_to(person_relationship),
+            catch_up_params=UpdateAction.change_to(person_catch_up_params),
+            birthday=UpdateAction.change_to(person_birthday), modification_time=self.last_edited_time)
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(person_name, self.last_edited_time)
-        aggregate_root.change_relationship(person_relationship, self.last_edited_time)
-        aggregate_root.change_catch_up_params(person_catch_up_params, self.last_edited_time)
-        aggregate_root.change_birthday(person_birthday, self.last_edited_time)
 
         return aggregate_root

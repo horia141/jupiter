@@ -6,6 +6,7 @@ from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -20,8 +21,8 @@ class Project(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _key: ProjectKey
-    _name: ProjectName
+    key: ProjectKey
+    name: ProjectName
 
     @staticmethod
     def new_project(key: ProjectKey, name: ProjectName, created_time: Timestamp) -> 'Project':
@@ -33,24 +34,14 @@ class Project(AggregateRoot):
             _archived_time=None,
             _last_modified_time=created_time,
             _events=[],
-            _key=key,
-            _name=name)
+            key=key,
+            name=name)
         project.record_event(Project.Created.make_event_from_frame_args(created_time))
         return project
 
-    def change_name(self, name: ProjectName, modification_time: Timestamp) -> 'Project':
-        """Change the name of the workspace."""
-        self._name = name
+    def update(self, name: UpdateAction[ProjectName], modification_time: Timestamp) -> 'Project':
+        """Change the project."""
+        self.name = name.or_else(self.name)
         self.record_event(
             Project.Updated.make_event_from_frame_args(modification_time))
         return self
-
-    @property
-    def key(self) -> ProjectKey:
-        """The key of the project."""
-        return self._key
-
-    @property
-    def name(self) -> ProjectName:
-        """The name of the project."""
-        return self._name

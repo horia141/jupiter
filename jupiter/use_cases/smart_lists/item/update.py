@@ -45,11 +45,6 @@ class SmartListItemUpdateUseCase(UseCase['SmartListItemUpdateUseCase.Args', None
         with self._storage_engine.get_unit_of_work() as uow:
             smart_list_item = uow.smart_list_item_repository.load_by_id(args.ref_id)
 
-            if args.name.should_change:
-                smart_list_item.change_name(args.name.value, self._time_provider.get_current_time())
-            if args.is_done.should_change:
-                smart_list_item.change_is_done(args.is_done.value, self._time_provider.get_current_time())
-
             if args.tags.should_change:
                 smart_list_tags = \
                     {t.tag_name: t
@@ -63,11 +58,17 @@ class SmartListItemUpdateUseCase(UseCase['SmartListItemUpdateUseCase.Args', None
                         created_time=self._time_provider.get_current_time())
                     smart_list_tag = uow.smart_list_tag_repository.create(smart_list_tag)
                     smart_list_tags[smart_list_tag.tag_name] = smart_list_tag
-                smart_list_item.change_tags(
-                    [t.ref_id for t in smart_list_tags.values()], self._time_provider.get_current_time())
+                tags_ref_id = UpdateAction.change_to(
+                    [t.ref_id for t in smart_list_tags.values()])
+            else:
+                tags_ref_id = UpdateAction.do_nothing()
 
-            if args.url.should_change:
-                smart_list_item.change_url(args.url.value, self._time_provider.get_current_time())
+            smart_list_item = smart_list_item.update(
+                name=args.name,
+                is_done=args.is_done,
+                tags_ref_id=tags_ref_id,
+                url=args.url,
+                modification_time=self._time_provider.get_current_time())
 
             uow.smart_list_item_repository.save(smart_list_item)
 

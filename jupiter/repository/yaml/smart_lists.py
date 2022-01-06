@@ -166,8 +166,8 @@ class YamlSmartListRepository(SmartListRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _key=row.key,
-            _name=row.name)
+            key=row.key,
+            name=row.name)
 
 
 @dataclass()
@@ -307,8 +307,8 @@ class YamlSmartListTagRepository(SmartListTagRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _smart_list_ref_id=row.smart_list_ref_id,
-            _tag_name=row.tag_name)
+            smart_list_ref_id=row.smart_list_ref_id,
+            tag_name=row.tag_name)
 
 
 @dataclass()
@@ -358,7 +358,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             smart_list_ref_id=smart_list_item.smart_list_ref_id,
             name=smart_list_item.name,
             is_done=smart_list_item.is_done,
-            tag_ids=set(smart_list_item.tags),
+            tag_ids=set(smart_list_item.tags_ref_id),
             url=smart_list_item.url))
         smart_list_item.assign_ref_id(new_smart_list_item_row.ref_id)
         return smart_list_item
@@ -452,7 +452,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             smart_list_ref_id=smart_list_item.smart_list_ref_id,
             name=smart_list_item.name,
             is_done=smart_list_item.is_done,
-            tag_ids=set(smart_list_item.tags),
+            tag_ids=set(smart_list_item.tags_ref_id),
             url=smart_list_item.url)
         smart_list_item_row.ref_id = smart_list_item.ref_id
         smart_list_item_row.created_time = smart_list_item.created_time
@@ -469,8 +469,8 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _smart_list_ref_id=row.smart_list_ref_id,
-            _name=row.name,
-            _is_done=row.is_done,
-            _tags_ref_id=list(row.tag_ids),
-            _url=row.url)
+            smart_list_ref_id=row.smart_list_ref_id,
+            name=row.name,
+            is_done=row.is_done,
+            tags_ref_id=list(row.tag_ids),
+            url=row.url)

@@ -6,6 +6,7 @@ from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartList
     NotionSmartListTagNotFoundError
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -38,8 +39,12 @@ class SmartListTagArchiveUseCase(UseCase[EntityId, None]):
                 filter_tag_ref_ids=[args])
 
             for smart_list_item in smart_list_items:
-                smart_list_item.change_tags(
-                    [t for t in smart_list_item.tags if t != args], self._time_provider.get_current_time())
+                smart_list_item.update(
+                    name=UpdateAction.do_nothing(),
+                    is_done=UpdateAction.do_nothing(),
+                    tags_ref_id=UpdateAction.change_to([t for t in smart_list_item.tags_ref_id if t != args]),
+                    url=UpdateAction.do_nothing(),
+                    modification_time=self._time_provider.get_current_time())
                 uow.smart_list_item_repository.save(smart_list_item)
 
             smart_list_tag.mark_archived(self._time_provider.get_current_time())

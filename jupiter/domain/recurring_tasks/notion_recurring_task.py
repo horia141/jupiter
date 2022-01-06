@@ -17,6 +17,7 @@ from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.notion import NotionRow
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
@@ -111,34 +112,38 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
     def apply_to_aggregate_root(self, aggregate_root: RecurringTask, extra_info: InverseExtraInfo) -> RecurringTask:
         """Apply to an already existing recurring task."""
         recurring_task_period = RecurringTaskPeriod.from_raw(self.period)
+        aggregate_root.update(
+            name=UpdateAction.change_to(RecurringTaskName.from_raw(self.name)),
+            period=UpdateAction.change_to(RecurringTaskPeriod.from_raw(self.period)),
+            the_type=UpdateAction.change_to(RecurringTaskType.from_raw(self.the_type)),
+            gen_params=UpdateAction.change_to(
+                RecurringTaskGenParams(
+                    project_ref_id=extra_info.project_ref_id,
+                    period=RecurringTaskPeriod.from_raw(self.period),
+                    eisen=Eisen.from_raw(self.eisen) if self.eisen else Eisen.REGULAR,
+                    difficulty=Difficulty.from_raw(self.difficulty) if self.difficulty else None,
+                    actionable_from_day=
+                    RecurringTaskDueAtDay.from_raw(recurring_task_period, self.actionable_from_day)
+                    if self.actionable_from_day else None,
+                    actionable_from_month=
+                    RecurringTaskDueAtMonth.from_raw(recurring_task_period, self.actionable_from_month)
+                    if self.actionable_from_month else None,
+                    due_at_time=RecurringTaskDueAtTime.from_raw(self.due_at_time) if self.due_at_time else None,
+                    due_at_day=
+                    RecurringTaskDueAtDay.from_raw(recurring_task_period, self.due_at_day) if self.due_at_day else None,
+                    due_at_month=
+                    RecurringTaskDueAtMonth.from_raw(recurring_task_period, self.due_at_month)
+                    if self.due_at_month else None)),
+            must_do=UpdateAction.change_to(self.must_do),
+            skip_rule=UpdateAction.change_to(
+                RecurringTaskSkipRule.from_raw(self.skip_rule) if self.skip_rule else None),
+            start_at_date=UpdateAction.change_to(
+                self.start_at_date if self.start_at_date else aggregate_root.start_at_date),
+            end_at_date=UpdateAction.change_to(self.end_at_date),
+            modification_time=self.last_edited_time)
+        if self.suspended:
+            aggregate_root.suspend(self.last_edited_time)
+        else:
+            aggregate_root.unsuspend(self.last_edited_time)
         aggregate_root.change_archived(self.archived, self.last_edited_time)
-        aggregate_root.change_name(RecurringTaskName.from_raw(self.name), self.last_edited_time)
-        aggregate_root.change_period(RecurringTaskPeriod.from_raw(self.period), self.last_edited_time)
-        aggregate_root.change_type(RecurringTaskType.from_raw(self.the_type), self.last_edited_time)
-        aggregate_root.change_gen_params(
-            RecurringTaskGenParams(
-                project_ref_id=extra_info.project_ref_id,
-                period=RecurringTaskPeriod.from_raw(self.period),
-                eisen=Eisen.from_raw(self.eisen) if self.eisen else Eisen.REGULAR,
-                difficulty=Difficulty.from_raw(self.difficulty) if self.difficulty else None,
-                actionable_from_day=
-                RecurringTaskDueAtDay.from_raw(recurring_task_period, self.actionable_from_day)
-                if self.actionable_from_day else None,
-                actionable_from_month=
-                RecurringTaskDueAtMonth.from_raw(recurring_task_period, self.actionable_from_month)
-                if self.actionable_from_month else None,
-                due_at_time=RecurringTaskDueAtTime.from_raw(self.due_at_time) if self.due_at_time else None,
-                due_at_day=
-                RecurringTaskDueAtDay.from_raw(recurring_task_period, self.due_at_day) if self.due_at_day else None,
-                due_at_month=
-                RecurringTaskDueAtMonth.from_raw(recurring_task_period, self.due_at_month)
-                if self.due_at_month else None),
-            self.last_edited_time)
-        aggregate_root.change_must_do(self.must_do, self.last_edited_time)
-        aggregate_root.change_skip_rule(
-            RecurringTaskSkipRule.from_raw(self.skip_rule) if self.skip_rule else None, self.last_edited_time)
-        aggregate_root.change_active_interval(
-            self.start_at_date or aggregate_root.start_at_date,
-            self.end_at_date,
-            self.last_edited_time)
         return aggregate_root

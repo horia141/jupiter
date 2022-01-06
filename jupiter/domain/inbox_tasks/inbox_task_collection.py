@@ -14,7 +14,7 @@ class InboxTaskCollection(AggregateRoot):
     class Created(AggregateRoot.Created):
         """Created event."""
 
-    _project_ref_id: EntityId
+    project_ref_id: EntityId
 
     @staticmethod
     def new_inbox_task_collection(project_ref_id: EntityId, created_time: Timestamp) -> 'InboxTaskCollection':
@@ -26,12 +26,7 @@ class InboxTaskCollection(AggregateRoot):
             _archived_time=None,
             _last_modified_time=created_time,
             _events=[],
-            _project_ref_id=project_ref_id)
+            project_ref_id=project_ref_id)
         inbox_task_collection.record_event(InboxTaskCollection.Created.make_event_from_frame_args(created_time))
 
         return inbox_task_collection
-
-    @property
-    def project_ref_id(self) -> EntityId:
-        """The project which owns this collection."""
-        return self._project_ref_id

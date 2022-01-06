@@ -24,15 +24,15 @@ class BigPlan(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _big_plan_collection_ref_id: EntityId
-    _name: BigPlanName
-    _status: BigPlanStatus
-    _actionable_date: Optional[ADate]
-    _due_date: Optional[ADate]
-    _notion_link_uuid: uuid.UUID
-    _accepted_time: Optional[Timestamp]
-    _working_time: Optional[Timestamp]
-    _completed_time: Optional[Timestamp]
+    big_plan_collection_ref_id: EntityId
+    name: BigPlanName
+    status: BigPlanStatus
+    actionable_date: Optional[ADate]
+    due_date: Optional[ADate]
+    notion_link_uuid: uuid.UUID
+    accepted_time: Optional[Timestamp]
+    working_time: Optional[Timestamp]
+    completed_time: Optional[Timestamp]
 
     @staticmethod
     def new_big_plan(
@@ -46,130 +46,79 @@ class BigPlan(AggregateRoot):
             _archived_time=created_time if archived else None,
             _last_modified_time=created_time,
             _events=[],
-            _big_plan_collection_ref_id=big_plan_collection_ref_id,
-            _name=name,
-            _status=status,
-            _actionable_date=actionable_date,
-            _due_date=due_date,
-            _notion_link_uuid=uuid.uuid4(),
-            _accepted_time=created_time if status.is_accepted_or_more else None,
-            _working_time=created_time if status.is_working_or_more else None,
-            _completed_time=created_time if status.is_completed else None)
-        big_plan.record_event(BigPlan.Created.make_event_from_frame_args(created_time))
+            big_plan_collection_ref_id=big_plan_collection_ref_id,
+            name=name,
+            status=status,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            notion_link_uuid=uuid.uuid4(),
+            accepted_time=created_time if status.is_accepted_or_more else None,
+            working_time=created_time if status.is_working_or_more else None,
+            completed_time=created_time if status.is_completed else None)
+
+        big_plan.record_event(
+            BigPlan.Created.make_event_from_frame_args(
+                created_time, notion_link_uuid=big_plan.notion_link_uuid, accepted_time=big_plan.accepted_time,
+                working_time=big_plan.working_time, completed_time=big_plan.completed_time))
 
         return big_plan
 
-    def change_name(self, name: BigPlanName, modification_time: Timestamp) -> 'BigPlan':
-        """Change the name of the big plan."""
-        if self._name == name:
-            return self
-        self._name = name
-        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time))
-        return self
+    def update(
+            self, name: UpdateAction[BigPlanName], status: UpdateAction[BigPlanStatus],
+            actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
+            modification_time: Timestamp) -> 'BigPlan':
+        """Update the big plan."""
+        self.name = name.or_else(self.name)
 
-    def change_status(self, status: BigPlanStatus, modification_time: Timestamp) -> 'BigPlan':
-        """Change the status of the big plan."""
-        if self._status == status:
-            return self
+        if status.should_change:
+            updated_accepted_time: UpdateAction[Optional[Timestamp]]
+            if not self.status.is_accepted_or_more and status.value.is_accepted_or_more:
+                self.accepted_time = modification_time
+                updated_accepted_time = UpdateAction.change_to(modification_time)
+            elif self.status.is_accepted_or_more and not status.value.is_accepted_or_more:
+                self.accepted_time = None
+                updated_accepted_time = UpdateAction.change_to(None)
+            else:
+                updated_accepted_time = UpdateAction.do_nothing()
 
-        updated_accepted_time: UpdateAction[Optional[Timestamp]]
-        if not self._status.is_accepted_or_more and status.is_accepted_or_more:
-            self._accepted_time = modification_time
-            updated_accepted_time = UpdateAction.change_to(modification_time)
-        elif self._status.is_accepted_or_more and not status.is_accepted_or_more:
-            self._accepted_time = None
-            updated_accepted_time = UpdateAction.change_to(None)
+            updated_working_time: UpdateAction[Optional[Timestamp]]
+            if not self.status.is_working_or_more and status.value.is_working_or_more:
+                self.working_time = modification_time
+                updated_working_time = UpdateAction.change_to(modification_time)
+            elif self.status.is_working_or_more and not status.value.is_working_or_more:
+                self.working_time = None
+                updated_working_time = UpdateAction.change_to(None)
+            else:
+                updated_working_time = UpdateAction.do_nothing()
+
+            updated_completed_time: UpdateAction[Optional[Timestamp]]
+            if not self.status.is_completed and status.value.is_completed:
+                self.completed_time = modification_time
+                updated_completed_time = UpdateAction.change_to(modification_time)
+            elif self.status.is_completed and not status.value.is_completed:
+                self.completed_time = None
+                updated_completed_time = UpdateAction.change_to(None)
+            else:
+                updated_completed_time = UpdateAction.do_nothing()
+            self.status = status.value
+
+            event_kwargs = {
+                "updated_accepted_time": updated_accepted_time,
+                "updated_working_time": updated_working_time,
+                "updated_completed_time":  updated_completed_time
+            }
         else:
-            updated_accepted_time = UpdateAction.do_nothing()
+            event_kwargs = {}
 
-        updated_working_time: UpdateAction[Optional[Timestamp]]
-        if not self._status.is_working_or_more and status.is_working_or_more:
-            self._working_time = modification_time
-            updated_working_time = UpdateAction.change_to(modification_time)
-        elif self._status.is_working_or_more and not status.is_working_or_more:
-            self._working_time = None
-            updated_working_time = UpdateAction.change_to(None)
-        else:
-            updated_working_time = UpdateAction.do_nothing()
+        self.actionable_date = actionable_date.or_else(self.actionable_date)
+        self.due_date = due_date.or_else(self.due_date)
 
-        updated_completed_time: UpdateAction[Optional[Timestamp]]
-        if not self._status.is_completed and status.is_completed:
-            self._completed_time = modification_time
-            updated_completed_time = UpdateAction.change_to(modification_time)
-        elif self._status.is_completed and not status.is_completed:
-            self._completed_time = None
-            updated_completed_time = UpdateAction.change_to(None)
-        else:
-            updated_completed_time = UpdateAction.do_nothing()
-        self._status = status
-        self.record_event(BigPlan.Updated.make_event_from_frame_args(
-            modification_time, updated_accepted_time=updated_accepted_time,
-            updated_working_time=updated_working_time, updated_completed_time=updated_completed_time))
-        return self
+        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time, **event_kwargs))
 
-    def change_actionable_date(self, actionable_date: Optional[ADate], modification_time: Timestamp) -> 'BigPlan':
-        """Change the actionable date of the big plan."""
-        if self._actionable_date == actionable_date:
-            return self
-        self._actionable_date = actionable_date
-        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_due_date(self, due_date: Optional[ADate], modification_time: Timestamp) -> 'BigPlan':
-        """Change the due date of the big plan."""
-        if self._due_date == due_date:
-            return self
-        self._due_date = due_date
-        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time))
         return self
 
     @property
     def project_ref_id(self) -> EntityId:
         """The id of the project this big plan belongs to."""
         # TODO(horia141): fix this uglyness
-        return self._big_plan_collection_ref_id
-
-    @property
-    def big_plan_collection_ref_id(self) -> EntityId:
-        """The big plan collection this big plan belongs to."""
-        return self._big_plan_collection_ref_id
-
-    @property
-    def name(self) -> BigPlanName:
-        """The name of the big plan."""
-        return self._name
-
-    @property
-    def status(self) -> BigPlanStatus:
-        """The status of the big plan."""
-        return self._status
-
-    @property
-    def actionable_date(self) -> Optional[ADate]:
-        """The actionable date of the big plan."""
-        return self._actionable_date
-
-    @property
-    def due_date(self) -> Optional[ADate]:
-        """The due date of the big plan."""
-        return self._due_date
-
-    @property
-    def notion_link_uuid(self) -> uuid.UUID:
-        """A stable Notion link for the big plan."""
-        return self._notion_link_uuid
-
-    @property
-    def accepted_time(self) -> Optional[Timestamp]:
-        """The time when the big plan was accepted for work."""
-        return self._accepted_time
-
-    @property
-    def working_time(self) -> Optional[Timestamp]:
-        """The time when work begun on the big plan."""
-        return self._working_time
-
-    @property
-    def completed_time(self) -> Optional[Timestamp]:
-        """The time when the big plan was completed."""
-        return self._completed_time
+        return self.big_plan_collection_ref_id

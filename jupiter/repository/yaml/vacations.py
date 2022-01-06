@@ -147,6 +147,6 @@ class YamlVacationRepository(VacationRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _name=row.name,
-            _start_date=row.start_date,
-            _end_date=row.end_date)
+            name=row.name,
+            start_date=row.start_date,
+            end_date=row.end_date)

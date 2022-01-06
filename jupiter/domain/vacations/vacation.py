@@ -8,6 +8,7 @@ from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -22,9 +23,9 @@ class Vacation(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _name: VacationName
-    _start_date: ADate
-    _end_date: ADate
+    name: VacationName
+    start_date: ADate
+    end_date: ADate
 
     @staticmethod
     def new_vacation(
@@ -41,59 +42,31 @@ class Vacation(AggregateRoot):
             _archived_time=created_time if archived else None,
             _last_modified_time=created_time,
             _events=[],
-            _name=name,
-            _start_date=start_date,
-            _end_date=end_date)
+            name=name,
+            start_date=start_date,
+            end_date=end_date)
         vacation.record_event(Vacation.Created.make_event_from_frame_args(created_time))
 
         return vacation
 
-    def change_name(self, name: VacationName, modification_time: Timestamp) -> 'Vacation':
-        """Change the name of a metric."""
-        if self._name == name:
-            return self
-        self._name = name
-        self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
-        return self
+    def update(
+            self, name: UpdateAction[VacationName], start_date: UpdateAction[ADate], end_date: UpdateAction[ADate],
+            modification_time: Timestamp) -> 'Vacation':
+        """Update a vacation's properties."""
+        new_start_date = start_date.or_else(self.start_date)
+        new_end_date = end_date.or_else(self.end_date)
 
-    def change_start_date(self, start_date: ADate, modification_time: Timestamp) -> 'Vacation':
-        """Change the start date of a metric."""
-        if self._start_date == start_date:
-            return self
-        if start_date >= self._end_date:
+        if new_start_date >= new_end_date:
             raise InputValidationError("Cannot set a start date after the end date")
-        self._start_date = start_date
-        self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_end_date(self, end_date: ADate, modification_time: Timestamp) -> 'Vacation':
-        """Change the start date of a metric."""
-        if self._end_date == end_date:
-            return self
-        if end_date <= self._start_date:
-            raise InputValidationError("Cannot set an end date before the start date")
-        self._end_date = end_date
+        self.name = name.or_else(self.name)
+        self.start_date = new_start_date
+        self.end_date = new_end_date
         self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this vacation."""
-        vacation_start_date = self._start_date.start_of_day()
-        vacation_end_date = self._end_date.end_of_day()
+        vacation_start_date = self.start_date.start_of_day()
+        vacation_end_date = self.end_date.end_of_day()
         return typing.cast(bool, vacation_start_date <= start_date) and \
                typing.cast(bool, end_date <= vacation_end_date)
-
-    @property
-    def name(self) -> VacationName:
-        """The name of the vacation."""
-        return self._name
-
-    @property
-    def start_date(self) -> ADate:
-        """The start date of the vacation."""
-        return self._start_date
-
-    @property
-    def end_date(self) -> ADate:
-        """The end date of the vacation."""
-        return self._end_date

@@ -5,6 +5,7 @@ from typing import Final
 from jupiter.domain.adate import ADate
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
+from jupiter.domain.vacations.notion_vacation import NotionVacation
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.use_case import UseCase
@@ -39,4 +40,5 @@ class VacationCreateUseCase(UseCase['VacationCreateUseCase.Args', None]):
             False, args.name, args.start_date, args.end_date, self._time_provider.get_current_time())
         with self._storage_engine.get_unit_of_work() as uow:
             vacation = uow.vacation_repository.create(vacation)
-        self._vacation_notion_manager.upsert_vacation(vacation)
+        notion_vacation = NotionVacation.new_notion_row(vacation, None)
+        self._vacation_notion_manager.upsert_vacation(notion_vacation)

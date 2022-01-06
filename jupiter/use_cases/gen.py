@@ -336,7 +336,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             with self._storage_engine.get_unit_of_work() as uow:
                 inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
 
-                inbox_task = InboxTask.new_inbox_task_for_metric(
+                inbox_task = InboxTask.new_inbox_task_for_metric_collection(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                     name=schedule.full_name,
                     metric_ref_id=metric.ref_id,

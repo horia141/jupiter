@@ -159,7 +159,7 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _project_ref_id=row.project_ref_id)
+            project_ref_id=row.project_ref_id)
 
 
 @dataclass()
@@ -343,12 +343,12 @@ class YamlBigPlanRepository(BigPlanRepository):
             _archived_time=row.archived_time,
             _last_modified_time=row.last_modified_time,
             _events=[],
-            _big_plan_collection_ref_id=row.big_plan_collection_ref_id,
-            _name=row.name,
-            _status=row.status,
-            _actionable_date=row.actionable_date,
-            _due_date=row.due_date,
-            _notion_link_uuid=row.notion_link_uuid,
-            _accepted_time=row.accepted_time,
-            _working_time=row.working_time,
-            _completed_time=row.completed_time)
+            big_plan_collection_ref_id=row.big_plan_collection_ref_id,
+            name=row.name,
+            status=row.status,
+            actionable_date=row.actionable_date,
+            due_date=row.due_date,
+            notion_link_uuid=row.notion_link_uuid,
+            accepted_time=row.accepted_time,
+            working_time=row.working_time,
+            completed_time=row.completed_time)

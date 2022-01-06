@@ -32,8 +32,8 @@ from jupiter.command.person_archive import PersonArchive
 from jupiter.command.person_create import PersonCreate
 from jupiter.command.person_remove import PersonRemove
 from jupiter.command.person_update import PersonUpdate
+from jupiter.command.prm_change_catch_up_project import PrmChangeCatchUpProject
 from jupiter.command.prm_show import PrmShow
-from jupiter.command.prm_update import PrmUpdate
 from jupiter.command.project_archive import ProjectArchive
 from jupiter.command.project_create import ProjectCreate
 from jupiter.command.project_show import ProjectShow
@@ -65,6 +65,7 @@ from jupiter.command.vacation_create import VacationCreate
 from jupiter.command.vacation_remove import VacationRemove
 from jupiter.command.vacation_show import VacationsShow
 from jupiter.command.vacation_update import VacationUpdate
+from jupiter.command.workspace_change_default_project import WorkspaceChangeDefaultProject
 from jupiter.command.workspace_show import WorkspaceShow
 from jupiter.command.workspace_update import WorkspaceUpdate
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import NotionBigPlanNotFoundError
@@ -118,12 +119,12 @@ from jupiter.use_cases.metrics.entry.update import MetricEntryUpdateUseCase
 from jupiter.use_cases.metrics.find import MetricFindUseCase
 from jupiter.use_cases.metrics.remove import MetricRemoveUseCase
 from jupiter.use_cases.metrics.update import MetricUpdateUseCase
+from jupiter.use_cases.prm.change_catch_up_project import PrmDatabaseChangeCatchUpProjectUseCase
 from jupiter.use_cases.prm.find import PrmDatabaseFindUseCase
 from jupiter.use_cases.prm.person.archive import PersonArchiveUseCase
 from jupiter.use_cases.prm.person.create import PersonCreateUseCase
 from jupiter.use_cases.prm.person.remove import PersonRemoveUseCase
 from jupiter.use_cases.prm.person.update import PersonUpdateUseCase
-from jupiter.use_cases.prm.update import PrmDatabaseUpdateUseCase
 from jupiter.use_cases.projects.archive import ProjectArchiveUseCase
 from jupiter.use_cases.projects.create import ProjectCreateUseCase
 from jupiter.use_cases.projects.find import ProjectFindUseCase
@@ -133,6 +134,7 @@ from jupiter.use_cases.recurring_tasks.create import RecurringTaskCreateUseCase
 from jupiter.use_cases.recurring_tasks.find import RecurringTaskFindUseCase
 from jupiter.use_cases.recurring_tasks.remove import RecurringTaskRemoveUseCase
 from jupiter.use_cases.recurring_tasks.suspend import RecurringTaskSuspendUseCase
+from jupiter.use_cases.recurring_tasks.unsuspend import RecurringTaskUnsuspendUseCase
 from jupiter.use_cases.recurring_tasks.update import RecurringTaskUpdateUseCase
 from jupiter.use_cases.report import ReportUseCase
 from jupiter.use_cases.smart_lists.archive import SmartListArchiveUseCase
@@ -154,6 +156,7 @@ from jupiter.use_cases.vacations.create import VacationCreateUseCase
 from jupiter.use_cases.vacations.find import VacationFindUseCase
 from jupiter.use_cases.vacations.remove import VacationRemoveUseCase
 from jupiter.use_cases.vacations.update import VacationUpdateUseCase
+from jupiter.use_cases.workspaces.change_default_project import WorkspaceChangeDefaultProjectUseCase
 from jupiter.use_cases.workspaces.find import WorkspaceFindUseCase
 from jupiter.use_cases.workspaces.update import WorkspaceUpdateUseCase
 from jupiter.utils.global_properties import build_global_properties
@@ -234,6 +237,8 @@ def main() -> None:
                 notion_connection,
                 WorkspaceUpdateUseCase(
                     time_provider, storage_engine, notion_workspace_manager)),
+            WorkspaceChangeDefaultProject(
+                WorkspaceChangeDefaultProjectUseCase(time_provider, storage_engine)),
             WorkspaceShow(
                 WorkspaceFindUseCase(storage_engine)),
             VacationCreate(
@@ -299,7 +304,7 @@ def main() -> None:
                 RecurringTaskSuspendUseCase(
                     time_provider, storage_engine, notion_recurring_tasks_manager)),
             RecurringTaskUnsuspend(
-                RecurringTaskSuspendUseCase(time_provider, storage_engine, notion_recurring_tasks_manager)),
+                RecurringTaskUnsuspendUseCase(time_provider, storage_engine, notion_recurring_tasks_manager)),
             RecurringTaskRemove(
                 RecurringTaskRemoveUseCase(storage_engine, notion_inbox_tasks_manager, notion_recurring_tasks_manager)),
             RecurringTaskUpdate(
@@ -395,8 +400,8 @@ def main() -> None:
             MetricEntryRemove(
                 MetricEntryRemoveUseCase(
                     storage_engine, notion_metric_manager)),
-            PrmUpdate(
-                PrmDatabaseUpdateUseCase(
+            PrmChangeCatchUpProject(
+                PrmDatabaseChangeCatchUpProjectUseCase(
                     time_provider, storage_engine, notion_inbox_tasks_manager, notion_prm_manager)),
             PrmShow(
                 PrmDatabaseFindUseCase(storage_engine)),

@@ -117,7 +117,8 @@ class VacationSyncService:
                 continue
 
             # If the vacation does not exist on Notion side, we create it.
-            self._vacation_notion_manager.upsert_vacation(vacation)
+            notion_vacation = NotionVacation.new_notion_row(vacation, None)
+            self._vacation_notion_manager.upsert_vacation(notion_vacation)
             LOGGER.info(f"Created new vacation on Notion side {vacation.name}")
 
         return all_vacations_set.values()

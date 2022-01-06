@@ -6,6 +6,7 @@ from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -20,9 +21,13 @@ class Workspace(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _name: WorkspaceName
-    _timezone: Timezone
-    _default_project_ref_id: EntityId
+    @dataclass(frozen=True)
+    class ChangedDefaultProject(AggregateRoot.Updated):
+        """Change the default project."""
+
+    name: WorkspaceName
+    timezone: Timezone
+    default_project_ref_id: EntityId
 
     @staticmethod
     def new_workspace(
@@ -36,41 +41,23 @@ class Workspace(AggregateRoot):
             _archived_time=None,
             _last_modified_time=created_time,
             _events=[],
-            _name=name,
-            _timezone=timezone,
-            _default_project_ref_id=default_project_ref_id)
+            name=name,
+            timezone=timezone,
+            default_project_ref_id=default_project_ref_id)
         workspace.record_event(Workspace.Created.make_event_from_frame_args(created_time))
         return workspace
 
-    def change_name(self, name: WorkspaceName, modification_time: Timestamp) -> 'Workspace':
-        """Change the name of the workspace."""
-        self._name = name
-        self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
-        return self
-
-    def change_timezone(self, timezone: Timezone, modification_time: Timestamp) -> 'Workspace':
-        """Change the timezone of the workspace."""
-        self._timezone = timezone
+    def update(
+            self, name: UpdateAction[WorkspaceName], timezone: UpdateAction[Timezone],
+            modification_time: Timestamp) -> 'Workspace':
+        """Update properties of the workspace."""
+        self.name = name.or_else(self.name)
+        self.timezone = timezone.or_else(self.timezone)
         self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
         return self
 
     def change_default_project(self, default_project_ref_id: EntityId, modification_time: Timestamp) -> 'Workspace':
         """Change the default project of the workspace."""
-        self._default_project_ref_id = default_project_ref_id
-        self.record_event(Workspace.Updated.make_event_from_frame_args(modification_time))
+        self.default_project_ref_id = default_project_ref_id
+        self.record_event(Workspace.ChangedDefaultProject.make_event_from_frame_args(modification_time))
         return self
-
-    @property
-    def name(self) -> WorkspaceName:
-        """The name of the workspace."""
-        return self._name
-
-    @property
-    def timezone(self) -> Timezone:
-        """The timezone of the workspace."""
-        return self._timezone
-
-    @property
-    def default_project_ref_id(self) -> EntityId:
-        """The default project of the workspace."""
-        return self._default_project_ref_id

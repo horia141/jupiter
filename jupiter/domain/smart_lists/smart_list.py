@@ -6,6 +6,7 @@ from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.framework.aggregate_root import AggregateRoot
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass()
@@ -20,8 +21,8 @@ class SmartList(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    _key: SmartListKey
-    _name: SmartListName
+    key: SmartListKey
+    name: SmartListName
 
     @staticmethod
     def new_smart_list(key: SmartListKey, name: SmartListName, created_time: Timestamp) -> 'SmartList':
@@ -33,26 +34,14 @@ class SmartList(AggregateRoot):
             _archived_time=None,
             _last_modified_time=created_time,
             _events=[],
-            _key=key,
-            _name=name)
+            key=key,
+            name=name)
         smart_list.record_event(SmartList.Created.make_event_from_frame_args(created_time))
 
         return smart_list
 
-    def change_name(self, name: SmartListName, modification_time: Timestamp) -> 'SmartList':
+    def update(self, name: UpdateAction[SmartListName], modification_time: Timestamp) -> 'SmartList':
         """Change the name of the smart list."""
-        if self._name == name:
-            return self
-        self._name = name
+        self.name = name.or_else(self.name)
         self.record_event(SmartList.Updated.make_event_from_frame_args(timestamp=modification_time))
         return self
-
-    @property
-    def key(self) -> SmartListKey:
-        """The key of the metric."""
-        return self._key
-
-    @property
-    def name(self) -> SmartListName:
-        """The name of the metric."""
-        return self._name

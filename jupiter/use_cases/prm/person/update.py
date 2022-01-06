@@ -73,10 +73,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
             person = uow.person_repository.load_by_id(args.ref_id)
 
             # Change the person.
-            if args.name.should_change:
-                person.change_name(args.name.value, self._time_provider.get_current_time())
-            if args.relationship.should_change:
-                person.change_relationship(args.relationship.value, self._time_provider.get_current_time())
+            catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]]
             if args.catch_up_period.should_change \
                     or args.catch_up_eisen.should_change \
                     or args.catch_up_difficulty.should_change \
@@ -136,7 +133,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     elif person.catch_up_params is not None:
                         new_catch_up_due_at_month = person.catch_up_params.due_at_month
 
-                    catch_up_params = RecurringTaskGenParams(
+                    catch_up_params = UpdateAction.change_to(RecurringTaskGenParams(
                         project_ref_id=new_catch_up_project_ref_id,
                         period=new_catch_up_period,
                         eisen=new_catch_up_eisen,
@@ -145,11 +142,15 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                         actionable_from_month=new_catch_up_actionable_from_month,
                         due_at_time=new_catch_up_due_at_time,
                         due_at_day=new_catch_up_due_at_day,
-                        due_at_month=new_catch_up_due_at_month)
+                        due_at_month=new_catch_up_due_at_month))
+                else:
+                    catch_up_params = UpdateAction.change_to(None)
+            else:
+                catch_up_params = UpdateAction.do_nothing()
 
-                    person.change_catch_up_params(catch_up_params, self._time_provider.get_current_time())
-            if args.birthday.should_change:
-                person.change_birthday(args.birthday.value, self._time_provider.get_current_time())
+            person.update(
+                name=args.name, relationship=args.relationship, birthday=args.birthday,
+                catch_up_params=catch_up_params, modification_time=self._time_provider.get_current_time())
 
             uow.person_repository.save(person)
 
@@ -157,6 +158,8 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
         notion_person = notion_person.join_with_aggregate_root(person, None)
         self._prm_notion_manager.save_person(notion_person)
 
+        # TODO(horia141): also create tasks here!
+        # TODO(horia141): what if we change other person properties not just catch up params?
         # Change the catch up inbox tasks
         with self._storage_engine.get_unit_of_work() as uow:
             person_catch_up_tasks = uow.inbox_task_repository.find_all(
