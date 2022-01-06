@@ -85,6 +85,10 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             raise InboxTaskCollectionNotFoundError(
                 f"Inbox task task collection with id {inbox_task_collection.ref_id} does not exist") from err
 
+    def dump_all(self, inbox_tasks: Iterable[InboxTaskCollection]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
+
     def load_by_id(self, ref_id: EntityId) -> InboxTaskCollection:
         """Load an inbox task collection by id."""
         try:
@@ -146,6 +150,7 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             archived=inbox_task_collection.archived,
             project_ref_id=inbox_task_collection.project_ref_id)
         inbox_task_collection_row.ref_id = inbox_task_collection.ref_id
+        inbox_task_collection_row.version = inbox_task_collection.version
         inbox_task_collection_row.created_time = inbox_task_collection.created_time
         inbox_task_collection_row.archived_time = inbox_task_collection.archived_time
         inbox_task_collection_row.last_modified_time = inbox_task_collection.last_modified_time
@@ -154,12 +159,13 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
     @staticmethod
     def _row_to_entity(row: _InboxTaskCollectionRow) -> InboxTaskCollection:
         return InboxTaskCollection(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             project_ref_id=row.project_ref_id)
 
 
@@ -410,6 +416,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             working_time=inbox_task.working_time,
             completed_time=inbox_task.completed_time)
         inbox_task_row.ref_id = inbox_task.ref_id
+        inbox_task_row.version = inbox_task.version
         inbox_task_row.created_time = inbox_task.created_time
         inbox_task_row.archived_time = inbox_task.archived_time
         inbox_task_row.last_modified_time = inbox_task.last_modified_time
@@ -418,12 +425,13 @@ class YamlInboxTaskRepository(InboxTaskRepository):
     @staticmethod
     def _row_to_entity(row: _InboxTaskRow) -> InboxTask:
         return InboxTask(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             inbox_task_collection_ref_id=row.inbox_task_collection_ref_id,
             source=row.source,
             big_plan_ref_id=row.big_plan_ref_id,

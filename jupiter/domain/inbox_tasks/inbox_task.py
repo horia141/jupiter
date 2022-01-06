@@ -16,7 +16,7 @@ from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_type import RecurringTaskType
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -118,12 +118,13 @@ class InboxTask(AggregateRoot):
         InboxTask._check_actionable_and_due_dates(actionable_date, due_date)
 
         inbox_task = InboxTask(
-            _ref_id=BAD_REF_ID,
-            _archived=archived,
-            _created_time=created_time,
-            _archived_time=created_time if archived else None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=archived,
+            created_time=created_time,
+            archived_time=created_time if archived else None,
+            last_modified_time=created_time,
+            events=[],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.USER if big_plan is None else InboxTaskSource.BIG_PLAN,
             big_plan_ref_id=big_plan.ref_id if big_plan else None,
@@ -154,12 +155,13 @@ class InboxTask(AggregateRoot):
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
         inbox_task = InboxTask(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.RECURRING_TASK,
             big_plan_ref_id=None,
@@ -190,12 +192,13 @@ class InboxTask(AggregateRoot):
             due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
         inbox_task = InboxTask(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.METRIC,
             big_plan_ref_id=None,
@@ -226,12 +229,13 @@ class InboxTask(AggregateRoot):
             due_date: Optional[ADate], created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
         inbox_task = InboxTask(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.PERSON_CATCH_UP,
             big_plan_ref_id=None,
@@ -261,12 +265,13 @@ class InboxTask(AggregateRoot):
             due_date: ADate, created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
         inbox_task = InboxTask(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.PERSON_BIRTHDAY,
             big_plan_ref_id=None,

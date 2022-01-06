@@ -74,6 +74,10 @@ class YamlVacationRepository(VacationRepository):
         except StorageEntityNotFoundError as err:
             raise VacationNotFoundError(f"Vacation with id {vacation.ref_id} does not exist") from err
 
+    def dump_all(self, inbox_tasks: Iterable[Vacation]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
+
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Find a vacation by id."""
         try:
@@ -133,6 +137,7 @@ class YamlVacationRepository(VacationRepository):
             start_date=vacation.start_date,
             end_date=vacation.end_date)
         vacation_row.ref_id = vacation.ref_id
+        vacation_row.version = vacation.version
         vacation_row.created_time = vacation.created_time
         vacation_row.archived_time = vacation.archived_time
         vacation_row.last_modified_time = vacation.last_modified_time
@@ -141,12 +146,13 @@ class YamlVacationRepository(VacationRepository):
     @staticmethod
     def _row_to_entity(row: _VacationRow) -> Vacation:
         return Vacation(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             name=row.name,
             start_date=row.start_date,
             end_date=row.end_date)

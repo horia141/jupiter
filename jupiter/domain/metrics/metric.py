@@ -6,7 +6,7 @@ from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -35,12 +35,13 @@ class Metric(AggregateRoot):
             metric_unit: Optional[MetricUnit], created_time: Timestamp) -> 'Metric':
         """Create a metric."""
         metric = Metric(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             key=key,
             name=name,
             collection_params=collection_params,

@@ -82,6 +82,10 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
             raise BigPlanCollectionNotFoundError(
                 f"Big plan task collection with id {big_plan_collection.ref_id} does not exist") from err
 
+    def dump_all(self, inbox_tasks: Iterable[BigPlanCollection]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
+
     def load_by_id(self, ref_id: EntityId) -> BigPlanCollection:
         """Load an inbox task collection by id."""
         try:
@@ -145,6 +149,7 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
             archived=big_plan_collection.archived,
             project_ref_id=big_plan_collection.project_ref_id)
         big_plan_collection_row.ref_id = big_plan_collection.ref_id
+        big_plan_collection_row.version = big_plan_collection.version
         big_plan_collection_row.created_time = big_plan_collection.created_time
         big_plan_collection_row.archived_time = big_plan_collection.archived_time
         big_plan_collection_row.last_modified_time = big_plan_collection.last_modified_time
@@ -153,12 +158,13 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
     @staticmethod
     def _row_to_entity(row: _BigPlanCollectionRow) -> BigPlanCollection:
         return BigPlanCollection(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             project_ref_id=row.project_ref_id)
 
 
@@ -329,6 +335,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             working_time=big_plan.working_time,
             completed_time=big_plan.completed_time)
         big_plan_row.ref_id = big_plan.ref_id
+        big_plan_row.version = big_plan.version
         big_plan_row.created_time = big_plan.created_time
         big_plan_row.archived_time = big_plan.archived_time
         big_plan_row.last_modified_time = big_plan.last_modified_time
@@ -337,12 +344,13 @@ class YamlBigPlanRepository(BigPlanRepository):
     @staticmethod
     def _row_to_entity(row: _BigPlanRow) -> BigPlan:
         return BigPlan(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             big_plan_collection_ref_id=row.big_plan_collection_ref_id,
             name=row.name,
             status=row.status,

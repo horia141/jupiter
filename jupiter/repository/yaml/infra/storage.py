@@ -14,6 +14,7 @@ import jsonschema as js
 import pendulum
 import yaml
 
+from jupiter.framework.aggregate_root import FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
@@ -380,6 +381,7 @@ class BaseEntityRow:
     """The base class for all entities."""
 
     ref_id: EntityId = field(init=False)
+    version: int = field(init=False)
     archived: bool
     created_time: Timestamp = field(init=False)
     last_modified_time: Timestamp = field(init=False)
@@ -388,6 +390,7 @@ class BaseEntityRow:
     def __post_init__(self) -> None:
         """Init the base entity with some invalid data."""
         self.ref_id = BAD_REF_ID
+        self.version = FIRST_VERSION
         self.created_time = BAD_TIME
         self.last_modified_time = BAD_TIME
         self.archived_time = None
@@ -401,6 +404,7 @@ class EntitiesStorage(Generic[EntityRowType]):
 
     _BASE_ENTITY_ROW_PROPERTIES = {
         "ref_id": {"type": "string"},
+        "version": {"type": "number"},
         "archived": {"type": "boolean"},
         "created_time": {"type": "string"},
         "last_modified_time": {"type": "string"},
@@ -462,6 +466,7 @@ class EntitiesStorage(Generic[EntityRowType]):
         next_idx = self._load_metadata()
 
         entity.ref_id = EntityId(str(next_idx))
+        # TODO(horia141): this ain't right!
         entity.created_time = self._time_provider.get_current_time()
         entity.last_modified_time = self._time_provider.get_current_time()
         entity.archived_time = self._time_provider.get_current_time() if entity.archived else None
@@ -673,6 +678,7 @@ class EntitiesStorage(Generic[EntityRowType]):
     def _full_storage_form_to_entity(self, full_storage_form: JSONDictType) -> EntityRowType:
         entity = self._protocol.storage_to_live(full_storage_form)
         entity.ref_id = EntityId(typing.cast(str, full_storage_form["ref_id"]))
+        entity.version = typing.cast(int, full_storage_form["version"])
         entity.created_time = \
             Timestamp.from_str(typing.cast(str, full_storage_form["created_time"]))
         entity.last_modified_time = \
@@ -680,16 +686,17 @@ class EntitiesStorage(Generic[EntityRowType]):
         entity.archived_time = \
             Timestamp.from_str(typing.cast(str, full_storage_form["archived_time"])) \
                 if full_storage_form["archived_time"] is not None else None
+
         return entity
 
     def _entity_to_full_storage_form(self, entity: EntityRowType) -> JSONDictType:
         full_storage_form: JSONDictType = {
             "ref_id": str(entity.ref_id),
+            "version": entity.version,
             "archived": entity.archived,
             "created_time": str(entity.created_time),
             "last_modified_time": str(entity.last_modified_time),
-            "archived_time": str(entity.archived_time)
-                             if entity.archived_time else None
+            "archived_time": str(entity.archived_time) if entity.archived_time else None
         }
         for key, val in self._protocol.live_to_storage(entity).items():
             full_storage_form[key] = val

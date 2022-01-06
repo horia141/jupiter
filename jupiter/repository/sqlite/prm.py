@@ -37,6 +37,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
             'prm_database',
             metadata,
             Column('ref_id', Integer, primary_key=True, autoincrement=True),
+            Column('version', Integer, nullable=False),
             Column('archived', Boolean, nullable=False),
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
@@ -50,6 +51,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         try:
             result = self._connection.execute(insert(self._prm_database_table).values(
                 ref_id=prm_database.ref_id.as_int() if prm_database.ref_id != BAD_REF_ID else None,
+                version=prm_database.version,
                 archived=prm_database.archived,
                 created_time=prm_database.created_time.to_db(),
                 last_modified_time=prm_database.last_modified_time.to_db(),
@@ -67,6 +69,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
             update(self._prm_database_table)
             .where(self._prm_database_table.c.ref_id == prm_database.ref_id.as_int())
             .values(
+                version=prm_database.version,
                 archived=prm_database.archived,
                 created_time=prm_database.created_time.to_db(),
                 last_modified_time=prm_database.last_modified_time.to_db(),
@@ -88,13 +91,14 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
     @staticmethod
     def _row_to_entity(row: Result) -> PrmDatabase:
         return PrmDatabase(
-            _ref_id=EntityId.from_raw(str(row["ref_id"])),
-            _archived=row["archived"],
-            _created_time=Timestamp.from_db(row["created_time"]),
-            _archived_time=Timestamp.from_db(row["archived_time"])
+            ref_id=EntityId.from_raw(str(row["ref_id"])),
+            version=row["version"],
+            archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
             if row["archived_time"] else None,
-            _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            _events=[],
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            events=[],
             catch_up_project_ref_id=EntityId.from_raw(str(row["catch_up_project_ref_id"])))
 
 
@@ -112,6 +116,7 @@ class SqlitePersonRepository(PersonRepository):
             'person',
             metadata,
             Column('ref_id', Integer, primary_key=True, autoincrement=True),
+            Column('version', Integer, nullable=False),
             Column('archived', Boolean, nullable=False),
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
@@ -136,6 +141,7 @@ class SqlitePersonRepository(PersonRepository):
         try:
             result = self._connection.execute(insert(self._person_table).values(
                 ref_id=person.ref_id.as_int() if person.ref_id != BAD_REF_ID else None,
+                version=person.version,
                 archived=person.archived,
                 created_time=person.created_time.to_db(),
                 last_modified_time=person.last_modified_time.to_db(),
@@ -168,6 +174,7 @@ class SqlitePersonRepository(PersonRepository):
             update(self._person_table)
             .where(self._person_table.c.ref_id == person.ref_id.as_int())
             .values(
+                version=person.version,
                 archived=person.archived,
                 created_time=person.created_time.to_db(),
                 last_modified_time=person.last_modified_time.to_db(),
@@ -228,13 +235,14 @@ class SqlitePersonRepository(PersonRepository):
     @staticmethod
     def _row_to_entity(row: Result) -> Person:
         return Person(
-            _ref_id=EntityId(str(row["ref_id"])),
-            _archived=row["archived"],
-            _created_time=Timestamp.from_db(row["created_time"]),
-            _archived_time=Timestamp.from_db(row["archived_time"])
+            ref_id=EntityId(str(row["ref_id"])),
+            version=row["version"],
+            archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
             if row["archived_time"] else None,
-            _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            _events=[],
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            events=[],
             name=PersonName.from_raw(row["name"]),
             relationship=PersonRelationship.from_raw(row["relationship"]),
             catch_up_params=RecurringTaskGenParams(

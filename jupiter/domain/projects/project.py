@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -28,12 +28,13 @@ class Project(AggregateRoot):
     def new_project(key: ProjectKey, name: ProjectName, created_time: Timestamp) -> 'Project':
         """Create a project."""
         project = Project(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             key=key,
             name=name)
         project.record_event(Project.Created.make_event_from_frame_args(created_time))

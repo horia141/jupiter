@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_name import SmartListName
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -28,12 +28,13 @@ class SmartList(AggregateRoot):
     def new_smart_list(key: SmartListKey, name: SmartListName, created_time: Timestamp) -> 'SmartList':
         """Create a smart list."""
         smart_list = SmartList(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             key=key,
             name=name)
         smart_list.record_event(SmartList.Created.make_event_from_frame_args(created_time))

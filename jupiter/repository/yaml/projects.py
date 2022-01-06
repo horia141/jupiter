@@ -79,6 +79,10 @@ class YamlProjectRepository(ProjectRepository):
         except StorageEntityNotFoundError as err:
             raise ProjectNotFoundError(f"Project with key {project.key} does not exist") from err
 
+    def dump_all(self, inbox_tasks: Iterable[Project]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
+
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
         """Retrieve a particular project by its key."""
         try:
@@ -132,6 +136,7 @@ class YamlProjectRepository(ProjectRepository):
             key=project.key,
             name=project.name)
         project_row.ref_id = project.ref_id
+        project_row.version = project.version
         project_row.created_time = project.created_time
         project_row.archived_time = project.archived_time
         project_row.last_modified_time = project.last_modified_time
@@ -140,11 +145,12 @@ class YamlProjectRepository(ProjectRepository):
     @staticmethod
     def _row_to_entity(row: _ProjectRow) -> Project:
         return Project(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             key=row.key,
             name=row.name)

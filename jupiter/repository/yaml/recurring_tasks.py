@@ -43,7 +43,7 @@ class _RecurringTaskCollectionRow(BaseEntityRow):
 class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
     """A repository for recurring task collections."""
 
-    _INBOX_TASK_COLLECTIONS_FILE_PATH: ClassVar[Path] = Path("./big-plan-collections")
+    _INBOX_TASK_COLLECTIONS_FILE_PATH: ClassVar[Path] = Path("./recurring-task-collections")
     _INBOX_TASK_COLLECTIONS_NUM_SHARDS: ClassVar[int] = 1
 
     _storage: Final[EntitiesStorage[_RecurringTaskCollectionRow]]
@@ -91,6 +91,10 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
         except StorageEntityNotFoundError as err:
             raise RecurringTaskCollectionNotFoundError(
                 f"Recurring task task collection with id {recurring_task_collection.ref_id} does not exist") from err
+
+    def dump_all(self, recurring_task_collection: Iterable[RecurringTaskCollection]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in recurring_task_collection)
 
     def load_by_id(self, ref_id: EntityId) -> RecurringTaskCollection:
         """Load an inbox task collection by id."""
@@ -156,6 +160,7 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
             archived=recurring_task_collection.archived,
             project_ref_id=recurring_task_collection.project_ref_id)
         recurring_task_collection_row.ref_id = recurring_task_collection.ref_id
+        recurring_task_collection_row.version = recurring_task_collection.version
         recurring_task_collection_row.created_time = recurring_task_collection.created_time
         recurring_task_collection_row.archived_time = recurring_task_collection.archived_time
         recurring_task_collection_row.last_modified_time = recurring_task_collection.last_modified_time
@@ -164,12 +169,13 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
     @staticmethod
     def _row_to_entity(row: _RecurringTaskCollectionRow) -> RecurringTaskCollection:
         return RecurringTaskCollection(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             project_ref_id=row.project_ref_id)
 
 
@@ -394,6 +400,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             start_at_date=recurring_task.start_at_date,
             end_at_date=recurring_task.end_at_date)
         recurring_task_row.ref_id = recurring_task.ref_id
+        recurring_task_row.version = recurring_task.version
         recurring_task_row.created_time = recurring_task.created_time
         recurring_task_row.archived_time = recurring_task.archived_time
         recurring_task_row.last_modified_time = recurring_task.last_modified_time
@@ -402,12 +409,13 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
     @staticmethod
     def _row_to_entity(row: _RecurringTaskRow) -> RecurringTask:
         return RecurringTask(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             recurring_task_collection_ref_id=row.recurring_task_collection_ref_id,
             name=row.name,
             period=row.period,

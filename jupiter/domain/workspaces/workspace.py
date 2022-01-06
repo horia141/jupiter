@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -35,12 +35,13 @@ class Workspace(AggregateRoot):
             created_time: Timestamp) -> 'Workspace':
         """Create a new workspace."""
         workspace = Workspace(
-            _ref_id=EntityId.from_raw('0'),
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=EntityId.from_raw('0'),
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             name=name,
             timezone=timezone,
             default_project_ref_id=default_project_ref_id)

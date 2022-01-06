@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.url import URL
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -34,12 +34,13 @@ class SmartListItem(AggregateRoot):
             tags_ref_id: List[EntityId], url: Optional[URL], created_time: Timestamp) -> 'SmartListItem':
         """Create a smart list item."""
         smart_list_item = SmartListItem(
-            _ref_id=BAD_REF_ID,
-            _archived=archived,
-            _created_time=created_time,
-            _archived_time=created_time if archived else None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=archived,
+            created_time=created_time,
+            archived_time=created_time if archived else None,
+            last_modified_time=created_time,
+            events=[],
             smart_list_ref_id=smart_list_ref_id,
             name=name,
             is_done=is_done,

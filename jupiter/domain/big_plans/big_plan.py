@@ -6,7 +6,7 @@ from typing import Optional
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -40,12 +40,13 @@ class BigPlan(AggregateRoot):
             actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'BigPlan':
         """Create a big plan."""
         big_plan = BigPlan(
-            _ref_id=BAD_REF_ID,
-            _archived=archived,
-            _created_time=created_time,
-            _archived_time=created_time if archived else None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=archived,
+            created_time=created_time,
+            archived_time=created_time if archived else None,
+            last_modified_time=created_time,
+            events=[],
             big_plan_collection_ref_id=big_plan_collection_ref_id,
             name=name,
             status=status,

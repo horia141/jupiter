@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -32,12 +32,13 @@ class MetricEntry(AggregateRoot):
             created_time: Timestamp) -> 'MetricEntry':
         """Create a metric entry."""
         metric_entry = MetricEntry(
-            _ref_id=BAD_REF_ID,
-            _archived=archived,
-            _created_time=created_time,
-            _archived_time=created_time if archived else None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=archived,
+            created_time=created_time,
+            archived_time=created_time if archived else None,
+            last_modified_time=created_time,
+            events=[],
             metric_ref_id=metric_ref_id,
             collection_time=collection_time,
             value=value,

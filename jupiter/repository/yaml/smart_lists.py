@@ -87,6 +87,10 @@ class YamlSmartListRepository(SmartListRepository):
         except StorageEntityNotFoundError as err:
             raise SmartListNotFoundError(f"Smart list with key {smart_list.key} does not exist") from err
 
+    def dump_all(self, inbox_tasks: Iterable[SmartList]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
+
     def load_by_key(self, key: SmartListKey) -> SmartList:
         """Find a smart list by key."""
         try:
@@ -152,6 +156,7 @@ class YamlSmartListRepository(SmartListRepository):
             key=smart_list.key,
             name=smart_list.name)
         smart_list_row.ref_id = smart_list.ref_id
+        smart_list_row.version = smart_list.version
         smart_list_row.created_time = smart_list.created_time
         smart_list_row.archived_time = smart_list.archived_time
         smart_list_row.last_modified_time = smart_list.last_modified_time
@@ -160,12 +165,13 @@ class YamlSmartListRepository(SmartListRepository):
     @staticmethod
     def _row_to_entity(row: _SmartListRow) -> SmartList:
         return SmartList(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             key=row.key,
             name=row.name)
 
@@ -224,6 +230,10 @@ class YamlSmartListTagRepository(SmartListTagRepository):
             return self._row_to_entity(smart_list_tag_row)
         except StorageEntityNotFoundError as err:
             raise SmartListTagNotFoundError(f"Smart list tag with id {smart_list_tag.ref_id} does not exist") from err
+
+    def dump_all(self, inbox_tasks: Iterable[SmartListTag]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListTag:
         """Load a given smart list item."""
@@ -293,6 +303,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
             smart_list_ref_id=smart_list_tag.smart_list_ref_id,
             tag_name=smart_list_tag.tag_name)
         smart_list_tag_row.ref_id = smart_list_tag.ref_id
+        smart_list_tag_row.version = smart_list_tag.version
         smart_list_tag_row.created_time = smart_list_tag.created_time
         smart_list_tag_row.archived_time = smart_list_tag.archived_time
         smart_list_tag_row.last_modified_time = smart_list_tag.last_modified_time
@@ -301,12 +312,13 @@ class YamlSmartListTagRepository(SmartListTagRepository):
     @staticmethod
     def _row_to_entity(row: _SmartListTagRow) -> SmartListTag:
         return SmartListTag(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             smart_list_ref_id=row.smart_list_ref_id,
             tag_name=row.tag_name)
 
@@ -372,6 +384,10 @@ class YamlSmartListItemRepository(SmartListItemRepository):
         except StorageEntityNotFoundError as err:
             raise SmartListItemNotFoundError(
                 f"Smart list item with id {smart_list_item.ref_id} does not exist") from err
+
+    def dump_all(self, inbox_tasks: Iterable[SmartListItem]) -> None:
+        """Save all inbox tasks - good for migrations."""
+        self._storage.dump_all(self._entity_to_row(it) for it in inbox_tasks)
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListItem:
         """Load a given smart listitem."""
@@ -455,6 +471,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             tag_ids=set(smart_list_item.tags_ref_id),
             url=smart_list_item.url)
         smart_list_item_row.ref_id = smart_list_item.ref_id
+        smart_list_item_row.version = smart_list_item.version
         smart_list_item_row.created_time = smart_list_item.created_time
         smart_list_item_row.archived_time = smart_list_item.archived_time
         smart_list_item_row.last_modified_time = smart_list_item.last_modified_time
@@ -463,12 +480,13 @@ class YamlSmartListItemRepository(SmartListItemRepository):
     @staticmethod
     def _row_to_entity(row: _SmartListItemRow) -> SmartListItem:
         return SmartListItem(
-            _ref_id=row.ref_id,
-            _archived=row.archived,
-            _created_time=row.created_time,
-            _archived_time=row.archived_time,
-            _last_modified_time=row.last_modified_time,
-            _events=[],
+            ref_id=row.ref_id,
+            version=row.version,
+            archived=row.archived,
+            created_time=row.created_time,
+            archived_time=row.archived_time,
+            last_modified_time=row.last_modified_time,
+            events=[],
             smart_list_ref_id=row.smart_list_ref_id,
             name=row.name,
             is_done=row.is_done,

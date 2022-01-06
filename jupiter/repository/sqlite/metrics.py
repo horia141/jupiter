@@ -44,6 +44,7 @@ class SqliteMetricRepository(MetricRepository):
             'metric',
             metadata,
             Column('ref_id', Integer, primary_key=True, autoincrement=True),
+            Column('version', Integer, nullable=False),
             Column('archived', Boolean, nullable=False),
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
@@ -68,6 +69,7 @@ class SqliteMetricRepository(MetricRepository):
         try:
             result = self._connection.execute(insert(self._metric_table).values(
                 ref_id=metric.ref_id.as_int() if metric.ref_id != BAD_REF_ID else None,
+                version=metric.version,
                 archived=metric.archived,
                 created_time=metric.created_time.to_db(),
                 last_modified_time=metric.last_modified_time.to_db(),
@@ -104,6 +106,7 @@ class SqliteMetricRepository(MetricRepository):
             update(self._metric_table)
             .where(self._metric_table.c.ref_id == metric.ref_id.as_int())
             .values(
+                version=metric.version,
                 archived=metric.archived,
                 created_time=metric.created_time.to_db(),
                 last_modified_time=metric.last_modified_time.to_db(),
@@ -179,13 +182,14 @@ class SqliteMetricRepository(MetricRepository):
     @staticmethod
     def _row_to_entity(row: Result) -> Metric:
         return Metric(
-            _ref_id=EntityId.from_raw(str(row["ref_id"])),
-            _archived=row["archived"],
-            _created_time=Timestamp.from_db(row["created_time"]),
-            _archived_time=Timestamp.from_db(row["archived_time"])
+            ref_id=EntityId.from_raw(str(row["ref_id"])),
+            version=row["version"],
+            archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
             if row["archived_time"] else None,
-            _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            _events=[],
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            events=[],
             key=MetricKey.from_raw(row["the_key"]),
             name=MetricName.from_raw(row["name"]),
             collection_params=RecurringTaskGenParams(
@@ -223,6 +227,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             'metric_entry',
             metadata,
             Column('ref_id', Integer, primary_key=True, autoincrement=True),
+            Column('version', Integer, nullable=False),
             Column('archived', Boolean, nullable=False),
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
@@ -238,6 +243,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
         """Create a metric entry."""
         result = self._connection.execute(insert(self._metric_entry_table).values(
             ref_id=metric_entry.ref_id.as_int() if metric_entry.ref_id != BAD_REF_ID else None,
+            version=metric_entry.version,
             archived=metric_entry.archived,
             created_time=metric_entry.created_time.to_db(),
             last_modified_time=metric_entry.last_modified_time.to_db(),
@@ -256,6 +262,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             update(self._metric_entry_table)
             .where(self._metric_entry_table.c.ref_id == metric_entry.ref_id.as_int())
             .values(
+                version=metric_entry.version,
                 archived=metric_entry.archived,
                 created_time=metric_entry.created_time.to_db(),
                 last_modified_time=metric_entry.last_modified_time.to_db(),
@@ -318,13 +325,14 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
     @staticmethod
     def _row_to_entity(row: Result) -> MetricEntry:
         return MetricEntry(
-            _ref_id=EntityId.from_raw(str(row["ref_id"])),
-            _archived=row["archived"],
-            _created_time=Timestamp.from_db(row["created_time"]),
-            _archived_time=Timestamp.from_db(row["archived_time"])
+            ref_id=EntityId.from_raw(str(row["ref_id"])),
+            version=row["version"],
+            archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
             if row["archived_time"] else None,
-            _last_modified_time=Timestamp.from_db(row["last_modified_time"]),
-            _events=[],
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            events=[],
             metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])),
             collection_time=ADate.from_db(row["collection_time"]),
             value=row["value"],

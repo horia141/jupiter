@@ -34,6 +34,7 @@ class EventKind(enum.Enum):
 class Event:
     """An event for an aggregate root."""
 
+    entity_version: int
     timestamp: Timestamp
     frame_args: Dict[str, object]
 
@@ -52,14 +53,20 @@ class Event:
 
             try:
                 args = inspect.getargvalues(parent_frame)  # pylint: disable=deprecated-method
+                entity_version = 0
                 frame_args = {}
                 for arg_name in args.args:
                     if arg_name == 'self':
+                        # This is called from some sort of method of an aggregate root class and we're looking
+                        # at this frame. There is a self and it's the aggregate root itself!
+                        entity_version = args.locals[arg_name].version
                         continue
                     frame_args[arg_name] = args.locals[arg_name]
+                if entity_version == 0:
+                    raise Exception("There's no recovery from stuff like this - part three")
                 for kwarg_name, kwargs_value in kwargs.items():
                     frame_args[kwarg_name] = kwargs_value
-                new_event = cls(timestamp=timestamp, frame_args=frame_args)
+                new_event = cls(entity_version=entity_version, timestamp=timestamp, frame_args=frame_args)
                 return new_event
             finally:
                 del parent_frame

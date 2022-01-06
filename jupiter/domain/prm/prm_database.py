@@ -1,7 +1,7 @@
 """The personal relationship database."""
 from dataclasses import dataclass
 
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 
@@ -24,12 +24,13 @@ class PrmDatabase(AggregateRoot):
     def new_prm_database(catch_up_project_ref_id: EntityId, created_time: Timestamp) -> 'PrmDatabase':
         """Create a new personal database."""
         person = PrmDatabase(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             catch_up_project_ref_id=catch_up_project_ref_id)
         person.record_event(PrmDatabase.Created.make_event_from_frame_args(created_time))
         return person

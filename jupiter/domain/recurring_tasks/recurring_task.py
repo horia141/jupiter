@@ -10,7 +10,7 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -66,12 +66,13 @@ class RecurringTask(AggregateRoot):
             raise InputValidationError(f"End date {end_at_date} is before {today}")
 
         recurring_task = RecurringTask(
-            _ref_id=BAD_REF_ID,
-            _archived=archived,
-            _created_time=created_time,
-            _archived_time=created_time if archived else None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=archived,
+            created_time=created_time,
+            archived_time=created_time if archived else None,
+            last_modified_time=created_time,
+            events=[],
             recurring_task_collection_ref_id=recurring_task_collection_ref_id,
             name=name,
             period=period,

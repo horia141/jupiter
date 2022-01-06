@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.update_action import UpdateAction
@@ -28,12 +28,13 @@ class SmartListTag(AggregateRoot):
             smart_list_ref_id: EntityId, tag_name: SmartListTagName, created_time: Timestamp) -> 'SmartListTag':
         """Create a smart list tag."""
         smart_list_tag = SmartListTag(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             smart_list_ref_id=smart_list_ref_id,
             tag_name=tag_name)
         smart_list_tag.record_event(SmartListTag.Created.make_event_from_frame_args(created_time))

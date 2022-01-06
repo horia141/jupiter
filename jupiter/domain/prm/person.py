@@ -6,7 +6,7 @@ from jupiter.domain.prm.person_birthday import PersonBirthday
 from jupiter.domain.prm.person_name import PersonName
 from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -40,12 +40,13 @@ class Person(AggregateRoot):
             birthday: Optional[PersonBirthday], created_time: Timestamp) -> 'Person':
         """Create a person."""
         person = Person(
-            _ref_id=BAD_REF_ID,
-            _archived=False,
-            _created_time=created_time,
-            _archived_time=None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[],
             name=name,
             relationship=relationship,
             catch_up_params=catch_up_params,

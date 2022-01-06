@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -36,12 +36,13 @@ class Vacation(AggregateRoot):
             raise InputValidationError("Cannot set a start date after the end date")
 
         vacation = Vacation(
-            _ref_id=BAD_REF_ID,
-            _archived=archived,
-            _created_time=created_time,
-            _archived_time=created_time if archived else None,
-            _last_modified_time=created_time,
-            _events=[],
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=archived,
+            created_time=created_time,
+            archived_time=created_time if archived else None,
+            last_modified_time=created_time,
+            events=[],
             name=name,
             start_date=start_date,
             end_date=end_date)
