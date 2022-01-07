@@ -20,6 +20,7 @@ from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurring
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -99,6 +100,7 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
                 start_at_date=args.start_at_date,
                 end_at_date=args.end_at_date,
                 suspended=False,
+                source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time())
             recurring_task = \
                 uow.recurring_task_repository.create(recurring_task_collection, recurring_task)

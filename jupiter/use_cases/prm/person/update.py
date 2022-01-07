@@ -23,6 +23,7 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.global_properties import GlobalProperties
@@ -150,7 +151,8 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
 
             person.update(
                 name=args.name, relationship=args.relationship, birthday=args.birthday,
-                catch_up_params=catch_up_params, modification_time=self._time_provider.get_current_time())
+                catch_up_params=catch_up_params, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
 
             uow.person_repository.save(person)
 
@@ -168,9 +170,11 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
 
         if person.catch_up_params is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
+            inbox_task_archive_service = InboxTaskArchiveService(
+                source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                inbox_task_notion_manager=self._inbox_task_notion_manager)
             for inbox_task in person_catch_up_tasks:
-                InboxTaskArchiveService(
-                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager).do_it(inbox_task)
+                inbox_task_archive_service.do_it(inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_catch_up_tasks:
@@ -182,10 +186,13 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     person.catch_up_params.due_at_month)
 
                 inbox_task.update_link_to_person_catch_up(
-                    name=schedule.full_name, recurring_timeline=schedule.timeline,
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
                     eisen=person.catch_up_params.eisen,
                     difficulty=person.catch_up_params.difficulty,
-                    actionable_date=schedule.actionable_date, due_time=schedule.due_time,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time,
+                    source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time())
                 # Situation 2a: we're handling the same project.
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -208,10 +215,11 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
 
         if person.birthday is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
+            inbox_task_archive_service = InboxTaskArchiveService(
+                source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                inbox_task_notion_manager=self._inbox_task_notion_manager)
             for inbox_task in person_birthday_tasks:
-                InboxTaskArchiveService(
-                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager)\
-                    .do_it(inbox_task)
+                inbox_task_archive_service.do_it(inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_birthday_tasks:
@@ -224,8 +232,11 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, person.birthday.month))
 
                 inbox_task.update_link_to_person_birthday(
-                    name=schedule.full_name, recurring_timeline=schedule.timeline,
-                    preparation_days_cnt=person.preparation_days_cnt_for_birthday, due_time=schedule.due_time,
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    preparation_days_cnt=person.preparation_days_cnt_for_birthday,
+                    due_time=schedule.due_time,
+                    source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time())
                 # Situation 2a: we're handling the same project.
                 with self._storage_engine.get_unit_of_work() as uow:

@@ -7,6 +7,7 @@ from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotion
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskNotFoundError
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -15,16 +16,17 @@ LOGGER = logging.getLogger(__name__)
 class BigPlanArchiveService:
     """Shared logic for archiving a big plan."""
 
+    _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
-            inbox_task_notion_manager: InboxTaskNotionManager,
-            big_plan_notion_manager: BigPlanNotionManager) -> None:
+            self, source: EventSource, time_provider: TimeProvider, storage_engine: StorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager, big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
+        self._source = source
         self._time_provider = time_provider
         self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
@@ -36,7 +38,7 @@ class BigPlanArchiveService:
             return
 
         with self._storage_engine.get_unit_of_work() as uow:
-            big_plan.mark_archived(self._time_provider.get_current_time())
+            big_plan.mark_archived(self._source, self._time_provider.get_current_time())
             uow.big_plan_repository.save(big_plan)
 
             big_plan_collection = uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
@@ -48,7 +50,7 @@ class BigPlanArchiveService:
                     allow_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id],
                     filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
             for inbox_task in inbox_tasks_to_archive:
-                inbox_task.mark_archived(self._time_provider.get_current_time())
+                inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)
 
         try:

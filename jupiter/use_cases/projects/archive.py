@@ -10,6 +10,7 @@ from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -71,10 +72,10 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                 uow.inbox_task_repository.find_all(filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
 
             for inbox_task in inbox_tasks:
-                inbox_task.mark_archived(self._time_provider.get_current_time())
+                inbox_task.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)
 
-            inbox_task_collection.mark_archived(self._time_provider.get_current_time())
+            inbox_task_collection.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.inbox_task_collection_repository.save(inbox_task_collection)
 
             big_plan_collection = uow.big_plan_collection_repository.load_by_project(project.ref_id)
@@ -82,10 +83,10 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                 uow.big_plan_repository.find_all(filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id])
 
             for big_plan in big_plans:
-                big_plan.mark_archived(self._time_provider.get_current_time())
+                big_plan.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.big_plan_repository.save(big_plan)
 
-            big_plan_collection.mark_archived(self._time_provider.get_current_time())
+            big_plan_collection.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.big_plan_collection_repository.save(big_plan_collection)
 
             recurring_task_collection = uow.recurring_task_collection_repository.load_by_project(project.ref_id)
@@ -94,13 +95,13 @@ class ProjectArchiveUseCase(UseCase['ProjectArchiveUseCase.Args', None]):
                     filter_recurring_task_collection_ref_ids=[recurring_task_collection.ref_id])
 
             for recurring_task in recurring_tasks:
-                recurring_task.mark_archived(self._time_provider.get_current_time())
+                recurring_task.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.recurring_task_repository.save(recurring_task)
 
-            recurring_task_collection.mark_archived(self._time_provider.get_current_time())
+            recurring_task_collection.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.recurring_task_collection_repository.save(recurring_task_collection)
 
-            project.mark_archived(self._time_provider.get_current_time())
+            project.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.project_repository.save(project)
         LOGGER.info("Applied local changes")
 

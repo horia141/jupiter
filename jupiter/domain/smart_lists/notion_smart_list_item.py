@@ -9,6 +9,7 @@ from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.update_action import UpdateAction
 
@@ -56,6 +57,7 @@ class NotionSmartListItem(
             is_done=self.is_done,
             tags_ref_id=[extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags],
             url=URL.from_raw(self.url) if self.url else None,
+            source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseExtraInfo) -> SmartListItem:
@@ -66,6 +68,8 @@ class NotionSmartListItem(
             tags_ref_id=
             UpdateAction.change_to([extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags]),
             url=UpdateAction.change_to(URL.from_raw(self.url) if self.url else None),
+            source=EventSource.NOTION,
             modification_time=self.last_edited_time)
-        aggregate_root.change_archived(self.archived, self.last_edited_time)
+        aggregate_root.change_archived(
+            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
         return aggregate_root

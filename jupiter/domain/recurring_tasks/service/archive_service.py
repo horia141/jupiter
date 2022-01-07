@@ -8,6 +8,7 @@ from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import R
     NotionRecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -16,16 +17,18 @@ LOGGER = logging.getLogger(__name__)
 class RecurringTaskArchiveService:
     """Shared service for archiving a recurring task."""
 
+    _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, source: EventSource, time_provider: TimeProvider, storage_engine: StorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
+        self._source = source
         self._time_provider = time_provider
         self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
@@ -37,7 +40,7 @@ class RecurringTaskArchiveService:
             return
 
         with self._storage_engine.get_unit_of_work() as uow:
-            recurring_task.mark_archived(self._time_provider.get_current_time())
+            recurring_task.mark_archived(self._source, self._time_provider.get_current_time())
             uow.recurring_task_repository.save(recurring_task)
 
             recurring_task_collection = \
@@ -49,7 +52,7 @@ class RecurringTaskArchiveService:
                 allow_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id],
                 filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
             for inbox_task in inbox_tasks_to_archive:
-                inbox_task.mark_archived(self._time_provider.get_current_time())
+                inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)
 
         try:

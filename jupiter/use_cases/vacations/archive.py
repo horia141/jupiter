@@ -5,6 +5,7 @@ from typing import Final
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -30,7 +31,7 @@ class VacationArchiveUseCase(UseCase[EntityId, None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             vacation = uow.vacation_repository.load_by_id(args)
-            vacation.mark_archived(archived_time=self._time_provider.get_current_time())
+            vacation.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.vacation_repository.save(vacation)
 
         try:

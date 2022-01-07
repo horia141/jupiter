@@ -21,6 +21,7 @@ from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.global_properties import GlobalProperties
@@ -113,7 +114,8 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
             recurring_task.update(
                 name=args.name, period=args.period, the_type=args.the_type, gen_params=recurring_task_gen_params,
                 must_do=args.must_do, skip_rule=args.skip_rule, start_at_date=args.start_at_date,
-                end_at_date=args.end_at_date, modification_time=self._time_provider.get_current_time())
+                end_at_date=args.end_at_date, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
 
         notion_recurring_task = \
             self._recurring_task_notion_manager.load_recurring_task(
@@ -137,9 +139,15 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
 
                 inbox_task.update_link_to_recurring_task(
-                    schedule.full_name, schedule.timeline, recurring_task.the_type, schedule.actionable_date,
-                    schedule.due_time, recurring_task.gen_params.eisen, recurring_task.gen_params.difficulty,
-                    self._time_provider.get_current_time())
+                    name=schedule.full_name,
+                    timeline=schedule.timeline,
+                    the_type=recurring_task.the_type,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time,
+                    eisen=recurring_task.gen_params.eisen,
+                    difficulty=recurring_task.gen_params.difficulty,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)

@@ -14,6 +14,7 @@ from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -53,7 +54,8 @@ class RecurringTask(AggregateRoot):
             recurring_task_collection_ref_id: EntityId, archived: bool, name: RecurringTaskName,
             period: RecurringTaskPeriod, the_type: Optional[RecurringTaskType], gen_params: RecurringTaskGenParams,
             must_do: bool, skip_rule: Optional[RecurringTaskSkipRule], start_at_date: Optional[ADate],
-            end_at_date: Optional[ADate], suspended: bool, created_time: Timestamp) -> 'RecurringTask':
+            end_at_date: Optional[ADate], suspended: bool, source: EventSource,
+            created_time: Timestamp) -> 'RecurringTask':
         """Create a recurring task."""
         today = ADate.from_date(created_time.as_date())
         RecurringTask._check_actionable_and_due_date_configs(
@@ -83,7 +85,8 @@ class RecurringTask(AggregateRoot):
             start_at_date=start_at_date if start_at_date else today,
             end_at_date=end_at_date,
             suspended=suspended)
-        recurring_task.record_event(RecurringTask.Created.make_event_from_frame_args(created_time))
+        recurring_task.record_event(
+            RecurringTask.Created.make_event_from_frame_args(source, recurring_task.version, created_time))
 
         return recurring_task
 
@@ -92,7 +95,7 @@ class RecurringTask(AggregateRoot):
             the_type: UpdateAction[RecurringTaskType], gen_params: UpdateAction[RecurringTaskGenParams],
             must_do: UpdateAction[bool], skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]],
             start_at_date: UpdateAction[ADate], end_at_date: UpdateAction[Optional[ADate]],
-            modification_time: Timestamp) -> 'RecurringTask':
+            source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
         """Update the recurring task."""
         self.name = name.or_else(self.name)
         self.period = period.or_else(self.period)
@@ -118,23 +121,23 @@ class RecurringTask(AggregateRoot):
             self.start_at_date = the_start_at_date
             self.end_at_date = the_end_at_date
 
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(modification_time))
+        self.record_event(RecurringTask.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self
 
-    def suspend(self, modification_time: Timestamp) -> 'RecurringTask':
+    def suspend(self, source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
         """Suspend the recurring task."""
         if self.suspended:
             return self
         self.suspended = True
-        self.record_event(RecurringTask.Suspended.make_event_from_frame_args(modification_time))
+        self.record_event(RecurringTask.Suspended.make_event_from_frame_args(source, self.version, modification_time))
         return self
 
-    def unsuspend(self, modification_time: Timestamp) -> 'RecurringTask':
+    def unsuspend(self, source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
         """Unsuspend the recurring task."""
         if self.suspended:
             return self
         self.suspended = False
-        self.record_event(RecurringTask.Unsuspended.make_event_from_frame_args(modification_time))
+        self.record_event(RecurringTask.Unsuspended.make_event_from_frame_args(source, self.version, modification_time))
         return self
 
     def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:

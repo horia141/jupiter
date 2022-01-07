@@ -8,6 +8,7 @@ from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -30,7 +31,7 @@ class Vacation(AggregateRoot):
     @staticmethod
     def new_vacation(
             archived: bool, name: VacationName, start_date: ADate, end_date: ADate,
-            created_time: Timestamp) -> 'Vacation':
+            source: EventSource, created_time: Timestamp) -> 'Vacation':
         """Create a vacation."""
         if start_date >= end_date:
             raise InputValidationError("Cannot set a start date after the end date")
@@ -46,13 +47,13 @@ class Vacation(AggregateRoot):
             name=name,
             start_date=start_date,
             end_date=end_date)
-        vacation.record_event(Vacation.Created.make_event_from_frame_args(created_time))
+        vacation.record_event(Vacation.Created.make_event_from_frame_args(source, vacation.version, created_time))
 
         return vacation
 
     def update(
             self, name: UpdateAction[VacationName], start_date: UpdateAction[ADate], end_date: UpdateAction[ADate],
-            modification_time: Timestamp) -> 'Vacation':
+            source: EventSource, modification_time: Timestamp) -> 'Vacation':
         """Update a vacation's properties."""
         new_start_date = start_date.or_else(self.start_date)
         new_end_date = end_date.or_else(self.end_date)
@@ -62,7 +63,7 @@ class Vacation(AggregateRoot):
         self.name = name.or_else(self.name)
         self.start_date = new_start_date
         self.end_date = new_end_date
-        self.record_event(Vacation.Updated.make_event_from_frame_args(modification_time))
+        self.record_event(Vacation.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:

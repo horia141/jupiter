@@ -6,6 +6,7 @@ from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartList
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -37,7 +38,9 @@ class SmartListTagUpdateUseCase(UseCase['SmartListTagUpdateUseCase.Args', None])
         with self._storage_engine.get_unit_of_work() as uow:
             smart_list_tag = uow.smart_list_tag_repository.load_by_id(args.ref_id)
 
-            smart_list_tag.update(args.tag_name, self._time_provider.get_current_time())
+            smart_list_tag.update(
+                tag_name=args.tag_name, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
 
             uow.smart_list_tag_repository.save(smart_list_tag)
 

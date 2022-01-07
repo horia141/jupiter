@@ -7,6 +7,7 @@ from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -42,7 +43,7 @@ class VacationUpdateUseCase(UseCase['VacationUpdateUseCase.Args', None]):
 
             vacation = vacation.update(
                 name=args.name, start_date=args.start_date, end_date=args.end_date,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             uow.vacation_repository.save(vacation)
 

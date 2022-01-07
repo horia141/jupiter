@@ -17,6 +17,7 @@ from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -73,7 +74,7 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
 
             person = Person.new_person(
                 name=args.name, relationship=args.relationship, catch_up_params=catch_up_params,
-                birthday=args.birthday, created_time=self._time_provider.get_current_time())
+                birthday=args.birthday, source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             person = uow.person_repository.create(person)
 
         notion_person = NotionPerson.new_notion_row(person, None)

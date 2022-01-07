@@ -19,6 +19,7 @@ from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -81,7 +82,8 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
 
             try:
                 metric = Metric.new_metric(
-                    args.key, args.name, collection_params, args.metric_unit, self._time_provider.get_current_time())
+                    key=args.key, name=args.name, collection_params=collection_params, metric_unit=args.metric_unit,
+                    source=EventSource.CLI, created_time=self._time_provider.get_current_time())
                 metric = uow.metric_repository.create(metric)
             except MetricAlreadyExistsError:
                 raise InputValidationError(f"Metric with key {metric.key} already exists")

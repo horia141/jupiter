@@ -23,6 +23,7 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.global_properties import GlobalProperties
@@ -159,7 +160,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
 
             metric.update(
                 name=args.name, collection_params=collection_params,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             uow.metric_repository.save(metric)
 
@@ -175,14 +176,16 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
             # Situation 1: we need to get rid of any existing collection metrics because there's no collection anymore.
             inbox_task_archive_service = \
                 InboxTaskArchiveService(
-                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
+                    source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                    inbox_task_notion_manager=self._inbox_task_notion_manager)
             for inbox_task in metric_collection_tasks:
                 inbox_task_archive_service.do_it(inbox_task)
         else:
             # Situation 2: we need to update the existing metrics.
             inbox_task_change_project_service = \
                 InboxTaskChangeProjectService(
-                    self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
+                    source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                    inbox_task_notion_manager=self._inbox_task_notion_manager)
             for inbox_task in metric_collection_tasks:
                 schedule = schedules.get_schedule(
                     metric.collection_params.period, metric.name,
@@ -192,9 +195,14 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     metric.collection_params.due_at_month)
 
                 inbox_task.update_link_to_metric(
-                    name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=metric.collection_params.eisen,
-                    difficulty=metric.collection_params.difficulty, actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    eisen=metric.collection_params.eisen,
+                    difficulty=metric.collection_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)

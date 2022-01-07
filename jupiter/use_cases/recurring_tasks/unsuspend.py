@@ -5,6 +5,7 @@ from typing import Final
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -33,7 +34,7 @@ class RecurringTaskUnsuspendUseCase(UseCase['RecurringTaskUnsuspendUseCase.Args'
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
-            recurring_task.unsuspend(self._time_provider.get_current_time())
+            recurring_task.unsuspend(source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.recurring_task_repository.save(recurring_task)
 
         notion_recurring_task = self._recurring_task_notion_manager.load_recurring_task(

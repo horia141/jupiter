@@ -7,6 +7,7 @@ from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveS
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -37,16 +38,18 @@ class MetricArchiveUseCase(UseCase[MetricKey, None]):
             metric = uow.metric_repository.load_by_key(args)
 
             for metric_entry in uow.metric_entry_repository.find_all_for_metric(metric.ref_id):
-                metric_entry.mark_archived(archived_time=self._time_provider.get_current_time())
+                metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.metric_entry_repository.save(metric_entry)
 
-            metric.mark_archived(archived_time=self._time_provider.get_current_time())
+            metric.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.metric_repository.save(metric)
 
             all_inbox_tasks = uow.inbox_task_repository.find_all(filter_metric_ref_ids=[metric.ref_id])
 
         inbox_task_archive_service = \
-            InboxTaskArchiveService(self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
+            InboxTaskArchiveService(
+                source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                inbox_task_notion_manager=self._inbox_task_notion_manager)
         for inbox_task in all_inbox_tasks:
             inbox_task_archive_service.do_it(inbox_task)
 

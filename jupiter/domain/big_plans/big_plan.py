@@ -9,6 +9,7 @@ from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -37,7 +38,8 @@ class BigPlan(AggregateRoot):
     @staticmethod
     def new_big_plan(
             archived: bool, big_plan_collection_ref_id: EntityId, name: BigPlanName, status: BigPlanStatus,
-            actionable_date: Optional[ADate], due_date: Optional[ADate], created_time: Timestamp) -> 'BigPlan':
+            actionable_date: Optional[ADate], due_date: Optional[ADate], source: EventSource,
+            created_time: Timestamp) -> 'BigPlan':
         """Create a big plan."""
         big_plan = BigPlan(
             ref_id=BAD_REF_ID,
@@ -59,15 +61,16 @@ class BigPlan(AggregateRoot):
 
         big_plan.record_event(
             BigPlan.Created.make_event_from_frame_args(
-                created_time, notion_link_uuid=big_plan.notion_link_uuid, accepted_time=big_plan.accepted_time,
-                working_time=big_plan.working_time, completed_time=big_plan.completed_time))
+                source, big_plan.version, created_time, notion_link_uuid=big_plan.notion_link_uuid,
+                accepted_time=big_plan.accepted_time, working_time=big_plan.working_time,
+                completed_time=big_plan.completed_time))
 
         return big_plan
 
     def update(
             self, name: UpdateAction[BigPlanName], status: UpdateAction[BigPlanStatus],
             actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
-            modification_time: Timestamp) -> 'BigPlan':
+            source: EventSource, modification_time: Timestamp) -> 'BigPlan':
         """Update the big plan."""
         self.name = name.or_else(self.name)
 
@@ -114,7 +117,8 @@ class BigPlan(AggregateRoot):
         self.actionable_date = actionable_date.or_else(self.actionable_date)
         self.due_date = due_date.or_else(self.due_date)
 
-        self.record_event(BigPlan.Updated.make_event_from_frame_args(modification_time, **event_kwargs))
+        self.record_event(
+            BigPlan.Updated.make_event_from_frame_args(source, self.version, modification_time, **event_kwargs))
 
         return self
 

@@ -6,6 +6,7 @@ from jupiter.domain.adate import ADate
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -29,7 +30,7 @@ class MetricEntry(AggregateRoot):
     @staticmethod
     def new_metric_entry(
             archived: bool, metric_ref_id: EntityId, collection_time: ADate, value: float, notes: Optional[str],
-            created_time: Timestamp) -> 'MetricEntry':
+            source: EventSource, created_time: Timestamp) -> 'MetricEntry':
         """Create a metric entry."""
         metric_entry = MetricEntry(
             ref_id=BAD_REF_ID,
@@ -43,15 +44,16 @@ class MetricEntry(AggregateRoot):
             collection_time=collection_time,
             value=value,
             notes=notes)
-        metric_entry.record_event(MetricEntry.Created.make_event_from_frame_args(created_time))
+        metric_entry.record_event(
+            MetricEntry.Created.make_event_from_frame_args(source, metric_entry.version, created_time))
         return metric_entry
 
     def update(
             self, collection_time: UpdateAction[ADate], value: UpdateAction[float], notes: UpdateAction[Optional[str]],
-            modification_time: Timestamp) -> 'MetricEntry':
+            source: EventSource, modification_time: Timestamp) -> 'MetricEntry':
         """Change the metric entry."""
         self.collection_time = collection_time.or_else(self.collection_time)
         self.value = value.or_else(self.value)
         self.notes = notes.or_else(self.notes)
-        self.record_event(MetricEntry.Updated.make_event_from_frame_args(modification_time))
+        self.record_event(MetricEntry.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self

@@ -30,17 +30,30 @@ class EventKind(enum.Enum):
         return str(self.value)
 
 
+@enum.unique
+class EventSource(enum.Enum):
+    """The source of the modification which this event records."""
+    CLI = "cli"
+    NOTION = "notion"
+
+    def to_db(self) -> str:
+        """A database appropriate form of this enum."""
+        return str(self.value)
+
+
 @dataclass(frozen=True)
 class Event:
     """An event for an aggregate root."""
 
+    source: EventSource
     entity_version: int
     timestamp: Timestamp
     frame_args: Dict[str, object]
 
     @classmethod
     def make_event_from_frame_args(
-            cls: typing.Type[EventType], timestamp: Timestamp, **kwargs: object) -> EventType:
+            cls: typing.Type[EventType], source: EventSource, entity_version: int, timestamp: Timestamp,
+            **kwargs: object) -> EventType:
         """Construct the data for an event from the arguments of the method which calls this one."""
         frame = inspect.currentframe()
         if frame is None:
@@ -53,20 +66,18 @@ class Event:
 
             try:
                 args = inspect.getargvalues(parent_frame)  # pylint: disable=deprecated-method
-                entity_version = 0
                 frame_args = {}
                 for arg_name in args.args:
-                    if arg_name == 'self':
+                    if arg_name in ('self', 'source'):
                         # This is called from some sort of method of an aggregate root class and we're looking
-                        # at this frame. There is a self and it's the aggregate root itself!
-                        entity_version = args.locals[arg_name].version
+                        # at this frame. There is a self and it's the aggregate root itself! Ditto don't need to
+                        # map the source again.
                         continue
                     frame_args[arg_name] = args.locals[arg_name]
-                if entity_version == 0:
-                    raise Exception("There's no recovery from stuff like this - part three")
                 for kwarg_name, kwargs_value in kwargs.items():
                     frame_args[kwarg_name] = kwargs_value
-                new_event = cls(entity_version=entity_version, timestamp=timestamp, frame_args=frame_args)
+                new_event = \
+                    cls(source=source, entity_version=entity_version, timestamp=timestamp, frame_args=frame_args)
                 return new_event
             finally:
                 del parent_frame

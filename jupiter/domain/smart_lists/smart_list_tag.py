@@ -5,6 +5,7 @@ from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -25,7 +26,8 @@ class SmartListTag(AggregateRoot):
 
     @staticmethod
     def new_smart_list_tag(
-            smart_list_ref_id: EntityId, tag_name: SmartListTagName, created_time: Timestamp) -> 'SmartListTag':
+            smart_list_ref_id: EntityId, tag_name: SmartListTagName, source: EventSource,
+            created_time: Timestamp) -> 'SmartListTag':
         """Create a smart list tag."""
         smart_list_tag = SmartListTag(
             ref_id=BAD_REF_ID,
@@ -37,12 +39,15 @@ class SmartListTag(AggregateRoot):
             events=[],
             smart_list_ref_id=smart_list_ref_id,
             tag_name=tag_name)
-        smart_list_tag.record_event(SmartListTag.Created.make_event_from_frame_args(created_time))
+        smart_list_tag.record_event(
+            SmartListTag.Created.make_event_from_frame_args(source, smart_list_tag.version, created_time))
 
         return smart_list_tag
 
-    def update(self, tag_name: UpdateAction[SmartListTagName], modification_time: Timestamp) -> 'SmartListTag':
+    def update(
+            self, tag_name: UpdateAction[SmartListTagName], source: EventSource,
+            modification_time: Timestamp) -> 'SmartListTag':
         """Change the smart list tag."""
         self.tag_name = tag_name.or_else(self.tag_name)
-        self.record_event(SmartListTag.Updated.make_event_from_frame_args(modification_time))
+        self.record_event(SmartListTag.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self

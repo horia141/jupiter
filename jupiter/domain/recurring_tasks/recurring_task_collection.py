@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 
 
 @dataclass()
@@ -17,7 +18,8 @@ class RecurringTaskCollection(AggregateRoot):
     project_ref_id: EntityId
 
     @staticmethod
-    def new_recurring_task_collection(project_ref_id: EntityId, created_time: Timestamp) -> 'RecurringTaskCollection':
+    def new_recurring_task_collection(
+            project_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'RecurringTaskCollection':
         """Create a recurring task collection."""
         recurring_task_collection = RecurringTaskCollection(
             ref_id=BAD_REF_ID,
@@ -29,6 +31,7 @@ class RecurringTaskCollection(AggregateRoot):
             events=[],
             project_ref_id=project_ref_id)
         recurring_task_collection.record_event(
-            RecurringTaskCollection.Created.make_event_from_frame_args(created_time))
+            RecurringTaskCollection.Created.make_event_from_frame_args(
+                source, recurring_task_collection.version, created_time))
 
         return recurring_task_collection

@@ -5,6 +5,7 @@ from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionEntity
 from jupiter.framework.update_action import UpdateAction
 
@@ -29,5 +30,6 @@ class NotionMetric(NotionEntity[Metric]):
         aggregate_root.update(
             name=UpdateAction.change_to(metric_name),
             collection_params=UpdateAction.do_nothing(),
+            source=EventSource.NOTION,
             modification_time=modification_time)
         return aggregate_root

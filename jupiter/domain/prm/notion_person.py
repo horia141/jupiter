@@ -15,6 +15,7 @@ from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.update_action import UpdateAction
 
@@ -98,6 +99,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
             relationship=person_relationship,
             catch_up_params=person_catch_up_params,
             birthday=person_birthday,
+            source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: Person, extra_info: InverseExtraInfo) -> Person:
@@ -127,7 +129,9 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
         aggregate_root.update(
             name=UpdateAction.change_to(person_name), relationship=UpdateAction.change_to(person_relationship),
             catch_up_params=UpdateAction.change_to(person_catch_up_params),
-            birthday=UpdateAction.change_to(person_birthday), modification_time=self.last_edited_time)
-        aggregate_root.change_archived(self.archived, self.last_edited_time)
+            birthday=UpdateAction.change_to(person_birthday), source=EventSource.NOTION,
+            modification_time=self.last_edited_time)
+        aggregate_root.change_archived(
+            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
 
         return aggregate_root

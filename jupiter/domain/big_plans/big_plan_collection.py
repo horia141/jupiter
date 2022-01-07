@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 
 
 @dataclass()
@@ -17,7 +18,8 @@ class BigPlanCollection(AggregateRoot):
     project_ref_id: EntityId
 
     @staticmethod
-    def new_big_plan_collection(project_ref_id: EntityId, created_time: Timestamp) -> 'BigPlanCollection':
+    def new_big_plan_collection(
+            project_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'BigPlanCollection':
         """Create a big plan collection."""
         big_plan_collection = BigPlanCollection(
             ref_id=BAD_REF_ID,
@@ -28,6 +30,7 @@ class BigPlanCollection(AggregateRoot):
             last_modified_time=created_time,
             events=[],
             project_ref_id=project_ref_id)
-        big_plan_collection.record_event(BigPlanCollection.Created.make_event_from_frame_args(created_time))
+        big_plan_collection.record_event(
+            BigPlanCollection.Created.make_event_from_frame_args(source, big_plan_collection.version, created_time))
 
         return big_plan_collection

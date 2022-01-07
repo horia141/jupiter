@@ -8,6 +8,7 @@ from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -38,7 +39,7 @@ class SmartListTagCreateUseCase(UseCase['SmartListTagCreateUseCase.Args', None])
         with self._storage_engine.get_unit_of_work() as uow:
             metric = uow.smart_list_repository.load_by_key(args.smart_list_key)
             smart_list_tag = SmartListTag.new_smart_list_tag(
-                smart_list_ref_id=metric.ref_id, tag_name=args.tag_name,
+                smart_list_ref_id=metric.ref_id, tag_name=args.tag_name, source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time())
             smart_list_tag = uow.smart_list_tag_repository.create(smart_list_tag)
         notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)

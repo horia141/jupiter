@@ -8,6 +8,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -16,14 +17,16 @@ LOGGER = logging.getLogger(__name__)
 class InboxTaskChangeProjectService:
     """Service for changing the project of an inbox task."""
 
+    _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
     _storage_engine: Final[StorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, source: EventSource, time_provider: TimeProvider, storage_engine: StorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
+        self._source = source
         self._time_provider = time_provider
         self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
@@ -39,7 +42,9 @@ class InboxTaskChangeProjectService:
 
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project_ref_id)
-            inbox_task.change_project(inbox_task_collection, self._time_provider.get_current_time())
+            inbox_task.change_project(
+                inbox_task_collection=inbox_task_collection, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
             uow.inbox_task_repository.save(inbox_task)
 
         notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))

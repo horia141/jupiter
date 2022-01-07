@@ -9,6 +9,7 @@ from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -32,7 +33,7 @@ class Metric(AggregateRoot):
     @staticmethod
     def new_metric(
             key: MetricKey, name: MetricName, collection_params: Optional[RecurringTaskGenParams],
-            metric_unit: Optional[MetricUnit], created_time: Timestamp) -> 'Metric':
+            metric_unit: Optional[MetricUnit], source: EventSource, created_time: Timestamp) -> 'Metric':
         """Create a metric."""
         metric = Metric(
             ref_id=BAD_REF_ID,
@@ -46,15 +47,15 @@ class Metric(AggregateRoot):
             name=name,
             collection_params=collection_params,
             metric_unit=metric_unit)
-        metric.record_event(Metric.Created.make_event_from_frame_args(created_time))
+        metric.record_event(Metric.Created.make_event_from_frame_args(source, metric.version, created_time))
 
         return metric
 
     def update(
             self, name: UpdateAction[MetricName], collection_params: UpdateAction[Optional[RecurringTaskGenParams]],
-            modification_time: Timestamp) -> 'Metric':
+            source: EventSource, modification_time: Timestamp) -> 'Metric':
         """Change the metric."""
         self.name = name.or_else(self.name)
         self.collection_params = collection_params.or_else(self.collection_params)
-        self.record_event(Metric.Updated.make_event_from_frame_args(modification_time))
+        self.record_event(Metric.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self

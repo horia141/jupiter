@@ -8,6 +8,7 @@ from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotio
 from jupiter.domain.vacations.notion_vacation import NotionVacation
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.domain.vacations.vacation_name import VacationName
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -37,7 +38,8 @@ class VacationCreateUseCase(UseCase['VacationCreateUseCase.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's actions."""
         vacation = Vacation.new_vacation(
-            False, args.name, args.start_date, args.end_date, self._time_provider.get_current_time())
+            archived=False, name=args.name, start_date=args.start_date, end_date=args.end_date,
+            source=EventSource.CLI, created_time=self._time_provider.get_current_time())
         with self._storage_engine.get_unit_of_work() as uow:
             vacation = uow.vacation_repository.create(vacation)
         notion_vacation = NotionVacation.new_notion_row(vacation, None)

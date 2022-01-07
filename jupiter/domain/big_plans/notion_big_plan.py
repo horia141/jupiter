@@ -8,6 +8,7 @@ from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.update_action import UpdateAction
 
@@ -48,6 +49,7 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
             status=BigPlanStatus.from_raw(self.status),
             actionable_date=self.actionable_date,
             due_date=self.due_date,
+            source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: BigPlan, extra_info: InverseExtraInfo) -> BigPlan:
@@ -57,6 +59,8 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
             status=UpdateAction.change_to(BigPlanStatus.from_raw(self.status)),
             actionable_date=UpdateAction.change_to(self.actionable_date),
             due_date=UpdateAction.change_to(self.due_date),
+            source=EventSource.NOTION,
             modification_time=self.last_edited_time)
-        aggregate_root.change_archived(self.archived, self.last_edited_time)
+        aggregate_root.change_archived(
+            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
         return aggregate_root

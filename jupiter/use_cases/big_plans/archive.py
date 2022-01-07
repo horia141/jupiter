@@ -10,6 +10,7 @@ from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service impo
     InboxTaskBigPlanRefOptionsUpdateService
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -46,7 +47,9 @@ class BigPlanArchiveUseCase(UseCase['BigPlanArchiveUseCase.Args', None]):
                 filter_big_plan_ref_ids=[args.ref_id])
 
         inbox_task_archive_service = \
-            InboxTaskArchiveService(self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
+            InboxTaskArchiveService(
+                source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                inbox_task_notion_manager=self._inbox_task_notion_manager)
         for inbox_task in inbox_tasks_for_big_plan:
             LOGGER.info(f"Archiving task {inbox_task.name} for plan")
             inbox_task_archive_service.do_it(inbox_task)
@@ -56,7 +59,7 @@ class BigPlanArchiveUseCase(UseCase['BigPlanArchiveUseCase.Args', None]):
             big_plan = uow.big_plan_repository.load_by_id(args.ref_id)
             big_plan_collection = \
                 uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
-            big_plan.mark_archived(self._time_provider.get_current_time())
+            big_plan.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.big_plan_repository.save(big_plan)
         LOGGER.info("Applied local changes")
         # Apply Notion changes

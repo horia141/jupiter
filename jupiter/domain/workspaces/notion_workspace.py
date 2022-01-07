@@ -5,6 +5,7 @@ from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionEntity
 from jupiter.framework.update_action import UpdateAction
 
@@ -29,5 +30,6 @@ class NotionWorkspace(NotionEntity[Workspace]):
         aggregate_root = aggregate_root.update(
             name=workspace_name,
             timezone=UpdateAction.do_nothing(),
+            source=EventSource.NOTION,
             modification_time=modification_time)
         return aggregate_root

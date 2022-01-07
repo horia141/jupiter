@@ -4,8 +4,7 @@ from typing import Optional, List
 
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
-from jupiter.framework.event import Event, EventKind
-
+from jupiter.framework.event import Event, EventKind, EventSource
 
 FIRST_VERSION = 1
 
@@ -62,24 +61,24 @@ class AggregateRoot:
         """Assign a ref id to the root."""
         self.ref_id = ref_id
 
-    def mark_archived(self, archived_time: Timestamp) -> None:
+    def mark_archived(self, source: EventSource, archived_time: Timestamp) -> None:
         """Archive the root."""
         self.archived = True
         self.archived_time = archived_time
-        self.record_event(AggregateRoot.Archived.make_event_from_frame_args(archived_time))
+        self.record_event(AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
 
-    def change_archived(self, archived: bool, archived_time: Timestamp) -> None:
+    def change_archived(self, archived: bool, source: EventSource, archived_time: Timestamp) -> None:
         """Change the archival status."""
         if self.archived == archived:
             return
         elif not self.archived and archived:
             self.archived = True
             self.archived_time = archived_time
-            self.record_event(AggregateRoot.Archived.make_event_from_frame_args(archived_time))
+            self.record_event(AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
         elif self.archived and not archived:
             self.archived = False
             self.archived_time = None
-            self.record_event(AggregateRoot.Restore.make_event_from_frame_args(archived_time))
+            self.record_event(AggregateRoot.Restore.make_event_from_frame_args(source, self.version, archived_time))
         else:
             return
 

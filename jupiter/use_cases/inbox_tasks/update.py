@@ -13,6 +13,7 @@ from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -53,7 +54,7 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
                 inbox_task.update(
                     name=args.name, status=args.status, eisen=args.eisen, difficulty=args.difficulty,
                     actionable_date=args.actionable_date, due_date=args.due_date,
-                    modification_time=self._time_provider.get_current_time())
+                    source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             except CannotModifyGeneratedTaskError as err:
                 raise InputValidationError(f"Modifing a generated task's field {err.field} is not possible") from err
 

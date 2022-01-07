@@ -1,10 +1,13 @@
 """Common toolin for SQLite repositories."""
+import logging
+
 from sqlalchemy import Table, MetaData, Column, Integer, ForeignKey, DateTime, String, JSON
 from sqlalchemy.dialects.sqlite import insert as sqliteInsert
 from sqlalchemy.engine import Connection
 
 from jupiter.framework.aggregate_root import AggregateRoot
 
+LOGGER = logging.getLogger(__name__)
 
 def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
     """Construct a standard events table for a given entity table."""
@@ -15,6 +18,7 @@ def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
         Column('timestamp', DateTime, primary_key=True),
         Column('session_index', Integer, primary_key=True),
         Column('name', String(32), primary_key=True),
+        Column('source', String(16), nullable=False),
         Column('owner_version', Integer, nullable=False),
         Column('kind', String(16), nullable=False),
         Column('data', JSON, nullable=False),
@@ -24,6 +28,7 @@ def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
 def upsert_events(connection: Connection, event_table: Table, aggreggate_root: AggregateRoot) -> None:
     """Upsert all the events for a given entity in an events table."""
     for event_idx, event in enumerate(aggreggate_root.events):
+        LOGGER.info(event)
         connection.execute(
             sqliteInsert(event_table)
             .values(
@@ -31,6 +36,7 @@ def upsert_events(connection: Connection, event_table: Table, aggreggate_root: A
                 timestamp=event.timestamp.to_db(),
                 session_index=event_idx,
                 name=str(event.__class__.__name__),
+                source=event.source.to_db(),
                 owner_version=event.entity_version,
                 kind=event.kind.to_db(),
                 data=event.to_serializable_dict())

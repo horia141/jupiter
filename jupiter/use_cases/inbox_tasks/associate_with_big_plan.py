@@ -8,6 +8,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -45,7 +46,8 @@ class InboxTaskAssociateWithBigPlanUseCase(UseCase['InboxTaskAssociateWithBigPla
 
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
             inbox_task.associate_with_big_plan(
-                args.big_plan_ref_id, big_plan_name, self._time_provider.get_current_time())
+                big_plan_ref_id=args.big_plan_ref_id, big_plan_name=big_plan_name,
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.inbox_task_repository.save(inbox_task)
 
         notion_inbox_task = \

@@ -6,6 +6,7 @@ from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -25,7 +26,8 @@ class SmartList(AggregateRoot):
     name: SmartListName
 
     @staticmethod
-    def new_smart_list(key: SmartListKey, name: SmartListName, created_time: Timestamp) -> 'SmartList':
+    def new_smart_list(
+            key: SmartListKey, name: SmartListName, source: EventSource, created_time: Timestamp) -> 'SmartList':
         """Create a smart list."""
         smart_list = SmartList(
             ref_id=BAD_REF_ID,
@@ -37,12 +39,13 @@ class SmartList(AggregateRoot):
             events=[],
             key=key,
             name=name)
-        smart_list.record_event(SmartList.Created.make_event_from_frame_args(created_time))
+        smart_list.record_event(SmartList.Created.make_event_from_frame_args(source, smart_list.version, created_time))
 
         return smart_list
 
-    def update(self, name: UpdateAction[SmartListName], modification_time: Timestamp) -> 'SmartList':
+    def update(
+            self, name: UpdateAction[SmartListName], source: EventSource, modification_time: Timestamp) -> 'SmartList':
         """Change the name of the smart list."""
         self.name = name.or_else(self.name)
-        self.record_event(SmartList.Updated.make_event_from_frame_args(timestamp=modification_time))
+        self.record_event(SmartList.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self

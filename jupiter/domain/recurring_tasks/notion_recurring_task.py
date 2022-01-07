@@ -16,6 +16,7 @@ from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.update_action import UpdateAction
 
@@ -107,6 +108,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             must_do=self.must_do,
             start_at_date=self.start_at_date,
             end_at_date=self.end_at_date,
+            source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: RecurringTask, extra_info: InverseExtraInfo) -> RecurringTask:
@@ -140,10 +142,12 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             start_at_date=UpdateAction.change_to(
                 self.start_at_date if self.start_at_date else aggregate_root.start_at_date),
             end_at_date=UpdateAction.change_to(self.end_at_date),
+            source=EventSource.NOTION,
             modification_time=self.last_edited_time)
         if self.suspended:
-            aggregate_root.suspend(self.last_edited_time)
+            aggregate_root.suspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
         else:
-            aggregate_root.unsuspend(self.last_edited_time)
-        aggregate_root.change_archived(self.archived, self.last_edited_time)
+            aggregate_root.unsuspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
+        aggregate_root.change_archived(
+            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
         return aggregate_root

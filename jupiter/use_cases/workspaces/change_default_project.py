@@ -4,6 +4,7 @@ from typing import Final
 
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -33,6 +34,6 @@ class WorkspaceChangeDefaultProjectUseCase(UseCase['WorkspaceChangeDefaultProjec
 
             workspace = workspace.change_default_project(
                 default_project_ref_id=project.ref_id,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             uow.workspace_repository.save(workspace)

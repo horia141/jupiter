@@ -8,6 +8,7 @@ from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import R
 from jupiter.domain.recurring_tasks.service.archive_service import RecurringTaskArchiveService
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -42,5 +43,5 @@ class RecurringTaskArchiveUseCase(UseCase['RecurringTaskArchiveUseCase.Args', No
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
         RecurringTaskArchiveService(
-            self._time_provider, self._storage_engine, self._inbox_task_notion_manager,
+            EventSource.CLI, self._time_provider, self._storage_engine, self._inbox_task_notion_manager,
             self._recurring_task_notion_manager).do_it(recurring_task)

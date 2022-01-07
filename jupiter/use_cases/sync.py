@@ -41,6 +41,7 @@ from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNo
 from jupiter.domain.workspaces.service.sync_service import WorkspaceSyncService
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
@@ -144,6 +145,10 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
             all_smart_lists = uow.smart_list_repository.find_all(allow_archived=True)
             all_metrics = uow.metric_repository.find_all(allow_archived=True)
             all_persons = uow.person_repository.find_all(allow_archived=True)
+
+        inbox_task_archive_service = InboxTaskArchiveService(
+            source=EventSource.NOTION, time_provider=self._time_provider,
+            storage_engine=self._storage_engine, inbox_task_notion_manager=self._inbox_task_notion_manager)
 
         if SyncTarget.PROJECTS in sync_targets \
                 or SyncTarget.INBOX_TASKS in sync_targets \
@@ -282,9 +287,15 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
 
                         inbox_task.update_link_to_recurring_task(
-                            schedule.full_name, schedule.timeline, recurring_task.the_type, schedule.actionable_date,
-                            schedule.due_time, recurring_task.gen_params.eisen, recurring_task.gen_params.difficulty,
-                            self._time_provider.get_current_time())
+                            name=schedule.full_name,
+                            timeline=schedule.timeline,
+                            the_type=recurring_task.the_type,
+                            actionable_date=schedule.actionable_date,
+                            due_time=schedule.due_time,
+                            eisen=recurring_task.gen_params.eisen,
+                            difficulty=recurring_task.gen_params.difficulty,
+                            source=EventSource.NOTION,
+                            modification_time=self._time_provider.get_current_time())
 
                         with self._storage_engine.get_unit_of_work() as uow:
                             uow.inbox_task_repository.save(inbox_task)
@@ -309,10 +320,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         big_blan = big_plans_by_ref_id[inbox_task.big_plan_ref_id]
                         if not (big_blan.archived and not inbox_task.archived):
                             continue
-                        # ToDO(horia141): extra here
-                        InboxTaskArchiveService(
-                            self._time_provider, self._storage_engine, self._inbox_task_notion_manager)\
-                            .do_it(inbox_task)
+                        inbox_task_archive_service.do_it(inbox_task)
                         LOGGER.info(f"Archived inbox task {inbox_task.name}")
 
                 if SyncTarget.RECURRING_TASKS in sync_targets:
@@ -326,9 +334,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
                         if not (recurring_task.archived and not inbox_task.archived):
                             continue
-                        InboxTaskArchiveService(
-                            self._time_provider, self._storage_engine, self._inbox_task_notion_manager)\
-                            .do_it(inbox_task)
+                        inbox_task_archive_service.do_it(inbox_task)
                         LOGGER.info(f"Archived inbox task {inbox_task.name}")
 
         if SyncTarget.SMART_LISTS in sync_targets:
@@ -390,9 +396,14 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                     None, collection_params.actionable_from_day, collection_params.actionable_from_month,
                     collection_params.due_at_time, collection_params.due_at_day, collection_params.due_at_month)
                 inbox_task.update_link_to_metric(
-                    name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=collection_params.eisen,
-                    difficulty=collection_params.difficulty, actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    eisen=collection_params.eisen,
+                    difficulty=collection_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time,
+                    source=EventSource.NOTION,
+                    modification_time=self._time_provider.get_current_time())
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
@@ -431,9 +442,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
                 if person.archived:
                     if not inbox_task.archived:
-                        InboxTaskArchiveService(
-                            self._time_provider, self._storage_engine, self._inbox_task_notion_manager)\
-                            .do_it(inbox_task)
+                        inbox_task_archive_service.do_it(inbox_task)
                 else:
                     catch_up_params = typing.cast(RecurringTaskGenParams, person.catch_up_params)
                     schedule = schedules.get_schedule(
@@ -446,6 +455,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         eisen=catch_up_params.eisen, difficulty=catch_up_params.difficulty,
                         actionable_date=schedule.actionable_date,
                         due_time=schedule.due_time,
+                        source=EventSource.NOTION,
                         modification_time=self._time_provider.get_current_time())
 
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -470,9 +480,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
                 if person.archived:
                     if not inbox_task.archived:
-                        InboxTaskArchiveService(
-                            self._time_provider, self._storage_engine, self._inbox_task_notion_manager)\
-                            .do_it(inbox_task)
+                        inbox_task_archive_service.do_it(inbox_task)
                 else:
                     birthday = typing.cast(PersonBirthday, person.birthday)
                     schedule = schedules.get_schedule(
@@ -482,9 +490,12 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, birthday.day),
                         RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, birthday.month))
                     inbox_task.update_link_to_person_birthday(
-                        name=schedule.full_name, recurring_timeline=schedule.timeline,
+                        name=schedule.full_name,
+                        recurring_timeline=schedule.timeline,
                         preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                        due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
+                        due_time=schedule.due_time,
+                        source=EventSource.NOTION,
+                        modification_time=self._time_provider.get_current_time())
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.inbox_task_repository.save(inbox_task)

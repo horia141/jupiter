@@ -16,6 +16,7 @@ from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -76,6 +77,7 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
                 difficulty=args.difficulty,
                 actionable_date=args.actionable_date,
                 due_date=args.due_date,
+                source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time())
 
             inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)

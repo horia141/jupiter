@@ -6,6 +6,7 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -41,7 +42,7 @@ class MetricEntryUpdateUseCase(UseCase['MetricEntryUpdateUseCase.Args', None]):
 
             metric_entry = metric_entry.update(
                 collection_time=args.collection_time, value=args.value, notes=args.notes,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             uow.metric_entry_repository.save(metric_entry)
 

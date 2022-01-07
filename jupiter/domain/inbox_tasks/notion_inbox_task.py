@@ -14,6 +14,7 @@ from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.update_action import UpdateAction
 from jupiter.remote.notion.common import format_name_for_option
@@ -131,6 +132,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             difficulty=inbox_task_difficulty,
             actionable_date=self.actionable_date,
             due_date=self.due_date,
+            source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: InboxTask, extra_info: InverseInfo) -> InboxTask:
@@ -141,7 +143,8 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
         inbox_task_big_plan_name = BigPlanName.from_raw(self.big_plan_name) \
             if self.big_plan_name else None
         aggregate_root.associate_with_big_plan(
-            inbox_task_big_plan_ref_id, inbox_task_big_plan_name, self.last_edited_time)
+            big_plan_ref_id=inbox_task_big_plan_ref_id, big_plan_name=inbox_task_big_plan_name,
+            source=EventSource.NOTION, modification_time=self.last_edited_time)
         if aggregate_root.allow_user_changes:
             aggregate_root.update(
                 name=UpdateAction.change_to(InboxTaskName.from_raw(self.name)),
@@ -151,13 +154,16 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 eisen=UpdateAction.change_to(Eisen.from_raw(self.eisen) if self.eisen else Eisen.REGULAR),
                 difficulty=UpdateAction.change_to(
                     Difficulty.from_raw(self.difficulty) if self.difficulty else None),
+                source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
         else:
             aggregate_root.update_generated(
                 status=UpdateAction.change_to(InboxTaskStatus.from_raw(self.status)),
                 actionable_date=UpdateAction.change_to(self.actionable_date),
                 due_date=UpdateAction.change_to(self.due_date),
+                source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
-        aggregate_root.change_archived(self.archived, self.last_edited_time)
+        aggregate_root.change_archived(
+            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
 
         return aggregate_root

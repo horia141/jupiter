@@ -7,6 +7,7 @@ from jupiter.domain.url import URL
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -31,7 +32,8 @@ class SmartListItem(AggregateRoot):
     @staticmethod
     def new_smart_list_item(
             archived: bool, smart_list_ref_id: EntityId, name: SmartListItemName, is_done: bool,
-            tags_ref_id: List[EntityId], url: Optional[URL], created_time: Timestamp) -> 'SmartListItem':
+            tags_ref_id: List[EntityId], url: Optional[URL], source: EventSource,
+            created_time: Timestamp) -> 'SmartListItem':
         """Create a smart list item."""
         smart_list_item = SmartListItem(
             ref_id=BAD_REF_ID,
@@ -46,17 +48,18 @@ class SmartListItem(AggregateRoot):
             is_done=is_done,
             tags_ref_id=tags_ref_id,
             url=url)
-        smart_list_item.record_event(SmartListItem.Created.make_event_from_frame_args(created_time))
+        smart_list_item.record_event(
+            SmartListItem.Created.make_event_from_frame_args(source, smart_list_item.version, created_time))
         return smart_list_item
 
     def update(
             self, name: UpdateAction[SmartListItemName], is_done: UpdateAction[bool],
             tags_ref_id: UpdateAction[List[EntityId]], url: UpdateAction[Optional[URL]],
-            modification_time: Timestamp) -> 'SmartListItem':
+            source: EventSource, modification_time: Timestamp) -> 'SmartListItem':
         """Update the smart list item."""
         self.name = name.or_else(self.name)
         self.is_done = is_done.or_else(self.is_done)
         self.tags_ref_id = tags_ref_id.or_else(self.tags_ref_id)
         self.url = url.or_else(self.url)
-        self.record_event(SmartListItem.Updated.make_event_from_frame_args(modification_time))
+        self.record_event(SmartListItem.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self

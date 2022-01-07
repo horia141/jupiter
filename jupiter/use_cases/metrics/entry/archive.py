@@ -5,6 +5,7 @@ from typing import Final
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricEntryNotFoundError
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -30,7 +31,7 @@ class MetricEntryArchiveUseCase(UseCase[EntityId, None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             metric_entry = uow.metric_entry_repository.load_by_id(args)
-            metric_entry.mark_archived(self._time_provider.get_current_time())
+            metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.metric_entry_repository.save(metric_entry)
 
         try:

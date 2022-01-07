@@ -25,6 +25,7 @@ from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
@@ -255,7 +256,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                 name=schedule.full_name, timeline=schedule.timeline, the_type=recurring_task.the_type,
                 actionable_date=schedule.actionable_date, due_time=schedule.due_time,
                 eisen=recurring_task.gen_params.eisen, difficulty=recurring_task.gen_params.difficulty,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
@@ -281,6 +282,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     difficulty=recurring_task.gen_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
+                    source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
@@ -322,7 +324,8 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             found_task.update_link_to_metric(
                 name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=collection_params.eisen,
                 difficulty=collection_params.difficulty, actionable_date=schedule.actionable_date,
-                due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
+                due_time=schedule.due_time, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
@@ -346,6 +349,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     difficulty=collection_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
+                    source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
@@ -387,7 +391,8 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             found_task.update_link_to_person_catch_up(
                 name=schedule.full_name, recurring_timeline=schedule.timeline, eisen=catch_up_params.eisen,
                 difficulty=catch_up_params.difficulty, actionable_date=schedule.actionable_date,
-                due_time=schedule.due_time, modification_time=self._time_provider.get_current_time())
+                due_time=schedule.due_time, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
@@ -412,6 +417,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     difficulty=catch_up_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
+                    source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
@@ -449,7 +455,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             found_task.update_link_to_person_birthday(
                 name=schedule.full_name, recurring_timeline=schedule.timeline,
                 preparation_days_cnt=person.preparation_days_cnt_for_birthday, due_time=schedule.due_time,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
@@ -472,6 +478,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     preparation_days_cnt=person.preparation_days_cnt_for_birthday,
                     recurring_task_gen_right_now=right_now,
                     due_date=schedule.due_time,
+                    source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)

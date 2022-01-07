@@ -5,6 +5,7 @@ from typing import Optional
 from jupiter.domain.adate import ADate
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.notion import NotionRow
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.update_action import UpdateAction
@@ -43,12 +44,15 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
             collection_time=self.collection_time,
             value=self.value,
             notes=self.notes,
+            source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
     def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: InverseExtraInfo) -> MetricEntry:
         """Apply to an already existing metric entry."""
         aggregate_root.update(
             collection_time=UpdateAction.change_to(self.collection_time), value=UpdateAction.change_to(self.value),
-            notes=UpdateAction.change_to(self.notes), modification_time=self.last_edited_time)
-        aggregate_root.change_archived(self.archived, self.last_edited_time)
+            notes=UpdateAction.change_to(self.notes), source=EventSource.NOTION,
+            modification_time=self.last_edited_time)
+        aggregate_root.change_archived(
+            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
         return aggregate_root

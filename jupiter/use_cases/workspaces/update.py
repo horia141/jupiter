@@ -6,6 +6,7 @@ from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -38,7 +39,8 @@ class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
             workspace = uow.workspace_repository.load()
 
             workspace = workspace.update(
-                name=args.name, timezone=args.timezone, modification_time=self._time_provider.get_current_time())
+                name=args.name, timezone=args.timezone,
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             uow.workspace_repository.save(workspace)
 

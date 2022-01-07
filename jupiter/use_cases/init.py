@@ -22,6 +22,7 @@ from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.entity_id import BAD_REF_ID
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.remote.notion.infra.connection import NotionConnection
 from jupiter.utils.time_provider import TimeProvider
@@ -77,19 +78,26 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
         LOGGER.info("Creating workspace")
         with self._storage_engine.get_unit_of_work() as uow:
             new_workspace = \
-                Workspace.new_workspace(args.name, args.timezone, BAD_REF_ID, self._time_provider.get_current_time())
+                Workspace.new_workspace(
+                    name=args.name, timezone=args.timezone, default_project_ref_id=BAD_REF_ID,
+                    source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             new_workspace = uow.workspace_repository.create(new_workspace)
 
             new_default_project = \
                 Project.new_project(
-                    args.first_project_key, args.first_project_name, self._time_provider.get_current_time())
+                    key=args.first_project_key, name=args.first_project_name, source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
             new_default_project = uow.project_repository.create(new_default_project)
 
             LOGGER.info("Created first project")
-            new_workspace.change_default_project(new_default_project.ref_id, self._time_provider.get_current_time())
+            new_workspace.change_default_project(
+                default_project_ref_id=new_default_project.ref_id, source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time())
             uow.workspace_repository.save(new_workspace)
             prm_database = \
-                PrmDatabase.new_prm_database(new_default_project.ref_id, self._time_provider.get_current_time())
+                PrmDatabase.new_prm_database(
+                    catch_up_project_ref_id=new_default_project.ref_id, source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
             uow.prm_database_repository.create(prm_database)
             LOGGER.info("Creating the PRM database")
 

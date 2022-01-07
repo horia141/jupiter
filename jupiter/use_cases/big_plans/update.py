@@ -13,6 +13,7 @@ from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
     import InboxTaskBigPlanRefOptionsUpdateService
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -58,7 +59,7 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
 
             big_plan.update(
                 name=args.name, status=args.status, actionable_date=args.actionable_date, due_date=args.due_date,
-                modification_time=self._time_provider.get_current_time())
+                source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
             uow.big_plan_repository.save(big_plan)
 
@@ -78,7 +79,8 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
                         allow_archived=True, filter_big_plan_ref_ids=[big_plan.ref_id])
 
                 for inbox_task in all_inbox_tasks:
-                    inbox_task.update_link_to_big_plan(big_plan.ref_id, self._time_provider.get_current_time())
+                    inbox_task.update_link_to_big_plan(
+                        big_plan.ref_id, EventSource.CLI, self._time_provider.get_current_time())
                     uow.inbox_task_repository.save(inbox_task)
                     LOGGER.info(f'Updating the associated inbox task "{inbox_task.name}"')
 

@@ -35,6 +35,7 @@ from jupiter.domain.storage_engine import StorageEngine
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.vacation import Vacation
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -252,7 +253,8 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 allow_archived=False, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
 
         inbox_task_archive_service = InboxTaskArchiveService(
-            self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
+            source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+            inbox_task_notion_manager=self._inbox_task_notion_manager)
         for inbox_task in inbox_tasks:
             if not inbox_task.status.is_completed:
                 continue
@@ -269,8 +271,9 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
 
         big_plan_archive_service = \
             BigPlanArchiveService(
-                self._time_provider, self._storage_engine, self._inbox_task_notion_manager,
-                self._big_plan_notion_manager)
+                source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+                inbox_task_notion_manager=self._inbox_task_notion_manager,
+                big_plan_notion_manager=self._big_plan_notion_manager)
         for big_plan in big_plans:
             if not big_plan.status.is_completed:
                 continue

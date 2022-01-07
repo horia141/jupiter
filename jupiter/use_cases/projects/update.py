@@ -7,6 +7,7 @@ from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionMa
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -39,7 +40,8 @@ class ProjectUpdateUseCase(UseCase['ProjectUpdateUseCase.Args', None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             project = uow.project_repository.load_by_key(args.key)
-            project.update(args.name, self._time_provider.get_current_time())
+            project.update(
+                name=args.name, source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.project_repository.save(project)
         LOGGER.info("Applied local changes")
         notion_project = self._project_notion_manager.load_project(project.ref_id)

@@ -6,6 +6,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.storage_engine import StorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -35,4 +36,5 @@ class InboxTaskArchiveUseCase(UseCase['InboxTaskArchiveUseCase.Args', None]):
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
         InboxTaskArchiveService(
-            self._time_provider, self._storage_engine, self._inbox_task_notion_manager).do_it(inbox_task)
+            source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+            inbox_task_notion_manager=self._inbox_task_notion_manager).do_it(inbox_task)

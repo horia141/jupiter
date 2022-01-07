@@ -6,6 +6,7 @@ from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
@@ -25,7 +26,7 @@ class Project(AggregateRoot):
     name: ProjectName
 
     @staticmethod
-    def new_project(key: ProjectKey, name: ProjectName, created_time: Timestamp) -> 'Project':
+    def new_project(key: ProjectKey, name: ProjectName, source: EventSource, created_time: Timestamp) -> 'Project':
         """Create a project."""
         project = Project(
             ref_id=BAD_REF_ID,
@@ -37,12 +38,12 @@ class Project(AggregateRoot):
             events=[],
             key=key,
             name=name)
-        project.record_event(Project.Created.make_event_from_frame_args(created_time))
+        project.record_event(Project.Created.make_event_from_frame_args(source, project.version, created_time))
         return project
 
-    def update(self, name: UpdateAction[ProjectName], modification_time: Timestamp) -> 'Project':
+    def update(self, name: UpdateAction[ProjectName], source: EventSource, modification_time: Timestamp) -> 'Project':
         """Change the project."""
         self.name = name.or_else(self.name)
         self.record_event(
-            Project.Updated.make_event_from_frame_args(modification_time))
+            Project.Updated.make_event_from_frame_args(source, self.version, modification_time))
         return self

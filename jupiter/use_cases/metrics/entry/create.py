@@ -8,6 +8,7 @@ from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.notion_metric_entry import NotionMetricEntry
 from jupiter.domain.storage_engine import StorageEngine
+from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -42,8 +43,8 @@ class MetricEntryCreateUseCase(UseCase['MetricEntryCreateUseCase.Args', None]):
             collection_time = args.collection_time \
                 if args.collection_time else ADate.from_timestamp(self._time_provider.get_current_time())
             metric_entry = MetricEntry.new_metric_entry(
-                False, metric.ref_id, collection_time, args.value, args.notes,
-                self._time_provider.get_current_time())
+                archived=False, metric_ref_id=metric.ref_id, collection_time=collection_time, value=args.value,
+                notes=args.notes, source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             metric_entry = uow.metric_entry_repository.create(metric_entry)
         notion_metric_entry = NotionMetricEntry.new_notion_row(metric_entry, None)
         self._notion_manager.upsert_metric_entry(metric.ref_id, notion_metric_entry)
