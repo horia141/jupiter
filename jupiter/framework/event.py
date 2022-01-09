@@ -103,11 +103,6 @@ class Event:
                 return process_primitive(primitive.value, key)
             elif isinstance(primitive, Value):
                 return str(primitive)  # A bit of a hack really!
-            elif isinstance(primitive, UpdateAction):
-                return {
-                    "should_change": primitive.should_change,
-                    "value": process_primitive(primitive.value, key) if primitive.should_change else None
-                }
             elif dataclasses.is_dataclass(primitive):
                 return {k: process_primitive(v, k) for k, v in dataclasses.asdict(primitive).items()}
             elif isinstance(primitive, list):
@@ -116,7 +111,14 @@ class Event:
                 return {k: process_primitive(v, k) for k, v in primitive.items()}
             else:
                 raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__}")
-        return process_primitive(self.frame_args, "root")
+        serialized_frame_args = {}
+        for the_key, the_value in self.frame_args.items():
+            if isinstance(the_value, UpdateAction):
+                if the_value.should_change:
+                    serialized_frame_args[the_key] = process_primitive(the_value.value, the_key)
+            else:
+                serialized_frame_args[the_key] = process_primitive(the_value, the_key)
+        return serialized_frame_args
 
     @property
     def kind(self) -> EventKind:
