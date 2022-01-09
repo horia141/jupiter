@@ -13,7 +13,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Metric(AggregateRoot):
     """A metric."""
 
@@ -42,20 +42,18 @@ class Metric(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[Metric.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             key=key,
             name=name,
             collection_params=collection_params,
             metric_unit=metric_unit)
-        metric.record_event(Metric.Created.make_event_from_frame_args(source, metric.version, created_time))
-
         return metric
 
     def update(
             self, name: UpdateAction[MetricName], collection_params: UpdateAction[Optional[RecurringTaskGenParams]],
             source: EventSource, modification_time: Timestamp) -> 'Metric':
         """Change the metric."""
-        self.name = name.or_else(self.name)
-        self.collection_params = collection_params.or_else(self.collection_params)
-        self.record_event(Metric.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            collection_params=collection_params.or_else(self.collection_params),
+            new_event=Metric.Updated.make_event_from_frame_args(source, self.version, modification_time))

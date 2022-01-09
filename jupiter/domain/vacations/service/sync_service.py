@@ -66,6 +66,7 @@ class VacationSyncService:
                 self._vacation_notion_manager.save_vacation(notion_vacation)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_vacation}")
 
+                all_vacations_set[new_vacation.ref_id] = new_vacation
                 all_notion_vacations_set[new_vacation.ref_id] = notion_vacation
             elif notion_vacation_ref_id in all_vacations_set \
                     and notion_vacation.notion_id in all_notion_vacations_notion_ids:
@@ -83,6 +84,9 @@ class VacationSyncService:
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.vacation_repository.save(updated_vacation)
+
+                    all_vacations_set[notion_vacation_ref_id] = updated_vacation
+
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified \
@@ -90,9 +94,12 @@ class VacationSyncService:
                         LOGGER.info(f"Skipping {notion_vacation.name} because it was not modified")
                         continue
 
-                    update_notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
+                    updated_notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
 
-                    self._vacation_notion_manager.save_vacation(update_notion_vacation)
+                    self._vacation_notion_manager.save_vacation(updated_notion_vacation)
+
+                    all_notion_vacations_set[notion_vacation_ref_id] = updated_notion_vacation
+
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -119,6 +126,7 @@ class VacationSyncService:
             # If the vacation does not exist on Notion side, we create it.
             notion_vacation = NotionVacation.new_notion_row(vacation, None)
             self._vacation_notion_manager.upsert_vacation(notion_vacation)
+            all_notion_vacations_set[vacation.ref_id] = notion_vacation
             LOGGER.info(f"Created new vacation on Notion side {vacation.name}")
 
         return all_vacations_set.values()

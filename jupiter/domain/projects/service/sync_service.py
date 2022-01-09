@@ -30,20 +30,22 @@ class ProjectSyncService:
         with self._storage_engine.get_unit_of_work() as uow:
             projects = uow.project_repository.find_all(filter_keys=filter_project_keys)
 
+        new_projects = []
         for project in projects:
             notion_project = self._project_notion_manager.load_project(project.ref_id)
 
             if sync_prefer == SyncPrefer.NOTION:
-                updated_project = notion_project.apply_to_aggregate_root(project, right_now)
+                project = notion_project.apply_to_aggregate_root(project, right_now)
 
                 with self._storage_engine.get_unit_of_work() as uow:
-                    uow.project_repository.save(updated_project)
+                    uow.project_repository.save(project)
                 LOGGER.info("Changed project from Notion")
             elif sync_prefer == SyncPrefer.LOCAL:
-                updated_notion_project = notion_project.join_with_aggregate_root(project)
-                self._project_notion_manager.save_project(updated_notion_project)
+                notion_project = notion_project.join_with_aggregate_root(project)
+                self._project_notion_manager.save_project(notion_project)
                 LOGGER.info("Applied changes on Notion side")
             else:
                 raise Exception(f"Invalid preference {sync_prefer}")
+            new_projects.append(project)
 
-        return projects
+        return new_projects

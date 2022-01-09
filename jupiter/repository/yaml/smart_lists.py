@@ -75,7 +75,7 @@ class YamlSmartListRepository(SmartListRepository):
             archived=smart_list.archived,
             key=smart_list.key,
             name=smart_list.name))
-        smart_list.assign_ref_id(new_smart_list_row.ref_id)
+        smart_list = smart_list.assign_ref_id(new_smart_list_row.ref_id)
         return smart_list
 
     def save(self, smart_list: SmartList) -> SmartList:
@@ -219,7 +219,7 @@ class YamlSmartListTagRepository(SmartListTagRepository):
             archived=smart_list_tag.archived,
             smart_list_ref_id=smart_list_tag.smart_list_ref_id,
             tag_name=smart_list_tag.tag_name))
-        smart_list_tag.assign_ref_id(new_smart_list_tag_row.ref_id)
+        smart_list_tag = smart_list_tag.assign_ref_id(new_smart_list_tag_row.ref_id)
         return smart_list_tag
 
     def save(self, smart_list_tag: SmartListTag) -> SmartListTag:
@@ -372,7 +372,7 @@ class YamlSmartListItemRepository(SmartListItemRepository):
             is_done=smart_list_item.is_done,
             tag_ids=set(smart_list_item.tags_ref_id),
             url=smart_list_item.url))
-        smart_list_item.assign_ref_id(new_smart_list_item_row.ref_id)
+        smart_list_item = smart_list_item.assign_ref_id(new_smart_list_item_row.ref_id)
         return smart_list_item
 
     def save(self, smart_list_item: SmartListItem) -> SmartListItem:

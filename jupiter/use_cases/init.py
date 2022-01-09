@@ -90,15 +90,16 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
             new_default_project = uow.project_repository.create(new_default_project)
 
             LOGGER.info("Created first project")
-            new_workspace.change_default_project(
-                default_project_ref_id=new_default_project.ref_id, source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time())
+            new_workspace = \
+                new_workspace.change_default_project(
+                    default_project_ref_id=new_default_project.ref_id, source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
             uow.workspace_repository.save(new_workspace)
             prm_database = \
                 PrmDatabase.new_prm_database(
                     catch_up_project_ref_id=new_default_project.ref_id, source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
-            uow.prm_database_repository.create(prm_database)
+            prm_database = uow.prm_database_repository.create(prm_database)
             LOGGER.info("Creating the PRM database")
 
         LOGGER.info("Applied local changes")

@@ -7,7 +7,7 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
-@dataclass()
+@dataclass(frozen=True)
 class PrmDatabase(AggregateRoot):
     """The personal relationship database."""
 
@@ -32,10 +32,8 @@ class PrmDatabase(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[PrmDatabase.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             catch_up_project_ref_id=catch_up_project_ref_id)
-        prm_database.record_event(
-            PrmDatabase.Created.make_event_from_frame_args(source, prm_database.version, created_time))
         return prm_database
 
     def change_catch_up_project(
@@ -43,7 +41,7 @@ class PrmDatabase(AggregateRoot):
         """Change the catch up project."""
         if self.catch_up_project_ref_id == catch_up_project_ref_id:
             return self
-        self.catch_up_project_ref_id = catch_up_project_ref_id
-        self.record_event(
+        return self._new_version(
+            catch_up_project_ref_id=catch_up_project_ref_id,
+            new_event=
             PrmDatabase.ChangeCatchUpProjectRefId.make_event_from_frame_args(source, self.version, modified_time))
-        return self

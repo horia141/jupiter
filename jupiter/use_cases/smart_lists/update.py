@@ -38,7 +38,7 @@ class SmartListUpdateUseCase(UseCase['SmartListUpdateUseCase.Args', None]):
         with self._storage_engine.get_unit_of_work() as uow:
             smart_list = uow.smart_list_repository.load_by_key(args.key)
 
-            smart_list.update(args.name, EventSource.CLI, self._time_provider.get_current_time())
+            smart_list = smart_list.update(args.name, EventSource.CLI, self._time_provider.get_current_time())
 
             uow.smart_list_repository.save(smart_list)
 

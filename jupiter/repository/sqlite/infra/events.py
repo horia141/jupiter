@@ -9,6 +9,7 @@ from jupiter.framework.aggregate_root import AggregateRoot
 
 LOGGER = logging.getLogger(__name__)
 
+
 def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
     """Construct a standard events table for a given entity table."""
     return Table(

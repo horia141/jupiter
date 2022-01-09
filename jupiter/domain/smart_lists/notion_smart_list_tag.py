@@ -41,7 +41,7 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
 
     def apply_to_aggregate_root(self, aggregate_root: SmartListTag, extra_info: InverseExtraInfo) -> SmartListTag:
         """Apply to an already existing smart list tag."""
-        aggregate_root.update(
-            tag_name=UpdateAction.change_to(SmartListTagName.from_raw(self.name)), source=EventSource.NOTION,
+        return aggregate_root.update(
+            tag_name=UpdateAction.change_to(SmartListTagName.from_raw(self.name)),
+            source=EventSource.NOTION,
             modification_time=self.last_edited_time)
-        return aggregate_root

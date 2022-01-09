@@ -69,6 +69,7 @@ class PrmSyncService:
                 self._prm_notion_manager.save_person(notion_person)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_person}")
 
+                all_persons_set[new_person.ref_id] = new_person
                 all_notion_persons_set[new_person.ref_id] = notion_person
             elif notion_person_ref_id in all_persons_set and notion_person.notion_id in all_notion_persons_notion_ids:
                 person = all_persons_set[notion_person_ref_id]
@@ -86,6 +87,7 @@ class PrmSyncService:
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.person_repository.save(updated_person)
+                    all_persons_set[notion_person_ref_id] = updated_person
                     LOGGER.info(f"Changed person with id={notion_person.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and person.last_modified_time <= notion_person.last_edited_time:
@@ -95,6 +97,7 @@ class PrmSyncService:
                     updated_notion_person = notion_person.join_with_aggregate_root(person, None)
 
                     self._prm_notion_manager.save_person(updated_notion_person)
+                    all_notion_persons_set[notion_person_ref_id] = updated_notion_person
                     LOGGER.info(f"Changed person with id={notion_person.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -121,6 +124,7 @@ class PrmSyncService:
             # If the person does not exist on Notion side, we create it.
             notion_person = NotionPerson.new_notion_row(person, None)
             self._prm_notion_manager.upsert_person(notion_person)
+            all_notion_persons_set[person.ref_id] = notion_person
             LOGGER.info(f"Created new person on Notion side {person.name}")
 
         return all_persons_set.values()

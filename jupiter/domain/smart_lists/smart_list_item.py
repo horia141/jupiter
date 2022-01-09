@@ -11,7 +11,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class SmartListItem(AggregateRoot):
     """A smart list item."""
 
@@ -42,14 +42,12 @@ class SmartListItem(AggregateRoot):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            events=[],
+            events=[SmartListItem.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             smart_list_ref_id=smart_list_ref_id,
             name=name,
             is_done=is_done,
             tags_ref_id=tags_ref_id,
             url=url)
-        smart_list_item.record_event(
-            SmartListItem.Created.make_event_from_frame_args(source, smart_list_item.version, created_time))
         return smart_list_item
 
     def update(
@@ -57,9 +55,9 @@ class SmartListItem(AggregateRoot):
             tags_ref_id: UpdateAction[List[EntityId]], url: UpdateAction[Optional[URL]],
             source: EventSource, modification_time: Timestamp) -> 'SmartListItem':
         """Update the smart list item."""
-        self.name = name.or_else(self.name)
-        self.is_done = is_done.or_else(self.is_done)
-        self.tags_ref_id = tags_ref_id.or_else(self.tags_ref_id)
-        self.url = url.or_else(self.url)
-        self.record_event(SmartListItem.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            is_done=is_done.or_else(self.is_done),
+            tags_ref_id=tags_ref_id.or_else(self.tags_ref_id),
+            url=url.or_else(self.url),
+            new_event=SmartListItem.Updated.make_event_from_frame_args(source, self.version, modification_time))

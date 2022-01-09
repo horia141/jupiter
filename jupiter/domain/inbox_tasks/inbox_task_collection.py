@@ -7,7 +7,7 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
-@dataclass()
+@dataclass(frozen=True)
 class InboxTaskCollection(AggregateRoot):
     """A inbox task collection."""
 
@@ -28,9 +28,6 @@ class InboxTaskCollection(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[InboxTaskCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             project_ref_id=project_ref_id)
-        inbox_task_collection.record_event(
-            InboxTaskCollection.Created.make_event_from_frame_args(source, inbox_task_collection.version, created_time))
-
         return inbox_task_collection

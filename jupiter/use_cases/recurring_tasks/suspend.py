@@ -34,7 +34,8 @@ class RecurringTaskSuspendUseCase(UseCase['RecurringTaskSuspendUseCase.Args', No
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
-            recurring_task.suspend(source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
+            recurring_task = \
+                recurring_task.suspend(source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.recurring_task_repository.save(recurring_task)
 
         notion_recurring_task = self._recurring_task_notion_manager.load_recurring_task(

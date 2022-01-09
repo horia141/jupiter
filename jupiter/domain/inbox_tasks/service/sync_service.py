@@ -113,7 +113,7 @@ class InboxTaskSyncService:
                         LOGGER.info(f"Skipping {notion_inbox_task.name} because it was not modified")
                         continue
 
-                    update_inbox_task = \
+                    updated_inbox_task = \
                         notion_inbox_task.apply_to_aggregate_root(
                             inbox_task,
                             NotionInboxTask.InverseInfo(
@@ -121,7 +121,8 @@ class InboxTaskSyncService:
                                 all_big_plans_map=all_big_plans_map,
                                 all_big_plans_by_name=all_big_plans_by_name))
                     with self._storage_engine.get_unit_of_work() as save_uow:
-                        save_uow.inbox_task_repository.save(update_inbox_task)
+                        save_uow.inbox_task_repository.save(updated_inbox_task)
+                    all_inbox_tasks_set[notion_inbox_task_ref_id] = updated_inbox_task
                     LOGGER.info(f"Changed inbox task with id={notion_inbox_task.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
@@ -138,6 +139,7 @@ class InboxTaskSyncService:
                             inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
                     self._inbox_task_notion_manager.save_inbox_task(
                         inbox_task_collection.ref_id, updated_notion_inbox_task)
+                    all_notion_inbox_tasks_set[notion_inbox_task_ref_id] = updated_notion_inbox_task
                     LOGGER.info(f"Changed inbox task with id={notion_inbox_task.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -170,6 +172,7 @@ class InboxTaskSyncService:
 
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
             self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+            all_notion_inbox_tasks_set[inbox_task.ref_id] = notion_inbox_task
             LOGGER.info(f'Created Notion inbox task for {inbox_task.name}')
 
         return all_inbox_tasks_set.values()

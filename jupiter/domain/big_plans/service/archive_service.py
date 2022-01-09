@@ -38,7 +38,7 @@ class BigPlanArchiveService:
             return
 
         with self._storage_engine.get_unit_of_work() as uow:
-            big_plan.mark_archived(self._source, self._time_provider.get_current_time())
+            big_plan = big_plan.mark_archived(self._source, self._time_provider.get_current_time())
             uow.big_plan_repository.save(big_plan)
 
             big_plan_collection = uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
@@ -49,9 +49,11 @@ class BigPlanArchiveService:
                 uow.inbox_task_repository.find_all(
                     allow_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id],
                     filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
+            archived_inbox_tasks = []
             for inbox_task in inbox_tasks_to_archive:
-                inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
+                inbox_task = inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)
+                archived_inbox_tasks.append(inbox_task)
 
         try:
             self._big_plan_notion_manager.remove_big_plan(big_plan.big_plan_collection_ref_id, big_plan.ref_id)
@@ -59,7 +61,7 @@ class BigPlanArchiveService:
             # If we can't find this locally it means it's already gone
             LOGGER.info("Skipping archival on Notion side because big plan was not found")
 
-        for inbox_task in inbox_tasks_to_archive:
+        for inbox_task in archived_inbox_tasks:
             try:
                 self._inbox_task_notion_manager.remove_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)

@@ -104,6 +104,7 @@ class BigPlanSyncService:
                             big_plan, NotionBigPlan.InverseExtraInfo(big_plan_collection.ref_id))
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.big_plan_repository.save(updated_big_plan)
+                    all_big_plans_set[notion_big_plan_ref_id] = updated_big_plan
                     LOGGER.info(f"Changed big plan with id={notion_big_plan.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
@@ -115,6 +116,7 @@ class BigPlanSyncService:
                     updated_notion_big_plan = notion_big_plan.join_with_aggregate_root(big_plan, None)
                     self._big_plan_notion_manager.save_big_plan(
                         big_plan_collection.ref_id, updated_notion_big_plan, inbox_task_collection)
+                    all_notion_big_plans_set[notion_big_plan_ref_id] = updated_notion_big_plan
                     LOGGER.info(f"Changed big plan with id={notion_big_plan.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -145,6 +147,7 @@ class BigPlanSyncService:
             notion_big_plan = NotionBigPlan.new_notion_row(big_plan, None)
             self._big_plan_notion_manager.upsert_big_plan(
                 big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
+            all_notion_big_plans_set[big_plan.ref_id] = notion_big_plan
             LOGGER.info(f'Created Notion task for {big_plan.name}')
 
         return all_big_plans_set.values()

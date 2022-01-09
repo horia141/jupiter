@@ -18,7 +18,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class RecurringTask(AggregateRoot):
     """A recurring task."""
 
@@ -74,7 +74,7 @@ class RecurringTask(AggregateRoot):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            events=[],
+            events=[RecurringTask.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             recurring_task_collection_ref_id=recurring_task_collection_ref_id,
             name=name,
             period=period,
@@ -85,9 +85,6 @@ class RecurringTask(AggregateRoot):
             start_at_date=start_at_date if start_at_date else today,
             end_at_date=end_at_date,
             suspended=suspended)
-        recurring_task.record_event(
-            RecurringTask.Created.make_event_from_frame_args(source, recurring_task.version, created_time))
-
         return recurring_task
 
     def update(
@@ -97,18 +94,13 @@ class RecurringTask(AggregateRoot):
             start_at_date: UpdateAction[ADate], end_at_date: UpdateAction[Optional[ADate]],
             source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
         """Update the recurring task."""
-        self.name = name.or_else(self.name)
-        self.period = period.or_else(self.period)
-        self.the_type = the_type.or_else(self.the_type)
-
         if gen_params.should_change:
             RecurringTask._check_actionable_and_due_date_configs(
                 gen_params.value.actionable_from_day, gen_params.value.actionable_from_month,
                 gen_params.value.due_at_day, gen_params.value.due_at_month)
-            self.gen_params = gen_params.value
-
-        self.must_do = must_do.or_else(self.must_do)
-        self.skip_rule = skip_rule.or_else(self.skip_rule)
+            the_gen_params = gen_params.value
+        else:
+            the_gen_params = self.gen_params
 
         if start_at_date.should_change or end_at_date.should_change:
             the_start_at_date = start_at_date.or_else(self.start_at_date)
@@ -118,27 +110,36 @@ class RecurringTask(AggregateRoot):
                 raise InputValidationError(f"Start date {the_start_at_date} is after end date {the_end_at_date}")
             if the_end_at_date is not None and the_end_at_date < today:
                 raise InputValidationError(f"End date {the_end_at_date} is before start date {today}")
-            self.start_at_date = the_start_at_date
-            self.end_at_date = the_end_at_date
+        else:
+            the_start_at_date = self.start_at_date
+            the_end_at_date = self.end_at_date
 
-        self.record_event(RecurringTask.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            period=period.or_else(self.period),
+            the_type=the_type.or_else(self.the_type),
+            gen_params=the_gen_params,
+            must_do=must_do.or_else(self.must_do),
+            skip_rule=skip_rule.or_else(self.skip_rule),
+            start_at_date=the_start_at_date,
+            the_end_at_date=the_end_at_date,
+            new_event=RecurringTask.Updated.make_event_from_frame_args(source, self.version, modification_time))
 
     def suspend(self, source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
         """Suspend the recurring task."""
         if self.suspended:
             return self
-        self.suspended = True
-        self.record_event(RecurringTask.Suspended.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            suspended=True,
+            new_event=RecurringTask.Suspended.make_event_from_frame_args(source, self.version, modification_time))
 
     def unsuspend(self, source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
         """Unsuspend the recurring task."""
         if self.suspended:
             return self
-        self.suspended = False
-        self.record_event(RecurringTask.Unsuspended.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            suspended=False,
+            new_event=RecurringTask.Unsuspended.make_event_from_frame_args(source, self.version, modification_time))
 
     def is_in_active_interval(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this active interval."""

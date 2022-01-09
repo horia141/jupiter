@@ -62,7 +62,7 @@ class YamlVacationRepository(VacationRepository):
             name=vacation.name,
             start_date=vacation.start_date,
             end_date=vacation.end_date))
-        vacation.assign_ref_id(new_vacation_row.ref_id)
+        vacation = vacation.assign_ref_id(new_vacation_row.ref_id)
         return vacation
 
     def save(self, vacation: Vacation) -> Vacation:

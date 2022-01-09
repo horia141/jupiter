@@ -71,7 +71,7 @@ class YamlBigPlanCollectionRepository(BigPlanCollectionRepository):
         new_big_plan_collection_row = self._storage.create(_BigPlanCollectionRow(
             archived=big_plan_collection.archived,
             project_ref_id=big_plan_collection.project_ref_id))
-        big_plan_collection.assign_ref_id(new_big_plan_collection_row.ref_id)
+        big_plan_collection = big_plan_collection.assign_ref_id(new_big_plan_collection_row.ref_id)
         return big_plan_collection
 
     def save(self, big_plan_collection: BigPlanCollection) -> BigPlanCollection:
@@ -228,7 +228,7 @@ class YamlBigPlanRepository(BigPlanRepository):
             accepted_time=big_plan.accepted_time,
             working_time=big_plan.working_time,
             completed_time=big_plan.completed_time))
-        big_plan.assign_ref_id(new_big_plan_row.ref_id)
+        big_plan = big_plan.assign_ref_id(new_big_plan_row.ref_id)
         return big_plan
 
     def save(self, big_plan: BigPlan) -> BigPlan:

@@ -57,7 +57,7 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
             big_plan_collection = \
                 uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
 
-            big_plan.update(
+            big_plan = big_plan.update(
                 name=args.name, status=args.status, actionable_date=args.actionable_date, due_date=args.due_date,
                 source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
@@ -79,7 +79,7 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
                         allow_archived=True, filter_big_plan_ref_ids=[big_plan.ref_id])
 
                 for inbox_task in all_inbox_tasks:
-                    inbox_task.update_link_to_big_plan(
+                    inbox_task = inbox_task.update_link_to_big_plan(
                         big_plan.ref_id, EventSource.CLI, self._time_provider.get_current_time())
                     uow.inbox_task_repository.save(inbox_task)
                     LOGGER.info(f'Updating the associated inbox task "{inbox_task.name}"')

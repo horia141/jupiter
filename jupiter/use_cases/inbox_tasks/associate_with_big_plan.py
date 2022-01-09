@@ -45,7 +45,7 @@ class InboxTaskAssociateWithBigPlanUseCase(UseCase['InboxTaskAssociateWithBigPla
                 big_plan_name = big_plan.name
 
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
-            inbox_task.associate_with_big_plan(
+            inbox_task = inbox_task.associate_with_big_plan(
                 big_plan_ref_id=args.big_plan_ref_id, big_plan_name=big_plan_name,
                 source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.inbox_task_repository.save(inbox_task)

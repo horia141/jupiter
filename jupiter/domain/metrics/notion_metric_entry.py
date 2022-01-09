@@ -49,10 +49,12 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
 
     def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: InverseExtraInfo) -> MetricEntry:
         """Apply to an already existing metric entry."""
-        aggregate_root.update(
-            collection_time=UpdateAction.change_to(self.collection_time), value=UpdateAction.change_to(self.value),
-            notes=UpdateAction.change_to(self.notes), source=EventSource.NOTION,
-            modification_time=self.last_edited_time)
-        aggregate_root.change_archived(
-            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
-        return aggregate_root
+        return aggregate_root\
+            .update(
+                collection_time=UpdateAction.change_to(self.collection_time),
+                value=UpdateAction.change_to(self.value),
+                notes=UpdateAction.change_to(self.notes),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time)\
+            .change_archived(
+                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

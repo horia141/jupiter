@@ -9,7 +9,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class SmartListTag(AggregateRoot):
     """A smart list tag."""
 
@@ -36,18 +36,15 @@ class SmartListTag(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[SmartListTag.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             smart_list_ref_id=smart_list_ref_id,
             tag_name=tag_name)
-        smart_list_tag.record_event(
-            SmartListTag.Created.make_event_from_frame_args(source, smart_list_tag.version, created_time))
-
         return smart_list_tag
 
     def update(
             self, tag_name: UpdateAction[SmartListTagName], source: EventSource,
             modification_time: Timestamp) -> 'SmartListTag':
         """Change the smart list tag."""
-        self.tag_name = tag_name.or_else(self.tag_name)
-        self.record_event(SmartListTag.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            tag_name=tag_name.or_else(self.tag_name),
+            new_event=SmartListTag.Updated.make_event_from_frame_args(source, self.version, modification_time))

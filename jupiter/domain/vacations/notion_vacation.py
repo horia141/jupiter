@@ -54,12 +54,12 @@ class NotionVacation(NotionRow[Vacation, None, None]):
             raise InputValidationError(f"Vacation '{self.name}' should have a start date")
         if self.end_date is None:
             raise InputValidationError(f"Vacation '{self.name}' should have an end date")
-        aggregate_root.update(
-            name=UpdateAction.change_to(vacation_name),
-            start_date=UpdateAction.change_to(self.start_date),
-            end_date=UpdateAction.change_to(self.end_date),
-            source=EventSource.NOTION,
-            modification_time=self.last_edited_time)
-        aggregate_root.change_archived(
-            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
-        return aggregate_root
+        return aggregate_root\
+            .update(
+                name=UpdateAction.change_to(vacation_name),
+                start_date=UpdateAction.change_to(self.start_date),
+                end_date=UpdateAction.change_to(self.end_date),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time)\
+            .change_archived(
+                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

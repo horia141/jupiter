@@ -10,7 +10,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Workspace(AggregateRoot):
     """The workspace where everything happens."""
 
@@ -42,27 +42,25 @@ class Workspace(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[Workspace.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             name=name,
             timezone=timezone,
             default_project_ref_id=default_project_ref_id)
-        workspace.record_event(
-            Workspace.Created.make_event_from_frame_args(source, workspace.version, created_time))
         return workspace
 
     def update(
             self, name: UpdateAction[WorkspaceName], timezone: UpdateAction[Timezone],
             source: EventSource, modification_time: Timestamp) -> 'Workspace':
         """Update properties of the workspace."""
-        self.name = name.or_else(self.name)
-        self.timezone = timezone.or_else(self.timezone)
-        self.record_event(Workspace.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            timezone=timezone.or_else(self.timezone),
+            new_event=Workspace.Updated.make_event_from_frame_args(source, self.version, modification_time))
 
     def change_default_project(
             self, default_project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'Workspace':
         """Change the default project of the workspace."""
-        self.default_project_ref_id = default_project_ref_id
-        self.record_event(
+        return self._new_version(
+            default_project_ref_id=default_project_ref_id,
+            new_event=
             Workspace.ChangedDefaultProject.make_event_from_frame_args(source, self.version, modification_time))
-        return self

@@ -7,7 +7,7 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
-@dataclass()
+@dataclass(frozen=True)
 class RecurringTaskCollection(AggregateRoot):
     """A recurring task collection."""
 
@@ -28,10 +28,6 @@ class RecurringTaskCollection(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[RecurringTaskCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             project_ref_id=project_ref_id)
-        recurring_task_collection.record_event(
-            RecurringTaskCollection.Created.make_event_from_frame_args(
-                source, recurring_task_collection.version, created_time))
-
         return recurring_task_collection

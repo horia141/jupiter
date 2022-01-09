@@ -41,9 +41,9 @@ class MetricSyncService:
                 self._metric_notion_manager.save_metric(updated_notion_metric)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
-                updated_metric = notion_metric.apply_to_aggregate_root(metric, right_now)
+                metric = notion_metric.apply_to_aggregate_root(metric, right_now)
                 with self._storage_engine.get_unit_of_work() as uow:
-                    uow.metric_repository.save(updated_metric)
+                    uow.metric_repository.save(metric)
                 LOGGER.info("Applied local change")
             else:
                 raise Exception(f"Invalid preference {sync_prefer}")
@@ -101,6 +101,7 @@ class MetricSyncService:
                 self._metric_notion_manager.save_metric_entry(metric.ref_id, notion_metric_entry)
                 LOGGER.info(f"Applied changes on Notion side too")
 
+                all_metric_entries_set[new_metric_entry.ref_id] = new_metric_entry
                 notion_metric_entries_set[new_metric_entry.ref_id] = notion_metric_entry
             elif notion_metric_ref_id in all_metric_entries_set and \
                     notion_metric_entry.notion_id in all_notion_metric_notion_ids:
@@ -119,6 +120,7 @@ class MetricSyncService:
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.metric_entry_repository.save(updated_metric_entry)
+                    all_metric_entries_set[notion_metric_ref_id] = updated_metric_entry
                     LOGGER.info(f"Changed metric entry '{metric_entry.collection_time}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and \

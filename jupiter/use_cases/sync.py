@@ -286,7 +286,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,
                             recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
 
-                        inbox_task.update_link_to_recurring_task(
+                        inbox_task = inbox_task.update_link_to_recurring_task(
                             name=schedule.full_name,
                             timeline=schedule.timeline,
                             the_type=recurring_task.the_type,
@@ -395,7 +395,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                     None, collection_params.actionable_from_day, collection_params.actionable_from_month,
                     collection_params.due_at_time, collection_params.due_at_day, collection_params.due_at_month)
-                inbox_task.update_link_to_metric(
+                inbox_task = inbox_task.update_link_to_metric(
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
                     eisen=collection_params.eisen,
@@ -450,7 +450,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         typing.cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                         None, catch_up_params.actionable_from_day, catch_up_params.actionable_from_month,
                         catch_up_params.due_at_time, catch_up_params.due_at_day, catch_up_params.due_at_month)
-                    inbox_task.update_link_to_person_catch_up(
+                    inbox_task = inbox_task.update_link_to_person_catch_up(
                         name=schedule.full_name, recurring_timeline=schedule.timeline,
                         eisen=catch_up_params.eisen, difficulty=catch_up_params.difficulty,
                         actionable_date=schedule.actionable_date,
@@ -489,7 +489,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         None, None, None, None,
                         RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, birthday.day),
                         RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, birthday.month))
-                    inbox_task.update_link_to_person_birthday(
+                    inbox_task = inbox_task.update_link_to_person_birthday(
                         name=schedule.full_name,
                         recurring_timeline=schedule.timeline,
                         preparation_days_cnt=person.preparation_days_cnt_for_birthday,

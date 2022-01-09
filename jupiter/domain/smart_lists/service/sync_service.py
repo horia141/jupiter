@@ -39,13 +39,13 @@ class SmartListSyncService:
             notion_smart_list = self._smart_list_notion_manager.load_smart_list(smart_list.ref_id)
 
             if sync_prefer == SyncPrefer.LOCAL:
-                updated_notion_smart_list = notion_smart_list.join_with_aggregate_root(smart_list)
-                self._smart_list_notion_manager.save_smart_list(updated_notion_smart_list)
+                notion_smart_list = notion_smart_list.join_with_aggregate_root(smart_list)
+                self._smart_list_notion_manager.save_smart_list(notion_smart_list)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
-                updated_smart_list = notion_smart_list.apply_to_aggregate_root(smart_list, right_now)
+                smart_list = notion_smart_list.apply_to_aggregate_root(smart_list, right_now)
                 with self._storage_engine.get_unit_of_work() as uow:
-                    uow.smart_list_repository.save(updated_smart_list)
+                    uow.smart_list_repository.save(smart_list)
                 LOGGER.info("Applied local change")
             else:
                 raise Exception(f"Invalid preference {sync_prefer}")
@@ -108,6 +108,8 @@ class SmartListSyncService:
                             smart_list_tag, NotionSmartListTag.InverseExtraInfo(smart_list.ref_id))
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.smart_list_tag_repository.save(updated_smart_list_tag)
+                    all_smart_list_tags_set[notion_smart_list_tag_ref_id] = updated_smart_list_tag
+                    all_smart_list_tags_by_name[smart_list_tag.tag_name] = updated_smart_list_tag
                     LOGGER.info(f"Changed smart list tag '{smart_list_tag.tag_name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     updated_notion_smart_list_tag = \
@@ -193,6 +195,7 @@ class SmartListSyncService:
                 self._smart_list_notion_manager.save_smart_list_item(smart_list.ref_id, notion_smart_list_item)
                 LOGGER.info(f"Applied changes on Notion side too")
 
+                all_smart_list_items_set[new_smart_list_item.ref_id] = new_smart_list_item
                 all_notion_smart_list_items_set[new_smart_list_item.ref_id] = \
                     notion_smart_list_item
             elif notion_smart_list_item_ref_id in all_smart_list_items_set and \
@@ -212,6 +215,7 @@ class SmartListSyncService:
                         NotionSmartListItem.InverseExtraInfo(smart_list.ref_id, all_smart_list_tags_by_name))
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.smart_list_item_repository.save(updated_smart_list_item)
+                    all_smart_list_items_set[notion_smart_list_item_ref_id] = updated_smart_list_item
                     LOGGER.info(f"Changed smart list item '{smart_list_item.name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and \
@@ -223,6 +227,7 @@ class SmartListSyncService:
                         smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
                     self._smart_list_notion_manager.save_smart_list_item(
                         smart_list.ref_id, updated_notion_smart_list_item)
+                    all_notion_smart_list_items_set[notion_smart_list_item_ref_id] = updated_notion_smart_list_item
                     LOGGER.info(f"Changed smart list item '{notion_smart_list_item.name}' from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -250,6 +255,7 @@ class SmartListSyncService:
                 NotionSmartListItem.new_notion_row(
                     smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
             self._smart_list_notion_manager.upsert_smart_list_item(smart_list.ref_id, notion_smart_list_item)
+            all_notion_smart_list_items_set[smart_list_item.ref_id] = notion_smart_list_item
             LOGGER.info(f"Created new smart list item on Notion side '{smart_list_item.name}'")
 
         # Done this way because it's a bit fasterr

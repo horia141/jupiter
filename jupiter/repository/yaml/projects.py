@@ -67,7 +67,7 @@ class YamlProjectRepository(ProjectRepository):
 
         new_project_row = _ProjectRow(key=project.key, archived=project.archived, name=project.name)
         new_project_row = self._storage.create(new_project_row)
-        project.assign_ref_id(new_project_row.ref_id)
+        project = project.assign_ref_id(new_project_row.ref_id)
         return project
 
     def save(self, project: Project) -> Project:

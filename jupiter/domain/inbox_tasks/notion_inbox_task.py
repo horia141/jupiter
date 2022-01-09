@@ -142,11 +142,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 if self.big_plan_ref_id else None
         inbox_task_big_plan_name = BigPlanName.from_raw(self.big_plan_name) \
             if self.big_plan_name else None
-        aggregate_root.associate_with_big_plan(
+        new_aggregate_root = aggregate_root.associate_with_big_plan(
             big_plan_ref_id=inbox_task_big_plan_ref_id, big_plan_name=inbox_task_big_plan_name,
             source=EventSource.NOTION, modification_time=self.last_edited_time)
         if aggregate_root.allow_user_changes:
-            aggregate_root.update(
+            new_aggregate_root = new_aggregate_root.update(
                 name=UpdateAction.change_to(InboxTaskName.from_raw(self.name)),
                 status=UpdateAction.change_to(InboxTaskStatus.from_raw(self.status)),
                 actionable_date=UpdateAction.change_to(self.actionable_date),
@@ -157,13 +157,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
         else:
-            aggregate_root.update_generated(
+            new_aggregate_root = new_aggregate_root.update_generated(
                 status=UpdateAction.change_to(InboxTaskStatus.from_raw(self.status)),
                 actionable_date=UpdateAction.change_to(self.actionable_date),
                 due_date=UpdateAction.change_to(self.due_date),
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
-        aggregate_root.change_archived(
+        return new_aggregate_root.change_archived(
             archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
-
-        return aggregate_root

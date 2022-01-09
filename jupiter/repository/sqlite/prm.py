@@ -59,7 +59,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
                 catch_up_project_ref_id=int(str(prm_database.catch_up_project_ref_id))))
         except IntegrityError as err:
             raise PrmDatabaseAlreadyExistsError(f"A PRM database already exists") from err
-        prm_database.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        prm_database = prm_database.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
 
@@ -164,7 +164,7 @@ class SqlitePersonRepository(PersonRepository):
                 birthday=str(person.birthday) if person.birthday else None))
         except IntegrityError as err:
             raise PersonAlreadyExistsError(f"Person with name {person.name} already exists") from err
-        person.assign_ref_id(EntityId.from_raw(str(result.inserted_primary_key[0])))
+        person = person.assign_ref_id(EntityId.from_raw(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._person_event_table, person)
         return person
 

@@ -66,7 +66,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
-            all_vacations = list(uow.vacation_repository.find_all())
+            all_vacations = uow.vacation_repository.find_all()
             all_projects = uow.project_repository.find_all()
             all_syncable_projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
             all_projects_by_ref_id = {p.ref_id: p for p in all_projects}

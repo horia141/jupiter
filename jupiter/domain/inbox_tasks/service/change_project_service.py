@@ -42,7 +42,7 @@ class InboxTaskChangeProjectService:
 
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project_ref_id)
-            inbox_task.change_project(
+            inbox_task = inbox_task.change_project(
                 inbox_task_collection=inbox_task_collection, source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time())
             uow.inbox_task_repository.save(inbox_task)

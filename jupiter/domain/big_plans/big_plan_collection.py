@@ -7,7 +7,7 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
-@dataclass()
+@dataclass(frozen=True)
 class BigPlanCollection(AggregateRoot):
     """A big plan collection."""
 
@@ -28,9 +28,6 @@ class BigPlanCollection(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[BigPlanCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             project_ref_id=project_ref_id)
-        big_plan_collection.record_event(
-            BigPlanCollection.Created.make_event_from_frame_args(source, big_plan_collection.version, created_time))
-
         return big_plan_collection

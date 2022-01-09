@@ -12,7 +12,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Vacation(AggregateRoot):
     """A vacation."""
 
@@ -43,11 +43,10 @@ class Vacation(AggregateRoot):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            events=[],
+            events=[Vacation.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             name=name,
             start_date=start_date,
             end_date=end_date)
-        vacation.record_event(Vacation.Created.make_event_from_frame_args(source, vacation.version, created_time))
 
         return vacation
 
@@ -60,11 +59,12 @@ class Vacation(AggregateRoot):
 
         if new_start_date >= new_end_date:
             raise InputValidationError("Cannot set a start date after the end date")
-        self.name = name.or_else(self.name)
-        self.start_date = new_start_date
-        self.end_date = new_end_date
-        self.record_event(Vacation.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+
+        return self._new_version(
+            name=name.or_else(self.name),
+            start_date=new_start_date,
+            end_date=new_end_date,
+            new_event=Vacation.Updated.make_event_from_frame_args(source, self.version, modification_time))
 
     def is_in_vacation(self, start_date: ADate, end_date: ADate) -> bool:
         """Checks whether a particular date range is in this vacation."""

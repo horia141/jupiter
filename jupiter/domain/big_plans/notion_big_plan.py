@@ -54,13 +54,13 @@ class NotionBigPlan(NotionRow[BigPlan, None, 'NotionBigPlan.InverseExtraInfo']):
 
     def apply_to_aggregate_root(self, aggregate_root: BigPlan, extra_info: InverseExtraInfo) -> BigPlan:
         """Apply to an already existing big plan."""
-        aggregate_root.update(
-            name=UpdateAction.change_to(BigPlanName.from_raw(self.name)),
-            status=UpdateAction.change_to(BigPlanStatus.from_raw(self.status)),
-            actionable_date=UpdateAction.change_to(self.actionable_date),
-            due_date=UpdateAction.change_to(self.due_date),
-            source=EventSource.NOTION,
-            modification_time=self.last_edited_time)
-        aggregate_root.change_archived(
-            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
-        return aggregate_root
+        return aggregate_root\
+            .update(
+                name=UpdateAction.change_to(BigPlanName.from_raw(self.name)),
+                status=UpdateAction.change_to(BigPlanStatus.from_raw(self.status)),
+                actionable_date=UpdateAction.change_to(self.actionable_date),
+                due_date=UpdateAction.change_to(self.due_date),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time)\
+            .change_archived(
+                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

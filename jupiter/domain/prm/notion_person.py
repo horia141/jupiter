@@ -126,12 +126,13 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
                 if self.catch_up_due_at_month else None)
         person_birthday = PersonBirthday.from_raw(self.birthday) if self.birthday else None
 
-        aggregate_root.update(
-            name=UpdateAction.change_to(person_name), relationship=UpdateAction.change_to(person_relationship),
-            catch_up_params=UpdateAction.change_to(person_catch_up_params),
-            birthday=UpdateAction.change_to(person_birthday), source=EventSource.NOTION,
-            modification_time=self.last_edited_time)
-        aggregate_root.change_archived(
-            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
-
-        return aggregate_root
+        return aggregate_root\
+            .update(
+                name=UpdateAction.change_to(person_name),
+                relationship=UpdateAction.change_to(person_relationship),
+                catch_up_params=UpdateAction.change_to(person_catch_up_params),
+                birthday=UpdateAction.change_to(person_birthday),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time)\
+            .change_archived(
+                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

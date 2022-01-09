@@ -59,7 +59,7 @@ class BigPlanArchiveUseCase(UseCase['BigPlanArchiveUseCase.Args', None]):
             big_plan = uow.big_plan_repository.load_by_id(args.ref_id)
             big_plan_collection = \
                 uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
-            big_plan.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
+            big_plan = big_plan.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.big_plan_repository.save(big_plan)
         LOGGER.info("Applied local changes")
         # Apply Notion changes

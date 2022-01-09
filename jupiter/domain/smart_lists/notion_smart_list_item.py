@@ -62,14 +62,15 @@ class NotionSmartListItem(
 
     def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseExtraInfo) -> SmartListItem:
         """Apply to an already existing smart list item."""
-        aggregate_root.update(
-            name=UpdateAction.change_to(SmartListItemName.from_raw(self.name)),
-            is_done=UpdateAction.change_to(self.is_done),
-            tags_ref_id=
-            UpdateAction.change_to([extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags]),
-            url=UpdateAction.change_to(URL.from_raw(self.url) if self.url else None),
-            source=EventSource.NOTION,
-            modification_time=self.last_edited_time)
-        aggregate_root.change_archived(
-            archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
-        return aggregate_root
+        return aggregate_root \
+            .update(
+                name=UpdateAction.change_to(SmartListItemName.from_raw(self.name)),
+                is_done=UpdateAction.change_to(self.is_done),
+                tags_ref_id=
+                UpdateAction.change_to(
+                    [extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags]),
+                url=UpdateAction.change_to(URL.from_raw(self.url) if self.url else None),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time) \
+            .change_archived(
+                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

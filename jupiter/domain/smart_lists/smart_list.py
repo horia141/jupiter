@@ -10,7 +10,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class SmartList(AggregateRoot):
     """A smart list."""
 
@@ -36,16 +36,14 @@ class SmartList(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[SmartList.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             key=key,
             name=name)
-        smart_list.record_event(SmartList.Created.make_event_from_frame_args(source, smart_list.version, created_time))
-
         return smart_list
 
     def update(
             self, name: UpdateAction[SmartListName], source: EventSource, modification_time: Timestamp) -> 'SmartList':
         """Change the name of the smart list."""
-        self.name = name.or_else(self.name)
-        self.record_event(SmartList.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            new_event=SmartList.Updated.make_event_from_frame_args(source, self.version, modification_time))

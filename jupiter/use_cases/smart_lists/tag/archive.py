@@ -40,7 +40,7 @@ class SmartListTagArchiveUseCase(UseCase[EntityId, None]):
                 filter_tag_ref_ids=[args])
 
             for smart_list_item in smart_list_items:
-                smart_list_item.update(
+                smart_list_item = smart_list_item.update(
                     name=UpdateAction.do_nothing(),
                     is_done=UpdateAction.do_nothing(),
                     tags_ref_id=UpdateAction.change_to([t for t in smart_list_item.tags_ref_id if t != args]),
@@ -49,7 +49,7 @@ class SmartListTagArchiveUseCase(UseCase[EntityId, None]):
                     modification_time=self._time_provider.get_current_time())
                 uow.smart_list_item_repository.save(smart_list_item)
 
-            smart_list_tag.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
+            smart_list_tag = smart_list_tag.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.smart_list_tag_repository.save(smart_list_tag)
 
         try:

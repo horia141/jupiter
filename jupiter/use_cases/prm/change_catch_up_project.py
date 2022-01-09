@@ -51,7 +51,7 @@ class PrmDatabaseChangeCatchUpProjectUseCase(UseCase['PrmDatabaseChangeCatchUpPr
                 workspace = uow.workspace_repository.load()
                 catch_up_project_ref_id = workspace.default_project_ref_id
 
-            prm_database.change_catch_up_project(
+            prm_database = prm_database.change_catch_up_project(
                 catch_up_project_ref_id=catch_up_project_ref_id, source=EventSource.CLI,
                 modified_time=self._time_provider.get_current_time())
 
@@ -62,7 +62,7 @@ class PrmDatabaseChangeCatchUpProjectUseCase(UseCase['PrmDatabaseChangeCatchUpPr
             for person in persons:
                 if person.catch_up_params is None:
                     continue
-                person.change_catch_up_project(
+                person = person.change_catch_up_project(
                     catch_up_project_ref_id=catch_up_project_ref_id, source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time())
                 uow.person_repository.save(person)

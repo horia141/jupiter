@@ -31,7 +31,7 @@ class VacationArchiveUseCase(UseCase[EntityId, None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             vacation = uow.vacation_repository.load_by_id(args)
-            vacation.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
+            vacation = vacation.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.vacation_repository.save(vacation)
 
         try:

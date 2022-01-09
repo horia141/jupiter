@@ -29,14 +29,14 @@ class WorkspaceSyncService:
         notion_workspace = self._workspace_notion_manager.load_workspace()
 
         if sync_prefer == SyncPrefer.NOTION:
-            updated_workspace = notion_workspace.apply_to_aggregate_root(workspace, right_now)
+            workspace = notion_workspace.apply_to_aggregate_root(workspace, right_now)
 
             with self._storage_engine.get_unit_of_work() as uow:
-                uow.workspace_repository.save(updated_workspace)
+                uow.workspace_repository.save(workspace)
             LOGGER.info("Changed workspace from Notion")
         elif sync_prefer == SyncPrefer.LOCAL:
-            updated_notion_workspace = notion_workspace.join_with_aggregate_root(workspace)
-            self._workspace_notion_manager.save_workspace(updated_notion_workspace)
+            notion_workspace = notion_workspace.join_with_aggregate_root(workspace)
+            self._workspace_notion_manager.save_workspace(notion_workspace)
             LOGGER.info("Applied changes on Notion side")
         else:
             raise Exception(f"Invalid preference {sync_prefer}")

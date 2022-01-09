@@ -51,7 +51,7 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
 
             try:
-                inbox_task.update(
+                inbox_task = inbox_task.update(
                     name=args.name, status=args.status, eisen=args.eisen, difficulty=args.difficulty,
                     actionable_date=args.actionable_date, due_date=args.due_date,
                     source=EventSource.CLI, modification_time=self._time_provider.get_current_time())

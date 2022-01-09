@@ -37,7 +37,7 @@ class PersonArchiveUseCase(UseCase[EntityId, None]):
         with self._storage_engine.get_unit_of_work() as uow:
             person = uow.person_repository.load_by_id(args)
 
-            person.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
+            person = person.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.person_repository.save(person)
 
             all_inbox_tasks = uow.inbox_task_repository.find_all(

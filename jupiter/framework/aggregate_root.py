@@ -1,6 +1,7 @@
 """Framework level elements for aggregate roots."""
+import dataclasses
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Union, cast
 
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -9,7 +10,10 @@ from jupiter.framework.event import Event, EventKind, EventSource
 FIRST_VERSION = 1
 
 
-@dataclass()
+_AggregateRootType = TypeVar('_AggregateRootType', bound='AggregateRoot')
+
+
+@dataclass(frozen=True)
 class AggregateRoot:
     """The base class for all aggregate roots."""
 
@@ -57,33 +61,39 @@ class AggregateRoot:
     archived_time: Optional[Timestamp]
     events: List[Event]
 
-    def assign_ref_id(self, ref_id: EntityId) -> None:
+    def _new_version(
+            self: _AggregateRootType, new_event: Event,
+            **kwargs: Union[None, bool, str, int, float, object]) -> _AggregateRootType:
+        new_events = self.events.copy()
+        new_events.append(new_event)
+        return cast(
+            _AggregateRootType,
+            dataclasses.replace(self, version=self.version + 1, events=new_events, **kwargs))
+
+    def assign_ref_id(self: _AggregateRootType, ref_id: EntityId) -> _AggregateRootType:
         """Assign a ref id to the root."""
-        self.ref_id = ref_id
+        return dataclasses.replace(self, ref_id=ref_id)
 
-    def mark_archived(self, source: EventSource, archived_time: Timestamp) -> None:
+    def mark_archived(self: _AggregateRootType, source: EventSource, archived_time: Timestamp) -> _AggregateRootType:
         """Archive the root."""
-        self.archived = True
-        self.archived_time = archived_time
-        self.record_event(AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
+        return self._new_version(
+            archived=True,
+            archived_time=archived_time,
+            new_event=AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
 
-    def change_archived(self, archived: bool, source: EventSource, archived_time: Timestamp) -> None:
+    def change_archived(
+            self: _AggregateRootType, archived: bool, source: EventSource,
+            archived_time: Timestamp) -> _AggregateRootType:
         """Change the archival status."""
         if self.archived == archived:
-            return
-        elif not self.archived and archived:
-            self.archived = True
-            self.archived_time = archived_time
-            self.record_event(AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
-        elif self.archived and not archived:
-            self.archived = False
-            self.archived_time = None
-            self.record_event(AggregateRoot.Restore.make_event_from_frame_args(source, self.version, archived_time))
+            return self
+        if archived:
+            return self._new_version(
+                archived=True,
+                archived_time=archived_time,
+                new_event=AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
         else:
-            return
-
-    def record_event(self, event: Event) -> None:
-        """Record an event on the root."""
-        self.version = self.version + 1
-        self.last_modified_time = event.timestamp
-        self.events.append(event)
+            return self._new_version(
+                archived=False,
+                archived_time=None,
+                new_event=AggregateRoot.Restore.make_event_from_frame_args(source, self.version, archived_time))

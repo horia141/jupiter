@@ -32,7 +32,7 @@ class SmartListItemArchiveUseCase(UseCase[EntityId, None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             smart_list_item = uow.smart_list_item_repository.load_by_id(args)
-            smart_list_item.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
+            smart_list_item = smart_list_item.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.smart_list_item_repository.save(smart_list_item)
 
         try:

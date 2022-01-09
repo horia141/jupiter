@@ -31,7 +31,7 @@ class InboxTaskArchiveService:
 
     def do_it(self, inbox_task: InboxTask) -> None:
         """Execute the service's action."""
-        inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
+        inbox_task = inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
 
         with self._storage_engine.get_unit_of_work() as uow:
             uow.inbox_task_repository.save(inbox_task)

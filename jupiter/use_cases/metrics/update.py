@@ -158,7 +158,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
             else:
                 collection_params = UpdateAction.do_nothing()
 
-            metric.update(
+            metric = metric.update(
                 name=args.name, collection_params=collection_params,
                 source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
@@ -194,7 +194,7 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
                     metric.collection_params.due_at_time, metric.collection_params.due_at_day,
                     metric.collection_params.due_at_month)
 
-                inbox_task.update_link_to_metric(
+                inbox_task = inbox_task.update_link_to_metric(
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
                     eisen=metric.collection_params.eisen,

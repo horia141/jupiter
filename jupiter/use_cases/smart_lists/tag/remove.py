@@ -40,7 +40,7 @@ class SmartListTagRemoveUseCase(UseCase[EntityId, None]):
                 filter_tag_ref_ids=[args])
 
             for smart_list_item in smart_list_items:
-                smart_list_item.update(
+                smart_list_item = smart_list_item.update(
                     name=UpdateAction.do_nothing(),
                     is_done=UpdateAction.do_nothing(),
                     tags_ref_id=UpdateAction.change_to([t for t in smart_list_item.tags_ref_id if t != args]),

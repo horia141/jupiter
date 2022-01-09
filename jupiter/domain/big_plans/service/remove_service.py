@@ -35,11 +35,11 @@ class BigPlanRemoveService:
 
             inbox_task_collection = \
                 uow.inbox_task_collection_repository.load_by_project(big_plan_collection.project_ref_id)
-            inbox_tasks_to_archive = \
+            inbox_tasks_to_remove = \
                 uow.inbox_task_repository.find_all(
                     allow_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id],
                     filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
-            for inbox_task in inbox_tasks_to_archive:
+            for inbox_task in inbox_tasks_to_remove:
                 uow.inbox_task_repository.remove(inbox_task.ref_id)
 
         try:
@@ -48,7 +48,7 @@ class BigPlanRemoveService:
             # If we can't find this locally it means it's already gone
             LOGGER.info("Skipping removal on Notion side because big plan was not found")
 
-        for inbox_task in inbox_tasks_to_archive:
+        for inbox_task in inbox_tasks_to_remove:
             try:
                 self._inbox_task_notion_manager.remove_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)

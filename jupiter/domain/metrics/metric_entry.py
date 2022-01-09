@@ -10,7 +10,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class MetricEntry(AggregateRoot):
     """A metric entry."""
 
@@ -39,21 +39,19 @@ class MetricEntry(AggregateRoot):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            events=[],
+            events=[MetricEntry.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             metric_ref_id=metric_ref_id,
             collection_time=collection_time,
             value=value,
             notes=notes)
-        metric_entry.record_event(
-            MetricEntry.Created.make_event_from_frame_args(source, metric_entry.version, created_time))
         return metric_entry
 
     def update(
             self, collection_time: UpdateAction[ADate], value: UpdateAction[float], notes: UpdateAction[Optional[str]],
             source: EventSource, modification_time: Timestamp) -> 'MetricEntry':
         """Change the metric entry."""
-        self.collection_time = collection_time.or_else(self.collection_time)
-        self.value = value.or_else(self.value)
-        self.notes = notes.or_else(self.notes)
-        self.record_event(MetricEntry.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            collection_time=collection_time.or_else(self.collection_time),
+            value=value.or_else(self.value),
+            notes=notes.or_else(self.notes),
+            new_event=MetricEntry.Updated.make_event_from_frame_args(source, self.version, modification_time))

@@ -31,7 +31,7 @@ class MetricEntryArchiveUseCase(UseCase[EntityId, None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             metric_entry = uow.metric_entry_repository.load_by_id(args)
-            metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
+            metric_entry = metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.metric_entry_repository.save(metric_entry)
 
         try:

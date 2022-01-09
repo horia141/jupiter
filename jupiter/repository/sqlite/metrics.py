@@ -96,7 +96,7 @@ class SqliteMetricRepository(MetricRepository):
                 metric_unit=metric.metric_unit.value if metric.metric_unit else None))
         except IntegrityError as err:
             raise MetricAlreadyExistsError(f"Metric with key {metric.key} already exists") from err
-        metric.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        metric = metric.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
@@ -252,7 +252,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             collection_time=metric_entry.collection_time.to_db(),
             value=metric_entry.value,
             notes=metric_entry.notes))
-        metric_entry.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        metric_entry = metric_entry.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
         return metric_entry
 

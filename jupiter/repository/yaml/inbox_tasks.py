@@ -74,7 +74,7 @@ class YamlInboxTaskCollectionRepository(InboxTaskCollectionRepository):
         new_inbox_task_collection_row = self._storage.create(_InboxTaskCollectionRow(
             archived=inbox_task_collection.archived,
             project_ref_id=inbox_task_collection.project_ref_id))
-        inbox_task_collection.assign_ref_id(new_inbox_task_collection_row.ref_id)
+        inbox_task_collection = inbox_task_collection.assign_ref_id(new_inbox_task_collection_row.ref_id)
         return inbox_task_collection
 
     def save(self, inbox_task_collection: InboxTaskCollection) -> InboxTaskCollection:
@@ -247,7 +247,7 @@ class YamlInboxTaskRepository(InboxTaskRepository):
             accepted_time=inbox_task.accepted_time,
             working_time=inbox_task.working_time,
             completed_time=inbox_task.completed_time))
-        inbox_task.assign_ref_id(new_inbox_task_row.ref_id)
+        inbox_task = inbox_task.assign_ref_id(new_inbox_task_row.ref_id)
         return inbox_task
 
     def save(self, inbox_task: InboxTask) -> InboxTask:

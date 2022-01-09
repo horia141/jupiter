@@ -40,7 +40,7 @@ class RecurringTaskArchiveService:
             return
 
         with self._storage_engine.get_unit_of_work() as uow:
-            recurring_task.mark_archived(self._source, self._time_provider.get_current_time())
+            recurring_task = recurring_task.mark_archived(self._source, self._time_provider.get_current_time())
             uow.recurring_task_repository.save(recurring_task)
 
             recurring_task_collection = \
@@ -52,7 +52,7 @@ class RecurringTaskArchiveService:
                 allow_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id],
                 filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
             for inbox_task in inbox_tasks_to_archive:
-                inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
+                inbox_task = inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)
 
         try:

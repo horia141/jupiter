@@ -81,7 +81,7 @@ class YamlRecurringTaskCollectionRepository(RecurringTaskCollectionRepository):
         new_recurring_task_collection_row = self._storage.create(_RecurringTaskCollectionRow(
             archived=recurring_task_collection.archived,
             project_ref_id=recurring_task_collection.project_ref_id))
-        recurring_task_collection.assign_ref_id(new_recurring_task_collection_row.ref_id)
+        recurring_task_collection = recurring_task_collection.assign_ref_id(new_recurring_task_collection_row.ref_id)
         return recurring_task_collection
 
     def save(self, recurring_task_collection: RecurringTaskCollection) -> RecurringTaskCollection:
@@ -254,7 +254,7 @@ class YamlRecurringTaskRepository(RecurringTaskRepository):
             must_do=recurring_task.must_do,
             start_at_date=recurring_task.start_at_date,
             end_at_date=recurring_task.end_at_date))
-        recurring_task.assign_ref_id(new_recurring_task_row.ref_id)
+        recurring_task = recurring_task.assign_ref_id(new_recurring_task_row.ref_id)
         return recurring_task
 
     def save(self, recurring_task: RecurringTask) -> RecurringTask:

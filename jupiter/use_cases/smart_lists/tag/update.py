@@ -38,7 +38,7 @@ class SmartListTagUpdateUseCase(UseCase['SmartListTagUpdateUseCase.Args', None])
         with self._storage_engine.get_unit_of_work() as uow:
             smart_list_tag = uow.smart_list_tag_repository.load_by_id(args.ref_id)
 
-            smart_list_tag.update(
+            smart_list_tag = smart_list_tag.update(
                 tag_name=args.tag_name, source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time())
 

@@ -149,7 +149,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
             else:
                 catch_up_params = UpdateAction.do_nothing()
 
-            person.update(
+            person = person.update(
                 name=args.name, relationship=args.relationship, birthday=args.birthday,
                 catch_up_params=catch_up_params, source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time())
@@ -185,7 +185,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     person.catch_up_params.due_at_time, person.catch_up_params.due_at_day,
                     person.catch_up_params.due_at_month)
 
-                inbox_task.update_link_to_person_catch_up(
+                inbox_task = inbox_task.update_link_to_person_catch_up(
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
                     eisen=person.catch_up_params.eisen,
@@ -231,7 +231,7 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
                     RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, person.birthday.day),
                     RecurringTaskDueAtMonth.from_raw(RecurringTaskPeriod.YEARLY, person.birthday.month))
 
-                inbox_task.update_link_to_person_birthday(
+                inbox_task = inbox_task.update_link_to_person_birthday(
                     name=schedule.full_name,
                     recurring_timeline=schedule.timeline,
                     preparation_days_cnt=person.preparation_days_cnt_for_birthday,

@@ -112,6 +112,7 @@ class RecurringTaskSyncService:
                     # TODO(horia141: handle archival here! The same in all other flows! BIG ISSUE!
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.recurring_task_repository.save(updated_recurring_task)
+                    all_recurring_tasks_set[notion_recurring_task_ref_id] = updated_recurring_task
                     LOGGER.info(f"Changed big plan with id={notion_recurring_task.ref_id} from Notion")
 
                     if notion_recurring_task.the_type is None or notion_recurring_task.start_at_date is None:
@@ -130,6 +131,7 @@ class RecurringTaskSyncService:
                     updated_notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
                     self._recurring_task_notion_manager.save_recurring_task(
                         recurring_task_collection.ref_id, updated_notion_recurring_task, inbox_task_collection)
+                    all_notion_recurring_tasks_set[notion_recurring_task_ref_id] = updated_notion_recurring_task
                     LOGGER.info(f"Changed big plan with id={notion_recurring_task.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -161,6 +163,7 @@ class RecurringTaskSyncService:
             notion_recurring_task = NotionRecurringTask.new_notion_row(recurring_task, None)
             self._recurring_task_notion_manager.upsert_recurring_task(
                 recurring_task_collection.ref_id, notion_recurring_task, inbox_task_collection)
+            all_notion_recurring_tasks_set[recurring_task.ref_id] = notion_recurring_task
             LOGGER.info(f'Created Notion task for {recurring_task.name}')
 
         return all_recurring_tasks_set.values()

@@ -14,7 +14,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Person(AggregateRoot):
     """A person."""
 
@@ -47,13 +47,11 @@ class Person(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[Person.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             name=name,
             relationship=relationship,
             catch_up_params=catch_up_params,
             birthday=birthday)
-        person.record_event(Person.Created.make_event_from_frame_args(source, person.version, created_time))
-
         return person
 
     def update(
@@ -62,22 +60,21 @@ class Person(AggregateRoot):
             birthday: UpdateAction[Optional[PersonBirthday]], source: EventSource,
             modification_time: Timestamp) -> 'Person':
         """Change the name of the person."""
-        self.name = name.or_else(self.name)
-        self.relationship = relationship.or_else(self.relationship)
-        self.catch_up_params = catch_up_params.or_else(self.catch_up_params)
-        self.birthday = birthday.or_else(self.birthday)
-        self.record_event(Person.Update.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            relationship=relationship.or_else(self.relationship),
+            catch_up_params=catch_up_params.or_else(self.catch_up_params),
+            birthday=birthday.or_else(self.birthday),
+            new_event=Person.Update.make_event_from_frame_args(source, self.version, modification_time))
 
     def change_catch_up_project(
             self, catch_up_project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'Person':
         """Change the catch up project for a person."""
         if self.catch_up_params is None:
             raise InputValidationError("Cannot change the catch up project if there's no catch up to do")
-        self.catch_up_params = self.catch_up_params.with_new_project_ref_id(catch_up_project_ref_id)
-        self.record_event(
-            Person.ChangeCatchUpProject.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            catch_up_params=self.catch_up_params.with_new_project_ref_id(catch_up_project_ref_id),
+            new_event=Person.ChangeCatchUpProject.make_event_from_frame_args(source, self.version, modification_time))
 
     @property
     def preparation_days_cnt_for_birthday(self) -> int:

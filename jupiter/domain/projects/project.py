@@ -10,7 +10,7 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
-@dataclass()
+@dataclass(frozen=True)
 class Project(AggregateRoot):
     """The project."""
 
@@ -35,15 +35,13 @@ class Project(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[],
+            events=[Project.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             key=key,
             name=name)
-        project.record_event(Project.Created.make_event_from_frame_args(source, project.version, created_time))
         return project
 
     def update(self, name: UpdateAction[ProjectName], source: EventSource, modification_time: Timestamp) -> 'Project':
         """Change the project."""
-        self.name = name.or_else(self.name)
-        self.record_event(
-            Project.Updated.make_event_from_frame_args(source, self.version, modification_time))
-        return self
+        return self._new_version(
+            name=name.or_else(self.name),
+            new_event=Project.Updated.make_event_from_frame_args(source, self.version, modification_time))

@@ -40,7 +40,7 @@ class ProjectUpdateUseCase(UseCase['ProjectUpdateUseCase.Args', None]):
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             project = uow.project_repository.load_by_key(args.key)
-            project.update(
+            project = project.update(
                 name=args.name, source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.project_repository.save(project)
         LOGGER.info("Applied local changes")
