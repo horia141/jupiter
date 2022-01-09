@@ -57,7 +57,6 @@ class RecurringTaskShow(command.Command):
             difficulty_str = \
                 recurring_task.gen_params.difficulty.value if recurring_task.gen_params.difficulty else "none"
             print(f'id={recurring_task.ref_id} {recurring_task.name}' +
-                  f' period={recurring_task.period.value}' +
                   f' type={recurring_task.the_type.value}' +
                   f'\n    eisen="{recurring_task.gen_params.eisen.value}"' +
                   f' difficulty={difficulty_str}' +

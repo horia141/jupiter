@@ -217,12 +217,12 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
             LOGGER.info(f"Skipping '{recurring_task.name}' because it is suspended")
             return
 
-        if period_filter is not None and recurring_task.period not in period_filter:
+        if period_filter is not None and recurring_task.gen_params.period not in period_filter:
             LOGGER.info(f"Skipping '{recurring_task.name}' on account of period filtering")
             return
 
         schedule = schedules.get_schedule(
-            recurring_task.period, recurring_task.name, right_now, self._global_properties.timezone,
+            recurring_task.gen_params.period, recurring_task.name, right_now, self._global_properties.timezone,
             recurring_task.skip_rule, recurring_task.gen_params.actionable_from_day,
             recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,
             recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)

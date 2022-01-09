@@ -279,7 +279,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             continue
                         LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
                         schedule = schedules.get_schedule(
-                            recurring_task.period, recurring_task.name,
+                            recurring_task.gen_params.period, recurring_task.name,
                             typing.cast(Timestamp, inbox_task.recurring_gen_right_now or inbox_task.created_time),
                             self._global_properties.timezone, recurring_task.skip_rule,
                             recurring_task.gen_params.actionable_from_day,

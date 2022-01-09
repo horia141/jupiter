@@ -88,7 +88,8 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                 args.due_at_day.should_change or \
                 args.due_at_month.should_change
 
-            if args.eisen.should_change or \
+            if args.period.should_change or \
+                args.eisen.should_change or \
                 args.difficulty.should_change or \
                 args.actionable_from_day.should_change or \
                 args.actionable_from_month.should_change or \
@@ -100,7 +101,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     UpdateAction.change_to(
                         RecurringTaskGenParams(
                             recurring_task.project_ref_id,
-                            recurring_task.period,
+                            recurring_task.gen_params.period,
                             args.eisen.or_else(recurring_task.gen_params.eisen),
                             args.difficulty.or_else(recurring_task.gen_params.difficulty),
                             args.actionable_from_day.or_else(recurring_task.gen_params.actionable_from_day),
@@ -112,7 +113,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                 recurring_task_gen_params = UpdateAction.do_nothing()
 
             recurring_task = recurring_task.update(
-                name=args.name, period=args.period, the_type=args.the_type, gen_params=recurring_task_gen_params,
+                name=args.name, the_type=args.the_type, gen_params=recurring_task_gen_params,
                 must_do=args.must_do, skip_rule=args.skip_rule, start_at_date=args.start_at_date,
                 end_at_date=args.end_at_date, source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time())
@@ -134,7 +135,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
 
             for inbox_task in all_inbox_tasks:
                 schedule = schedules.get_schedule(
-                    recurring_task.period, recurring_task.name,
+                    recurring_task.gen_params.period, recurring_task.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
                     recurring_task.skip_rule, recurring_task.gen_params.actionable_from_day,
                     recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,

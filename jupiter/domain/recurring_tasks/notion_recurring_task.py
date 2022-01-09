@@ -56,7 +56,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             last_edited_time=aggregate_root.last_modified_time,
             archived=aggregate_root.archived,
             name=str(aggregate_root.name),
-            period=aggregate_root.period.for_notion(),
+            period=aggregate_root.gen_params.period.for_notion(),
             the_type=aggregate_root.the_type.for_notion(),
             eisen=aggregate_root.gen_params.eisen.for_notion(),
             difficulty=
@@ -84,7 +84,6 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
             recurring_task_collection_ref_id=extra_info.recurring_task_collection_ref_id,
             archived=self.archived,
             name=RecurringTaskName.from_raw(self.name),
-            period=RecurringTaskPeriod.from_raw(self.period),
             the_type=RecurringTaskType.from_raw(self.the_type),
             gen_params=RecurringTaskGenParams(
                 project_ref_id=extra_info.project_ref_id,
@@ -117,7 +116,6 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
         new_aggregate_root = aggregate_root\
             .update(
                 name=UpdateAction.change_to(RecurringTaskName.from_raw(self.name)),
-                period=UpdateAction.change_to(RecurringTaskPeriod.from_raw(self.period)),
                 the_type=UpdateAction.change_to(RecurringTaskType.from_raw(self.the_type)),
                 gen_params=UpdateAction.change_to(
                     RecurringTaskGenParams(

@@ -6,7 +6,6 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
@@ -40,7 +39,6 @@ class RecurringTask(AggregateRoot):
 
     recurring_task_collection_ref_id: EntityId
     name: RecurringTaskName
-    period: RecurringTaskPeriod
     the_type: RecurringTaskType
     gen_params: RecurringTaskGenParams
     suspended: bool
@@ -52,7 +50,7 @@ class RecurringTask(AggregateRoot):
     @staticmethod
     def new_recurring_task(
             recurring_task_collection_ref_id: EntityId, archived: bool, name: RecurringTaskName,
-            period: RecurringTaskPeriod, the_type: Optional[RecurringTaskType], gen_params: RecurringTaskGenParams,
+            the_type: Optional[RecurringTaskType], gen_params: RecurringTaskGenParams,
             must_do: bool, skip_rule: Optional[RecurringTaskSkipRule], start_at_date: Optional[ADate],
             end_at_date: Optional[ADate], suspended: bool, source: EventSource,
             created_time: Timestamp) -> 'RecurringTask':
@@ -77,7 +75,6 @@ class RecurringTask(AggregateRoot):
             events=[RecurringTask.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             recurring_task_collection_ref_id=recurring_task_collection_ref_id,
             name=name,
-            period=period,
             the_type=the_type or RecurringTaskType.CHORE,
             gen_params=gen_params,
             must_do=must_do,
@@ -88,11 +85,11 @@ class RecurringTask(AggregateRoot):
         return recurring_task
 
     def update(
-            self, name: UpdateAction[RecurringTaskName], period: UpdateAction[RecurringTaskPeriod],
-            the_type: UpdateAction[RecurringTaskType], gen_params: UpdateAction[RecurringTaskGenParams],
-            must_do: UpdateAction[bool], skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]],
-            start_at_date: UpdateAction[ADate], end_at_date: UpdateAction[Optional[ADate]],
-            source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
+            self, name: UpdateAction[RecurringTaskName], the_type: UpdateAction[RecurringTaskType],
+            gen_params: UpdateAction[RecurringTaskGenParams], must_do: UpdateAction[bool],
+            skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]], start_at_date: UpdateAction[ADate],
+            end_at_date: UpdateAction[Optional[ADate]], source: EventSource,
+            modification_time: Timestamp) -> 'RecurringTask':
         """Update the recurring task."""
         if gen_params.should_change:
             RecurringTask._check_actionable_and_due_date_configs(
@@ -116,7 +113,6 @@ class RecurringTask(AggregateRoot):
 
         return self._new_version(
             name=name.or_else(self.name),
-            period=period.or_else(self.period),
             the_type=the_type.or_else(self.the_type),
             gen_params=the_gen_params,
             must_do=must_do.or_else(self.must_do),

@@ -83,7 +83,6 @@ class RecurringTaskCreateUseCase(UseCase['RecurringTaskCreateUseCase.Args', None
                 recurring_task_collection_ref_id=recurring_task_collection.ref_id,
                 archived=False,
                 name=args.name,
-                period=args.period,
                 the_type=args.the_type,
                 gen_params=RecurringTaskGenParams(
                     project_ref_id=project.ref_id,

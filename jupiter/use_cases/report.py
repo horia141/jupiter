@@ -294,7 +294,7 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
                 name=all_recurring_tasks_by_ref_id[k].name,
                 the_type=all_recurring_tasks_by_ref_id[k].the_type,
                 summary=self._run_report_for_inbox_for_recurring_tasks(
-                    all_recurring_tasks_by_ref_id[k].period, args.right_now, schedule, [vx[1] for vx in v]))
+                    all_recurring_tasks_by_ref_id[k].gen_params.period, args.right_now, schedule, [vx[1] for vx in v]))
             for (k, v) in
             groupby(sorted(
                 [(it.recurring_task_ref_id, it)
