@@ -54,21 +54,28 @@ class AggregateRoot:
             return EventKind.RESTORE
 
     ref_id: EntityId
-    version: int
+    version: int = dataclasses.field(compare=False, hash=False)
     archived: bool
     created_time: Timestamp
     last_modified_time: Timestamp
     archived_time: Optional[Timestamp]
-    events: List[Event]
+    events: List[Event] = dataclasses.field(compare=False, hash=False)
 
     def _new_version(
             self: _AggregateRootType, new_event: Event,
             **kwargs: Union[None, bool, str, int, float, object]) -> _AggregateRootType:
-        new_events = self.events.copy()
-        new_events.append(new_event)
-        return cast(
-            _AggregateRootType,
-            dataclasses.replace(self, version=self.version + 1, events=new_events, **kwargs))
+        # To hell with your types!
+        # We only want to create a new version if there's any actual change in the root. This means we both
+        # create a new object, and we increment it's version, and emit a new event. Otherwise we just return
+        # the original object.
+        for arg_name, arg_value in kwargs.items():
+            if arg_value != getattr(self, arg_name):
+                new_events = self.events.copy()
+                new_events.append(new_event)
+                return cast(
+                    _AggregateRootType,
+                    dataclasses.replace(self, version=self.version + 1, events=new_events, **kwargs))
+        return self
 
     def assign_ref_id(self: _AggregateRootType, ref_id: EntityId) -> _AggregateRootType:
         """Assign a ref id to the root."""
