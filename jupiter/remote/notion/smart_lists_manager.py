@@ -11,15 +11,15 @@ from jupiter.domain.smart_lists.notion_smart_list import NotionSmartList
 from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
-from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionPageLink, NotionLockKey
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldProps, NotionFieldShow
-from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionNotFoundError, \
+from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionNotFoundError, \
     NotionCollectionFieldTagNotFoundError, NotionCollectionItemNotFoundError
-from jupiter.remote.notion.infra.pages_manager import PagesManager
+from jupiter.remote.notion.infra.pages_manager import NotionPagesManager
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -238,12 +238,12 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _pages_manager: Final[PagesManager]
-    _collections_manager: Final[CollectionsManager]
+    _pages_manager: Final[NotionPagesManager]
+    _collections_manager: Final[NotionCollectionsManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider, pages_manager: PagesManager,
-            collections_manager: CollectionsManager) -> None:
+            self, global_properties: GlobalProperties, time_provider: TimeProvider, pages_manager: NotionPagesManager,
+            collections_manager: NotionCollectionsManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -253,14 +253,14 @@ class NotionSmartListsManager(SmartListNotionManager):
     def upsert_root_page(self, notion_workspace: NotionWorkspace) -> None:
         """Upsert the root page for the smart lists section."""
         self._pages_manager.upsert_page(
-            NotionLockKey(self._KEY), self._PAGE_NAME, NotionPageLink(notion_workspace.notion_id))
+            NotionLockKey(self._KEY), self._PAGE_NAME, notion_workspace.notion_id)
 
     def upsert_smart_list(self, smart_list: NotionSmartList) -> NotionSmartList:
         """Upsert a smart list on Notion-side."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{smart_list.ref_id}"),
-            parent_page=root_page,
+            parent_page_notion_id=root_page.notion_id,
             name=smart_list.name,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -293,7 +293,7 @@ class NotionSmartListsManager(SmartListNotionManager):
         return NotionSmartList(
             name=smart_list_link.name,
             ref_id=ref_id,
-            notion_id=smart_list_link.collection_id)
+            notion_id=smart_list_link.collection_notion_id)
 
     def remove_smart_list(self, ref_id: EntityId) -> None:
         """Remove a smart list on Notion-side."""
@@ -309,7 +309,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
             field="tags",
             key=NotionLockKey(f"{smart_list_tag.ref_id}"),
-            ref_id=EntityId.from_raw(smart_list_tag.ref_id),
+            ref_id=typing.cast(EntityId, smart_list_tag.ref_id),
             tag=smart_list_tag.name)
         return smart_list_tag
 
@@ -319,17 +319,14 @@ class NotionSmartListsManager(SmartListNotionManager):
         try:
             self._collections_manager.save_collection_field_tag(
                 collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-                field="tags",
-                key=NotionLockKey(f"{smart_list_tag.ref_id}"),
-                ref_id=EntityId.from_raw(smart_list_tag.ref_id),
-                tag=smart_list_tag.name)
+                key=NotionLockKey(f"{smart_list_tag.ref_id}"), field="tags", tag=smart_list_tag.name)
             return smart_list_tag
         except NotionCollectionFieldTagNotFoundError as err:
             raise NotionSmartListTagNotFoundError(
                 f"Smart list tag with id {smart_list_tag.ref_id} was not found") from err
 
     def load_smart_list_tag(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> NotionSmartListTag:
-        """Retrieve all the Notion-side smart list tags."""
+        """Retrieve a the Notion-side smart list tag."""
         try:
             notion_link = self._collections_manager.load_collection_field_tag(
                 collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
@@ -337,7 +334,7 @@ class NotionSmartListsManager(SmartListNotionManager):
                 key=NotionLockKey(f"{ref_id}"),
                 ref_id=ref_id)
             return NotionSmartListTag(
-                name=notion_link.name, notion_id=notion_link.notion_id, ref_id=notion_link.tmp_ref_id_as_str,
+                name=notion_link.name, notion_id=notion_link.notion_id, ref_id=ref_id,
                 archived=False, last_edited_time=self._time_provider.get_current_time())
         except NotionCollectionFieldTagNotFoundError as err:
             raise NotionSmartListTagNotFoundError(
@@ -345,8 +342,11 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     def load_all_smart_list_tags(self, smart_list_ref_id: EntityId) -> typing.Iterable[NotionSmartListTag]:
         """Retrieve all the Notion-side smart list tags."""
-        return [NotionSmartListTag(name=s.name, notion_id=s.notion_id, ref_id=s.tmp_ref_id_as_str,
-                                   archived=False, last_edited_time=self._time_provider.get_current_time())
+        return [NotionSmartListTag(name=s.name,
+                                   notion_id=s.notion_id,
+                                   ref_id=s.ref_id if s.ref_id != BAD_REF_ID else None,
+                                   archived=False,
+                                   last_edited_time=self._time_provider.get_current_time())
                 for s in self._collections_manager.load_all_collection_field_tags(
                     collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"), field="tags")]
 
@@ -386,21 +386,25 @@ class NotionSmartListsManager(SmartListNotionManager):
     def upsert_smart_list_item(
             self, smart_list_ref_id: EntityId, smart_list_item: NotionSmartListItem) -> NotionSmartListItem:
         """Upsert a smart list item on Notion-side."""
-        return self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{smart_list_item.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-            new_row=smart_list_item,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        link = \
+            self._collections_manager.upsert_collection_item(
+                key=NotionLockKey(f"{smart_list_item.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+                new_row=smart_list_item,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        return link.item_info
 
     def save_smart_list_item(
             self, smart_list_ref_id: EntityId, smart_list_item: NotionSmartListItem) -> NotionSmartListItem:
         """Update the Notion-side smart list with new data."""
         try:
-            return self._collections_manager.save_collection_item(
-                key=NotionLockKey(f"{smart_list_item.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-                row=smart_list_item,
-                copy_row_to_notion_row=self._copy_row_to_notion_row)
+            link = \
+                self._collections_manager.save_collection_item(
+                    key=NotionLockKey(f"{smart_list_item.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+                    row=smart_list_item,
+                    copy_row_to_notion_row=self._copy_row_to_notion_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionSmartListItemNotFoundError(
                 f"Smart list item with id {smart_list_item.ref_id} could not be found") from err
@@ -408,19 +412,22 @@ class NotionSmartListsManager(SmartListNotionManager):
     def load_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> NotionSmartListItem:
         """Retrieve a particular smart list item."""
         try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
+            link = \
+                self._collections_manager.load_collection_item(
+                    key=NotionLockKey(f"{ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionSmartListItemNotFoundError(
                 f"Smart list item with id {ref_id} could not be found") from err
 
     def load_all_smart_list_items(self, smart_list_ref_id: EntityId) -> typing.Iterable[NotionSmartListItem]:
         """Retrieve all the Notion-side smart list items."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
+        return [l.item_info for l in
+                self._collections_manager.load_all_collection_items(
+                    collection_key=NotionLockKey(f"{self._KEY}:{smart_list_ref_id}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
     def remove_smart_list_item(self, smart_list_ref_id: EntityId, ref_id: EntityId) -> None:
         """Remove a smart list item on Notion-side."""
@@ -466,7 +473,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             notion_row.url = row.url
             notion_row.archived = row.archived
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
-            notion_row.ref_id = row.ref_id
+            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
         return notion_row
 
@@ -487,5 +494,5 @@ class NotionSmartListsManager(SmartListNotionManager):
             url=notion_row.url,
             archived=notion_row.archived,
             last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
-            ref_id=notion_row.ref_id,
+            ref_id=EntityId.from_raw(notion_row.ref_id) if notion_row.ref_id else None,
             notion_id=NotionId.from_raw(notion_row.id))

@@ -4,7 +4,7 @@ from typing import Final
 
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListItemNotFoundError
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -14,11 +14,11 @@ LOGGER = logging.getLogger(__name__)
 class SmartListItemRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a smart list item."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine,
+            self, storage_engine: DomainStorageEngine,
             smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine

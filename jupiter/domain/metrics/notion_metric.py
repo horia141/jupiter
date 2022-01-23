@@ -26,8 +26,10 @@ class NotionMetric(NotionEntity[Metric]):
 
     def apply_to_aggregate_root(self, aggregate_root: Metric, modification_time: Timestamp) -> Metric:
         """Obtain the aggregate root form of this, with a possible error."""
+        metric_name = MetricName.from_raw(self.name)
         return aggregate_root.update(
-            name=UpdateAction.change_to(MetricName.from_raw(self.name)),
+            name=UpdateAction.change_to(metric_name),
             collection_params=UpdateAction.do_nothing(),
             source=EventSource.NOTION,
-            modification_time=modification_time)
+            modification_time=
+            modification_time if metric_name != aggregate_root.name else aggregate_root.last_modified_time)

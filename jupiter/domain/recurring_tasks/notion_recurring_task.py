@@ -52,7 +52,7 @@ class NotionRecurringTask(NotionRow[RecurringTask, None, 'NotionRecurringTask.In
         """Construct a new Notion row from a given recurring task."""
         return NotionRecurringTask(
             notion_id=BAD_NOTION_ID,
-            ref_id=str(aggregate_root.ref_id),
+            ref_id=aggregate_root.ref_id,
             last_edited_time=aggregate_root.last_modified_time,
             archived=aggregate_root.archived,
             name=str(aggregate_root.name),

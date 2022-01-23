@@ -30,6 +30,7 @@ class Person(AggregateRoot):
     class ChangeCatchUpProject(AggregateRoot.Updated):
         """Change the catch up project."""
 
+    prm_database_ref_id: EntityId
     name: PersonName
     relationship: PersonRelationship
     catch_up_params: Optional[RecurringTaskGenParams]
@@ -37,8 +38,9 @@ class Person(AggregateRoot):
 
     @staticmethod
     def new_person(
-            name: PersonName, relationship: PersonRelationship, catch_up_params: Optional[RecurringTaskGenParams],
-            birthday: Optional[PersonBirthday], source: EventSource, created_time: Timestamp) -> 'Person':
+            prm_database_ref_id: EntityId, name: PersonName, relationship: PersonRelationship,
+            catch_up_params: Optional[RecurringTaskGenParams], birthday: Optional[PersonBirthday], source: EventSource,
+            created_time: Timestamp) -> 'Person':
         """Create a person."""
         person = Person(
             ref_id=BAD_REF_ID,
@@ -48,6 +50,7 @@ class Person(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[Person.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            prm_database_ref_id=prm_database_ref_id,
             name=name,
             relationship=relationship,
             catch_up_params=catch_up_params,

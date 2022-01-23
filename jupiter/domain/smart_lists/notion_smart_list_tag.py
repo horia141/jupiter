@@ -26,7 +26,7 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
         """Construct a new Notion row from a given smart list tag."""
         return NotionSmartListTag(
             notion_id=BAD_NOTION_ID,
-            ref_id=str(aggregate_root.ref_id),
+            ref_id=aggregate_root.ref_id,
             archived=aggregate_root.archived,
             last_edited_time=aggregate_root.last_modified_time,
             name=str(aggregate_root.tag_name))
@@ -41,7 +41,10 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
 
     def apply_to_aggregate_root(self, aggregate_root: SmartListTag, extra_info: InverseExtraInfo) -> SmartListTag:
         """Apply to an already existing smart list tag."""
+        smart_list_tag_name = SmartListTagName.from_raw(self.name)
         return aggregate_root.update(
-            tag_name=UpdateAction.change_to(SmartListTagName.from_raw(self.name)),
+            tag_name=UpdateAction.change_to(smart_list_tag_name),
             source=EventSource.NOTION,
-            modification_time=self.last_edited_time)
+            modification_time=
+            self.last_edited_time
+            if smart_list_tag_name != aggregate_root.tag_name else aggregate_root.last_modified_time)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
@@ -19,11 +19,11 @@ class RecurringTaskUnsuspendUseCase(UseCase['RecurringTaskUnsuspendUseCase.Args'
         ref_id: EntityId
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

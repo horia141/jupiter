@@ -3,10 +3,7 @@ from sqlalchemy import create_engine
 
 from alembic import context
 
-try:
-    from jupiter.utils.global_properties import build_global_properties
-except ModuleNotFoundError:
-    from jupiter.utils.global_properties import build_global_properties
+from jupiter.utils.global_properties import build_global_properties
 
 
 coloredlogs.install(

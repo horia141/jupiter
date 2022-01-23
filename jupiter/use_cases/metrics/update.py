@@ -20,7 +20,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
@@ -52,13 +52,13 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
             metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties

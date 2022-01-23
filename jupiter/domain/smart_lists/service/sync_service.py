@@ -9,7 +9,7 @@ from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListIte
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -20,11 +20,11 @@ LOGGER = logging.getLogger(__name__)
 class SmartListSyncService:
     """The service class for syncing smart lists."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, smart_list_notion_manager: SmartListNotionManager) -> None:
+            self, storage_engine: DomainStorageEngine, smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._smart_list_notion_manager = smart_list_notion_manager
@@ -73,11 +73,9 @@ class SmartListSyncService:
         notion_smart_list_tags_set = {}
 
         for notion_smart_list_tag in all_notion_smart_list_tags:
-            notion_smart_list_tag_ref_id = EntityId.from_raw(notion_smart_list_tag.ref_id)\
-                if notion_smart_list_tag.ref_id else None
             LOGGER.info(f"Syncing tag '{notion_smart_list_tag.name}' (id={notion_smart_list_tag.notion_id})")
 
-            if notion_smart_list_tag_ref_id is None or notion_smart_list_tag.ref_id == "":
+            if notion_smart_list_tag.ref_id is None:
                 # If the smart list tag doesn't exist locally, we create it.
                 new_smart_list_tag = \
                     notion_smart_list_tag.new_aggregate_root(NotionSmartListTag.InverseExtraInfo(smart_list.ref_id))
@@ -97,10 +95,10 @@ class SmartListSyncService:
                 all_smart_list_tags.append(new_smart_list_tag)
                 all_smart_list_tags_set[new_smart_list_tag.ref_id] = new_smart_list_tag
                 all_smart_list_tags_by_name[new_smart_list_tag.tag_name] = new_smart_list_tag
-            elif notion_smart_list_tag_ref_id in all_smart_list_tags_set and \
+            elif notion_smart_list_tag.ref_id in all_smart_list_tags_set and \
                     notion_smart_list_tag.notion_id in all_notion_smart_list_tags_notion_ids:
-                smart_list_tag = all_smart_list_tags_set[notion_smart_list_tag_ref_id]
-                notion_smart_list_tags_set[notion_smart_list_tag_ref_id] = notion_smart_list_tag
+                smart_list_tag = all_smart_list_tags_set[notion_smart_list_tag.ref_id]
+                notion_smart_list_tags_set[notion_smart_list_tag.ref_id] = notion_smart_list_tag
 
                 if sync_prefer == SyncPrefer.NOTION:
                     updated_smart_list_tag = \
@@ -108,7 +106,7 @@ class SmartListSyncService:
                             smart_list_tag, NotionSmartListTag.InverseExtraInfo(smart_list.ref_id))
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.smart_list_tag_repository.save(updated_smart_list_tag)
-                    all_smart_list_tags_set[notion_smart_list_tag_ref_id] = updated_smart_list_tag
+                    all_smart_list_tags_set[notion_smart_list_tag.ref_id] = updated_smart_list_tag
                     all_smart_list_tags_by_name[smart_list_tag.tag_name] = updated_smart_list_tag
                     LOGGER.info(f"Changed smart list tag '{smart_list_tag.tag_name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
@@ -127,8 +125,7 @@ class SmartListSyncService:
                 #    We'll have duplicates in these cases, and they need to be removed.
                 try:
                     self._smart_list_notion_manager.remove_smart_list_tag(
-                        smart_list.ref_id,
-                        EntityId.from_raw(notion_smart_list_tag.ref_id) if notion_smart_list_tag.ref_id else None)
+                        smart_list.ref_id, notion_smart_list_tag.ref_id)
                     LOGGER.info(f"Removed smart list item with id={notion_smart_list_tag.ref_id} from Notion")
                 except NotionSmartListTagNotFoundError:
                     LOGGER.info(f"Skipped dangling smart list item in Notion {notion_smart_list_tag.ref_id}")
@@ -168,16 +165,14 @@ class SmartListSyncService:
 
         # Explore Notion and apply to local
         for notion_smart_list_item in all_notion_smart_list_items:
-            notion_smart_list_item_ref_id = EntityId.from_raw(notion_smart_list_item.ref_id) \
-                if notion_smart_list_item.ref_id else None
             if filter_smart_list_item_ref_ids_set is not None and \
-                    notion_smart_list_item_ref_id not in filter_smart_list_item_ref_ids_set:
+                    notion_smart_list_item.ref_id not in filter_smart_list_item_ref_ids_set:
                 LOGGER.info(f"Skipping '{notion_smart_list_item.name}' (id={notion_smart_list_item.notion_id})")
                 continue
 
             LOGGER.info(f"Syncing '{notion_smart_list_item.name}' (id={notion_smart_list_item.notion_id})")
 
-            if notion_smart_list_item_ref_id is None or notion_smart_list_item.ref_id == "":
+            if notion_smart_list_item.ref_id is None:
                 # If the smart list item doesn't exist locally, we create it.
                 new_smart_list_item = notion_smart_list_item.new_aggregate_root(
                     NotionSmartListItem.InverseExtraInfo(smart_list.ref_id, all_smart_list_tags_by_name))
@@ -198,10 +193,10 @@ class SmartListSyncService:
                 all_smart_list_items_set[new_smart_list_item.ref_id] = new_smart_list_item
                 all_notion_smart_list_items_set[new_smart_list_item.ref_id] = \
                     notion_smart_list_item
-            elif notion_smart_list_item_ref_id in all_smart_list_items_set and \
+            elif notion_smart_list_item.ref_id in all_smart_list_items_set and \
                     notion_smart_list_item.notion_id in all_notion_smart_list_items_notion_ids:
-                smart_list_item = all_smart_list_items_set[notion_smart_list_item_ref_id]
-                all_notion_smart_list_items_set[notion_smart_list_item_ref_id] = \
+                smart_list_item = all_smart_list_items_set[notion_smart_list_item.ref_id]
+                all_notion_smart_list_items_set[notion_smart_list_item.ref_id] = \
                     notion_smart_list_item
 
                 if sync_prefer == SyncPrefer.NOTION:
@@ -215,7 +210,7 @@ class SmartListSyncService:
                         NotionSmartListItem.InverseExtraInfo(smart_list.ref_id, all_smart_list_tags_by_name))
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.smart_list_item_repository.save(updated_smart_list_item)
-                    all_smart_list_items_set[notion_smart_list_item_ref_id] = updated_smart_list_item
+                    all_smart_list_items_set[notion_smart_list_item.ref_id] = updated_smart_list_item
                     LOGGER.info(f"Changed smart list item '{smart_list_item.name}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and \
@@ -227,7 +222,7 @@ class SmartListSyncService:
                         smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
                     self._smart_list_notion_manager.save_smart_list_item(
                         smart_list.ref_id, updated_notion_smart_list_item)
-                    all_notion_smart_list_items_set[notion_smart_list_item_ref_id] = updated_notion_smart_list_item
+                    all_notion_smart_list_items_set[notion_smart_list_item.ref_id] = updated_notion_smart_list_item
                     LOGGER.info(f"Changed smart list item '{notion_smart_list_item.name}' from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")

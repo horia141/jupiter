@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.projects.project import Project
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.use_case import UseCase
 
@@ -18,9 +18,9 @@ class WorkspaceFindUseCase(UseCase[None, 'WorkspaceFindUseCase.Response']):
         workspace: Workspace
         default_project: Project
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
-    def __init__(self, storage_engine: StorageEngine) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
 

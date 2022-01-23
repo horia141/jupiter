@@ -6,7 +6,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from jupiter.domain.metrics.metric_key import MetricKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -18,12 +18,12 @@ class MetricArchiveUseCase(UseCase[MetricKey, None]):
     """The command for archiving a metric."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""

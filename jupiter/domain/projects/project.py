@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
-from jupiter.framework.base.entity_id import BAD_REF_ID
+from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
@@ -22,11 +22,14 @@ class Project(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
+    workspace_ref_id: EntityId
     key: ProjectKey
     name: ProjectName
 
     @staticmethod
-    def new_project(key: ProjectKey, name: ProjectName, source: EventSource, created_time: Timestamp) -> 'Project':
+    def new_project(
+            workspace_ref_id: EntityId, key: ProjectKey, name: ProjectName, source: EventSource,
+            created_time: Timestamp) -> 'Project':
         """Create a project."""
         project = Project(
             ref_id=BAD_REF_ID,
@@ -36,6 +39,7 @@ class Project(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[Project.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            workspace_ref_id=workspace_ref_id,
             key=key,
             name=name)
         return project

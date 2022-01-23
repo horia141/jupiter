@@ -7,7 +7,7 @@ from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
-from jupiter.framework.base.entity_id import BAD_REF_ID
+from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
@@ -25,6 +25,7 @@ class Metric(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
+    workspace_ref_id: EntityId
     key: MetricKey
     name: MetricName
     collection_params: Optional[RecurringTaskGenParams]
@@ -32,8 +33,9 @@ class Metric(AggregateRoot):
 
     @staticmethod
     def new_metric(
-            key: MetricKey, name: MetricName, collection_params: Optional[RecurringTaskGenParams],
-            metric_unit: Optional[MetricUnit], source: EventSource, created_time: Timestamp) -> 'Metric':
+            workspace_ref_id: EntityId, key: MetricKey, name: MetricName,
+            collection_params: Optional[RecurringTaskGenParams], metric_unit: Optional[MetricUnit], source: EventSource,
+            created_time: Timestamp) -> 'Metric':
         """Create a metric."""
         metric = Metric(
             ref_id=BAD_REF_ID,
@@ -43,6 +45,7 @@ class Metric(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[Metric.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            workspace_ref_id=workspace_ref_id,
             key=key,
             name=name,
             collection_params=collection_params,

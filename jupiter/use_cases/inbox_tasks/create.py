@@ -14,7 +14,7 @@ from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
@@ -38,11 +38,11 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
         due_date: Optional[ADate]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
@@ -80,7 +80,7 @@ class InboxTaskCreateUseCase(UseCase['InboxTaskCreateUseCase.Args', None]):
                 source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time())
 
-            inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+            inbox_task = uow.inbox_task_repository.create(inbox_task)
             LOGGER.info("Applied local changes")
 
         notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(big_plan_name))

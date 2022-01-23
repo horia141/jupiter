@@ -6,7 +6,7 @@ from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskNotFoundError
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.utils.time_provider import TimeProvider
 
@@ -18,12 +18,12 @@ class BigPlanArchiveService:
 
     _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
-            self, source: EventSource, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, source: EventSource, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager, big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
         self._source = source

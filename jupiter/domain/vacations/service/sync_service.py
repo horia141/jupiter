@@ -2,11 +2,12 @@
 import logging
 from typing import Final, Iterable, Dict, Optional
 
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.notion_vacation import NotionVacation
 from jupiter.domain.vacations.vacation import Vacation
+from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -15,17 +16,17 @@ LOGGER = logging.getLogger(__name__)
 class VacationSyncService:
     """The service class for syncing the VACATION database between local and Notion."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, vacation_notion_manager: VacationNotionManager) -> None:
+            self, storage_engine: DomainStorageEngine, vacation_notion_manager: VacationNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._vacation_notion_manager = vacation_notion_manager
 
     def sync(
-            self, drop_all_notion_side: bool, sync_even_if_not_modified: bool,
+            self, workspace: Workspace, drop_all_notion_side: bool, sync_even_if_not_modified: bool,
             filter_ref_ids: Optional[Iterable[EntityId]], sync_prefer: SyncPrefer) -> Iterable[Vacation]:
         """Synchronise vacations between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
@@ -45,15 +46,16 @@ class VacationSyncService:
 
         # Explore Notion and apply to local
         for notion_vacation in all_notion_vacations:
-            notion_vacation_ref_id = EntityId.from_raw(notion_vacation.ref_id) if notion_vacation.ref_id else None
-            if filter_ref_ids_set is not None and notion_vacation_ref_id not in filter_ref_ids_set:
+            if filter_ref_ids_set is not None and notion_vacation.ref_id not in filter_ref_ids_set:
                 LOGGER.info(f"Skipping '{notion_vacation.name}' (id={notion_vacation.notion_id}) because of filtering")
                 continue
 
             LOGGER.info(f"Syncing '{notion_vacation.name}' (id={notion_vacation.notion_id})")
 
-            if notion_vacation_ref_id is None or notion_vacation.ref_id == "":
-                new_vacation = notion_vacation.new_aggregate_root(None)
+            if notion_vacation.ref_id is None:
+                new_vacation = \
+                    notion_vacation.new_aggregate_root(
+                        NotionVacation.InverseExtraInfo(workspace_ref_id=workspace.ref_id))
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_vacation = uow.vacation_repository.create(new_vacation)
@@ -68,10 +70,10 @@ class VacationSyncService:
 
                 all_vacations_set[new_vacation.ref_id] = new_vacation
                 all_notion_vacations_set[new_vacation.ref_id] = notion_vacation
-            elif notion_vacation_ref_id in all_vacations_set \
+            elif notion_vacation.ref_id in all_vacations_set \
                     and notion_vacation.notion_id in all_notion_vacations_notion_ids:
-                vacation = all_vacations_set[notion_vacation_ref_id]
-                all_notion_vacations_set[notion_vacation_ref_id] = notion_vacation
+                vacation = all_vacations_set[notion_vacation.ref_id]
+                all_notion_vacations_set[notion_vacation.ref_id] = notion_vacation
 
                 # If the vacation exists locally, we sync it with the remote:
                 if sync_prefer == SyncPrefer.NOTION:
@@ -80,12 +82,14 @@ class VacationSyncService:
                         LOGGER.info(f"Skipping {notion_vacation.name} because it was not modified")
                         continue
 
-                    updated_vacation = notion_vacation.apply_to_aggregate_root(vacation, None)
+                    updated_vacation = \
+                        notion_vacation.apply_to_aggregate_root(
+                            vacation, NotionVacation.InverseExtraInfo(workspace_ref_id=workspace.ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.vacation_repository.save(updated_vacation)
 
-                    all_vacations_set[notion_vacation_ref_id] = updated_vacation
+                    all_vacations_set[notion_vacation.ref_id] = updated_vacation
 
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
@@ -98,7 +102,7 @@ class VacationSyncService:
 
                     self._vacation_notion_manager.save_vacation(updated_notion_vacation)
 
-                    all_notion_vacations_set[notion_vacation_ref_id] = updated_notion_vacation
+                    all_notion_vacations_set[notion_vacation.ref_id] = updated_notion_vacation
 
                     LOGGER.info(f"Changed vacation with id={notion_vacation.ref_id} from local")
                 else:
@@ -110,7 +114,7 @@ class VacationSyncService:
                 # 2. This is a vacation added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
                 try:
-                    self._vacation_notion_manager.remove_vacation(notion_vacation_ref_id)
+                    self._vacation_notion_manager.remove_vacation(notion_vacation.ref_id)
                     LOGGER.info(f"Removed vacation with id={notion_vacation.ref_id} from Notion")
                 except NotionVacationNotFoundError:
                     LOGGER.info(f"Skipped dangling vacation in Notion {notion_vacation.ref_id}")

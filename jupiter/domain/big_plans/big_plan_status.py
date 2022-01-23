@@ -69,3 +69,7 @@ class BigPlanStatus(enum.Enum):
     def all_values() -> Iterable[str]:
         """The possible values for difficulties."""
         return frozenset(st.value for st in BigPlanStatus)
+
+    def __str__(self) -> str:
+        """String form."""
+        return str(self.value)

@@ -76,6 +76,10 @@ class InboxTask(AggregateRoot):
         """Updated link to recurring task event."""
 
     @dataclass(frozen=True)
+    class UpdatedLinkToMetricCollection(AggregateRoot.Updated):
+        """Updated link to recurring task event."""
+
+    @dataclass(frozen=True)
     class UpdatedLinkToPersonCatchUp(AggregateRoot.Updated):
         """Updated link to a person catch up task event."""
 
@@ -334,7 +338,7 @@ class InboxTask(AggregateRoot):
 
     def update_link_to_recurring_task(
             self, name: InboxTaskName, timeline: str, the_type: RecurringTaskType, actionable_date: Optional[ADate],
-            due_time: ADate, eisen: Eisen, difficulty: Optional[Difficulty],
+            due_date: ADate, eisen: Eisen, difficulty: Optional[Difficulty],
             source: EventSource, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a recurring task."""
         if self.source is not InboxTaskSource.RECURRING_TASK:
@@ -343,12 +347,13 @@ class InboxTask(AggregateRoot):
         return self._new_version(
             name=name,
             actionable_date=actionable_date,
-            due_time=due_time,
+            due_date=due_date,
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
             recurring_type=the_type,
-            new_event=InboxTask.Updated.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=
+            InboxTask.UpdatedLinkToRecurringTask.make_event_from_frame_args(source, self.version, modification_time))
 
     def update_link_to_metric(
             self, name: InboxTaskName, recurring_timeline: str, eisen: Eisen, difficulty: Optional[Difficulty],
@@ -366,7 +371,7 @@ class InboxTask(AggregateRoot):
             difficulty=difficulty,
             recurring_timeline=recurring_timeline,
             new_event=
-            InboxTask.UpdatedLinkToRecurringTask.make_event_from_frame_args(source, self.version, modification_time))
+            InboxTask.UpdatedLinkToMetricCollection.make_event_from_frame_args(source, self.version, modification_time))
 
     def update_link_to_person_catch_up(
             self, name: InboxTaskName, recurring_timeline: str, eisen: Eisen, difficulty: Optional[Difficulty],

@@ -20,7 +20,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -53,12 +53,12 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, global_properties: GlobalProperties, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""

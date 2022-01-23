@@ -6,7 +6,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.service.remove_service import MetricRemoveService
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
 
@@ -17,12 +17,12 @@ class MetricRemoveUseCase(UseCase[MetricKey, None]):
     """The command for removing a metric."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _metric_notion_manager: Final[MetricNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager, metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

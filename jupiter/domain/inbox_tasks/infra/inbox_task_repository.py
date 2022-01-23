@@ -3,7 +3,6 @@ import abc
 from typing import Optional, Iterable
 
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.storage import Repository
@@ -17,7 +16,7 @@ class InboxTaskRepository(Repository, abc.ABC):
     """A repository of inbox tasks."""
 
     @abc.abstractmethod
-    def create(self, inbox_task_collection: InboxTaskCollection, inbox_task: InboxTask) -> InboxTask:
+    def create(self, inbox_task: InboxTask) -> InboxTask:
         """Create a inbox task."""
 
     @abc.abstractmethod

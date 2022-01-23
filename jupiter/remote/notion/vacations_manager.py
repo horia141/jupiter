@@ -12,10 +12,10 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionPageLink, NotionLockKey
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, \
     NotionFieldShow
-from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError
+from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionItemNotFoundError
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -120,11 +120,11 @@ class NotionVacationsManager(VacationNotionManager):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _collections_manager: Final[CollectionsManager]
+    _collections_manager: Final[NotionCollectionsManager]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            collections_manager: CollectionsManager) -> None:
+            collections_manager: NotionCollectionsManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -134,7 +134,7 @@ class NotionVacationsManager(VacationNotionManager):
         """Upsert the root page for the vacations section."""
         self._collections_manager.upsert_collection(
             key=NotionLockKey(self._KEY),
-            parent_page=NotionPageLink(notion_workspace.notion_id),
+            parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -144,38 +144,45 @@ class NotionVacationsManager(VacationNotionManager):
 
     def upsert_vacation(self, vacation: NotionVacation) -> NotionVacation:
         """Create a vacation."""
-        return self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{vacation.ref_id}"),
-            collection_key=NotionLockKey(self._KEY),
-            new_row=vacation,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        link = \
+            self._collections_manager.upsert_collection_item(
+                key=NotionLockKey(f"{vacation.ref_id}"),
+                collection_key=NotionLockKey(self._KEY),
+                new_row=vacation,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        return link.item_info
 
     def save_vacation(self, vacation: NotionVacation) -> NotionVacation:
         """Update a Notion-side vacation with new data."""
         try:
-            return self._collections_manager.save_collection_item(
-                key=NotionLockKey(f"{vacation.ref_id}"),
-                collection_key=NotionLockKey(self._KEY),
-                row=vacation,
-                copy_row_to_notion_row=self._copy_row_to_notion_row)
+            link = \
+                self._collections_manager.save_collection_item(
+                    key=NotionLockKey(f"{vacation.ref_id}"),
+                    collection_key=NotionLockKey(self._KEY),
+                    row=vacation,
+                    copy_row_to_notion_row=self._copy_row_to_notion_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {vacation.ref_id} could not be found") from err
 
     def load_vacation(self, ref_id: EntityId) -> NotionVacation:
         """Load a Notion-side vacation."""
         try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
+            link = \
+                self._collections_manager.load_collection_item(
+                    key=NotionLockKey(f"{ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {ref_id} could not be found") from err
 
     def load_all_vacations(self) -> Iterable[NotionVacation]:
         """Retrieve all the Notion-side vacation items."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(self._KEY),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
+        return [l.item_info for l in
+                self._collections_manager.load_all_collection_items(
+                    collection_key=NotionLockKey(self._KEY),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
     def remove_vacation(self, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
@@ -219,7 +226,7 @@ class NotionVacationsManager(VacationNotionManager):
                 row.start_date.to_notion(self._global_properties.timezone) if row.start_date else None
             notion_row.end_date = row.end_date.to_notion(self._global_properties.timezone) if row.end_date else None
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
-            notion_row.ref_id = row.ref_id
+            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
         return notion_row
 
@@ -234,4 +241,4 @@ class NotionVacationsManager(VacationNotionManager):
             end_date=ADate.from_notion(self._global_properties.timezone, vacation_notion_row.end_date)
             if vacation_notion_row.end_date else None,
             last_edited_time=Timestamp.from_notion(vacation_notion_row.last_edited_time),
-            ref_id=vacation_notion_row.ref_id)
+            ref_id=EntityId.from_raw(vacation_notion_row.ref_id) if vacation_notion_row.ref_id else None)

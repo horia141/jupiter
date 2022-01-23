@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
-from jupiter.framework.base.entity_id import BAD_REF_ID
+from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
@@ -24,13 +24,14 @@ class Vacation(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
+    workspace_ref_id: EntityId
     name: VacationName
     start_date: ADate
     end_date: ADate
 
     @staticmethod
     def new_vacation(
-            archived: bool, name: VacationName, start_date: ADate, end_date: ADate,
+            archived: bool, workspace_ref_id: EntityId, name: VacationName, start_date: ADate, end_date: ADate,
             source: EventSource, created_time: Timestamp) -> 'Vacation':
         """Create a vacation."""
         if start_date >= end_date:
@@ -44,6 +45,7 @@ class Vacation(AggregateRoot):
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
             events=[Vacation.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            workspace_ref_id=workspace_ref_id,
             name=name,
             start_date=start_date,
             end_date=end_date)

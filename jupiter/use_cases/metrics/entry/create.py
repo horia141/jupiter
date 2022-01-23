@@ -7,7 +7,7 @@ from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManag
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.notion_metric_entry import NotionMetricEntry
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -25,11 +25,11 @@ class MetricEntryCreateUseCase(UseCase['MetricEntryCreateUseCase.Args', None]):
         notes: Optional[str]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

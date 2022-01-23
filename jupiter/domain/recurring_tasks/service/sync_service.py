@@ -7,7 +7,7 @@ from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import R
     NotionRecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.utils.time_provider import TimeProvider
@@ -19,11 +19,11 @@ class RecurringTaskSyncService:
     """The service class for dealing with recurring tasks."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
@@ -61,16 +61,14 @@ class RecurringTaskSyncService:
 
         for notion_recurring_task in all_notion_recurring_tasks:
             # Skip this step when asking only for particular entities to be synced.
-            notion_recurring_task_ref_id = \
-                EntityId.from_raw(notion_recurring_task.ref_id) if notion_recurring_task.ref_id else None
-            if filter_ref_ids_set is not None and notion_recurring_task_ref_id not in filter_ref_ids_set:
+            if filter_ref_ids_set is not None and notion_recurring_task.ref_id not in filter_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{notion_recurring_task.name}' " +
                     f"(id={notion_recurring_task.notion_id}) because of filtering")
                 continue
 
             LOGGER.info(f"Syncing '{notion_recurring_task.name}' (id={notion_recurring_task.notion_id})")
-            if notion_recurring_task_ref_id is None or notion_recurring_task.ref_id == "":
+            if notion_recurring_task.ref_id is None:
                 # If the big plan doesn't exist locally, we create it!
 
                 new_recurring_task = \
@@ -78,8 +76,7 @@ class RecurringTaskSyncService:
                         NotionRecurringTask.InverseExtraInfo(project_ref_id, recurring_task_collection.ref_id))
 
                 with self._storage_engine.get_unit_of_work() as save_uow:
-                    new_recurring_task = \
-                        save_uow.recurring_task_repository.create(recurring_task_collection, new_recurring_task)
+                    new_recurring_task = save_uow.recurring_task_repository.create(new_recurring_task)
                 LOGGER.info(f"Found new big plan from Notion {notion_recurring_task.name}")
 
                 self._recurring_task_notion_manager.link_local_and_notion_recurring_task(
@@ -93,11 +90,11 @@ class RecurringTaskSyncService:
 
                 all_recurring_tasks_set[new_recurring_task.ref_id] = new_recurring_task
                 all_notion_recurring_tasks_set[new_recurring_task.ref_id] = notion_recurring_task
-            elif notion_recurring_task_ref_id in all_recurring_tasks_set and \
+            elif notion_recurring_task.ref_id in all_recurring_tasks_set and \
                     notion_recurring_task.notion_id in all_notion_recurring_tasks_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
-                recurring_task = all_recurring_tasks_set[notion_recurring_task_ref_id]
-                all_notion_recurring_tasks_set[notion_recurring_task_ref_id] = notion_recurring_task
+                recurring_task = all_recurring_tasks_set[notion_recurring_task.ref_id]
+                all_notion_recurring_tasks_set[notion_recurring_task.ref_id] = notion_recurring_task
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified \
@@ -112,7 +109,7 @@ class RecurringTaskSyncService:
                     # TODO(horia141: handle archival here! The same in all other flows! BIG ISSUE!
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.recurring_task_repository.save(updated_recurring_task)
-                    all_recurring_tasks_set[notion_recurring_task_ref_id] = updated_recurring_task
+                    all_recurring_tasks_set[notion_recurring_task.ref_id] = updated_recurring_task
                     LOGGER.info(f"Changed big plan with id={notion_recurring_task.ref_id} from Notion")
 
                     if notion_recurring_task.the_type is None or notion_recurring_task.start_at_date is None:
@@ -131,7 +128,7 @@ class RecurringTaskSyncService:
                     updated_notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
                     self._recurring_task_notion_manager.save_recurring_task(
                         recurring_task_collection.ref_id, updated_notion_recurring_task, inbox_task_collection)
-                    all_notion_recurring_tasks_set[notion_recurring_task_ref_id] = updated_notion_recurring_task
+                    all_notion_recurring_tasks_set[notion_recurring_task.ref_id] = updated_notion_recurring_task
                     LOGGER.info(f"Changed big plan with id={notion_recurring_task.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -143,7 +140,7 @@ class RecurringTaskSyncService:
                 #    We'll have duplicates in these cases, and they need to be removed.
                 try:
                     self._recurring_task_notion_manager.remove_recurring_task(
-                        recurring_task_collection.ref_id, notion_recurring_task_ref_id)
+                        recurring_task_collection.ref_id, notion_recurring_task.ref_id)
                     LOGGER.info(f"Removed dangling recurring task in Notion {notion_recurring_task}")
                 except NotionRecurringTaskNotFoundError:
                     LOGGER.info(f"Skipped dangling recurring task in Notion {notion_recurring_task}")

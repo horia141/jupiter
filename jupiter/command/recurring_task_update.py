@@ -48,17 +48,19 @@ class RecurringTaskUpdate(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--id", type=str, dest="ref_id", required=True,
                             help="The id of the recurring task to modify")
-        parser.add_argument("--name", dest="name", required=True, help="The name of the recurring task")
-        parser.add_argument("--period", dest="period", choices=RecurringTaskPeriod.all_values(),
-                            required=True, help="The period for the recurring task")
-        parser.add_argument("--type", dest="the_type", choices=RecurringTaskType.all_values(),
-                            default=RecurringTaskType.CHORE.value, required=True,
-                            help="The type of the recurring task")
+        parser.add_argument("--name", dest="name", help="The name of the recurring task")
+        parser.add_argument(
+            "--period", dest="period", choices=RecurringTaskPeriod.all_values(),
+            help="The period for the recurring task")
+        parser.add_argument(
+            "--type", dest="the_type", choices=RecurringTaskType.all_values(),
+            help="The type of the recurring task")
         parser.add_argument(
             "--eisen", dest="eisen", choices=Eisen.all_values(), help="The Eisenhower matrix values to use for task")
         difficulty = parser.add_mutually_exclusive_group()
-        difficulty.add_argument("--difficulty", dest="difficulty", choices=Difficulty.all_values(),
-                                help="The difficulty to use for tasks")
+        difficulty.add_argument(
+            "--difficulty", dest="difficulty", choices=Difficulty.all_values(),
+            help="The difficulty to use for tasks")
         difficulty.add_argument(
             "--clear-difficulty", dest="clear_difficulty", default=False, action="store_const", const=True,
             help="Clear the difficulty  of the recurring task")
@@ -197,7 +199,7 @@ class RecurringTaskUpdate(command.Command):
         else:
             start_at_date = UpdateAction.do_nothing()
         end_at_date: UpdateAction[Optional[ADate]]
-        if args.clear_ent_date:
+        if args.clear_end_at_date:
             end_at_date = UpdateAction.change_to(None)
         elif args.end_at_date:
             end_at_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.end_at_date))

@@ -18,7 +18,7 @@ from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -54,13 +54,13 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
@@ -71,8 +71,6 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
 
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
-        need_to_change_inbox_tasks = False
-
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
 
@@ -101,7 +99,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     UpdateAction.change_to(
                         RecurringTaskGenParams(
                             recurring_task.project_ref_id,
-                            recurring_task.gen_params.period,
+                            args.period.or_else(recurring_task.gen_params.period),
                             args.eisen.or_else(recurring_task.gen_params.eisen),
                             args.difficulty.or_else(recurring_task.gen_params.difficulty),
                             args.actionable_from_day.or_else(recurring_task.gen_params.actionable_from_day),
@@ -134,6 +132,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                         allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
 
             for inbox_task in all_inbox_tasks:
+                LOGGER.info(inbox_task)
                 schedule = schedules.get_schedule(
                     recurring_task.gen_params.period, recurring_task.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
@@ -146,7 +145,7 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
                     timeline=schedule.timeline,
                     the_type=recurring_task.the_type,
                     actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time,
+                    due_date=schedule.due_time,
                     eisen=recurring_task.gen_params.eisen,
                     difficulty=recurring_task.gen_params.difficulty,
                     source=EventSource.CLI,
@@ -154,6 +153,9 @@ class RecurringTaskUpdateUseCase(UseCase['RecurringTaskUpdateUseCase.Args', None
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
+
+                if inbox_task.archived:
+                    continue
 
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(

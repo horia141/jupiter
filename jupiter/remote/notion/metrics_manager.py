@@ -1,4 +1,5 @@
 """The centralised point for interacting with Notion metrics."""
+import logging
 import typing
 from typing import ClassVar, Final
 
@@ -15,13 +16,15 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionPageLink, NotionLockKey
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionCollectionSchemaProperties, NotionFieldShow, NotionFieldProps
-from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionNotFoundError, \
+from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionNotFoundError, \
     NotionCollectionItemNotFoundError
-from jupiter.remote.notion.infra.pages_manager import PagesManager
+from jupiter.remote.notion.infra.pages_manager import NotionPagesManager
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
+
+LOGGER = logging.getLogger(__name__)
 
 
 class NotionMetricManager(MetricNotionManager):
@@ -123,12 +126,12 @@ class NotionMetricManager(MetricNotionManager):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _pages_manager: Final[PagesManager]
-    _collections_manager: Final[CollectionsManager]
+    _pages_manager: Final[NotionPagesManager]
+    _collections_manager: Final[NotionCollectionsManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider, pages_manager: PagesManager,
-            collections_manager: CollectionsManager) -> None:
+            self, global_properties: GlobalProperties, time_provider: TimeProvider, pages_manager: NotionPagesManager,
+            collections_manager: NotionCollectionsManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -138,14 +141,14 @@ class NotionMetricManager(MetricNotionManager):
     def upsert_root_page(self, notion_workspace: NotionWorkspace) -> None:
         """Upsert the root page for the metrics section."""
         self._pages_manager.upsert_page(
-            NotionLockKey(self._KEY), self._PAGE_NAME, NotionPageLink(notion_workspace.notion_id))
+            NotionLockKey(self._KEY), self._PAGE_NAME, notion_workspace.notion_id)
 
     def upsert_metric(self, metric: NotionMetric) -> NotionMetric:
         """Upsert the Notion-side metric."""
         root_page = self._pages_manager.get_page(NotionLockKey(self._KEY))
         metric_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{metric.ref_id}"),
-            parent_page=root_page,
+            parent_page_notion_id=root_page.notion_id,
             name=metric.name,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -156,7 +159,7 @@ class NotionMetricManager(MetricNotionManager):
         return NotionMetric(
             name=metric.name,
             ref_id=metric.ref_id,
-            notion_id=metric_link.collection_id)
+            notion_id=metric_link.collection_notion_id)
 
     def save_metric(self, metric: NotionMetric) -> NotionMetric:
         """Save a metric collection."""
@@ -180,7 +183,7 @@ class NotionMetricManager(MetricNotionManager):
         return NotionMetric(
             name=metric_link.name,
             ref_id=ref_id,
-            notion_id=metric_link.collection_id)
+            notion_id=metric_link.collection_notion_id)
 
     def remove_metric(self, ref_id: EntityId) -> None:
         """Remove a metric on Notion-side."""
@@ -191,21 +194,25 @@ class NotionMetricManager(MetricNotionManager):
 
     def upsert_metric_entry(self, metric_ref_id: EntityId, metric_entry: NotionMetricEntry) -> NotionMetricEntry:
         """Upsert a metric entry on Notion-side."""
-        return self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{metric_entry.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
-            new_row=metric_entry,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        link = \
+            self._collections_manager.upsert_collection_item(
+                key=NotionLockKey(f"{metric_entry.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
+                new_row=metric_entry,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        return link.item_info
 
     def save_metric_entry(
             self, metric_ref_id: EntityId, metric_entry: NotionMetricEntry) -> NotionMetricEntry:
         """Update the Notion-side metric with new data."""
         try:
-            return self._collections_manager.save_collection_item(
-                key=NotionLockKey(f"{metric_entry.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
-                row=metric_entry,
-                copy_row_to_notion_row=self._copy_row_to_notion_row)
+            link = \
+                self._collections_manager.save_collection_item(
+                    key=NotionLockKey(f"{metric_entry.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
+                    row=metric_entry,
+                    copy_row_to_notion_row=self._copy_row_to_notion_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionMetricEntryNotFoundError(
                 f"Notion metric entry with id {metric_entry.ref_id} does not exist") from err
@@ -213,19 +220,22 @@ class NotionMetricManager(MetricNotionManager):
     def load_metric_entry(self, metric_ref_id: EntityId, ref_id: EntityId) -> NotionMetricEntry:
         """Load a particular metric entry."""
         try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
+            link = \
+                self._collections_manager.load_collection_item(
+                    key=NotionLockKey(f"{ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionMetricEntryNotFoundError(
                 f"Notion metric entry with id {ref_id} does not exist") from err
 
     def load_all_metric_entries(self, metric_ref_id: EntityId) -> typing.Iterable[NotionMetricEntry]:
         """Retrieve all the Notion-side metric entrys."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
+        return [l.item_info for l in
+                self._collections_manager.load_all_collection_items(
+                    collection_key=NotionLockKey(f"{self._KEY}:{metric_ref_id}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
     def remove_metric_entry(self, metric_ref_id: EntityId, metric_entry_ref_id: typing.Optional[EntityId]) -> None:
         """Remove a metric on Notion-side."""
@@ -270,7 +280,7 @@ class NotionMetricManager(MetricNotionManager):
             notion_row.title = row.notes if row.notes else ""
             notion_row.archived = row.archived
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
-            notion_row.ref_id = row.ref_id
+            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
         return notion_row
 
@@ -282,5 +292,5 @@ class NotionMetricManager(MetricNotionManager):
             notes=notion_row.title if typing.cast(str, notion_row.title).strip() != "" else None,
             archived=notion_row.archived,
             last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
-            ref_id=notion_row.ref_id,
+            ref_id=EntityId.from_raw(notion_row.ref_id) if notion_row.ref_id else None,
             notion_id=NotionId.from_raw(notion_row.id))

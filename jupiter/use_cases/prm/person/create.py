@@ -16,7 +16,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -43,11 +43,11 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
         birthday: Optional[PersonBirthday]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
@@ -57,9 +57,10 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
     def execute(self, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
+            prm_database = uow.prm_database_repository.load()
+
             catch_up_params = None
             if args.catch_up_period is not None:
-                prm_database = uow.prm_database_repository.load()
                 project_ref_id = prm_database.catch_up_project_ref_id
                 catch_up_params = RecurringTaskGenParams(
                     project_ref_id=project_ref_id,
@@ -73,8 +74,9 @@ class PersonCreateUseCase(UseCase['PersonCreateUseCase.Args', None]):
                     due_at_month=args.catch_up_due_at_month)
 
             person = Person.new_person(
-                name=args.name, relationship=args.relationship, catch_up_params=catch_up_params,
-                birthday=args.birthday, source=EventSource.CLI, created_time=self._time_provider.get_current_time())
+                prm_database_ref_id=prm_database.ref_id, name=args.name, relationship=args.relationship,
+                catch_up_params=catch_up_params, birthday=args.birthday, source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time())
             person = uow.person_repository.create(person)
 
         notion_person = NotionPerson.new_notion_row(person, None)

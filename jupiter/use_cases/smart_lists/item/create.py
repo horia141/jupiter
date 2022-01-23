@@ -10,7 +10,7 @@ from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.url import URL
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
@@ -30,11 +30,11 @@ class SmartListItemCreateUseCase(UseCase['SmartListItemCreateUseCase.Args', None
         url: Optional[URL]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

@@ -5,7 +5,7 @@ from typing import Iterable, Optional, Final, List
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -31,10 +31,10 @@ class RecurringTaskFindUseCase(UseCase['RecurringTaskFindUseCase.Args', 'Recurri
         """The result."""
         recurring_tasks: Iterable['RecurringTaskFindUseCase.ResultEntry']
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
     def __init__(
-            self, storage_engine: StorageEngine) -> None:
+            self, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
 

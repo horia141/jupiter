@@ -10,7 +10,7 @@ from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
@@ -34,11 +34,11 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
         due_date: UpdateAction[Optional[ADate]]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

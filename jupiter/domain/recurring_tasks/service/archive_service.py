@@ -7,7 +7,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
     NotionRecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.utils.time_provider import TimeProvider
 
@@ -19,12 +19,12 @@ class RecurringTaskArchiveService:
 
     _source: Final[EventSource]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
-            self, source: EventSource, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, source: EventSource, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""

@@ -5,7 +5,7 @@ from typing import Final, Iterable, Optional
 from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionManager
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.timestamp import Timestamp
 
@@ -15,10 +15,10 @@ LOGGER = logging.getLogger(__name__)
 class ProjectSyncService:
     """The service class for syncing the Project."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _project_notion_manager: Final[ProjectNotionManager]
 
-    def __init__(self, storage_engine: StorageEngine, project_notion_manager: ProjectNotionManager) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine, project_notion_manager: ProjectNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._project_notion_manager = project_notion_manager

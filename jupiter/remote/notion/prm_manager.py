@@ -12,12 +12,12 @@ from jupiter.domain.prm.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.framework.base.notion_id import NotionId
-from jupiter.remote.notion.common import NotionPageLink, NotionLockKey
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
-from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError
+from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionItemNotFoundError
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -290,11 +290,11 @@ class NotionPrmManager(PrmNotionManager):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _collections_manager: Final[CollectionsManager]
+    _collections_manager: Final[NotionCollectionsManager]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            collections_manager: CollectionsManager) -> None:
+            collections_manager: NotionCollectionsManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -304,7 +304,7 @@ class NotionPrmManager(PrmNotionManager):
         """Upsert the root Notion structure."""
         self._collections_manager.upsert_collection(
             key=NotionLockKey(self._KEY),
-            parent_page=NotionPageLink(notion_workspace.notion_id),
+            parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -334,18 +334,21 @@ class NotionPrmManager(PrmNotionManager):
     def load_person(self, ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
         try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(self._KEY),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
+            link = \
+                self._collections_manager.load_collection_item(
+                    key=NotionLockKey(f"{ref_id}"),
+                    collection_key=NotionLockKey(self._KEY),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
 
     def load_all_persons(self) -> Iterable[NotionPerson]:
         """Retrieve all persons from Notion-side."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(self._KEY),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
+        return [l.item_info for l in
+                self._collections_manager.load_all_collection_items(
+                    collection_key=NotionLockKey(self._KEY),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
     def remove_person(self, ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
@@ -396,7 +399,7 @@ class NotionPrmManager(PrmNotionManager):
             notion_row.catch_up_due_at_month = row.catch_up_due_at_month
             notion_row.archived = row.archived
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
-            notion_row.ref_id = row.ref_id
+            notion_row.ref_id = str(row.ref_id)
 
         return notion_row
 
@@ -418,4 +421,4 @@ class NotionPrmManager(PrmNotionManager):
             catch_up_due_at_day=notion_row.catch_up_due_at_day,
             catch_up_due_at_month=notion_row.catch_up_due_at_month,
             last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
-            ref_id=notion_row.ref_id)
+            ref_id=EntityId.from_raw(notion_row.ref_id) if notion_row.ref_id else None)

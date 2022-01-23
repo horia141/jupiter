@@ -2,7 +2,7 @@
 import logging
 from typing import Final
 
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
@@ -13,11 +13,11 @@ LOGGER = logging.getLogger(__name__)
 class VacationRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a vacation."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, vacation_notion_manager: VacationNotionManager) -> None:
+            self, storage_engine: DomainStorageEngine, vacation_notion_manager: VacationNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._vacation_notion_manager = vacation_notion_manager

@@ -7,8 +7,8 @@ import jupiter.command.command as command
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.timezone import Timezone
-from jupiter.domain.workspaces.notion_space_id import NotionSpaceId
-from jupiter.domain.workspaces.notion_token import NotionToken
+from jupiter.domain.remote.notion.space_id import NotionSpaceId
+from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.use_cases.init import InitUseCase
 
@@ -43,7 +43,7 @@ class Initialize(command.Command):
         parser.add_argument(
             "--notion-space-id", dest="notion_space_id", required=True, help="The Notion space id to use")
         parser.add_argument(
-            "--notion-token", dest="notion_space_id", required=True, help="The Notion access token to use")
+            "--notion-token", dest="notion_token", required=True, help="The Notion access token to use")
         parser.add_argument(
             "--project-key", dest="first_project_key", required=True, help="The key of the first project")
         parser.add_argument(
@@ -54,7 +54,7 @@ class Initialize(command.Command):
         name = WorkspaceName.from_raw(args.name)
         timezone = Timezone.from_raw(args.timezone)
         notion_space_id = NotionSpaceId.from_raw(args.notion_space_id)
-        notion_token = NotionToken.from_raw(args.notion_space_id)
+        notion_token = NotionToken.from_raw(args.notion_token)
         first_project_key = ProjectKey.from_raw(args.first_project_key)
         first_project_name = ProjectName.from_raw(args.first_project_name)
 

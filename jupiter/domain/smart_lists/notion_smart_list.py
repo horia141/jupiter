@@ -26,7 +26,9 @@ class NotionSmartList(NotionEntity[SmartList]):
 
     def apply_to_aggregate_root(self, aggregate_root: SmartList, modification_time: Timestamp) -> SmartList:
         """Obtain the aggregate root form of this, with a possible error."""
+        smart_list_name = SmartListName.from_raw(self.name)
         return aggregate_root.update(
-            name=UpdateAction.change_to(SmartListName.from_raw(self.name)),
+            name=UpdateAction.change_to(smart_list_name),
             source=EventSource.NOTION,
-            modification_time=modification_time)
+            modification_time=
+            modification_time if smart_list_name != aggregate_root.name else aggregate_root.last_modified_time)

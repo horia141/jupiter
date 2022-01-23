@@ -14,6 +14,7 @@ from jupiter.domain.prm.infra.prm_database_repository import PrmDatabaseReposito
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
 from jupiter.domain.recurring_tasks.infra.recurring_task_collection_repository import RecurringTaskCollectionRepository
 from jupiter.domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository
+from jupiter.domain.remote.notion.collection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
 from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepository
 from jupiter.domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository
@@ -21,7 +22,7 @@ from jupiter.domain.vacations.infra.vacation_repository import VacationRepositor
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository
 
 
-class UnitOfWork(abc.ABC):
+class DomainUnitOfWork(abc.ABC):
     """A transactional unit of work from an engine."""
 
     @property
@@ -104,11 +105,16 @@ class UnitOfWork(abc.ABC):
     def person_repository(self) -> PersonRepository:
         """The person repository."""
 
+    @property
+    @abc.abstractmethod
+    def notion_connection_repository(self) -> NotionConnectionRepository:
+        """The Notion connection repository."""
 
-class StorageEngine(abc.ABC):
+
+class DomainStorageEngine(abc.ABC):
     """A storage engine of some form."""
 
     @abc.abstractmethod
     @contextmanager
-    def get_unit_of_work(self) -> Iterator[UnitOfWork]:
+    def get_unit_of_work(self) -> Iterator[DomainUnitOfWork]:
         """Build a unit of work."""

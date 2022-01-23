@@ -44,3 +44,10 @@ class UpdateAction(Generic[UpdateActionType]):
         if not self._should_change:
             raise Exception("Trying to get the value when it's not there")
         return typing.cast(UpdateActionType, self._value)
+
+    def __repr__(self) -> str:
+        """The representation of this action."""
+        if self.should_change:
+            return f"UpdateAction.change_to({repr(self._value)})"
+        else:
+            return f"UpdateAction.do_nothing()"

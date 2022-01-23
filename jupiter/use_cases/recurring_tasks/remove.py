@@ -6,7 +6,7 @@ from typing import Final
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
 from jupiter.domain.recurring_tasks.service.remove_service import RecurringTaskRemoveService
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -21,12 +21,12 @@ class RecurringTaskRemoveUseCase(UseCase['RecurringTaskRemoveUseCase.Args', None
         """Args."""
         ref_id: EntityId
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            self, storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine

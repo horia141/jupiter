@@ -21,10 +21,10 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionLockKey, NotionPageLink
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
-from jupiter.remote.notion.infra.collections_manager import CollectionsManager, NotionCollectionItemNotFoundError, \
-    NotionCollectionNotFoundError
+from jupiter.remote.notion.infra.collections_manager\
+    import NotionCollectionsManager, NotionCollectionItemNotFoundError, NotionCollectionNotFoundError
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -424,11 +424,11 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _collections_manager: Final[CollectionsManager]
+    _collections_manager: Final[NotionCollectionsManager]
 
     def __init__(
             self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            collections_manager: CollectionsManager) -> None:
+            collections_manager: NotionCollectionsManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -440,7 +440,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         """Upsert the Notion-side recurring task."""
         collection_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{recurring_task_collection.ref_id}"),
-            parent_page=NotionPageLink(notion_project.notion_id),
+            parent_page_notion_id=notion_project.notion_id,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
@@ -450,7 +450,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             })
 
         return NotionRecurringTaskCollection(
-            notion_id=collection_link.collection_id,
+            notion_id=collection_link.collection_notion_id,
             ref_id=recurring_task_collection.ref_id)
 
     def load_recurring_task_collection(self, ref_id: EntityId) -> NotionRecurringTaskCollection:
@@ -464,7 +464,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
 
         return NotionRecurringTaskCollection(
             ref_id=ref_id,
-            notion_id=recurring_task_collection_link.collection_id)
+            notion_id=recurring_task_collection_link.collection_notion_id)
 
     def remove_recurring_tasks_collection(self, ref_id: EntityId) -> None:
         """Remove the Notion-side structure for this collection."""
@@ -479,22 +479,27 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             self, recurring_task_collection_ref_id: EntityId, recurring_task: NotionRecurringTask,
             inbox_collection_link: NotionInboxTaskCollection) -> NotionRecurringTask:
         """Upsert a recurring task."""
-        return self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{recurring_task.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
-            new_row=recurring_task,
-            copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+        link = \
+            self._collections_manager.upsert_collection_item(
+                key=NotionLockKey(f"{recurring_task.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
+                new_row=recurring_task,
+                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+        return link.item_info
 
     def save_recurring_task(
             self, recurring_task_collection_ref_id: EntityId, recurring_task: NotionRecurringTask,
             inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionRecurringTask:
         """Update the Notion-side recurring task with new data."""
         try:
-            return self._collections_manager.save_collection_item(
-                key=NotionLockKey(f"{recurring_task.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
-                row=recurring_task,
-                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+            link = \
+                self._collections_manager.save_collection_item(
+                    key=NotionLockKey(f"{recurring_task.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
+                    row=recurring_task,
+                    copy_row_to_notion_row=
+                    lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionRecurringTaskNotFoundError(
                 f"Notion recurring task with id {recurring_task.ref_id} could not be found") from err
@@ -502,10 +507,12 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
     def load_recurring_task(self, recurring_task_collection_ref_id: EntityId, ref_id: EntityId) -> NotionRecurringTask:
         """Retrieve the Notion-side recurring task associated with a particular entity."""
         try:
-            return self._collections_manager.load_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row)
+            link = \
+                self._collections_manager.load_collection_item(
+                    key=NotionLockKey(f"{ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionRecurringTaskNotFoundError(
                 f"Notion recurring task with id {ref_id} could not be found") from err
@@ -513,9 +520,10 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
     def load_all_recurring_tasks(
             self, recurring_task_collection_ref_id: EntityId) -> Iterable[NotionRecurringTask]:
         """Retrieve all the Notion-side recurring tasks."""
-        return self._collections_manager.load_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
-            copy_notion_row_to_row=self._copy_notion_row_to_row)
+        return [l.item_info for l in
+                self._collections_manager.load_all_collection_items(
+                    collection_key=NotionLockKey(f"{self._KEY}:{recurring_task_collection_ref_id}"),
+                    copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
     def remove_recurring_task(self, recurring_task_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
@@ -579,7 +587,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             notion_row.end_at_date = \
                 row.end_at_date.to_notion(self._global_properties.timezone) if row.end_at_date else None
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
-            notion_row.ref_id = row.ref_id
+            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
         if inbox_collection_link:
             LOGGER.info(f"Creating views structure for recurring task {notion_row}")
@@ -614,10 +622,10 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             if recurring_task_notion_row.end_at_date else None,
             last_edited_time=
             Timestamp.from_notion(recurring_task_notion_row.last_edited_time),
-            ref_id=recurring_task_notion_row.ref_id)
+            ref_id=EntityId.from_raw(recurring_task_notion_row.ref_id) if recurring_task_notion_row.ref_id else None)
 
     @staticmethod
-    def _get_view_schema_for_recurring_tasks_desc(recurring_task_ref_id: str) -> JSONDictType:
+    def _get_view_schema_for_recurring_tasks_desc(recurring_task_ref_id: EntityId) -> JSONDictType:
         """Get the view schema for a recurring task details view."""
         return {
             "name": "Inbox Tasks",
@@ -638,7 +646,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
                             "operator": "string_is",
                             "value": {
                                 "type": "exact",
-                                "value": recurring_task_ref_id
+                                "value": str(recurring_task_ref_id)
                             }
                         }
                     }, {

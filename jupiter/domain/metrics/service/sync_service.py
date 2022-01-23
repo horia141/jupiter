@@ -8,7 +8,7 @@ from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.notion_metric import NotionMetric
 from jupiter.domain.metrics.notion_metric_entry import NotionMetricEntry
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
@@ -19,11 +19,11 @@ LOGGER = logging.getLogger(__name__)
 class MetricSyncService:
     """The service class for syncing the METRIC database between local and Notion."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, metric_notion_manager: MetricNotionManager) -> None:
+            self, storage_engine: DomainStorageEngine, metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._metric_notion_manager = metric_notion_manager
@@ -75,17 +75,15 @@ class MetricSyncService:
 
         # Explore Notion and apply to local
         for notion_metric_entry in all_notion_metric_entries:
-            notion_metric_ref_id = EntityId.from_raw(notion_metric_entry.ref_id) \
-                if notion_metric_entry.ref_id else None
             if filter_metric_entry_ref_ids_set is not None and \
-                    notion_metric_ref_id not in filter_metric_entry_ref_ids_set:
+                    notion_metric_entry.ref_id not in filter_metric_entry_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{notion_metric_entry.collection_time}' (id={notion_metric_entry.notion_id})")
                 continue
 
             LOGGER.info(f"Syncing '{notion_metric_entry.collection_time}' (id={notion_metric_entry.notion_id})")
 
-            if notion_metric_ref_id is None or notion_metric_entry.ref_id == "":
+            if notion_metric_entry.ref_id is None:
                 # If the metric entry doesn't exist locally, we create it.
                 new_metric_entry = \
                     notion_metric_entry.new_aggregate_root(NotionMetricEntry.InverseExtraInfo(metric.ref_id))
@@ -103,10 +101,10 @@ class MetricSyncService:
 
                 all_metric_entries_set[new_metric_entry.ref_id] = new_metric_entry
                 notion_metric_entries_set[new_metric_entry.ref_id] = notion_metric_entry
-            elif notion_metric_ref_id in all_metric_entries_set and \
+            elif notion_metric_entry.ref_id in all_metric_entries_set and \
                     notion_metric_entry.notion_id in all_notion_metric_notion_ids:
-                metric_entry = all_metric_entries_set[notion_metric_ref_id]
-                notion_metric_entries_set[notion_metric_ref_id] = notion_metric_entry
+                metric_entry = all_metric_entries_set[notion_metric_entry.ref_id]
+                notion_metric_entries_set[notion_metric_entry.ref_id] = notion_metric_entry
 
                 if sync_prefer == SyncPrefer.NOTION:
                     if not sync_even_if_not_modified and \
@@ -120,7 +118,7 @@ class MetricSyncService:
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.metric_entry_repository.save(updated_metric_entry)
-                    all_metric_entries_set[notion_metric_ref_id] = updated_metric_entry
+                    all_metric_entries_set[notion_metric_entry.ref_id] = updated_metric_entry
                     LOGGER.info(f"Changed metric entry '{metric_entry.collection_time}' from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and \
@@ -140,9 +138,7 @@ class MetricSyncService:
                 # 2. This is a metric entry added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
                 try:
-                    self._metric_notion_manager.remove_metric_entry(
-                        metric.ref_id,
-                        EntityId.from_raw(notion_metric_entry.ref_id) if notion_metric_entry.ref_id else None)
+                    self._metric_notion_manager.remove_metric_entry(metric.ref_id, notion_metric_entry.ref_id)
                     LOGGER.info(f"Removed metric entry with id={notion_metric_entry.ref_id} from Notion")
                 except NotionMetricEntryNotFoundError:
                     LOGGER.info(f"Skipped dangling metric entry in Notion {notion_metric_entry}")

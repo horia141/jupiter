@@ -40,7 +40,7 @@ class NotionSmartListItem(
         """Construct a new Notion row from a given smart list item."""
         return NotionSmartListItem(
             notion_id=BAD_NOTION_ID,
-            ref_id=str(aggregate_root.ref_id),
+            ref_id=aggregate_root.ref_id,
             last_edited_time=aggregate_root.last_modified_time,
             archived=aggregate_root.archived,
             name=str(aggregate_root.name),

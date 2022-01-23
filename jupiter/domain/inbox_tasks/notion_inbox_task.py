@@ -59,7 +59,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
         """Construct a new Notion row from a given inbox task."""
         return NotionInboxTask(
             notion_id=BAD_NOTION_ID,
-            ref_id=str(aggregate_root.ref_id),
+            ref_id=aggregate_root.ref_id,
             last_edited_time=aggregate_root.last_modified_time,
             source=aggregate_root.source.for_notion(),
             name=str(aggregate_root.name),
@@ -142,9 +142,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 if self.big_plan_ref_id else None
         inbox_task_big_plan_name = BigPlanName.from_raw(self.big_plan_name) \
             if self.big_plan_name else None
-        new_aggregate_root = aggregate_root.associate_with_big_plan(
-            big_plan_ref_id=inbox_task_big_plan_ref_id, big_plan_name=inbox_task_big_plan_name,
-            source=EventSource.NOTION, modification_time=self.last_edited_time)
+        new_aggregate_root = aggregate_root
+        if inbox_task_big_plan_ref_id is not None or inbox_task_big_plan_name is not None:
+            new_aggregate_root = new_aggregate_root.associate_with_big_plan(
+                big_plan_ref_id=inbox_task_big_plan_ref_id, big_plan_name=inbox_task_big_plan_name,
+                source=EventSource.NOTION, modification_time=self.last_edited_time)
         if aggregate_root.allow_user_changes:
             new_aggregate_root = new_aggregate_root.update(
                 name=UpdateAction.change_to(InboxTaskName.from_raw(self.name)),

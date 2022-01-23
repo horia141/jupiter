@@ -9,8 +9,8 @@ from notion.client import NotionClient as BaseNotionClient, Transaction
 from notion.collection import CollectionView, Collection, QueryResult, CollectionRowBlock
 from notion.space import Space
 
-from jupiter.domain.workspaces.notion_token import NotionToken
-from jupiter.domain.workspaces.notion_space_id import NotionSpaceId
+from jupiter.domain.remote.notion.token import NotionToken
+from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.framework.json import JSONDictType
 from jupiter.framework.base.notion_id import NotionId
 

@@ -6,7 +6,7 @@ from typing import Optional, Final
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
@@ -25,12 +25,12 @@ class InboxTaskAssociateWithBigPlanUseCase(UseCase['InboxTaskAssociateWithBigPla
         big_plan_ref_id: Optional[EntityId]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
             self, time_provider: TimeProvider,
-            storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
+            storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._storage_engine = storage_engine

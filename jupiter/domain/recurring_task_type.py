@@ -36,3 +36,7 @@ class RecurringTaskType(enum.Enum):
     def all_values() -> Iterable[str]:
         """The possible values for difficulties."""
         return frozenset(st.value for st in RecurringTaskType)
+
+    def __str__(self) -> str:
+        """String form."""
+        return str(self.value)

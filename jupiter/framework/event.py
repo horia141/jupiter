@@ -3,6 +3,7 @@ import dataclasses
 import enum
 import inspect
 import typing
+import uuid
 from dataclasses import dataclass
 from enum import Enum
 from typing import TypeVar, Dict
@@ -20,10 +21,10 @@ EventType = TypeVar('EventType', bound='Event')
 @enum.unique
 class EventKind(enum.Enum):
     """The kind of an event."""
-    CREATE = "create"
-    UPDATE = "update"
-    ARCHIVE = "archive"
-    RESTORE = "restore"
+    CREATE = "Created"
+    UPDATE = "Updated"
+    ARCHIVE = "Archived"
+    RESTORE = "Restored"
 
     def to_db(self) -> str:
         """A database appropriate form of this enum."""
@@ -68,16 +69,16 @@ class Event:
                 args = inspect.getargvalues(parent_frame)  # pylint: disable=deprecated-method
                 frame_args = {}
                 for arg_name in args.args:
-                    if arg_name in ('self', 'source'):
+                    if arg_name in ('self', 'source', 'event_type'):
                         # This is called from some sort of method of an aggregate root class and we're looking
                         # at this frame. There is a self and it's the aggregate root itself! Ditto don't need to
-                        # map the source again.
+                        # map the source again. Nor the special `event_type'.
                         continue
                     frame_args[arg_name] = args.locals[arg_name]
                 for kwarg_name, kwargs_value in kwargs.items():
                     frame_args[kwarg_name] = kwargs_value
                 new_event = \
-                    cls(source=source, entity_version=entity_version, timestamp=timestamp, frame_args=frame_args)
+                    cls(source=source, entity_version=entity_version + 1, timestamp=timestamp, frame_args=frame_args)
                 return new_event
             finally:
                 del parent_frame
@@ -103,6 +104,8 @@ class Event:
                 return process_primitive(primitive.value, key)
             elif isinstance(primitive, Value):
                 return str(primitive)  # A bit of a hack really!
+            elif isinstance(primitive, uuid.UUID):
+                return str(primitive)
             elif dataclasses.is_dataclass(primitive):
                 return {k: process_primitive(v, k) for k, v in dataclasses.asdict(primitive).items()}
             elif isinstance(primitive, list):

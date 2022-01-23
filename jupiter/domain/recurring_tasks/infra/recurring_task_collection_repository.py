@@ -7,10 +7,6 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.storage import Repository
 
 
-class RecurringTaskCollectionAlreadyExistsError(Exception):
-    """Error raised when a recurring task collection with the given key already exists."""
-
-
 class RecurringTaskCollectionNotFoundError(Exception):
     """Error raised when a recurring task collection is not found."""
 
@@ -27,7 +23,7 @@ class RecurringTaskCollectionRepository(Repository, abc.ABC):
         """Save a recurring task collection."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId) -> RecurringTaskCollection:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> RecurringTaskCollection:
         """Retrieve a recurring task collection by its id."""
 
     @abc.abstractmethod

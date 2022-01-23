@@ -3,7 +3,7 @@ import logging
 from typing import Final
 
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricEntryNotFoundError
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -13,10 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class MetricEntryRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a metric entry."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _notion_manager: Final[MetricNotionManager]
 
-    def __init__(self, storage_engine: StorageEngine, notion_manager: MetricNotionManager) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine, notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._notion_manager = notion_manager

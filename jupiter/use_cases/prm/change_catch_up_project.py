@@ -7,7 +7,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.service.change_project_service import InboxTaskChangeProjectService
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -24,12 +24,12 @@ class PrmDatabaseChangeCatchUpProjectUseCase(UseCase['PrmDatabaseChangeCatchUpPr
         catch_up_project_key: Optional[ProjectKey]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, workspace_engine: StorageEngine,
+            self, time_provider: TimeProvider, workspace_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""

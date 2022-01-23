@@ -11,7 +11,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
     import InboxTaskBigPlanRefOptionsUpdateService
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
@@ -34,13 +34,13 @@ class BigPlanUpdateUseCase(UseCase['BigPlanUpdateUseCase.Args', None]):
         due_date: UpdateAction[Optional[ADate]]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
             self, time_provider: TimeProvider,
-            storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
             big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

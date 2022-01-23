@@ -26,7 +26,9 @@ class NotionProject(NotionEntity[Project]):
 
     def apply_to_aggregate_root(self, aggregate_root: Project, modification_time: Timestamp) -> 'Project':
         """Apply an existing Notion row to a project."""
+        project_name = ProjectName.from_raw(self.name)
         return aggregate_root.update(
-            name=UpdateAction.change_to(ProjectName.from_raw(self.name)),
+            name=UpdateAction.change_to(project_name),
             source=EventSource.NOTION,
-            modification_time=modification_time)
+            modification_time=
+            modification_time if project_name != aggregate_root.name else aggregate_root.last_modified_time)

@@ -27,7 +27,7 @@ from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.schedules import Schedule
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.use_case import UseCase
@@ -159,9 +159,9 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         per_recurring_task_breakdown: List['ReportUseCase.PerRecurringTaskBreakdownItem']
 
     _global_properties: Final[GlobalProperties]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
-    def __init__(self, global_properties: GlobalProperties, storage_engine: StorageEngine) -> None:
+    def __init__(self, global_properties: GlobalProperties, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._storage_engine = storage_engine

@@ -37,3 +37,7 @@ class Eisen(enum.Enum):
     def all_values() -> Iterable[str]:
         """The possible values for eisen."""
         return frozenset(st.value for st in Eisen)
+
+    def __str__(self) -> str:
+        """String form."""
+        return str(self.value)

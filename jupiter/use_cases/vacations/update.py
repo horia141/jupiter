@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.adate import ADate
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
@@ -25,11 +25,11 @@ class VacationUpdateUseCase(UseCase['VacationUpdateUseCase.Args', None]):
         end_date: UpdateAction[ADate]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             notion_manager: VacationNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

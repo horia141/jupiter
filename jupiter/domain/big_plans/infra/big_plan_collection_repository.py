@@ -7,10 +7,6 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.storage import Repository
 
 
-class BigPlanCollectionAlreadyExistsError(Exception):
-    """Error raised when a big plan collection already exists."""
-
-
 class BigPlanCollectionNotFoundError(Exception):
     """Error raised when a big plan collection is not found."""
 
@@ -27,7 +23,7 @@ class BigPlanCollectionRepository(Repository, abc.ABC):
         """Save a big plan collection."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId) -> BigPlanCollection:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BigPlanCollection:
         """Retrieve a big plan collection by its id."""
 
     @abc.abstractmethod

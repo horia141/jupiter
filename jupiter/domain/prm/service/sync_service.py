@@ -6,7 +6,7 @@ from typing import Final, Iterable, Dict, Optional
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from jupiter.domain.prm.notion_person import NotionPerson
 from jupiter.domain.prm.person import Person
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 
@@ -16,11 +16,11 @@ LOGGER = logging.getLogger(__name__)
 class PrmSyncService:
     """The service class for syncing the PRM database between local and Notion."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, prm_prm_notion_manager: PrmNotionManager) -> None:
+            self, storage_engine: DomainStorageEngine, prm_prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._prm_notion_manager = prm_prm_notion_manager
@@ -47,17 +47,16 @@ class PrmSyncService:
 
         # Explore Notion and apply to local
         for notion_person in all_notion_persons:
-            notion_person_ref_id = EntityId.from_raw(notion_person.ref_id) if notion_person.ref_id else None
-            if filter_ref_ids_set is not None and notion_person_ref_id not in filter_ref_ids_set:
+            if filter_ref_ids_set is not None and notion_person.ref_id not in filter_ref_ids_set:
                 LOGGER.info(f"Skipping '{notion_person.name}' (id={notion_person.notion_id}) because of filtering")
                 continue
 
             LOGGER.info(f"Syncing '{notion_person.name}' (id={notion_person.notion_id})")
 
-            if notion_person.ref_id is None or notion_person.ref_id == "":
+            if notion_person.ref_id is None:
                 new_person = \
                     notion_person.new_aggregate_root(
-                        NotionPerson.InverseExtraInfo(prm_database.catch_up_project_ref_id))
+                        NotionPerson.InverseExtraInfo(prm_database.ref_id, prm_database.catch_up_project_ref_id))
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_person = uow.person_repository.create(new_person)
@@ -71,9 +70,9 @@ class PrmSyncService:
 
                 all_persons_set[new_person.ref_id] = new_person
                 all_notion_persons_set[new_person.ref_id] = notion_person
-            elif notion_person_ref_id in all_persons_set and notion_person.notion_id in all_notion_persons_notion_ids:
-                person = all_persons_set[notion_person_ref_id]
-                all_notion_persons_set[notion_person_ref_id] = notion_person
+            elif notion_person.ref_id in all_persons_set and notion_person.notion_id in all_notion_persons_notion_ids:
+                person = all_persons_set[notion_person.ref_id]
+                all_notion_persons_set[notion_person.ref_id] = notion_person
 
                 # If the person exists locally, we sync it with the remote:
                 if sync_prefer == SyncPrefer.NOTION:
@@ -83,11 +82,12 @@ class PrmSyncService:
 
                     updated_person = \
                         notion_person.apply_to_aggregate_root(
-                            person, NotionPerson.InverseExtraInfo(prm_database.catch_up_project_ref_id))
+                            person,
+                            NotionPerson.InverseExtraInfo(prm_database.ref_id, prm_database.catch_up_project_ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.person_repository.save(updated_person)
-                    all_persons_set[notion_person_ref_id] = updated_person
+                    all_persons_set[notion_person.ref_id] = updated_person
                     LOGGER.info(f"Changed person with id={notion_person.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     if not sync_even_if_not_modified and person.last_modified_time <= notion_person.last_edited_time:
@@ -97,7 +97,7 @@ class PrmSyncService:
                     updated_notion_person = notion_person.join_with_aggregate_root(person, None)
 
                     self._prm_notion_manager.save_person(updated_notion_person)
-                    all_notion_persons_set[notion_person_ref_id] = updated_notion_person
+                    all_notion_persons_set[notion_person.ref_id] = updated_notion_person
                     LOGGER.info(f"Changed person with id={notion_person.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -108,7 +108,7 @@ class PrmSyncService:
                 # 2. This is a person added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
                 try:
-                    self._prm_notion_manager.remove_person(typing.cast(EntityId, notion_person_ref_id))
+                    self._prm_notion_manager.remove_person(typing.cast(EntityId, notion_person.ref_id))
                     LOGGER.info(f"Removed person with id={notion_person.ref_id} from Notion")
                 except NotionPersonNotFoundError:
                     LOGGER.info(f"Skipped dangling person in Notion {notion_person}")

@@ -7,10 +7,6 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.storage import Repository
 
 
-class InboxTaskCollectionAlreadyExistsError(Exception):
-    """Error raised when trying to create an inbox task collection and it already exists."""
-
-
 class InboxTaskCollectionNotFoundError(Exception):
     """Error raised when an inbox task collection does not exist."""
 
@@ -27,7 +23,7 @@ class InboxTaskCollectionRepository(Repository, abc.ABC):
         """Save a big plan collection."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId) -> InboxTaskCollection:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTaskCollection:
         """Retrieve a inbox task collection by its id."""
 
     @abc.abstractmethod

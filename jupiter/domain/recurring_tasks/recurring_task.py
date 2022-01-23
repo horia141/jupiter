@@ -118,7 +118,7 @@ class RecurringTask(AggregateRoot):
             must_do=must_do.or_else(self.must_do),
             skip_rule=skip_rule.or_else(self.skip_rule),
             start_at_date=the_start_at_date,
-            the_end_at_date=the_end_at_date,
+            end_at_date=the_end_at_date,
             new_event=RecurringTask.Updated.make_event_from_frame_args(source, self.version, modification_time))
 
     def suspend(self, source: EventSource, modification_time: Timestamp) -> 'RecurringTask':

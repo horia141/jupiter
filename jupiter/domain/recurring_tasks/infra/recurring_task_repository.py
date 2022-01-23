@@ -3,7 +3,6 @@ import abc
 from typing import Optional, Iterable
 
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.storage import Repository
 
@@ -16,8 +15,7 @@ class RecurringTaskRepository(Repository, abc.ABC):
     """A repository of recurring tasks."""
 
     @abc.abstractmethod
-    def create(
-            self, recurring_task_collection: RecurringTaskCollection, recurring_task: RecurringTask) -> RecurringTask:
+    def create(self, recurring_task: RecurringTask) -> RecurringTask:
         """Create a recurring task."""
 
     @abc.abstractmethod

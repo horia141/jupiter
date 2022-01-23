@@ -6,7 +6,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.service.remove_service import InboxTaskRemoveService
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
 from jupiter.domain.metrics.metric import Metric
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +14,12 @@ LOGGER = logging.getLogger(__name__)
 class MetricRemoveService:
     """Shared service for removing a metric."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            self, storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
                 metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine

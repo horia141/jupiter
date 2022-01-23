@@ -8,7 +8,7 @@ from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskNotFoundError
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.utils.time_provider import TimeProvider
@@ -20,11 +20,11 @@ class InboxTaskSyncService:
     """The service class for syncing inbox tasks."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
@@ -64,10 +64,8 @@ class InboxTaskSyncService:
         # Prepare Notion connection
 
         for notion_inbox_task in all_notion_inbox_tasks:
-            notion_inbox_task_ref_id = EntityId.from_raw(notion_inbox_task.ref_id) \
-                if notion_inbox_task.ref_id else None
             # Skip this step when asking only for particular entities to be synced.
-            if filter_ref_ids_set is not None and notion_inbox_task_ref_id not in filter_ref_ids_set:
+            if filter_ref_ids_set is not None and notion_inbox_task.ref_id not in filter_ref_ids_set:
                 LOGGER.info(
                     f"Skipping '{notion_inbox_task.name}' " +
                     f"(id={notion_inbox_task.notion_id}) because of filtering")
@@ -75,7 +73,7 @@ class InboxTaskSyncService:
 
             LOGGER.info(f"Syncing '{notion_inbox_task.name}' (id={notion_inbox_task.notion_id})")
 
-            if notion_inbox_task_ref_id is None or notion_inbox_task.ref_id == "":
+            if notion_inbox_task.ref_id is None:
                 # If the inbox task doesn't exist locally, we create it!
                 new_inbox_task = notion_inbox_task.new_aggregate_root(NotionInboxTask.InverseInfo(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -83,7 +81,7 @@ class InboxTaskSyncService:
                     all_big_plans_by_name=all_big_plans_by_name))
 
                 with self._storage_engine.get_unit_of_work() as save_uow:
-                    new_inbox_task = save_uow.inbox_task_repository.create(inbox_task_collection, new_inbox_task)
+                    new_inbox_task = save_uow.inbox_task_repository.create(new_inbox_task)
                 LOGGER.info(f"Found new inbox task from Notion {notion_inbox_task.name}")
 
                 self._inbox_task_notion_manager.link_local_and_notion_inbox_task(
@@ -100,11 +98,11 @@ class InboxTaskSyncService:
 
                 all_inbox_tasks_set[new_inbox_task.ref_id] = new_inbox_task
                 all_notion_inbox_tasks_set[new_inbox_task.ref_id] = notion_inbox_task
-            elif notion_inbox_task_ref_id in all_inbox_tasks_set and \
+            elif notion_inbox_task.ref_id in all_inbox_tasks_set and \
                     notion_inbox_task.notion_id in all_notion_inbox_tasks_notion_ids:
                 # If the big plan exists locally, we sync it with the remote
-                inbox_task = all_inbox_tasks_set[notion_inbox_task_ref_id]
-                all_notion_inbox_tasks_set[notion_inbox_task_ref_id] = notion_inbox_task
+                inbox_task = all_inbox_tasks_set[notion_inbox_task.ref_id]
+                all_notion_inbox_tasks_set[notion_inbox_task.ref_id] = notion_inbox_task
 
                 if sync_prefer == SyncPrefer.NOTION:
                     # Copy over the parameters from Notion to local
@@ -122,7 +120,7 @@ class InboxTaskSyncService:
                                 all_big_plans_by_name=all_big_plans_by_name))
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.inbox_task_repository.save(updated_inbox_task)
-                    all_inbox_tasks_set[notion_inbox_task_ref_id] = updated_inbox_task
+                    all_inbox_tasks_set[notion_inbox_task.ref_id] = updated_inbox_task
                     LOGGER.info(f"Changed inbox task with id={notion_inbox_task.ref_id} from Notion")
                 elif sync_prefer == SyncPrefer.LOCAL:
                     # Copy over the parameters from local to Notion
@@ -139,7 +137,7 @@ class InboxTaskSyncService:
                             inbox_task, NotionInboxTask.DirectInfo(big_plan_name))
                     self._inbox_task_notion_manager.save_inbox_task(
                         inbox_task_collection.ref_id, updated_notion_inbox_task)
-                    all_notion_inbox_tasks_set[notion_inbox_task_ref_id] = updated_notion_inbox_task
+                    all_notion_inbox_tasks_set[notion_inbox_task.ref_id] = updated_notion_inbox_task
                     LOGGER.info(f"Changed inbox task with id={notion_inbox_task.ref_id} from local")
                 else:
                     raise Exception(f"Invalid preference {sync_prefer}")
@@ -151,7 +149,7 @@ class InboxTaskSyncService:
                 #    duplicates in these cases, and they need to be removed.
                 try:
                     self._inbox_task_notion_manager.remove_inbox_task(
-                        inbox_task_collection.ref_id, notion_inbox_task_ref_id)
+                        inbox_task_collection.ref_id, notion_inbox_task.ref_id)
                     LOGGER.info(f"Removed dangling inbox task in Notion {notion_inbox_task}")
                 except NotionInboxTaskNotFoundError:
                     LOGGER.info(f"Skipped dangling inbox task in Notion {notion_inbox_task}")

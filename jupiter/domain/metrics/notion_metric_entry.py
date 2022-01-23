@@ -29,7 +29,7 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
         """Construct a new Notion row from a given metric entry."""
         return NotionMetricEntry(
             notion_id=BAD_NOTION_ID,
-            ref_id=str(aggregate_root.ref_id),
+            ref_id=aggregate_root.ref_id,
             last_edited_time=aggregate_root.last_modified_time,
             archived=aggregate_root.archived,
             collection_time=aggregate_root.collection_time,

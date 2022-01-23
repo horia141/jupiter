@@ -2,6 +2,7 @@
 import abc
 
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
+from jupiter.framework.base.entity_id import EntityId
 
 
 class NotionWorkspaceNotFoundError(Exception):
@@ -20,5 +21,5 @@ class WorkspaceNotionManager(abc.ABC):
         """Save the root Notion structure."""
 
     @abc.abstractmethod
-    def load_workspace(self) -> NotionWorkspace:
+    def load_workspace(self, ref_id: EntityId) -> NotionWorkspace:
         """Retrieve the workspace from Notion side."""

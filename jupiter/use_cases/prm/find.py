@@ -5,7 +5,7 @@ from typing import List, Optional, Final
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.prm_database import PrmDatabase
 from jupiter.domain.projects.project import Project
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -27,9 +27,9 @@ class PrmDatabaseFindUseCase(UseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabase
         catch_up_project: Project
         persons: List[Person]
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
-    def __init__(self, storage_engine: StorageEngine) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
 

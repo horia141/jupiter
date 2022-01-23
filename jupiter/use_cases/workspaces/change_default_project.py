@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -18,10 +18,10 @@ class WorkspaceChangeDefaultProjectUseCase(UseCase['WorkspaceChangeDefaultProjec
         default_project_key: ProjectKey
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine) -> None:
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._storage_engine = storage_engine

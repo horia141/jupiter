@@ -3,17 +3,17 @@ from typing import Final
 
 from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, InboxTaskBigPlanLabel
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 
 
 class InboxTaskBigPlanRefOptionsUpdateService:
     """Service for updating the big plan references on Notion side to the current set of big plans."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
+            self, storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager

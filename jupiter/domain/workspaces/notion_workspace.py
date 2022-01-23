@@ -26,8 +26,10 @@ class NotionWorkspace(NotionEntity[Workspace]):
 
     def apply_to_aggregate_root(self, aggregate_root: Workspace, modification_time: Timestamp) -> 'Workspace':
         """Apply a Notion workspace to an already existing workspace."""
+        workspace_name = WorkspaceName.from_raw(self.name)
         return aggregate_root.update(
-            name=UpdateAction.change_to(WorkspaceName.from_raw(self.name)),
+            name=UpdateAction.change_to(workspace_name),
             timezone=UpdateAction.do_nothing(),
             source=EventSource.NOTION,
-            modification_time=modification_time)
+            modification_time=
+            modification_time if workspace_name != aggregate_root.name else aggregate_root.last_modified_time)

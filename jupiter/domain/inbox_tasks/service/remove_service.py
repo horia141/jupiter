@@ -5,7 +5,7 @@ from typing import Final
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskNotFoundError
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,10 +13,10 @@ LOGGER = logging.getLogger(__name__)
 class InboxTaskRemoveService:
     """Shared service for removing an inbox task."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
-    def __init__(self, storage_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager

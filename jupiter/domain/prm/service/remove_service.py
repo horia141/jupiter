@@ -6,7 +6,7 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.service.remove_service import InboxTaskRemoveService
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
 from jupiter.domain.prm.person import Person
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +14,12 @@ LOGGER = logging.getLogger(__name__)
 class PersonRemoveService:
     """The command for removing a person."""
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _prm_notion_manager: Final[PrmNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, storage_engine: StorageEngine, prm_notion_manager: PrmNotionManager,
+            self, storage_engine: DomainStorageEngine, prm_notion_manager: PrmNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._storage_engine = storage_engine

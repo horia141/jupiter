@@ -8,7 +8,7 @@ from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
@@ -30,11 +30,11 @@ class SmartListItemUpdateUseCase(UseCase['SmartListItemUpdateUseCase.Args', None
         url: UpdateAction[Optional[URL]]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

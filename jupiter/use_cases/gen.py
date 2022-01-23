@@ -20,7 +20,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.base.entity_id import EntityId
@@ -50,13 +50,13 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
             self,
             global_properties: GlobalProperties, time_provider: TimeProvider,
-            project_engine: StorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
+            project_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
@@ -254,7 +254,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
 
             found_task.update_link_to_recurring_task(
                 name=schedule.full_name, timeline=schedule.timeline, the_type=recurring_task.the_type,
-                actionable_date=schedule.actionable_date, due_time=schedule.due_time,
+                actionable_date=schedule.actionable_date, due_date=schedule.due_time,
                 eisen=recurring_task.gen_params.eisen, difficulty=recurring_task.gen_params.difficulty,
                 source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
 
@@ -285,7 +285,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
 
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
@@ -352,7 +352,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
 
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
@@ -420,7 +420,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
 
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))
@@ -481,7 +481,7 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
                     source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
 
-                inbox_task = uow.inbox_task_repository.create(inbox_task_collection, inbox_task)
+                inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
 
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, NotionInboxTask.DirectInfo(None))

@@ -1,16 +1,13 @@
 """The handler of ad-hoc pages on Notion side."""
-import typing
-from dataclasses import dataclass
-from pathlib import Path
-from types import TracebackType
-from typing import Optional, Final
+from typing import Final, Optional
 
-from jupiter.framework.json import JSONDictType
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.remote.notion.common import NotionPageLink, NotionLockKey, NotionPageLinkExtra
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionPageBlockNotFound
-from jupiter.remote.notion.infra.connection import NotionConnection
-from jupiter.repository.yaml.infra.storage import BaseRecordRow, RecordsStorage, StorageEntityNotFoundError
+from jupiter.remote.notion.infra.client_builder import NotionClientBuilder
+from jupiter.remote.notion.infra.page_link import NotionPageLink, NotionPageLinkExtra
+from jupiter.remote.notion.infra.page_link_repository import NotionPageLinkNotFoundError
+from jupiter.remote.notion.infra.storage_engine import NotionStorageEngine
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -18,133 +15,112 @@ class NotionPageNotFoundError(Exception):
     """Error raised when a Notion page does not exist."""
 
 
-@dataclass()
-class _PageLockRow(BaseRecordRow):
-    """Information about a Notion-side page."""
-    page_id: NotionId
-
-
-class PagesManager:
+class NotionPagesManager:
     """The handler of ad-hoc pages on Notion side."""
 
-    _STORAGE_PATH: typing.ClassVar[Path] = Path("./notion.pages.yaml")
+    _time_provider: Final[TimeProvider]
+    _client_builder: Final[NotionClientBuilder]
+    _storage_engine: Final[NotionStorageEngine]
 
-    _connection: Final[NotionConnection]
-    _storage: Final[RecordsStorage[_PageLockRow]]
-
-    def __init__(self, time_provider: TimeProvider, connection: NotionConnection) -> None:
+    def __init__(
+            self, time_provider: TimeProvider, client_builder: NotionClientBuilder,
+            storage_engine: NotionStorageEngine) -> None:
         """Constructor."""
-        self._connection = connection
-        self._storage = RecordsStorage[_PageLockRow](self._STORAGE_PATH, time_provider, self)
+        self._time_provider = time_provider
+        self._client_builder = client_builder
+        self._storage_engine = storage_engine
 
-    def __enter__(self) -> 'PagesManager':
-        """Enter context."""
-        self._storage.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-        if exc_type is not None:
-            return
-
-    def upsert_page(self, key: NotionLockKey, name: str, parent_page: NotionPageLink) -> NotionPageLink:
+    def upsert_page(
+            self, key: NotionLockKey, name: str, parent_page_notion_id: Optional[NotionId] = None) -> NotionPageLink:
         """Create a page with a given name."""
-        notion_client = self._connection.get_notion_client()
+        notion_client = self._client_builder.get_notion_client()
 
-        found_page_lock_row = self._storage.load_optional(key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            found_notion_page_link = uow.notion_page_link_repository.load_optional(key)
 
-        if found_page_lock_row:
-            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
+        if found_notion_page_link:
+            page_block = notion_client.get_regular_page(found_notion_page_link.notion_id)
             if page_block.alive:
                 page_block.title = name
 
-                if page_block.get("parent_id") != parent_page.page_id:
+                if parent_page_notion_id is not None and page_block.get("parent_id") != parent_page_notion_id:
                     # Kind of expensive operation here!
-                    page_block.move_to(notion_client.get_regular_page(parent_page.page_id))
+                    page_block.move_to(notion_client.get_regular_page(parent_page_notion_id))
 
-                self._storage.update(found_page_lock_row)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    new_notion_page_link = found_notion_page_link.mark_update(self._time_provider.get_current_time())
+                    uow.notion_page_link_repository.save(new_notion_page_link)
 
-                return NotionPageLink(page_id=page_block.id)
+                return new_notion_page_link
 
-        parent_page_block = notion_client.get_regular_page(parent_page.page_id)
+        parent_page_block = notion_client.get_regular_page(parent_page_notion_id) if parent_page_notion_id else None
         new_page_block = notion_client.create_regular_page(name, parent_page_block)
 
-        self._storage.create(_PageLockRow(key=key, page_id=new_page_block.id))
+        with self._storage_engine.get_unit_of_work() as uow:
+            new_notion_page_link = \
+                NotionPageLink.new_notion_page_link(
+                    key=key, notion_id=new_page_block.id, creation_time=self._time_provider.get_current_time())
+            uow.notion_page_link_repository.create(new_notion_page_link)
 
-        return NotionPageLink(page_id=new_page_block.id)
+        return new_notion_page_link
 
-    def save_page(self, key: NotionLockKey, name: str, parent_page: NotionPageLink) -> NotionPageLink:
+    def save_page(
+            self, key: NotionLockKey, name: str, parent_page_notion_id: Optional[NotionId] = None) -> NotionPageLink:
         """Save a page with a given name."""
-        notion_client = self._connection.get_notion_client()
+        notion_client = self._client_builder.get_notion_client()
 
         try:
-            found_page_lock_row = self._storage.load(key)
-            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
-        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                notion_page_link = uow.notion_page_link_repository.load(key)
+            page_block = notion_client.get_regular_page(notion_page_link.notion_id)
+        except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
             raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
 
         page_block.title = name
 
-        if page_block.get("parent_id") != parent_page.page_id:
+        if parent_page_notion_id is not None and page_block.get("parent_id") != parent_page_notion_id:
             # Kind of expensive operation here!
-            page_block.move_to(notion_client.get_regular_page(parent_page.page_id))
+            page_block.move_to(notion_client.get_regular_page(parent_page_notion_id))
 
-        self._storage.update(found_page_lock_row)
+        with self._storage_engine.get_unit_of_work() as uow:
+            new_notion_page_link = notion_page_link.mark_update(self._time_provider.get_current_time())
+            uow.notion_page_link_repository.save(new_notion_page_link)
 
-        return NotionPageLink(page_id=page_block.id)
+        return new_notion_page_link
 
-    def remove_page(self, key: NotionLockKey) -> NotionPageLink:
+    def remove_page(self, key: NotionLockKey) -> None:
         """Remove a page with a given key."""
-        notion_client = self._connection.get_notion_client()
+        notion_client = self._client_builder.get_notion_client()
 
         try:
-            found_page_lock_row = self._storage.load(key)
-            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
-        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                notion_page_link = uow.notion_page_link_repository.load(key)
+            page_block = notion_client.get_regular_page(notion_page_link.notion_id)
+        except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
             raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
+
         page_block.remove()
 
-        return NotionPageLink(page_id=found_page_lock_row.page_id)
+        with self._storage_engine.get_unit_of_work() as uow:
+            uow.notion_page_link_repository.remove(key)
 
     def get_page(self, key: NotionLockKey) -> NotionPageLink:
         """Get a page with a given key."""
         try:
-            found_page_lock_row = self._storage.load(key)
-        except StorageEntityNotFoundError as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                return uow.notion_page_link_repository.load(key)
+        except NotionPageLinkNotFoundError as err:
             raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
-        return NotionPageLink(page_id=found_page_lock_row.page_id)
 
     def get_page_extra(self, key: NotionLockKey) -> NotionPageLinkExtra:
         """Get a page with a given key."""
-        notion_client = self._connection.get_notion_client()
+        notion_client = self._client_builder.get_notion_client()
 
         try:
-            found_page_lock_row = self._storage.load(key)
-            page_block = notion_client.get_regular_page(found_page_lock_row.page_id)
-        except (StorageEntityNotFoundError, NotionPageBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                notion_page_link = uow.notion_page_link_repository.load(key)
+            page_block = notion_client.get_regular_page(notion_page_link.notion_id)
+        except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
             raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
 
-        return NotionPageLinkExtra(page_id=found_page_lock_row.page_id, name=page_block.title)
-
-    @staticmethod
-    def storage_schema() -> JSONDictType:
-        """The schema for the data."""
-        return {
-            "page_id": {"type": "string"}
-        }
-
-    @staticmethod
-    def storage_to_live(storage_form: JSONDictType) -> _PageLockRow:
-        """Transform the data reconstructed from basic storage into something useful for the live system."""
-        return _PageLockRow(
-            key=NotionLockKey(typing.cast(str, storage_form["key"])),
-            page_id=NotionId.from_raw(typing.cast(str, storage_form["page_id"])))
-
-    @staticmethod
-    def live_to_storage(live_form: _PageLockRow) -> JSONDictType:
-        """Transform the live system data to something suitable for basic storage."""
-        return {
-            "page_id": str(live_form.page_id)
-        }
+        return notion_page_link.with_extra(page_block.title)

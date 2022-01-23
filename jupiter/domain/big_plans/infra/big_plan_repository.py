@@ -3,7 +3,6 @@ import abc
 from typing import Optional, Iterable
 
 from jupiter.domain.big_plans.big_plan import BigPlan
-from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.storage import Repository
 
@@ -16,7 +15,7 @@ class BigPlanRepository(Repository, abc.ABC):
     """A repository of big plans."""
 
     @abc.abstractmethod
-    def create(self, big_plan_collection: BigPlanCollection, big_plan: BigPlan) -> BigPlan:
+    def create(self, big_plan: BigPlan) -> BigPlan:
         """Create a big plan."""
 
     @abc.abstractmethod

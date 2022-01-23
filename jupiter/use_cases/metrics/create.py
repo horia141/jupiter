@@ -17,7 +17,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
@@ -44,11 +44,11 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
         metric_unit: Optional[MetricUnit]
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider
@@ -62,12 +62,13 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
 
         collection_params = None
         with self._storage_engine.get_unit_of_work() as uow:
+            workspace = uow.workspace_repository.load()
+
             if args.collection_period is not None:
                 if args.collection_project_key is not None:
                     project = uow.project_repository.load_by_key(args.collection_project_key)
                     project_ref_id = project.ref_id
                 else:
-                    workspace = uow.workspace_repository.load()
                     project_ref_id = workspace.default_project_ref_id
                 collection_params = RecurringTaskGenParams(
                     project_ref_id=project_ref_id,
@@ -82,8 +83,9 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
 
             try:
                 metric = Metric.new_metric(
-                    key=args.key, name=args.name, collection_params=collection_params, metric_unit=args.metric_unit,
-                    source=EventSource.CLI, created_time=self._time_provider.get_current_time())
+                    workspace_ref_id=workspace.ref_id, key=args.key, name=args.name,
+                    collection_params=collection_params, metric_unit=args.metric_unit, source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
                 metric = uow.metric_repository.create(metric)
             except MetricAlreadyExistsError:
                 raise InputValidationError(f"Metric with key {metric.key} already exists")

@@ -1,1 +1,0 @@
-"""Infrastructure around YAML storage."""

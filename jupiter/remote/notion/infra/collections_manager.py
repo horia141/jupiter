@@ -4,23 +4,26 @@ import hashlib
 import logging
 import typing
 from copy import deepcopy
-from dataclasses import dataclass
-from pathlib import Path
-from types import TracebackType
-from typing import Callable, TypeVar, Final, Dict, Optional, Iterable, cast, ClassVar
+from typing import Callable, TypeVar, Final, Dict, Iterable, cast
 
 from notion.collection import CollectionRowBlock
 
-from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.json import JSONDictType
 from jupiter.framework.notion import BaseNotionRow
-from jupiter.remote.notion.common import NotionPageLink, NotionCollectionLink, NotionLockKey, \
-    NotionCollectionLinkExtra
+from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, \
     NotionCollectionBlockNotFound, NotionCollectionRowNotFound
-from jupiter.remote.notion.infra.connection import NotionConnection
-from jupiter.repository.yaml.infra.storage import BaseRecordRow, RecordsStorage, Eq, StorageEntityNotFoundError
+from jupiter.remote.notion.infra.collection_field_tag_link import NotionCollectionFieldTagLink, \
+    NotionCollectionFieldTagLinkExtra
+from jupiter.remote.notion.infra.collection_field_tag_link_repository import NotionCollectionFieldTagLinkNotFoundError
+from jupiter.remote.notion.infra.collection_item_link import NotionCollectionItemLink, NotionCollectionItemLinkExtra
+from jupiter.remote.notion.infra.collection_item_link_repository import NotionCollectionItemLinkNotFoundError
+from jupiter.remote.notion.infra.collection_link import NotionCollectionLink, NotionCollectionLinkExtra
+from jupiter.remote.notion.infra.collection_link_repository import NotionCollectionLinkNotFoundError
+from jupiter.remote.notion.infra.client_builder import NotionClientBuilder
+from jupiter.remote.notion.infra.storage_engine import NotionStorageEngine
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -43,107 +46,46 @@ CopyRowToNotionRowType = Callable[[NotionClient, ItemType, CollectionRowBlock], 
 CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
 
 
-@dataclass()
-class _NotionCollectionTagLink:
-    """Info about a particular tag in a collection."""
-    notion_id: NotionId
-    collection_id: NotionId
-    name: str
-    ref_id: Optional[EntityId]
-
-    @property
-    def tmp_ref_id_as_str(self) -> Optional[str]:
-        """A temporary string value for ref sid."""
-        return str(self.ref_id) if self.ref_id else None
-
-
-@dataclass()
-class _CollectionLockRow(BaseRecordRow):
-    """Information about a Notion-side collection."""
-    page_id: NotionId
-    collection_id: NotionId
-    view_ids: Dict[str, NotionId] = dataclasses.field(default_factory=dict, compare=False)
-
-
-@dataclass()
-class _CollectionFieldTagLockRow(BaseRecordRow):
-    """Information about a Notion-side collection field tag."""
-    collection_key: NotionLockKey
-    ref_id: EntityId
-    field: str
-    tag_id: NotionId
-
-
-@dataclass()
-class _CollectionItemLockRow(BaseRecordRow):
-    """Information about a Notion-side collection item."""
-    collection_key: NotionLockKey
-    ref_id: EntityId
-    row_id: NotionId
-
-
-class CollectionsManager:
+class NotionCollectionsManager:
     """The handler for collections on Notion side."""
 
-    _COLLECTIONS_STORAGE_PATH: ClassVar[Path] = Path("./notion.collections.yaml")
-    _COLLECTION_FIELD_TAGS_STORAGE_PATH: ClassVar[Path] = Path("./notion.collection-field-tags.yaml")
-    _COLLECTION_ITEMS_STORAGE_PATH: ClassVar[Path] = Path("./notion.collection-items.yaml")
+    _time_provider: Final[TimeProvider]
+    _client_builder: Final[NotionClientBuilder]
+    _storage_engine: Final[NotionStorageEngine]
 
-    _connection: Final[NotionConnection]
-    _collections_storage: Final[RecordsStorage[_CollectionLockRow]]
-    _collection_field_tags_storage: Final[RecordsStorage[_CollectionFieldTagLockRow]]
-    _collection_items_storage: Final[RecordsStorage[_CollectionItemLockRow]]
-
-    def __init__(self, time_provider: TimeProvider, connection: NotionConnection) -> None:
+    def __init__(
+            self, time_provider: TimeProvider, client_builder: NotionClientBuilder,
+            storage_engine: NotionStorageEngine) -> None:
         """Constructor."""
-        self._connection = connection
-        self._collections_storage = \
-            RecordsStorage[_CollectionLockRow](
-                self._COLLECTIONS_STORAGE_PATH, time_provider, CollectionsManager._CollectionsStorageProtocol())
-        self._collection_field_tags_storage = \
-            RecordsStorage[_CollectionFieldTagLockRow](
-                self._COLLECTION_FIELD_TAGS_STORAGE_PATH, time_provider,
-                CollectionsManager._CollectionFieldTagsStorageProtocol())
-        self._collection_items_storage = \
-            RecordsStorage[_CollectionItemLockRow](
-                self._COLLECTION_ITEMS_STORAGE_PATH, time_provider,
-                CollectionsManager._CollectionItemsStorageProtocol())
-
-    def __enter__(self) -> 'CollectionsManager':
-        """Enter context."""
-        self._collections_storage.initialize()
-        self._collection_field_tags_storage.initialize()
-        self._collection_items_storage.initialize()
-        return self
-
-    def __exit__(
-            self, exc_type: Optional[typing.Type[BaseException]], _exc_val: Optional[BaseException],
-            _exc_tb: Optional[TracebackType]) -> None:
-        """Exit context."""
-        if exc_type is not None:
-            return
+        self._time_provider = time_provider
+        self._client_builder = client_builder
+        self._storage_engine = storage_engine
 
     def upsert_collection(
-            self, key: NotionLockKey, parent_page: NotionPageLink, name: str, schema: JSONDictType,
+            self, key: NotionLockKey, parent_page_notion_id: NotionId, name: str, schema: JSONDictType,
             schema_properties: NotionCollectionSchemaProperties,
-            view_schemas: Dict[str, JSONDictType]) -> NotionCollectionLink:
+            view_schemas: Dict[str, JSONDictType]) -> NotionCollectionLinkExtra:
         """Create the Notion-side structure for this collection."""
         simdif_fields = set(schema.keys()).symmetric_difference(m.name for m in schema_properties)
 
         if len(simdif_fields) > 0:
             raise Exception(f"Schema params are off: {','.join(simdif_fields)}")
 
-        lock = self._collections_storage.load_optional(key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load_optional(key)
 
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
 
-        if lock:
-            page = client.get_collection_page_by_id(lock.page_id)
+        if collection_link:
+            page = client.get_collection_page_by_id(collection_link.page_notion_id)
             LOGGER.info(f"Found the already existing page as {page.id}")
-            collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
+            collection = \
+                client.get_collection(
+                    collection_link.page_notion_id, collection_link.collection_notion_id,
+                    collection_link.view_notion_ids.values())
             LOGGER.info(f"Found the already existing collection {collection.id}")
         else:
-            page = client.create_collection_page(parent_page=client.get_regular_page(parent_page.page_id))
+            page = client.create_collection_page(parent_page=client.get_regular_page(parent_page_notion_id))
             LOGGER.info(f"Created the page as {page.id}")
             collection = client.create_collection(page, schema)
             LOGGER.info(f"Created the collection as {collection}")
@@ -156,7 +98,7 @@ class CollectionsManager:
         LOGGER.info("Applied the most current schema to the collection")
 
         # Attach the views.
-        view_ids = lock.view_ids if lock else {}
+        view_ids = collection_link.view_notion_ids if collection_link else {}
         for view_name, view_schema in view_schemas.items():
             the_view = client.attach_view_to_collection_page(
                 page, collection, view_ids.get(view_name, None), cast(str, view_schema["type"]), view_schema)
@@ -180,29 +122,35 @@ class CollectionsManager:
         LOGGER.info("Changed the field order")
 
         # Save local locks.
-        new_lock = _CollectionLockRow(
-            key=key,
-            page_id=page.id,
-            collection_id=collection.id,
-            view_ids=view_ids)
-
-        if lock:
-            self._collections_storage.update(new_lock)
+        if collection_link:
+            new_notion_collection_link = \
+                collection_link.with_new_collection(
+                    page.id, collection.id, view_ids, self._time_provider.get_current_time())
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_link_repository.save(new_notion_collection_link)
         else:
-            self._collections_storage.create(new_lock)
+            new_notion_collection_link = \
+                NotionCollectionLink.new_notion_collection_link(
+                    key, page.id, collection.id, view_ids, self._time_provider.get_current_time())
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_link_repository.create(new_notion_collection_link)
         LOGGER.info("Saved lock structure")
 
-        return NotionCollectionLink(page_id=page.id, collection_id=collection.id)
+        return new_notion_collection_link.with_extra(name)
 
-    def save_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
+    def save_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> NotionCollectionLinkExtra:
         """Just updates the name and schema for the collection and asks no questions."""
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
 
         try:
-            lock = self._collections_storage.load(key)
-            page = client.get_collection_page_by_id(lock.page_id)
-            collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
-        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                collection_link = uow.notion_collection_link_repository.load(key)
+            page = client.get_collection_page_by_id(collection_link.page_notion_id)
+            collection = \
+                client.get_collection(
+                    collection_link.page_notion_id, collection_link.collection_notion_id,
+                    collection_link.view_notion_ids.values())
+        except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
         page.title = new_name
@@ -212,15 +160,26 @@ class CollectionsManager:
         collection.set("schema", final_schema)
         LOGGER.info("Applied the most current schema to the collection")
 
-    def save_collection_no_merge(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> None:
+        with self._storage_engine.get_unit_of_work() as uow:
+            new_collection_link = collection_link.mark_update(self._time_provider.get_current_time())
+            uow.notion_collection_link_repository.save(new_collection_link)
+
+        return new_collection_link.with_extra(new_name)
+
+    def save_collection_no_merge(
+            self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> NotionCollectionLinkExtra:
         """Just updates the name and schema for the collection and asks no questions."""
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
 
         try:
-            lock = self._collections_storage.load(key)
-            page = client.get_collection_page_by_id(lock.page_id)
-            collection = client.get_collection(lock.page_id, lock.collection_id, lock.view_ids.values())
-        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                collection_link = uow.notion_collection_link_repository.load(key)
+            page = client.get_collection_page_by_id(collection_link.page_notion_id)
+            collection = \
+                client.get_collection(
+                    collection_link.page_notion_id, collection_link.collection_notion_id,
+                    collection_link.view_notion_ids.values())
+        except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
         page.title = new_name
@@ -228,47 +187,56 @@ class CollectionsManager:
         collection.set("schema", new_schema)
         LOGGER.info("Applied the most current schema to the collection")
 
+        with self._storage_engine.get_unit_of_work() as uow:
+            new_collection_link = collection_link.mark_update(self._time_provider.get_current_time())
+            uow.notion_collection_link_repository.save(new_collection_link)
+
+        return new_collection_link.with_extra(new_name)
+
     def load_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
         """Retrive the Notion-side structure for this collection."""
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
 
         try:
-            lock = self._collections_storage.load(key)
-            page = client.get_collection_page_by_id(lock.page_id)
-        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                collection_link = uow.notion_collection_link_repository.load(key)
+            page = client.get_collection_page_by_id(collection_link.page_notion_id)
+        except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
-        return NotionCollectionLinkExtra(
-            page_id=lock.page_id,
-            collection_id=lock.collection_id,
-            name=page.title)
+        return collection_link.with_extra(page.title)
 
     def remove_collection(self, key: NotionLockKey) -> None:
         """Remove the Notion-side structure for this collection."""
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
 
         try:
-            lock = self._collections_storage.load(key)
-            page = client.get_collection_page_by_id(lock.page_id)
+            with self._storage_engine.get_unit_of_work() as uow:
+                collection_link = uow.notion_collection_link_repository.load(key)
+            page = client.get_collection_page_by_id(collection_link.page_notion_id)
             page.remove()
-            self._collections_storage.remove(key)
-        except (StorageEntityNotFoundError, NotionCollectionBlockNotFound) as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_link_repository.remove(key)
+        except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
     @staticmethod
-    def _build_compound_key(collection_key: str, key: str) -> str:
-        return f"{collection_key}:{key}"
+    def _build_compound_key(collection_key: str, key: str) -> NotionLockKey:
+        return NotionLockKey(f"{collection_key}:{key}")
 
     def upsert_collection_field_tag(
             self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
-            field: str, tag: str) -> _NotionCollectionTagLink:
+            field: str, tag: str) -> NotionCollectionFieldTagLinkExtra:
         """Create a new tag for a Collection's field which has tags support."""
-        collection_lock = self._collections_storage.load(collection_key)
-        tag_key = self._build_compound_key(collection_key, key)
-        lock = self._collection_field_tags_storage.load_optional(tag_key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            tag_key = self._build_compound_key(collection_key, key)
+            field_tag_link = uow.notion_collection_field_tag_link_repository.load_optional(tag_key)
 
-        client = self._connection.get_notion_client()
-        collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        client = self._client_builder.get_notion_client()
+        collection = \
+            client.get_collection(
+                collection_link.page_notion_id, collection_link.collection_notion_id,
+                collection_link.view_notion_ids.values())
         schema = collection.get("schema")
 
         if field not in schema:
@@ -283,16 +251,16 @@ class CollectionsManager:
             field_schema["options"] = []
 
         tag_id = None
-        if lock:
+        if field_tag_link:
             for option in field_schema["options"]:
-                if option["id"] == lock.tag_id:
+                if option["id"] == str(field_tag_link.notion_id):
                     option["value"] = tag
                     option["color"] = self._get_stable_color(tag_key)
-                    tag_id = lock.tag_id
-                    LOGGER.info(f'Found tag "{tag}" ({lock.tag_id}) for field "{field}"')
+                    tag_id = field_tag_link.notion_id
+                    LOGGER.info(f'Found tag "{tag}" ({field_tag_link.notion_id}) for field "{field}"')
                     break
             else:
-                LOGGER.info(f'Could not find "{tag}" ({lock.tag_id})')
+                LOGGER.info(f'Could not find "{tag}" ({field_tag_link.notion_id})')
 
         if tag_id is None:
             tag_id = NotionId.make_brand_new()
@@ -305,40 +273,58 @@ class CollectionsManager:
 
         collection.set("schema", schema)
 
-        new_lock = _CollectionFieldTagLockRow(
-            key=tag_key,
-            collection_key=collection_key,
-            tag_id=tag_id,
-            field=field,
-            ref_id=ref_id)
-
-        if lock:
-            self._collection_field_tags_storage.update(new_lock)
+        if field_tag_link:
+            new_field_tag_link = field_tag_link.with_new_tag(tag_id, self._time_provider.get_current_time())
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_field_tag_link_repository.save(new_field_tag_link)
         else:
-            self._collection_field_tags_storage.create(new_lock)
+            new_field_tag_link = \
+                NotionCollectionFieldTagLink.new_notion_collection_field_tag_link(
+                    tag_key, collection_key, field, ref_id, tag_id, self._time_provider.get_current_time())
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_field_tag_link_repository.create(new_field_tag_link)
         LOGGER.info("Saved lock structure")
 
-        return _NotionCollectionTagLink(
-            notion_id=tag_id,
-            collection_id=collection.id,
-            name=tag,
-            ref_id=ref_id)
+        return new_field_tag_link.with_extra(tag)
 
-    def load_collection_field_tag(
-            self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
-            field: str) -> _NotionCollectionTagLink:
-        """Load a particular tag for a field in a collection."""
-        collection_lock = self._collections_storage.load(collection_key)
+    def quick_link_local_and_notion_collection_field_tag(
+            self, key: NotionLockKey, collection_key: NotionLockKey, field: str, ref_id: EntityId,
+            notion_id: NotionId) -> NotionCollectionFieldTagLink:
+        """Link a local entity with the Notion one, useful in syncing processes."""
         tag_key = self._build_compound_key(collection_key, key)
-        try:
-            lock = self._collection_field_tags_storage.load(tag_key)
-        except StorageEntityNotFoundError as err:
-            raise NotionCollectionFieldTagNotFoundError(
-                f"Collection field tag with key {key} could not be found") from err
 
-        client = self._connection.get_notion_client()
+        with self._storage_engine.get_unit_of_work() as uow:
+            field_tag_link = uow.notion_collection_field_tag_link_repository.load_optional(tag_key)
+
+            if field_tag_link is not None:
+                LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
+                new_field_tag_link = field_tag_link.with_new_tag(notion_id, self._time_provider.get_current_time())
+                uow.notion_collection_field_tag_link_repository.save(new_field_tag_link)
+            else:
+                new_field_tag_link = NotionCollectionFieldTagLink.new_notion_collection_field_tag_link(
+                    key=tag_key, collection_key=collection_key, field=field, ref_id=ref_id, notion_id=notion_id,
+                    creation_time=self._time_provider.get_current_time())
+                uow.notion_collection_field_tag_link_repository.create(new_field_tag_link)
+
+        return new_field_tag_link
+
+    def save_collection_field_tag(
+            self, collection_key: NotionLockKey, key: NotionLockKey, field: str,
+            tag: str) -> NotionCollectionFieldTagLinkExtra:
+        """Create a new tag for a Collection's field which has tags support."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            tag_key = self._build_compound_key(collection_key, key)
+            try:
+                field_tag_link = uow.notion_collection_field_tag_link_repository.load(tag_key)
+            except NotionCollectionFieldTagNotFoundError as err:
+                raise NotionCollectionFieldTagNotFoundError(
+                    f"Collection field tag with key {key} could not be found") from err
+
+        client = self._client_builder.get_notion_client()
         collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
         schema = collection.get("schema")
 
         if field not in schema:
@@ -353,23 +339,70 @@ class CollectionsManager:
             field_schema["options"] = []
 
         for option in field_schema["options"]:
-            if option["id"] == lock.tag_id:
-                return _NotionCollectionTagLink(
-                    collection_id=collection.id,
-                    notion_id=NotionId.from_raw(option["id"]),
-                    name=option["value"],
-                    ref_id=ref_id)
+            if option["id"] == str(field_tag_link.notion_id):
+                option["value"] = tag
+                option["color"] = self._get_stable_color(tag_key)
+                LOGGER.info(f'Found tag "{tag}" ({field_tag_link.notion_id}) for field "{field}"')
+                break
+        else:
+            raise NotionCollectionFieldTagNotFoundError(f'Could not find "{tag}" ({field_tag_link.notion_id})')
 
-        raise NotionCollectionFieldTagNotFoundError(f'Could not find tag with id {ref_id} ({lock.tag_id})')
+        collection.set("schema", schema)
+
+        with self._storage_engine.get_unit_of_work() as uow:
+            new_field_tag_link = field_tag_link.mark_update(self._time_provider.get_current_time())
+            uow.notion_collection_field_tag_link_repository.save(new_field_tag_link)
+
+        return new_field_tag_link.with_extra(tag)
+
+    def load_collection_field_tag(
+            self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
+            field: str) -> NotionCollectionFieldTagLinkExtra:
+        """Load a particular tag for a field in a collection."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            tag_key = self._build_compound_key(collection_key, key)
+            try:
+                field_tag_link = uow.notion_collection_field_tag_link_repository.load(tag_key)
+            except NotionCollectionFieldTagLinkNotFoundError as err:
+                raise NotionCollectionFieldTagNotFoundError(
+                    f"Collection field tag with key {key} could not be found") from err
+
+        client = self._client_builder.get_notion_client()
+        collection = client.get_collection(
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
+        schema = collection.get("schema")
+
+        if field not in schema:
+            raise Exception(f'Field "{field}" not in schema')
+
+        field_schema = schema[field]
+
+        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
+            raise Exception(f'Field "{field}" is not appropriate for tags')
+
+        if "options" not in field_schema:
+            field_schema["options"] = []
+
+        for option in field_schema["options"]:
+            if option["id"] == str(field_tag_link.notion_id):
+                return field_tag_link.with_extra(option["value"])
+
+        raise NotionCollectionFieldTagNotFoundError(f'Could not find tag with id {ref_id} ({field_tag_link.notion_id})')
 
     def load_all_collection_field_tags(
-            self, collection_key: NotionLockKey, field: str) -> Iterable[_NotionCollectionTagLink]:
+            self, collection_key: NotionLockKey, field: str) -> Iterable[NotionCollectionFieldTagLinkExtra]:
         """Load all tags for a field in a collection."""
-        collection_lock = self._collections_storage.load(collection_key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            field_tag_links = \
+                uow.notion_collection_field_tag_link_repository.find_all_for_collection(collection_key, field)
 
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
         collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
         schema = collection.get("schema")
 
         if field not in schema:
@@ -383,86 +416,71 @@ class CollectionsManager:
         if "options" not in field_schema:
             return []
 
-        tag_links_lock_by_tag_id = {
-            s.tag_id: s.ref_id
-            for s in self._collection_field_tags_storage.find_all(collection_key=Eq(collection_key), field=Eq(field))}
+        tag_links_lock_by_tag_id = {str(s.notion_id): s for s in field_tag_links}
+        return [tag_links_lock_by_tag_id[tl["id"]].with_extra(tl["value"])
+                if tl["id"] in tag_links_lock_by_tag_id
+                else NotionCollectionFieldTagLink.new_notion_collection_field_tag_link(
+                    key=self._build_compound_key(collection_key, NotionLockKey("just-found")),
+                    collection_key=collection_key,
+                    field=field,
+                    ref_id=BAD_REF_ID,
+                    notion_id=tl["id"],
+                    creation_time=self._time_provider.get_current_time())
+                .with_extra(tl["value"])
+                for tl in field_schema["options"]]
 
-        return [
-            _NotionCollectionTagLink(
-                collection_id=collection.id,
-                notion_id=NotionId.from_raw(option["id"]),
-                name=option["value"],
-                ref_id=tag_links_lock_by_tag_id.get(NotionId.from_raw(option["id"]), None))
-            for option in field_schema["options"]]
-
-    def save_collection_field_tag(
-            self, collection_key: NotionLockKey, key: NotionLockKey, ref_id: EntityId,
-            field: str, tag: str) -> _NotionCollectionTagLink:
-        """Create a new tag for a Collection's field which has tags support."""
-        collection_lock = self._collections_storage.load(collection_key)
-        tag_key = self._build_compound_key(collection_key, key)
-        try:
-            lock = self._collection_field_tags_storage.load(tag_key)
-        except StorageEntityNotFoundError as err:
-            raise NotionCollectionFieldTagNotFoundError(
-                f"Collection field tag with key {key} could not be found") from err
-
-        client = self._connection.get_notion_client()
+    def remove_collection_field_tag(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
+        """Hard remove the Notion entity associated with a local entity."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            tag_key = self._build_compound_key(collection_key, key)
+            try:
+                field_tag_link = uow.notion_collection_field_tag_link_repository.load(tag_key)
+            except NotionCollectionFieldTagNotFoundError as err:
+                raise NotionCollectionFieldTagNotFoundError(
+                    f"Collection field tag with key {key} could not be found") from err
+        client = self._client_builder.get_notion_client()
         collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
+
         schema = collection.get("schema")
 
-        if field not in schema:
-            raise Exception(f'Field "{field}" not in schema')
+        if field_tag_link.field not in schema:
+            raise Exception(f'Field "{field_tag_link.field}" not in schema')
 
-        field_schema = schema[field]
+        field_schema = schema[field_tag_link.field]
 
         if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
-            raise Exception(f'Field "{field}" is not appropriate for tags')
+            raise Exception(f'Field "{field_tag_link.field}" is not appropriate for tags')
 
         if "options" not in field_schema:
             field_schema["options"] = []
 
-        for option in field_schema["options"]:
-            if option["id"] == lock.tag_id:
-                option["value"] = tag
-                option["color"] = self._get_stable_color(tag_key)
-                tag_id = lock.tag_id
-                LOGGER.info(f'Found tag "{tag}" ({lock.tag_id}) for field "{field}"')
+        for option_idx, option in enumerate(field_schema["options"]):
+            if option["id"] == str(field_tag_link.notion_id):
+                del field_schema["options"][option_idx]
+                LOGGER.info(f'Found tag {field_tag_link.notion_id} for field "{field_tag_link.field}"')
                 break
         else:
-            raise NotionCollectionFieldTagNotFoundError(f'Could not find "{tag}" ({lock.tag_id})')
+            raise NotionCollectionFieldTagNotFoundError(f"Cannot find collection field tag with key {key}")
 
         collection.set("schema", schema)
 
-        new_lock = _CollectionFieldTagLockRow(
-            key=tag_key,
-            collection_key=collection_key,
-            tag_id=tag_id,
-            field=field,
-            ref_id=ref_id)
-
-        self._collection_field_tags_storage.update(new_lock)
-        LOGGER.info("Saved lock structure")
-
-        return _NotionCollectionTagLink(
-            notion_id=tag_id,
-            collection_id=collection.id,
-            name=tag,
-            ref_id=ref_id)
-
-    def load_all_saved_collection_field_tag_notion_ids(
-            self, collection_key: NotionLockKey, field: str) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids."""
-        return [r.tag_id for r
-                in self._collection_field_tags_storage.find_all(collection_key=Eq(collection_key), field=Eq(field))]
+        with self._storage_engine.get_unit_of_work() as uow:
+            uow.notion_collection_field_tag_link_repository.remove(tag_key)
 
     def drop_all_collection_field_tags(self, collection_key: NotionLockKey, field: str) -> None:
         """Hard remove all the Notion-side entities."""
-        collection_lock = self._collections_storage.load(collection_key)
-        client = self._connection.get_notion_client()
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            field_tag_links = \
+                uow.notion_collection_field_tag_link_repository.find_all_for_collection(collection_key, field)
+
+        client = self._client_builder.get_notion_client()
         collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
 
         schema = collection.get("schema")
 
@@ -478,81 +496,39 @@ class CollectionsManager:
 
         collection.set("schema", schema)
 
-    def quick_link_local_and_notion_collection_field_tag(
-            self, key: NotionLockKey, collection_key: NotionLockKey, field: str, ref_id: EntityId,
-            notion_id: NotionId) -> None:
-        """Link a local entity with the Notion one, useful in syncing processes."""
-        tag_key = self._build_compound_key(collection_key, key)
-        lock = self._collection_field_tags_storage.load_optional(tag_key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            for field_tag_link in field_tag_links:
+                uow.notion_collection_field_tag_link_repository.remove(field_tag_link.key)
 
-        new_lock = _CollectionFieldTagLockRow(
-            key=tag_key,
-            collection_key=collection_key,
-            tag_id=notion_id,
-            field=field,
-            ref_id=ref_id)
-
-        if lock is not None:
-            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
-            self._collection_field_tags_storage.update(new_lock)
-        else:
-            self._collection_field_tags_storage.create(new_lock)
-
-    def remove_collection_field_tag(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
-        """Hard remove the Notion entity associated with a local entity."""
-        tag_key = self._build_compound_key(collection_key, key)
-        collection_lock = self._collections_storage.load(collection_key)
-        try:
-            lock = self._collection_field_tags_storage.load(tag_key)
-        except StorageEntityNotFoundError as err:
-            raise NotionCollectionFieldTagNotFoundError(f"Cannot find collection field tag with key {key}") from err
-        client = self._connection.get_notion_client()
-        collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
-
-        schema = collection.get("schema")
-
-        if lock.field not in schema:
-            raise Exception(f'Field "{lock.field}" not in schema')
-
-        field_schema = schema[lock.field]
-
-        if field_schema["type"] != "select" and field_schema["type"] != "multi_select":
-            raise Exception(f'Field "{lock.field}" is not appropriate for tags')
-
-        if "options" not in field_schema:
-            field_schema["options"] = []
-
-        for option_idx, option in enumerate(field_schema["options"]):
-            if option["id"] == lock.tag_id:
-                del field_schema["options"][option_idx]
-                LOGGER.info(f'Found tag {lock.tag_id} for field "{lock.field}"')
-                break
-        else:
-            raise NotionCollectionFieldTagNotFoundError(f"Cannot find collection field tag with key {key}")
-
-        collection.set("schema", schema)
-
-        self._collection_field_tags_storage.remove(tag_key)
+    def load_all_saved_collection_field_tag_notion_ids(
+            self, collection_key: NotionLockKey, field: str) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            return [ftl.notion_id for ftl
+                    in uow.notion_collection_field_tag_link_repository.find_all_for_collection(collection_key, field)]
 
     def upsert_collection_item(
             self, collection_key: NotionLockKey, key: NotionLockKey, new_row: ItemType,
-            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> ItemType:
+            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> NotionCollectionItemLinkExtra[ItemType]:
         """Create a Notion entity."""
         if new_row.ref_id is None:
             raise Exception("Can only create over an entity which has a ref_id")
+        if new_row.ref_id == BAD_REF_ID:
+            raise Exception("Can only create over an entity which has a ref_id")
 
-        collection_lock = self._collections_storage.load(collection_key)
-        item_key = self._build_compound_key(collection_key, key)
-        lock = self._collection_items_storage.load_optional(item_key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            item_key = self._build_compound_key(collection_key, key)
+            item_link = uow.notion_collection_item_link_repository.load_optional(item_key)
 
-        client = self._connection.get_notion_client()
+        client = self._client_builder.get_notion_client()
         collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
 
         was_found = False
-        if lock:
-            notion_row = client.get_collection_row(collection, lock.row_id)
+        if item_link:
+            notion_row = client.get_collection_row(collection, item_link.notion_id)
             if notion_row.alive:
                 was_found = True
                 LOGGER.info(f"Entity already exists on Notion side with id={notion_row.id}")
@@ -563,133 +539,191 @@ class CollectionsManager:
 
         new_row = dataclasses.replace(new_row, notion_id=notion_row.id)
 
-        new_lock = _CollectionItemLockRow(
-            key=item_key,
-            collection_key=collection_key,
-            row_id=notion_row.id,
-            ref_id=EntityId.from_raw(new_row.ref_id))
-
-        if lock:
-            self._collection_items_storage.update(new_lock)
+        if item_link:
+            new_item_link = item_link.with_new_item(notion_row.id, self._time_provider.get_current_time())
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_item_link_repository.save(new_item_link)
         else:
-            self._collection_items_storage.create(new_lock)
+            new_item_link = \
+                NotionCollectionItemLink.new_notion_collection_item_link(
+                    key=item_key, collection_key=collection_key, ref_id=typing.cast(EntityId, new_row.ref_id),
+                    notion_id=notion_row.id, creation_time=self._time_provider.get_current_time())
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_item_link_repository.create(new_item_link)
         LOGGER.info("Saved local locks")
 
         copy_row_to_notion_row(client, new_row, notion_row)
         LOGGER.info(f"Created new entity with id {notion_row.id}")
 
-        return new_row
+        return new_item_link.with_extra(new_row)
 
     def quick_link_local_and_notion_entries_for_collection_item(
-            self, key: NotionLockKey, collection_key: NotionLockKey, ref_id: EntityId, notion_id: NotionId) -> None:
+            self, key: NotionLockKey, collection_key: NotionLockKey, ref_id: EntityId,
+            notion_id: NotionId) -> NotionCollectionItemLink:
         """Link a local entity with the Notion one, useful in syncing processes."""
         item_key = self._build_compound_key(collection_key, key)
-        lock = self._collection_items_storage.load_optional(item_key)
-        new_lock = _CollectionItemLockRow(
-            key=item_key,
-            collection_key=collection_key,
-            row_id=notion_id,
-            ref_id=ref_id)
-        if lock is not None:
-            LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
-            self._collection_items_storage.update(new_lock)
-        else:
-            self._collection_items_storage.create(new_lock)
+
+        with self._storage_engine.get_unit_of_work() as uow:
+            item_link = uow.notion_collection_item_link_repository.load_optional(item_key)
+
+            if item_link is not None:
+                new_item_link = item_link.with_new_item(notion_id, self._time_provider.get_current_time())
+                LOGGER.warning(f"Entity already exists on Notion side for entity with id={ref_id}")
+                uow.notion_collection_item_link_repository.save(new_item_link)
+            else:
+                new_item_link = NotionCollectionItemLink.new_notion_collection_item_link(
+                    key=item_key, collection_key=collection_key, ref_id=ref_id, notion_id=notion_id,
+                    creation_time=self._time_provider.get_current_time())
+                uow.notion_collection_item_link_repository.create(new_item_link)
+
+        return new_item_link
 
     def save_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemType,
-            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> ItemType:
+            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> NotionCollectionItemLinkExtra[ItemType]:
         """Update the Notion-side entity with new data."""
-        if row.ref_id is None:
+        if row.ref_id is None or row.ref_id == BAD_REF_ID:
             raise Exception("Can only save over an entity which has a ref_id")
 
-        item_key = self._build_compound_key(collection_key, key)
-        collection_lock = self._collections_storage.load(collection_key)
-        client = self._connection.get_notion_client()
-        collection = \
-            client.get_collection(
-                collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            item_key = self._build_compound_key(collection_key, key)
+            try:
+                item_link = uow.notion_collection_item_link_repository.load(item_key)
+            except NotionCollectionItemLinkNotFoundError as err:
+                raise NotionCollectionFieldTagNotFoundError(
+                    f"Collection field tag with key {key} could not be found") from err
+
+        client = self._client_builder.get_notion_client()
+        collection = client.get_collection(
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
+
         try:
-            lock = self._collection_items_storage.load(item_key)
-            notion_row = client.get_collection_row(collection, lock.row_id)
-        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
+            notion_row = client.get_collection_row(collection, item_link.notion_id)
+        except NotionCollectionRowNotFound as err:
             raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
 
         copy_row_to_notion_row(client, row, notion_row)
 
-        return row
+        with self._storage_engine.get_unit_of_work() as uow:
+            new_item_link = item_link.mark_update(self._time_provider.get_current_time())
+            uow.notion_collection_item_link_repository.save(new_item_link)
+
+        return new_item_link.with_extra(row)
 
     def load_all_collection_items(
             self, collection_key: NotionLockKey,
-            copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> Iterable[ItemType]:
+            copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> \
+            Iterable[NotionCollectionItemLinkExtra[ItemType]]:
         """Retrieve all the Notion-side entitys."""
-        collection_lock = self._collections_storage.load(collection_key)
-        client = self._connection.get_notion_client()
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            item_links = uow.notion_collection_item_link_repository.find_all_for_collection(collection_key)
+        client = self._client_builder.get_notion_client()
         collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
-        all_notion_rows = client.get_collection_all_rows(collection, collection_lock.view_ids["database_view_id"])
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
+        all_notion_rows = \
+            client.get_collection_all_rows(collection, collection_link.view_notion_ids["database_view_id"])
+        all_rows = [copy_notion_row_to_row(nr) for nr in all_notion_rows]
+        all_item_links_by_notion_id = {il.notion_id: il for il in item_links}
 
-        return [copy_notion_row_to_row(nr) for nr in all_notion_rows]
+        return [(all_item_links_by_notion_id[r.notion_id].with_extra(r)
+                 if r.notion_id in all_item_links_by_notion_id
+                 else NotionCollectionItemLink
+                 .new_notion_collection_item_link(
+                     key=self._build_compound_key(collection_key, NotionLockKey("just-found")),
+                     collection_key=collection_key,
+                     ref_id=BAD_REF_ID,
+                     notion_id=r.notion_id,
+                     creation_time=self._time_provider.get_current_time())
+                 .with_extra(r))
+                for r in all_rows]
 
     def load_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey,
-            copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> ItemType:
+            copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> NotionCollectionItemLinkExtra[ItemType]:
         """Retrieve the Notion-side entity associated with a particular entity."""
-        item_key = self._build_compound_key(collection_key, key)
-        collection_lock = self._collections_storage.load(collection_key)
-        client = self._connection.get_notion_client()
-        collection = \
-            client.get_collection(
-                collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            item_key = self._build_compound_key(collection_key, key)
+            try:
+                item_link = uow.notion_collection_item_link_repository.load(item_key)
+            except NotionCollectionItemLinkNotFoundError as err:
+                raise NotionCollectionFieldTagNotFoundError(
+                    f"Collection field tag with key {key} could not be found") from err
+
+        client = self._client_builder.get_notion_client()
+        collection = client.get_collection(
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
 
         try:
-            lock = self._collection_items_storage.load(item_key)
-            notion_row = client.get_collection_row(collection, lock.row_id)
-        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
+            notion_row = client.get_collection_row(collection, item_link.notion_id)
+        except NotionCollectionRowNotFound as err:
             raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
-        return copy_notion_row_to_row(notion_row)
 
-    def load_all_collection_items_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids."""
-        return [r.row_id for r
-                in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
+        return item_link.with_extra(copy_notion_row_to_row(notion_row))
 
-    def load_all_collection_items_saved_ref_ids(self, collection_key: NotionLockKey) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids."""
-        return [r.ref_id for r
-                in self._collection_items_storage.find_all(collection_key=Eq(collection_key))]
+    def remove_collection_item(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
+        """Hard remove the Notion entity associated with a local entity."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            item_key = self._build_compound_key(collection_key, key)
+            try:
+                item_link = uow.notion_collection_item_link_repository.load(item_key)
+            except NotionCollectionItemLinkNotFoundError as err:
+                raise NotionCollectionItemNotFoundError(
+                    f"Collection field tag with key {key} could not be found") from err
+
+        client = self._client_builder.get_notion_client()
+        collection = client.get_collection(
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
+
+        try:
+            notion_row = client.get_collection_row(collection, item_link.notion_id)
+            notion_row.remove()
+        except NotionCollectionRowNotFound as err:
+            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
+
+        with self._storage_engine.get_unit_of_work() as uow:
+            uow.notion_collection_item_link_repository.remove(key)
 
     def drop_all_collection_items(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""
-        collection_lock = self._collections_storage.load(collection_key)
-        client = self._connection.get_notion_client()
-        collection = client.get_collection(
-            collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+        with self._storage_engine.get_unit_of_work() as uow:
+            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            item_links = \
+                uow.notion_collection_item_link_repository.find_all_for_collection(collection_key)
 
-        all_notion_rows = client.get_collection_all_rows(collection, collection_lock.view_ids["database_view_id"])
+        client = self._client_builder.get_notion_client()
+        collection = client.get_collection(
+            collection_link.page_notion_id, collection_link.collection_notion_id,
+            collection_link.view_notion_ids.values())
+
+        all_notion_rows = \
+            client.get_collection_all_rows(collection, collection_link.view_notion_ids["database_view_id"])
 
         for notion_row in all_notion_rows:
             notion_row.remove()
 
-        for item in self._collection_items_storage.find_all(collection_key=Eq(collection_key)):
-            self._collection_items_storage.remove(item.key)
+        with self._storage_engine.get_unit_of_work() as uow:
+            for item_link in item_links:
+                uow.notion_collection_item_link_repository.remove(item_link.key)
 
-    def remove_collection_item(self, key: NotionLockKey, collection_key: NotionLockKey) -> None:
-        """Hard remove the Notion entity associated with a local entity."""
-        item_key = self._build_compound_key(collection_key, key)
-        client = self._connection.get_notion_client()
-        collection_lock = self._collections_storage.load(collection_key)
-        collection = \
-            client.get_collection(
-                collection_lock.page_id, collection_lock.collection_id, collection_lock.view_ids.values())
+    def load_all_collection_items_saved_notion_ids(self, collection_key: NotionLockKey) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            return [r.notion_id for r
+                    in uow.notion_collection_item_link_repository.find_all_for_collection(collection_key)]
 
-        try:
-            lock = self._collection_items_storage.load(item_key)
-            notion_row = client.get_collection_row(collection, lock.row_id)
-            notion_row.remove()
-            self._collection_items_storage.remove(item_key)
-        except (StorageEntityNotFoundError, NotionCollectionRowNotFound) as err:
-            raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
+    def load_all_collection_items_saved_ref_ids(self, collection_key: NotionLockKey) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids."""
+        with self._storage_engine.get_unit_of_work() as uow:
+            return [r.ref_id for r
+                    in uow.notion_collection_item_link_repository.find_all_for_collection(collection_key)]
 
     @staticmethod
     def _merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
@@ -733,100 +767,6 @@ class CollectionsManager:
                 combined_schema[schema_item_name] = schema_item
 
         return combined_schema
-
-    class _CollectionsStorageProtocol:
-        @staticmethod
-        def storage_schema() -> JSONDictType:
-            """The schema for the data."""
-            return {
-                "page_id": {"type": "string"},
-                "collection_id": {"type": "string"},
-                "view_ids": {
-                    "type": "object",
-                    "additionalProperties": {"type": "string"}
-                }
-            }
-
-        @staticmethod
-        def storage_to_live(storage_form: JSONDictType) -> _CollectionLockRow:
-            """Transform the data reconstructed from basic storage into something useful for the live system."""
-            return _CollectionLockRow(
-                key=NotionLockKey(typing.cast(str, storage_form["key"])),
-                page_id=NotionId.from_raw(typing.cast(str, storage_form["page_id"])),
-                collection_id=NotionId.from_raw(cast(str, storage_form["collection_id"])),
-                view_ids={k: NotionId.from_raw(v) for (k, v) in cast(Dict[str, str], storage_form["view_ids"]).items()})
-
-        @staticmethod
-        def live_to_storage(live_form: _CollectionLockRow) -> JSONDictType:
-            """Transform the live system data to something suitable for basic storage."""
-            return {
-                "page_id": str(live_form.page_id),
-                "collection_id": str(live_form.collection_id),
-                "view_ids": {k: str(v) for (k, v) in live_form.view_ids.items()},
-            }
-
-    class _CollectionFieldTagsStorageProtocol:
-        @staticmethod
-        def storage_schema() -> JSONDictType:
-            """The schema for the data."""
-            return {
-                "key": {"type": "string"},
-                "collection_key": {"type": "string"},
-                "ref_id": {"type": "string"},
-                "field": {"type": "string"},
-                "tag_id": {"type": "string"}
-            }
-
-        @staticmethod
-        def storage_to_live(storage_form: JSONDictType) -> _CollectionFieldTagLockRow:
-            """Transform the data reconstructed from basic storage into something useful for the live system."""
-            return _CollectionFieldTagLockRow(
-                key=NotionLockKey(typing.cast(str, storage_form["key"])),
-                collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
-                ref_id=EntityId.from_raw(typing.cast(str, storage_form["ref_id"])),
-                field=typing.cast(str, storage_form["field"]),
-                tag_id=NotionId.from_raw(typing.cast(str, storage_form["tag_id"])))
-
-        @staticmethod
-        def live_to_storage(live_form: _CollectionFieldTagLockRow) -> JSONDictType:
-            """Transform the live system data to something suitable for basic storage."""
-            return {
-                "collection_key": live_form.collection_key,
-                "ref_id": str(live_form.ref_id),
-                "tag_id": str(live_form.tag_id),
-                "field": live_form.field
-            }
-
-    class _CollectionItemsStorageProtocol:
-        @staticmethod
-        def storage_schema() -> JSONDictType:
-            """The schema for the data."""
-            return {
-                "key": {"type": "string"},
-                "collection_key": {"type": "string"},
-                "ref_id": {"type": "string"},
-                "row_id": {"type": "string"}
-            }
-
-        @staticmethod
-        def storage_to_live(storage_form: JSONDictType) -> _CollectionItemLockRow:
-            """Transform the data reconstructed from basic storage into something useful for the live system."""
-            if not storage_form["ref_id"]:
-                LOGGER.error(storage_form)
-            return _CollectionItemLockRow(
-                key=NotionLockKey(typing.cast(str, storage_form["key"])),
-                collection_key=NotionLockKey(typing.cast(str, storage_form["collection_key"])),
-                ref_id=EntityId.from_raw(typing.cast(str, storage_form["ref_id"])),
-                row_id=NotionId.from_raw(typing.cast(str, storage_form["row_id"])))
-
-        @staticmethod
-        def live_to_storage(live_form: _CollectionItemLockRow) -> JSONDictType:
-            """Transform the live system data to something suitable for basic storage."""
-            return {
-                "collection_key": live_form.collection_key,
-                "ref_id": str(live_form.ref_id),
-                "row_id": str(live_form.row_id)
-            }
 
     @staticmethod
     def _get_stable_color(option_id: str) -> str:

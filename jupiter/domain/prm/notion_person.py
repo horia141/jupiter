@@ -27,6 +27,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
     @dataclass(frozen=True)
     class InverseExtraInfo:
         """Inverse info."""
+        prm_database_ref_id: EntityId
         project_ref_id: EntityId
 
     name: str
@@ -46,7 +47,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
         """Construct a new Notion row from a given aggregate root."""
         return NotionPerson(
             notion_id=BAD_NOTION_ID,
-            ref_id=str(aggregate_root.ref_id),
+            ref_id=aggregate_root.ref_id,
             last_edited_time=aggregate_root.last_modified_time,
             name=str(aggregate_root.name),
             archived=aggregate_root.archived,
@@ -95,6 +96,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseExtraInfo']):
         person_birthday = PersonBirthday.from_raw(self.birthday) if self.birthday else None
 
         return Person.new_person(
+            prm_database_ref_id=extra_info.prm_database_ref_id,
             name=person_name,
             relationship=person_relationship,
             catch_up_params=person_catch_up_params,

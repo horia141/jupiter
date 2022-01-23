@@ -4,7 +4,7 @@ from typing import Final, Optional, List
 
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.use_case import UseCase
 
 
@@ -23,9 +23,9 @@ class ProjectFindUseCase(UseCase['ProjectFindUseCase.Args', 'ProjectFindUseCase.
 
         projects: List[Project]
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
-    def __init__(self, storage_engine: StorageEngine) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
 

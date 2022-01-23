@@ -5,7 +5,7 @@ from typing import Final
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListNotFoundError
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -17,11 +17,11 @@ class SmartListArchiveUseCase(UseCase[SmartListKey, None]):
     """The command for archiving a smart list."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

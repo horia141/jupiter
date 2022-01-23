@@ -32,7 +32,7 @@ from jupiter.domain.recurring_tasks.service.sync_service import RecurringTaskSyn
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.service.sync_service import SmartListSyncService
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
@@ -72,7 +72,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
 
     _global_properties: Final[GlobalProperties]
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _workspace_notion_manager: Final[WorkspaceNotionManager]
     _vacation_notion_manager: Final[VacationNotionManager]
     _project_notion_manager: Final[ProjectNotionManager]
@@ -86,7 +86,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
     def __init__(
             self,
             global_properties: GlobalProperties, time_provider: TimeProvider,
-            storage_engine: StorageEngine, workspace_notion_manager: WorkspaceNotionManager,
+            storage_engine: DomainStorageEngine, workspace_notion_manager: WorkspaceNotionManager,
             vacation_notion_manager: VacationNotionManager, project_notion_manager: ProjectNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager,
@@ -112,7 +112,10 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
             frozenset(args.filter_recurring_task_ref_ids) if args.filter_recurring_task_ref_ids else None
         sync_targets = frozenset(args.sync_targets)
 
-        notion_workspace = self._workspace_notion_manager.load_workspace()
+        with self._storage_engine.get_unit_of_work() as uow:
+            workspace = uow.workspace_repository.load()
+
+        notion_workspace = self._workspace_notion_manager.load_workspace(workspace.ref_id)
 
         if SyncTarget.WORKSPACE in args.sync_targets:
             if SyncTarget.STRUCTURE in args.sync_targets:
@@ -133,13 +136,16 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
 
             LOGGER.info("Syncing the workspace")
             workspace_sync_service = WorkspaceSyncService(self._storage_engine, self._workspace_notion_manager)
-            workspace_sync_service.sync(right_now=self._time_provider.get_current_time(), sync_prefer=args.sync_prefer)
+            workspace = \
+                workspace_sync_service.sync(
+                    right_now=self._time_provider.get_current_time(), sync_prefer=args.sync_prefer)
 
         if SyncTarget.VACATIONS in sync_targets:
             LOGGER.info("Syncing the vacations")
             vacation_sync_service = VacationSyncService(self._storage_engine, self._vacation_notion_manager)
-            _ = vacation_sync_service.sync(
-                args.drop_all_notion, args.sync_even_if_not_modified, args.filter_vacation_ref_ids, args.sync_prefer)
+            vacation_sync_service.sync(
+                workspace, args.drop_all_notion, args.sync_even_if_not_modified, args.filter_vacation_ref_ids,
+                args.sync_prefer)
 
         with self._storage_engine.get_unit_of_work() as uow:
             all_smart_lists = uow.smart_list_repository.find_all(allow_archived=True)
@@ -291,7 +297,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                             timeline=schedule.timeline,
                             the_type=recurring_task.the_type,
                             actionable_date=schedule.actionable_date,
-                            due_time=schedule.due_time,
+                            due_date=schedule.due_time,
                             eisen=recurring_task.gen_params.eisen,
                             difficulty=recurring_task.gen_params.difficulty,
                             source=EventSource.NOTION,
@@ -388,6 +394,9 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 if args.filter_metric_keys is not None and metric.key not in args.filter_metric_keys:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of metric filtering")
                     continue
+                if metric.last_modified_time < self._time_provider.get_current_time():
+                    LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
+                    continue
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
                 collection_params = typing.cast(RecurringTaskGenParams, metric.collection_params)
                 schedule = schedules.get_schedule(
@@ -439,6 +448,9 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 if args.filter_person_ref_ids is not None and person.ref_id not in args.filter_person_ref_ids:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
                     continue
+                if person.last_modified_time < self._time_provider.get_current_time():
+                    LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
+                    continue
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
                 if person.archived:
                     if not inbox_task.archived:
@@ -476,6 +488,9 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                 person = all_persons_by_ref_id[typing.cast(EntityId, inbox_task.person_ref_id)]
                 if args.filter_person_ref_ids is not None and person.ref_id not in args.filter_person_ref_ids:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
+                    continue
+                if person.last_modified_time < self._time_provider.get_current_time():
+                    LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
                 if person.archived:

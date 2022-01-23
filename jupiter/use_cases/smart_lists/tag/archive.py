@@ -4,7 +4,7 @@ from typing import Final
 
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListTagNotFoundError
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
@@ -18,11 +18,11 @@ class SmartListTagArchiveUseCase(UseCase[EntityId, None]):
     """The command for archiving a smart list tag."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
         self._time_provider = time_provider

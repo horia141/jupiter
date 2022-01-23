@@ -10,7 +10,7 @@ from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project import Project
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 
@@ -41,9 +41,9 @@ class MetricFindUseCase(UseCase['MetricFindUseCase.Args', 'MetricFindUseCase.Res
 
         metrics: List['MetricFindUseCase.ResponseEntry']
 
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
 
-    def __init__(self, storage_engine: StorageEngine) -> None:
+    def __init__(self, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
 

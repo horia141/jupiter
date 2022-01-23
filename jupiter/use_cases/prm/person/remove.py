@@ -5,7 +5,7 @@ from typing import Final
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.prm.service.remove_service import PersonRemoveService
-from jupiter.domain.storage_engine import StorageEngine
+from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCase
 from jupiter.utils.time_provider import TimeProvider
@@ -17,12 +17,12 @@ class PersonRemoveUseCase(UseCase[EntityId, None]):
     """The command for removing a person."""
 
     _time_provider: Final[TimeProvider]
-    _storage_engine: Final[StorageEngine]
+    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: StorageEngine,
+            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""

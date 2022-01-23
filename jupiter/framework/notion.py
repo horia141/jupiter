@@ -19,7 +19,7 @@ class BaseNotionRow:
     """A basic item type, which must contain a Notion id and an local id."""
 
     notion_id: NotionId
-    ref_id: Optional[str]
+    ref_id: Optional[EntityId]
     archived: bool
     last_edited_time: Timestamp
 
