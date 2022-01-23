@@ -39,12 +39,21 @@ In order for things to properly work out however, you also need to run
 that the various Notion pages know about the new or removed big plan. It is an idempotent
 operation, useful to use in case of updates too.
 
+Big plans have an actionable date, much like _inbox tasks_. Conceptually, this is the the
+time from which you can start working on a particular big plan.
+
 Big plans also have a deadline. It's optional, but it's strongly recommended you add one
 as a goal setting rule.
 
+Any tasks that don't have their own actionable or due dates will inherit them from the big
+plan, if it has any.
+
+Between them, the actionable and due dates allow you to schedule the big plans in time in
+a more organized manner. There is a special view which allows for this.
+
 In Notion a big plan might look like this:
 
-![Big plan image](../assets/concepts-big-plan.png)
+![Big Plan Image](../assets/concepts-big-plan.png)
 
 Notice there is a link to the project's Inbox for the tasks associated with that plan. You
 can view the completion status here.
@@ -60,5 +69,9 @@ collection of big plans. They are created here in the "Accepted" state.
 The big plan page looks like a Kanban board, with the various states of a big plan as
 columns.
 
-![Big plans image](../assets/concepts-big-plan-page.png)
+![Big Plans Kanban](../assets/concepts-big-plan-page.png)
+
+It also has a useful _timeline_ view, which is a Gnatt chart of sorts.
+
+![Big Plans Timeline](../assets/concepts-big-plans-timeline.png)
 

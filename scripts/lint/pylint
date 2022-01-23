@@ -11,7 +11,7 @@ ignore=CVS
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=.*migrations.*
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -571,7 +571,7 @@ max-public-methods=64
 max-returns=16
 
 # Maximum number of statements in function / method body.
-max-statements=200
+max-statements=256
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0

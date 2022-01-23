@@ -21,10 +21,10 @@ In order to do this, you'll need to:
 1. In the headers field there will be a `cookie` set with the value `token`. That's your token for accessing the API.
    Write it down somewhere.
 
-You can then set the token via the `workspace-set-token` command like so:
+You can then set the token via the `notion-connection-update-token` command like so:
 
 ```bash
-$ jupiter workspace-update --notion-token THE_TOKEN_YOU_FOUND_ABOVE
+$ jupiter notion-connection-update-token --token THE_TOKEN_YOU_FOUND_ABOVE
 $ jupiter sync  # It should just work
 ```
 

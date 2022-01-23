@@ -16,7 +16,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'metric',
         sa.Column('ref_id', sa.Integer, primary_key=True, autoincrement=True),
@@ -30,5 +30,5 @@ def upgrade():
         sa.Column('metric_unit', sa.String(), nullable=True))
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('metric')

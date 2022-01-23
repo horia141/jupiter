@@ -16,7 +16,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'person',
         sa.Column('ref_id', sa.Integer, primary_key=True, autoincrement=True),
@@ -45,6 +45,6 @@ def upgrade():
         sa.Column('data', sa.JSON, nullable=True))
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('person')
     op.drop_table('person_event')

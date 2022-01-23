@@ -16,9 +16,15 @@ While Notion acts as the main user interface, a CLI app takes care of large scal
 as backup, recurring tasks generation, Notion environment cleanup, etc. It also mirrors the
 functionality available through Notion, for the console heads among us.
 
-Here's a picture from it:
+Here's a picture from the "inbox" view:
 
 ![Inbox image](assets/concepts-inbox.png)
+
+![Inbox Image With Eisen](assets/concepts-inbox-tasks-with-eisen.png)
+
+And here's one for the "big plans timeline" view:
+
+![Big Plans Timeline](assets/concepts-big-plans-timeline.png)
 
 ## Further Reading
 

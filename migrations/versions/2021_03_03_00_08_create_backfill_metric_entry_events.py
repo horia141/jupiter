@@ -17,7 +17,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.execute("""
     insert into metric_entry_event (owner_reF_id, timestamp, session_index, name, data)
     select 
@@ -41,5 +41,5 @@ def upgrade():
     """)
 
 
-def downgrade():
+def downgrade() -> None:
     pass

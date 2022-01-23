@@ -18,6 +18,6 @@ cloc \
   requirements-dev.txt \
   scripts/ \
   migrations/ \
-  src/
+  jupiter/
 
 libyear -r requirements.txt

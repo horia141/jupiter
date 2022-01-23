@@ -17,7 +17,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'metric_event',
         sa.Column('owner_ref_id', sa.Integer, sa.ForeignKey('metric.ref_id'), primary_key=True),
@@ -27,5 +27,5 @@ def upgrade():
         sa.Column('data', sa.JSON, nullable=True))
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('metric_history')
