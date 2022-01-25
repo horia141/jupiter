@@ -33,7 +33,7 @@ def upsert_events(connection: Connection, event_table: Table, aggreggate_root: A
         connection.execute(
             sqliteInsert(event_table)
             .values(
-                owner_ref_id=int(str(aggreggate_root.ref_id)),
+                owner_ref_id=aggreggate_root.ref_id.as_int(),
                 timestamp=event.timestamp.to_db(),
                 session_index=event_idx,
                 name=str(event.__class__.__name__),
@@ -47,4 +47,4 @@ def upsert_events(connection: Connection, event_table: Table, aggreggate_root: A
 def remove_events(connection: Connection, event_table: Table, aggregate_root_ref_id: EntityId) -> None:
     """Remove all the events for a given entity in an events table."""
     connection.execute(
-        delete(event_table).where(event_table.c.owner_ref_id == aggregate_root_ref_id))
+        delete(event_table).where(event_table.c.owner_ref_id == aggregate_root_ref_id.as_int()))
