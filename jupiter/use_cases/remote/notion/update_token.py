@@ -1,32 +1,21 @@
 """Usecase for updating a Notion connection token."""
 from dataclasses import dataclass
-from typing import Final
 
 from jupiter.domain.remote.notion.token import NotionToken
-from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
-from jupiter.utils.time_provider import TimeProvider
+from jupiter.framework.use_case import UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 
 
-class NotionConnectionUpdateTokenUseCase(UseCase['NotionConnectionUpdateTokenUseCase.Args', None]):
+class NotionConnectionUpdateTokenUseCase(AppMutationUseCase['NotionConnectionUpdateTokenUseCase.Args', None]):
     """UseCase for updating a workspace."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         token: NotionToken
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
-
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()

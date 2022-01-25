@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, cast
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.use_cases.metrics.find import MetricFindUseCase
@@ -75,7 +75,7 @@ class MetricShow(command.Command):
                       f" val={metric_entry.value}")
 
             if metric_response_entry.metric_collection_inbox_tasks:
-                print(f"  Collection Tasks:")
+                print("  Collection Tasks:")
                 for inbox_task in sorted(
                         metric_response_entry.metric_collection_inbox_tasks,
                         key=lambda it: cast(ADate, it.due_date)):

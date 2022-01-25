@@ -93,11 +93,11 @@ class MetricSyncService:
 
                 self._metric_notion_manager.link_local_and_notion_entries_for_metric(
                     metric.ref_id, new_metric_entry.ref_id, notion_metric_entry.notion_id)
-                LOGGER.info(f"Linked the new metric entry with local entries")
+                LOGGER.info("Linked the new metric entry with local entries")
 
                 notion_metric_entry = notion_metric_entry.join_with_aggregate_root(new_metric_entry, None)
                 self._metric_notion_manager.save_metric_entry(metric.ref_id, notion_metric_entry)
-                LOGGER.info(f"Applied changes on Notion side too")
+                LOGGER.info("Applied changes on Notion side too")
 
                 all_metric_entries_set[new_metric_entry.ref_id] = new_metric_entry
                 notion_metric_entries_set[new_metric_entry.ref_id] = notion_metric_entry

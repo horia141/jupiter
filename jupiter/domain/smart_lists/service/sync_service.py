@@ -85,11 +85,11 @@ class SmartListSyncService:
 
                 self._smart_list_notion_manager.link_local_and_notion_tag_for_smart_list(
                     smart_list.ref_id, new_smart_list_tag.ref_id, notion_smart_list_tag.notion_id)
-                LOGGER.info(f"Linked the new smart list tag with local entries")
+                LOGGER.info("Linked the new smart list tag with local entries")
 
                 notion_smart_list_tag = notion_smart_list_tag.join_with_aggregate_root(new_smart_list_tag, None)
                 self._smart_list_notion_manager.save_smart_list_tag(smart_list.ref_id, notion_smart_list_tag)
-                LOGGER.info(f"Applied changes on Notion side too")
+                LOGGER.info("Applied changes on Notion side too")
 
                 notion_smart_list_tags_set[new_smart_list_tag.ref_id] = notion_smart_list_tag
                 all_smart_list_tags.append(new_smart_list_tag)
@@ -183,12 +183,12 @@ class SmartListSyncService:
 
                 self._smart_list_notion_manager.link_local_and_notion_entries_for_smart_list(
                     smart_list.ref_id, new_smart_list_item.ref_id, notion_smart_list_item.notion_id)
-                LOGGER.info(f"Linked the new smart list item with local entries")
+                LOGGER.info("Linked the new smart list item with local entries")
 
                 notion_smart_list_item = notion_smart_list_item.join_with_aggregate_root(
                     new_smart_list_item, NotionSmartListItem.DirectExtraInfo(all_smart_list_tags_set))
                 self._smart_list_notion_manager.save_smart_list_item(smart_list.ref_id, notion_smart_list_item)
-                LOGGER.info(f"Applied changes on Notion side too")
+                LOGGER.info("Applied changes on Notion side too")
 
                 all_smart_list_items_set[new_smart_list_item.ref_id] = new_smart_list_item
                 all_notion_smart_list_items_set[new_smart_list_item.ref_id] = \

@@ -2,7 +2,7 @@
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId

@@ -25,18 +25,19 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
+class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
     """The command for updating a person."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         ref_id: EntityId
         name: UpdateAction[PersonName]
@@ -52,23 +53,24 @@ class PersonUpdateUseCase(UseCase['PersonUpdateUseCase.Args', None]):
         birthday: UpdateAction[Optional[PersonBirthday]]
 
     _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            global_properties: GlobalProperties,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._global_properties = global_properties
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._prm_notion_manager = prm_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             person = uow.person_repository.load_by_id(args.ref_id)

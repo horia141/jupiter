@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.update_action import UpdateAction

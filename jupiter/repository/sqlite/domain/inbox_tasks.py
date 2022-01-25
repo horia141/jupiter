@@ -75,7 +75,7 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
                 inbox_task_collection.archived_time.to_db() if inbox_task_collection.archived_time else None,
                 project_ref_id=inbox_task_collection.project_ref_id.as_int()))
         if result.rowcount == 0:
-            raise InboxTaskCollectionNotFoundError(f"The inbox task collection does not exist")
+            raise InboxTaskCollectionNotFoundError("The inbox task collection does not exist")
         upsert_events(self._connection, self._inbox_task_collection_event_table, inbox_task_collection)
         return inbox_task_collection
 

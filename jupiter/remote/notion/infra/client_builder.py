@@ -45,5 +45,5 @@ class NotionClientBuilder:
             return self._cached_client
         except requests.exceptions.HTTPError as error:
             if str(error).find("Unauthorized for url"):
-                raise OldTokenForNotionConnectionError()
+                raise OldTokenForNotionConnectionError() from error
             raise

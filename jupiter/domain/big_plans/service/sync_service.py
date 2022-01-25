@@ -76,7 +76,7 @@ class BigPlanSyncService:
 
                 self._big_plan_notion_manager.link_local_and_notion_big_plan(
                     big_plan_collection.ref_id, new_big_plan.ref_id, notion_big_plan.notion_id)
-                LOGGER.info(f"Linked the new big plan with local entries")
+                LOGGER.info("Linked the new big plan with local entries")
 
                 notion_big_plan = notion_big_plan.join_with_aggregate_root(new_big_plan, None)
                 self._big_plan_notion_manager.save_big_plan(

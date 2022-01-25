@@ -47,8 +47,8 @@ class PersonBirthday(Value):
             month = PersonBirthday._MONTH_NAME_INDEX[parts[1].capitalize()]
         except ValueError as err:
             raise InputValidationError(f"Invalid format for day part of birthday '{birthday_str}'") from err
-        except KeyError:
-            raise InputValidationError(f"Invalid format for month part of birthday '{birthday_str}'")
+        except KeyError as err:
+            raise InputValidationError(f"Invalid format for month part of birthday '{birthday_str}'") from err
 
         return PersonBirthday(day.as_int(), month)
 

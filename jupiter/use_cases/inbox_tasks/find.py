@@ -1,6 +1,6 @@
 """The command for finding a inbox task."""
 from dataclasses import dataclass
-from typing import Optional, Iterable, List, Final
+from typing import Optional, Iterable, List
 
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
@@ -9,22 +9,22 @@ from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.prm.person import Person
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
-class InboxTaskFindUseCase(UseCase['InboxTaskFindUseCase.Args', 'InboxTaskFindUseCase.Result']):
+class InboxTaskFindUseCase(AppReadonlyUseCase['InboxTaskFindUseCase.Args', 'InboxTaskFindUseCase.Result']):
     """The command for finding a inbox task."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         filter_ref_ids: Optional[Iterable[EntityId]]
         filter_project_keys: Optional[Iterable[ProjectKey]]
         filter_sources: Optional[Iterable[InboxTaskSource]]
 
-    @dataclass()
+    @dataclass(frozen=True)
     class ResultEntry:
         """A single entry in the load all inbox tasks response."""
         inbox_task: InboxTask
@@ -33,18 +33,12 @@ class InboxTaskFindUseCase(UseCase['InboxTaskFindUseCase.Args', 'InboxTaskFindUs
         metric: Optional[Metric]
         person: Optional[Person]
 
-    @dataclass()
-    class Result:
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
         """Result."""
         inbox_tasks: Iterable['InboxTaskFindUseCase.ResultEntry']
 
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(self, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._storage_engine = storage_engine
-
-    def execute(self, args: Args) -> 'Result':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             filter_project_ref_ids: Optional[List[EntityId]] = None

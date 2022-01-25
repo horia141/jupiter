@@ -74,7 +74,7 @@ class SqliteVacationRepository(VacationRepository):
                 start_date=vacation.start_date.to_db(),
                 end_date=vacation.end_date.to_db()))
         if result.rowcount == 0:
-            raise VacationNotFoundError(f"The vacation does not exist")
+            raise VacationNotFoundError("The vacation does not exist")
         upsert_events(self._connection, self._vacation_event_table, vacation)
         return vacation
 

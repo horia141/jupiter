@@ -1,39 +1,33 @@
 """The command for finding the PRM database."""
 from dataclasses import dataclass
-from typing import List, Optional, Final
+from typing import List, Optional
 
 from jupiter.domain.prm.person import Person
 from jupiter.domain.prm.prm_database import PrmDatabase
 from jupiter.domain.projects.project import Project
-from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppUseCaseContext, AppReadonlyUseCase
 
 
-class PrmDatabaseFindUseCase(UseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabaseFindUseCase.Response']):
+class PrmDatabaseFindUseCase(AppReadonlyUseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabaseFindUseCase.Result']):
     """The command for finding the PRM Database."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         allow_archived: bool
         filter_person_ref_ids: Optional[List[EntityId]]
 
-    @dataclass()
-    class Response:
-        """Response."""
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
+        """Result."""
 
         prm_database: PrmDatabase
         catch_up_project: Project
         persons: List[Person]
 
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(self, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._storage_engine = storage_engine
-
-    def execute(self, args: Args) -> 'PrmDatabaseFindUseCase.Response':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'PrmDatabaseFindUseCase.Result':
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             prm_database = uow.prm_database_repository.load()
@@ -41,7 +35,7 @@ class PrmDatabaseFindUseCase(UseCase['PrmDatabaseFindUseCase.Args', 'PrmDatabase
             persons = uow.person_repository.find_all(
                 allow_archived=args.allow_archived, filter_ref_ids=args.filter_person_ref_ids)
 
-        return self.Response(
+        return self.Result(
             prm_database=prm_database,
             catch_up_project=catch_up_project,
             persons=persons)

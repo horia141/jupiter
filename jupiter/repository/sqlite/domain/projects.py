@@ -75,7 +75,7 @@ class SqliteProjectRepository(ProjectRepository):
                 the_key=str(project.key),
                 name=str(project.name)))
         if result.rowcount == 0:
-            raise ProjectNotFoundError(f"The project does not exist")
+            raise ProjectNotFoundError("The project does not exist")
         upsert_events(self._connection, self._project_event_table, project)
         return project
 

@@ -4,7 +4,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.vacations.archive import VacationArchiveUseCase
 from jupiter.framework.base.entity_id import EntityId
 
@@ -38,4 +38,4 @@ class VacationArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(ref_id)
+        self._command.execute(VacationArchiveUseCase.Args(ref_id=ref_id))

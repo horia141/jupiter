@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL

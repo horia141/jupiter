@@ -26,18 +26,19 @@ from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GenUseCase(UseCase['GenUseCase.Args', None]):
+class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
     """The command for generating new tasks."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         right_now: Timestamp
         gen_targets: Iterable[SyncTarget]
@@ -49,21 +50,21 @@ class GenUseCase(UseCase['GenUseCase.Args', None]):
         sync_even_if_not_modified: bool
 
     _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
             self,
-            global_properties: GlobalProperties, time_provider: TimeProvider,
-            project_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager) -> None:
+            global_properties: GlobalProperties,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._global_properties = global_properties
-        self._time_provider = time_provider
-        self._storage_engine = project_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             all_vacations = uow.vacation_repository.find_all()

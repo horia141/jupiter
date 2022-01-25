@@ -9,33 +9,34 @@ from jupiter.domain.vacations.notion_vacation import NotionVacation
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 
-class VacationCreateUseCase(UseCase['VacationCreateUseCase.Args', None]):
+class VacationCreateUseCase(AppMutationUseCase['VacationCreateUseCase.Args', None]):
     """The command for creating a vacation."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         name: VacationName
         start_date: ADate
         end_date: ADate
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             notion_manager: VacationNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._vacation_notion_manager = notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's actions."""
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()

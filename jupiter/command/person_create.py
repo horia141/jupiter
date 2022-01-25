@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.prm.person_birthday import PersonBirthday

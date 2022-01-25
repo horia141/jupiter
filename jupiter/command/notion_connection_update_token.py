@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.use_cases.remote.notion.update_token import NotionConnectionUpdateTokenUseCase
 

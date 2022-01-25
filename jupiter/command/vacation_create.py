@@ -4,7 +4,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.use_cases.vacations.create import VacationCreateUseCase

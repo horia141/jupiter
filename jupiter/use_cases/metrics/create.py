@@ -20,15 +20,16 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 
-class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
+class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
     """The command for creating a metric."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         key: MetricKey
         name: MetricName
@@ -43,19 +44,19 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
         collection_due_at_month: Optional[RecurringTaskDueAtMonth]
         metric_unit: Optional[MetricUnit]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._metric_notion_manager = metric_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         if args.collection_period is None and args.collection_project_key is not None:
             raise InputValidationError("Cannot specify a collection project if no period is given")
@@ -87,8 +88,8 @@ class MetricCreateUseCase(UseCase['MetricCreateUseCase.Args', None]):
                     collection_params=collection_params, metric_unit=args.metric_unit, source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
                 metric = uow.metric_repository.create(metric)
-            except MetricAlreadyExistsError:
-                raise InputValidationError(f"Metric with key {metric.key} already exists")
+            except MetricAlreadyExistsError as err:
+                raise InputValidationError(f"Metric with key {metric.key} already exists") from err
 
         notion_metric = NotionMetric.new_notion_row(metric)
         self._metric_notion_manager.upsert_metric(notion_metric)

@@ -1,44 +1,37 @@
 """The command for finding a recurring task."""
 from dataclasses import dataclass
-from typing import Iterable, Optional, Final, List
+from typing import Iterable, Optional, List
 
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
-class RecurringTaskFindUseCase(UseCase['RecurringTaskFindUseCase.Args', 'RecurringTaskFindUseCase.Result']):
+class RecurringTaskFindUseCase(AppReadonlyUseCase['RecurringTaskFindUseCase.Args', 'RecurringTaskFindUseCase.Result']):
     """The command for finding a recurring task."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         show_archived: bool
         filter_ref_ids: Optional[Iterable[EntityId]]
         filter_project_keys: Optional[Iterable[ProjectKey]]
 
-    @dataclass()
+    @dataclass(frozen=True)
     class ResultEntry:
         """A single entry in the load all recurring tasks response."""
         recurring_task: RecurringTask
         inbox_tasks: Iterable[InboxTask]
 
-    @dataclass()
-    class Result:
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
         """The result."""
         recurring_tasks: Iterable['RecurringTaskFindUseCase.ResultEntry']
 
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(
-            self, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._storage_engine = storage_engine
-
-    def execute(self, args: Args) -> 'Result':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             filter_project_ref_ids: Optional[List[EntityId]] = None

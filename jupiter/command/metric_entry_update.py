@@ -4,7 +4,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.use_cases.metrics.entry.update import MetricEntryUpdateUseCase
 from jupiter.framework.update_action import UpdateAction

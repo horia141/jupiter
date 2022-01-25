@@ -96,6 +96,7 @@ from jupiter.remote.notion.vacations_manager import NotionVacationsManager
 from jupiter.remote.notion.workspaces_manager import NotionWorkspacesManager
 from jupiter.repository.sqlite.domain.storage_engine import SqliteDomainStorageEngine
 from jupiter.repository.sqlite.remote.notion.storage_engine import SqliteNotionStorageEngine
+from jupiter.repository.sqlite.use_case.storage_engine import SqliteUseCaseStorageEngine
 from jupiter.use_cases.big_plans.archive import BigPlanArchiveUseCase
 from jupiter.use_cases.big_plans.create import BigPlanCreateUseCase
 from jupiter.use_cases.big_plans.find import BigPlanFindUseCase
@@ -109,6 +110,7 @@ from jupiter.use_cases.inbox_tasks.create import InboxTaskCreateUseCase
 from jupiter.use_cases.inbox_tasks.find import InboxTaskFindUseCase
 from jupiter.use_cases.inbox_tasks.remove import InboxTaskRemoveUseCase
 from jupiter.use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
+from jupiter.use_cases.infra.persistent_mutation_use_case_recoder import PersistentMutationUseCaseInvocationRecorder
 from jupiter.use_cases.init import InitUseCase
 from jupiter.use_cases.metrics.archive import MetricArchiveUseCase
 from jupiter.use_cases.metrics.create import MetricCreateUseCase
@@ -184,6 +186,12 @@ def main() -> None:
                 global_properties.sqlite_db_url, global_properties.alembic_ini_path,
                 global_properties.alembic_migrations_path))
 
+    usecase_storage_engine = \
+        SqliteUseCaseStorageEngine(
+            SqliteUseCaseStorageEngine.Config(
+                global_properties.sqlite_db_url, global_properties.alembic_ini_path,
+                global_properties.alembic_migrations_path))
+
     notion_client_builder = NotionClientBuilder(domain_storage_engine)
     notion_pages_manager = NotionPagesManager(time_provider, notion_client_builder, notion_storage_engine)
     notion_collections_manager = NotionCollectionsManager(time_provider, notion_client_builder, notion_storage_engine)
@@ -202,71 +210,127 @@ def main() -> None:
         global_properties, time_provider, notion_pages_manager, notion_collections_manager)
     notion_prm_manager = NotionPrmManager(global_properties, time_provider, notion_collections_manager)
 
+    invocation_recorder = PersistentMutationUseCaseInvocationRecorder(usecase_storage_engine)
+
     commands = {
         # Complex commands.
         Initialize(
             InitUseCase(
-                time_provider, domain_storage_engine, notion_workspace_manager, notion_vacation_manager,
-                notion_projects_manager, notion_smart_list_manager, notion_metric_manager, notion_prm_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_workspace_manager,
+                notion_vacation_manager,
+                notion_projects_manager,
+                notion_smart_list_manager,
+                notion_metric_manager,
+                notion_prm_manager)),
         Sync(
             SyncUseCase(
-                global_properties, time_provider, domain_storage_engine, notion_workspace_manager,
-                notion_vacation_manager, notion_projects_manager, notion_inbox_tasks_manager,
-                notion_recurring_tasks_manager, notion_big_plans_manager, notion_smart_list_manager,
-                notion_metric_manager, notion_prm_manager)),
+                global_properties,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_workspace_manager,
+                notion_vacation_manager,
+                notion_projects_manager,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager,
+                notion_big_plans_manager,
+                notion_smart_list_manager,
+                notion_metric_manager,
+                notion_prm_manager)),
         Gen(
             global_properties,
             time_provider,
             GenUseCase(
-                global_properties, time_provider, domain_storage_engine,
+                global_properties,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
                 notion_inbox_tasks_manager)),
         Report(
             global_properties,
             time_provider,
-            ReportUseCase(global_properties, domain_storage_engine)),
+            ReportUseCase(
+                global_properties,
+                domain_storage_engine)),
         GC(
             GCUseCase(
-                time_provider, domain_storage_engine, notion_vacation_manager,
-                notion_inbox_tasks_manager, notion_recurring_tasks_manager, notion_big_plans_manager,
-                notion_smart_list_manager, notion_metric_manager,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_vacation_manager,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager,
+                notion_big_plans_manager,
+                notion_smart_list_manager,
+                notion_metric_manager,
                 notion_prm_manager)),
         # CRUD Commands.
         WorkspaceUpdate(
             WorkspaceUpdateUseCase(
-                time_provider, domain_storage_engine, notion_workspace_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_workspace_manager)),
         WorkspaceChangeDefaultProject(
-            WorkspaceChangeDefaultProjectUseCase(time_provider, domain_storage_engine)),
+            WorkspaceChangeDefaultProjectUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine)),
         WorkspaceShow(
             WorkspaceFindUseCase(domain_storage_engine)),
         VacationCreate(
             global_properties,
             VacationCreateUseCase(
-                time_provider, domain_storage_engine, notion_vacation_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_vacation_manager)),
         VacationArchive(
             VacationArchiveUseCase(
-                time_provider, domain_storage_engine, notion_vacation_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_vacation_manager)),
         VacationUpdate(
             global_properties,
             VacationUpdateUseCase(
-                time_provider, domain_storage_engine, notion_vacation_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_vacation_manager)),
         VacationRemove(
             VacationRemoveUseCase(
-                domain_storage_engine, notion_vacation_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_vacation_manager)),
         VacationsShow(
             global_properties,
             VacationFindUseCase(domain_storage_engine)),
         ProjectCreate(
             ProjectCreateUseCase(
-                time_provider, domain_storage_engine, notion_projects_manager,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_projects_manager,
                 notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager,
                 notion_big_plans_manager)),
         ProjectUpdate(
             ProjectUpdateUseCase(
-                time_provider, domain_storage_engine, notion_projects_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_projects_manager)),
         ProjectArchive(
             ProjectArchiveUseCase(
-                time_provider, domain_storage_engine, notion_projects_manager,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_projects_manager,
                 notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager,
                 notion_big_plans_manager)),
@@ -275,40 +339,80 @@ def main() -> None:
         InboxTaskCreate(
             global_properties,
             InboxTaskCreateUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager)),
         InboxTaskArchive(
-            InboxTaskArchiveUseCase(time_provider, domain_storage_engine, notion_inbox_tasks_manager)),
+            InboxTaskArchiveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager)),
         InboxTaskAssociateWithBigPlan(
             InboxTaskAssociateWithBigPlanUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager)),
         InboxTaskRemove(
-            InboxTaskRemoveUseCase(domain_storage_engine, notion_inbox_tasks_manager)),
+            InboxTaskRemoveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager)),
         InboxTaskUpdate(
             global_properties,
             InboxTaskUpdateUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager)),
         InboxTaskShow(
             global_properties,
             InboxTaskFindUseCase(domain_storage_engine)),
         RecurringTaskCreate(
             global_properties,
             RecurringTaskCreateUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_recurring_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager)),
         RecurringTaskArchive(
             RecurringTaskArchiveUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_recurring_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager)),
         RecurringTaskSuspend(
             RecurringTaskSuspendUseCase(
-                time_provider, domain_storage_engine, notion_recurring_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_recurring_tasks_manager)),
         RecurringTaskUnsuspend(
-            RecurringTaskUnsuspendUseCase(time_provider, domain_storage_engine, notion_recurring_tasks_manager)),
+            RecurringTaskUnsuspendUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_recurring_tasks_manager)),
         RecurringTaskRemove(
             RecurringTaskRemoveUseCase(
-                domain_storage_engine, notion_inbox_tasks_manager, notion_recurring_tasks_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager)),
         RecurringTaskUpdate(
             global_properties,
             RecurringTaskUpdateUseCase(
-                global_properties, time_provider, domain_storage_engine, notion_inbox_tasks_manager,
+                global_properties,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager)),
         RecurringTaskShow(
             global_properties,
@@ -316,110 +420,208 @@ def main() -> None:
         BigPlanCreate(
             global_properties,
             BigPlanCreateUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_big_plans_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_big_plans_manager)),
         BigPlanArchive(
             BigPlanArchiveUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
                 notion_big_plans_manager)),
         BigPlanRemove(
-            BigPlanRemoveUseCase(domain_storage_engine, notion_inbox_tasks_manager, notion_big_plans_manager)),
+            BigPlanRemoveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_big_plans_manager)),
         BigPlanUpdate(
             global_properties,
             BigPlanUpdateUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
                 notion_big_plans_manager)),
         BigPlanShow(
             global_properties,
             BigPlanFindUseCase(domain_storage_engine)),
         SmartListCreate(
             SmartListCreateUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListArchive(
             SmartListArchiveUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListUpdate(
             SmartListUpdateUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListShow(
             SmartListFindUseCase(domain_storage_engine)),
         SmartListsRemove(
             SmartListRemoveUseCase(
-                domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListTagCreate(
             SmartListTagCreateUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListTagArchive(
             SmartListTagArchiveUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListTagUpdate(
             SmartListTagUpdateUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListTagRemove(
             SmartListTagRemoveUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListItemCreate(
             SmartListItemCreateUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListItemArchive(
             SmartListItemArchiveUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListItemUpdate(
             SmartListItemUpdateUseCase(
-                time_provider, domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         SmartListItemRemove(
             SmartListItemRemoveUseCase(
-                domain_storage_engine, notion_smart_list_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_smart_list_manager)),
         MetricCreate(
             MetricCreateUseCase(
-                time_provider, domain_storage_engine, notion_metric_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_metric_manager)),
         MetricArchive(
             MetricArchiveUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_metric_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_metric_manager)),
         MetricUpdate(
             MetricUpdateUseCase(
-                global_properties, time_provider, domain_storage_engine, notion_inbox_tasks_manager,
+                global_properties,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
                 notion_metric_manager)),
         MetricShow(
             global_properties,
             MetricFindUseCase(domain_storage_engine)),
         MetricRemove(
             MetricRemoveUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
                 notion_metric_manager)),
         MetricEntryCreate(
             MetricEntryCreateUseCase(
-                time_provider, domain_storage_engine, notion_metric_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_metric_manager)),
         MetricEntryArchive(
             MetricEntryArchiveUseCase(
-                time_provider, domain_storage_engine, notion_metric_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_metric_manager)),
         MetricEntryUpdate(
             MetricEntryUpdateUseCase(
-                time_provider, domain_storage_engine, notion_metric_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_metric_manager)),
         MetricEntryRemove(
             MetricEntryRemoveUseCase(
-                domain_storage_engine, notion_metric_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_metric_manager)),
         PrmChangeCatchUpProject(
             PrmDatabaseChangeCatchUpProjectUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_prm_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_prm_manager)),
         PrmShow(
             PrmDatabaseFindUseCase(domain_storage_engine)),
         PersonCreate(
             PersonCreateUseCase(
-                time_provider, domain_storage_engine, notion_prm_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_prm_manager)),
         PersonArchive(
             PersonArchiveUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_prm_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_prm_manager)),
         PersonUpdate(
             PersonUpdateUseCase(
-                global_properties, time_provider, domain_storage_engine, notion_inbox_tasks_manager,
+                global_properties,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
                 notion_prm_manager)),
         PersonRemove(
             PersonRemoveUseCase(
-                time_provider, domain_storage_engine, notion_inbox_tasks_manager, notion_prm_manager)),
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_prm_manager)),
         # Remote connection commands
         NotionConnectionUpdateToken(
             NotionConnectionUpdateTokenUseCase(
-                time_provider, domain_storage_engine))
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine))
     }
 
     parser = argparse.ArgumentParser(description=global_properties.description)
@@ -457,6 +659,8 @@ def main() -> None:
             handler.addFilter(CommandsAndControllersLoggerFilter())
 
     domain_storage_engine.prepare()
+    notion_storage_engine.prepare()
+    usecase_storage_engine.prepare()
 
     try:
         for command in commands:
@@ -490,8 +694,8 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
     """A filter for commands and controllers."""
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """Filtering the log records for commands and controllers."""
-        if record.name.startswith("command.") or record.name.startswith("controllers."):
+        """Filtering the log records for commands."""
+        if record.name.startswith("command."):
             return True
         return False
 

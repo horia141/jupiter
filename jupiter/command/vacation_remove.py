@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.vacations.remove import VacationRemoveUseCase
 from jupiter.framework.base.entity_id import EntityId
 
@@ -39,4 +39,4 @@ class VacationRemove(command.Command):
         # Parse arguments
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
         for ref_id in ref_ids:
-            self._command.execute(ref_id)
+            self._command.execute(VacationRemoveUseCase.Args(ref_id=ref_id))

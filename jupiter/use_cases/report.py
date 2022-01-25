@@ -7,7 +7,6 @@ from operator import itemgetter
 from typing import Optional, Iterable, Final, Dict, List, cast, Tuple, DefaultDict
 
 import pendulum
-from nested_dataclasses import nested
 from pendulum import UTC
 
 from jupiter.domain import schedules
@@ -30,17 +29,18 @@ from jupiter.domain.schedules import Schedule
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
+class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
     """The command for reporting on progress."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         right_now: Timestamp
         filter_project_keys: Optional[Iterable[ProjectKey]]
@@ -52,26 +52,22 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         period: RecurringTaskPeriod
         breakdown_period: Optional[RecurringTaskPeriod]
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
+    class NestedResult:
+        """A result broken down by the various sources of inbox tasks."""
+        total_cnt: int
+        per_source_cnt: Dict[InboxTaskSource, int]
+
+    @dataclass(frozen=True)
     class InboxTasksSummary:
         """A bigger summary for inbox tasks."""
+        created: 'ReportUseCase.NestedResult'
+        accepted: 'ReportUseCase.NestedResult'
+        working: 'ReportUseCase.NestedResult'
+        not_done: 'ReportUseCase.NestedResult'
+        done: 'ReportUseCase.NestedResult'
 
-        @nested()
-        @dataclass()
-        class NestedResult:
-            """A result broken down by the various sources of inbox tasks."""
-            total_cnt: int
-            per_source_cnt: Dict[InboxTaskSource, int]
-
-        created: NestedResult
-        accepted: NestedResult
-        working: NestedResult
-        not_done: NestedResult
-        done: NestedResult
-
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class WorkableSummary:
         """The reporting summary."""
         created_cnt: int
@@ -82,8 +78,7 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         not_done_projects: List[BigPlanName]
         done_projects: List[BigPlanName]
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class BigPlanSummary:
         """The report for a big plan."""
         created_cnt: int
@@ -95,8 +90,7 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         done_ratio: float
         completed_ratio: float
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class RecurringTaskSummary:
         """The reporting summary."""
         created_cnt: int
@@ -116,40 +110,35 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
             field(hash=False, compare=False, repr=False, default_factory=dict)
         streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class PerProjectBreakdownItem:
         """The report for a particular project."""
         name: EntityName
         inbox_tasks_summary: 'ReportUseCase.InboxTasksSummary'
         big_plans_summary: 'ReportUseCase.WorkableSummary'
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class PerPeriodBreakdownItem:
         """The report for a particular time period."""
         name: EntityName
         inbox_tasks_summary: 'ReportUseCase.InboxTasksSummary'
         big_plans_summary: 'ReportUseCase.WorkableSummary'
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class PerBigPlanBreakdownItem:
         """The report for a particular big plan."""
         name: EntityName
         summary: 'ReportUseCase.BigPlanSummary'
 
-    @nested()
-    @dataclass()
+    @dataclass(frozen=True)
     class PerRecurringTaskBreakdownItem:
         """The report for a particular recurring task."""
         name: EntityName
         the_type: RecurringTaskType
         summary: 'ReportUseCase.RecurringTaskSummary'
 
-    @nested()
-    @dataclass()
-    class Result:
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
         """Result of the run report call."""
         global_inbox_tasks_summary: 'ReportUseCase.InboxTasksSummary'
         global_big_plans_summary: 'ReportUseCase.WorkableSummary'
@@ -159,14 +148,13 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
         per_recurring_task_breakdown: List['ReportUseCase.PerRecurringTaskBreakdownItem']
 
     _global_properties: Final[GlobalProperties]
-    _storage_engine: Final[DomainStorageEngine]
 
     def __init__(self, global_properties: GlobalProperties, storage_engine: DomainStorageEngine) -> None:
         """Constructor."""
+        super().__init__(storage_engine)
         self._global_properties = global_properties
-        self._storage_engine = storage_engine
 
-    def execute(self, args: Args) -> 'Result':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command."""
         today = args.right_now.value.date()
         with self._storage_engine.get_unit_of_work() as uow:
@@ -349,19 +337,19 @@ class ReportUseCase(UseCase['ReportUseCase.Args', 'ReportUseCase.Result']):
                 accepted_per_source_cnt[inbox_task.source] += 1
 
         return ReportUseCase.InboxTasksSummary(
-            created=ReportUseCase.InboxTasksSummary.NestedResult(
+            created=ReportUseCase.NestedResult(
                 total_cnt=created_cnt_total,
                 per_source_cnt=created_per_source_cnt),
-            accepted=ReportUseCase.InboxTasksSummary.NestedResult(
+            accepted=ReportUseCase.NestedResult(
                 total_cnt=accepted_cnt_total,
                 per_source_cnt=accepted_per_source_cnt),
-            working=ReportUseCase.InboxTasksSummary.NestedResult(
+            working=ReportUseCase.NestedResult(
                 total_cnt=working_cnt_total,
                 per_source_cnt=working_per_source_cnt),
-            not_done=ReportUseCase.InboxTasksSummary.NestedResult(
+            not_done=ReportUseCase.NestedResult(
                 total_cnt=not_done_cnt_total,
                 per_source_cnt=not_done_per_source_cnt),
-            done=ReportUseCase.InboxTasksSummary.NestedResult(
+            done=ReportUseCase.NestedResult(
                 total_cnt=done_cnt_total,
                 per_source_cnt=done_per_source_cnt))
 

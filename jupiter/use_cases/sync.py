@@ -42,18 +42,19 @@ from jupiter.domain.workspaces.service.sync_service import WorkspaceSyncService
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class SyncUseCase(UseCase['SyncUseCase.Args', None]):
+class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
     """Synchronise between Notion and local."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         sync_targets: Iterable[SyncTarget]
         drop_all_notion: bool
@@ -71,8 +72,6 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
         sync_prefer: SyncPrefer
 
     _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _workspace_notion_manager: Final[WorkspaceNotionManager]
     _vacation_notion_manager: Final[VacationNotionManager]
     _project_notion_manager: Final[ProjectNotionManager]
@@ -85,17 +84,22 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
 
     def __init__(
             self,
-            global_properties: GlobalProperties, time_provider: TimeProvider,
-            storage_engine: DomainStorageEngine, workspace_notion_manager: WorkspaceNotionManager,
-            vacation_notion_manager: VacationNotionManager, project_notion_manager: ProjectNotionManager,
+            global_properties: GlobalProperties,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
+            workspace_notion_manager: WorkspaceNotionManager,
+            vacation_notion_manager: VacationNotionManager,
+            project_notion_manager: ProjectNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager,
-            big_plan_notion_manager: BigPlanNotionManager, smart_list_notion_manager: SmartListNotionManager,
-            metric_notion_manager: MetricNotionManager, prm_notion_manager: PrmNotionManager) -> None:
+            big_plan_notion_manager: BigPlanNotionManager,
+            smart_list_notion_manager: SmartListNotionManager,
+            metric_notion_manager: MetricNotionManager,
+            prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._global_properties = global_properties
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
         self._workspace_notion_manager = workspace_notion_manager
         self._vacation_notion_manager = vacation_notion_manager
         self._project_notion_manager = project_notion_manager
@@ -106,15 +110,13 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
         self._metric_notion_manager = metric_notion_manager
         self._prm_notion_manager = prm_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         filter_recurring_task_ref_ids_set = \
             frozenset(args.filter_recurring_task_ref_ids) if args.filter_recurring_task_ref_ids else None
         sync_targets = frozenset(args.sync_targets)
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.load()
-
+        workspace = context.workspace
         notion_workspace = self._workspace_notion_manager.load_workspace(workspace.ref_id)
 
         if SyncTarget.WORKSPACE in args.sync_targets:
@@ -316,7 +318,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         LOGGER.info("Applied Notion changes")
 
                 if SyncTarget.BIG_PLANS in sync_targets:
-                    LOGGER.info(f"Archiving any inbox task whose big plan has been archived")
+                    LOGGER.info("Archiving any inbox task whose big plan has been archived")
                     for inbox_task in all_inbox_tasks:
                         if inbox_task.big_plan_ref_id is None:
                             continue
@@ -330,7 +332,7 @@ class SyncUseCase(UseCase['SyncUseCase.Args', None]):
                         LOGGER.info(f"Archived inbox task {inbox_task.name}")
 
                 if SyncTarget.RECURRING_TASKS in sync_targets:
-                    LOGGER.info(f"Archiving any inbox task whose recurring task has been archived")
+                    LOGGER.info("Archiving any inbox task whose recurring task has been archived")
                     for inbox_task in all_inbox_tasks:
                         if inbox_task.recurring_task_ref_id is None:
                             continue

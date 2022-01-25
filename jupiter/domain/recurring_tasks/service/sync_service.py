@@ -81,7 +81,7 @@ class RecurringTaskSyncService:
 
                 self._recurring_task_notion_manager.link_local_and_notion_recurring_task(
                     recurring_task_collection.ref_id, new_recurring_task.ref_id, notion_recurring_task.notion_id)
-                LOGGER.info(f"Linked the new big plan with local entries")
+                LOGGER.info("Linked the new big plan with local entries")
 
                 notion_recurring_task = notion_recurring_task.join_with_aggregate_root(new_recurring_task, None)
                 self._recurring_task_notion_manager.save_recurring_task(

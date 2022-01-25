@@ -62,7 +62,7 @@ class VacationSyncService:
 
                 self._vacation_notion_manager.link_local_and_notion_entries(
                     new_vacation.ref_id, notion_vacation.notion_id)
-                LOGGER.info(f"Linked the new vacation with local entries")
+                LOGGER.info("Linked the new vacation with local entries")
 
                 notion_vacation = notion_vacation.join_with_aggregate_root(new_vacation, None)
                 self._vacation_notion_manager.save_vacation(notion_vacation)

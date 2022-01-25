@@ -226,14 +226,12 @@ class DailySchedule(Schedule):
         self._due_date = typing.cast(pendulum.Date, right_now.value.date())
         self._actionable_date = None
         if due_at_time:
-            self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time),
-                tz=timezone)
+            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
         else:
             self._due_time = None
-        self._full_name = InboxTaskName("{name} {year}:{month}{day}".format(
-            name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now),
-            day=right_now.value.day))
+        self._full_name = \
+            InboxTaskName(
+                f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}")
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = self._skip_helper(skip_rule, self._due_date.day_of_week) if skip_rule else False
 
@@ -253,14 +251,13 @@ class DailySchedule(Schedule):
         return ADate.from_date(self._due_date)
 
     def _generate_timeline(self, right_now: Timestamp) -> str:
-        year = "{year}".format(year=right_now.value.year)
+        year = f"{right_now.value.year}"
         quarter = self.month_to_quarter(right_now)
         month = self.month_to_month(right_now)
-        week = "W{week}".format(week=right_now.value.week_of_year)
-        day = "D{day}".format(day=right_now.value.day_of_week)
+        week = f"W{right_now.value.week_of_year}"
+        day = f"D{right_now.value.day_of_week}"
 
-        return "{year},{quarter},{month},{week},{day}".format(year=year, quarter=quarter, month=month, week=week,
-                                                              day=day)
+        return f"{year},{quarter},{month},{week},{day}"
 
 
 class WeeklySchedule(Schedule):
@@ -284,12 +281,10 @@ class WeeklySchedule(Schedule):
         else:
             self._due_date = start_of_week.end_of("week").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
+            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
         else:
             self._due_time = None
-        self._full_name = InboxTaskName("{name} {year}:W{week}".format(
-            name=name, year=self.year_two_digits(right_now), week=start_of_week.week_of_year))
+        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}")
         self._timeline = self._generate_timeline(start_of_week)
         self._should_skip = self._skip_helper(skip_rule, self._due_date.week_of_year) if skip_rule else False
 
@@ -309,12 +304,12 @@ class WeeklySchedule(Schedule):
         return ADate.from_date(self._date.end_of("week"))
 
     def _generate_timeline(self, right_now: pendulum.DateTime) -> str:
-        year = "{year}".format(year=right_now.year)
+        year = f"{right_now.year}"
         quarter = self.month_to_quarter(right_now)
         month = self.month_to_month(right_now)
-        week = "W{week}".format(week=right_now.week_of_year)
+        week = f"W{right_now.week_of_year}"
 
-        return "{year},{quarter},{month},{week}".format(year=year, quarter=quarter, month=month, week=week)
+        return f"{year},{quarter},{month},{week}"
 
 
 class MonthlySchedule(Schedule):
@@ -338,12 +333,10 @@ class MonthlySchedule(Schedule):
         else:
             self._due_date = start_of_month.end_of("month").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
+            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
         else:
             self._due_time = None
-        self._full_name = InboxTaskName("{name} {year}:{month}".format(
-            name=name, year=self.year_two_digits(right_now), month=self.month_to_month(right_now)))
+        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}")
         self._timeline = self._generate_timeline(Timestamp(start_of_month))
         self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
 
@@ -363,11 +356,11 @@ class MonthlySchedule(Schedule):
         return ADate.from_date(self._date.end_of("month"))
 
     def _generate_timeline(self, right_now: Timestamp) -> str:
-        year = "{year}".format(year=right_now.value.year)
+        year = f"{right_now.value.year}"
         quarter = self.month_to_quarter(right_now)
         month = self.month_to_month(right_now)
 
-        return "{year},{quarter},{month}".format(year=year, quarter=quarter, month=month)
+        return f"{year},{quarter},{month}"
 
 
 class QuarterlySchedule(Schedule):
@@ -437,12 +430,10 @@ class QuarterlySchedule(Schedule):
                 .end_of("month")\
                 .end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
+            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
         else:
             self._due_time = None
-        self._full_name = InboxTaskName("{name} {year}:{quarter}".format(
-            name=name, year=self.year_two_digits(right_now), quarter=self.month_to_quarter(right_now)))
+        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}")
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = \
             self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date)) if skip_rule else False
@@ -467,10 +458,10 @@ class QuarterlySchedule(Schedule):
             .end_of("month"))
 
     def _generate_timeline(self, right_now: Timestamp) -> str:
-        year = "{year}".format(year=right_now.value.year)
+        year = f"{right_now.value.year}"
         quarter = self.month_to_quarter(right_now)
 
-        return "{year},{quarter}".format(year=year, quarter=quarter)
+        return f"{year},{quarter}"
 
 
 class YearlySchedule(Schedule):
@@ -524,11 +515,10 @@ class YearlySchedule(Schedule):
         else:
             self._due_date = right_now.value.end_of("year").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(
-                "{date} {time}".format(date=self._due_date.to_date_string(), time=due_at_time), tz=timezone)
+            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
         else:
             self._due_time = None
-        self._full_name = InboxTaskName("{name} {year}".format(name=name, year=self.year_two_digits(right_now)))
+        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}")
         self._timeline = self._generate_timeline(right_now)
         self._should_skip = False
 
@@ -549,7 +539,7 @@ class YearlySchedule(Schedule):
 
     @staticmethod
     def _generate_timeline(right_now: Timestamp) -> str:
-        year = "{year}".format(year=right_now.value.year)
+        year = f"{right_now.value.year}"
 
         return year
 

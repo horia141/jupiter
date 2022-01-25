@@ -14,37 +14,38 @@ from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppUseCaseContext, AppMutationUseCase
 from jupiter.utils.time_provider import TimeProvider
 
 
-class BigPlanCreateUseCase(UseCase['BigPlanCreateUseCase.Args', None]):
+class BigPlanCreateUseCase(AppMutationUseCase['BigPlanCreateUseCase.Args', None]):
     """The command for creating a big plan."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         project_key: Optional[ProjectKey]
         name: BigPlanName
         actionable_date: Optional[ADate]
         due_date: Optional[ADate]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             if args.project_key is not None:

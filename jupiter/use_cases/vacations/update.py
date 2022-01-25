@@ -9,34 +9,35 @@ from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 
-class VacationUpdateUseCase(UseCase['VacationUpdateUseCase.Args', None]):
+class VacationUpdateUseCase(AppMutationUseCase['VacationUpdateUseCase.Args', None]):
     """The command for updating a vacation's properties."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         ref_id: EntityId
         name: UpdateAction[VacationName]
         start_date: UpdateAction[ADate]
         end_date: UpdateAction[ADate]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             notion_manager: VacationNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._vacation_notion_manager = notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             vacation = uow.vacation_repository.load_by_id(args.ref_id)

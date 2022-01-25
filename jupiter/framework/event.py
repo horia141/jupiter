@@ -1,19 +1,13 @@
 """Framework level elements for entity events."""
-import dataclasses
 import enum
 import inspect
 import typing
-import uuid
 from dataclasses import dataclass
-from enum import Enum
 from typing import TypeVar, Dict
 
-from pendulum import Date, DateTime
-
 from jupiter.framework.base.timestamp import Timestamp
-from jupiter.framework.json import JSONValueType
+from jupiter.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.framework.update_action import UpdateAction
-from jupiter.framework.value import Value
 
 EventType = TypeVar('EventType', bound='Event')
 
@@ -85,42 +79,15 @@ class Event:
         finally:
             del frame
 
-    def to_serializable_dict(self) -> JSONValueType:
+    def to_serializable_dict(self) -> JSONDictType:
         """Transform an event into a serialisation-ready dictionary."""
-        def process_primitive(primitive: typing.Union[None, int, float, str, object], key: str) -> JSONValueType:
-            if primitive is None:
-                return primitive
-            elif isinstance(primitive, int):
-                return primitive
-            elif isinstance(primitive, float):
-                return primitive
-            elif isinstance(primitive, str):
-                return primitive
-            elif isinstance(primitive, Date):
-                return str(primitive)
-            elif isinstance(primitive, DateTime):
-                return str(primitive)
-            elif isinstance(primitive, Enum):
-                return process_primitive(primitive.value, key)
-            elif isinstance(primitive, Value):
-                return str(primitive)  # A bit of a hack really!
-            elif isinstance(primitive, uuid.UUID):
-                return str(primitive)
-            elif dataclasses.is_dataclass(primitive):
-                return {k: process_primitive(v, k) for k, v in dataclasses.asdict(primitive).items()}
-            elif isinstance(primitive, list):
-                return [process_primitive(p, key) for p in primitive]
-            elif isinstance(primitive, dict):
-                return {k: process_primitive(v, k) for k, v in primitive.items()}
-            else:
-                raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__}")
         serialized_frame_args = {}
         for the_key, the_value in self.frame_args.items():
             if isinstance(the_value, UpdateAction):
                 if the_value.should_change:
-                    serialized_frame_args[the_key] = process_primitive(the_value.value, the_key)
+                    serialized_frame_args[the_key] = process_primitive_to_json(the_value.value, the_key)
             else:
-                serialized_frame_args[the_key] = process_primitive(the_value, the_key)
+                serialized_frame_args[the_key] = process_primitive_to_json(the_value, the_key)
         return serialized_frame_args
 
     @property

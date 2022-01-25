@@ -37,7 +37,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         try:
             self._pages_manager.save_page(NotionLockKey(self._KEY), notion_workspace.name)
         except NotionPageNotFoundError as err:
-            raise NotionWorkspaceNotFoundError(f"Cannot find Notion workspace") from err
+            raise NotionWorkspaceNotFoundError("Cannot find Notion workspace") from err
         return notion_workspace
 
     def load_workspace(self, ref_id: EntityId) -> NotionWorkspace:
@@ -45,7 +45,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         try:
             workspace_page = self._pages_manager.get_page_extra(NotionLockKey(self._KEY))
         except NotionPageNotFoundError as err:
-            raise NotionWorkspaceNotFoundError(f"Cannot find Notion workspace") from err
+            raise NotionWorkspaceNotFoundError("Cannot find Notion workspace") from err
         return NotionWorkspace(
             name=workspace_page.name,
             notion_id=workspace_page.notion_id,

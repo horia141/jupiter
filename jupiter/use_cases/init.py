@@ -12,29 +12,29 @@ from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.remote.notion.connection import NotionConnection
+from jupiter.domain.remote.notion.space_id import NotionSpaceId
+from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
-from jupiter.domain.remote.notion.space_id import NotionSpaceId
-from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.entity_id import BAD_REF_ID
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCase, MutationUseCaseInvocationRecorder, UseCaseArgsBase
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class InitUseCase(UseCase['InitUseCase.Args', None]):
+class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
     """UseCase for initialising the workspace."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         name: WorkspaceName
         timezone: Timezone
@@ -43,7 +43,6 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
         first_project_key: ProjectKey
         first_project_name: ProjectName
 
-    _time_provider: Final[TimeProvider]
     _storage_engine: Final[DomainStorageEngine]
     _workspace_notion_manager: Final[WorkspaceNotionManager]
     _vacation_notion_manager: Final[VacationNotionManager]
@@ -55,6 +54,7 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
     def __init__(
             self,
             time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
             storage_engine: DomainStorageEngine,
             workspace_notion_manager: WorkspaceNotionManager,
             vacation_notion_manager: VacationNotionManager,
@@ -63,7 +63,7 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
             metric_notion_manager: MetricNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
+        super().__init__(time_provider, invocation_recorder)
         self._storage_engine = storage_engine
         self._workspace_notion_manager = workspace_notion_manager
         self._vacation_notion_manager = vacation_notion_manager
@@ -72,7 +72,11 @@ class InitUseCase(UseCase['InitUseCase.Args', None]):
         self._smart_list_notion_manager = smart_list_notion_manager
         self._prm_notion_manager = prm_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _build_context(self) -> None:
+        """Construct the context for the use case."""
+        return None
+
+    def _execute(self, context: None, args: Args) -> None:
         """Execute the command's action."""
         LOGGER.info("Creating workspace")
         with self._storage_engine.get_unit_of_work() as uow:

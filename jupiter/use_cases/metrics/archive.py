@@ -1,5 +1,6 @@
 """The command for archiving a metric."""
 import logging
+from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
@@ -8,34 +9,40 @@ from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManag
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricArchiveUseCase(UseCase[MetricKey, None]):
+class MetricArchiveUseCase(AppMutationUseCase['MetricArchiveUseCase.Args', None]):
     """The command for archiving a metric."""
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
+        """Args."""
+        key: MetricKey
+
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._metric_notion_manager = metric_notion_manager
 
-    def execute(self, args: MetricKey) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.load_by_key(args)
+            metric = uow.metric_repository.load_by_key(args.key)
 
             for metric_entry in uow.metric_entry_repository.find_all_for_metric(metric.ref_id):
                 metric_entry = metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())

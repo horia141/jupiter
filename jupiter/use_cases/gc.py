@@ -36,17 +36,18 @@ from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class GCUseCase(UseCase['GCUseCase.Args', None]):
+class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
     """The command for doing a garbage collection run."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         sync_targets: Iterable[SyncTarget]
         project_keys: Optional[Iterable[ProjectKey]]
@@ -54,8 +55,6 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
         do_anti_entropy: bool
         do_notion_cleanup: bool
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _vacation_notion_manager: Final[VacationNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
@@ -65,14 +64,19 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
-            vacation_notion_manager: VacationNotionManager, inbox_task_notion_manager: InboxTaskNotionManager,
-            recurring_task_notion_manager: RecurringTaskNotionManager, big_plan_notion_manager: BigPlanNotionManager,
-            smart_list_notion_manager: SmartListNotionManager, metric_notion_manager: MetricNotionManager,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
+            vacation_notion_manager: VacationNotionManager,
+            inbox_task_notion_manager: InboxTaskNotionManager,
+            recurring_task_notion_manager: RecurringTaskNotionManager,
+            big_plan_notion_manager: BigPlanNotionManager,
+            smart_list_notion_manager: SmartListNotionManager,
+            metric_notion_manager: MetricNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._vacation_notion_manager = vacation_notion_manager
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._recurring_task_notion_manager = recurring_task_notion_manager
@@ -81,16 +85,16 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
         self._metric_notion_manager = metric_notion_manager
         self._prm_notion_manager = prm_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         if SyncTarget.VACATIONS in args.sync_targets:
             if args.do_anti_entropy:
-                LOGGER.info(f"Performing anti-entropy adjustments for vacations")
+                LOGGER.info("Performing anti-entropy adjustments for vacations")
                 with self._storage_engine.get_unit_of_work() as uow:
                     vacations = uow.vacation_repository.find_all(allow_archived=True)
                 self._do_anti_entropy_for_vacations(vacations)
             if args.do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting vacations which were archived")
+                LOGGER.info("Garbage collecting vacations which were archived")
 
                 allowed_ref_ids = self._vacation_notion_manager.load_all_saved_vacation_ref_ids()
 
@@ -108,16 +112,16 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
                 if args.do_archival:
-                    LOGGER.info(f"Archiving all done inbox tasks")
+                    LOGGER.info("Archiving all done inbox tasks")
                     self._archive_done_inbox_tasks_for_project(project)
                 if args.do_anti_entropy:
-                    LOGGER.info(f"Performing anti-entropy adjustments for inbox tasks")
+                    LOGGER.info("Performing anti-entropy adjustments for inbox tasks")
                     with self._storage_engine.get_unit_of_work() as uow:
                         inbox_tasks = uow.inbox_task_repository.find_all(
                             allow_archived=True, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
                     self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
                 if args.do_notion_cleanup:
-                    LOGGER.info(f"Garbage collecting inbox tasks which were archived")
+                    LOGGER.info("Garbage collecting inbox tasks which were archived")
                     allowed_ref_ids = \
                         self._inbox_task_notion_manager.load_all_saved_inbox_tasks_ref_ids(inbox_task_collection.ref_id)
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -128,7 +132,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
 
             if SyncTarget.RECURRING_TASKS in args.sync_targets:
                 if args.do_anti_entropy:
-                    LOGGER.info(f"Performing anti-entropy adjustments for recurring tasks")
+                    LOGGER.info("Performing anti-entropy adjustments for recurring tasks")
                     with self._storage_engine.get_unit_of_work() as uow:
                         recurring_task_collection = \
                             uow.recurring_task_collection_repository.load_by_project(project.ref_id)
@@ -137,7 +141,7 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                             filter_recurring_task_collection_ref_ids=[recurring_task_collection.ref_id])
                     self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
                 if args.do_notion_cleanup:
-                    LOGGER.info(f"Garbage collecting recurring tasks which were archived")
+                    LOGGER.info("Garbage collecting recurring tasks which were archived")
                     allowed_ref_ids = \
                         self._recurring_task_notion_manager.load_all_saved_recurring_tasks_ref_ids(
                             recurring_task_collection.ref_id)
@@ -154,16 +158,16 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     big_plan_collection = uow.big_plan_collection_repository.load_by_project(project.ref_id)
                 if args.do_archival:
-                    LOGGER.info(f"Archiving all done big plans")
+                    LOGGER.info("Archiving all done big plans")
                     self._archive_done_big_plans_for_project(project)
                 if args.do_anti_entropy:
-                    LOGGER.info(f"Performing anti-entropy adjustments for big plans")
+                    LOGGER.info("Performing anti-entropy adjustments for big plans")
                     with self._storage_engine.get_unit_of_work() as uow:
                         big_plans = uow.big_plan_repository.find_all(
                             allow_archived=True, filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id])
                     self._do_anti_entropy_for_big_plans(big_plans)
                 if args.do_notion_cleanup:
-                    LOGGER.info(f"Garbage collecting big plans which were archived")
+                    LOGGER.info("Garbage collecting big plans which were archived")
                     allowed_ref_ids = \
                         self._big_plan_notion_manager.load_all_saved_big_plans_ref_ids(big_plan_collection.ref_id)
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -179,22 +183,22 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
         if SyncTarget.SMART_LISTS in args.sync_targets:
             smart_lists: Iterable[SmartList] = []
             if args.do_anti_entropy:
-                LOGGER.info(f"Performing anti-entropy adjustments for smart lists")
+                LOGGER.info("Performing anti-entropy adjustments for smart lists")
                 with self._storage_engine.get_unit_of_work() as uow:
                     smart_lists = uow.smart_list_repository.find_all(allow_archived=True)
                 smart_lists = self._do_anti_entropy_for_smart_lists(smart_lists)
             if args.do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting smart lists which were archived")
+                LOGGER.info("Garbage collecting smart lists which were archived")
                 with self._storage_engine.get_unit_of_work() as uow:
                     smart_lists = smart_lists or uow.smart_list_repository.find_all(allow_archived=True)
                 self._do_drop_all_archived_smart_lists(smart_lists)
             if args.do_anti_entropy:
-                LOGGER.info(f"Performing anti-entropy adjustments for smart list items")
+                LOGGER.info("Performing anti-entropy adjustments for smart list items")
                 with self._storage_engine.get_unit_of_work() as uow:
                     smart_list_items = uow.smart_list_item_repository.find_all(allow_archived=True)
                 self._do_anti_entropy_for_smart_list_items(smart_list_items)
             if args.do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting smart list items which were archived")
+                LOGGER.info("Garbage collecting smart list items which were archived")
                 for smart_list in smart_lists:
                     allowed_ref_ids = set(
                         self._smart_list_notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list.ref_id))
@@ -207,22 +211,22 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
         if SyncTarget.METRICS in args.sync_targets:
             metrics: Iterable[Metric] = []
             if args.do_anti_entropy:
-                LOGGER.info(f"Performing anti-entropy adjustments for metrics")
+                LOGGER.info("Performing anti-entropy adjustments for metrics")
                 with self._storage_engine.get_unit_of_work() as uow:
                     metrics = uow.metric_repository.find_all(allow_archived=True)
                 metrics = self._do_anti_entropy_for_metrics(metrics)
             if args.do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting metrics which were archived")
+                LOGGER.info("Garbage collecting metrics which were archived")
                 with self._storage_engine.get_unit_of_work() as uow:
                     metrics = metrics or uow.metric_repository.find_all(allow_archived=True)
                 self._do_drop_all_archived_metrics(metrics)
             if args.do_anti_entropy:
-                LOGGER.info(f"Performing anti-entropy adjustments for metric entries")
+                LOGGER.info("Performing anti-entropy adjustments for metric entries")
                 with self._storage_engine.get_unit_of_work() as uow:
                     metric_entries = uow.metric_entry_repository.find_all(allow_archived=True)
                 self._do_anti_entropy_for_metric_entries(metric_entries)
             if args.do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting metric entries which were archived")
+                LOGGER.info("Garbage collecting metric entries which were archived")
                 for metric in metrics:
                     allowed_ref_ids = \
                         set(self._metric_notion_manager.load_all_saved_metric_entries_ref_ids(metric.ref_id))
@@ -233,12 +237,12 @@ class GCUseCase(UseCase['GCUseCase.Args', None]):
 
         if SyncTarget.PRM in args.sync_targets:
             if args.do_anti_entropy:
-                LOGGER.info(f"Performing anti-entropy adjustments for persons in the PRM database")
+                LOGGER.info("Performing anti-entropy adjustments for persons in the PRM database")
                 with self._storage_engine.get_unit_of_work() as uow:
                     persons = uow.person_repository.find_all(allow_archived=True)
                 self._do_anti_entropy_for_persons(persons)
             if args.do_notion_cleanup:
-                LOGGER.info(f"Garbage collecting persons which were archived")
+                LOGGER.info("Garbage collecting persons which were archived")
                 allowed_person_ref_ids = self._prm_notion_manager.load_all_saved_person_ref_ids()
 
                 with self._storage_engine.get_unit_of_work() as uow:

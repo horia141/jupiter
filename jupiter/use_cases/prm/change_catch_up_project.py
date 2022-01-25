@@ -9,36 +9,37 @@ from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PrmDatabaseChangeCatchUpProjectUseCase(UseCase['PrmDatabaseChangeCatchUpProjectUseCase.Args', None]):
+class PrmDatabaseChangeCatchUpProjectUseCase(AppMutationUseCase['PrmDatabaseChangeCatchUpProjectUseCase.Args', None]):
     """The command for updating a PRM database."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         catch_up_project_key: Optional[ProjectKey]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _prm_notion_manager: Final[PrmNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, workspace_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager,
             prm_notion_manager: PrmNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = workspace_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._prm_notion_manager = prm_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             prm_database = uow.prm_database_repository.load()

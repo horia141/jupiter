@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.recurring_tasks.archive import RecurringTaskArchiveUseCase
 

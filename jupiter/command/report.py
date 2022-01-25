@@ -131,10 +131,10 @@ class Report(command.Command):
         print(f"{period.for_notion()} as of {right_now}:")
 
         if "global" in breakdowns:
-            print(f"  Global:")
+            print("  Global:")
 
             if "inbox-tasks" in covers:
-                print(f"    Inbox Tasks:")
+                print("    Inbox Tasks:")
                 print(f"      Created: {response.global_inbox_tasks_summary.created.total_cnt}", end=" ")
                 for source in sources_to_present:
                     print(f"({response.global_inbox_tasks_summary.created.per_source_cnt[source]} " +
@@ -162,7 +162,7 @@ class Report(command.Command):
                 print("")
 
             if "big-plans" in covers:
-                print(f"    Big Plans:")
+                print("    Big Plans:")
                 print(f"      Created: {response.global_big_plans_summary.created_cnt}")
                 print(f"      Accepted: {response.global_big_plans_summary.accepted_cnt}")
                 print(f"      Working: {response.global_big_plans_summary.working_cnt}")
@@ -174,12 +174,12 @@ class Report(command.Command):
                     print(f"      - {big_plan_name}")
 
         if "projects" in breakdowns:
-            print(f"  By Project:")
+            print("  By Project:")
 
             for project_item in response.per_project_breakdown:
                 print(f"    {project_item.name}:")
                 if "inbox-tasks" in covers:
-                    print(f"      Inbox Tasks:")
+                    print("      Inbox Tasks:")
                     print(f"        Created: {project_item.inbox_tasks_summary.created.total_cnt}", end=" ")
                     for source in sources_to_present:
                         print(f"({project_item.inbox_tasks_summary.created.per_source_cnt[source]} " +
@@ -207,7 +207,7 @@ class Report(command.Command):
                     print("")
 
                 if "big-plans" in covers:
-                    print(f"      Big Plans:")
+                    print("      Big Plans:")
                     print(f"        Created: {project_item.big_plans_summary.created_cnt}")
                     print(f"        Accepted: {project_item.big_plans_summary.accepted_cnt}")
                     print(f"        Working: {project_item.big_plans_summary.working_cnt}")
@@ -219,7 +219,7 @@ class Report(command.Command):
                         print(f"        - {big_plan_name}")
 
         if "periods" in breakdowns:
-            print(f"  By Period:")
+            print("  By Period:")
 
             if not response.per_period_breakdown:
                 raise Exception("Did not find any per period breakdown even if it's asked for")
@@ -227,7 +227,7 @@ class Report(command.Command):
             for period_item in response.per_period_breakdown:
                 print(f"    {period_item.name}:")
                 if "inbox-tasks" in covers:
-                    print(f"      Inbox Tasks:")
+                    print("      Inbox Tasks:")
                     print(f"        Created: {period_item.inbox_tasks_summary.created.total_cnt}", end=" ")
                     for source in sources_to_present:
                         print(f"({period_item.inbox_tasks_summary.created.per_source_cnt[source]} " +
@@ -255,7 +255,7 @@ class Report(command.Command):
                     print("")
 
                 if "big-plans" in covers:
-                    print(f"      Big Plans:")
+                    print("      Big Plans:")
                     print(f"        Created: {period_item.big_plans_summary.created_cnt}")
                     print(f"        Accepted: {period_item.big_plans_summary.accepted_cnt}")
                     print(f"        Working: {period_item.big_plans_summary.working_cnt}")
@@ -267,7 +267,7 @@ class Report(command.Command):
                         print(f"        - {big_plan_name}")
 
         if "big-plans" in breakdowns:
-            print(f"  By Big Plan:")
+            print("  By Big Plan:")
 
             for big_plan_item in response.per_big_plan_breakdown:
                 print(f"    {big_plan_item.name}:")
@@ -281,7 +281,7 @@ class Report(command.Command):
                 print(f"      Completed Ratio: {big_plan_item.summary.completed_ratio * 100:.0f}%")
 
         if "recurring-tasks" in breakdowns:
-            print(f"  By Recurring Task:")
+            print("  By Recurring Task:")
 
             for recurring_task_item in response.per_recurring_task_breakdown:
                 if recurring_task_item.the_type not in recurring_task_types:
@@ -300,11 +300,11 @@ class Report(command.Command):
                     print(f"      Current Streak: {recurring_task_item.summary.current_streak_size}")
                     print(f"      Longest Streak: {recurring_task_item.summary.longest_streak_size}")
                     if recurring_task_item.summary.one_streak_size_histogram:
-                        print(f"      Streak Sizes (Max 1 Skip):")
+                        print("      Streak Sizes (Max 1 Skip):")
                         for streak_size in sorted(recurring_task_item.summary.one_streak_size_histogram.keys()):
                             print(f"        {streak_size} =>", end=" ")
                             print(f"{recurring_task_item.summary.one_streak_size_histogram[streak_size]}")
-                    print(f"      Avg Done:")
+                    print("      Avg Done:")
                     print(f"        Overall: {recurring_task_item.summary.avg_done_total * 100:2.1f}%")
                     for bigger_period, bigger_result in recurring_task_item.summary.avg_done_last_period.items():
                         print(f"        {bigger_period.for_notion()}: {bigger_result * 100:2.1f}%")

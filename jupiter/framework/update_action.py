@@ -50,4 +50,4 @@ class UpdateAction(Generic[UpdateActionType]):
         if self.should_change:
             return f"UpdateAction.change_to({repr(self._value)})"
         else:
-            return f"UpdateAction.do_nothing()"
+            return "UpdateAction.do_nothing()"

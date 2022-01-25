@@ -8,36 +8,37 @@ from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNo
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 
-class WorkspaceUpdateUseCase(UseCase['WorkspaceUpdateUseCase.Args', None]):
+class WorkspaceUpdateUseCase(AppMutationUseCase['WorkspaceUpdateUseCase.Args', None]):
     """UseCase for updating a workspace."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         name: UpdateAction[WorkspaceName]
         timezone: UpdateAction[Timezone]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _workspace_notion_manager: Final[WorkspaceNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             workspace_notion_manager: WorkspaceNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._workspace_notion_manager = workspace_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.load()
+        workspace = context.workspace
 
+        with self._storage_engine.get_unit_of_work() as uow:
             workspace = workspace.update(
                 name=args.name, timezone=args.timezone,
                 source=EventSource.CLI, modification_time=self._time_provider.get_current_time())

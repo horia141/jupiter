@@ -70,7 +70,7 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
                 archived_time=big_plan_collection.archived_time.to_db() if big_plan_collection.archived_time else None,
                 project_ref_id=big_plan_collection.project_ref_id.as_int()))
         if result.rowcount == 0:
-            raise BigPlanCollectionNotFoundError(f"The big plan collection does not exist")
+            raise BigPlanCollectionNotFoundError("The big plan collection does not exist")
         upsert_events(self._connection, self._big_plan_collection_event_table, big_plan_collection)
         return big_plan_collection
 

@@ -1,28 +1,28 @@
 """The command for finding smart lists."""
 from dataclasses import dataclass
-from typing import Optional, Iterable, Final
+from typing import Optional, Iterable
 
 from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.domain.storage_engine import DomainStorageEngine
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
-class SmartListFindUseCase(UseCase['SmartListFindUseCase.Args', 'SmartListFindUseCase.Response']):
+class SmartListFindUseCase(AppReadonlyUseCase['SmartListFindUseCase.Args', 'SmartListFindUseCase.Result']):
     """The command for finding smart lists."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         allow_archived: bool
         filter_keys: Optional[Iterable[SmartListKey]]
         filter_is_done: Optional[bool]
         filter_tag_names: Optional[Iterable[SmartListTagName]]
 
-    @dataclass()
+    @dataclass(frozen=True)
     class ResponseEntry:
         """A single entry in the LoadAllSmartListsResponse."""
 
@@ -30,19 +30,12 @@ class SmartListFindUseCase(UseCase['SmartListFindUseCase.Args', 'SmartListFindUs
         smart_list_tags: Iterable[SmartListTag]
         smart_list_items: Iterable[SmartListItem]
 
-    @dataclass()
-    class Response:
-        """Response object."""
-
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
+        """Result object."""
         smart_lists: Iterable['SmartListFindUseCase.ResponseEntry']
 
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(self, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._storage_engine = storage_engine
-
-    def execute(self, args: Args) -> 'SmartListFindUseCase.Response':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'SmartListFindUseCase.Result':
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             smart_lists = uow.smart_list_repository.find_all(
@@ -69,7 +62,7 @@ class SmartListFindUseCase(UseCase['SmartListFindUseCase.Args', 'SmartListFindUs
                 smart_list_items_by_smart_list_ref_ids[smart_list_item.smart_list_ref_id] = [smart_list_item]
             else:
                 smart_list_items_by_smart_list_ref_ids[smart_list_item.smart_list_ref_id].append(smart_list_item)
-        return SmartListFindUseCase.Response(
+        return SmartListFindUseCase.Result(
             smart_lists=[SmartListFindUseCase.ResponseEntry(
                 smart_list=sl,
                 smart_list_tags=smart_list_tags_by_smart_list_ref_ids.get(sl.ref_id, []),

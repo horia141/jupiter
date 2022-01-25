@@ -84,7 +84,7 @@ class SqliteSmartListRepository(SmartListRepository):
                 the_key=str(smart_list.key),
                 name=str(smart_list.name)))
         if result.rowcount == 0:
-            raise SmartListNotFoundError(f"The smart list does not exist")
+            raise SmartListNotFoundError("The smart list does not exist")
         upsert_events(self._connection, self._smart_list_event_table, smart_list)
         return smart_list
 
@@ -202,7 +202,7 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
                 smart_list_ref_id=smart_list_tag.smart_list_ref_id.as_int(),
                 tag_name=str(smart_list_tag.tag_name)))
         if result.rowcount == 0:
-            raise SmartListTagNotFoundError(f"The smart list tag does not exist")
+            raise SmartListTagNotFoundError("The smart list tag does not exist")
         upsert_events(self._connection, self._smart_list_tag_event_table, smart_list_tag)
         return smart_list_tag
 
@@ -339,7 +339,7 @@ class SqliteSmartListItemRepository(SmartListItemRepository):
                 tags_ref_id=[ti.as_int() for ti in smart_list_item.tags_ref_id],
                 url=str(smart_list_item.url) if smart_list_item.url else None))
         if result.rowcount == 0:
-            raise SmartListItemNotFoundError(f"The smart list item does not exist")
+            raise SmartListItemNotFoundError("The smart list item does not exist")
         upsert_events(self._connection, self._smart_list_item_event_table, smart_list_item)
         return smart_list_item
 

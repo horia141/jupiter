@@ -13,15 +13,16 @@ from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.url import URL
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 
-class SmartListItemCreateUseCase(UseCase['SmartListItemCreateUseCase.Args', None]):
+class SmartListItemCreateUseCase(AppMutationUseCase['SmartListItemCreateUseCase.Args', None]):
     """The command for creating a smart list item."""
 
     @dataclass()
-    class Args:
+    class Args(UseCaseArgsBase):
         """Args."""
         smart_list_key: SmartListKey
         name: SmartListItemName
@@ -29,19 +30,19 @@ class SmartListItemCreateUseCase(UseCase['SmartListItemCreateUseCase.Args', None
         tag_names: List[SmartListTagName]
         url: Optional[URL]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             smart_list_notion_manager: SmartListNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._smart_list_notion_manager = smart_list_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             smart_list = uow.smart_list_repository.load_by_key(args.smart_list_key)

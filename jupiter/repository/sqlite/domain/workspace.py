@@ -43,7 +43,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
         """Create a workspace."""
         try:
             workspace = self.load()
-            raise WorkspaceAlreadyExistsError(f"Workspace already exists")
+            raise WorkspaceAlreadyExistsError("Workspace already exists")
         except WorkspaceNotFoundError:
             pass
         result = self._connection.execute(
@@ -78,7 +78,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 default_project_ref_id=
                 workspace.default_project_ref_id.as_int() if workspace.default_project_ref_id else None))
         if result.rowcount == 0:
-            raise WorkspaceNotFoundError(f"The workspace does not exist")
+            raise WorkspaceNotFoundError("The workspace does not exist")
         upsert_events(self._connection, self._workspace_event_table, workspace)
         return workspace
 
@@ -87,7 +87,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
         query_stmt = select(self._workspace_table)
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise WorkspaceNotFoundError(f"Missing workspace")
+            raise WorkspaceNotFoundError("Missing workspace")
         return self._row_to_entity(result)
 
     @staticmethod

@@ -62,7 +62,7 @@ class PrmSyncService:
                     new_person = uow.person_repository.create(new_person)
 
                 self._prm_notion_manager.link_local_and_notion_entries(new_person.ref_id, notion_person.notion_id)
-                LOGGER.info(f"Linked the new person with local entries")
+                LOGGER.info("Linked the new person with local entries")
 
                 notion_person = notion_person.join_with_aggregate_root(new_person, None)
                 self._prm_notion_manager.save_person(notion_person)

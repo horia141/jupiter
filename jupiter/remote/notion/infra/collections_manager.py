@@ -269,7 +269,7 @@ class NotionCollectionsManager:
                 "value": tag,
                 "color": self._get_stable_color(tag_key)
             })
-            LOGGER.info(f"Added new item for collection schema")
+            LOGGER.info("Added new item for collection schema")
 
         collection.set("schema", schema)
 

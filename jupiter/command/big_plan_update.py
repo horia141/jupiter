@@ -2,7 +2,7 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus

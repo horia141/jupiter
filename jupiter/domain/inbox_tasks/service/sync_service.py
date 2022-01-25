@@ -86,7 +86,7 @@ class InboxTaskSyncService:
 
                 self._inbox_task_notion_manager.link_local_and_notion_inbox_task(
                     inbox_task_collection.ref_id, new_inbox_task.ref_id, notion_inbox_task.notion_id)
-                LOGGER.info(f"Linked the new inbox task with local entries")
+                LOGGER.info("Linked the new inbox task with local entries")
 
                 big_plan_name = \
                     all_big_plans_map[new_inbox_task.big_plan_ref_id].name if new_inbox_task.big_plan_ref_id else None

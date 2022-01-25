@@ -60,7 +60,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
                 workspace_ref_id=prm_database.workspace_ref_id.as_int(),
                 catch_up_project_ref_id=prm_database.catch_up_project_ref_id.as_int()))
         except IntegrityError as err:
-            raise PrmDatabaseAlreadyExistsError(f"A PRM database already exists") from err
+            raise PrmDatabaseAlreadyExistsError("A PRM database already exists") from err
         prm_database = prm_database.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
@@ -79,7 +79,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
                 workspace_ref_id=prm_database.workspace_ref_id.as_int(),
                 catch_up_project_ref_id=prm_database.catch_up_project_ref_id.as_int()))
         if result.rowcount == 0:
-            raise PrmDatabaseNotFoundError(f"The PRM database does not exist")
+            raise PrmDatabaseNotFoundError("The PRM database does not exist")
         upsert_events(self._connection, self._prm_database_event_table, prm_database)
         return prm_database
 
@@ -88,7 +88,7 @@ class SqlitePrmDatabaseRepository(PrmDatabaseRepository):
         query_stmt = select(self._prm_database_table)
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise PrmDatabaseNotFoundError(f"Missing PRM database")
+            raise PrmDatabaseNotFoundError("Missing PRM database")
         return self._row_to_entity(result)
 
     @staticmethod

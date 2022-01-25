@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.smart_lists.archive import SmartListArchiveUseCase
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 
@@ -37,4 +37,4 @@ class SmartListArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
-        self._command.execute(smart_list_key)
+        self._command.execute(SmartListArchiveUseCase.Args(key=smart_list_key))

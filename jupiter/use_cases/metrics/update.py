@@ -25,18 +25,19 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
+class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
     """The command for updating a metric's properties."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         key: MetricKey
         name: UpdateAction[MetricName]
@@ -51,23 +52,24 @@ class MetricUpdateUseCase(UseCase['MetricUpdateUseCase.Args', None]):
         collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
 
     _global_properties: Final[GlobalProperties]
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            storage_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            self,
+            global_properties: GlobalProperties,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager,
             metric_notion_manager: MetricNotionManager) -> None:
         """Constructor."""
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._global_properties = global_properties
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._metric_notion_manager = metric_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             metric = uow.metric_repository.load_by_key(args.key)
