@@ -15,11 +15,11 @@ class RecurringTaskCollection(AggregateRoot):
     class Created(AggregateRoot.Created):
         """Created event."""
 
-    project_ref_id: EntityId
+    workspace_ref_id: EntityId
 
     @staticmethod
     def new_recurring_task_collection(
-            project_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'RecurringTaskCollection':
+            workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'RecurringTaskCollection':
         """Create a recurring task collection."""
         recurring_task_collection = RecurringTaskCollection(
             ref_id=BAD_REF_ID,
@@ -29,5 +29,5 @@ class RecurringTaskCollection(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[RecurringTaskCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            project_ref_id=project_ref_id)
+            workspace_ref_id=workspace_ref_id)
         return recurring_task_collection

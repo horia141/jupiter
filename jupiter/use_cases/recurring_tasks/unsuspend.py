@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
@@ -35,13 +36,15 @@ class RecurringTaskUnsuspendUseCase(AppMutationUseCase['RecurringTaskUnsuspendUs
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
+            project = uow.project_repository.load_by_id(recurring_task.project_ref_id)
             recurring_task = \
                 recurring_task.unsuspend(
                     source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.recurring_task_repository.save(recurring_task)
 
+        direct_info = NotionRecurringTask.DirectInfo(project_name=project.name)
         notion_recurring_task = self._recurring_task_notion_manager.load_recurring_task(
             recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
-        notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
+        notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, direct_info)
         self._recurring_task_notion_manager.save_recurring_task(
             recurring_task.recurring_task_collection_ref_id, notion_recurring_task)

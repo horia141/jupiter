@@ -10,10 +10,13 @@ from sqlalchemy.exc import IntegrityError
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository, \
+    MetricCollectionNotFoundError
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository, MetricEntryNotFoundError
 from jupiter.domain.metrics.infra.metric_repository import MetricRepository, MetricAlreadyExistsError, \
     MetricNotFoundError
 from jupiter.domain.metrics.metric import Metric
+from jupiter.domain.metrics.metric_collection import MetricCollection
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
@@ -28,6 +31,90 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.repository.sqlite.infra.events import build_event_table, upsert_events, remove_events
 
 LOGGER = logging.getLogger(__name__)
+
+
+class SqliteMetricCollectionRepository(MetricCollectionRepository):
+    """The metric collection repository."""
+
+    _connection: Final[Connection]
+    _metric_collection_table: Final[Table]
+    _metric_collection_event_table: Final[Table]
+
+    def __init__(self, connection: Connection, metadata: MetaData) -> None:
+        """Constructor."""
+        self._connection = connection
+        self._metric_collection_table = Table(
+            'metric_collection',
+            metadata,
+            Column('ref_id', Integer, primary_key=True, autoincrement=True),
+            Column('version', Integer, nullable=False),
+            Column('archived', Boolean, nullable=False),
+            Column('created_time', DateTime, nullable=False),
+            Column('last_modified_time', DateTime, nullable=False),
+            Column('archived_time', DateTime, nullable=True),
+            Column(
+                'workspace_ref_id', Integer, ForeignKey("workspace.ref_id"), unique=True, index=True, nullable=False),
+            Column('collection_project_ref_id', Integer, ForeignKey("project.ref_id"), nullable=False),
+            keep_existing=True)
+        self._metric_collection_event_table = build_event_table(self._metric_collection_table, metadata)
+
+    def create(self, metric_collection: MetricCollection) -> MetricCollection:
+        """Create a metric collection."""
+        result = self._connection.execute(
+            insert(self._metric_collection_table).values(
+                ref_id=metric_collection.ref_id.as_int() if metric_collection.ref_id != BAD_REF_ID else None,
+                version=metric_collection.version,
+                archived=metric_collection.archived,
+                created_time=metric_collection.created_time.to_db(),
+                last_modified_time=metric_collection.last_modified_time.to_db(),
+                archived_time=metric_collection.archived_time.to_db() if metric_collection.archived_time else None,
+                workspace_ref_id=metric_collection.workspace_ref_id.as_int(),
+                collection_project_ref_id=metric_collection.collection_project_ref_id.as_int()))
+        metric_collection = metric_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._metric_collection_event_table, metric_collection)
+        return metric_collection
+
+    def save(self, metric_collection: MetricCollection) -> MetricCollection:
+        """Save a big metric collection."""
+        result = self._connection.execute(
+            update(self._metric_collection_table)
+            .where(self._metric_collection_table.c.ref_id == metric_collection.ref_id.as_int())
+            .values(
+                version=metric_collection.version,
+                archived=metric_collection.archived,
+                created_time=metric_collection.created_time.to_db(),
+                last_modified_time=metric_collection.last_modified_time.to_db(),
+                archived_time=metric_collection.archived_time.to_db() if metric_collection.archived_time else None,
+                workspace_ref_id=metric_collection.workspace_ref_id.as_int(),
+                collection_project_ref_id=metric_collection.collection_project_ref_id.as_int()))
+        if result.rowcount == 0:
+            raise MetricCollectionNotFoundError("The metric collection does not exist")
+        upsert_events(self._connection, self._metric_collection_event_table, metric_collection)
+        return metric_collection
+
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> MetricCollection:
+        """Load a metric collection for a given metric."""
+        query_stmt = \
+            select(self._metric_collection_table)\
+                .where(self._metric_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+        result = self._connection.execute(query_stmt).first()
+        if result is None:
+            raise MetricCollectionNotFoundError(f"Big plan collection for metric {workspace_ref_id} does not exist")
+        return self._row_to_entity(result)
+
+    @staticmethod
+    def _row_to_entity(row: Result) -> MetricCollection:
+        return MetricCollection(
+            ref_id=EntityId.from_raw(str(row["ref_id"])),
+            version=row["version"],
+            archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
+            if row["archived_time"] else None,
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            events=[],
+            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])),
+            collection_project_ref_id=EntityId.from_raw(str(row["collection_project_ref_id"])))
 
 
 class SqliteMetricRepository(MetricRepository):
@@ -49,7 +136,7 @@ class SqliteMetricRepository(MetricRepository):
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
             Column('archived_time', DateTime, nullable=True),
-            Column('workspace_ref_id', Integer, ForeignKey("workspace.ref_id"), nullable=False),
+            Column('metric_collection_ref_id', Integer, ForeignKey("metric_collection.ref_id"), nullable=False),
             Column('the_key', String(64), nullable=False, index=True, unique=True),
             Column('name', Unicode(), nullable=False),
             Column('collection_project_ref_id', Integer, nullable=True),
@@ -76,11 +163,9 @@ class SqliteMetricRepository(MetricRepository):
                 last_modified_time=metric.last_modified_time.to_db(),
                 archived_time=metric.archived_time.to_db()
                 if metric.archived_time else None,
-                workspace_ref_id=metric.workspace_ref_id.as_int(),
+                metric_collection_ref_id=metric.metric_collection_ref_id.as_int(),
                 the_key=str(metric.key),
                 name=str(metric.name),
-                collection_project_ref_id=
-                metric.collection_params.project_ref_id.as_int() if metric.collection_params else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
                 collection_eisen=metric.collection_params.eisen.value if metric.collection_params else None,
                 collection_difficulty=metric.collection_params.difficulty.value
@@ -113,11 +198,9 @@ class SqliteMetricRepository(MetricRepository):
                 created_time=metric.created_time.to_db(),
                 last_modified_time=metric.last_modified_time.to_db(),
                 archived_time=metric.archived_time.to_db() if metric.archived_time else None,
-                workspace_ref_id=metric.workspace_ref_id.as_int(),
+                metric_collection_ref_id=metric.metric_collection_ref_id.as_int(),
                 the_key=str(metric.key),
                 name=str(metric.name),
-                collection_project_ref_id=metric.collection_params.project_ref_id.as_int()
-                if metric.collection_params else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
                 collection_eisen=metric.collection_params.eisen.value if metric.collection_params else None,
                 collection_difficulty=metric.collection_params.difficulty.value
@@ -138,9 +221,12 @@ class SqliteMetricRepository(MetricRepository):
         upsert_events(self._connection, self._metric_event_table, metric)
         return metric
 
-    def load_by_key(self, key: MetricKey) -> Metric:
+    def load_by_key(self, metric_collection_ref_id: EntityId, key: MetricKey) -> Metric:
         """Find a metric by key."""
-        query_stmt = select(self._metric_table).where(self._metric_table.c.the_key == str(key))
+        query_stmt = \
+            select(self._metric_table)\
+                .where(self._metric_table.c.metric_collection_ref_id == metric_collection_ref_id.as_int())\
+                .where(self._metric_table.c.the_key == str(key))
         result = self._connection.execute(query_stmt).first()
         if result is None:
             raise MetricNotFoundError(f"Metric with key {key} does not exist")
@@ -158,11 +244,14 @@ class SqliteMetricRepository(MetricRepository):
 
     def find_all(
             self,
+            metric_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[MetricKey]] = None) -> List[Metric]:
         """Find all metrics matching some criteria."""
-        query_stmt = select(self._metric_table)
+        query_stmt = \
+            select(self._metric_table)\
+                .where(self._metric_table.c.metric_collection_ref_id == metric_collection_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_table.c.archived.is_(False))
         if filter_ref_ids:
@@ -194,11 +283,10 @@ class SqliteMetricRepository(MetricRepository):
             if row["archived_time"] else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])),
+            metric_collection_ref_id=EntityId.from_raw(str(row["metric_collection_ref_id"])),
             key=MetricKey.from_raw(row["the_key"]),
             name=MetricName.from_raw(row["name"]),
             collection_params=RecurringTaskGenParams(
-                project_ref_id=EntityId.from_raw(str(row["collection_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["collection_period"]),
                 eisen=Eisen.from_raw(row["collection_eisen"]),
                 difficulty=Difficulty.from_raw(row["collection_difficulty"])
@@ -246,17 +334,18 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
 
     def create(self, metric_entry: MetricEntry) -> MetricEntry:
         """Create a metric entry."""
-        result = self._connection.execute(insert(self._metric_entry_table).values(
-            ref_id=metric_entry.ref_id.as_int() if metric_entry.ref_id != BAD_REF_ID else None,
-            version=metric_entry.version,
-            archived=metric_entry.archived,
-            created_time=metric_entry.created_time.to_db(),
-            last_modified_time=metric_entry.last_modified_time.to_db(),
-            archived_time=metric_entry.archived_time.to_db() if metric_entry.archived_time else None,
-            metric_ref_id=metric_entry.metric_ref_id.as_int(),
-            collection_time=metric_entry.collection_time.to_db(),
-            value=metric_entry.value,
-            notes=metric_entry.notes))
+        result = \
+            self._connection.execute(insert(self._metric_entry_table).values(
+                ref_id=metric_entry.ref_id.as_int() if metric_entry.ref_id != BAD_REF_ID else None,
+                version=metric_entry.version,
+                archived=metric_entry.archived,
+                created_time=metric_entry.created_time.to_db(),
+                last_modified_time=metric_entry.last_modified_time.to_db(),
+                archived_time=metric_entry.archived_time.to_db() if metric_entry.archived_time else None,
+                metric_ref_id=metric_entry.metric_ref_id.as_int(),
+                collection_time=metric_entry.collection_time.to_db(),
+                value=metric_entry.value,
+                notes=metric_entry.notes))
         metric_entry = metric_entry.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._metric_entry_event_table, metric_entry)
         return metric_entry
@@ -291,29 +380,18 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             raise MetricEntryNotFoundError(f"Metric entry with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> List[MetricEntry]:
+    def find_all(
+            self,
+            metric_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[MetricEntry]:
         """Retrieve all metric entries for a given metric."""
         query_stmt = select(self._metric_entry_table)\
             .where(self._metric_entry_table.c.metric_ref_id == metric_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
-        results = self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
-    def find_all(
-            self,
-            allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None) -> List[MetricEntry]:
-        """Find all metric entries matching some criteria."""
-        query_stmt = select(self._metric_entry_table)
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._metric_entry_table.c.archived.is_(False))
         if filter_ref_ids:
             query_stmt = query_stmt.where(self._metric_entry_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_metric_ref_ids:
-            query_stmt = query_stmt\
-                .where(self._metric_entry_table.c.metric_ref_id.in_(fi.as_int() for fi in filter_metric_ref_ids))
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 

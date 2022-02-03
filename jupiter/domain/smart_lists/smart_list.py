@@ -22,13 +22,13 @@ class SmartList(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    workspace_ref_id: EntityId
+    smart_list_collection_ref_id: EntityId
     key: SmartListKey
     name: SmartListName
 
     @staticmethod
     def new_smart_list(
-            workspace_ref_id: EntityId, key: SmartListKey, name: SmartListName, source: EventSource,
+            smart_list_collection_ref_id: EntityId, key: SmartListKey, name: SmartListName, source: EventSource,
             created_time: Timestamp) -> 'SmartList':
         """Create a smart list."""
         smart_list = SmartList(
@@ -39,7 +39,7 @@ class SmartList(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[SmartList.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id,
+            smart_list_collection_ref_id=smart_list_collection_ref_id,
             key=key,
             name=name)
         return smart_list

@@ -1,4 +1,6 @@
 """The centralised point for interacting with Notion recurring tasks."""
+import copy
+import hashlib
 import logging
 import uuid
 from typing import Optional, ClassVar, Final, cast, Dict, Iterable
@@ -10,21 +12,22 @@ from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
-    NotionRecurringTaskCollectionNotFoundError, NotionRecurringTaskNotFoundError
+    NotionRecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
+from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
-from jupiter.remote.notion.common import NotionLockKey
+from jupiter.remote.notion.common import NotionLockKey, format_name_for_option
 from jupiter.remote.notion.infra.client import NotionFieldProps, NotionFieldShow, NotionClient
-from jupiter.remote.notion.infra.collections_manager\
-    import NotionCollectionsManager, NotionCollectionItemNotFoundError, NotionCollectionNotFoundError
+from jupiter.remote.notion.infra.collections_manager \
+    import NotionCollectionsManager, NotionCollectionItemNotFoundError
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -98,7 +101,7 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         }
     }
 
-    _DIFFICULTY = {
+    _DIFFICULTY: ClassVar[JSONDictType] = {
         "Easy": {
             "name": Difficulty.EASY.for_notion(),
             "color": "blue"
@@ -139,6 +142,15 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         "archived": {
             "name": "Archived",
             "type": "checkbox"
+        },
+        "project-ref-id": {
+            "name": "Project Id",
+            "type": "text"
+        },
+        "project-name": {
+            "name": "Project",
+            "type": "select",
+            "options": [{"color": "gray", "id": str(uuid.uuid4()), "value": "None"}]
         },
         "eisen": {
             "name": "Eisenhower",
@@ -212,6 +224,8 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         NotionFieldProps(name="title", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="period", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="the-type", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="project-ref-id", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="project-name", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="eisen", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="difficulty", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="actionable-from-month", show=NotionFieldShow.SHOW),
@@ -229,7 +243,120 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         NotionFieldProps(name="last-edited-time", show=NotionFieldShow.SHOW)
     ]
 
-    _KANBAN_ALL_VIEW_SCHEMA: JSONDictType = {
+    _DATABASE_BY_PROJECT_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "List By Project",
+        "type": "table",
+        "query2": {
+            "sort": [{
+                "property": "suspended",
+                "direction": "ascending"
+            }, {
+                "property": "period",
+                "direction": "ascending"
+            }, {
+                "property": "the-type",
+                "direction": "descending"
+            }, {
+                "property": "eisen",
+                "direction": "ascending"
+            }, {
+                "property": "difficulty",
+                "direction": "ascending"
+            }]
+        },
+        "format": {
+            "collection_group_by": {
+                "property": "project-name",
+                "type": "select",
+                "sort": {
+                    "type": "manual"
+                }
+            },
+            "table_properties": [{
+                "width": 400,
+                "property": "title",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "period",
+                "visible": True
+            }, {
+                "width": 80,
+                "property": "the-type",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "eisen",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "difficulty",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "actionable-from-day",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "actionable-from-month",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "due-at-time",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "due-at-day",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "due-at-month",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "suspended",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "must-do",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "skip-rule",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "start-at-date",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "end-at-date",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "archived",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "project-ref-id",
+                "visible": False
+            }, {
+                "width": 100,
+                "property": "project-name",
+                "visible": False
+            }, {
+                "width": 100,
+                "property": "last-edited-time",
+                "visible": False
+            }, {
+                "width": 100,
+                "property": "ref-id",
+                "visible": False
+            }]
+        }
+    }
+
+    _KANBAN_ALL_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Kanban",
         "type": "board",
         "query2": {
@@ -241,6 +368,9 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             "sort": [{
                 "property": "suspended",
                 "direction": "ascending"
+            }, {
+                "property": "the-type",
+                "direction": "descending"
             }, {
                 "property": "eisen",
                 "direction": "ascending"
@@ -296,6 +426,12 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
                 "property": "archived",
                 "visible": False,
             }, {
+                "property": "project-ref-id",
+                "visible": False
+            }, {
+                "property": "project-name",
+                "visible": True
+            }, {
                 "property": "eisen",
                 "visible": True
             }, {
@@ -303,19 +439,19 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
                 "visible": True
             }, {
                 "property": "actionable-from-day",
-                "visible": True
+                "visible": False
             }, {
                 "property": "actionable-from-month",
-                "visible": True
+                "visible": False
             }, {
                 "property": "due-at-time",
-                "visible": True
+                "visible": False
             }, {
                 "property": "due-at-day",
-                "visible": True
+                "visible": False
             }, {
                 "property": "due-at-month",
-                "visible": True
+                "visible": False
             }, {
                 "property": "suspended",
                 "visible": True
@@ -353,6 +489,14 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             }, {
                 "width": 100,
                 "property": "archived",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "project-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "project-name",
                 "visible": True
             }, {
                 "width": 100,
@@ -435,45 +579,58 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
         self._collections_manager = collections_manager
 
     def upsert_recurring_task_collection(
-            self, notion_project: NotionProject,
+            self, notion_workspace: NotionWorkspace,
             recurring_task_collection: NotionRecurringTaskCollection) -> NotionRecurringTaskCollection:
         """Upsert the Notion-side recurring task."""
         collection_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{recurring_task_collection.ref_id}"),
-            parent_page_notion_id=notion_project.notion_id,
+            parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
-            view_schemas={
-                "kanban_all_view_id": NotionRecurringTasksManager._KANBAN_ALL_VIEW_SCHEMA,
-                "database_view_id": NotionRecurringTasksManager._DATABASE_VIEW_SCHEMA
-            })
+            view_schemas=[
+                ("database_by_project_view_id", NotionRecurringTasksManager._DATABASE_BY_PROJECT_VIEW_SCHEMA),
+                ("kanban_all_view_id", NotionRecurringTasksManager._KANBAN_ALL_VIEW_SCHEMA),
+                ("database_view_id", NotionRecurringTasksManager._DATABASE_VIEW_SCHEMA)
+            ])
 
         return NotionRecurringTaskCollection(
             notion_id=collection_link.collection_notion_id,
             ref_id=recurring_task_collection.ref_id)
 
-    def load_recurring_task_collection(self, ref_id: EntityId) -> NotionRecurringTaskCollection:
-        """Retrieve the Notion-side recurring task collection."""
-        try:
-            recurring_task_collection_link = self._collections_manager.load_collection(
-                key=NotionLockKey(f"{self._KEY}:{ref_id}"))
-        except NotionCollectionNotFoundError as err:
-            raise NotionRecurringTaskCollectionNotFoundError(
-                f"Could not find recurring task collection with id {ref_id} locally") from err
+    def upsert_recurring_tasks_project_field_options(
+            self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
+        """Upsert the Notion-side structure for the 'project' select field."""
+        inbox_big_plan_options = [{
+            "color": self._get_stable_color(str(pl.notion_link_uuid)),
+            "id": str(pl.notion_link_uuid),
+            "value": format_name_for_option(pl.name)
+        } for pl in project_labels]
 
-        return NotionRecurringTaskCollection(
-            ref_id=ref_id,
-            notion_id=recurring_task_collection_link.collection_notion_id)
+        new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
+        new_schema["project-name"]["options"] = inbox_big_plan_options  # type: ignore
 
-    def remove_recurring_tasks_collection(self, ref_id: EntityId) -> None:
-        """Remove the Notion-side structure for this collection."""
-        try:
-            return self._collections_manager.remove_collection(NotionLockKey(f"{self._KEY}:{ref_id}"))
-        except NotionCollectionNotFoundError as err:
-            raise NotionRecurringTaskCollectionNotFoundError(
-                f"Notion recurring task collection with id {ref_id} could not be found") \
-                from err
+        self._collections_manager.save_collection_no_merge(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, new_schema, "project-name")
+        LOGGER.info("Updated the schema for the associated recurring task")
+
+        new_view: JSONDictType = copy.deepcopy(NotionRecurringTasksManager._DATABASE_BY_PROJECT_VIEW_SCHEMA)
+        new_view["format"]["collection_groups"] = [{  # type: ignore
+            "property": "project-name",
+            "value": {
+                "type": "select",
+                "value": format_name_for_option(pl.name)
+            },
+            "hidden": False
+        } for pl in sorted(project_labels, key=lambda x: x.created_time)] + [{
+            "property": "project-name",
+            "value": {"type": "select"},
+            "hidden": True
+        }]
+
+        self._collections_manager.quick_update_view_for_collection(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), "database_by_project_view_id", new_view)
+        LOGGER.info("Updated the projects view for the associated recurring tasks")
 
     def upsert_recurring_task(
             self, recurring_task_collection_ref_id: EntityId, recurring_task: NotionRecurringTask,
@@ -571,6 +728,8 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             notion_row.title = row.name
             notion_row.archived = row.archived
             notion_row.period = row.period
+            notion_row.project_id = row.project_ref_id
+            notion_row.project = row.project_name
             notion_row.the_type = row.the_type
             notion_row.eisenhower = row.eisen
             notion_row.difficulty = row.difficulty
@@ -604,6 +763,8 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
             notion_id=NotionId.from_raw(recurring_task_notion_row.id),
             name=recurring_task_notion_row.title,
             archived=recurring_task_notion_row.archived,
+            project_ref_id=recurring_task_notion_row.project_id,
+            project_name=recurring_task_notion_row.project,
             period=recurring_task_notion_row.period,
             the_type=recurring_task_notion_row.the_type,
             eisen=recurring_task_notion_row.eisenhower,
@@ -705,3 +866,19 @@ class NotionRecurringTasksManager(RecurringTaskNotionManager):
                 }]
             }
         }
+
+    @staticmethod
+    def _get_stable_color(option_id: str) -> str:
+        """Return a random-ish yet stable color for a given name."""
+        colors = [
+            "gray",
+            "brown",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "pink",
+            "red"
+        ]
+        return colors[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(colors)]

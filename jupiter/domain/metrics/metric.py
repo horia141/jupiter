@@ -25,7 +25,7 @@ class Metric(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    workspace_ref_id: EntityId
+    metric_collection_ref_id: EntityId
     key: MetricKey
     name: MetricName
     collection_params: Optional[RecurringTaskGenParams]
@@ -33,7 +33,7 @@ class Metric(AggregateRoot):
 
     @staticmethod
     def new_metric(
-            workspace_ref_id: EntityId, key: MetricKey, name: MetricName,
+            metric_collection_ref_id: EntityId, key: MetricKey, name: MetricName,
             collection_params: Optional[RecurringTaskGenParams], metric_unit: Optional[MetricUnit], source: EventSource,
             created_time: Timestamp) -> 'Metric':
         """Create a metric."""
@@ -45,7 +45,7 @@ class Metric(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[Metric.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id,
+            metric_collection_ref_id=metric_collection_ref_id,
             key=key,
             name=name,
             collection_params=collection_params,

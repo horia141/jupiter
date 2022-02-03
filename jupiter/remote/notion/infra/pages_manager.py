@@ -42,8 +42,9 @@ class NotionPagesManager:
             page_block = notion_client.get_regular_page(found_notion_page_link.notion_id)
             if page_block.alive:
                 page_block.title = name
+                page_block.icon = "🚀"
 
-                if parent_page_notion_id is not None and page_block.get("parent_id") != parent_page_notion_id:
+                if parent_page_notion_id is not None and page_block.get("parent_id") != str(parent_page_notion_id):
                     # Kind of expensive operation here!
                     page_block.move_to(notion_client.get_regular_page(parent_page_notion_id))
 
@@ -54,7 +55,7 @@ class NotionPagesManager:
                 return new_notion_page_link
 
         parent_page_block = notion_client.get_regular_page(parent_page_notion_id) if parent_page_notion_id else None
-        new_page_block = notion_client.create_regular_page(name, parent_page_block)
+        new_page_block = notion_client.create_regular_page(name, "🚀", parent_page_block)
 
         with self._storage_engine.get_unit_of_work() as uow:
             new_notion_page_link = \
@@ -78,7 +79,7 @@ class NotionPagesManager:
 
         page_block.title = name
 
-        if parent_page_notion_id is not None and page_block.get("parent_id") != parent_page_notion_id:
+        if parent_page_notion_id is not None and page_block.get("parent_id") != str(parent_page_notion_id):
             # Kind of expensive operation here!
             page_block.move_to(notion_client.get_regular_page(parent_page_notion_id))
 
@@ -87,22 +88,6 @@ class NotionPagesManager:
             uow.notion_page_link_repository.save(new_notion_page_link)
 
         return new_notion_page_link
-
-    def remove_page(self, key: NotionLockKey) -> None:
-        """Remove a page with a given key."""
-        notion_client = self._client_builder.get_notion_client()
-
-        try:
-            with self._storage_engine.get_unit_of_work() as uow:
-                notion_page_link = uow.notion_page_link_repository.load(key)
-            page_block = notion_client.get_regular_page(notion_page_link.notion_id)
-        except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
-            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
-
-        page_block.remove()
-
-        with self._storage_engine.get_unit_of_work() as uow:
-            uow.notion_page_link_repository.remove(key)
 
     def get_page(self, key: NotionLockKey) -> NotionPageLink:
         """Get a page with a given key."""

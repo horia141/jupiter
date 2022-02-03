@@ -40,19 +40,24 @@ class SmartListCreateUseCase(AppMutationUseCase['SmartListCreateUseCase.Args', N
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.load()
+        workspace = context.workspace
 
-            smart_list = SmartList.new_smart_list(
-                workspace_ref_id=workspace.ref_id, key=args.key, name=args.name, source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time())
+        with self._storage_engine.get_unit_of_work() as uow:
+            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+
+            smart_list = \
+                SmartList.new_smart_list(
+                    smart_list_collection_ref_id=smart_list_collection.ref_id, key=args.key, name=args.name,
+                    source=EventSource.CLI, created_time=self._time_provider.get_current_time())
 
             smart_list = uow.smart_list_repository.create(smart_list)
             smart_list_default_tag = SmartListTag.new_smart_list_tag(
                 smart_list_ref_id=smart_list.ref_id, tag_name=SmartListTagName('Default'),
                 source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             smart_list_default_tag = uow.smart_list_tag_repository.create(smart_list_default_tag)
+
         notion_smart_list = NotionSmartList.new_notion_row(smart_list)
-        self._smart_list_notion_manager.upsert_smart_list(notion_smart_list)
+        self._smart_list_notion_manager.upsert_smart_list(smart_list_collection.ref_id, notion_smart_list)
         notion_smart_list_default_tag = NotionSmartListTag.new_notion_row(smart_list_default_tag, None)
-        self._smart_list_notion_manager.upsert_smart_list_tag(smart_list.ref_id, notion_smart_list_default_tag)
+        self._smart_list_notion_manager.upsert_smart_list_tag(
+            smart_list_collection.ref_id, smart_list.ref_id, notion_smart_list_default_tag)

@@ -37,14 +37,18 @@ class SmartListArchiveUseCase(AppMutationUseCase['SmartListArchiveUseCase.Args',
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            smart_list = uow.smart_list_repository.load_by_key(args.key)
+        workspace = context.workspace
 
-            for smart_list_tag in uow.smart_list_tag_repository.find_all_for_smart_list(smart_list.ref_id):
+        with self._storage_engine.get_unit_of_work() as uow:
+            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+
+            smart_list = uow.smart_list_repository.load_by_key(smart_list_collection.ref_id, args.key)
+
+            for smart_list_tag in uow.smart_list_tag_repository.find_all(smart_list.ref_id):
                 smart_list_tag = smart_list_tag.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.smart_list_tag_repository.save(smart_list_tag)
 
-            for smart_list_item in uow.smart_list_item_repository.find_all_for_smart_list(smart_list.ref_id):
+            for smart_list_item in uow.smart_list_item_repository.find_all(smart_list.ref_id):
                 smart_list_item = smart_list_item.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.smart_list_item_repository.save(smart_list_item)
 
@@ -53,7 +57,7 @@ class SmartListArchiveUseCase(AppMutationUseCase['SmartListArchiveUseCase.Args',
             LOGGER.info("Applied local changes")
 
         try:
-            self._smart_list_notion_manager.remove_smart_list(smart_list.ref_id)
+            self._smart_list_notion_manager.remove_smart_list(smart_list_collection.ref_id, smart_list.ref_id)
             LOGGER.info("Applied Notion changes")
         except NotionSmartListNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

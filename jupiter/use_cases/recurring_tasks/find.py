@@ -33,20 +33,27 @@ class RecurringTaskFindUseCase(AppReadonlyUseCase['RecurringTaskFindUseCase.Args
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
             filter_project_ref_ids: Optional[List[EntityId]] = None
             if args.filter_project_keys:
-                projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
+                project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+                projects = \
+                    uow.project_repository.find_all(
+                        project_collection_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
                 filter_project_ref_ids = [p.ref_id for p in projects]
 
-            recurring_task_collections = \
-                uow.recurring_task_collection_repository.find_all(
-                    filter_project_ref_ids=filter_project_ref_ids)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+
             recurring_tasks = uow.recurring_task_repository.find_all(
+                recurring_task_collection_ref_id=recurring_task_collection.ref_id,
                 allow_archived=args.show_archived, filter_ref_ids=args.filter_ref_ids,
-                filter_recurring_task_collection_ref_ids=[rct.ref_id for rct in recurring_task_collections])
+                filter_project_ref_ids=filter_project_ref_ids)
 
             inbox_tasks = uow.inbox_task_repository.find_all(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True, filter_recurring_task_ref_ids=(bp.ref_id for bp in recurring_tasks))
 
         return RecurringTaskFindUseCase.Result(

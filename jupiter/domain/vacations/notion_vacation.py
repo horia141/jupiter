@@ -14,13 +14,13 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class NotionVacation(NotionRow[Vacation, None, 'NotionVacation.InverseExtraInfo']):
+class NotionVacation(NotionRow[Vacation, None, 'NotionVacation.InverseInfo']):
     """A vacation on Notion-side."""
 
     @dataclass(frozen=True)
-    class InverseExtraInfo:
+    class InverseInfo:
         """Extra info for the Notion to app copy."""
-        workspace_ref_id: EntityId
+        vacation_collection_ref_id: EntityId
 
     name: str
     start_date: Optional[ADate]
@@ -38,7 +38,7 @@ class NotionVacation(NotionRow[Vacation, None, 'NotionVacation.InverseExtraInfo'
             start_date=aggregate_root.start_date,
             end_date=aggregate_root.end_date)
 
-    def new_aggregate_root(self, extra_info: InverseExtraInfo) -> Vacation:
+    def new_aggregate_root(self, extra_info: InverseInfo) -> Vacation:
         """Create a new vacation from this."""
         vacation_name = VacationName.from_raw(self.name)
         if self.start_date is None:
@@ -47,14 +47,14 @@ class NotionVacation(NotionRow[Vacation, None, 'NotionVacation.InverseExtraInfo'
             raise InputValidationError(f"Vacation '{self.name}' should have an end date")
         return Vacation.new_vacation(
             archived=self.archived,
-            workspace_ref_id=extra_info.workspace_ref_id,
+            vacation_collection_ref_id=extra_info.vacation_collection_ref_id,
             name=vacation_name,
             start_date=self.start_date,
             end_date=self.end_date,
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: Vacation, extra_info: InverseExtraInfo) -> Vacation:
+    def apply_to_aggregate_root(self, aggregate_root: Vacation, extra_info: InverseInfo) -> Vacation:
         """Apply to an already existing vacation."""
         vacation_name = VacationName.from_raw(self.name)
         if self.start_date is None:

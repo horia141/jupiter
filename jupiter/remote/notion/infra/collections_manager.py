@@ -4,7 +4,7 @@ import hashlib
 import logging
 import typing
 from copy import deepcopy
-from typing import Callable, TypeVar, Final, Dict, Iterable, cast
+from typing import Callable, TypeVar, Final, Dict, Iterable, cast, List, Tuple
 
 from notion.collection import CollectionRowBlock
 
@@ -64,7 +64,7 @@ class NotionCollectionsManager:
     def upsert_collection(
             self, key: NotionLockKey, parent_page_notion_id: NotionId, name: str, schema: JSONDictType,
             schema_properties: NotionCollectionSchemaProperties,
-            view_schemas: Dict[str, JSONDictType]) -> NotionCollectionLinkExtra:
+            view_schemas: List[Tuple[str, JSONDictType]]) -> NotionCollectionLinkExtra:
         """Create the Notion-side structure for this collection."""
         simdif_fields = set(schema.keys()).symmetric_difference(m.name for m in schema_properties)
 
@@ -99,7 +99,7 @@ class NotionCollectionsManager:
 
         # Attach the views.
         view_ids = collection_link.view_notion_ids if collection_link else {}
-        for view_name, view_schema in view_schemas.items():
+        for view_name, view_schema in view_schemas:
             the_view = client.attach_view_to_collection_page(
                 page, collection, view_ids.get(view_name, None), cast(str, view_schema["type"]), view_schema)
             view_ids[view_name] = the_view.id
@@ -108,7 +108,7 @@ class NotionCollectionsManager:
         # Tie everything up.
 
         page.set("collection_id", collection.id)
-        page.set("view_ids", list(view_ids.values()))
+        page.set("view_ids", [view_ids[view_name] for view_name, _ in view_schemas]) # view_ids.values()))
 
         # Change the title.
 
@@ -167,7 +167,8 @@ class NotionCollectionsManager:
         return new_collection_link.with_extra(new_name)
 
     def save_collection_no_merge(
-            self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> NotionCollectionLinkExtra:
+            self, key: NotionLockKey, new_name: str, new_schema: JSONDictType,
+            newly_added_field: str) -> NotionCollectionLinkExtra:
         """Just updates the name and schema for the collection and asks no questions."""
         client = self._client_builder.get_notion_client()
 
@@ -184,7 +185,9 @@ class NotionCollectionsManager:
 
         page.title = new_name
         collection.name = new_name
-        collection.set("schema", new_schema)
+        old_schema = collection.get("schema")
+        final_schema = self._merge_notion_schemas(old_schema, new_schema, newly_added_field)
+        collection.set("schema", final_schema)
         LOGGER.info("Applied the most current schema to the collection")
 
         with self._storage_engine.get_unit_of_work() as uow:
@@ -216,6 +219,29 @@ class NotionCollectionsManager:
             page.remove()
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.notion_collection_link_repository.remove(key)
+        except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
+            raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
+
+    def quick_update_view_for_collection(
+            self, key: NotionLockKey, view_name: str, view_schema: JSONDictType) -> None:
+        """Update a single view for a collection."""
+        client = self._client_builder.get_notion_client()
+
+        try:
+            with self._storage_engine.get_unit_of_work() as uow:
+                collection_link = uow.notion_collection_link_repository.load(key)
+
+            page = client.get_collection_page_by_id(collection_link.page_notion_id)
+            collection = \
+                client.get_collection(
+                    collection_link.page_notion_id, collection_link.collection_notion_id,
+                    collection_link.view_notion_ids.values())
+
+            # Change the view schema.
+            view_ids = collection_link.view_notion_ids if collection_link else {}
+            client.attach_view_to_collection_page(
+                page, collection, view_ids[view_name], cast(str, view_schema["type"]), view_schema)
+            LOGGER.info(f"Attached view '{view_name}' to collection id='{collection.id}'")
         except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
@@ -726,7 +752,9 @@ class NotionCollectionsManager:
                     in uow.notion_collection_item_link_repository.find_all_for_collection(collection_key)]
 
     @staticmethod
-    def _merge_notion_schemas(old_schema: JSONDictType, new_schema: JSONDictType) -> JSONDictType:
+    def _merge_notion_schemas(
+            old_schema: JSONDictType, new_schema: JSONDictType,
+            newly_added_field: typing.Optional[str] = None) -> JSONDictType:
         """Merge an old and new schema for the collection."""
         old_schema_any: typing.Any = old_schema # type: ignore
         new_schema_any: typing.Any = new_schema # type: ignore
@@ -741,7 +769,9 @@ class NotionCollectionsManager:
         # As another special case, the recurring tasks group key is left to whatever value it had
         # before since this thing is managed by the other flows!
         for (schema_item_name, schema_item) in new_schema_any.items():
-            if schema_item_name == "bigplan2":
+            if schema_item_name == newly_added_field:
+                combined_schema[schema_item_name] = schema_item
+            elif schema_item_name in ("bigplan2", "project-name"):
                 combined_schema[schema_item_name] = old_schema_any[schema_item_name] \
                     if (schema_item_name in old_schema_any and old_schema_any[schema_item_name]["type"] == "select") \
                     else schema_item

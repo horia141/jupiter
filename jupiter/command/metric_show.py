@@ -44,14 +44,15 @@ class MetricShow(command.Command):
             if len(args.metric_keys) > 0 else None
         response = self._command.execute(MetricFindUseCase.Args(allow_archived=False, filter_keys=metric_keys))
 
+        print(f"The collection project is {response.collection_project.name}")
+
+        print("Metrics:")
         for metric_response_entry in response.metrics:
             metric = metric_response_entry.metric
-            collection_project = metric_response_entry.collection_project
             metric_entries = metric_response_entry.metric_entries
 
-            print(f"{metric.key}: {metric.name}" +
-                  (f" @{metric.collection_params.period.for_notion()} in " +
-                   (f"{collection_project.name if collection_project else 'Default'}") +
+            print(f" - {metric.key}: {metric.name}" +
+                  (f" @{metric.collection_params.period.for_notion()}" +
                    (f" eisen={metric.collection_params.eisen.value}"
                     if metric.collection_params.eisen else '')) +
                   (f" difficulty={metric.collection_params.difficulty.for_notion()}"
@@ -70,13 +71,13 @@ class MetricShow(command.Command):
                   (f' #{metric.metric_unit.for_notion()}' if metric.metric_unit else ''))
 
             for metric_entry in sorted(metric_entries, key=lambda me: me.collection_time):
-                print(f"  - id={metric_entry.ref_id}" +
+                print(f"    - id={metric_entry.ref_id}" +
                       (f" {ADate.to_user_str(self._global_properties.timezone, metric_entry.collection_time)}") +
                       f" val={metric_entry.value}")
 
             if metric_response_entry.metric_collection_inbox_tasks:
-                print("  Collection Tasks:")
+                print("    Collection Tasks:")
                 for inbox_task in sorted(
                         metric_response_entry.metric_collection_inbox_tasks,
                         key=lambda it: cast(ADate, it.due_date)):
-                    print(f"    -id={inbox_task.ref_id} {inbox_task.name} {inbox_task.status.for_notion()}")
+                    print(f"      -id={inbox_task.ref_id} {inbox_task.name} {inbox_task.status.for_notion()}")

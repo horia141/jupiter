@@ -24,7 +24,11 @@ class ProjectFindUseCase(AppReadonlyUseCase['ProjectFindUseCase.Args', 'ProjectF
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
+        workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            projects = uow.project_repository.find_all(
-                allow_archived=args.allow_archived, filter_keys=args.filter_keys)
+            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            projects = \
+                uow.project_repository.find_all(
+                    project_collection_ref_id=project_collection.ref_id,
+                    allow_archived=args.allow_archived, filter_keys=args.filter_keys)
         return self.Result(projects=list(projects))

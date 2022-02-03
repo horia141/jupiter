@@ -43,8 +43,12 @@ class BigPlanArchiveUseCase(AppMutationUseCase['BigPlanArchiveUseCase.Args', Non
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
             inbox_tasks_for_big_plan = uow.inbox_task_repository.find_all(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 filter_big_plan_ref_ids=[args.ref_id])
 
         inbox_task_archive_service = \

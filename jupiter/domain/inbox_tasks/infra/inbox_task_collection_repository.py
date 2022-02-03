@@ -1,6 +1,5 @@
 """A repository for inbox task collections."""
 import abc
-from typing import Optional, Iterable
 
 from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.framework.base.entity_id import EntityId
@@ -27,15 +26,5 @@ class InboxTaskCollectionRepository(Repository, abc.ABC):
         """Retrieve a inbox task collection by its id."""
 
     @abc.abstractmethod
-    def load_by_project(self, project_ref_id: EntityId) -> InboxTaskCollection:
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> InboxTaskCollection:
         """Retrieve a inbox task collection by its owning project id."""
-
-    @abc.abstractmethod
-    def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTaskCollection]:
-        """Retrieve inbox task collections."""
-
-    @abc.abstractmethod
-    def remove(self, ref_id: EntityId) -> InboxTaskCollection:
-        """Hard remove a inbox task collection."""

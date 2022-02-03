@@ -28,7 +28,7 @@ class MetricRepository(Repository, abc.ABC):
         """Save a metric - it should already exist."""
 
     @abc.abstractmethod
-    def load_by_key(self, key: MetricKey) -> Metric:
+    def load_by_key(self, metric_collection_ref_id: EntityId, key: MetricKey) -> Metric:
         """Find a metric by key."""
 
     @abc.abstractmethod
@@ -38,6 +38,7 @@ class MetricRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def find_all(
             self,
+            metric_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[MetricKey]] = None) -> List[Metric]:

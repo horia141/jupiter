@@ -12,11 +12,11 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseExtraInfo']):
+class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseInfo']):
     """A metric entry on Notion-side."""
 
     @dataclass(frozen=True)
-    class InverseExtraInfo:
+    class InverseInfo:
         """Inverse info."""
         metric_ref_id: EntityId
 
@@ -36,7 +36,7 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
             value=aggregate_root.value,
             notes=aggregate_root.notes)
 
-    def new_aggregate_root(self, extra_info: InverseExtraInfo) -> MetricEntry:
+    def new_aggregate_root(self, extra_info: InverseInfo) -> MetricEntry:
         """Create a new metric entry from this."""
         return MetricEntry.new_metric_entry(
             archived=self.archived,
@@ -47,7 +47,7 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseE
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: InverseExtraInfo) -> MetricEntry:
+    def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: InverseInfo) -> MetricEntry:
         """Apply to an already existing metric entry."""
         return aggregate_root\
             .update(

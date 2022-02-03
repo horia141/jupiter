@@ -33,19 +33,26 @@ class BigPlanFindUseCase(AppReadonlyUseCase['BigPlanFindUseCase.Args', 'BigPlanF
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
+        workspace = context.workspace
         filter_project_ref_ids: Optional[List[EntityId]] = None
+
         with self._storage_engine.get_unit_of_work() as uow:
             if args.filter_project_keys:
-                projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
+                project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+                projects = \
+                    uow.project_repository.find_all(
+                        project_collection_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
                 filter_project_ref_ids = [p.ref_id for p in projects]
 
-            big_plan_collections = \
-                uow.big_plan_collection_repository.find_all(filter_project_ref_ids=filter_project_ref_ids)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
             big_plans = uow.big_plan_repository.find_all(
+                big_plan_collection_ref_id=big_plan_collection.ref_id,
                 allow_archived=args.allow_archived, filter_ref_ids=args.filter_ref_ids,
-                filter_big_plan_collection_ref_ids=[bpc.ref_id for bpc in big_plan_collections])
+                filter_project_ref_ids=filter_project_ref_ids)
 
             inbox_tasks = uow.inbox_task_repository.find_all(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True, filter_big_plan_ref_ids=(bp.ref_id for bp in big_plans))
 
         return BigPlanFindUseCase.Result(

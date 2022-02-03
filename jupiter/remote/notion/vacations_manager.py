@@ -7,6 +7,7 @@ from notion.collection import CollectionRowBlock
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.notion_vacation import NotionVacation
+from jupiter.domain.vacations.notion_vacation_collection import NotionVacationCollection
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
@@ -130,89 +131,91 @@ class NotionVacationsManager(VacationNotionManager):
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_root_page(self, notion_workspace: NotionWorkspace) -> None:
+    def upsert_root_page(
+            self, notion_workspace: NotionWorkspace, vacation_collection: NotionVacationCollection) -> None:
         """Upsert the root page for the vacations section."""
         self._collections_manager.upsert_collection(
-            key=NotionLockKey(self._KEY),
+            key=NotionLockKey(f"{self._KEY}:{vacation_collection.ref_id}"),
             parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
-            view_schemas={
-                "database_view_id": self._DATABASE_VIEW_SCHEMA
-            })
+            view_schemas=[
+                ("database_view_id", self._DATABASE_VIEW_SCHEMA)
+            ])
 
-    def upsert_vacation(self, vacation: NotionVacation) -> NotionVacation:
+    def upsert_vacation(self, vacation_collection_ref_id: EntityId, vacation: NotionVacation) -> NotionVacation:
         """Create a vacation."""
         link = \
             self._collections_manager.upsert_collection_item(
                 key=NotionLockKey(f"{vacation.ref_id}"),
-                collection_key=NotionLockKey(self._KEY),
+                collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"),
                 new_row=vacation,
                 copy_row_to_notion_row=self._copy_row_to_notion_row)
         return link.item_info
 
-    def save_vacation(self, vacation: NotionVacation) -> NotionVacation:
+    def save_vacation(self, vacation_collection_ref_id: EntityId, vacation: NotionVacation) -> NotionVacation:
         """Update a Notion-side vacation with new data."""
         try:
             link = \
                 self._collections_manager.save_collection_item(
                     key=NotionLockKey(f"{vacation.ref_id}"),
-                    collection_key=NotionLockKey(self._KEY),
+                    collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"),
                     row=vacation,
                     copy_row_to_notion_row=self._copy_row_to_notion_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {vacation.ref_id} could not be found") from err
 
-    def load_vacation(self, ref_id: EntityId) -> NotionVacation:
+    def load_vacation(self, vacation_collection_ref_id: EntityId, ref_id: EntityId) -> NotionVacation:
         """Load a Notion-side vacation."""
         try:
             link = \
                 self._collections_manager.load_collection_item(
                     key=NotionLockKey(f"{ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {ref_id} could not be found") from err
 
-    def load_all_vacations(self) -> Iterable[NotionVacation]:
+    def load_all_vacations(self, vacation_collection_ref_id: EntityId) -> Iterable[NotionVacation]:
         """Retrieve all the Notion-side vacation items."""
         return [l.item_info for l in
                 self._collections_manager.load_all_collection_items(
-                    collection_key=NotionLockKey(self._KEY),
+                    collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
-    def remove_vacation(self, ref_id: EntityId) -> None:
+    def remove_vacation(self, vacation_collection_ref_id: EntityId, ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         try:
             self._collections_manager.remove_collection_item(
                 key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(self._KEY))
+                collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"))
         except NotionCollectionItemNotFoundError as err:
             raise NotionVacationNotFoundError(f"Vacation with id {ref_id} could not be found") from err
 
-    def drop_all_vacations(self) -> None:
+    def drop_all_vacations(self, vacation_collection_ref_id: EntityId) -> None:
         """Remove all vacations Notion-side."""
         self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(self._KEY))
+            collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"))
 
-    def load_all_saved_vacation_ref_ids(self) -> Iterable[EntityId]:
+    def load_all_saved_vacation_ref_ids(self, vacation_collection_ref_id: EntityId) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the vacations."""
         return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(self._KEY))
+            collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"))
 
-    def load_all_saved_vacation_notion_ids(self) -> Iterable[NotionId]:
+    def load_all_saved_vacation_notion_ids(self, vacation_collection_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for the vacations."""
         return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(self._KEY))
+            collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"))
 
-    def link_local_and_notion_entries(self, ref_id: EntityId, notion_id: NotionId) -> None:
+    def link_local_and_notion_entries(
+            self, vacation_collection_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the notion one, useful in syncing processes."""
         self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(self._KEY),
+            collection_key=NotionLockKey(f"{self._KEY}:{vacation_collection_ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id)
 

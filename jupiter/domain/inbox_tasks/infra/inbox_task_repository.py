@@ -29,10 +29,11 @@ class InboxTaskRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def find_all(
             self,
+            inbox_task_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_inbox_task_collection_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_sources: Optional[Iterable[InboxTaskSource]] = None,
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,

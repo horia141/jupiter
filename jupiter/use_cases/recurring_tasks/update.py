@@ -17,6 +17,7 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
+from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
@@ -73,8 +74,11 @@ class RecurringTaskUpdateUseCase(AppMutationUseCase['RecurringTaskUpdateUseCase.
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
             recurring_task = uow.recurring_task_repository.load_by_id(args.ref_id)
+            project = uow.project_repository.load_by_id(recurring_task.project_ref_id)
 
             need_to_change_inbox_tasks = \
                 args.name.should_change or \
@@ -100,7 +104,6 @@ class RecurringTaskUpdateUseCase(AppMutationUseCase['RecurringTaskUpdateUseCase.
                 recurring_task_gen_params = \
                     UpdateAction.change_to(
                         RecurringTaskGenParams(
-                            recurring_task.project_ref_id,
                             args.period.or_else(recurring_task.gen_params.period),
                             args.eisen.or_else(recurring_task.gen_params.eisen),
                             args.difficulty.or_else(recurring_task.gen_params.difficulty),
@@ -113,28 +116,36 @@ class RecurringTaskUpdateUseCase(AppMutationUseCase['RecurringTaskUpdateUseCase.
                 recurring_task_gen_params = UpdateAction.do_nothing()
 
             recurring_task = recurring_task.update(
-                name=args.name, the_type=args.the_type, gen_params=recurring_task_gen_params,
-                must_do=args.must_do, skip_rule=args.skip_rule, start_at_date=args.start_at_date,
-                end_at_date=args.end_at_date, source=EventSource.CLI,
+                name=args.name,
+                the_type=args.the_type,
+                gen_params=recurring_task_gen_params,
+                must_do=args.must_do,
+                skip_rule=args.skip_rule,
+                start_at_date=args.start_at_date,
+                end_at_date=args.end_at_date,
+                source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time())
 
             uow.recurring_task_repository.save(recurring_task)
 
+        recurring_task_direct_info = NotionRecurringTask.DirectInfo(project_name=project.name)
         notion_recurring_task = \
             self._recurring_task_notion_manager.load_recurring_task(
                 recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
-        notion_recurring_task = notion_recurring_task.join_with_aggregate_root(recurring_task, None)
+        notion_recurring_task = \
+            notion_recurring_task.join_with_aggregate_root(recurring_task, recurring_task_direct_info)
         self._recurring_task_notion_manager.save_recurring_task(
             recurring_task.recurring_task_collection_ref_id, notion_recurring_task)
 
         if need_to_change_inbox_tasks:
             with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
                 all_inbox_tasks = \
                     uow.inbox_task_repository.find_all(
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True, filter_recurring_task_ref_ids=[recurring_task.ref_id])
 
             for inbox_task in all_inbox_tasks:
-                LOGGER.info(inbox_task)
                 schedule = schedules.get_schedule(
                     recurring_task.gen_params.period, recurring_task.name,
                     cast(Timestamp, inbox_task.recurring_gen_right_now), self._global_properties.timezone,
@@ -143,6 +154,7 @@ class RecurringTaskUpdateUseCase(AppMutationUseCase['RecurringTaskUpdateUseCase.
                     recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
 
                 inbox_task = inbox_task.update_link_to_recurring_task(
+                    project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
                     the_type=recurring_task.the_type,
@@ -159,11 +171,11 @@ class RecurringTaskUpdateUseCase(AppMutationUseCase['RecurringTaskUpdateUseCase.
                 if inbox_task.archived:
                     continue
 
+                inbox_task_direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(
-                    inbox_task, NotionInboxTask.DirectInfo(None))
+                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, inbox_task_direct_info)
                 self._inbox_task_notion_manager.save_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from typing import Final
 
+from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError
@@ -41,17 +42,26 @@ class MetricArchiveUseCase(AppMutationUseCase['MetricArchiveUseCase.Args', None]
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.load_by_key(args.key)
+        workspace = context.workspace
 
-            for metric_entry in uow.metric_entry_repository.find_all_for_metric(metric.ref_id):
+        with self._storage_engine.get_unit_of_work() as uow:
+            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+
+            metric = uow.metric_repository.load_by_key(metric_collection.ref_id, args.key)
+
+            for metric_entry in uow.metric_entry_repository.find_all(metric_ref_id=metric.ref_id):
                 metric_entry = metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.metric_entry_repository.save(metric_entry)
 
             metric = metric.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.metric_repository.save(metric)
 
-            all_inbox_tasks = uow.inbox_task_repository.find_all(filter_metric_ref_ids=[metric.ref_id])
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            all_inbox_tasks = \
+                uow.inbox_task_repository.find_all(
+                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    filter_sources=[InboxTaskSource.METRIC],
+                    filter_metric_ref_ids=[metric.ref_id])
 
         inbox_task_archive_service = \
             InboxTaskArchiveService(
@@ -62,6 +72,6 @@ class MetricArchiveUseCase(AppMutationUseCase['MetricArchiveUseCase.Args', None]
 
         # TODO(horia141): process Notion side entries too
         try:
-            self._metric_notion_manager.remove_metric(metric.ref_id)
+            self._metric_notion_manager.remove_metric(metric_collection.ref_id, metric.ref_id)
         except NotionMetricNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

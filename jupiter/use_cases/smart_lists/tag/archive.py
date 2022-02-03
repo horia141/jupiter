@@ -38,22 +38,28 @@ class SmartListTagArchiveUseCase(AppMutationUseCase['SmartListTagArchiveUseCase.
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
+            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
             smart_list_tag = uow.smart_list_tag_repository.load_by_id(args.ref_id)
 
-            smart_list_items = uow.smart_list_item_repository.find_all(
-                allow_archived=True,
-                filter_smart_list_ref_ids=[smart_list_tag.smart_list_ref_id],
-                filter_tag_ref_ids=[args.ref_id])
+            smart_list_items = \
+                uow.smart_list_item_repository.find_all(
+                    smart_list_ref_id=smart_list_tag.smart_list_ref_id,
+                    allow_archived=True,
+                    filter_tag_ref_ids=[args.ref_id])
 
             for smart_list_item in smart_list_items:
-                smart_list_item = smart_list_item.update(
-                    name=UpdateAction.do_nothing(),
-                    is_done=UpdateAction.do_nothing(),
-                    tags_ref_id=UpdateAction.change_to([t for t in smart_list_item.tags_ref_id if t != args.ref_id]),
-                    url=UpdateAction.do_nothing(),
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time())
+                smart_list_item = \
+                    smart_list_item.update(
+                        name=UpdateAction.do_nothing(),
+                        is_done=UpdateAction.do_nothing(),
+                        tags_ref_id=UpdateAction.change_to(
+                            [t for t in smart_list_item.tags_ref_id if t != args.ref_id]),
+                        url=UpdateAction.do_nothing(),
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time())
                 uow.smart_list_item_repository.save(smart_list_item)
 
             smart_list_tag = smart_list_tag.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
@@ -61,6 +67,6 @@ class SmartListTagArchiveUseCase(AppMutationUseCase['SmartListTagArchiveUseCase.
 
         try:
             self._smart_list_notion_manager.remove_smart_list_tag(
-                smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
+                smart_list_collection.ref_id, smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
         except NotionSmartListTagNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

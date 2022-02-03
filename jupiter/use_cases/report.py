@@ -156,28 +156,45 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command."""
+        workspace = context.workspace
         today = args.right_now.value.date()
+
         with self._storage_engine.get_unit_of_work() as uow:
-            projects = uow.project_repository.find_all(filter_keys=args.filter_project_keys)
+            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            projects = \
+                uow.project_repository.find_all(
+                    project_collection_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
+            filter_project_ref_ids = [p.ref_id for p in projects]
             projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
 
-            metrics = uow.metric_repository.find_all(allow_archived=True, filter_keys=args.filter_metric_keys)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+            big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
+
+            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metrics = \
+                uow.metric_repository.find_all(
+                    metric_collection_ref_id=metric_collection.ref_id, allow_archived=True,
+                    filter_keys=args.filter_metric_keys)
             metrics_by_ref_id: Dict[EntityId, Metric] = {m.ref_id: m for m in metrics}
 
-            persons = uow.person_repository.find_all(allow_archived=True, filter_ref_ids=args.filter_person_ref_ids)
+            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            persons = \
+                uow.person_repository.find_all(
+                    person_collection_ref_id=person_collection.ref_id, allow_archived=True,
+                    filter_ref_ids=args.filter_person_ref_ids)
             persons_by_ref_id = {p.ref_id: p for p in persons}
 
             schedule = schedules.get_schedule(
                 args.period, RecurringTaskName("Helper"), args.right_now, self._global_properties.timezone,
                 None, None, None, None, None, None)
 
-            inbox_task_collections = uow.inbox_task_collection_repository.find_all(
-                filter_project_ref_ids=[p.ref_id for p in projects])
             all_inbox_tasks = [
                 it for it in uow.inbox_task_repository.find_all(
+                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
-                    filter_inbox_task_collection_ref_ids=[itc.ref_id for itc in inbox_task_collections],
-                    filter_sources=args.filter_sources)
+                    filter_sources=args.filter_sources,
+                    filter_project_ref_ids=filter_project_ref_ids)
                 # (source is BIG_PLAN and (need to filter then (big_plan_ref_id in filter))
                 if it.source is InboxTaskSource.USER
                 or (it.source is InboxTaskSource.BIG_PLAN and
@@ -192,21 +209,19 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                 or ((it.source is InboxTaskSource.PERSON_CATCH_UP or it.source is InboxTaskSource.PERSON_BIRTHDAY) and
                     (not (args.filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))]
 
-            big_plan_collections = \
-                uow.big_plan_collection_repository.find_all(
-                    filter_project_ref_ids=[p.ref_id for p in projects])
-            all_big_plans = uow.big_plan_repository.find_all(
-                allow_archived=True, filter_ref_ids=args.filter_big_plan_ref_ids,
-                filter_big_plan_collection_ref_ids=[bpc.ref_id for bpc in big_plan_collections])
-            big_plans_by_ref_id: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
-
-            recurring_task_collections = \
-                uow.recurring_task_collection_repository.find_all(
-                    filter_project_ref_ids=[p.ref_id for p in projects])
-            all_recurring_tasks = uow.recurring_task_repository.find_all(
-                allow_archived=True, filter_ref_ids=args.filter_recurring_task_ref_ids,
-                filter_recurring_task_collection_ref_ids=[rtc.ref_id for rtc in recurring_task_collections])
+            all_recurring_tasks = \
+                uow.recurring_task_repository.find_all(
+                    recurring_task_collection_ref_id=recurring_task_collection.ref_id,
+                    allow_archived=True, filter_ref_ids=args.filter_recurring_task_ref_ids,
+                    filter_project_ref_ids=filter_project_ref_ids)
             all_recurring_tasks_by_ref_id: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
+
+            all_big_plans = \
+                uow.big_plan_repository.find_all(
+                    big_plan_collection_ref_id=big_plan_collection.ref_id,
+                    allow_archived=True, filter_ref_ids=args.filter_big_plan_ref_ids,
+                    filter_project_ref_ids=filter_project_ref_ids)
+            big_plans_by_ref_id: Dict[EntityId, BigPlan] = {bp.ref_id: bp for bp in all_big_plans}
 
         global_inbox_tasks_summary = self._run_report_for_inbox_tasks(schedule, all_inbox_tasks)
         global_big_plans_summary = self._run_report_for_big_plan(schedule, all_big_plans)

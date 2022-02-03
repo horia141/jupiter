@@ -35,10 +35,12 @@ class VacationRemoveUseCase(AppMutationUseCase['VacationRemoveUseCase.Args', Non
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
+            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
             uow.vacation_repository.remove(args.ref_id)
 
         try:
-            self._vacation_notion_manager.remove_vacation(args.ref_id)
+            self._vacation_notion_manager.remove_vacation(vacation_collection.ref_id, args.ref_id)
         except NotionVacationNotFoundError:
             LOGGER.info("Skipping archival on Notion side because vacation was not found")

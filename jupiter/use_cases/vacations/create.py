@@ -38,13 +38,22 @@ class VacationCreateUseCase(AppMutationUseCase['VacationCreateUseCase.Args', Non
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's actions."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.load()
+        workspace = context.workspace
 
-            vacation = Vacation.new_vacation(
-                archived=False, workspace_ref_id=workspace.ref_id, name=args.name, start_date=args.start_date,
-                end_date=args.end_date, source=EventSource.CLI, created_time=self._time_provider.get_current_time())
+        with self._storage_engine.get_unit_of_work() as uow:
+            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
+
+            vacation = \
+                Vacation.new_vacation(
+                    archived=False,
+                    vacation_collection_ref_id=vacation_collection.ref_id,
+                    name=args.name,
+                    start_date=args.start_date,
+                    end_date=args.end_date,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
 
             vacation = uow.vacation_repository.create(vacation)
+
         notion_vacation = NotionVacation.new_notion_row(vacation, None)
-        self._vacation_notion_manager.upsert_vacation(notion_vacation)
+        self._vacation_notion_manager.upsert_vacation(vacation_collection.ref_id, notion_vacation)

@@ -1,7 +1,7 @@
 """The command for doing a garbage collection run."""
 import logging
 from dataclasses import dataclass
-from typing import Final, Optional, Iterable
+from typing import Final, Iterable
 
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
@@ -16,13 +16,17 @@ from jupiter.domain.inbox_tasks.service.remove_service import InboxTaskRemoveSer
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager, NotionMetricNotFoundError, \
     NotionMetricEntryNotFoundError
 from jupiter.domain.metrics.metric import Metric
+from jupiter.domain.metrics.metric_collection import MetricCollection
 from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.service.remove_service import MetricRemoveService
-from jupiter.domain.prm.infra.prm_notion_manager import PrmNotionManager, NotionPersonNotFoundError
-from jupiter.domain.prm.person import Person
-from jupiter.domain.prm.service.remove_service import PersonRemoveService
+from jupiter.domain.persons.infra.person_notion_manager import PersonNotionManager, NotionPersonNotFoundError
+from jupiter.domain.persons.person import Person
+from jupiter.domain.persons.person_collection import PersonCollection
+from jupiter.domain.persons.service.remove_service import PersonRemoveService
+from jupiter.domain.projects.infra.project_notion_manager import NotionProjectNotFoundError, ProjectNotionManager
 from jupiter.domain.projects.project import Project
-from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.projects.project_collection import ProjectCollection
+from jupiter.domain.projects.service.project_label_update_service import ProjectLabelUpdateService
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
     NotionRecurringTaskNotFoundError
 from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
@@ -30,11 +34,13 @@ from jupiter.domain.recurring_tasks.service.remove_service import RecurringTaskR
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListNotFoundError, NotionSmartListItemNotFoundError
 from jupiter.domain.smart_lists.smart_list import SmartList
+from jupiter.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.vacation import Vacation
+from jupiter.domain.vacations.vacation_collection import VacationCollection
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
 from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
@@ -50,18 +56,18 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
     class Args(UseCaseArgsBase):
         """Args."""
         sync_targets: Iterable[SyncTarget]
-        project_keys: Optional[Iterable[ProjectKey]]
         do_archival: bool
         do_anti_entropy: bool
         do_notion_cleanup: bool
 
     _vacation_notion_manager: Final[VacationNotionManager]
+    _project_notion_manager: Final[ProjectNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
     _smart_list_notion_manager: Final[SmartListNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
-    _prm_notion_manager: Final[PrmNotionManager]
+    _person_notion_manager: Final[PersonNotionManager]
 
     def __init__(
             self,
@@ -69,193 +75,267 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             invocation_recorder: MutationUseCaseInvocationRecorder,
             storage_engine: DomainStorageEngine,
             vacation_notion_manager: VacationNotionManager,
+            project_notion_manager: ProjectNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager,
             recurring_task_notion_manager: RecurringTaskNotionManager,
             big_plan_notion_manager: BigPlanNotionManager,
             smart_list_notion_manager: SmartListNotionManager,
             metric_notion_manager: MetricNotionManager,
-            prm_notion_manager: PrmNotionManager) -> None:
+            person_notion_manager: PersonNotionManager) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._vacation_notion_manager = vacation_notion_manager
+        self._project_notion_manager = project_notion_manager
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._recurring_task_notion_manager = recurring_task_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
         self._smart_list_notion_manager = smart_list_notion_manager
         self._metric_notion_manager = metric_notion_manager
-        self._prm_notion_manager = prm_notion_manager
+        self._person_notion_manager = person_notion_manager
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         if SyncTarget.VACATIONS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for vacations")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    vacations = uow.vacation_repository.find_all(allow_archived=True)
-                self._do_anti_entropy_for_vacations(vacations)
+                    vacations = \
+                        uow.vacation_repository.find_all(
+                            vacation_collection_ref_id=vacation_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_vacations(vacation_collection, vacations)
             if args.do_notion_cleanup:
                 LOGGER.info("Garbage collecting vacations which were archived")
 
-                allowed_ref_ids = self._vacation_notion_manager.load_all_saved_vacation_ref_ids()
+                allowed_ref_ids = \
+                    self._vacation_notion_manager.load_all_saved_vacation_ref_ids(vacation_collection.ref_id)
 
                 with self._storage_engine.get_unit_of_work() as uow:
-                    vacations = uow.vacation_repository.find_all(allow_archived=True, filter_ref_ids=allowed_ref_ids)
-                self._do_drop_all_archived_vacations(vacations)
+                    vacations = \
+                        uow.vacation_repository.find_all(
+                            vacation_collection_ref_id=vacation_collection.ref_id,
+                            allow_archived=True, filter_ref_ids=allowed_ref_ids)
+                self._do_drop_all_archived_vacations(vacation_collection, vacations)
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            all_projects = uow.project_repository.find_all(filter_keys=args.project_keys)
-
-        for project in all_projects:
-            LOGGER.info(f"Garbage collecting project '{project.name}'")
-
-            if SyncTarget.INBOX_TASKS in args.sync_targets:
+        if SyncTarget.PROJECTS in args.sync_targets:
+            need_to_modifiy_something = False
+            with self._storage_engine.get_unit_of_work() as uow:
+                project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            if args.do_anti_entropy:
+                LOGGER.info("Performing anti-entropy adjustments for projects")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
-                if args.do_archival:
-                    LOGGER.info("Archiving all done inbox tasks")
-                    self._archive_done_inbox_tasks_for_project(project)
-                if args.do_anti_entropy:
-                    LOGGER.info("Performing anti-entropy adjustments for inbox tasks")
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        inbox_tasks = uow.inbox_task_repository.find_all(
-                            allow_archived=True, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
-                    self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
-                if args.do_notion_cleanup:
-                    LOGGER.info("Garbage collecting inbox tasks which were archived")
-                    allowed_ref_ids = \
-                        self._inbox_task_notion_manager.load_all_saved_inbox_tasks_ref_ids(inbox_task_collection.ref_id)
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        inbox_tasks = uow.inbox_task_repository.find_all(
-                            allow_archived=True, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id],
+                    projects = \
+                        uow.project_repository.find_all(
+                            project_collection_ref_id=project_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_projects(project_collection, projects)
+                need_to_modifiy_something = True
+            if args.do_notion_cleanup:
+                LOGGER.info("Garbage collecting projects which were archived")
+
+                allowed_ref_ids = self._project_notion_manager.load_all_saved_project_ref_ids(project_collection.ref_id)
+
+                with self._storage_engine.get_unit_of_work() as uow:
+                    projects = \
+                        uow.project_repository.find_all(
+                            project_collection_ref_id=project_collection.ref_id, allow_archived=True,
                             filter_ref_ids=allowed_ref_ids)
-                    self._do_drop_all_archived_inbox_tasks(inbox_tasks)
+                self._do_drop_all_archived_projects(project_collection, projects)
+                need_to_modifiy_something = True
 
-            if SyncTarget.RECURRING_TASKS in args.sync_targets:
-                if args.do_anti_entropy:
-                    LOGGER.info("Performing anti-entropy adjustments for recurring tasks")
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        recurring_task_collection = \
-                            uow.recurring_task_collection_repository.load_by_project(project.ref_id)
-                        recurring_tasks = uow.recurring_task_repository.find_all(
-                            allow_archived=True,
-                            filter_recurring_task_collection_ref_ids=[recurring_task_collection.ref_id])
-                    self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
-                if args.do_notion_cleanup:
-                    LOGGER.info("Garbage collecting recurring tasks which were archived")
-                    allowed_ref_ids = \
-                        self._recurring_task_notion_manager.load_all_saved_recurring_tasks_ref_ids(
-                            recurring_task_collection.ref_id)
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        recurring_task_collection = \
-                            uow.recurring_task_collection_repository.load_by_project(project.ref_id)
-                        recurring_tasks = \
-                            uow.recurring_task_repository.find_all(
-                                allow_archived=True, filter_ref_ids=allowed_ref_ids,
-                                filter_recurring_task_collection_ref_ids=[recurring_task_collection.ref_id])
-                    self._do_drop_all_archived_recurring_tasks(recurring_tasks)
+            if need_to_modifiy_something:
+                ProjectLabelUpdateService(
+                    self._storage_engine,
+                    self._inbox_task_notion_manager,
+                    self._recurring_task_notion_manager,
+                    self._big_plan_notion_manager) \
+                    .sync(workspace, projects)
 
-            if SyncTarget.BIG_PLANS in args.sync_targets:
+        if SyncTarget.INBOX_TASKS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            if args.do_archival:
+                LOGGER.info("Archiving all done inbox tasks")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    big_plan_collection = uow.big_plan_collection_repository.load_by_project(project.ref_id)
-                if args.do_archival:
-                    LOGGER.info("Archiving all done big plans")
-                    self._archive_done_big_plans_for_project(project)
-                if args.do_anti_entropy:
-                    LOGGER.info("Performing anti-entropy adjustments for big plans")
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        big_plans = uow.big_plan_repository.find_all(
-                            allow_archived=True, filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id])
-                    self._do_anti_entropy_for_big_plans(big_plans)
-                if args.do_notion_cleanup:
-                    LOGGER.info("Garbage collecting big plans which were archived")
-                    allowed_ref_ids = \
-                        self._big_plan_notion_manager.load_all_saved_big_plans_ref_ids(big_plan_collection.ref_id)
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        big_plans = \
-                            uow.big_plan_repository.find_all(
-                                allow_archived=True, filter_ref_ids=allowed_ref_ids,
-                                filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id])
-                    self._do_drop_all_archived_big_plans(big_plans)
+                    inbox_tasks = \
+                        uow.inbox_task_repository.find_all(
+                            inbox_task_collection_ref_id=inbox_task_collection.ref_id, allow_archived=False)
+                self._archive_done_inbox_tasks(inbox_tasks)
+            if args.do_anti_entropy:
+                LOGGER.info("Performing anti-entropy adjustments for inbox tasks")
+                with self._storage_engine.get_unit_of_work() as uow:
+                    inbox_tasks = \
+                        uow.inbox_task_repository.find_all(
+                            inbox_task_collection_ref_id=inbox_task_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_inbox_tasks(inbox_tasks)
+            if args.do_notion_cleanup:
+                LOGGER.info("Garbage collecting inbox tasks which were archived")
+                allowed_ref_ids = \
+                    self._inbox_task_notion_manager.load_all_saved_inbox_tasks_ref_ids(inbox_task_collection.ref_id)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    inbox_tasks = \
+                        uow.inbox_task_repository.find_all(
+                            inbox_task_collection_ref_id=inbox_task_collection.ref_id, allow_archived=True,
+                            filter_ref_ids=allowed_ref_ids)
+                self._do_drop_all_archived_inbox_tasks(inbox_tasks)
 
-                InboxTaskBigPlanRefOptionsUpdateService(
-                    self._storage_engine, self._inbox_task_notion_manager).sync(big_plan_collection)
+        if SyncTarget.RECURRING_TASKS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+            if args.do_anti_entropy:
+                LOGGER.info("Performing anti-entropy adjustments for recurring tasks")
+                with self._storage_engine.get_unit_of_work() as uow:
+                    recurring_tasks = \
+                        uow.recurring_task_repository.find_all(
+                            recurring_task_collection_ref_id=recurring_task_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
+            if args.do_notion_cleanup:
+                LOGGER.info("Garbage collecting recurring tasks which were archived")
+                allowed_ref_ids = \
+                    self._recurring_task_notion_manager.load_all_saved_recurring_tasks_ref_ids(
+                        recurring_task_collection.ref_id)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    recurring_tasks = \
+                        uow.recurring_task_repository.find_all(
+                            recurring_task_collection_ref_id=recurring_task_collection.ref_id,
+                            allow_archived=True, filter_ref_ids=allowed_ref_ids)
+                self._do_drop_all_archived_recurring_tasks(recurring_tasks)
+
+        if SyncTarget.BIG_PLANS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
+            if args.do_archival:
+                LOGGER.info("Archiving all done big plans")
+                with self._storage_engine.get_unit_of_work() as uow:
+                    big_plans = \
+                        uow.big_plan_repository.find_all(
+                            big_plan_collection_ref_id=big_plan_collection.ref_id, allow_archived=False)
+                self._archive_done_big_plans(big_plans)
+            if args.do_anti_entropy:
+                LOGGER.info("Performing anti-entropy adjustments for big plans")
+                with self._storage_engine.get_unit_of_work() as uow:
+                    big_plans = \
+                        uow.big_plan_repository.find_all(
+                            big_plan_collection_ref_id=big_plan_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_big_plans(big_plans)
+            if args.do_notion_cleanup:
+                LOGGER.info("Garbage collecting big plans which were archived")
+                allowed_ref_ids = \
+                    self._big_plan_notion_manager.load_all_saved_big_plans_ref_ids(big_plan_collection.ref_id)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    big_plans = \
+                        uow.big_plan_repository.find_all(
+                            big_plan_collection_ref_id=big_plan_collection.ref_id,
+                            allow_archived=True, filter_ref_ids=allowed_ref_ids)
+                self._do_drop_all_archived_big_plans(big_plans)
+
+            InboxTaskBigPlanRefOptionsUpdateService(
+                self._storage_engine, self._inbox_task_notion_manager).sync(big_plan_collection)
 
         if SyncTarget.SMART_LISTS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+
             smart_lists: Iterable[SmartList] = []
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for smart lists")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    smart_lists = uow.smart_list_repository.find_all(allow_archived=True)
-                smart_lists = self._do_anti_entropy_for_smart_lists(smart_lists)
+                    smart_lists = \
+                        uow.smart_list_repository.find_all(
+                            smart_list_collection_ref_id=smart_list_collection.ref_id, allow_archived=True)
+                smart_lists = self._do_anti_entropy_for_smart_lists(smart_list_collection, smart_lists)
             if args.do_notion_cleanup:
                 LOGGER.info("Garbage collecting smart lists which were archived")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    smart_lists = smart_lists or uow.smart_list_repository.find_all(allow_archived=True)
-                self._do_drop_all_archived_smart_lists(smart_lists)
+                    smart_lists = \
+                        smart_lists or uow.smart_list_repository.find_all(
+                            smart_list_collection_ref_id=smart_list_collection.ref_id, allow_archived=True)
+                self._do_drop_all_archived_smart_lists(smart_list_collection, smart_lists)
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for smart list items")
-                with self._storage_engine.get_unit_of_work() as uow:
-                    smart_list_items = uow.smart_list_item_repository.find_all(allow_archived=True)
-                self._do_anti_entropy_for_smart_list_items(smart_list_items)
+                for smart_list in smart_lists:
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        smart_list_items = \
+                            uow.smart_list_item_repository.find_all(
+                                smart_list_ref_id=smart_list.ref_id, allow_archived=True)
+                    self._do_anti_entropy_for_smart_list_items(smart_list_collection, smart_list, smart_list_items)
             if args.do_notion_cleanup:
                 LOGGER.info("Garbage collecting smart list items which were archived")
                 for smart_list in smart_lists:
                     allowed_ref_ids = set(
-                        self._smart_list_notion_manager.load_all_saved_smart_list_items_ref_ids(smart_list.ref_id))
+                        self._smart_list_notion_manager.load_all_saved_smart_list_items_ref_ids(
+                            smart_list_collection.ref_id, smart_list.ref_id))
                     with self._storage_engine.get_unit_of_work() as uow:
-                        smart_list_items = uow.smart_list_item_repository.find_all(
-                            allow_archived=True, filter_ref_ids=allowed_ref_ids,
-                            filter_smart_list_ref_ids=[smart_list.ref_id])
-                    self._do_drop_all_archived_smart_list_items(smart_list_items)
+                        smart_list_items = \
+                            uow.smart_list_item_repository.find_all(
+                                smart_list_ref_id=smart_list.ref_id,
+                                allow_archived=True, filter_ref_ids=allowed_ref_ids)
+                    self._do_drop_all_archived_smart_list_items(smart_list_collection, smart_list, smart_list_items)
 
         if SyncTarget.METRICS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+
             metrics: Iterable[Metric] = []
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for metrics")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    metrics = uow.metric_repository.find_all(allow_archived=True)
-                metrics = self._do_anti_entropy_for_metrics(metrics)
+                    metrics = \
+                        uow.metric_repository.find_all(
+                            metric_collection_ref_id=metric_collection.ref_id, allow_archived=True)
+                metrics = self._do_anti_entropy_for_metrics(metric_collection, metrics)
             if args.do_notion_cleanup:
                 LOGGER.info("Garbage collecting metrics which were archived")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    metrics = metrics or uow.metric_repository.find_all(allow_archived=True)
-                self._do_drop_all_archived_metrics(metrics)
+                    metrics =\
+                        metrics or uow.metric_repository.find_all(
+                            metric_collection_ref_id=metric_collection.ref_id, allow_archived=True)
+                self._do_drop_all_archived_metrics(metric_collection, metrics)
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for metric entries")
-                with self._storage_engine.get_unit_of_work() as uow:
-                    metric_entries = uow.metric_entry_repository.find_all(allow_archived=True)
-                self._do_anti_entropy_for_metric_entries(metric_entries)
+                for metric in metrics:
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        metric_entries = \
+                            uow.metric_entry_repository.find_all(metric_ref_id=metric.ref_id, allow_archived=True)
+                    self._do_anti_entropy_for_metric_entries(metric, metric_entries)
             if args.do_notion_cleanup:
                 LOGGER.info("Garbage collecting metric entries which were archived")
                 for metric in metrics:
                     allowed_ref_ids = \
-                        set(self._metric_notion_manager.load_all_saved_metric_entries_ref_ids(metric.ref_id))
+                        set(self._metric_notion_manager.load_all_saved_metric_entries_ref_ids(
+                            metric_collection.ref_id, metric.ref_id))
                     with self._storage_engine.get_unit_of_work() as uow:
-                        metric_entries = uow.metric_entry_repository.find_all(
-                            allow_archived=True, filter_ref_ids=allowed_ref_ids, filter_metric_ref_ids=[metric.ref_id])
-                    self._do_drop_all_archived_metric_entries(metric_entries)
+                        metric_entries = \
+                            uow.metric_entry_repository.find_all(
+                                metric_ref_id=metric.ref_id, allow_archived=True, filter_ref_ids=allowed_ref_ids)
+                    self._do_drop_all_archived_metric_entries(metric, metric_entries)
 
-        if SyncTarget.PRM in args.sync_targets:
+        if SyncTarget.PERSONS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
             if args.do_anti_entropy:
-                LOGGER.info("Performing anti-entropy adjustments for persons in the PRM database")
+                LOGGER.info("Performing anti-entropy adjustments for persons")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    persons = uow.person_repository.find_all(allow_archived=True)
-                self._do_anti_entropy_for_persons(persons)
+                    persons = \
+                        uow.person_repository.find_all(
+                            person_collection_ref_id=person_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_persons(person_collection, persons)
             if args.do_notion_cleanup:
                 LOGGER.info("Garbage collecting persons which were archived")
-                allowed_person_ref_ids = self._prm_notion_manager.load_all_saved_person_ref_ids()
+                allowed_person_ref_ids = \
+                    self._person_notion_manager.load_all_saved_person_ref_ids(person_collection.ref_id)
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     persons = \
-                        uow.person_repository.find_all(allow_archived=True, filter_ref_ids=allowed_person_ref_ids)
-                self._do_drop_all_archived_persons(persons)
+                        uow.person_repository.find_all(
+                            person_collection_ref_id=person_collection.ref_id,
+                            allow_archived=True,
+                            filter_ref_ids=allowed_person_ref_ids)
+                self._do_drop_all_archived_persons(person_collection, persons)
 
-    def _archive_done_inbox_tasks_for_project(self, project: Project) -> None:
-        with self._storage_engine.get_unit_of_work() as uow:
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project.ref_id)
-            inbox_tasks = uow.inbox_task_repository.find_all(
-                allow_archived=False, filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
-
+    def _archive_done_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> None:
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
             inbox_task_notion_manager=self._inbox_task_notion_manager)
@@ -265,14 +345,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
 
             inbox_task_archive_service.do_it(inbox_task)
 
-    def _archive_done_big_plans_for_project(self, project: Project) -> None:
+    def _archive_done_big_plans(self, big_plans: Iterable[BigPlan]) -> None:
         """Archive the done big plans."""
-        # TODO(horia141): should probably archive related tasks too here. ALso for recurring tasks and others linked
-        with self._storage_engine.get_unit_of_work() as uow:
-            big_plan_collection = uow.big_plan_collection_repository.load_by_project(project.ref_id)
-            big_plans = uow.big_plan_repository.find_all(
-                allow_archived=False, filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id])
-
         big_plan_archive_service = \
             BigPlanArchiveService(
                 source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
@@ -284,9 +358,9 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             big_plan_archive_service.do_it(big_plan)
 
     def _do_anti_entropy_for_vacations(
-            self, all_vacation: Iterable[Vacation]) -> Iterable[Vacation]:
+            self, vacation_collection: VacationCollection, all_vacations: Iterable[Vacation]) -> Iterable[Vacation]:
         vacations_names_set = {}
-        for vacation in all_vacation:
+        for vacation in all_vacations:
             if vacation.name in vacations_names_set:
                 LOGGER.info(f"Found a duplicate vacation '{vacation.name}' - removing in anti-entropy")
                 # Apply changes locally
@@ -295,7 +369,7 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                     LOGGER.info("Applied local changes")
 
                 try:
-                    self._vacation_notion_manager.remove_vacation(vacation.ref_id)
+                    self._vacation_notion_manager.remove_vacation(vacation_collection.ref_id, vacation.ref_id)
                     LOGGER.info("Applied Notion changes")
                 except NotionVacationNotFoundError:
                     LOGGER.info("Skipping removal on Notion side because vacation was not found")
@@ -303,12 +377,32 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             vacations_names_set[vacation.name] = vacation
         return vacations_names_set.values()
 
+    def _do_anti_entropy_for_projects(
+            self, project_collection: ProjectCollection, all_projects: Iterable[Project]) -> Iterable[Project]:
+        projects_names_set = {}
+        for project in all_projects:
+            if project.name in projects_names_set:
+                LOGGER.info(f"Found a duplicate project '{project.name}' - removing in anti-entropy")
+                # Apply changes locally
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.project_repository.remove(project.ref_id)
+                    LOGGER.info("Applied local changes")
+
+                try:
+                    self._project_notion_manager.remove_project(project_collection.ref_id, project.ref_id)
+                    LOGGER.info("Applied Notion changes")
+                except NotionProjectNotFoundError:
+                    LOGGER.info("Skipping removal on Notion side because project was not found")
+                continue
+            projects_names_set[project.name] = project
+        return projects_names_set.values()
+
     def _do_anti_entropy_for_big_plans(self, all_big_plans: Iterable[BigPlan]) -> Iterable[BigPlan]:
         big_plans_names_set = {}
+        big_plan_remove_service = \
+            BigPlanRemoveService(
+                self._storage_engine, self._inbox_task_notion_manager, self._big_plan_notion_manager)
         for big_plan in all_big_plans:
-            big_plan_remove_service = \
-                BigPlanRemoveService(
-                    self._storage_engine, self._inbox_task_notion_manager, self._big_plan_notion_manager)
             if big_plan.name in big_plans_names_set:
                 LOGGER.info(f"Found a duplicate big plan '{big_plan.name}' - removing in anti-entropy")
                 big_plan_remove_service.remove(big_plan.ref_id)
@@ -319,10 +413,10 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
     def _do_anti_entropy_for_recurring_tasks(
             self, all_recurring_tasks: Iterable[RecurringTask]) -> Iterable[RecurringTask]:
         recurring_tasks_names_set = {}
+        recurring_task_remove_service = \
+            RecurringTaskRemoveService(
+                self._storage_engine, self._inbox_task_notion_manager, self._recurring_task_notion_manager)
         for recurring_task in all_recurring_tasks:
-            recurring_task_remove_service = RecurringTaskRemoveService(self._storage_engine,
-                                                                       self._inbox_task_notion_manager,
-                                                                       self._recurring_task_notion_manager)
             if recurring_task.name in recurring_tasks_names_set:
                 LOGGER.info(f"Found a duplicate recurring task '{recurring_task.name}' - removing in anti-entropy")
                 recurring_task_remove_service.remove(recurring_task.ref_id)
@@ -330,17 +424,20 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             recurring_tasks_names_set[recurring_task.name] = recurring_task
         return recurring_tasks_names_set.values()
 
-    def _do_anti_entropy_for_inbox_tasks(self, all_inbox_tasks: Iterable[InboxTask]) -> Iterable[InboxTask]:
+    def _do_anti_entropy_for_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> Iterable[InboxTask]:
         inbox_tasks_names_set = {}
-        for inbox_task in all_inbox_tasks:
+        inbox_task_remove_service = InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager)
+        for inbox_task in inbox_tasks:
             if inbox_task.name in inbox_tasks_names_set:
                 LOGGER.info(f"Found a duplicate inbox task '{inbox_task.name}' - removing in anti-entropy")
-                InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager).do_it(inbox_task)
+                inbox_task_remove_service.do_it(inbox_task)
                 continue
             inbox_tasks_names_set[inbox_task.name] = inbox_task
         return inbox_tasks_names_set.values()
 
-    def _do_anti_entropy_for_smart_lists(self, all_smart_lists: Iterable[SmartList]) -> Iterable[SmartList]:
+    def _do_anti_entropy_for_smart_lists(
+            self, smart_list_collection: SmartListCollection,
+            all_smart_lists: Iterable[SmartList]) -> Iterable[SmartList]:
         smart_lists_name_set = {}
         for smart_list in all_smart_lists:
             if smart_list.name in smart_lists_name_set:
@@ -349,12 +446,12 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     for smart_list_item in \
                             uow.smart_list_item_repository.find_all(
-                                    allow_archived=True, filter_smart_list_ref_ids=[smart_list.ref_id]):
+                                smart_list_ref_id=smart_list.ref_id, allow_archived=True):
                         uow.smart_list_item_repository.remove(smart_list_item.ref_id)
 
                     for smart_list_tag in \
                             uow.smart_list_tag_repository.find_all(
-                                    allow_archived=True, filter_smart_list_ref_ids=[smart_list.ref_id]):
+                                smart_list_ref_id=smart_list.ref_id, allow_archived=True):
                         uow.smart_list_tag_repository.remove(smart_list_tag.ref_id)
 
                     uow.smart_list_repository.remove(smart_list.ref_id)
@@ -362,7 +459,7 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                 LOGGER.info("Applied local changes")
 
                 try:
-                    self._smart_list_notion_manager.remove_smart_list(smart_list.ref_id)
+                    self._smart_list_notion_manager.remove_smart_list(smart_list_collection.ref_id, smart_list.ref_id)
                     LOGGER.info("Applied Notion changes")
                 except NotionSmartListNotFoundError:
                     LOGGER.info("Skipping removal on Notion side because smart list was not found")
@@ -371,7 +468,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
         return smart_lists_name_set.values()
 
     def _do_anti_entropy_for_smart_list_items(
-            self, all_smart_list_items: Iterable[SmartListItem]) -> Iterable[SmartListItem]:
+            self, smart_list_collection: SmartListCollection, smart_list: SmartList,
+            all_smart_list_items: Iterable[SmartListItem]) -> Iterable[SmartListItem]:
         smart_list_items_name_set = {}
         for smart_list_item in all_smart_list_items:
             if smart_list_item.name in smart_list_items_name_set:
@@ -382,7 +480,7 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
 
                 try:
                     self._smart_list_notion_manager.remove_smart_list_item(
-                        smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
+                        smart_list_collection.ref_id, smart_list.ref_id, smart_list_item.ref_id)
                     LOGGER.info("Applied Notion changes")
                 except NotionSmartListItemNotFoundError:
                     LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
@@ -390,20 +488,21 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             smart_list_items_name_set[smart_list_item.name] = smart_list_item
         return smart_list_items_name_set.values()
 
-    def _do_anti_entropy_for_metrics(self, all_metrics: Iterable[Metric]) -> Iterable[Metric]:
+    def _do_anti_entropy_for_metrics(
+            self, metric_collection: MetricCollection, all_metrics: Iterable[Metric]) -> Iterable[Metric]:
         metrics_name_set = {}
         for metric in all_metrics:
-            metric_remove_service = MetricRemoveService(self._storage_engine, self._inbox_task_notion_manager,
-                                                        self._metric_notion_manager)
+            metric_remove_service = \
+                MetricRemoveService(self._storage_engine, self._inbox_task_notion_manager, self._metric_notion_manager)
             if metric.name in metrics_name_set:
                 LOGGER.info(f"Found a duplicate metric '{metric.name}' - removing in anti-entropy")
-                metric_remove_service.execute(metric)
+                metric_remove_service.execute(metric_collection, metric)
                 continue
             metrics_name_set[metric.name] = metric
         return metrics_name_set.values()
 
     def _do_anti_entropy_for_metric_entries(
-            self, all_metric_entrys: Iterable[MetricEntry]) -> Iterable[MetricEntry]:
+            self, metric: Metric, all_metric_entrys: Iterable[MetricEntry]) -> Iterable[MetricEntry]:
         metric_entries_collection_time_set = {}
         for metric_entry in all_metric_entrys:
             if metric_entry.collection_time in metric_entries_collection_time_set:
@@ -414,7 +513,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                     LOGGER.info("Applied local changes")
 
                 try:
-                    self._metric_notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
+                    self._metric_notion_manager.remove_metric_entry(
+                        metric.metric_collection_ref_id, metric_entry.metric_ref_id, metric_entry.ref_id)
                     LOGGER.info("Applied Notion changes")
                 except NotionMetricEntryNotFoundError:
                     LOGGER.info("Skipping har removal on Notion side because recurring task was not found")
@@ -422,29 +522,43 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             metric_entries_collection_time_set[metric_entry.collection_time] = metric_entry
         return metric_entries_collection_time_set.values()
 
-    def _do_anti_entropy_for_persons(self, all_persons: Iterable[Person]) -> Iterable[Person]:
+    def _do_anti_entropy_for_persons(
+            self, person_collection: PersonCollection, all_persons: Iterable[Person]) -> Iterable[Person]:
         persons_name_set = {}
         person_remove_service = \
-            PersonRemoveService(self._storage_engine, self._prm_notion_manager, self._inbox_task_notion_manager)
+            PersonRemoveService(self._storage_engine, self._person_notion_manager, self._inbox_task_notion_manager)
         for person in all_persons:
             if person.name in persons_name_set:
                 LOGGER.info(
                     f"Found a duplicate person '{person.name}' - removing in anti-entropy")
-                person_remove_service.do_it(person)
+                person_remove_service.do_it(person_collection, person)
                 continue
             persons_name_set[person.name] = person
         return persons_name_set.values()
 
-    def _do_drop_all_archived_vacations(self, all_vacations: Iterable[Vacation]) -> None:
+    def _do_drop_all_archived_vacations(
+            self, vacation_collection: VacationCollection, all_vacations: Iterable[Vacation]) -> None:
         for vacation in all_vacations:
             if not vacation.archived:
                 continue
             LOGGER.info(f"Removed an archived vacation '{vacation.name}' on Notion side")
             try:
-                self._vacation_notion_manager.remove_vacation(vacation.ref_id)
+                self._vacation_notion_manager.remove_vacation(vacation_collection.ref_id, vacation.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionVacationNotFoundError:
                 LOGGER.info("Skipping removal on Notion side because vacation was not found")
+
+    def _do_drop_all_archived_projects(
+            self, project_collection: ProjectCollection, all_projects: Iterable[Project]) -> None:
+        for project in all_projects:
+            if not project.archived:
+                continue
+            LOGGER.info(f"Removed an archived project '{project.name}' on Notion side")
+            try:
+                self._project_notion_manager.remove_project(project_collection.ref_id, project.ref_id)
+                LOGGER.info("Applied Notion changes")
+            except NotionProjectNotFoundError:
+                LOGGER.info("Skipping removal on Notion side because project was not found")
 
     def _do_drop_all_archived_big_plans(self, big_plans: Iterable[BigPlan]) -> None:
         for big_plan in big_plans:
@@ -485,59 +599,64 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping removal on Notion side because inbox task was not found")
 
-    def _do_drop_all_archived_smart_lists(self, smart_lists: Iterable[SmartList]) -> None:
+    def _do_drop_all_archived_smart_lists(
+            self, smart_list_collection: SmartListCollection, smart_lists: Iterable[SmartList]) -> None:
         for smart_list in smart_lists:
             if not smart_list.archived:
                 continue
             LOGGER.info(f"Removed an archived smart list '{smart_list.name}' on Notion side")
 
             try:
-                self._smart_list_notion_manager.remove_smart_list(smart_list.ref_id)
+                self._smart_list_notion_manager.remove_smart_list(smart_list_collection.ref_id, smart_list.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionSmartListNotFoundError:
                 LOGGER.info("Skipping removal on Notion side because smart list was not found")
 
-    def _do_drop_all_archived_smart_list_items(self, smart_list_items: Iterable[SmartListItem]) -> None:
+    def _do_drop_all_archived_smart_list_items(
+            self, smart_list_collection: SmartListCollection, smart_list: SmartList,
+            smart_list_items: Iterable[SmartListItem]) -> None:
         for smart_list_item in smart_list_items:
             if not smart_list_item.archived:
                 continue
             LOGGER.info(f"Removed an archived smart list item '{smart_list_item.name}' on Notion side")
             try:
                 self._smart_list_notion_manager.remove_smart_list_item(
-                    smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
+                    smart_list_collection.ref_id, smart_list.ref_id, smart_list_item.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionSmartListItemNotFoundError:
                 LOGGER.info("Skipping archival on Notion side because smart list was not found")
 
-    def _do_drop_all_archived_metrics(self, metrics: Iterable[Metric]) -> None:
+    def _do_drop_all_archived_metrics(
+            self, metric_collection: MetricCollection, metrics: Iterable[Metric]) -> None:
         for metric in metrics:
             if not metric.archived:
                 continue
             LOGGER.info(f"Removed an archived metric '{metric.name}' on Notion side")
             try:
-                self._metric_notion_manager.remove_metric(metric.ref_id)
+                self._metric_notion_manager.remove_metric(metric_collection.ref_id, metric.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionMetricNotFoundError:
                 LOGGER.info("Skipping archival on Notion side because metric was not found")
 
-    def _do_drop_all_archived_metric_entries(self, metric_entries: Iterable[MetricEntry]) -> None:
+    def _do_drop_all_archived_metric_entries(self, metric: Metric, metric_entries: Iterable[MetricEntry]) -> None:
         for metric_entry in metric_entries:
             if not metric_entry.archived:
                 continue
             LOGGER.info(f"Removed an archived metric entry '{metric_entry.collection_time}' on Notion side")
             try:
-                self._metric_notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
+                self._metric_notion_manager.remove_metric_entry(
+                    metric.metric_collection_ref_id, metric_entry.metric_ref_id, metric_entry.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionMetricEntryNotFoundError:
                 LOGGER.info("Skipping the removal on Notion side because recurring task was not found")
 
-    def _do_drop_all_archived_persons(self, persons: Iterable[Person]) -> None:
+    def _do_drop_all_archived_persons(self, person_collection: PersonCollection, persons: Iterable[Person]) -> None:
         for person in persons:
             if not person.archived:
                 continue
             LOGGER.info(f"Removed an archived person '{person.name}' on Notion side")
             try:
-                self._prm_notion_manager.remove_person(person.ref_id)
+                self._person_notion_manager.remove_person(person_collection.ref_id, person.ref_id)
                 LOGGER.info("Applied Notion changes")
             except NotionPersonNotFoundError:
                 LOGGER.info("Skipping the removal on Notion side because person was not found")

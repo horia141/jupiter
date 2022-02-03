@@ -1,9 +1,6 @@
-update smart_list_item_event set kind='Created' where kind='created';
-update smart_list_item_event set kind='Updated' where kind='updated';
-update smart_list_item_event set kind='Archived' where kind='archived';
-update smart_list_item_event set kind='Restored' where kind='restored';
-update smart_list_item_event set kind='Created' where kind='create';
-update smart_list_item_event set kind='Updated' where kind='update';
-update smart_list_item_event set kind='Archived' where kind='archive';
-update smart_list_item_event set kind='Restored' where kind='restore';
-select kind from smart_list_item_event;
+update big_plan
+set project_ref_id =
+ (select rtc.project_ref_id
+  from big_plan_collection as rtc
+  where big_plan.big_plan_collection_ref_id = rtc.ref_id)
+where project_ref_id is null

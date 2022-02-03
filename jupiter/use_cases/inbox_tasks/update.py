@@ -50,6 +50,7 @@ class InboxTaskUpdateUseCase(AppMutationUseCase['InboxTaskUpdateUseCase.Args', N
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
+            project = uow.project_repository.load_by_id(inbox_task.project_ref_id)
 
             try:
                 inbox_task = inbox_task.update(
@@ -65,9 +66,10 @@ class InboxTaskUpdateUseCase(AppMutationUseCase['InboxTaskUpdateUseCase.Args', N
             if inbox_task.big_plan_ref_id is not None:
                 big_plan = uow.big_plan_repository.load_by_id(inbox_task.big_plan_ref_id)
 
+        direct_info = \
+            NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=big_plan.name if big_plan else None)
         notion_inbox_task = \
             self._inbox_task_notion_manager.load_inbox_task(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
         notion_inbox_task = \
-            notion_inbox_task.join_with_aggregate_root(
-                inbox_task, NotionInboxTask.DirectInfo(big_plan.name if big_plan else None))
+            notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
         self._inbox_task_notion_manager.save_inbox_task(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)

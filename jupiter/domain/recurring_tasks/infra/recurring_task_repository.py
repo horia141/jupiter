@@ -29,9 +29,10 @@ class RecurringTaskRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def find_all(
             self,
+            recurring_task_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_recurring_task_collection_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:
         """Find all recurring tasks."""
 
     @abc.abstractmethod

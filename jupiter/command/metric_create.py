@@ -8,7 +8,6 @@ from jupiter.domain.eisen import Eisen
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
-from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -39,8 +38,6 @@ class MetricCreate(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--metric", dest="metric_key", required=True, help="The key of the metric")
         parser.add_argument("--name", dest="name", required=True, help="The name of the metric")
-        parser.add_argument("--collection-project", dest="collection_project_key", required=False,
-                            help="The project key to generate recurring collection tasks")
         parser.add_argument("--collection-period", dest="collection_period", required=False,
                             choices=RecurringTaskPeriod.all_values(),
                             help="The period at which a metric should be recorded")
@@ -69,8 +66,6 @@ class MetricCreate(command.Command):
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
         name = MetricName.from_raw(args.name)
-        collection_project_key = ProjectKey.from_raw(args.collection_project_key) \
-            if args.collection_project_key else None
         collection_period = RecurringTaskPeriod.from_raw(args.collection_period)\
             if args.collection_period else None
         collection_eisen = Eisen.from_raw(args.collection_eisen) if args.collection_eisen else None
@@ -95,7 +90,6 @@ class MetricCreate(command.Command):
         self._command.execute(MetricCreateUseCase.Args(
             key=metric_key,
             name=name,
-            collection_project_key=collection_project_key,
             collection_period=collection_period,
             collection_eisen=collection_eisen,
             collection_difficulty=collection_difficulty,

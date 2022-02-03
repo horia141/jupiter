@@ -22,10 +22,15 @@ class BigPlan(AggregateRoot):
         """Created event."""
 
     @dataclass(frozen=True)
+    class ChangeProject(AggregateRoot.Updated):
+        """Changed the project event."""
+
+    @dataclass(frozen=True)
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
     big_plan_collection_ref_id: EntityId
+    project_ref_id: EntityId
     name: BigPlanName
     status: BigPlanStatus
     actionable_date: Optional[ADate]
@@ -37,8 +42,8 @@ class BigPlan(AggregateRoot):
 
     @staticmethod
     def new_big_plan(
-            archived: bool, big_plan_collection_ref_id: EntityId, name: BigPlanName, status: BigPlanStatus,
-            actionable_date: Optional[ADate], due_date: Optional[ADate], source: EventSource,
+            archived: bool, big_plan_collection_ref_id: EntityId, project_ref_id: EntityId, name: BigPlanName,
+            status: BigPlanStatus, actionable_date: Optional[ADate], due_date: Optional[ADate], source: EventSource,
             created_time: Timestamp) -> 'BigPlan':
         """Create a big plan."""
         notion_link_uuid = uuid.uuid4()
@@ -58,6 +63,7 @@ class BigPlan(AggregateRoot):
                     source, FIRST_VERSION, created_time, notion_link_uuid=notion_link_uuid,
                     accepted_time=accepted_time, working_time=working_time, completed_time=completed_time)],
             big_plan_collection_ref_id=big_plan_collection_ref_id,
+            project_ref_id=project_ref_id,
             name=name,
             status=status,
             actionable_date=actionable_date,
@@ -67,6 +73,15 @@ class BigPlan(AggregateRoot):
             working_time=working_time,
             completed_time=completed_time)
         return big_plan
+
+    def change_project(
+            self, project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'BigPlan':
+        """Change the project for the inbox task."""
+        if self.project_ref_id == project_ref_id:
+            return self
+        return self._new_version(
+            project_ref_id=project_ref_id,
+            new_event=BigPlan.ChangeProject.make_event_from_frame_args(source, self.version, modification_time))
 
     def update(
             self, name: UpdateAction[BigPlanName], status: UpdateAction[BigPlanStatus],
@@ -132,9 +147,3 @@ class BigPlan(AggregateRoot):
             due_date=new_due_date,
             new_event=
             BigPlan.Updated.make_event_from_frame_args(source, self.version, modification_time, **event_kwargs))
-
-    @property
-    def project_ref_id(self) -> EntityId:
-        """The id of the project this big plan belongs to."""
-        # TODO(horia141): fix this uglyness
-        return self.big_plan_collection_ref_id

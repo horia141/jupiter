@@ -38,7 +38,10 @@ class MetricEntryUpdateUseCase(AppMutationUseCase['MetricEntryUpdateUseCase.Args
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
+            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
             metric_entry = uow.metric_entry_repository.load_by_id(args.ref_id)
 
             metric_entry = metric_entry.update(
@@ -47,6 +50,9 @@ class MetricEntryUpdateUseCase(AppMutationUseCase['MetricEntryUpdateUseCase.Args
 
             uow.metric_entry_repository.save(metric_entry)
 
-        notion_metric_entry = self._notion_manager.load_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
+        notion_metric_entry = \
+            self._notion_manager.load_metric_entry(
+                metric_collection.ref_id, metric_entry.metric_ref_id, metric_entry.ref_id)
         notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry, None)
-        self._notion_manager.save_metric_entry(metric_entry.metric_ref_id, notion_metric_entry)
+        self._notion_manager.save_metric_entry(
+            metric_collection.ref_id, metric_entry.metric_ref_id, notion_metric_entry)

@@ -5,7 +5,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.prm.person.archive import PersonArchiveUseCase
+from jupiter.use_cases.persons.archive import PersonArchiveUseCase
 from jupiter.framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)

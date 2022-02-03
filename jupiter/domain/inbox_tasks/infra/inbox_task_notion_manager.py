@@ -1,13 +1,11 @@
 """A manager of Notion-side inbox tasks."""
 import abc
-import uuid
-from dataclasses import dataclass
 from typing import Optional, Iterable
 
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.projects.notion_project import NotionProject
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
+from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 
@@ -20,19 +18,12 @@ class NotionInboxTaskNotFoundError(Exception):
     """Exception raised when a Notion inbox task was not found."""
 
 
-@dataclass(frozen=True)
-class InboxTaskBigPlanLabel:
-    """A value for an inbox task big plan label."""
-    notion_link_uuid: uuid.UUID
-    name: EntityName
-
-
 class InboxTaskNotionManager(abc.ABC):
     """A manager of Notion-side inbox tasks."""
 
     @abc.abstractmethod
     def upsert_inbox_task_collection(
-            self, notion_project: NotionProject,
+            self, notion_workspace: NotionWorkspace,
             inbox_task_collection: NotionInboxTaskCollection) -> NotionInboxTaskCollection:
         """Upsert the Notion-side inbox task."""
 
@@ -41,12 +32,13 @@ class InboxTaskNotionManager(abc.ABC):
         """Retrieve the Notion-side inbox task collection."""
 
     @abc.abstractmethod
-    def remove_inbox_tasks_collection(self, ref_id: EntityId) -> None:
-        """Remove the Notion-side structure for this collection."""
+    def upsert_inbox_tasks_project_field_options(
+            self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
+        """Upsert the Notion-side structure for the 'project' select field."""
 
     @abc.abstractmethod
     def upsert_inbox_tasks_big_plan_field_options(
-            self, ref_id: EntityId, big_plans_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
+            self, ref_id: EntityId, big_plans_labels: Iterable[NotionFieldLabel]) -> None:
         """Upsert the Notion-side structure for the 'big plan' select field."""
 
     @abc.abstractmethod

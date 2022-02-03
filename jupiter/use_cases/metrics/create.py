@@ -11,7 +11,6 @@ from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.metrics.notion_metric import NotionMetric
-from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -33,7 +32,6 @@ class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
         """Args."""
         key: MetricKey
         name: MetricName
-        collection_project_key: Optional[ProjectKey]
         collection_period: Optional[RecurringTaskPeriod]
         collection_eisen: Optional[Eisen]
         collection_difficulty: Optional[Difficulty]
@@ -58,38 +56,33 @@ class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
-        if args.collection_period is None and args.collection_project_key is not None:
-            raise InputValidationError("Cannot specify a collection project if no period is given")
+        workspace = context.workspace
 
         collection_params = None
         with self._storage_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.load()
+            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
 
             if args.collection_period is not None:
-                if args.collection_project_key is not None:
-                    project = uow.project_repository.load_by_key(args.collection_project_key)
-                    project_ref_id = project.ref_id
-                else:
-                    project_ref_id = workspace.default_project_ref_id
-                collection_params = RecurringTaskGenParams(
-                    project_ref_id=project_ref_id,
-                    period=args.collection_period,
-                    eisen=args.collection_eisen if args.collection_eisen else Eisen.REGULAR,
-                    difficulty=args.collection_difficulty,
-                    actionable_from_day=args.collection_actionable_from_day,
-                    actionable_from_month=args.collection_actionable_from_month,
-                    due_at_time=args.collection_due_at_time,
-                    due_at_day=args.collection_due_at_day,
-                    due_at_month=args.collection_due_at_month)
+                collection_params = \
+                    RecurringTaskGenParams(
+                        period=args.collection_period,
+                        eisen=args.collection_eisen if args.collection_eisen else Eisen.REGULAR,
+                        difficulty=args.collection_difficulty,
+                        actionable_from_day=args.collection_actionable_from_day,
+                        actionable_from_month=args.collection_actionable_from_month,
+                        due_at_time=args.collection_due_at_time,
+                        due_at_day=args.collection_due_at_day,
+                        due_at_month=args.collection_due_at_month)
 
             try:
-                metric = Metric.new_metric(
-                    workspace_ref_id=workspace.ref_id, key=args.key, name=args.name,
-                    collection_params=collection_params, metric_unit=args.metric_unit, source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time())
+                metric = \
+                    Metric.new_metric(
+                        metric_collection_ref_id=metric_collection.ref_id, key=args.key, name=args.name,
+                        collection_params=collection_params, metric_unit=args.metric_unit, source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time())
                 metric = uow.metric_repository.create(metric)
             except MetricAlreadyExistsError as err:
                 raise InputValidationError(f"Metric with key {metric.key} already exists") from err
 
         notion_metric = NotionMetric.new_notion_row(metric)
-        self._metric_notion_manager.upsert_metric(notion_metric)
+        self._metric_notion_manager.upsert_metric(metric_collection.ref_id, notion_metric)

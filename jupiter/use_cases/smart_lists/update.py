@@ -36,13 +36,18 @@ class SmartListUpdateUseCase(AppMutationUseCase['SmartListUpdateUseCase.Args', N
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list = uow.smart_list_repository.load_by_key(args.key)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+
+            smart_list = uow.smart_list_repository.load_by_key(smart_list_collection.ref_id, args.key)
 
             smart_list = smart_list.update(args.name, EventSource.CLI, self._time_provider.get_current_time())
 
             uow.smart_list_repository.save(smart_list)
 
-        notion_smart_list = self._smart_list_notion_manager.load_smart_list(smart_list.ref_id)
+        notion_smart_list = \
+            self._smart_list_notion_manager.load_smart_list(smart_list_collection.ref_id, smart_list.ref_id)
         notion_smart_list = notion_smart_list.join_with_aggregate_root(smart_list)
-        self._smart_list_notion_manager.save_smart_list(notion_smart_list)
+        self._smart_list_notion_manager.save_smart_list(smart_list_collection.ref_id, notion_smart_list)

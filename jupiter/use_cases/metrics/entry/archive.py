@@ -36,12 +36,16 @@ class MetricEntryArchiveUseCase(AppMutationUseCase['MetricEntryArchiveUseCase.Ar
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
+            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
             metric_entry = uow.metric_entry_repository.load_by_id(args.ref_id)
             metric_entry = metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.metric_entry_repository.save(metric_entry)
 
         try:
-            self._notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
+            self._notion_manager.remove_metric_entry(
+                metric_collection.ref_id, metric_entry.metric_ref_id, metric_entry.ref_id)
         except NotionMetricEntryNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

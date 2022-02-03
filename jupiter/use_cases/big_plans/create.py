@@ -47,20 +47,24 @@ class BigPlanCreateUseCase(AppMutationUseCase['BigPlanCreateUseCase.Args', None]
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
+            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+
             if args.project_key is not None:
-                project = uow.project_repository.load_by_key(args.project_key)
+                project = uow.project_repository.load_by_key(project_collection.ref_id, args.project_key)
                 project_ref_id = project.ref_id
             else:
-                workspace = uow.workspace_repository.load()
+                project = uow.project_repository.load_by_id(workspace.default_project_ref_id)
                 project_ref_id = workspace.default_project_ref_id
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_project(project_ref_id)
-
-            big_plan_collection = uow.big_plan_collection_repository.load_by_project(project_ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
 
             big_plan = BigPlan.new_big_plan(
                 big_plan_collection_ref_id=big_plan_collection.ref_id,
+                project_ref_id=project_ref_id,
                 archived=False,
                 name=args.name,
                 status=BigPlanStatus.ACCEPTED,
@@ -73,7 +77,8 @@ class BigPlanCreateUseCase(AppMutationUseCase['BigPlanCreateUseCase.Args', None]
         notion_inbox_tasks_collection = \
             self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
 
-        notion_big_plan = NotionBigPlan.new_notion_row(big_plan, None)
+        direct_info = NotionBigPlan.DirectInfo(project_name=project.name)
+        notion_big_plan = NotionBigPlan.new_notion_row(big_plan, direct_info)
         self._big_plan_notion_manager.upsert_big_plan(
             big_plan_collection.ref_id, notion_big_plan, notion_inbox_tasks_collection)
 

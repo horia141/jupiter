@@ -5,6 +5,7 @@ import logging
 import coloredlogs
 
 from jupiter.command.big_plan_archive import BigPlanArchive
+from jupiter.command.big_plan_change_project import BigPlanChangeProject
 from jupiter.command.big_plan_create import BigPlanCreate
 from jupiter.command.big_plan_remove import BigPlanRemove
 from jupiter.command.big_plan_show import BigPlanShow
@@ -13,12 +14,14 @@ from jupiter.command.gc import GC
 from jupiter.command.gen import Gen
 from jupiter.command.inbox_task_archive import InboxTaskArchive
 from jupiter.command.inbox_task_associate_with_big_plan import InboxTaskAssociateWithBigPlan
+from jupiter.command.inbox_task_change_project import InboxTaskChangeProject
 from jupiter.command.inbox_task_create import InboxTaskCreate
 from jupiter.command.inbox_task_remove import InboxTaskRemove
 from jupiter.command.inbox_task_show import InboxTaskShow
 from jupiter.command.inbox_task_update import InboxTaskUpdate
 from jupiter.command.initialize import Initialize
 from jupiter.command.metric_archive import MetricArchive
+from jupiter.command.metric_change_collection_project import MetricChangeCollectionProject
 from jupiter.command.metric_create import MetricCreate
 from jupiter.command.metric_entry_archive import MetricEntryArchive
 from jupiter.command.metric_entry_create import MetricEntryCreate
@@ -32,13 +35,13 @@ from jupiter.command.person_archive import PersonArchive
 from jupiter.command.person_create import PersonCreate
 from jupiter.command.person_remove import PersonRemove
 from jupiter.command.person_update import PersonUpdate
-from jupiter.command.prm_change_catch_up_project import PrmChangeCatchUpProject
-from jupiter.command.prm_show import PrmShow
-from jupiter.command.project_archive import ProjectArchive
+from jupiter.command.person_change_catch_up_project import PersonChangeCatchUpProject
+from jupiter.command.person_show import PersonShow
 from jupiter.command.project_create import ProjectCreate
 from jupiter.command.project_show import ProjectShow
 from jupiter.command.project_update import ProjectUpdate
 from jupiter.command.recurring_task_archive import RecurringTaskArchive
+from jupiter.command.recurring_task_change_project import RecurringTaskChangeProject
 from jupiter.command.recurring_task_create import RecurringTaskCreate
 from jupiter.command.recurring_task_remove import RecurringTaskRemove
 from jupiter.command.recurring_task_show import RecurringTaskShow
@@ -71,7 +74,7 @@ from jupiter.command.workspace_update import WorkspaceUpdate
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import NotionBigPlanNotFoundError
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import NotionInboxTaskNotFoundError
 from jupiter.domain.metrics.infra.metric_notion_manager import NotionMetricNotFoundError, NotionMetricEntryNotFoundError
-from jupiter.domain.prm.infra.prm_notion_manager import NotionPersonNotFoundError
+from jupiter.domain.persons.infra.person_notion_manager import NotionPersonNotFoundError
 from jupiter.domain.projects.infra.project_notion_manager import NotionProjectNotFoundError
 from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import NotionRecurringTaskNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import NotionSmartListNotFoundError, \
@@ -83,12 +86,12 @@ from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceNotFou
 from jupiter.framework.errors import InputValidationError
 from jupiter.remote.notion.big_plans_manager import NotionBigPlansManager
 from jupiter.remote.notion.inbox_tasks_manager import NotionInboxTasksManager
-from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager
 from jupiter.remote.notion.infra.client_builder import \
     MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionClientBuilder
+from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager
 from jupiter.remote.notion.infra.pages_manager import NotionPagesManager
 from jupiter.remote.notion.metrics_manager import NotionMetricManager
-from jupiter.remote.notion.prm_manager import NotionPrmManager
+from jupiter.remote.notion.persons_manager import NotionPersonManager
 from jupiter.remote.notion.projects_manager import NotionProjectsManager
 from jupiter.remote.notion.recurring_tasks_manager import NotionRecurringTasksManager
 from jupiter.remote.notion.smart_lists_manager import NotionSmartListsManager
@@ -98,6 +101,7 @@ from jupiter.repository.sqlite.domain.storage_engine import SqliteDomainStorageE
 from jupiter.repository.sqlite.remote.notion.storage_engine import SqliteNotionStorageEngine
 from jupiter.repository.sqlite.use_case.storage_engine import SqliteUseCaseStorageEngine
 from jupiter.use_cases.big_plans.archive import BigPlanArchiveUseCase
+from jupiter.use_cases.big_plans.change_project import BigPlanChangeProjectUseCase
 from jupiter.use_cases.big_plans.create import BigPlanCreateUseCase
 from jupiter.use_cases.big_plans.find import BigPlanFindUseCase
 from jupiter.use_cases.big_plans.remove import BigPlanRemoveUseCase
@@ -106,6 +110,7 @@ from jupiter.use_cases.gc import GCUseCase
 from jupiter.use_cases.gen import GenUseCase
 from jupiter.use_cases.inbox_tasks.archive import InboxTaskArchiveUseCase
 from jupiter.use_cases.inbox_tasks.associate_with_big_plan import InboxTaskAssociateWithBigPlanUseCase
+from jupiter.use_cases.inbox_tasks.change_project import InboxTaskChangeProjectUseCase
 from jupiter.use_cases.inbox_tasks.create import InboxTaskCreateUseCase
 from jupiter.use_cases.inbox_tasks.find import InboxTaskFindUseCase
 from jupiter.use_cases.inbox_tasks.remove import InboxTaskRemoveUseCase
@@ -113,6 +118,7 @@ from jupiter.use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from jupiter.use_cases.infra.persistent_mutation_use_case_recoder import PersistentMutationUseCaseInvocationRecorder
 from jupiter.use_cases.init import InitUseCase
 from jupiter.use_cases.metrics.archive import MetricArchiveUseCase
+from jupiter.use_cases.metrics.change_collection_project import MetricChangeCollectionProjectUseCase
 from jupiter.use_cases.metrics.create import MetricCreateUseCase
 from jupiter.use_cases.metrics.entry.archive import MetricEntryArchiveUseCase
 from jupiter.use_cases.metrics.entry.create import MetricEntryCreateUseCase
@@ -121,17 +127,17 @@ from jupiter.use_cases.metrics.entry.update import MetricEntryUpdateUseCase
 from jupiter.use_cases.metrics.find import MetricFindUseCase
 from jupiter.use_cases.metrics.remove import MetricRemoveUseCase
 from jupiter.use_cases.metrics.update import MetricUpdateUseCase
-from jupiter.use_cases.prm.change_catch_up_project import PrmDatabaseChangeCatchUpProjectUseCase
-from jupiter.use_cases.prm.find import PrmDatabaseFindUseCase
-from jupiter.use_cases.prm.person.archive import PersonArchiveUseCase
-from jupiter.use_cases.prm.person.create import PersonCreateUseCase
-from jupiter.use_cases.prm.person.remove import PersonRemoveUseCase
-from jupiter.use_cases.prm.person.update import PersonUpdateUseCase
-from jupiter.use_cases.projects.archive import ProjectArchiveUseCase
+from jupiter.use_cases.persons.change_catch_up_project import PersonChangeCatchUpProjectUseCase
+from jupiter.use_cases.persons.find import PersonFindUseCase
+from jupiter.use_cases.persons.archive import PersonArchiveUseCase
+from jupiter.use_cases.persons.create import PersonCreateUseCase
+from jupiter.use_cases.persons.remove import PersonRemoveUseCase
+from jupiter.use_cases.persons.update import PersonUpdateUseCase
 from jupiter.use_cases.projects.create import ProjectCreateUseCase
 from jupiter.use_cases.projects.find import ProjectFindUseCase
 from jupiter.use_cases.projects.update import ProjectUpdateUseCase
 from jupiter.use_cases.recurring_tasks.archive import RecurringTaskArchiveUseCase
+from jupiter.use_cases.recurring_tasks.change_project import RecurringTaskChangeProjectUseCase
 from jupiter.use_cases.recurring_tasks.create import RecurringTaskCreateUseCase
 from jupiter.use_cases.recurring_tasks.find import RecurringTaskFindUseCase
 from jupiter.use_cases.recurring_tasks.remove import RecurringTaskRemoveUseCase
@@ -199,7 +205,7 @@ def main() -> None:
     notion_workspace_manager = NotionWorkspacesManager(notion_pages_manager)
     notion_vacation_manager = NotionVacationsManager(
         global_properties, time_provider, notion_collections_manager)
-    notion_projects_manager = NotionProjectsManager(notion_pages_manager)
+    notion_projects_manager = NotionProjectsManager(global_properties, time_provider, notion_collections_manager)
     notion_inbox_tasks_manager = NotionInboxTasksManager(global_properties, time_provider, notion_collections_manager)
     notion_recurring_tasks_manager = NotionRecurringTasksManager(
         global_properties, time_provider, notion_collections_manager)
@@ -208,7 +214,7 @@ def main() -> None:
         global_properties, time_provider, notion_pages_manager, notion_collections_manager)
     notion_metric_manager = NotionMetricManager(
         global_properties, time_provider, notion_pages_manager, notion_collections_manager)
-    notion_prm_manager = NotionPrmManager(global_properties, time_provider, notion_collections_manager)
+    notion_person_manager = NotionPersonManager(global_properties, time_provider, notion_collections_manager)
 
     invocation_recorder = PersistentMutationUseCaseInvocationRecorder(usecase_storage_engine)
 
@@ -222,9 +228,12 @@ def main() -> None:
                 notion_workspace_manager,
                 notion_vacation_manager,
                 notion_projects_manager,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager,
+                notion_big_plans_manager,
                 notion_smart_list_manager,
                 notion_metric_manager,
-                notion_prm_manager)),
+                notion_person_manager)),
         Sync(
             SyncUseCase(
                 global_properties,
@@ -239,7 +248,7 @@ def main() -> None:
                 notion_big_plans_manager,
                 notion_smart_list_manager,
                 notion_metric_manager,
-                notion_prm_manager)),
+                notion_person_manager)),
         Gen(
             global_properties,
             time_provider,
@@ -261,12 +270,13 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_vacation_manager,
+                notion_projects_manager,
                 notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager,
                 notion_big_plans_manager,
                 notion_smart_list_manager,
                 notion_metric_manager,
-                notion_prm_manager)),
+                notion_person_manager)),
         # CRUD Commands.
         WorkspaceUpdate(
             WorkspaceUpdateUseCase(
@@ -324,12 +334,6 @@ def main() -> None:
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_projects_manager)),
-        ProjectArchive(
-            ProjectArchiveUseCase(
-                time_provider,
-                invocation_recorder,
-                domain_storage_engine,
                 notion_projects_manager,
                 notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager,
@@ -345,6 +349,12 @@ def main() -> None:
                 notion_inbox_tasks_manager)),
         InboxTaskArchive(
             InboxTaskArchiveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager)),
+        InboxTaskChangeProject(
+            InboxTaskChangeProjectUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
@@ -386,6 +396,14 @@ def main() -> None:
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager)),
+        RecurringTaskChangeProject(
+            RecurringTaskChangeProjectUseCase(
+                global_properties,
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_recurring_tasks_manager)),
         RecurringTaskSuspend(
             RecurringTaskSuspendUseCase(
                 time_provider,
@@ -398,17 +416,17 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_recurring_tasks_manager)),
-        RecurringTaskRemove(
-            RecurringTaskRemoveUseCase(
+        RecurringTaskUpdate(
+            global_properties,
+            RecurringTaskUpdateUseCase(
+                global_properties,
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
                 notion_recurring_tasks_manager)),
-        RecurringTaskUpdate(
-            global_properties,
-            RecurringTaskUpdateUseCase(
-                global_properties,
+        RecurringTaskRemove(
+            RecurringTaskRemoveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
@@ -434,6 +452,13 @@ def main() -> None:
                 notion_big_plans_manager)),
         BigPlanRemove(
             BigPlanRemoveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_big_plans_manager)),
+        BigPlanChangeProject(
+            BigPlanChangeProjectUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
@@ -524,6 +549,13 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_smart_list_manager)),
+        MetricChangeCollectionProject(
+            MetricChangeCollectionProjectUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_metric_manager)),
         MetricCreate(
             MetricCreateUseCase(
                 time_provider,
@@ -579,28 +611,26 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_metric_manager)),
-        PrmChangeCatchUpProject(
-            PrmDatabaseChangeCatchUpProjectUseCase(
+        PersonChangeCatchUpProject(
+            PersonChangeCatchUpProjectUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_prm_manager)),
-        PrmShow(
-            PrmDatabaseFindUseCase(domain_storage_engine)),
+                notion_person_manager)),
         PersonCreate(
             PersonCreateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_prm_manager)),
+                notion_person_manager)),
         PersonArchive(
             PersonArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_prm_manager)),
+                notion_person_manager)),
         PersonUpdate(
             PersonUpdateUseCase(
                 global_properties,
@@ -608,14 +638,16 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_prm_manager)),
+                notion_person_manager)),
         PersonRemove(
             PersonRemoveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_prm_manager)),
+                notion_person_manager)),
+        PersonShow(
+            PersonFindUseCase(domain_storage_engine)),
         # Remote connection commands
         NotionConnectionUpdateToken(
             NotionConnectionUpdateTokenUseCase(

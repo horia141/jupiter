@@ -15,11 +15,11 @@ class BigPlanCollection(AggregateRoot):
     class Created(AggregateRoot.Created):
         """Created event."""
 
-    project_ref_id: EntityId
+    workspace_ref_id: EntityId
 
     @staticmethod
     def new_big_plan_collection(
-            project_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'BigPlanCollection':
+            workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'BigPlanCollection':
         """Create a big plan collection."""
         big_plan_collection = BigPlanCollection(
             ref_id=BAD_REF_ID,
@@ -29,5 +29,5 @@ class BigPlanCollection(AggregateRoot):
             archived_time=None,
             last_modified_time=created_time,
             events=[BigPlanCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            project_ref_id=project_ref_id)
+            workspace_ref_id=workspace_ref_id)
         return big_plan_collection

@@ -26,6 +26,10 @@ class RecurringTask(AggregateRoot):
         """Created event."""
 
     @dataclass(frozen=True)
+    class ChangeProject(AggregateRoot.Updated):
+        """Changed the project event."""
+
+    @dataclass(frozen=True)
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
@@ -38,6 +42,7 @@ class RecurringTask(AggregateRoot):
         """Unsuspend event."""
 
     recurring_task_collection_ref_id: EntityId
+    project_ref_id: EntityId
     name: RecurringTaskName
     the_type: RecurringTaskType
     gen_params: RecurringTaskGenParams
@@ -49,8 +54,8 @@ class RecurringTask(AggregateRoot):
 
     @staticmethod
     def new_recurring_task(
-            recurring_task_collection_ref_id: EntityId, archived: bool, name: RecurringTaskName,
-            the_type: Optional[RecurringTaskType], gen_params: RecurringTaskGenParams,
+            recurring_task_collection_ref_id: EntityId, archived: bool, project_ref_id: EntityId,
+            name: RecurringTaskName, the_type: Optional[RecurringTaskType], gen_params: RecurringTaskGenParams,
             must_do: bool, skip_rule: Optional[RecurringTaskSkipRule], start_at_date: Optional[ADate],
             end_at_date: Optional[ADate], suspended: bool, source: EventSource,
             created_time: Timestamp) -> 'RecurringTask':
@@ -74,6 +79,7 @@ class RecurringTask(AggregateRoot):
             last_modified_time=created_time,
             events=[RecurringTask.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             recurring_task_collection_ref_id=recurring_task_collection_ref_id,
+            project_ref_id=project_ref_id,
             name=name,
             the_type=the_type or RecurringTaskType.CHORE,
             gen_params=gen_params,
@@ -83,6 +89,15 @@ class RecurringTask(AggregateRoot):
             end_at_date=end_at_date,
             suspended=suspended)
         return recurring_task
+
+    def change_project(
+            self, project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'RecurringTask':
+        """Change the project for the recurring task task."""
+        if self.project_ref_id == project_ref_id:
+            return self
+        return self._new_version(
+            project_ref_id=project_ref_id,
+            new_event=RecurringTask.ChangeProject.make_event_from_frame_args(source, self.version, modification_time))
 
     def update(
             self, name: UpdateAction[RecurringTaskName], the_type: UpdateAction[RecurringTaskType],
@@ -102,11 +117,8 @@ class RecurringTask(AggregateRoot):
         if start_at_date.should_change or end_at_date.should_change:
             the_start_at_date = start_at_date.or_else(self.start_at_date)
             the_end_at_date = end_at_date.or_else(self.end_at_date)
-            today = ADate.from_date(modification_time.as_date())
-            if the_end_at_date is not None and the_start_at_date >= end_at_date:
+            if the_end_at_date is not None and the_start_at_date >= the_end_at_date:
                 raise InputValidationError(f"Start date {the_start_at_date} is after end date {the_end_at_date}")
-            if the_end_at_date is not None and the_end_at_date < today:
-                raise InputValidationError(f"End date {the_end_at_date} is before start date {today}")
         else:
             the_start_at_date = self.start_at_date
             the_end_at_date = self.end_at_date
@@ -150,12 +162,6 @@ class RecurringTask(AggregateRoot):
             # the interval we're comparing against should be in this interval.
             return recurring_task_start_date <= start_date <= recurring_task_end_date or \
                 recurring_task_start_date <= end_date <= recurring_task_end_date
-
-    @property
-    def project_ref_id(self) -> EntityId:
-        """The project id this task belongs to."""
-        # TODO(horia141): fix this uglyness
-        return self.recurring_task_collection_ref_id
 
     @staticmethod
     def _check_actionable_and_due_date_configs(

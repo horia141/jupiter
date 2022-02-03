@@ -1,4 +1,5 @@
 """The command for finding smart lists."""
+import itertools
 from dataclasses import dataclass
 from typing import Optional, Iterable
 
@@ -37,18 +38,30 @@ class SmartListFindUseCase(AppReadonlyUseCase['SmartListFindUseCase.Args', 'Smar
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> 'SmartListFindUseCase.Result':
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_lists = uow.smart_list_repository.find_all(
-                allow_archived=args.allow_archived, filter_keys=args.filter_keys)
-            smart_list_tags = uow.smart_list_tag_repository.find_all(
-                allow_archived=args.allow_archived,
-                filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists],
-                filter_tag_names=args.filter_tag_names)
-            smart_list_items = uow.smart_list_item_repository.find_all(
-                allow_archived=args.allow_archived,
-                filter_is_done=args.filter_is_done,
-                filter_tag_ref_ids=[t.ref_id for t in smart_list_tags] if args.filter_tag_names else None,
-                filter_smart_list_ref_ids=[sl.ref_id for sl in smart_lists])
+            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+
+            smart_lists = \
+                uow.smart_list_repository.find_all(
+                    smart_list_collection_ref_id=smart_list_collection.ref_id,
+                    allow_archived=args.allow_archived,
+                    filter_keys=args.filter_keys)
+            smart_list_tags = \
+                itertools.chain(*(uow.smart_list_tag_repository.find_all(
+                                    smart_list_ref_id=sl.ref_id,
+                                    allow_archived=args.allow_archived,
+                                    filter_tag_names=args.filter_tag_names)
+                    for sl in smart_lists))
+            smart_list_items = \
+                itertools.chain(*(uow.smart_list_item_repository.find_all(
+                                    smart_list_ref_id=sl.ref_id,
+                                    allow_archived=args.allow_archived,
+                                    filter_is_done=args.filter_is_done,
+                                    filter_tag_ref_ids=
+                                    [t.ref_id for t in smart_list_tags] if args.filter_tag_names else None)
+                    for sl in smart_lists))
 
         smart_list_tags_by_smart_list_ref_ids = {}
         for smart_list_tag in smart_list_tags:

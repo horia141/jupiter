@@ -26,9 +26,10 @@ def upgrade() -> None:
         sa.Column('created_time', sa.DateTime, nullable=False),
         sa.Column('last_modified_time', sa.DateTime, nullable=False),
         sa.Column('archived_time', sa.DateTime, nullable=True),
-        sa.Column('workspace_ref_id', sa.Integer, sa.ForeignKey('workspace.ref_id'), index=True, nullable=False),
+        sa.Column('project_collection_ref_id', sa.Integer, sa.ForeignKey('project_collection.ref_id'), index=True, nullable=False),
         sa.Column('the_key', sa.String(32), nullable=False),
-        sa.Column('name', sa.String(100), nullable=False))
+        sa.Column('name', sa.String(100), nullable=False),
+        sa.Column('notion_link_uuid', sa.String(16), nullable=False))
     op.create_table(
         'project_event',
         sa.Column('owner_ref_id', sa.Integer, sa.ForeignKey('project.ref_id'), primary_key=True),

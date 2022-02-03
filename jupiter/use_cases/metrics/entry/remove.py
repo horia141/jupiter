@@ -37,8 +37,10 @@ class MetricEntryRemoveUseCase(AppMutationUseCase['MetricEntryRemoveUseCase.Args
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             metric_entry = uow.metric_entry_repository.remove(args.ref_id)
+            metric = uow.metric_repository.load_by_id(metric_entry.metric_ref_id)
 
         try:
-            self._metric_notion_manager.remove_metric_entry(metric_entry.metric_ref_id, metric_entry.ref_id)
+            self._metric_notion_manager.remove_metric_entry(
+                metric.metric_collection_ref_id, metric.ref_id, metric_entry.ref_id)
         except NotionMetricEntryNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

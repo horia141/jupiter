@@ -32,14 +32,20 @@ class VacationSyncService:
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
         with self._storage_engine.get_unit_of_work() as uow:
-            all_vacations = uow.vacation_repository.find_all(allow_archived=True, filter_ref_ids=filter_ref_ids)
+            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
+            all_vacations = \
+                uow.vacation_repository.find_all(
+                    vacation_collection_ref_id=vacation_collection.ref_id,
+                    allow_archived=True,
+                    filter_ref_ids=filter_ref_ids)
         all_vacations_set: Dict[EntityId, Vacation] = {v.ref_id: v for v in all_vacations}
 
         if not drop_all_notion_side:
-            all_notion_vacations = self._vacation_notion_manager.load_all_vacations()
-            all_notion_vacations_notion_ids = set(self._vacation_notion_manager.load_all_saved_vacation_notion_ids())
+            all_notion_vacations = self._vacation_notion_manager.load_all_vacations(vacation_collection.ref_id)
+            all_notion_vacations_notion_ids = \
+                set(self._vacation_notion_manager.load_all_saved_vacation_notion_ids(vacation_collection.ref_id))
         else:
-            self._vacation_notion_manager.drop_all_vacations()
+            self._vacation_notion_manager.drop_all_vacations(vacation_collection.ref_id)
             all_notion_vacations = []
             all_notion_vacations_notion_ids = set()
         all_notion_vacations_set: Dict[EntityId, NotionVacation] = {}
@@ -55,17 +61,17 @@ class VacationSyncService:
             if notion_vacation.ref_id is None:
                 new_vacation = \
                     notion_vacation.new_aggregate_root(
-                        NotionVacation.InverseExtraInfo(workspace_ref_id=workspace.ref_id))
+                        NotionVacation.InverseInfo(vacation_collection_ref_id=vacation_collection.ref_id))
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_vacation = uow.vacation_repository.create(new_vacation)
 
                 self._vacation_notion_manager.link_local_and_notion_entries(
-                    new_vacation.ref_id, notion_vacation.notion_id)
+                    vacation_collection.ref_id, new_vacation.ref_id, notion_vacation.notion_id)
                 LOGGER.info("Linked the new vacation with local entries")
 
                 notion_vacation = notion_vacation.join_with_aggregate_root(new_vacation, None)
-                self._vacation_notion_manager.save_vacation(notion_vacation)
+                self._vacation_notion_manager.save_vacation(vacation_collection.ref_id, notion_vacation)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_vacation}")
 
                 all_vacations_set[new_vacation.ref_id] = new_vacation
@@ -84,7 +90,7 @@ class VacationSyncService:
 
                     updated_vacation = \
                         notion_vacation.apply_to_aggregate_root(
-                            vacation, NotionVacation.InverseExtraInfo(workspace_ref_id=workspace.ref_id))
+                            vacation, NotionVacation.InverseInfo(vacation_collection_ref_id=vacation_collection.ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.vacation_repository.save(updated_vacation)
@@ -100,7 +106,7 @@ class VacationSyncService:
 
                     updated_notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
 
-                    self._vacation_notion_manager.save_vacation(updated_notion_vacation)
+                    self._vacation_notion_manager.save_vacation(vacation_collection.ref_id, updated_notion_vacation)
 
                     all_notion_vacations_set[notion_vacation.ref_id] = updated_notion_vacation
 
@@ -114,7 +120,7 @@ class VacationSyncService:
                 # 2. This is a vacation added by the script, but which failed before local data could be saved.
                 #    We'll have duplicates in these cases, and they need to be removed.
                 try:
-                    self._vacation_notion_manager.remove_vacation(notion_vacation.ref_id)
+                    self._vacation_notion_manager.remove_vacation(vacation_collection.ref_id, notion_vacation.ref_id)
                     LOGGER.info(f"Removed vacation with id={notion_vacation.ref_id} from Notion")
                 except NotionVacationNotFoundError:
                     LOGGER.info(f"Skipped dangling vacation in Notion {notion_vacation.ref_id}")
@@ -129,7 +135,7 @@ class VacationSyncService:
 
             # If the vacation does not exist on Notion side, we create it.
             notion_vacation = NotionVacation.new_notion_row(vacation, None)
-            self._vacation_notion_manager.upsert_vacation(notion_vacation)
+            self._vacation_notion_manager.upsert_vacation(vacation_collection.ref_id, notion_vacation)
             all_notion_vacations_set[vacation.ref_id] = notion_vacation
             LOGGER.info(f"Created new vacation on Notion side {vacation.name}")
 

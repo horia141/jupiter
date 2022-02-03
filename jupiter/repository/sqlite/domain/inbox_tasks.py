@@ -41,7 +41,9 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
             Column('archived_time', DateTime, nullable=True),
-            Column('project_ref_id', Integer, ForeignKey("project.ref_id"), unique=True, nullable=False),
+            Column(
+                'workspace_ref_id', Integer, ForeignKey("workspace_ref_id.ref_id"),
+                index=True, unique=True, nullable=False),
             keep_existing=True)
         self._inbox_task_collection_event_table = build_event_table(self._inbox_task_collection_table, metadata)
 
@@ -56,7 +58,7 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
                 last_modified_time=inbox_task_collection.last_modified_time.to_db(),
                 archived_time=
                 inbox_task_collection.archived_time.to_db() if inbox_task_collection.archived_time else None,
-                project_ref_id=inbox_task_collection.project_ref_id.as_int()))
+                workspace_ref_id=inbox_task_collection.workspace_ref_id.as_int()))
         inbox_task_collection = inbox_task_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._inbox_task_collection_event_table, inbox_task_collection)
         return inbox_task_collection
@@ -73,7 +75,7 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
                 last_modified_time=inbox_task_collection.last_modified_time.to_db(),
                 archived_time=
                 inbox_task_collection.archived_time.to_db() if inbox_task_collection.archived_time else None,
-                project_ref_id=inbox_task_collection.project_ref_id.as_int()))
+                workspace_ref_id=inbox_task_collection.workspace_ref_id.as_int()))
         if result.rowcount == 0:
             raise InboxTaskCollectionNotFoundError("The inbox task collection does not exist")
         upsert_events(self._connection, self._inbox_task_collection_event_table, inbox_task_collection)
@@ -91,47 +93,15 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             raise InboxTaskCollectionNotFoundError(f"inbox task collection with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def load_by_project(self, project_ref_id: EntityId) -> InboxTaskCollection:
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> InboxTaskCollection:
         """Retrieve the inbox task collection for a project."""
         query_stmt = \
             select(self._inbox_task_collection_table)\
-                .where(self._inbox_task_collection_table.c.project_ref_id == project_ref_id.as_int())
+                .where(self._inbox_task_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise InboxTaskCollectionNotFoundError(f"inbox task collection for project {project_ref_id} does not exist")
-        return self._row_to_entity(result)
-
-    def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTaskCollection]:
-        """Retrieve all inbox task collections."""
-        query_stmt = select(self._inbox_task_collection_table)
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._inbox_task_collection_table.c.archived.is_(False))
-        if filter_ref_ids:
-            query_stmt = \
-                query_stmt.where(self._inbox_task_collection_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_project_ref_ids:
-            query_stmt = \
-                query_stmt\
-                .where(
-                    self._inbox_task_collection_table.c.project_ref_id.in_(
-                        fi.as_int() for fi in filter_project_ref_ids))
-        results = self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
-    def remove(self, ref_id: EntityId) -> InboxTaskCollection:
-        """Remove an inbox task collection."""
-        query_stmt = \
-            select(self._inbox_task_collection_table)\
-            .where(self._inbox_task_collection_table.c.ref_id == ref_id.as_int())
-        result = self._connection.execute(query_stmt).first()
-        if result is None:
-            raise InboxTaskCollectionNotFoundError(f"inbox task collection with id {ref_id} does not exist")
-        self._connection.execute(
-            delete(self._inbox_task_collection_table)
-            .where(self._inbox_task_collection_table.c.ref_id == ref_id.as_int()))
-        remove_events(self._connection, self._inbox_task_collection_event_table, ref_id)
+            raise InboxTaskCollectionNotFoundError(
+                f"inbox task collection for workspace {workspace_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -145,7 +115,7 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
             if row["archived_time"] else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            project_ref_id=EntityId.from_raw(str(row["project_ref_id"])))
+            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])))
 
 
 class SqliteInboxTaskRepository(InboxTaskRepository):
@@ -169,6 +139,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             Column('archived_time', DateTime, nullable=True),
             Column('inbox_task_collection_ref_id', Integer, ForeignKey("inbox_task_collection.ref_id"), nullable=False),
             Column('source', String(16), nullable=False),
+            Column('project_ref_id', Integer, ForeignKey('project.ref_id'), nullable=False, index=True),
             Column('big_plan_ref_id', Integer, ForeignKey('big_plan.ref_id'), nullable=True),
             Column('recurring_task_ref_id', Integer, ForeignKey('recurring_task.ref_id'), nullable=True),
             Column('metric_ref_id', Integer, ForeignKey('metric.ref_id'), nullable=True),
@@ -201,6 +172,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                     archived_time=inbox_task.archived_time.to_db() if inbox_task.archived_time else None,
                     inbox_task_collection_ref_id=inbox_task.inbox_task_collection_ref_id.as_int(),
                     source=str(inbox_task.source),
+                    project_ref_id=inbox_task.project_ref_id.as_int(),
                     big_plan_ref_id=inbox_task.big_plan_ref_id.as_int() if inbox_task.big_plan_ref_id else None,
                     recurring_task_ref_id=
                     inbox_task.recurring_task_ref_id.as_int() if inbox_task.recurring_task_ref_id else None,
@@ -237,6 +209,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 archived_time=inbox_task.archived_time.to_db() if inbox_task.archived_time else None,
                 inbox_task_collection_ref_id=inbox_task.inbox_task_collection_ref_id.as_int(),
                 source=str(inbox_task.source),
+                project_ref_id=inbox_task.project_ref_id.as_int(),
                 big_plan_ref_id=inbox_task.big_plan_ref_id.as_int() if inbox_task.big_plan_ref_id else None,
                 recurring_task_ref_id=
                 inbox_task.recurring_task_ref_id.as_int() if inbox_task.recurring_task_ref_id else None,
@@ -272,26 +245,29 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
 
     def find_all(
             self,
+            inbox_task_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_inbox_task_collection_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_sources: Optional[Iterable[InboxTaskSource]] = None,
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_person_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
         """Find all the inbox task."""
-        query_stmt = select(self._inbox_task_table)
+        query_stmt = \
+            select(self._inbox_task_table) \
+            .where(self._inbox_task_table.c.inbox_task_collection_ref_id == inbox_task_collection_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._inbox_task_table.c.archived.is_(False))
         if filter_ref_ids:
             query_stmt = query_stmt.where(self._inbox_task_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_inbox_task_collection_ref_ids:
-            query_stmt = query_stmt.where(
-                self._inbox_task_table.c.inbox_task_collection_ref_id.in_(
-                    fi.as_int() for fi in filter_inbox_task_collection_ref_ids))
         if filter_sources:
             query_stmt = query_stmt.where(self._inbox_task_table.c.source.in_(str(s) for s in filter_sources))
+        if filter_project_ref_ids:
+            query_stmt = \
+                query_stmt.where(
+                    self._inbox_task_table.c.project_ref_id.in_(fi.as_int() for fi in filter_project_ref_ids))
         if filter_big_plan_ref_ids:
             query_stmt = \
                 query_stmt\
@@ -332,6 +308,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             events=[],
             inbox_task_collection_ref_id=EntityId.from_raw(str(row["inbox_task_collection_ref_id"])),
             source=InboxTaskSource.from_raw(row["source"]),
+            project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),
             big_plan_ref_id=EntityId.from_raw(str(row["big_plan_ref_id"])) if row["big_plan_ref_id"] else None,
             recurring_task_ref_id=
             EntityId.from_raw(str(row["recurring_task_ref_id"])) if row["recurring_task_ref_id"] else None,

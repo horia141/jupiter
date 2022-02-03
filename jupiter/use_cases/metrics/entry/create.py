@@ -39,8 +39,11 @@ class MetricEntryCreateUseCase(AppMutationUseCase['MetricEntryCreateUseCase.Args
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
-            metric = uow.metric_repository.load_by_key(args.metric_key)
+            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric = uow.metric_repository.load_by_key(metric_collection.ref_id, args.metric_key)
             collection_time = args.collection_time \
                 if args.collection_time else ADate.from_timestamp(self._time_provider.get_current_time())
             metric_entry = MetricEntry.new_metric_entry(
@@ -48,4 +51,4 @@ class MetricEntryCreateUseCase(AppMutationUseCase['MetricEntryCreateUseCase.Args
                 notes=args.notes, source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             metric_entry = uow.metric_entry_repository.create(metric_entry)
         notion_metric_entry = NotionMetricEntry.new_notion_row(metric_entry, None)
-        self._notion_manager.upsert_metric_entry(metric.ref_id, notion_metric_entry)
+        self._notion_manager.upsert_metric_entry(metric_collection.ref_id, metric.ref_id, notion_metric_entry)

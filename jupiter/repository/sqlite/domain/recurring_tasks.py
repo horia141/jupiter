@@ -46,7 +46,9 @@ class SqliteRecurringTaskCollectionRepository(RecurringTaskCollectionRepository)
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
             Column('archived_time', DateTime, nullable=True),
-            Column('project_ref_id', Integer, ForeignKey("project.ref_id"), unique=True, nullable=False),
+            Column(
+                'workspace_ref_id', Integer, ForeignKey("workspace_ref_id.ref_id"),
+                unique=True, index=True, nullable=False),
             keep_existing=True)
         self._recurring_task_collection_event_table = build_event_table(self._recurring_task_collection_table, metadata)
 
@@ -62,7 +64,7 @@ class SqliteRecurringTaskCollectionRepository(RecurringTaskCollectionRepository)
                 last_modified_time=recurring_task_collection.last_modified_time.to_db(),
                 archived_time=
                 recurring_task_collection.archived_time.to_db() if recurring_task_collection.archived_time else None,
-                project_ref_id=recurring_task_collection.project_ref_id.as_int()))
+                workspace_ref_id=recurring_task_collection.workspace_ref_id.as_int()))
         recurring_task_collection = \
             recurring_task_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._recurring_task_collection_event_table, recurring_task_collection)
@@ -80,7 +82,7 @@ class SqliteRecurringTaskCollectionRepository(RecurringTaskCollectionRepository)
                 last_modified_time=recurring_task_collection.last_modified_time.to_db(),
                 archived_time=
                 recurring_task_collection.archived_time.to_db() if recurring_task_collection.archived_time else None,
-                project_ref_id=recurring_task_collection.project_ref_id.as_int()))
+                workspace_ref_id=recurring_task_collection.workspace_ref_id.as_int()))
         if result.rowcount == 0:
             raise RecurringTaskCollectionNotFoundError("The recurring task collection does not exist")
         upsert_events(self._connection, self._recurring_task_collection_event_table, recurring_task_collection)
@@ -98,49 +100,15 @@ class SqliteRecurringTaskCollectionRepository(RecurringTaskCollectionRepository)
             raise RecurringTaskCollectionNotFoundError(f"Recurring task collection with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def load_by_project(self, project_ref_id: EntityId) -> RecurringTaskCollection:
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> RecurringTaskCollection:
         """Retrieve a recurring task collection for a project."""
         query_stmt = \
             select(self._recurring_task_collection_table)\
-            .where(self._recurring_task_collection_table.c.project_ref_id == project_ref_id.as_int())
+            .where(self._recurring_task_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
             raise RecurringTaskCollectionNotFoundError(
-                f"Recurring task collection for project {project_ref_id} does not exist")
-        return self._row_to_entity(result)
-
-    def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTaskCollection]:
-        """Retrieve all recurring task collections."""
-        query_stmt = select(self._recurring_task_collection_table)
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._recurring_task_collection_table.c.archived.is_(False))
-        if filter_ref_ids:
-            query_stmt = \
-                query_stmt\
-                .where(self._recurring_task_collection_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_project_ref_ids:
-            query_stmt = \
-                query_stmt\
-                .where(
-                    self._recurring_task_collection_table.c.project_ref_id.in_(
-                        fi.as_int() for fi in filter_project_ref_ids))
-        results = self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
-    def remove(self, ref_id: EntityId) -> RecurringTaskCollection:
-        """Remove a recurring task collection."""
-        query_stmt = \
-            select(self._recurring_task_collection_table)\
-            .where(self._recurring_task_collection_table.c.ref_id == ref_id.as_int())
-        result = self._connection.execute(query_stmt).first()
-        if result is None:
-            raise RecurringTaskCollectionNotFoundError(f"Recurring task collection with id {ref_id} does not exist")
-        self._connection.execute(
-            delete(self._recurring_task_collection_table)
-            .where(self._recurring_task_collection_table.c.ref_id == ref_id.as_int()))
-        remove_events(self._connection, self._recurring_task_collection_event_table, ref_id)
+                f"Recurring task collection for workspace {workspace_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -154,7 +122,7 @@ class SqliteRecurringTaskCollectionRepository(RecurringTaskCollectionRepository)
             if row["archived_time"] else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            project_ref_id=EntityId.from_raw(str(row["project_ref_id"])))
+            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])))
 
 
 class SqliteRecurringTaskRepository(RecurringTaskRepository):
@@ -179,9 +147,9 @@ class SqliteRecurringTaskRepository(RecurringTaskRepository):
             Column(
                 'recurring_task_collection_ref_id', Integer, ForeignKey("recurring_task_collection.ref_id"),
                 nullable=False),
+            Column('project_ref_id', Integer, ForeignKey('project.ref_id'), nullable=False, index=True),
             Column('name', Unicode(), nullable=False),
             Column('the_type', String(16), nullable=False),
-            Column('gen_params_project_ref_id', Integer, ForeignKey('project.ref_id'), nullable=False),
             Column('gen_params_period', String, nullable=False),
             Column('gen_params_eisen', String, nullable=True),
             Column('gen_params_difficulty', String, nullable=True),
@@ -210,10 +178,9 @@ class SqliteRecurringTaskRepository(RecurringTaskRepository):
                     last_modified_time=recurring_task.last_modified_time.to_db(),
                     archived_time=recurring_task.archived_time.to_db() if recurring_task.archived_time else None,
                     recurring_task_collection_ref_id=recurring_task.recurring_task_collection_ref_id.as_int(),
+                    project_ref_id=recurring_task.project_ref_id.as_int(),
                     name=str(recurring_task.name),
                     the_type=str(recurring_task.the_type),
-                    gen_params_project_ref_id=
-                    recurring_task.gen_params.project_ref_id.as_int() if recurring_task.gen_params else None,
                     gen_params_period=recurring_task.gen_params.period.value if recurring_task.gen_params else None,
                     gen_params_eisen=recurring_task.gen_params.eisen.value if recurring_task.gen_params else None,
                     gen_params_difficulty=recurring_task.gen_params.difficulty.value
@@ -250,10 +217,9 @@ class SqliteRecurringTaskRepository(RecurringTaskRepository):
                 last_modified_time=recurring_task.last_modified_time.to_db(),
                 archived_time=recurring_task.archived_time.to_db() if recurring_task.archived_time else None,
                 recurring_task_collection_ref_id=recurring_task.recurring_task_collection_ref_id.as_int(),
+                project_ref_id=recurring_task.project_ref_id.as_int(),
                 name=str(recurring_task.name),
                 the_type=str(recurring_task.the_type),
-                gen_params_project_ref_id=
-                recurring_task.gen_params.project_ref_id.as_int() if recurring_task.gen_params else None,
                 gen_params_period=recurring_task.gen_params.period.value if recurring_task.gen_params else None,
                 gen_params_eisen=recurring_task.gen_params.eisen.value if recurring_task.gen_params else None,
                 gen_params_difficulty=recurring_task.gen_params.difficulty.value
@@ -289,20 +255,25 @@ class SqliteRecurringTaskRepository(RecurringTaskRepository):
         return self._row_to_entity(result)
 
     def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_recurring_task_collection_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:
+            self,
+            recurring_task_collection_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[RecurringTask]:
         """Retrieve recurring task."""
-        query_stmt = select(self._recurring_task_table)
+        query_stmt = \
+            select(self._recurring_task_table) \
+            .where(
+                self._recurring_task_table.c.recurring_task_collection_ref_id
+                == recurring_task_collection_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._recurring_task_table.c.archived.is_(False))
         if filter_ref_ids:
             query_stmt = query_stmt.where(self._recurring_task_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_recurring_task_collection_ref_ids:
+        if filter_project_ref_ids:
             query_stmt = \
-                query_stmt\
-                .where(
-                    self._recurring_task_table.c.recurring_task_collection_ref_id.in_(
-                        fi.as_int() for fi in filter_recurring_task_collection_ref_ids))
+                query_stmt.where(
+                    self._recurring_task_table.c.project_ref_id.in_(fi.as_int() for fi in filter_project_ref_ids))
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
@@ -330,10 +301,10 @@ class SqliteRecurringTaskRepository(RecurringTaskRepository):
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
             recurring_task_collection_ref_id=EntityId.from_raw(str(row["recurring_task_collection_ref_id"])),
+            project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),
             name=RecurringTaskName.from_raw(row["name"]),
             the_type=RecurringTaskType.from_raw(row["the_type"]),
             gen_params=RecurringTaskGenParams(
-                project_ref_id=EntityId.from_raw(str(row["gen_params_project_ref_id"])),
                 period=RecurringTaskPeriod.from_raw(row["gen_params_period"]),
                 eisen=Eisen.from_raw(row["gen_params_eisen"]),
                 difficulty=Difficulty.from_raw(row["gen_params_difficulty"])

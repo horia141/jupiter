@@ -6,14 +6,14 @@ from typing import Final
 from jupiter.command import command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.prm.person_birthday import PersonBirthday
-from jupiter.domain.prm.person_name import PersonName
-from jupiter.domain.prm.person_relationship import PersonRelationship
+from jupiter.domain.persons.person_birthday import PersonBirthday
+from jupiter.domain.persons.person_name import PersonName
+from jupiter.domain.persons.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.use_cases.prm.person.create import PersonCreateUseCase
+from jupiter.use_cases.persons.create import PersonCreateUseCase
 
 LOGGER = logging.getLogger(__name__)
 

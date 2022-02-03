@@ -1,6 +1,5 @@
 """A repository for big plan collections."""
 import abc
-from typing import Optional, Iterable
 
 from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.framework.base.entity_id import EntityId
@@ -27,14 +26,5 @@ class BigPlanCollectionRepository(Repository, abc.ABC):
         """Retrieve a big plan collection by its id."""
 
     @abc.abstractmethod
-    def load_by_project(self, project_ref_id: EntityId) -> BigPlanCollection:
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> BigPlanCollection:
         """Retrieve a big plan collection by its owning project id."""
-
-    @abc.abstractmethod
-    def find_all(self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-                 filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlanCollection]:
-        """Retrieve recurring task collections."""
-
-    @abc.abstractmethod
-    def remove(self, ref_id: EntityId) -> BigPlanCollection:
-        """Hard remove a big plan collection."""

@@ -2,7 +2,8 @@
 from typing import Final
 
 from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
-from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, InboxTaskBigPlanLabel
+from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.storage_engine import DomainStorageEngine
 
 
@@ -22,10 +23,8 @@ class InboxTaskBigPlanRefOptionsUpdateService:
         """Execute the service's actions."""
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = \
-                uow.inbox_task_collection_repository.load_by_project(big_plan_collection.project_ref_id)
-            all_big_plans = \
-                uow.big_plan_repository.find_all(
-                    filter_big_plan_collection_ref_ids=[big_plan_collection.ref_id])
+                uow.inbox_task_collection_repository.load_by_workspace(big_plan_collection.workspace_ref_id)
+            all_big_plans = uow.big_plan_repository.find_all(big_plan_collection_ref_id=big_plan_collection.ref_id)
         self._inbox_task_notion_manager.upsert_inbox_tasks_big_plan_field_options(
             inbox_task_collection.ref_id,
-            (InboxTaskBigPlanLabel(notion_link_uuid=bp.notion_link_uuid, name=bp.name) for bp in all_big_plans))
+            (NotionFieldLabel(bp.notion_link_uuid, bp.name, bp.created_time) for bp in all_big_plans))

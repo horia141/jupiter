@@ -47,10 +47,10 @@ class RecurringTaskArchiveService:
                 uow.recurring_task_collection_repository.load_by_id(recurring_task.recurring_task_collection_ref_id)
 
             inbox_task_collection = \
-                uow.inbox_task_collection_repository.load_by_project(recurring_task_collection.project_ref_id)
+                uow.inbox_task_collection_repository.load_by_workspace(recurring_task_collection.workspace_ref_id)
             inbox_tasks_to_archive = uow.inbox_task_repository.find_all(
-                allow_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id],
-                filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                allow_archived=False, filter_recurring_task_ref_ids=[recurring_task.ref_id])
             for inbox_task in inbox_tasks_to_archive:
                 inbox_task = inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
                 uow.inbox_task_repository.save(inbox_task)

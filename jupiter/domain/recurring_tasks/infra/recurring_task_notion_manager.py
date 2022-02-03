@@ -3,15 +3,12 @@ import abc
 from typing import Optional, Iterable
 
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.recurring_tasks.notion_recurring_task import NotionRecurringTask
 from jupiter.domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
+from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-
-
-class NotionRecurringTaskCollectionNotFoundError(Exception):
-    """Exception raised when a Notion recurring task collection was not found."""
 
 
 class NotionRecurringTaskNotFoundError(Exception):
@@ -23,17 +20,14 @@ class RecurringTaskNotionManager(abc.ABC):
 
     @abc.abstractmethod
     def upsert_recurring_task_collection(
-            self, notion_project: NotionProject,
+            self, notion_workspace: NotionWorkspace,
             recurring_task_collection: NotionRecurringTaskCollection) -> NotionRecurringTaskCollection:
         """Upsert the Notion-side recurring task."""
 
     @abc.abstractmethod
-    def load_recurring_task_collection(self, ref_id: EntityId) -> NotionRecurringTaskCollection:
-        """Retrieve the Notion-side recurring task collection."""
-
-    @abc.abstractmethod
-    def remove_recurring_tasks_collection(self, ref_id: EntityId) -> None:
-        """Remove the Notion-side structure for this collection."""
+    def upsert_recurring_tasks_project_field_options(
+            self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
+        """Upsert the Notion-side structure for the 'project' select field."""
 
     @abc.abstractmethod
     def upsert_recurring_task(

@@ -31,12 +31,18 @@ class ProjectRepository(abc.ABC):
         """Retrieve a particular project by its key."""
 
     @abc.abstractmethod
-    def load_by_key(self, key: ProjectKey) -> Project:
+    def load_by_key(self, project_collection_ref_id: EntityId, key: ProjectKey) -> Project:
         """Retrieve a particular project by its key."""
 
     @abc.abstractmethod
     def find_all(
             self,
+            project_collection_ref_id: EntityId,
             allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
         """Retrieve all the projects defined."""
+
+    @abc.abstractmethod
+    def remove(self, ref_id: EntityId) -> None:
+        """Remove the project."""

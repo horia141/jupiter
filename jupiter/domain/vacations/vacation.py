@@ -24,15 +24,15 @@ class Vacation(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    workspace_ref_id: EntityId
+    vacation_collection_ref_id: EntityId
     name: VacationName
     start_date: ADate
     end_date: ADate
 
     @staticmethod
     def new_vacation(
-            archived: bool, workspace_ref_id: EntityId, name: VacationName, start_date: ADate, end_date: ADate,
-            source: EventSource, created_time: Timestamp) -> 'Vacation':
+            archived: bool, vacation_collection_ref_id: EntityId, name: VacationName, start_date: ADate,
+            end_date: ADate, source: EventSource, created_time: Timestamp) -> 'Vacation':
         """Create a vacation."""
         if start_date >= end_date:
             raise InputValidationError("Cannot set a start date after the end date")
@@ -45,7 +45,7 @@ class Vacation(AggregateRoot):
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
             events=[Vacation.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id,
+            vacation_collection_ref_id=vacation_collection_ref_id,
             name=name,
             start_date=start_date,
             end_date=end_date)

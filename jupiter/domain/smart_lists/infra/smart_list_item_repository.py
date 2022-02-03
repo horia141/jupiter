@@ -27,15 +27,11 @@ class SmartListItemRepository(Repository, abc.ABC):
         """Load a given smart list item."""
 
     @abc.abstractmethod
-    def find_all_for_smart_list(self, smart_list_ref_id: EntityId, allow_archived: bool = False) -> List[SmartListItem]:
-        """Retrieve all smart list entries for a given smart list."""
-
-    @abc.abstractmethod
     def find_all(
             self,
+            smart_list_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_is_done: Optional[bool] = None,
             filter_tag_ref_ids: Optional[Iterable[EntityId]] = None) -> List[SmartListItem]:
         """Find all smart list entries matching some criteria."""
