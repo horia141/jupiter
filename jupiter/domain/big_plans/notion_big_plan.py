@@ -34,7 +34,7 @@ class NotionBigPlan(NotionRow[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPla
         all_projects_map: Dict[EntityId, Project]
 
     name: str
-    status: str
+    status: Optional[str]
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
     project_ref_id: Optional[str]
@@ -74,7 +74,7 @@ class NotionBigPlan(NotionRow[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPla
             big_plan_collection_ref_id=extra_info.big_plan_collection_ref_id,
             project_ref_id=project.ref_id,
             name=BigPlanName.from_raw(self.name),
-            status=BigPlanStatus.from_raw(self.status),
+            status=BigPlanStatus.from_raw(self.status) if self.status else BigPlanStatus.NOT_STARTED,
             actionable_date=self.actionable_date,
             due_date=self.due_date,
             source=EventSource.NOTION,
@@ -99,7 +99,8 @@ class NotionBigPlan(NotionRow[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPla
                 project_ref_id=project.ref_id, source=EventSource.NOTION, modification_time=self.last_edited_time) \
             .update(
                 name=UpdateAction.change_to(BigPlanName.from_raw(self.name)),
-                status=UpdateAction.change_to(BigPlanStatus.from_raw(self.status)),
+                status=UpdateAction.change_to(
+                    BigPlanStatus.from_raw(self.status) if self.status else BigPlanStatus.NOT_STARTED),
                 actionable_date=UpdateAction.change_to(self.actionable_date),
                 due_date=UpdateAction.change_to(self.due_date),
                 source=EventSource.NOTION,

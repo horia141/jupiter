@@ -123,7 +123,9 @@ class BigPlanSyncService:
                     all_big_plans_set[notion_big_plan.ref_id] = updated_big_plan
                     LOGGER.info(f"Changed big plan with id={notion_big_plan.ref_id} from Notion")
 
-                    if notion_big_plan.project_ref_id is None or notion_big_plan.project_name is None:
+                    if notion_big_plan.status is None or \
+                            notion_big_plan.project_ref_id is None or\
+                            notion_big_plan.project_name is None:
                         direct_info = \
                             NotionBigPlan.DirectInfo(project_name=all_projects_map[big_plan.project_ref_id].name)
                         updated_notion_big_plan = \
