@@ -254,7 +254,13 @@ class NotionBigPlansManager(BigPlanNotionManager):
                 "aggregator": "count"
             }],
             "sort": [{
+                "property": "actionable-date",
+                "direction": "ascending"
+            }, {
                 "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "status",
                 "direction": "ascending"
             }],
             "filter": {
@@ -309,7 +315,13 @@ class NotionBigPlansManager(BigPlanNotionManager):
                 "aggregator": "count"
             }],
             "sort": [{
+                "property": "actionable-date",
+                "direction": "ascending"
+            }, {
                 "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "status",
                 "direction": "ascending"
             }],
             "filter": {
