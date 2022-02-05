@@ -43,3 +43,6 @@ ignore_missing_imports = True
 
 [mypy-icecream.*]
 ignore_missing_imports = True
+
+[mypy-emoji.*]
+ignore_missing_imports = True

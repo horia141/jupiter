@@ -20,6 +20,9 @@ It will be used as a reference to the project in other commands.
 
 Metrics have a name. It's the nicely looking counterpart to the key.
 
+Metrics can also have an icon. It's a nice unicode glyph like 💰 or ⚖️ and it serves to
+visually distinguish the metric.
+
 Metrics can also have a _unit_. It adds extra info about what exactly you're recording - weight,
 currency, the count of an event, etc.
 
@@ -38,7 +41,7 @@ You can:
 
 * Create a metric via `metric-create`.
 * Remove a metric via `metric-archive`.
-* Change the name via `metric-update`, or by changing the name of the page in Notion.
+* Change the name or icon via `metric-update`, or by changing them in Notion.
 * Change the collection project via `metric-update`. This cannot be changed from Notion.
 * Change the collection period via `metric-update`. This cannot be changed from Notion.
 * Change the unit via `metric-update`. This cannot be changed from Notion.

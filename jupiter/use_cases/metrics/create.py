@@ -4,6 +4,7 @@ from typing import Optional, Final
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.metrics.infra.metric_notion_manager import MetricNotionManager
 from jupiter.domain.metrics.infra.metric_repository import MetricAlreadyExistsError
 from jupiter.domain.metrics.metric import Metric
@@ -32,6 +33,7 @@ class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
         """Args."""
         key: MetricKey
         name: MetricName
+        icon: Optional[EntityIcon]
         collection_period: Optional[RecurringTaskPeriod]
         collection_eisen: Optional[Eisen]
         collection_difficulty: Optional[Difficulty]
@@ -77,8 +79,13 @@ class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
             try:
                 metric = \
                     Metric.new_metric(
-                        metric_collection_ref_id=metric_collection.ref_id, key=args.key, name=args.name,
-                        collection_params=collection_params, metric_unit=args.metric_unit, source=EventSource.CLI,
+                        metric_collection_ref_id=metric_collection.ref_id,
+                        key=args.key,
+                        name=args.name,
+                        icon=args.icon,
+                        collection_params=collection_params,
+                        metric_unit=args.metric_unit,
+                        source=EventSource.CLI,
                         created_time=self._time_provider.get_current_time())
                 metric = uow.metric_repository.create(metric)
             except MetricAlreadyExistsError as err:

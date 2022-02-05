@@ -51,7 +51,7 @@ class MetricShow(command.Command):
             metric = metric_response_entry.metric
             metric_entries = metric_response_entry.metric_entries
 
-            print(f" - {metric.key}: {metric.name}" +
+            print(f" - {metric.key}: {metric.icon if metric.icon else ''}{metric.name}" +
                   (f" @{metric.collection_params.period.for_notion()}" +
                    (f" eisen={metric.collection_params.eisen.value}"
                     if metric.collection_params.eisen else '')) +

@@ -38,8 +38,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
     """The centralised point for interacting with Notion inbox tasks."""
 
     _KEY: ClassVar[str] = "inbox-tasks"
-
     _PAGE_NAME: ClassVar[str] = "Inbox Tasks"
+    _PAGE_ICON: ClassVar[str] = "📥"
 
     _STATUS: ClassVar[JSONDictType] = {
         "Not Started": {
@@ -1351,6 +1351,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             key=NotionLockKey(f"{self._KEY}:{inbox_task_collection.ref_id}"),
             parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
+            icon=self._PAGE_ICON,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[
@@ -1394,7 +1395,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
 
         self._collections_manager.save_collection_no_merge(
-            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, new_schema, "bigplan2")
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, self._PAGE_ICON, new_schema, "bigplan2")
         LOGGER.info("Updated the schema for the associated inbox")
 
     def upsert_inbox_tasks_project_field_options(
@@ -1410,7 +1411,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         new_schema["project-name"]["options"] = inbox_big_plan_options  # type: ignore
 
         self._collections_manager.save_collection_no_merge(
-            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, new_schema, "project-name")
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, self._PAGE_ICON, new_schema, "project-name")
         LOGGER.info("Updated the schema for the associated inbox")
 
         new_view: JSONDictType = copy.deepcopy(NotionInboxTasksManager._KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA)

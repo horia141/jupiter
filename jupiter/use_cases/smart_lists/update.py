@@ -1,7 +1,8 @@
 """The command for updating a smart list."""
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Optional
 
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_name import SmartListName
@@ -21,6 +22,7 @@ class SmartListUpdateUseCase(AppMutationUseCase['SmartListUpdateUseCase.Args', N
         """Args."""
         key: SmartListKey
         name: UpdateAction[SmartListName]
+        icon: UpdateAction[Optional[EntityIcon]]
 
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
@@ -43,7 +45,10 @@ class SmartListUpdateUseCase(AppMutationUseCase['SmartListUpdateUseCase.Args', N
 
             smart_list = uow.smart_list_repository.load_by_key(smart_list_collection.ref_id, args.key)
 
-            smart_list = smart_list.update(args.name, EventSource.CLI, self._time_provider.get_current_time())
+            smart_list = \
+                smart_list.update(
+                    name=args.name, icon=args.icon, source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
             uow.smart_list_repository.save(smart_list)
 

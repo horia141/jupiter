@@ -62,8 +62,8 @@ class NotionCollectionsManager:
         self._storage_engine = storage_engine
 
     def upsert_collection(
-            self, key: NotionLockKey, parent_page_notion_id: NotionId, name: str, schema: JSONDictType,
-            schema_properties: NotionCollectionSchemaProperties,
+            self, key: NotionLockKey, parent_page_notion_id: NotionId, name: str, icon: typing.Optional[str],
+            schema: JSONDictType, schema_properties: NotionCollectionSchemaProperties,
             view_schemas: List[Tuple[str, JSONDictType]]) -> NotionCollectionLinkExtra:
         """Create the Notion-side structure for this collection."""
         simdif_fields = set(schema.keys()).symmetric_difference(m.name for m in schema_properties)
@@ -113,7 +113,9 @@ class NotionCollectionsManager:
         # Change the title.
 
         page.title = name
+        page.icon = icon
         collection.name = name
+        collection.set("icon", icon)
         LOGGER.info("Changed the name")
 
         # Arrange the fields.
@@ -136,9 +138,11 @@ class NotionCollectionsManager:
                 uow.notion_collection_link_repository.create(new_notion_collection_link)
         LOGGER.info("Saved lock structure")
 
-        return new_notion_collection_link.with_extra(name)
+        return new_notion_collection_link.with_extra(name, icon)
 
-    def save_collection(self, key: NotionLockKey, new_name: str, new_schema: JSONDictType) -> NotionCollectionLinkExtra:
+    def save_collection(
+            self, key: NotionLockKey, new_name: str, new_icon: typing.Optional[str],
+            new_schema: JSONDictType) -> NotionCollectionLinkExtra:
         """Just updates the name and schema for the collection and asks no questions."""
         client = self._client_builder.get_notion_client()
 
@@ -154,7 +158,9 @@ class NotionCollectionsManager:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
         page.title = new_name
+        page.icon = new_icon
         collection.name = new_name
+        collection.set("icon", new_icon)
         old_schema = collection.get("schema")
         final_schema = self._merge_notion_schemas(old_schema, new_schema)
         collection.set("schema", final_schema)
@@ -164,10 +170,10 @@ class NotionCollectionsManager:
             new_collection_link = collection_link.mark_update(self._time_provider.get_current_time())
             uow.notion_collection_link_repository.save(new_collection_link)
 
-        return new_collection_link.with_extra(new_name)
+        return new_collection_link.with_extra(new_name, new_icon)
 
     def save_collection_no_merge(
-            self, key: NotionLockKey, new_name: str, new_schema: JSONDictType,
+            self, key: NotionLockKey, new_name: str, new_icon: typing.Optional[str], new_schema: JSONDictType,
             newly_added_field: str) -> NotionCollectionLinkExtra:
         """Just updates the name and schema for the collection and asks no questions."""
         client = self._client_builder.get_notion_client()
@@ -184,7 +190,9 @@ class NotionCollectionsManager:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
 
         page.title = new_name
+        page.icon = new_icon
         collection.name = new_name
+        collection.set("icon", new_icon)
         old_schema = collection.get("schema")
         final_schema = self._merge_notion_schemas(old_schema, new_schema, newly_added_field)
         collection.set("schema", final_schema)
@@ -194,7 +202,7 @@ class NotionCollectionsManager:
             new_collection_link = collection_link.mark_update(self._time_provider.get_current_time())
             uow.notion_collection_link_repository.save(new_collection_link)
 
-        return new_collection_link.with_extra(new_name)
+        return new_collection_link.with_extra(new_name, new_icon)
 
     def load_collection(self, key: NotionLockKey) -> NotionCollectionLinkExtra:
         """Retrive the Notion-side structure for this collection."""
@@ -204,9 +212,13 @@ class NotionCollectionsManager:
             with self._storage_engine.get_unit_of_work() as uow:
                 collection_link = uow.notion_collection_link_repository.load(key)
             page = client.get_collection_page_by_id(collection_link.page_notion_id)
+            collection = \
+                client.get_collection(
+                    collection_link.page_notion_id, collection_link.collection_notion_id,
+                    collection_link.view_notion_ids.values())
         except (NotionCollectionLinkNotFoundError, NotionCollectionBlockNotFound) as err:
             raise NotionCollectionNotFoundError(f"Notion collection with key {key} cannot be found") from err
-        return collection_link.with_extra(page.title)
+        return collection_link.with_extra(page.title, collection.get("icon"))
 
     def remove_collection(self, key: NotionLockKey) -> None:
         """Remove the Notion-side structure for this collection."""
@@ -677,7 +689,7 @@ class NotionCollectionsManager:
             try:
                 item_link = uow.notion_collection_item_link_repository.load(item_key)
             except NotionCollectionItemLinkNotFoundError as err:
-                raise NotionCollectionFieldTagNotFoundError(
+                raise NotionCollectionItemNotFoundError(
                     f"Collection field tag with key {key} could not be found") from err
 
         client = self._client_builder.get_notion_client()
@@ -715,7 +727,7 @@ class NotionCollectionsManager:
             raise NotionCollectionItemNotFoundError(f"Collection item with key {key} could not be found") from err
 
         with self._storage_engine.get_unit_of_work() as uow:
-            uow.notion_collection_item_link_repository.remove(key)
+            uow.notion_collection_item_link_repository.remove(item_key)
 
     def drop_all_collection_items(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""

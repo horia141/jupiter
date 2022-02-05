@@ -6,6 +6,7 @@ from sqlalchemy import Table, Integer, Boolean, DateTime, ForeignKey, String, Co
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
 
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository, \
     SmartListCollectionNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository, \
@@ -145,6 +146,7 @@ class SqliteSmartListRepository(SmartListRepository):
             Column('smart_list_collection_ref_id', Integer, ForeignKey('smart_list_collection.ref_id'), nullable=False),
             Column('the_key', String(32), nullable=False),
             Column('name', String(100), nullable=False),
+            Column('icon', String(1), nullable=True),
             keep_existing=True)
         self._smart_list_event_table = build_event_table(self._smart_list_table, metadata)
 
@@ -161,7 +163,8 @@ class SqliteSmartListRepository(SmartListRepository):
                     archived_time=smart_list.archived_time.to_db() if smart_list.archived_time else None,
                     smart_list_collection_ref_id=smart_list.smart_list_collection_ref_id.as_int(),
                     the_key=str(smart_list.key),
-                    name=str(smart_list.name)))
+                    name=str(smart_list.name),
+                    icon=smart_list.icon.to_safe() if smart_list.icon else None))
         except IntegrityError as err:
             raise SmartListAlreadyExistsError(f"Smart list with key {smart_list.key} already exists") from err
         smart_list = smart_list.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -181,7 +184,8 @@ class SqliteSmartListRepository(SmartListRepository):
                 archived_time=smart_list.archived_time.to_db() if smart_list.archived_time else None,
                 smart_list_collection_ref_id=smart_list.smart_list_collection_ref_id.as_int(),
                 the_key=str(smart_list.key),
-                name=str(smart_list.name)))
+                name=str(smart_list.name),
+                icon=smart_list.icon.to_safe() if smart_list.icon else None))
         if result.rowcount == 0:
             raise SmartListNotFoundError("The smart list does not exist")
         upsert_events(self._connection, self._smart_list_event_table, smart_list)
@@ -252,7 +256,8 @@ class SqliteSmartListRepository(SmartListRepository):
             events=[],
             smart_list_collection_ref_id=EntityId.from_raw(str(row["smart_list_collection_ref_id"])),
             key=SmartListKey.from_raw(row["the_key"]),
-            name=SmartListName.from_raw(row["name"]))
+            name=SmartListName.from_raw(row["name"]),
+            icon=EntityIcon.from_safe(row["icon"]) if row["icon"] else None)
 
 
 class SqliteSmartListTagRepository(SmartListTagRepository):

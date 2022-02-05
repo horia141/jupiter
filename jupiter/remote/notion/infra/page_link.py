@@ -1,5 +1,6 @@
 """A Notion page link."""
 from dataclasses import dataclass
+from typing import Optional
 
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
@@ -31,14 +32,15 @@ class NotionPageLink:
             created_time=self.created_time,
             last_modified_time=modification_time)
 
-    def with_extra(self, name: str) -> 'NotionPageLinkExtra':
+    def with_extra(self, name: str, icon: Optional[str]) -> 'NotionPageLinkExtra':
         """Return the Notion page info with some little extra."""
         return NotionPageLinkExtra(
             key=self.key,
             notion_id=self.notion_id,
-            name=name,
             created_time=self.created_time,
-            last_modified_time=self.last_modified_time)
+            last_modified_time=self.last_modified_time,
+            name=name,
+            icon=icon)
 
 
 @dataclass(frozen=True)
@@ -46,6 +48,7 @@ class NotionPageLinkExtra:
     """A descriptor for a Notion page like in Windows."""
     key: NotionLockKey
     notion_id: NotionId
-    name: str
     created_time: Timestamp
     last_modified_time: Timestamp
+    name: str
+    icon: Optional[str]

@@ -28,6 +28,7 @@ class NotionPersonManager(PersonNotionManager):
 
     _KEY: ClassVar[str] = "persons"
     _PAGE_NAME: ClassVar[str] = "Persons"
+    _PAGE_ICON: ClassVar[str] = "👨"
 
     _RELATIONSHIP: ClassVar[JSONDictType] = {
         "Family": {
@@ -307,6 +308,7 @@ class NotionPersonManager(PersonNotionManager):
             key=NotionLockKey(f"{self._KEY}:{person_collection.ref_id}"),
             parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
+            icon=self._PAGE_ICON,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[

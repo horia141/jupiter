@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository, \
     MetricCollectionNotFoundError
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository, MetricEntryNotFoundError
@@ -139,6 +140,7 @@ class SqliteMetricRepository(MetricRepository):
             Column('metric_collection_ref_id', Integer, ForeignKey("metric_collection.ref_id"), nullable=False),
             Column('the_key', String(64), nullable=False, index=True, unique=True),
             Column('name', Unicode(), nullable=False),
+            Column('icon', String(1), nullable=True),
             Column('collection_project_ref_id', Integer, nullable=True),
             Column('collection_period', String, nullable=True),
             Column('collection_eisen', String, nullable=True),
@@ -166,6 +168,7 @@ class SqliteMetricRepository(MetricRepository):
                 metric_collection_ref_id=metric.metric_collection_ref_id.as_int(),
                 the_key=str(metric.key),
                 name=str(metric.name),
+                icon=metric.icon.to_safe() if metric.icon else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
                 collection_eisen=metric.collection_params.eisen.value if metric.collection_params else None,
                 collection_difficulty=metric.collection_params.difficulty.value
@@ -201,6 +204,7 @@ class SqliteMetricRepository(MetricRepository):
                 metric_collection_ref_id=metric.metric_collection_ref_id.as_int(),
                 the_key=str(metric.key),
                 name=str(metric.name),
+                icon=metric.icon.to_safe() if metric.icon else None,
                 collection_period=metric.collection_params.period.value if metric.collection_params else None,
                 collection_eisen=metric.collection_params.eisen.value if metric.collection_params else None,
                 collection_difficulty=metric.collection_params.difficulty.value
@@ -286,6 +290,7 @@ class SqliteMetricRepository(MetricRepository):
             metric_collection_ref_id=EntityId.from_raw(str(row["metric_collection_ref_id"])),
             key=MetricKey.from_raw(row["the_key"]),
             name=MetricName.from_raw(row["name"]),
+            icon=EntityIcon.from_safe(row["icon"]) if row["icon"] else None,
             collection_params=RecurringTaskGenParams(
                 period=RecurringTaskPeriod.from_raw(row["collection_period"]),
                 eisen=Eisen.from_raw(row["collection_eisen"]),

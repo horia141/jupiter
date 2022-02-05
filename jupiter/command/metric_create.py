@@ -5,6 +5,7 @@ from typing import Final
 from jupiter.command import command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
@@ -38,6 +39,7 @@ class MetricCreate(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--metric", dest="metric_key", required=True, help="The key of the metric")
         parser.add_argument("--name", dest="name", required=True, help="The name of the metric")
+        parser.add_argument("--icon", dest="icon", required=False, help="A unicode icon or :alias: for the metric")
         parser.add_argument("--collection-period", dest="collection_period", required=False,
                             choices=RecurringTaskPeriod.all_values(),
                             help="The period at which a metric should be recorded")
@@ -66,6 +68,7 @@ class MetricCreate(command.Command):
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
         name = MetricName.from_raw(args.name)
+        icon = EntityIcon.from_raw(args.icon) if args.icon else None
         collection_period = RecurringTaskPeriod.from_raw(args.collection_period)\
             if args.collection_period else None
         collection_eisen = Eisen.from_raw(args.collection_eisen) if args.collection_eisen else None
@@ -90,6 +93,7 @@ class MetricCreate(command.Command):
         self._command.execute(MetricCreateUseCase.Args(
             key=metric_key,
             name=name,
+            icon=icon,
             collection_period=collection_period,
             collection_eisen=collection_eisen,
             collection_difficulty=collection_difficulty,

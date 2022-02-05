@@ -270,31 +270,35 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             (recurring_task.ref_id, schedule.timeline), None)
 
         if found_task:
+            LOGGER.info(f"Found a task '{found_task.name}'")
+
             if not sync_even_if_not_modified and found_task.last_modified_time >= recurring_task.last_modified_time:
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
-            found_task.update_link_to_recurring_task(
-                project_ref_id=project.ref_id,
-                name=schedule.full_name,
-                timeline=schedule.timeline,
-                the_type=recurring_task.the_type,
-                actionable_date=schedule.actionable_date,
-                due_date=schedule.due_time,
-                eisen=recurring_task.gen_params.eisen,
-                difficulty=recurring_task.gen_params.difficulty,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time())
+            found_task = \
+                found_task.update_link_to_recurring_task(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    timeline=schedule.timeline,
+                    the_type=recurring_task.the_type,
+                    actionable_date=schedule.actionable_date,
+                    due_date=schedule.due_time,
+                    eisen=recurring_task.gen_params.eisen,
+                    difficulty=recurring_task.gen_params.difficulty,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
+            if found_task.archived:
+                return
+
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(
-                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
-            notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, direct_info)
-            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_inbox_task(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -315,6 +319,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
+
+            if inbox_task.archived:
+                return
 
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
@@ -347,30 +354,34 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             (metric.ref_id, schedule.timeline), None)
 
         if found_task:
+            LOGGER.info(f"Found a task '{found_task.name}'")
+
             if not sync_even_if_not_modified and found_task.last_modified_time >= metric.last_modified_time:
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
-            found_task.update_link_to_metric(
-                project_ref_id=project.ref_id,
-                name=schedule.full_name,
-                recurring_timeline=schedule.timeline,
-                eisen=collection_params.eisen,
-                difficulty=collection_params.difficulty,
-                actionable_date=schedule.actionable_date,
-                due_time=schedule.due_time,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time())
+            found_task = \
+                found_task.update_link_to_metric(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    eisen=collection_params.eisen,
+                    difficulty=collection_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
+            if found_task.archived:
+                return
+
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(
-                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
-            notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, direct_info)
-            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_inbox_task(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -390,6 +401,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
+
+            if inbox_task.archived:
+                return
 
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
@@ -422,30 +436,34 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             (person.ref_id, schedule.timeline), None)
 
         if found_task:
+            LOGGER.info(f"Found a task '{found_task.name}'")
+
             if not sync_even_if_not_modified and found_task.last_modified_time >= person.last_modified_time:
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
-            found_task.update_link_to_person_catch_up(
-                project_ref_id=project.ref_id,
-                name=schedule.full_name,
-                recurring_timeline=schedule.timeline,
-                eisen=catch_up_params.eisen,
-                difficulty=catch_up_params.difficulty,
-                actionable_date=schedule.actionable_date,
-                due_time=schedule.due_time,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time())
+            found_task = \
+                found_task.update_link_to_person_catch_up(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    eisen=catch_up_params.eisen,
+                    difficulty=catch_up_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_time=schedule.due_time,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
+            if found_task.archived:
+                return
+
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(
-                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
-            notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, direct_info)
-            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_inbox_task(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -465,6 +483,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
+
+            if inbox_task.archived:
+                return
 
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
@@ -493,28 +514,32 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             (person.ref_id, schedule.timeline), None)
 
         if found_task:
+            LOGGER.info(f"Found a task '{found_task.name}'")
+
             if not sync_even_if_not_modified and found_task.last_modified_time >= person.last_modified_time:
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
-            found_task.update_link_to_person_birthday(
-                project_ref_id=project.ref_id,
-                name=schedule.full_name,
-                recurring_timeline=schedule.timeline,
-                preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                due_time=schedule.due_time,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time())
+            found_task = \
+                found_task.update_link_to_person_birthday(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    recurring_timeline=schedule.timeline,
+                    preparation_days_cnt=person.preparation_days_cnt_for_birthday,
+                    due_time=schedule.due_time,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.inbox_task_repository.save(found_task)
 
+            if found_task.archived:
+                return
+
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(
-                    found_task.inbox_task_collection_ref_id, found_task.ref_id)
-            notion_inbox_task = notion_inbox_task.join_with_aggregate_root(found_task, direct_info)
-            self._inbox_task_notion_manager.save_inbox_task(found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_inbox_task(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -532,6 +557,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
+
+            if inbox_task.archived:
+                return
 
             direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
             notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)

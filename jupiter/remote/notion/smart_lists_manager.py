@@ -30,6 +30,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
     _KEY: ClassVar[str] = "smart-lists"
     _PAGE_NAME: ClassVar[str] = "Smart Lists"
+    _PAGE_ICON: ClassVar[str] = "🏛️"
 
     _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
@@ -255,7 +256,10 @@ class NotionSmartListsManager(SmartListNotionManager):
             self, notion_workspace: NotionWorkspace, smart_list_collection: NotionSmartListCollection) -> None:
         """Upsert the root page for the smart lists section."""
         self._pages_manager.upsert_page(
-            NotionLockKey(f"{self._KEY}:{smart_list_collection.ref_id}"), self._PAGE_NAME, notion_workspace.notion_id)
+            key=NotionLockKey(f"{self._KEY}:{smart_list_collection.ref_id}"),
+            name=self._PAGE_NAME,
+            icon=self._PAGE_ICON,
+            parent_page_notion_id=notion_workspace.notion_id)
 
     def upsert_smart_list(self, smart_list_collection_ref_id: EntityId, smart_list: NotionSmartList) -> NotionSmartList:
         """Upsert a smart list on Notion-side."""
@@ -264,6 +268,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             key=NotionLockKey(f"{self._KEY}:{smart_list_collection_ref_id}:{smart_list.ref_id}"),
             parent_page_notion_id=root_page.notion_id,
             name=smart_list.name,
+            icon=smart_list.icon,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[
@@ -279,6 +284,7 @@ class NotionSmartListsManager(SmartListNotionManager):
             self._collections_manager.save_collection(
                 key=NotionLockKey(f"{self._KEY}:{smart_list_collection_ref_id}:{smart_list.ref_id}"),
                 new_name=smart_list.name,
+                new_icon=smart_list.icon,
                 new_schema=self._SCHEMA)
             return smart_list
         except NotionCollectionNotFoundError as err:
@@ -294,6 +300,7 @@ class NotionSmartListsManager(SmartListNotionManager):
 
         return NotionSmartList(
             name=smart_list_link.name,
+            icon=smart_list_link.icon,
             ref_id=ref_id,
             notion_id=smart_list_link.collection_notion_id)
 

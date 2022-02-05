@@ -7,6 +7,7 @@ from typing import Final, Optional
 from jupiter.domain import schedules
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -39,6 +40,7 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
         """Args."""
         key: MetricKey
         name: UpdateAction[MetricName]
+        icon: UpdateAction[Optional[EntityIcon]]
         collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
         collection_eisen: UpdateAction[Eisen]
         collection_difficulty: UpdateAction[Optional[Difficulty]]
@@ -149,8 +151,11 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
 
             metric = \
                 metric.update(
-                    name=args.name, collection_params=collection_params,
-                    source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
+                    name=args.name,
+                    icon=args.icon,
+                    collection_params=collection_params,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
 
             uow.metric_repository.save(metric)
 

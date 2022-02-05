@@ -27,6 +27,7 @@ class NotionProjectsManager(ProjectNotionManager):
 
     _KEY: ClassVar[str] = "projects"
     _PAGE_NAME: ClassVar[str] = "Projects"
+    _PAGE_ICON: ClassVar[str] = "💡"
 
     _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
@@ -97,6 +98,7 @@ class NotionProjectsManager(ProjectNotionManager):
             key=NotionLockKey(f"{self._KEY}:{project_collection.ref_id}"),
             parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
+            icon=self._PAGE_ICON,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[

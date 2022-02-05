@@ -33,6 +33,7 @@ class NotionMetricManager(MetricNotionManager):
 
     _KEY: ClassVar[str] = "metrics"
     _PAGE_NAME: ClassVar[str] = "Metrics"
+    _PAGE_ICON: ClassVar[str] = "📈"
 
     _SCHEMA: ClassVar[JSONDictType] = {
         "collection-time": {
@@ -143,7 +144,8 @@ class NotionMetricManager(MetricNotionManager):
             self, notion_workspace: NotionWorkspace, metric_collection: NotionMetricCollection) -> None:
         """Upsert the root page for the metrics section."""
         self._pages_manager.upsert_page(
-            NotionLockKey(f"{self._KEY}:{metric_collection.ref_id}"), self._PAGE_NAME, notion_workspace.notion_id)
+            NotionLockKey(f"{self._KEY}:{metric_collection.ref_id}"), self._PAGE_NAME, self._PAGE_ICON,
+            notion_workspace.notion_id)
 
     def upsert_metric(self, metric_collection_ref_id: EntityId, metric: NotionMetric) -> NotionMetric:
         """Upsert the Notion-side metric."""
@@ -152,6 +154,7 @@ class NotionMetricManager(MetricNotionManager):
             key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric.ref_id}"),
             parent_page_notion_id=root_page.notion_id,
             name=metric.name,
+            icon=metric.icon,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[
@@ -160,6 +163,7 @@ class NotionMetricManager(MetricNotionManager):
 
         return NotionMetric(
             name=metric.name,
+            icon=metric.icon,
             ref_id=metric.ref_id,
             notion_id=metric_link.collection_notion_id)
 
@@ -169,6 +173,7 @@ class NotionMetricManager(MetricNotionManager):
             self._collections_manager.save_collection(
                 key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric.ref_id}"),
                 new_name=metric.name,
+                new_icon=metric.icon,
                 new_schema=self._SCHEMA)
         except NotionCollectionNotFoundError as err:
             raise NotionMetricNotFoundError(f"Could not find metric with id {metric.ref_id} locally") from err
@@ -184,6 +189,7 @@ class NotionMetricManager(MetricNotionManager):
 
         return NotionMetric(
             name=metric_link.name,
+            icon=metric_link.icon,
             ref_id=ref_id,
             notion_id=metric_link.collection_notion_id)
 

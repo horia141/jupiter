@@ -59,13 +59,15 @@ class SmartListShow(command.Command):
             allow_archived=show_archived, filter_keys=keys, filter_is_done=filter_is_done,
             filter_tag_names=filter_tag_names))
 
+        print("Smart Lists:")
+
         for smart_list_entry in response.smart_lists:
             smart_list = smart_list_entry.smart_list
             smart_list_tags_set = {t.ref_id: t for t in smart_list_entry.smart_list_tags}
-            print(f'{smart_list.key}: {smart_list.name}')
+            print(f"  - {smart_list.key}: {smart_list.icon if smart_list.icon else ''}{smart_list.name}")
 
             for smart_list_item in smart_list_entry.smart_list_items:
-                print(f'  - id={smart_list_item.ref_id} {smart_list_item.name}' +
+                print(f'    - id={smart_list_item.ref_id} {smart_list_item.name}' +
                       (' [x] ' if smart_list_item.is_done else ' [ ] ') +
                       (' '.join(f'#{smart_list_tags_set[t].tag_name}' for t in smart_list_item.tags_ref_id)) +
                       (f' url={smart_list_item.url}' if smart_list_item.url else '') +

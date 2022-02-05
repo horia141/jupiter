@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
@@ -28,12 +29,13 @@ class Metric(AggregateRoot):
     metric_collection_ref_id: EntityId
     key: MetricKey
     name: MetricName
+    icon: Optional[EntityIcon]
     collection_params: Optional[RecurringTaskGenParams]
     metric_unit: Optional[MetricUnit]
 
     @staticmethod
     def new_metric(
-            metric_collection_ref_id: EntityId, key: MetricKey, name: MetricName,
+            metric_collection_ref_id: EntityId, key: MetricKey, name: MetricName, icon: Optional[EntityIcon],
             collection_params: Optional[RecurringTaskGenParams], metric_unit: Optional[MetricUnit], source: EventSource,
             created_time: Timestamp) -> 'Metric':
         """Create a metric."""
@@ -48,15 +50,18 @@ class Metric(AggregateRoot):
             metric_collection_ref_id=metric_collection_ref_id,
             key=key,
             name=name,
+            icon=icon,
             collection_params=collection_params,
             metric_unit=metric_unit)
         return metric
 
     def update(
-            self, name: UpdateAction[MetricName], collection_params: UpdateAction[Optional[RecurringTaskGenParams]],
-            source: EventSource, modification_time: Timestamp) -> 'Metric':
+            self, name: UpdateAction[MetricName], icon: UpdateAction[Optional[EntityIcon]],
+            collection_params: UpdateAction[Optional[RecurringTaskGenParams]], source: EventSource,
+            modification_time: Timestamp) -> 'Metric':
         """Change the metric."""
         return self._new_version(
             name=name.or_else(self.name),
+            icon=icon.or_else(self.icon),
             collection_params=collection_params.or_else(self.collection_params),
             new_event=Metric.Updated.make_event_from_frame_args(source, self.version, modification_time))

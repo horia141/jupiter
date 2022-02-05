@@ -16,6 +16,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
     """The centralised point for interacting with Notion workspaces."""
 
     _KEY: ClassVar[str] = "workspaces"
+    _PAGE_ICON: ClassVar[str] = "⭐"
 
     _pages_manager: Final[NotionPagesManager]
 
@@ -26,7 +27,8 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
     def upsert_workspace(self, workspace: NotionWorkspace) -> NotionWorkspace:
         """Upsert the root Notion structure."""
         workspace_page = \
-            self._pages_manager.upsert_page(NotionLockKey(f"{self._KEY}:{workspace.ref_id}"), workspace.name)
+            self._pages_manager.upsert_page(
+                NotionLockKey(f"{self._KEY}:{workspace.ref_id}"), workspace.name, self._PAGE_ICON)
 
         return NotionWorkspace(
             name=workspace.name,
@@ -37,7 +39,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         """Change the root Notion structure."""
         try:
             self._pages_manager.save_page(
-                NotionLockKey(f"{self._KEY}:{notion_workspace.ref_id}"), notion_workspace.name)
+                NotionLockKey(f"{self._KEY}:{notion_workspace.ref_id}"), notion_workspace.name, self._PAGE_ICON)
         except NotionPageNotFoundError as err:
             raise NotionWorkspaceNotFoundError("Cannot find Notion workspace") from err
         return notion_workspace

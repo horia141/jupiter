@@ -1,7 +1,8 @@
 """The command for creating a smart list."""
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Optional
 
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.notion_smart_list import NotionSmartList
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
@@ -25,6 +26,7 @@ class SmartListCreateUseCase(AppMutationUseCase['SmartListCreateUseCase.Args', N
         """Args."""
         key: SmartListKey
         name: SmartListName
+        icon: Optional[EntityIcon]
 
     _smart_list_notion_manager: Final[SmartListNotionManager]
 
@@ -48,12 +50,13 @@ class SmartListCreateUseCase(AppMutationUseCase['SmartListCreateUseCase.Args', N
             smart_list = \
                 SmartList.new_smart_list(
                     smart_list_collection_ref_id=smart_list_collection.ref_id, key=args.key, name=args.name,
-                    source=EventSource.CLI, created_time=self._time_provider.get_current_time())
+                    icon=args.icon, source=EventSource.CLI, created_time=self._time_provider.get_current_time())
 
             smart_list = uow.smart_list_repository.create(smart_list)
-            smart_list_default_tag = SmartListTag.new_smart_list_tag(
-                smart_list_ref_id=smart_list.ref_id, tag_name=SmartListTagName('Default'),
-                source=EventSource.CLI, created_time=self._time_provider.get_current_time())
+            smart_list_default_tag = \
+                SmartListTag.new_smart_list_tag(
+                    smart_list_ref_id=smart_list.ref_id, tag_name=SmartListTagName('Default'),
+                    source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             smart_list_default_tag = uow.smart_list_tag_repository.create(smart_list_default_tag)
 
         notion_smart_list = NotionSmartList.new_notion_row(smart_list)
