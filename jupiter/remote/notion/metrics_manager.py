@@ -91,7 +91,7 @@ class NotionMetricManager(MetricNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]

@@ -16,7 +16,6 @@ from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository, \
     InboxTaskCollectionNotFoundError
 from jupiter.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository, InboxTaskNotFoundError
-from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.repository.sqlite.infra.events import upsert_events, build_event_table, remove_events
@@ -141,7 +140,8 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             Column('source', String(16), nullable=False),
             Column('project_ref_id', Integer, ForeignKey('project.ref_id'), nullable=False, index=True),
             Column('big_plan_ref_id', Integer, ForeignKey('big_plan.ref_id'), nullable=True),
-            Column('recurring_task_ref_id', Integer, ForeignKey('recurring_task.ref_id'), nullable=True),
+            Column('habit_ref_id', Integer, ForeignKey('habit.ref_id'), nullable=True),
+            Column('chore_ref_id', Integer, ForeignKey('chore.ref_id'), nullable=True),
             Column('metric_ref_id', Integer, ForeignKey('metric.ref_id'), nullable=True),
             Column('person_ref_id', Integer, ForeignKey('person.ref_id'), nullable=True),
             Column('name', Unicode(), nullable=False),
@@ -151,7 +151,6 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             Column('actionable_date', DateTime, nullable=True),
             Column('due_date', DateTime, nullable=True),
             Column('recurring_timeline', String, nullable=True),
-            Column('recurring_type', String, nullable=True),
             Column('recurring_gen_right_now', DateTime, nullable=True),
             Column('accepted_time', DateTime, nullable=True),
             Column('working_time', DateTime, nullable=True),
@@ -174,8 +173,8 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                     source=str(inbox_task.source),
                     project_ref_id=inbox_task.project_ref_id.as_int(),
                     big_plan_ref_id=inbox_task.big_plan_ref_id.as_int() if inbox_task.big_plan_ref_id else None,
-                    recurring_task_ref_id=
-                    inbox_task.recurring_task_ref_id.as_int() if inbox_task.recurring_task_ref_id else None,
+                    habit_ref_id=inbox_task.habit_ref_id.as_int() if inbox_task.habit_ref_id else None,
+                    chore_ref_id=inbox_task.chore_ref_id.as_int() if inbox_task.chore_ref_id else None,
                     metric_ref_id=inbox_task.metric_ref_id.as_int() if inbox_task.metric_ref_id else None,
                     person_ref_id=inbox_task.person_ref_id.as_int() if inbox_task.person_ref_id else None,
                     name=str(inbox_task.name),
@@ -185,7 +184,6 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                     actionable_date=inbox_task.actionable_date.to_db() if inbox_task.actionable_date else None,
                     due_date=inbox_task.due_date.to_db() if inbox_task.due_date else None,
                     recurring_timeline=inbox_task.recurring_timeline,
-                    recurring_type=str(inbox_task.recurring_type) if inbox_task.recurring_type else None,
                     recurring_gen_right_now=
                     inbox_task.recurring_gen_right_now.to_db() if inbox_task.recurring_gen_right_now else None,
                     accepted_time=inbox_task.accepted_time.to_db() if inbox_task.accepted_time else None,
@@ -211,8 +209,8 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 source=str(inbox_task.source),
                 project_ref_id=inbox_task.project_ref_id.as_int(),
                 big_plan_ref_id=inbox_task.big_plan_ref_id.as_int() if inbox_task.big_plan_ref_id else None,
-                recurring_task_ref_id=
-                inbox_task.recurring_task_ref_id.as_int() if inbox_task.recurring_task_ref_id else None,
+                habit_ref_id=inbox_task.habit_ref_id.as_int() if inbox_task.habit_ref_id else None,
+                chore_ref_id=inbox_task.chore_ref_id.as_int() if inbox_task.chore_ref_id else None,
                 metric_ref_id=inbox_task.metric_ref_id.as_int() if inbox_task.metric_ref_id else None,
                 person_ref_id=inbox_task.person_ref_id.as_int() if inbox_task.person_ref_id else None,
                 name=str(inbox_task.name),
@@ -222,7 +220,6 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 actionable_date=inbox_task.actionable_date.to_db() if inbox_task.actionable_date else None,
                 due_date=inbox_task.due_date.to_db() if inbox_task.due_date else None,
                 recurring_timeline=inbox_task.recurring_timeline,
-                recurring_type=str(inbox_task.recurring_type) if inbox_task.recurring_type else None,
                 recurring_gen_right_now=
                 inbox_task.recurring_gen_right_now.to_db() if inbox_task.recurring_gen_right_now else None,
                 accepted_time=inbox_task.accepted_time.to_db() if inbox_task.accepted_time else None,
@@ -252,6 +249,8 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_person_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
         """Find all the inbox task."""
@@ -275,6 +274,12 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
         if filter_recurring_task_ref_ids:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.recurring_task_ref_id.in_(fi.as_int() for fi in filter_recurring_task_ref_ids))
+        if filter_habit_ref_ids:
+            query_stmt = query_stmt.where(
+                self._inbox_task_table.c.habit_ref_id.in_(fi.as_int() for fi in filter_habit_ref_ids))
+        if filter_chore_ref_ids:
+            query_stmt = query_stmt.where(
+                self._inbox_task_table.c.chore_ref_id.in_(fi.as_int() for fi in filter_chore_ref_ids))
         if filter_metric_ref_ids:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.metric_ref_id.in_(fi.as_int() for fi in filter_metric_ref_ids))
@@ -310,8 +315,8 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             source=InboxTaskSource.from_raw(row["source"]),
             project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),
             big_plan_ref_id=EntityId.from_raw(str(row["big_plan_ref_id"])) if row["big_plan_ref_id"] else None,
-            recurring_task_ref_id=
-            EntityId.from_raw(str(row["recurring_task_ref_id"])) if row["recurring_task_ref_id"] else None,
+            habit_ref_id=EntityId.from_raw(str(row["habit_ref_id"])) if row["habit_ref_id"] else None,
+            chore_ref_id=EntityId.from_raw(str(row["chore_ref_id"])) if row["chore_ref_id"] else None,
             metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])) if row["metric_ref_id"] else None,
             person_ref_id=EntityId.from_raw(str(row["person_ref_id"])) if row["person_ref_id"] else None,
             name=InboxTaskName.from_raw(row["name"]),
@@ -321,7 +326,6 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             actionable_date=ADate.from_db(row["actionable_date"]) if row["actionable_date"] else None,
             due_date=ADate.from_db(row["due_date"]) if row["due_date"] else None,
             recurring_timeline=row["recurring_timeline"],
-            recurring_type=RecurringTaskType.from_raw(row["recurring_type"]) if row["recurring_type"] else None,
             recurring_gen_right_now=
             Timestamp.from_db(row["recurring_gen_right_now"]) if row["recurring_gen_right_now"] else None,
             accepted_time=Timestamp.from_db(row["accepted_time"]) if row["accepted_time"] else None,

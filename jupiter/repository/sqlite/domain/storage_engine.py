@@ -14,17 +14,19 @@ from sqlalchemy.future import Engine
 
 from jupiter.domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository
 from jupiter.domain.big_plans.infra.big_plan_repository import BigPlanRepository
+from jupiter.domain.chores.infra.chore_collection_repository import ChoreCollectionRepository
+from jupiter.domain.chores.infra.chore_repository import ChoreRepository
+from jupiter.domain.habits.infra.habit_collection_repository import HabitCollectionRepository
+from jupiter.domain.habits.infra.habit_repository import HabitRepository
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository
 from jupiter.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
 from jupiter.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from jupiter.domain.metrics.infra.metric_repository import MetricRepository
-from jupiter.domain.persons.infra.person_repository import PersonRepository
 from jupiter.domain.persons.infra.person_collection_repository import PersonCollectionRepository
+from jupiter.domain.persons.infra.person_repository import PersonRepository
 from jupiter.domain.projects.infra.project_collection_repository import ProjectCollectionRepository
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
-from jupiter.domain.recurring_tasks.infra.recurring_task_collection_repository import RecurringTaskCollectionRepository
-from jupiter.domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository
 from jupiter.domain.remote.notion.collection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
@@ -35,13 +37,13 @@ from jupiter.domain.vacations.infra.vacation_collection_repository import Vacati
 from jupiter.domain.vacations.infra.vacation_repository import VacationRepository
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository
 from jupiter.repository.sqlite.domain.big_plans import SqliteBigPlanCollectionRepository, SqliteBigPlanRepository
+from jupiter.repository.sqlite.domain.chores import SqliteChoreCollectionRepository, SqliteChoreRepository
+from jupiter.repository.sqlite.domain.habits import SqliteHabitCollectionRepository, SqliteHabitRepository
 from jupiter.repository.sqlite.domain.inbox_tasks import SqliteInboxTaskCollectionRepository, SqliteInboxTaskRepository
 from jupiter.repository.sqlite.domain.metrics import SqliteMetricRepository, SqliteMetricEntryRepository, \
     SqliteMetricCollectionRepository
 from jupiter.repository.sqlite.domain.persons import SqlitePersonCollectionRepository, SqlitePersonRepository
 from jupiter.repository.sqlite.domain.projects import SqliteProjectRepository, SqliteProjectCollectionRepository
-from jupiter.repository.sqlite.domain.recurring_tasks import SqliteRecurringTaskCollectionRepository, \
-    SqliteRecurringTaskRepository
 from jupiter.repository.sqlite.domain.remote.notion.connections import SqliteNotionConnectionRepository
 from jupiter.repository.sqlite.domain.smart_lists import SqliteSmartListRepository, SqliteSmartListTagRepository, \
     SqliteSmartListItemRepository, SqliteSmartListCollectionRepository
@@ -59,8 +61,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _project_repository: Final[SqliteProjectRepository]
     _inbox_task_collection_repository: Final[SqliteInboxTaskCollectionRepository]
     _inbox_task_repository: Final[SqliteInboxTaskRepository]
-    _recurring_task_collection_repository: Final[SqliteRecurringTaskCollectionRepository]
-    _recurring_task_repository: Final[SqliteRecurringTaskRepository]
+    _habit_collection_repository: Final[SqliteHabitCollectionRepository]
+    _habit_repository: Final[SqliteHabitRepository]
+    _chore_collection_repository: Final[SqliteChoreCollectionRepository]
+    _chore_repository: Final[SqliteChoreRepository]
     _big_plan_collection_repository: Final[SqliteBigPlanCollectionRepository]
     _big_plan_repository: Final[SqliteBigPlanRepository]
     _smart_list_collection_repository: Final[SmartListCollectionRepository]
@@ -83,8 +87,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             project_repository: SqliteProjectRepository,
             inbox_task_collection_repository: SqliteInboxTaskCollectionRepository,
             inbox_task_repository: SqliteInboxTaskRepository,
-            recurring_task_collection_repository: SqliteRecurringTaskCollectionRepository,
-            recurring_task_repository: SqliteRecurringTaskRepository,
+            habit_collection_repository: SqliteHabitCollectionRepository,
+            habit_repository: SqliteHabitRepository,
+            chore_collection_repository: SqliteChoreCollectionRepository,
+            chore_repository: SqliteChoreRepository,
             big_plan_collection_repository: SqliteBigPlanCollectionRepository,
             big_plan_repository: SqliteBigPlanRepository,
             smart_list_collection_repository: SqliteSmartListCollectionRepository,
@@ -105,8 +111,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._project_repository = project_repository
         self._inbox_task_collection_repository = inbox_task_collection_repository
         self._inbox_task_repository = inbox_task_repository
-        self._recurring_task_collection_repository = recurring_task_collection_repository
-        self._recurring_task_repository = recurring_task_repository
+        self._habit_collection_repository = habit_collection_repository
+        self._habit_repository = habit_repository
+        self._chore_collection_repository = chore_collection_repository
+        self._chore_repository = chore_repository
         self._big_plan_collection_repository = big_plan_collection_repository
         self._big_plan_repository = big_plan_repository
         self._smart_list_collection_repository = smart_list_collection_repository
@@ -165,14 +173,24 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         return self._inbox_task_repository
 
     @property
-    def recurring_task_collection_repository(self) -> RecurringTaskCollectionRepository:
-        """The recurring task collection repository."""
-        return self._recurring_task_collection_repository
+    def habit_collection_repository(self) -> HabitCollectionRepository:
+        """The habit collection repository."""
+        return self._habit_collection_repository
 
     @property
-    def recurring_task_repository(self) -> RecurringTaskRepository:
-        """The recurring task repository."""
-        return self._recurring_task_repository
+    def habit_repository(self) -> HabitRepository:
+        """The habit repository."""
+        return self._habit_repository
+
+    @property
+    def chore_collection_repository(self) -> ChoreCollectionRepository:
+        """The chore collection repository."""
+        return self._chore_collection_repository
+
+    @property
+    def chore_repository(self) -> ChoreRepository:
+        """The chore repository."""
+        return self._chore_repository
 
     @property
     def big_plan_collection_repository(self) -> BigPlanCollectionRepository:
@@ -276,8 +294,10 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             project_repository = SqliteProjectRepository(connection, self._metadata)
             inbox_task_collection_repository = SqliteInboxTaskCollectionRepository(connection, self._metadata)
             inbox_task_repository = SqliteInboxTaskRepository(connection, self._metadata)
-            recurring_task_collection_repository = SqliteRecurringTaskCollectionRepository(connection, self._metadata)
-            recurring_task_repository = SqliteRecurringTaskRepository(connection, self._metadata)
+            habit_collection_repository = SqliteHabitCollectionRepository(connection, self._metadata)
+            habit_repository = SqliteHabitRepository(connection, self._metadata)
+            chore_collection_repository = SqliteChoreCollectionRepository(connection, self._metadata)
+            chore_repository = SqliteChoreRepository(connection, self._metadata)
             big_plan_collection_repository = SqliteBigPlanCollectionRepository(connection, self._metadata)
             big_plan_repository = SqliteBigPlanRepository(connection, self._metadata)
             smart_list_collection_repository = SqliteSmartListCollectionRepository(connection, self._metadata)
@@ -299,8 +319,10 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 project_repository=project_repository,
                 inbox_task_collection_repository=inbox_task_collection_repository,
                 inbox_task_repository=inbox_task_repository,
-                recurring_task_collection_repository=recurring_task_collection_repository,
-                recurring_task_repository=recurring_task_repository,
+                habit_collection_repository=habit_collection_repository,
+                habit_repository=habit_repository,
+                chore_collection_repository=chore_collection_repository,
+                chore_repository=chore_repository,
                 big_plan_collection_repository=big_plan_collection_repository,
                 big_plan_repository=big_plan_repository,
                 smart_list_collection_repository=smart_list_collection_repository,

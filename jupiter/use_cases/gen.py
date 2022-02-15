@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
 from jupiter.domain import schedules
+from jupiter.domain.chores.chore import Chore
+from jupiter.domain.habits.habit import Habit
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -20,7 +22,6 @@ from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.vacation import Vacation
@@ -44,7 +45,8 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
         right_now: Timestamp
         gen_targets: Iterable[SyncTarget]
         filter_project_keys: Optional[Iterable[ProjectKey]]
-        filter_recurring_task_ref_ids: Optional[Iterable[EntityId]]
+        filter_habit_ref_ids: Optional[Iterable[EntityId]]
+        filter_chore_ref_ids: Optional[Iterable[EntityId]]
         filter_metric_keys: Optional[Iterable[MetricKey]]
         filter_person_ref_ids: Optional[Iterable[EntityId]]
         filter_period: Optional[Iterable[RecurringTaskPeriod]]
@@ -82,41 +84,78 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             filter_project_ref_ids = [p.ref_id for p in all_syncable_projects]
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
 
-        if SyncTarget.RECURRING_TASKS in args.gen_targets:
+        if SyncTarget.HABITS in args.gen_targets:
             with self._storage_engine.get_unit_of_work() as uow:
-                all_recurring_tasks = \
-                    uow.recurring_task_repository.find_all(
-                        recurring_task_collection_ref_id=recurring_task_collection.ref_id,
-                        filter_ref_ids=args.filter_recurring_task_ref_ids,
+                all_habits = \
+                    uow.habit_repository.find_all(
+                        habit_collection_ref_id=habit_collection.ref_id,
+                        filter_ref_ids=args.filter_habit_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids)
 
             with self._storage_engine.get_unit_of_work() as uow:
-                all_collection_inbox_tasks = uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    filter_sources=[InboxTaskSource.RECURRING_TASK],
-                    allow_archived=True, filter_recurring_task_ref_ids=(rt.ref_id for rt in all_recurring_tasks))
+                all_collection_inbox_tasks = \
+                    uow.inbox_task_repository.find_all(
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                        filter_sources=[InboxTaskSource.HABIT],
+                        allow_archived=True, filter_habit_ref_ids=(rt.ref_id for rt in all_habits))
 
-            all_inbox_tasks_by_recurring_task_ref_id_and_timeline = {}
+            all_inbox_tasks_by_habit_ref_id_and_timeline = {}
             for inbox_task in all_collection_inbox_tasks:
-                if inbox_task.recurring_task_ref_id is None or inbox_task.recurring_timeline is None:
+                if inbox_task.habit_ref_id is None or inbox_task.recurring_timeline is None:
                     raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
-                all_inbox_tasks_by_recurring_task_ref_id_and_timeline[
-                    (inbox_task.recurring_task_ref_id, inbox_task.recurring_timeline)] = inbox_task
+                all_inbox_tasks_by_habit_ref_id_and_timeline[
+                    (inbox_task.habit_ref_id, inbox_task.recurring_timeline)] = inbox_task
 
-            for recurring_task in all_recurring_tasks:
-                LOGGER.info(f"Generating inbox tasks for '{recurring_task.name}'")
-                project = all_projects_by_ref_id[recurring_task.project_ref_id]
-                self._generate_inbox_tasks_for_recurring_task(
+            for habit in all_habits:
+                LOGGER.info(f"Generating inbox tasks for '{habit.name}'")
+                project = all_projects_by_ref_id[habit.project_ref_id]
+                self._generate_inbox_tasks_for_habit(
+                    inbox_task_collection=inbox_task_collection,
+                    project=project,
+                    right_now=args.right_now,
+                    period_filter=frozenset(args.filter_period) if args.filter_period else None,
+                    habit=habit,
+                    all_inbox_tasks_by_habit_ref_id_and_timeline=
+                    all_inbox_tasks_by_habit_ref_id_and_timeline,
+                    sync_even_if_not_modified=args.sync_even_if_not_modified)
+
+        if SyncTarget.CHORES in args.gen_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_chores = \
+                    uow.chore_repository.find_all(
+                        chore_collection_ref_id=chore_collection.ref_id,
+                        filter_ref_ids=args.filter_chore_ref_ids,
+                        filter_project_ref_ids=filter_project_ref_ids)
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_collection_inbox_tasks = \
+                    uow.inbox_task_repository.find_all(
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                        filter_sources=[InboxTaskSource.CHORE],
+                        allow_archived=True, filter_chore_ref_ids=(rt.ref_id for rt in all_chores))
+
+            all_inbox_tasks_by_chore_ref_id_and_timeline = {}
+            for inbox_task in all_collection_inbox_tasks:
+                if inbox_task.chore_ref_id is None or inbox_task.recurring_timeline is None:
+                    raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
+                all_inbox_tasks_by_chore_ref_id_and_timeline[
+                    (inbox_task.chore_ref_id, inbox_task.recurring_timeline)] = inbox_task
+
+            for chore in all_chores:
+                LOGGER.info(f"Generating inbox tasks for '{chore.name}'")
+                project = all_projects_by_ref_id[chore.project_ref_id]
+                self._generate_inbox_tasks_for_chore(
                     inbox_task_collection=inbox_task_collection,
                     project=project,
                     right_now=args.right_now,
                     period_filter=frozenset(args.filter_period) if args.filter_period else None,
                     all_vacations=all_vacations,
-                    recurring_task=recurring_task,
-                    all_inbox_tasks_by_recurring_task_ref_id_and_timeline=
-                    all_inbox_tasks_by_recurring_task_ref_id_and_timeline,
+                    chore=chore,
+                    all_inbox_tasks_by_chore_ref_id_and_timeline=
+                    all_inbox_tasks_by_chore_ref_id_and_timeline,
                     sync_even_if_not_modified=args.sync_even_if_not_modified)
 
         if SyncTarget.METRICS in args.gen_targets:
@@ -225,67 +264,53 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
                     all_birthday_inbox_tasks_by_person_ref_id_and_timeline,
                     sync_even_if_not_modified=args.sync_even_if_not_modified)
 
-    def _generate_inbox_tasks_for_recurring_task(
+    def _generate_inbox_tasks_for_habit(
             self,
             inbox_task_collection: InboxTaskCollection,
             project: Project,
             right_now: Timestamp,
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
-            all_vacations: List[Vacation],
-            recurring_task: RecurringTask,
-            all_inbox_tasks_by_recurring_task_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask],
+            habit: Habit,
+            all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask],
             sync_even_if_not_modified: bool) -> None:
-        if recurring_task.suspended:
-            LOGGER.info(f"Skipping '{recurring_task.name}' because it is suspended")
+        if habit.suspended:
+            LOGGER.info(f"Skipping '{habit.name}' because it is suspended")
             return
 
-        if period_filter is not None and recurring_task.gen_params.period not in period_filter:
-            LOGGER.info(f"Skipping '{recurring_task.name}' on account of period filtering")
+        if period_filter is not None and habit.gen_params.period not in period_filter:
+            LOGGER.info(f"Skipping '{habit.name}' on account of period filtering")
             return
 
         schedule = schedules.get_schedule(
-            recurring_task.gen_params.period, recurring_task.name, right_now, self._global_properties.timezone,
-            recurring_task.skip_rule, recurring_task.gen_params.actionable_from_day,
-            recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,
-            recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
-
-        if not recurring_task.must_do:
-            for vacation in all_vacations:
-                if vacation.is_in_vacation(schedule.first_day, schedule.end_day):
-                    LOGGER.info(
-                        f"Skipping '{recurring_task.name}' on account of being fully withing vacation {vacation}")
-                    return
-
-        if not recurring_task.is_in_active_interval(schedule.first_day, schedule.end_day):
-            LOGGER.info(f"Skipping '{recurring_task.name}' on account of being outside the active interval")
-            return
+            habit.gen_params.period, habit.name, right_now, self._global_properties.timezone,
+            habit.skip_rule, habit.gen_params.actionable_from_day,
+            habit.gen_params.actionable_from_month, habit.gen_params.due_at_time,
+            habit.gen_params.due_at_day, habit.gen_params.due_at_month)
 
         if schedule.should_skip:
-            LOGGER.info(f"Skipping '{recurring_task.name}' on account of rule")
+            LOGGER.info(f"Skipping '{habit.name}' on account of rule")
             return
 
-        LOGGER.info(f"Upserting '{recurring_task.name}'")
+        LOGGER.info(f"Upserting '{habit.name}'")
 
-        found_task = all_inbox_tasks_by_recurring_task_ref_id_and_timeline.get(
-            (recurring_task.ref_id, schedule.timeline), None)
+        found_task = all_inbox_tasks_by_habit_ref_id_and_timeline.get((habit.ref_id, schedule.timeline), None)
 
         if found_task:
             LOGGER.info(f"Found a task '{found_task.name}'")
 
-            if not sync_even_if_not_modified and found_task.last_modified_time >= recurring_task.last_modified_time:
+            if not sync_even_if_not_modified and found_task.last_modified_time >= habit.last_modified_time:
                 LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
                 return
 
             found_task = \
-                found_task.update_link_to_recurring_task(
+                found_task.update_link_to_habit(
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
-                    the_type=recurring_task.the_type,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
-                    eisen=recurring_task.gen_params.eisen,
-                    difficulty=recurring_task.gen_params.difficulty,
+                    eisen=habit.gen_params.eisen,
+                    difficulty=habit.gen_params.difficulty,
                     source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time())
 
@@ -302,16 +327,116 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
-                inbox_task = InboxTask.new_inbox_task_for_recurring_task(
+                inbox_task = InboxTask.new_inbox_task_for_habit(
                     inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                     name=schedule.full_name,
                     project_ref_id=project.ref_id,
-                    recurring_task_ref_id=recurring_task.ref_id,
+                    habit_ref_id=habit.ref_id,
                     recurring_task_timeline=schedule.timeline,
-                    recurring_task_type=recurring_task.the_type,
                     recurring_task_gen_right_now=right_now,
-                    eisen=recurring_task.gen_params.eisen,
-                    difficulty=recurring_task.gen_params.difficulty,
+                    eisen=habit.gen_params.eisen,
+                    difficulty=habit.gen_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_date=schedule.due_time,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
+
+                inbox_task = uow.inbox_task_repository.create(inbox_task)
+                LOGGER.info("Applied local changes")
+
+            if inbox_task.archived:
+                return
+
+            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+            notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
+            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+            LOGGER.info("Applied Notion changes")
+
+    def _generate_inbox_tasks_for_chore(
+            self,
+            inbox_task_collection: InboxTaskCollection,
+            project: Project,
+            right_now: Timestamp,
+            period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
+            all_vacations: List[Vacation],
+            chore: Chore,
+            all_inbox_tasks_by_chore_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask],
+            sync_even_if_not_modified: bool) -> None:
+        if chore.suspended:
+            LOGGER.info(f"Skipping '{chore.name}' because it is suspended")
+            return
+
+        if period_filter is not None and chore.gen_params.period not in period_filter:
+            LOGGER.info(f"Skipping '{chore.name}' on account of period filtering")
+            return
+
+        schedule = schedules.get_schedule(
+            chore.gen_params.period, chore.name, right_now, self._global_properties.timezone,
+            chore.skip_rule, chore.gen_params.actionable_from_day,
+            chore.gen_params.actionable_from_month, chore.gen_params.due_at_time,
+            chore.gen_params.due_at_day, chore.gen_params.due_at_month)
+
+        if not chore.must_do:
+            for vacation in all_vacations:
+                if vacation.is_in_vacation(schedule.first_day, schedule.end_day):
+                    LOGGER.info(
+                        f"Skipping '{chore.name}' on account of being fully withing vacation {vacation}")
+                    return
+
+        if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
+            LOGGER.info(f"Skipping '{chore.name}' on account of being outside the active interval")
+            return
+
+        if schedule.should_skip:
+            LOGGER.info(f"Skipping '{chore.name}' on account of rule")
+            return
+
+        LOGGER.info(f"Upserting '{chore.name}'")
+
+        found_task = all_inbox_tasks_by_chore_ref_id_and_timeline.get(
+            (chore.ref_id, schedule.timeline), None)
+
+        if found_task:
+            LOGGER.info(f"Found a task '{found_task.name}'")
+
+            if not sync_even_if_not_modified and found_task.last_modified_time >= chore.last_modified_time:
+                LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
+                return
+
+            found_task = \
+                found_task.update_link_to_chore(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    timeline=schedule.timeline,
+                    actionable_date=schedule.actionable_date,
+                    due_date=schedule.due_time,
+                    eisen=chore.gen_params.eisen,
+                    difficulty=chore.gen_params.difficulty,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time())
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.inbox_task_repository.save(found_task)
+
+            if found_task.archived:
+                return
+
+            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_inbox_task(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            LOGGER.info("Applied Notion changes")
+        else:
+            with self._storage_engine.get_unit_of_work() as uow:
+                inbox_task = InboxTask.new_inbox_task_for_chore(
+                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    name=schedule.full_name,
+                    project_ref_id=project.ref_id,
+                    chore_ref_id=chore.ref_id,
+                    recurring_task_timeline=schedule.timeline,
+                    recurring_task_gen_right_now=right_now,
+                    eisen=chore.gen_params.eisen,
+                    difficulty=chore.gen_params.difficulty,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
                     source=EventSource.CLI,

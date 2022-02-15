@@ -31,6 +31,8 @@ def process_primitive_to_json(primitive: typing.Union[None, int, float, str, obj
         return process_primitive_to_json(primitive.value, key)
     elif isinstance(primitive, Value):
         return str(primitive)  # A bit of a hack really!
+    elif 'AggregateRoot' in [t.__name__ for t in type(primitive).__mro__]:
+        return {"ref_id": str(getattr(primitive, "ref_id")), "aggregate-root-type": primitive.__class__.__name__}
     elif isinstance(primitive, uuid.UUID):
         return str(primitive)
     elif dataclasses.is_dataclass(primitive):

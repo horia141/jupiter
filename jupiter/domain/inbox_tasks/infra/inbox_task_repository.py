@@ -36,6 +36,8 @@ class InboxTaskRepository(Repository, abc.ABC):
             filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_recurring_task_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_person_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[InboxTask]:
         """Find all inbox tasks."""

@@ -6,6 +6,12 @@ from typing import Final
 from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
+from jupiter.domain.chores.chore_collection import ChoreCollection
+from jupiter.domain.chores.infra.chore_notion_manager import ChoreNotionManager
+from jupiter.domain.chores.notion_chore_collection import NotionChoreCollection
+from jupiter.domain.habits.habit_collection import HabitCollection
+from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager
+from jupiter.domain.habits.notion_habit_collection import NotionHabitCollection
 from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
@@ -23,9 +29,6 @@ from jupiter.domain.projects.project_collection import ProjectCollection
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.projects.service.project_label_update_service import ProjectLabelUpdateService
-from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
-from jupiter.domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
-from jupiter.domain.recurring_tasks.recurring_task_collection import RecurringTaskCollection
 from jupiter.domain.remote.notion.connection import NotionConnection
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
@@ -67,7 +70,8 @@ class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
     _vacation_notion_manager: Final[VacationNotionManager]
     _project_notion_manager: Final[ProjectNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
+    _habit_notion_manager: Final[HabitNotionManager]
+    _chore_notion_manager: Final[ChoreNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
     _smart_list_notion_manager: Final[SmartListNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
@@ -82,7 +86,8 @@ class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
             vacation_notion_manager: VacationNotionManager,
             project_notion_manager: ProjectNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager,
-            recurring_task_notion_manager: RecurringTaskNotionManager,
+            habit_notion_manager: HabitNotionManager,
+            chore_notion_manager: ChoreNotionManager,
             big_plan_notion_manager: BigPlanNotionManager,
             smart_list_notion_manager: SmartListNotionManager,
             metric_notion_manager: MetricNotionManager,
@@ -94,7 +99,8 @@ class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
         self._vacation_notion_manager = vacation_notion_manager
         self._project_notion_manager = project_notion_manager
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._recurring_task_notion_manager = recurring_task_notion_manager
+        self._habit_notion_manager = habit_notion_manager
+        self._chore_notion_manager = chore_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
         self._metric_notion_manager = metric_notion_manager
         self._smart_list_notion_manager = smart_list_notion_manager
@@ -149,12 +155,19 @@ class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
                     created_time=self._time_provider.get_current_time())
             new_inbox_task_collection = uow.inbox_task_collection_repository.create(new_inbox_task_collection)
 
-            new_recurring_task_collection = \
-                RecurringTaskCollection.new_recurring_task_collection(
+            new_habit_collection = \
+                HabitCollection.new_habit_collection(
                     workspace_ref_id=new_workspace.ref_id, source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
-            new_recurring_task_collection = \
-                uow.recurring_task_collection_repository.create(new_recurring_task_collection)
+            new_habit_collection = \
+                uow.habit_collection_repository.create(new_habit_collection)
+
+            new_chore_collection = \
+                ChoreCollection.new_chore_collection(
+                    workspace_ref_id=new_workspace.ref_id, source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
+            new_chore_collection = \
+                uow.chore_collection_repository.create(new_chore_collection)
 
             new_big_plan_collection = \
                 BigPlanCollection.new_big_plan_collection(
@@ -204,11 +217,13 @@ class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
         self._inbox_task_notion_manager.upsert_inbox_task_collection(
             new_notion_workspace, new_notion_inbox_task_collection)
 
-        LOGGER.info("Creating recurring tasks structure")
-        new_notion_recurring_task_collection = \
-            NotionRecurringTaskCollection.new_notion_row(new_recurring_task_collection)
-        self._recurring_task_notion_manager.upsert_recurring_task_collection(
-            new_notion_workspace, new_notion_recurring_task_collection)
+        LOGGER.info("Creating habits structure")
+        new_notion_habit_collection = NotionHabitCollection.new_notion_row(new_habit_collection)
+        self._habit_notion_manager.upsert_habit_collection(new_notion_workspace, new_notion_habit_collection)
+
+        LOGGER.info("Creating chores structure")
+        new_notion_chore_collection = NotionChoreCollection.new_notion_row(new_chore_collection)
+        self._chore_notion_manager.upsert_chore_collection(new_notion_workspace, new_notion_chore_collection)
 
         LOGGER.info("Creating big plans structure")
         new_notion_big_plan_collection = NotionBigPlanCollection.new_notion_row(new_big_plan_collection)
@@ -229,7 +244,8 @@ class InitUseCase(MutationUseCase[None, 'InitUseCase.Args', None]):
         ProjectLabelUpdateService(
             self._storage_engine,
             self._inbox_task_notion_manager,
-            self._recurring_task_notion_manager,
+            self._habit_notion_manager,
+            self._chore_notion_manager,
             self._big_plan_notion_manager) \
             .sync(new_workspace, [new_default_project])
 

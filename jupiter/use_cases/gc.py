@@ -7,8 +7,15 @@ from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
 from jupiter.domain.big_plans.service.archive_service import BigPlanArchiveService
 from jupiter.domain.big_plans.service.remove_service import BigPlanRemoveService
+from jupiter.domain.chores.chore import Chore
+from jupiter.domain.chores.infra.chore_notion_manager import ChoreNotionManager, NotionChoreNotFoundError
+from jupiter.domain.chores.service.remove_service import ChoreRemoveService
+from jupiter.domain.habits.habit import Habit
+from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager, NotionHabitNotFoundError
+from jupiter.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
+    NotionInboxTaskNotFoundError
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
 from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service \
     import InboxTaskBigPlanRefOptionsUpdateService
@@ -27,10 +34,6 @@ from jupiter.domain.projects.infra.project_notion_manager import NotionProjectNo
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_collection import ProjectCollection
 from jupiter.domain.projects.service.project_label_update_service import ProjectLabelUpdateService
-from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager, \
-    NotionRecurringTaskNotFoundError
-from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.recurring_tasks.service.remove_service import RecurringTaskRemoveService
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListNotFoundError, NotionSmartListItemNotFoundError
 from jupiter.domain.smart_lists.smart_list import SmartList
@@ -63,7 +66,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
     _vacation_notion_manager: Final[VacationNotionManager]
     _project_notion_manager: Final[ProjectNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
+    _habit_notion_manager: Final[HabitNotionManager]
+    _chore_notion_manager: Final[ChoreNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
     _smart_list_notion_manager: Final[SmartListNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
@@ -77,7 +81,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             vacation_notion_manager: VacationNotionManager,
             project_notion_manager: ProjectNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager,
-            recurring_task_notion_manager: RecurringTaskNotionManager,
+            habit_notion_manager: HabitNotionManager,
+            chore_notion_manager: ChoreNotionManager,
             big_plan_notion_manager: BigPlanNotionManager,
             smart_list_notion_manager: SmartListNotionManager,
             metric_notion_manager: MetricNotionManager,
@@ -87,7 +92,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
         self._vacation_notion_manager = vacation_notion_manager
         self._project_notion_manager = project_notion_manager
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._recurring_task_notion_manager = recurring_task_notion_manager
+        self._habit_notion_manager = habit_notion_manager
+        self._chore_notion_manager = chore_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
         self._smart_list_notion_manager = smart_list_notion_manager
         self._metric_notion_manager = metric_notion_manager
@@ -149,7 +155,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                 ProjectLabelUpdateService(
                     self._storage_engine,
                     self._inbox_task_notion_manager,
-                    self._recurring_task_notion_manager,
+                    self._habit_notion_manager,
+                    self._chore_notion_manager,
                     self._big_plan_notion_manager) \
                     .sync(workspace, projects)
 
@@ -181,27 +188,49 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                             filter_ref_ids=allowed_ref_ids)
                 self._do_drop_all_archived_inbox_tasks(inbox_tasks)
 
-        if SyncTarget.RECURRING_TASKS in args.sync_targets:
+        if SyncTarget.HABITS in args.sync_targets:
             with self._storage_engine.get_unit_of_work() as uow:
-                recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+                habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
             if args.do_anti_entropy:
-                LOGGER.info("Performing anti-entropy adjustments for recurring tasks")
+                LOGGER.info("Performing anti-entropy adjustments for habits")
                 with self._storage_engine.get_unit_of_work() as uow:
-                    recurring_tasks = \
-                        uow.recurring_task_repository.find_all(
-                            recurring_task_collection_ref_id=recurring_task_collection.ref_id, allow_archived=True)
-                self._do_anti_entropy_for_recurring_tasks(recurring_tasks)
+                    habits = \
+                        uow.habit_repository.find_all(
+                            habit_collection_ref_id=habit_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_habits(habits)
             if args.do_notion_cleanup:
-                LOGGER.info("Garbage collecting recurring tasks which were archived")
+                LOGGER.info("Garbage collecting habits which were archived")
                 allowed_ref_ids = \
-                    self._recurring_task_notion_manager.load_all_saved_recurring_tasks_ref_ids(
-                        recurring_task_collection.ref_id)
+                    self._habit_notion_manager.load_all_saved_habits_ref_ids(
+                        habit_collection.ref_id)
                 with self._storage_engine.get_unit_of_work() as uow:
-                    recurring_tasks = \
-                        uow.recurring_task_repository.find_all(
-                            recurring_task_collection_ref_id=recurring_task_collection.ref_id,
+                    habits = \
+                        uow.habit_repository.find_all(
+                            habit_collection_ref_id=habit_collection.ref_id,
                             allow_archived=True, filter_ref_ids=allowed_ref_ids)
-                self._do_drop_all_archived_recurring_tasks(recurring_tasks)
+                self._do_drop_all_archived_habits(habits)
+
+        if SyncTarget.CHORES in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
+            if args.do_anti_entropy:
+                LOGGER.info("Performing anti-entropy adjustments for chores")
+                with self._storage_engine.get_unit_of_work() as uow:
+                    chores = \
+                        uow.chore_repository.find_all(
+                            chore_collection_ref_id=chore_collection.ref_id, allow_archived=True)
+                self._do_anti_entropy_for_chores(chores)
+            if args.do_notion_cleanup:
+                LOGGER.info("Garbage collecting chores which were archived")
+                allowed_ref_ids = \
+                    self._chore_notion_manager.load_all_saved_chores_ref_ids(
+                        chore_collection.ref_id)
+                with self._storage_engine.get_unit_of_work() as uow:
+                    chores = \
+                        uow.chore_repository.find_all(
+                            chore_collection_ref_id=chore_collection.ref_id,
+                            allow_archived=True, filter_ref_ids=allowed_ref_ids)
+                self._do_drop_all_archived_chores(chores)
 
         if SyncTarget.BIG_PLANS in args.sync_targets:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -397,6 +426,41 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             projects_names_set[project.name] = project
         return projects_names_set.values()
 
+    def _do_anti_entropy_for_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> Iterable[InboxTask]:
+        inbox_tasks_names_set = {}
+        inbox_task_remove_service = InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager)
+        for inbox_task in inbox_tasks:
+            if inbox_task.name in inbox_tasks_names_set:
+                LOGGER.info(f"Found a duplicate inbox task '{inbox_task.name}' - removing in anti-entropy")
+                inbox_task_remove_service.do_it(inbox_task)
+                continue
+            inbox_tasks_names_set[inbox_task.name] = inbox_task
+        return inbox_tasks_names_set.values()
+
+    def _do_anti_entropy_for_habits(self, all_habits: Iterable[Habit]) -> Iterable[Habit]:
+        habits_names_set = {}
+        habit_remove_service = \
+            HabitRemoveService(self._storage_engine, self._inbox_task_notion_manager, self._habit_notion_manager)
+        for habit in all_habits:
+            if habit.name in habits_names_set:
+                LOGGER.info(f"Found a duplicate habit '{habit.name}' - removing in anti-entropy")
+                habit_remove_service.remove(habit.ref_id)
+                continue
+            habits_names_set[habit.name] = habit
+        return habits_names_set.values()
+
+    def _do_anti_entropy_for_chores(self, all_chores: Iterable[Chore]) -> Iterable[Chore]:
+        chores_names_set = {}
+        chore_remove_service = \
+            ChoreRemoveService(self._storage_engine, self._inbox_task_notion_manager, self._chore_notion_manager)
+        for chore in all_chores:
+            if chore.name in chores_names_set:
+                LOGGER.info(f"Found a duplicate chore '{chore.name}' - removing in anti-entropy")
+                chore_remove_service.remove(chore.ref_id)
+                continue
+            chores_names_set[chore.name] = chore
+        return chores_names_set.values()
+
     def _do_anti_entropy_for_big_plans(self, all_big_plans: Iterable[BigPlan]) -> Iterable[BigPlan]:
         big_plans_names_set = {}
         big_plan_remove_service = \
@@ -409,31 +473,6 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                 continue
             big_plans_names_set[big_plan.name] = big_plan
         return big_plans_names_set.values()
-
-    def _do_anti_entropy_for_recurring_tasks(
-            self, all_recurring_tasks: Iterable[RecurringTask]) -> Iterable[RecurringTask]:
-        recurring_tasks_names_set = {}
-        recurring_task_remove_service = \
-            RecurringTaskRemoveService(
-                self._storage_engine, self._inbox_task_notion_manager, self._recurring_task_notion_manager)
-        for recurring_task in all_recurring_tasks:
-            if recurring_task.name in recurring_tasks_names_set:
-                LOGGER.info(f"Found a duplicate recurring task '{recurring_task.name}' - removing in anti-entropy")
-                recurring_task_remove_service.remove(recurring_task.ref_id)
-                continue
-            recurring_tasks_names_set[recurring_task.name] = recurring_task
-        return recurring_tasks_names_set.values()
-
-    def _do_anti_entropy_for_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> Iterable[InboxTask]:
-        inbox_tasks_names_set = {}
-        inbox_task_remove_service = InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager)
-        for inbox_task in inbox_tasks:
-            if inbox_task.name in inbox_tasks_names_set:
-                LOGGER.info(f"Found a duplicate inbox task '{inbox_task.name}' - removing in anti-entropy")
-                inbox_task_remove_service.do_it(inbox_task)
-                continue
-            inbox_tasks_names_set[inbox_task.name] = inbox_task
-        return inbox_tasks_names_set.values()
 
     def _do_anti_entropy_for_smart_lists(
             self, smart_list_collection: SmartListCollection,
@@ -560,6 +599,45 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             except NotionProjectNotFoundError:
                 LOGGER.info("Skipping removal on Notion side because project was not found")
 
+    def _do_drop_all_archived_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> None:
+        for inbox_task in inbox_tasks:
+            if not inbox_task.archived:
+                continue
+            LOGGER.info(f"Removed an archived inbox tasks '{inbox_task.name}' on Notion side")
+            try:
+                self._inbox_task_notion_manager.remove_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+                LOGGER.info("Applied Notion changes")
+            except NotionInboxTaskNotFoundError:
+                # If we can't find this locally it means it's already gone
+                LOGGER.info("Skipping removal on Notion side because inbox task was not found")
+
+    def _do_drop_all_archived_habits(self, habits: Iterable[Habit]) -> None:
+        for habit in habits:
+            if not habit.archived:
+                continue
+            LOGGER.info(f"Removed an archived habit '{habit.name}' on Notion side")
+            try:
+                self._habit_notion_manager.remove_habit(habit.habit_collection_ref_id, habit.ref_id)
+                LOGGER.info("Applied Notion changes")
+            except NotionHabitNotFoundError:
+                # If we can't find this locally it means it's already gone
+                LOGGER.info("Skipping removal on Notion side because big plan was not found")
+            #TODO(horia141): more can be done here surely!
+
+    def _do_drop_all_archived_chores(self, chores: Iterable[Chore]) -> None:
+        for chore in chores:
+            if not chore.archived:
+                continue
+            LOGGER.info(f"Removed an archived chore '{chore.name}' on Notion side")
+            try:
+                self._chore_notion_manager.remove_chore(chore.chore_collection_ref_id, chore.ref_id)
+                LOGGER.info("Applied Notion changes")
+            except NotionChoreNotFoundError:
+                # If we can't find this locally it means it's already gone
+                LOGGER.info("Skipping removal on Notion side because big plan was not found")
+            #TODO(horia141): more can be done here surely!
+
     def _do_drop_all_archived_big_plans(self, big_plans: Iterable[BigPlan]) -> None:
         for big_plan in big_plans:
             if not big_plan.archived:
@@ -571,33 +649,6 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             except NotionBigPlanNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping removal on Notion side because big plan was not found")
-
-    def _do_drop_all_archived_recurring_tasks(self, recurring_tasks: Iterable[RecurringTask]) -> None:
-        for recurring_task in recurring_tasks:
-            if not recurring_task.archived:
-                continue
-            LOGGER.info(f"Removed an archived recurring task '{recurring_task.name}' on Notion side")
-            try:
-                self._recurring_task_notion_manager.remove_recurring_task(
-                    recurring_task.recurring_task_collection_ref_id, recurring_task.ref_id)
-                LOGGER.info("Applied Notion changes")
-            except NotionRecurringTaskNotFoundError:
-                # If we can't find this locally it means it's already gone
-                LOGGER.info("Skipping removal on Notion side because big plan was not found")
-            #TODO(horia141): more can be done here surely!
-
-    def _do_drop_all_archived_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> None:
-        for inbox_task in inbox_tasks:
-            if not inbox_task.archived:
-                continue
-            LOGGER.info(f"Removed an archived inbox tasks '{inbox_task.name}' on Notion side")
-            try:
-                self._inbox_task_notion_manager.remove_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-                LOGGER.info("Applied Notion changes")
-            except NotionRecurringTaskNotFoundError:
-                # If we can't find this locally it means it's already gone
-                LOGGER.info("Skipping removal on Notion side because inbox task was not found")
 
     def _do_drop_all_archived_smart_lists(
             self, smart_list_collection: SmartListCollection, smart_lists: Iterable[SmartList]) -> None:

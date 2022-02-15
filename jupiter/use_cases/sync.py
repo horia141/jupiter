@@ -8,6 +8,12 @@ from jupiter.domain import schedules
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
 from jupiter.domain.big_plans.service.sync_service import BigPlanSyncService
+from jupiter.domain.chores.infra.chore_notion_manager import ChoreNotionManager
+from jupiter.domain.chores.notion_chore_collection import NotionChoreCollection
+from jupiter.domain.chores.service.sync_service import ChoreSyncService
+from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager
+from jupiter.domain.habits.notion_habit_collection import NotionHabitCollection
+from jupiter.domain.habits.service.sync_service import HabitSyncService
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -33,9 +39,6 @@ from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.recurring_tasks.infra.recurring_task_notion_manager import RecurringTaskNotionManager
-from jupiter.domain.recurring_tasks.notion_recurring_task_collection import NotionRecurringTaskCollection
-from jupiter.domain.recurring_tasks.service.sync_service import RecurringTaskSyncService
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.notion_smart_list_collection import NotionSmartListCollection
 from jupiter.domain.smart_lists.service.sync_service import SmartListSyncService
@@ -72,7 +75,8 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
         filter_project_keys: Optional[Iterable[ProjectKey]]
         filter_inbox_task_ref_ids: Optional[Iterable[EntityId]]
         filter_big_plan_ref_ids: Optional[Iterable[EntityId]]
-        filter_recurring_task_ref_ids: Optional[Iterable[EntityId]]
+        filter_habit_ref_ids: Optional[Iterable[EntityId]]
+        filter_chore_ref_ids: Optional[Iterable[EntityId]]
         filter_smart_list_keys: Optional[Iterable[SmartListKey]]
         filter_smart_list_item_ref_ids: Optional[Iterable[EntityId]]
         filter_metric_keys: Optional[Iterable[MetricKey]]
@@ -85,7 +89,8 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
     _vacation_notion_manager: Final[VacationNotionManager]
     _project_notion_manager: Final[ProjectNotionManager]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
-    _recurring_task_notion_manager: Final[RecurringTaskNotionManager]
+    _habit_notion_manager: Final[HabitNotionManager]
+    _chore_notion_manager: Final[ChoreNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
     _smart_list_notion_manager: Final[SmartListNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
@@ -101,7 +106,8 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
             vacation_notion_manager: VacationNotionManager,
             project_notion_manager: ProjectNotionManager,
             inbox_task_notion_manager: InboxTaskNotionManager,
-            recurring_task_notion_manager: RecurringTaskNotionManager,
+            habit_notion_manager: HabitNotionManager,
+            chore_notion_manager: ChoreNotionManager,
             big_plan_notion_manager: BigPlanNotionManager,
             smart_list_notion_manager: SmartListNotionManager,
             metric_notion_manager: MetricNotionManager,
@@ -113,7 +119,8 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
         self._vacation_notion_manager = vacation_notion_manager
         self._project_notion_manager = project_notion_manager
         self._inbox_task_notion_manager = inbox_task_notion_manager
-        self._recurring_task_notion_manager = recurring_task_notion_manager
+        self._habit_notion_manager = habit_notion_manager
+        self._chore_notion_manager = chore_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
         self._smart_list_notion_manager = smart_list_notion_manager
         self._metric_notion_manager = metric_notion_manager
@@ -121,8 +128,10 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
-        filter_recurring_task_ref_ids_set = \
-            frozenset(args.filter_recurring_task_ref_ids) if args.filter_recurring_task_ref_ids else None
+        filter_habit_ref_ids_set = \
+            frozenset(args.filter_habit_ref_ids) if args.filter_habit_ref_ids else None
+        filter_chore_ref_ids_set = \
+            frozenset(args.filter_chore_ref_ids) if args.filter_chore_ref_ids else None
         sync_targets = frozenset(args.sync_targets)
 
         workspace = context.workspace
@@ -132,7 +141,8 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
             vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
             project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
             big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
             smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
             metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
@@ -159,10 +169,13 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
             notion_inbox_task_collection = NotionInboxTaskCollection.new_notion_row(inbox_task_collection)
             self._inbox_task_notion_manager.upsert_inbox_task_collection(notion_workspace, notion_inbox_task_collection)
 
-            LOGGER.info("Recreating recurring tasks structure")
-            notion_recurring_task_collection = NotionRecurringTaskCollection.new_notion_row(recurring_task_collection)
-            self._recurring_task_notion_manager.upsert_recurring_task_collection(
-                notion_workspace, notion_recurring_task_collection)
+            LOGGER.info("Recreating habits structure")
+            notion_habit_collection = NotionHabitCollection.new_notion_row(habit_collection)
+            self._habit_notion_manager.upsert_habit_collection(notion_workspace, notion_habit_collection)
+
+            LOGGER.info("Recreating chores structure")
+            notion_chore_collection = NotionChoreCollection.new_notion_row(chore_collection)
+            self._chore_notion_manager.upsert_chore_collection(notion_workspace, notion_chore_collection)
 
             LOGGER.info("Recreating big plan structure")
             notion_big_plan_collection = NotionBigPlanCollection.new_notion_row(big_plan_collection)
@@ -207,7 +220,8 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
             ProjectLabelUpdateService(
                 self._storage_engine,
                 self._inbox_task_notion_manager,
-                self._recurring_task_notion_manager,
+                self._habit_notion_manager,
+                self._chore_notion_manager,
                 self._big_plan_notion_manager) \
                 .sync(workspace, all_projects)
 
@@ -250,27 +264,47 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     filter_project_ref_ids=filter_project_ref_ids)
         big_plans_by_ref_id = {bp.ref_id: bp for bp in all_big_plans}
 
-        if SyncTarget.RECURRING_TASKS in sync_targets:
-            LOGGER.info("Syncing recurring tasks")
-            recurring_task_sync_service = RecurringTaskSyncService(
-                self._time_provider, self._storage_engine, self._recurring_task_notion_manager)
-            all_recurring_tasks = \
-                recurring_task_sync_service.recurring_tasks_sync(
+        if SyncTarget.HABITS in sync_targets:
+            LOGGER.info("Syncing habits")
+            habit_sync_service = HabitSyncService(self._time_provider, self._storage_engine, self._habit_notion_manager)
+            all_habits = \
+                habit_sync_service.habits_sync(
                     workspace=workspace,
                     all_projects=all_projects,
                     inbox_task_collection=notion_inbox_task_collection,
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
-                    filter_ref_ids=args.filter_recurring_task_ref_ids,
+                    filter_ref_ids=args.filter_habit_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids,
                     sync_prefer=args.sync_prefer)
         else:
             with self._storage_engine.get_unit_of_work() as uow:
-                all_recurring_tasks = uow.recurring_task_repository.find_all(
-                    recurring_task_collection_ref_id=recurring_task_collection.ref_id,
-                    allow_archived=True, filter_ref_ids=args.filter_recurring_task_ref_ids,
+                all_habits = uow.habit_repository.find_all(
+                    habit_collection_ref_id=habit_collection.ref_id,
+                    allow_archived=True, filter_ref_ids=args.filter_habit_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
-        recurring_tasks_by_ref_id = {rt.ref_id: rt for rt in all_recurring_tasks}
+        habits_by_ref_id = {rt.ref_id: rt for rt in all_habits}
+
+        if SyncTarget.CHORES in sync_targets:
+            LOGGER.info("Syncing chores")
+            chore_sync_service = ChoreSyncService(self._time_provider, self._storage_engine, self._chore_notion_manager)
+            all_chores = \
+                chore_sync_service.chores_sync(
+                    workspace=workspace,
+                    all_projects=all_projects,
+                    inbox_task_collection=notion_inbox_task_collection,
+                    drop_all_notion_side=args.drop_all_notion,
+                    sync_even_if_not_modified=args.sync_even_if_not_modified,
+                    filter_ref_ids=args.filter_chore_ref_ids,
+                    filter_project_ref_ids=filter_project_ref_ids,
+                    sync_prefer=args.sync_prefer)
+        else:
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_chores = uow.chore_repository.find_all(
+                    chore_collection_ref_id=chore_collection.ref_id,
+                    allow_archived=True, filter_ref_ids=args.filter_chore_ref_ids,
+                    filter_project_ref_ids=filter_project_ref_ids)
+        chores_by_ref_id = {rt.ref_id: rt for rt in all_chores}
 
         if SyncTarget.INBOX_TASKS in args.sync_targets:
             LOGGER.info("Syncing inbox tasks")
@@ -293,41 +327,89 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     allow_archived=True, filter_ref_ids=args.filter_inbox_task_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
 
-        if SyncTarget.RECURRING_TASKS in args.sync_targets:
-            LOGGER.info("Syncing inbox tasks generated by recurring tasks")
+        if SyncTarget.HABITS in args.sync_targets:
+            LOGGER.info("Syncing inbox tasks generated by habits")
             for inbox_task in all_inbox_tasks:
                 if inbox_task.archived:
                     continue
                 if inbox_task.status.is_completed:
                     continue
-                if inbox_task.recurring_task_ref_id is None:
+                if inbox_task.habit_ref_id is None:
                     continue
-                if filter_recurring_task_ref_ids_set is not None \
-                        and inbox_task.recurring_task_ref_id not in filter_recurring_task_ref_ids_set:
+                if filter_habit_ref_ids_set is not None \
+                        and inbox_task.habit_ref_id not in filter_habit_ref_ids_set:
                     continue
-                recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
-                project = projects_by_ref_id[recurring_task.project_ref_id]
-                if recurring_task.last_modified_time < self._time_provider.get_current_time():
+                habit = habits_by_ref_id[inbox_task.habit_ref_id]
+                project = projects_by_ref_id[habit.project_ref_id]
+                if habit.last_modified_time < self._time_provider.get_current_time():
                     LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
                 schedule = schedules.get_schedule(
-                    recurring_task.gen_params.period, recurring_task.name,
+                    habit.gen_params.period, habit.name,
                     typing.cast(Timestamp, inbox_task.recurring_gen_right_now or inbox_task.created_time),
-                    self._global_properties.timezone, recurring_task.skip_rule,
-                    recurring_task.gen_params.actionable_from_day,
-                    recurring_task.gen_params.actionable_from_month, recurring_task.gen_params.due_at_time,
-                    recurring_task.gen_params.due_at_day, recurring_task.gen_params.due_at_month)
+                    self._global_properties.timezone, habit.skip_rule,
+                    habit.gen_params.actionable_from_day,
+                    habit.gen_params.actionable_from_month, habit.gen_params.due_at_time,
+                    habit.gen_params.due_at_day, habit.gen_params.due_at_month)
 
-                inbox_task = inbox_task.update_link_to_recurring_task(
+                inbox_task = inbox_task.update_link_to_habit(
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
-                    the_type=recurring_task.the_type,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
-                    eisen=recurring_task.gen_params.eisen,
-                    difficulty=recurring_task.gen_params.difficulty,
+                    eisen=habit.gen_params.eisen,
+                    difficulty=habit.gen_params.difficulty,
+                    source=EventSource.NOTION,
+                    modification_time=self._time_provider.get_current_time())
+
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.save(inbox_task)
+
+                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                notion_inbox_task = \
+                    self._inbox_task_notion_manager.load_inbox_task(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
+                self._inbox_task_notion_manager.save_inbox_task(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                LOGGER.info("Applied Notion changes")
+
+        if SyncTarget.CHORES in args.sync_targets:
+            LOGGER.info("Syncing inbox tasks generated by chores")
+            for inbox_task in all_inbox_tasks:
+                if inbox_task.archived:
+                    continue
+                if inbox_task.status.is_completed:
+                    continue
+                if inbox_task.chore_ref_id is None:
+                    continue
+                if filter_chore_ref_ids_set is not None \
+                        and inbox_task.chore_ref_id not in filter_chore_ref_ids_set:
+                    continue
+                chore = chores_by_ref_id[inbox_task.chore_ref_id]
+                project = projects_by_ref_id[chore.project_ref_id]
+                if chore.last_modified_time < self._time_provider.get_current_time():
+                    LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
+                    continue
+                LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
+                schedule = schedules.get_schedule(
+                    chore.gen_params.period, chore.name,
+                    typing.cast(Timestamp, inbox_task.recurring_gen_right_now or inbox_task.created_time),
+                    self._global_properties.timezone, chore.skip_rule,
+                    chore.gen_params.actionable_from_day,
+                    chore.gen_params.actionable_from_month, chore.gen_params.due_at_time,
+                    chore.gen_params.due_at_day, chore.gen_params.due_at_month)
+
+                inbox_task = inbox_task.update_link_to_chore(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    timeline=schedule.timeline,
+                    actionable_date=schedule.actionable_date,
+                    due_date=schedule.due_time,
+                    eisen=chore.gen_params.eisen,
+                    difficulty=chore.gen_params.difficulty,
                     source=EventSource.NOTION,
                     modification_time=self._time_provider.get_current_time())
 
@@ -357,16 +439,30 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 inbox_task_archive_service.do_it(inbox_task)
                 LOGGER.info(f"Archived inbox task {inbox_task.name}")
 
-        if SyncTarget.RECURRING_TASKS in sync_targets:
-            LOGGER.info("Archiving any inbox task whose recurring task has been archived")
+        if SyncTarget.HABITS in sync_targets:
+            LOGGER.info("Archiving any inbox task whose habit has been archived")
             for inbox_task in all_inbox_tasks:
-                if inbox_task.recurring_task_ref_id is None:
+                if inbox_task.habit_ref_id is None:
                     continue
-                if args.filter_recurring_task_ref_ids is not None \
-                        and inbox_task.recurring_task_ref_id not in args.filter_recurring_task_ref_ids:
+                if args.filter_habit_ref_ids is not None \
+                        and inbox_task.habit_ref_id not in args.filter_habit_ref_ids:
                     continue
-                recurring_task = recurring_tasks_by_ref_id[inbox_task.recurring_task_ref_id]
-                if not (recurring_task.archived and not inbox_task.archived):
+                habit = habits_by_ref_id[inbox_task.habit_ref_id]
+                if not (habit.archived and not inbox_task.archived):
+                    continue
+                inbox_task_archive_service.do_it(inbox_task)
+                LOGGER.info(f"Archived inbox task {inbox_task.name}")
+
+        if SyncTarget.CHORES in sync_targets:
+            LOGGER.info("Archiving any inbox task whose chore has been archived")
+            for inbox_task in all_inbox_tasks:
+                if inbox_task.chore_ref_id is None:
+                    continue
+                if args.filter_chore_ref_ids is not None \
+                        and inbox_task.chore_ref_id not in args.filter_chore_ref_ids:
+                    continue
+                chore = chores_by_ref_id[inbox_task.chore_ref_id]
+                if not (chore.archived and not inbox_task.archived):
                     continue
                 inbox_task_archive_service.do_it(inbox_task)
                 LOGGER.info(f"Archived inbox task {inbox_task.name}")

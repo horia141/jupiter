@@ -9,8 +9,8 @@ from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.sync_target import SyncTarget
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.timestamp import Timestamp
 from jupiter.use_cases.gen import GenUseCase
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
@@ -50,8 +50,10 @@ class Gen(command.Command):
                             choices=SyncTarget.all_values(), help="What exactly to try to generate for")
         parser.add_argument("--project", dest="project_keys", default=[], action="append",
                             help="Allow only tasks from this project")
-        parser.add_argument("--id", dest="recurring_task_ref_ids", default=[], action="append",
-                            help="Allow only recurring tasks with this id")
+        parser.add_argument("--habit-id", dest="habit_ref_ids", default=[], action="append",
+                            help="Allow only habits with this id")
+        parser.add_argument("--chore-id", dest="chore_ref_ids", default=[], action="append",
+                            help="Allow only chores with this id")
         parser.add_argument("--metric", dest="metric_keys", default=[], action="append",
                             help="Allow only these metrics")
         parser.add_argument("--person", dest="person_ref_ids", default=[], action="append",
@@ -69,23 +71,20 @@ class Gen(command.Command):
         gen_targets = [SyncTarget.from_raw(st) for st in args.gen_targets] \
             if len(args.gen_targets) > 0 else list(st for st in SyncTarget)
         project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
-        recurring_task_ref_ids = [
-            EntityId.from_raw(rid) for rid in args.recurring_task_ref_ids] \
-            if len(args.recurring_task_ref_ids) > 0 else None
-        metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] \
-            if len(args.metric_keys) > 0 else None
-        person_ref_ids = [
-            EntityId.from_raw(rid) for rid in args.person_ref_ids] \
-            if len(args.person_ref_ids) > 0 else None
-        period_filter = frozenset(RecurringTaskPeriod.from_raw(p)
-                                  for p in args.period) \
-            if len(args.period) > 0 else None
+        habit_ref_ids = [EntityId.from_raw(rid) for rid in args.habit_ref_ids] if len(args.habit_ref_ids) > 0 else None
+        chore_ref_ids = [EntityId.from_raw(rid) for rid in args.chore_ref_ids] if len(args.chore_ref_ids) > 0 else None
+        metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] if len(args.metric_keys) > 0 else None
+        person_ref_ids = \
+            [EntityId.from_raw(rid) for rid in args.person_ref_ids] if len(args.person_ref_ids) > 0 else None
+        period_filter = \
+            frozenset(RecurringTaskPeriod.from_raw(p) for p in args.period) if len(args.period) > 0 else None
         sync_even_if_not_modified: bool = args.sync_even_if_not_modified
         self._command.execute(GenUseCase.Args(
             right_now=right_now,
             gen_targets=gen_targets,
             filter_project_keys=project_keys,
-            filter_recurring_task_ref_ids=recurring_task_ref_ids,
+            filter_habit_ref_ids=habit_ref_ids,
+            filter_chore_ref_ids=chore_ref_ids,
             filter_metric_keys=metric_keys,
             filter_person_ref_ids=person_ref_ids,
             filter_period=period_filter,

@@ -3,12 +3,13 @@ from dataclasses import dataclass
 from typing import Optional, Iterable, List
 
 from jupiter.domain.big_plans.big_plan import BigPlan
+from jupiter.domain.chores.chore import Chore
+from jupiter.domain.habits.habit import Habit
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.persons.person import Person
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
@@ -28,8 +29,9 @@ class InboxTaskFindUseCase(AppReadonlyUseCase['InboxTaskFindUseCase.Args', 'Inbo
     class ResultEntry:
         """A single entry in the load all inbox tasks response."""
         inbox_task: InboxTask
+        habit: Optional[Habit]
+        chore: Optional[Chore]
         big_plan: Optional[BigPlan]
-        recurring_task: Optional[RecurringTask]
         metric: Optional[Metric]
         person: Optional[Person]
 
@@ -52,7 +54,8 @@ class InboxTaskFindUseCase(AppReadonlyUseCase['InboxTaskFindUseCase.Args', 'Inbo
                 filter_project_ref_ids = [p.ref_id for p in projects]
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
             big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
             metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
             person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
@@ -63,12 +66,17 @@ class InboxTaskFindUseCase(AppReadonlyUseCase['InboxTaskFindUseCase.Args', 'Inbo
                     filter_ref_ids=args.filter_ref_ids, filter_sources=args.filter_sources,
                     filter_project_ref_ids=filter_project_ref_ids)
 
-            recurring_tasks = \
-                uow.recurring_task_repository.find_all(
-                    recurring_task_collection_ref_id=recurring_task_collection.ref_id,
-                    filter_ref_ids=(
-                        it.recurring_task_ref_id for it in inbox_tasks if it.recurring_task_ref_id is not None))
-            recurring_tasks_map = {rt.ref_id: rt for rt in recurring_tasks}
+            habits = \
+                uow.habit_repository.find_all(
+                    habit_collection_ref_id=habit_collection.ref_id,
+                    filter_ref_ids=(it.habit_ref_id for it in inbox_tasks if it.habit_ref_id is not None))
+            habits_map = {rt.ref_id: rt for rt in habits}
+
+            chores = \
+                uow.chore_repository.find_all(
+                    chore_collection_ref_id=chore_collection.ref_id,
+                    filter_ref_ids=(it.chore_ref_id for it in inbox_tasks if it.chore_ref_id is not None))
+            chores_map = {rt.ref_id: rt for rt in chores}
 
             big_plans = \
                 uow.big_plan_repository.find_all(
@@ -92,9 +100,9 @@ class InboxTaskFindUseCase(AppReadonlyUseCase['InboxTaskFindUseCase.Args', 'Inbo
             inbox_tasks=[
                 InboxTaskFindUseCase.ResultEntry(
                     inbox_task=it,
+                    habit=habits_map[it.habit_ref_id] if it.habit_ref_id is not None else None,
+                    chore=chores_map[it.chore_ref_id] if it.chore_ref_id is not None else None,
                     big_plan=big_plans_map[it.big_plan_ref_id] if it.big_plan_ref_id is not None else None,
-                    recurring_task=recurring_tasks_map[it.recurring_task_ref_id]
-                    if it.recurring_task_ref_id is not None else None,
                     metric=metrics_map[it.metric_ref_id] if it.metric_ref_id is not None else None,
                     person=persons_map[it.person_ref_id] if it.person_ref_id is not None else None)
                 for it in inbox_tasks])

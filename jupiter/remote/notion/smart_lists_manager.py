@@ -126,7 +126,7 @@ class NotionSmartListsManager(SmartListNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -135,7 +135,7 @@ class NotionSmartListsManager(SmartListNotionManager):
                         "operator": "checkbox_is",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]
@@ -190,7 +190,7 @@ class NotionSmartListsManager(SmartListNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -199,7 +199,7 @@ class NotionSmartListsManager(SmartListNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]

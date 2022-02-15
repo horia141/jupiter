@@ -13,7 +13,9 @@ from jupiter.domain import schedules
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
+from jupiter.domain.chores.chore import Chore
 from jupiter.domain.entity_name import EntityName
+from jupiter.domain.habits.habit import Habit
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -22,9 +24,6 @@ from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.recurring_task_type import RecurringTaskType
-from jupiter.domain.recurring_tasks.recurring_task import RecurringTask
-from jupiter.domain.recurring_tasks.recurring_task_name import RecurringTaskName
 from jupiter.domain.schedules import Schedule
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
@@ -46,7 +45,8 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
         filter_project_keys: Optional[Iterable[ProjectKey]]
         filter_sources: Optional[Iterable[InboxTaskSource]]
         filter_big_plan_ref_ids: Optional[Iterable[EntityId]]
-        filter_recurring_task_ref_ids: Optional[Iterable[EntityId]]
+        filter_habit_ref_ids: Optional[Iterable[EntityId]]
+        filter_chore_ref_ids: Optional[Iterable[EntityId]]
         filter_metric_keys: Optional[Iterable[MetricKey]]
         filter_person_ref_ids: Optional[Iterable[EntityId]]
         period: RecurringTaskPeriod
@@ -131,10 +131,19 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
         summary: 'ReportUseCase.BigPlanSummary'
 
     @dataclass(frozen=True)
-    class PerRecurringTaskBreakdownItem:
-        """The report for a particular recurring task."""
+    class PerHabitBreakdownItem:
+        """The report for a particular habit."""
         name: EntityName
-        the_type: RecurringTaskType
+        period: RecurringTaskPeriod
+        archived: bool
+        suspended: bool
+        summary: 'ReportUseCase.RecurringTaskSummary'
+
+    @dataclass(frozen=True)
+    class PerChoreBreakdownItem:
+        """The report for a particular chore."""
+        name: EntityName
+        archived: bool
         summary: 'ReportUseCase.RecurringTaskSummary'
 
     @dataclass(frozen=True)
@@ -144,8 +153,9 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
         global_big_plans_summary: 'ReportUseCase.WorkableSummary'
         per_project_breakdown: List['ReportUseCase.PerProjectBreakdownItem']
         per_period_breakdown: Optional[List['ReportUseCase.PerPeriodBreakdownItem']]
+        per_habit_breakdown: List['ReportUseCase.PerHabitBreakdownItem']
+        per_chore_breakdown: List['ReportUseCase.PerChoreBreakdownItem']
         per_big_plan_breakdown: List['ReportUseCase.PerBigPlanBreakdownItem']
-        per_recurring_task_breakdown: List['ReportUseCase.PerRecurringTaskBreakdownItem']
 
     _global_properties: Final[GlobalProperties]
 
@@ -168,7 +178,8 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
             projects_by_ref_id: Dict[EntityId, Project] = {p.ref_id: p for p in projects}
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            recurring_task_collection = uow.recurring_task_collection_repository.load_by_workspace(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
             big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
 
             metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
@@ -186,7 +197,7 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
             persons_by_ref_id = {p.ref_id: p for p in persons}
 
             schedule = schedules.get_schedule(
-                args.period, RecurringTaskName("Helper"), args.right_now, self._global_properties.timezone,
+                args.period, EntityName("Helper"), args.right_now, self._global_properties.timezone,
                 None, None, None, None, None, None)
 
             all_inbox_tasks = [
@@ -200,21 +211,32 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                 or (it.source is InboxTaskSource.BIG_PLAN and
                     (not (args.filter_big_plan_ref_ids is not None) or
                      (it.big_plan_ref_id is not None and it.big_plan_ref_id in args.filter_big_plan_ref_ids)))
-                or (it.source is InboxTaskSource.RECURRING_TASK and
-                    (not (args.filter_recurring_task_ref_ids is not None) or
-                     (it.recurring_task_ref_id is not None
-                      and it.recurring_task_ref_id in args.filter_recurring_task_ref_ids)))
+                or (it.source is InboxTaskSource.HABIT and
+                    (not (args.filter_habit_ref_ids is not None) or
+                     (it.habit_ref_id is not None
+                      and it.habit_ref_id in args.filter_habit_ref_ids)))
+               or (it.source is InboxTaskSource.CHORE and
+                   (not (args.filter_chore_ref_ids is not None) or
+                    (it.chore_ref_id is not None
+                     and it.chore_ref_id in args.filter_chore_ref_ids)))
                 or (it.source is InboxTaskSource.METRIC and
                     (not (args.filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))
                 or ((it.source is InboxTaskSource.PERSON_CATCH_UP or it.source is InboxTaskSource.PERSON_BIRTHDAY) and
                     (not (args.filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))]
 
-            all_recurring_tasks = \
-                uow.recurring_task_repository.find_all(
-                    recurring_task_collection_ref_id=recurring_task_collection.ref_id,
-                    allow_archived=True, filter_ref_ids=args.filter_recurring_task_ref_ids,
+            all_habits = \
+                uow.habit_repository.find_all(
+                    habit_collection_ref_id=habit_collection.ref_id,
+                    allow_archived=True, filter_ref_ids=args.filter_habit_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
-            all_recurring_tasks_by_ref_id: Dict[EntityId, RecurringTask] = {rt.ref_id: rt for rt in all_recurring_tasks}
+            all_habits_by_ref_id: Dict[EntityId, Habit] = {rt.ref_id: rt for rt in all_habits}
+
+            all_chores = \
+                uow.chore_repository.find_all(
+                    chore_collection_ref_id=chore_collection.ref_id,
+                    allow_archived=True, filter_ref_ids=args.filter_chore_ref_ids,
+                    filter_project_ref_ids=filter_project_ref_ids)
+            all_chores_by_ref_id: Dict[EntityId, Chore] = {rt.ref_id: rt for rt in all_chores}
 
             all_big_plans = \
                 uow.big_plan_repository.find_all(
@@ -260,7 +282,7 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                 curr_date_as_time = \
                     Timestamp(pendulum.DateTime(curr_date.year, curr_date.month, curr_date.day, tzinfo=UTC))
                 phase_schedule = schedules.get_schedule(
-                    args.breakdown_period, RecurringTaskName("Sub-period"), curr_date_as_time,
+                    args.breakdown_period, EntityName("Sub-period"), curr_date_as_time,
                     self._global_properties.timezone, None, None, None, None, None, None)
                 all_schedules[phase_schedule.full_name] = phase_schedule
                 curr_date = curr_date.next_day()
@@ -277,6 +299,42 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                     per_period_big_plans_summary.get(k, ReportUseCase.WorkableSummary(0, 0, 0, 0, 0, [], [])))
                 for (k, v) in per_period_inbox_tasks_summary.items()]
 
+        # Build per habit breakdown
+
+        # all_inbox_tasks.groupBy(it -> it.habit.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
+        per_habit_breakdown = [
+            ReportUseCase.PerHabitBreakdownItem(
+                name=all_habits_by_ref_id[k].name,
+                archived=all_habits_by_ref_id[k].archived,
+                suspended=all_habits_by_ref_id[k].suspended,
+                period=all_habits_by_ref_id[k].gen_params.period,
+                summary=self._run_report_for_inbox_for_recurring_tasks(
+                    all_habits_by_ref_id[k].gen_params.period, args.right_now, schedule,
+                    [vx[1] for vx in v]))
+            for (k, v) in
+            groupby(sorted(
+                [(it.habit_ref_id, it)
+                 for it in all_inbox_tasks if it.habit_ref_id],
+                key=itemgetter(0)),
+                key=itemgetter(0))]
+
+        # Build per chore breakdown
+
+        # all_inbox_tasks.groupBy(it -> it.chore.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
+        per_chore_breakdown = [
+            ReportUseCase.PerChoreBreakdownItem(
+                name=all_chores_by_ref_id[k].name,
+                archived=all_chores_by_ref_id[k].archived,
+                summary=self._run_report_for_inbox_for_recurring_tasks(
+                    all_chores_by_ref_id[k].gen_params.period, args.right_now, schedule,
+                    [vx[1] for vx in v]))
+            for (k, v) in
+            groupby(sorted(
+                [(it.chore_ref_id, it)
+                 for it in all_inbox_tasks if it.chore_ref_id],
+                key=itemgetter(0)),
+                key=itemgetter(0))]
+
         # Build per big plan breakdown
 
         # all_inbox_tasks.groupBy(it -> it.bigPlan.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
@@ -289,29 +347,14 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                 key=itemgetter(0)),
                     key=itemgetter(0))]
 
-        # Build per recurring task breakdown
-
-        # all_inbox_tasks.groupBy(it -> it.recurringTask.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        per_recurring_task_breakdown = [
-            ReportUseCase.PerRecurringTaskBreakdownItem(
-                name=all_recurring_tasks_by_ref_id[k].name,
-                the_type=all_recurring_tasks_by_ref_id[k].the_type,
-                summary=self._run_report_for_inbox_for_recurring_tasks(
-                    all_recurring_tasks_by_ref_id[k].gen_params.period, args.right_now, schedule, [vx[1] for vx in v]))
-            for (k, v) in
-            groupby(sorted(
-                [(it.recurring_task_ref_id, it)
-                 for it in all_inbox_tasks if it.recurring_task_ref_id],
-                key=itemgetter(0)),
-                    key=itemgetter(0))]
-
         return ReportUseCase.Result(
             global_inbox_tasks_summary=global_inbox_tasks_summary,
             global_big_plans_summary=global_big_plans_summary,
             per_project_breakdown=per_project_breakdown,
             per_period_breakdown=per_period_breakdown,
-            per_big_plan_breakdown=per_big_plan_breakdown,
-            per_recurring_task_breakdown=per_recurring_task_breakdown)
+            per_habit_breakdown=per_habit_breakdown,
+            per_chore_breakdown=per_chore_breakdown,
+            per_big_plan_breakdown=per_big_plan_breakdown)
 
     @staticmethod
     def _run_report_for_inbox_tasks(schedule: Schedule, inbox_tasks: Iterable[InboxTask]) -> 'InboxTasksSummary':
@@ -415,7 +458,7 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
 
             while the_current_period != the_bigger_period:
                 the_bigger_schedule = schedules.get_schedule(
-                    the_bigger_period, RecurringTaskName("Helper"), right_now, self._global_properties.timezone,
+                    the_bigger_period, EntityName("Helper"), right_now, self._global_properties.timezone,
                     None, None, None, None, None, None)
 
                 the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))

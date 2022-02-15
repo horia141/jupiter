@@ -271,7 +271,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]
@@ -332,7 +332,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]
@@ -382,7 +382,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]
@@ -412,7 +412,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]

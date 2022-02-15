@@ -5,17 +5,19 @@ from typing import Iterator
 
 from jupiter.domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository
 from jupiter.domain.big_plans.infra.big_plan_repository import BigPlanRepository
+from jupiter.domain.chores.infra.chore_collection_repository import ChoreCollectionRepository
+from jupiter.domain.chores.infra.chore_repository import ChoreRepository
+from jupiter.domain.habits.infra.habit_collection_repository import HabitCollectionRepository
+from jupiter.domain.habits.infra.habit_repository import HabitRepository
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository
 from jupiter.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
 from jupiter.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from jupiter.domain.metrics.infra.metric_repository import MetricRepository
-from jupiter.domain.persons.infra.person_repository import PersonRepository
 from jupiter.domain.persons.infra.person_collection_repository import PersonCollectionRepository
+from jupiter.domain.persons.infra.person_repository import PersonRepository
 from jupiter.domain.projects.infra.project_collection_repository import ProjectCollectionRepository
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
-from jupiter.domain.recurring_tasks.infra.recurring_task_collection_repository import RecurringTaskCollectionRepository
-from jupiter.domain.recurring_tasks.infra.recurring_task_repository import RecurringTaskRepository
 from jupiter.domain.remote.notion.collection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
@@ -66,13 +68,23 @@ class DomainUnitOfWork(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def recurring_task_collection_repository(self) -> RecurringTaskCollectionRepository:
-        """The recurring task collection repository."""
+    def habit_collection_repository(self) -> HabitCollectionRepository:
+        """The habit collection repository."""
 
     @property
     @abc.abstractmethod
-    def recurring_task_repository(self) -> RecurringTaskRepository:
-        """The recurring task repository."""
+    def habit_repository(self) -> HabitRepository:
+        """The habit repository."""
+
+    @property
+    @abc.abstractmethod
+    def chore_collection_repository(self) -> ChoreCollectionRepository:
+        """The chore collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def chore_repository(self) -> ChoreRepository:
+        """The chore repository."""
 
     @property
     @abc.abstractmethod

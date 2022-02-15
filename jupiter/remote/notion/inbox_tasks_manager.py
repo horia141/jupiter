@@ -17,7 +17,6 @@ from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.recurring_task_type import RecurringTaskType
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
@@ -84,13 +83,17 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": InboxTaskSource.USER.for_notion(),
             "color": "blue"
         },
+        "Habit": {
+            "name": InboxTaskSource.HABIT.for_notion(),
+            "color": "yellow"
+        },
+        "Chore": {
+            "name": InboxTaskSource.CHORE.for_notion(),
+            "color": "gray"
+        },
         "Big Plan": {
             "name": InboxTaskSource.BIG_PLAN.for_notion(),
             "color": "green"
-        },
-        "Recurring Task": {
-            "name": InboxTaskSource.RECURRING_TASK.for_notion(),
-            "color": "yellow"
         },
         "Metric": {
             "name": InboxTaskSource.METRIC.for_notion(),
@@ -163,19 +166,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         }
     }
 
-    _RECURRING_TASK_TYPE: ClassVar[JSONDictType] = {
-        "Chore": {
-            "name": RecurringTaskType.CHORE.for_notion(),
-            "color": "green",
-            "in_board": True
-        },
-        "Habit": {
-            "name": RecurringTaskType.HABIT.for_notion(),
-            "color": "blue",
-            "in_board": True
-        }
-    }
-
     _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
             "name": "Name",
@@ -225,8 +215,12 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "type": "select",
             "options": [{"color": "gray", "id": str(uuid.uuid4()), "value": "None"}]
         },
-        "recurring-task-ref-id": {
-            "name": "Recurring Task Id",
+        "habit-ref-id": {
+            "name": "Habit Id",
+            "type": "text"
+        },
+        "chore-ref-id": {
+            "name": "Chore Id",
             "type": "text"
         },
         "metric-ref-id": {
@@ -280,15 +274,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _RECURRING_TASK_PERIOD.values()]
         },
-        "recurring-task-type": {
-            "name": "Recurring Type",
-            "type": "select",
-            "options": [{
-                "color": cast(Dict[str, str], v)["color"],
-                "id": str(uuid.uuid4()),
-                "value": cast(Dict[str, str], v)["name"]
-            } for v in _RECURRING_TASK_TYPE.values()]
-        },
         "recurring-task-gen-right-now": {
             "name": "Recurring Gen Right Now",
             "type": "date"
@@ -313,8 +298,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         NotionFieldProps(name="project-name", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="big-plan-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="bigplan2", show=NotionFieldShow.HIDE_IF_EMPTY),
-        NotionFieldProps(name="recurring-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
-        NotionFieldProps(name="recurring-task-type", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="habit-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="chore-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="metric-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="person-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
@@ -397,7 +382,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "bigplan2",
             "visible": True
         }, {
-            "property": "recurring-task-ref-id",
+            "property": "habit-ref-id",
+            "visible": False
+        }, {
+            "property": "chore-ref-id",
             "visible": False
         }, {
             "property": "metric-ref-id",
@@ -425,9 +413,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "period",
-            "visible": True
-        }, {
-            "property": "recurring-task-type",
             "visible": True
         }, {
             "property": "recurring-task-gen-right-now",
@@ -503,7 +488,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "bigplan2",
             "visible": True
         }, {
-            "property": "recurring-task-ref-id",
+            "property": "habit-ref-id",
+            "visible": False
+        }, {
+            "property": "chore-ref-id",
             "visible": False
         }, {
             "property": "metric-ref-id",
@@ -531,9 +519,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "period",
-            "visible": True
-        }, {
-            "property": "recurring-task-type",
             "visible": True
         }, {
             "property": "recurring-task-gen-right-now",
@@ -602,7 +587,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "bigplan2",
             "visible": True
         }, {
-            "property": "recurring-task-ref-id",
+            "property": "habit-ref-id",
+            "visible": False
+        }, {
+            "property": "chore-ref-id",
             "visible": False
         }, {
             "property": "metric-ref-id",
@@ -630,9 +618,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "period",
-            "visible": True
-        }, {
-            "property": "recurring-task-type",
             "visible": True
         }, {
             "property": "recurring-task-gen-right-now",
@@ -677,7 +662,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -701,6 +686,74 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             }
         },
         "format": _KANBAN_BY_EISEN_SUBGROUP_FORMAT
+    }
+
+    _KANBAN_HABITS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Kanban Habits",
+        "type": "board",
+        "query2": {
+            "group_by": "status",
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "eisen",
+                "direction": "ascending"
+            }, {
+                "property": "difficulty",
+                "direction": "ascending"
+            }, {
+                "property": "fromscript",
+                "direction": "ascending"
+            }, {
+                "property": "period",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }, {
+                    "property": "source",
+                    "filter": {
+                        "operator": "enum_is",
+                        "value": {
+                            "type": "exact",
+                            "value": InboxTaskSource.HABIT.for_notion()
+                        }
+                    }
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "today"
+                            }
+                        }
+                    }, {
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }]
+            }
+        },
+        "format": _KANBAN_FORMAT
     }
 
     _KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
@@ -736,7 +789,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -795,7 +848,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -854,7 +907,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -923,7 +976,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -999,7 +1052,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -1075,7 +1128,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -1146,7 +1199,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -1190,7 +1243,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "property": "bigplan2",
                 "visible": True
             }, {
-                "property": "recurring-task-ref-id",
+                "property": "habit-ref-id",
+                "visible": False
+            }, {
+                "property": "chore-ref-id",
                 "visible": False
             }, {
                 "property": "metric-ref-id",
@@ -1218,9 +1274,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "visible": False
             }, {
                 "property": "period",
-                "visible": True
-            }, {
-                "property": "recurring-task-type",
                 "visible": True
             }, {
                 "property": "recurring-task-gen-right-now",
@@ -1262,7 +1315,11 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "visible": True
             }, {
                 "width": 100,
-                "property": "recurring-task-ref-id",
+                "property": "habit-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "chore-ref-id",
                 "visible": True
             }, {
                 "width": 100,
@@ -1314,10 +1371,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "visible": True
             }, {
                 "width": 100,
-                "property": "recurring-task-type",
-                "visible": True
-            }, {
-                "width": 100,
                 "property": "recurring-task-gen-right-now",
                 "visible": True
             }, {
@@ -1356,6 +1409,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[
                 ("kanban_by_eisen_subgroup_view_id", NotionInboxTasksManager._KANBAN_BY_EISEN_SUBGROUPS_VIEW_SCHEMA),
+                ("kanban_habits_view_id", NotionInboxTasksManager._KANBAN_HABITS_VIEW_SCHEMA),
                 ("kanban_by_project_subgroup_view_id",
                  NotionInboxTasksManager._KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA),
                 ("kanban_all_view_id", NotionInboxTasksManager._KANBAN_ALL_VIEW_SCHEMA),
@@ -1521,7 +1575,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_row.big_plan_id = row.big_plan_ref_id
             if row.big_plan_name:
                 notion_row.big_plan = row.big_plan_name
-            notion_row.recurring_task_id = row.recurring_task_ref_id
+            notion_row.habit_id = row.habit_ref_id
+            notion_row.chore_id = row.chore_ref_id
             notion_row.metric_id = row.metric_ref_id
             notion_row.person_id = row.person_ref_id
             notion_row.status = row.status
@@ -1533,7 +1588,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_row.from_script = row.from_script
             notion_row.recurring_timeline = row.recurring_timeline
             notion_row.recurring_period = row.recurring_period
-            notion_row.recurring_type = row.recurring_type
             notion_row.recurring_gen_right_now = \
                 row.recurring_gen_right_now.to_notion(self._global_properties.timezone) \
                 if row.recurring_gen_right_now else None
@@ -1553,7 +1607,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             project_name=inbox_task_notion_row.project,
             big_plan_ref_id=inbox_task_notion_row.big_plan_id,
             big_plan_name=inbox_task_notion_row.big_plan,
-            recurring_task_ref_id=inbox_task_notion_row.recurring_task_id,
+            habit_ref_id=inbox_task_notion_row.habit_id,
+            chore_ref_id=inbox_task_notion_row.chore_id,
             metric_ref_id=inbox_task_notion_row.metric_id,
             person_ref_id=inbox_task_notion_row.person_id,
             status=inbox_task_notion_row.status,
@@ -1566,7 +1621,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
             recurring_period=inbox_task_notion_row.recurring_period,
-            recurring_type=inbox_task_notion_row.recurring_type,
             recurring_gen_right_now=
             ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.recurring_gen_right_now)
             if inbox_task_notion_row.recurring_gen_right_now else None,

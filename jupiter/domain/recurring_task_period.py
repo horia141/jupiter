@@ -38,4 +38,9 @@ class RecurringTaskPeriod(enum.Enum):
     @lru_cache(maxsize=1)
     def all_values() -> Iterable[str]:
         """The possible values for difficulties."""
-        return frozenset(st.value for st in RecurringTaskPeriod)
+        return (
+            RecurringTaskPeriod.DAILY.value,
+            RecurringTaskPeriod.WEEKLY.value,
+            RecurringTaskPeriod.MONTHLY.value,
+            RecurringTaskPeriod.QUARTERLY.value,
+            RecurringTaskPeriod.YEARLY.value)
