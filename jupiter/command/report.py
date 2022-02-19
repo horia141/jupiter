@@ -272,10 +272,13 @@ class Report(command.Command):
             for print_period in RecurringTaskPeriod.all_values():
                 print(f"    {print_period}:")
 
-                max_breakdown_streak_size = \
-                    max(len(b.summary.streak_plot)
-                        for b in response.per_habit_breakdown
-                        if b.period.value == print_period)
+                try:
+                    max_breakdown_streak_size = \
+                        max(len(b.summary.streak_plot)
+                            for b in response.per_habit_breakdown
+                            if b.period.value == print_period)
+                except ValueError:
+                    max_breakdown_streak_size = 1
 
                 for habit_item in sorted(
                         response.per_habit_breakdown,
