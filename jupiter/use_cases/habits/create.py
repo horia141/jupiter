@@ -43,6 +43,7 @@ class HabitCreateUseCase(AppMutationUseCase['HabitCreateUseCase.Args', None]):
         due_at_day: Optional[RecurringTaskDueAtDay]
         due_at_month: Optional[RecurringTaskDueAtMonth]
         skip_rule: Optional[RecurringTaskSkipRule]
+        repeats_in_period_count: Optional[int]
 
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _habit_notion_manager: Final[HabitNotionManager]
@@ -92,6 +93,7 @@ class HabitCreateUseCase(AppMutationUseCase['HabitCreateUseCase.Args', None]):
                     due_at_month=args.due_at_month),
                 skip_rule=args.skip_rule,
                 suspended=False,
+                repeats_in_period_count=args.repeats_in_period_count,
                 source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time())
             habit = \

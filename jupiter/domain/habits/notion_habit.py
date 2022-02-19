@@ -49,8 +49,9 @@ class NotionHabit(
     due_at_time: Optional[str]
     due_at_day: Optional[int]
     due_at_month: Optional[int]
-    suspended: bool
     skip_rule: Optional[str]
+    repeats_in_period_count: Optional[int]
+    suspended: bool
     project_ref_id: Optional[str]
     project_name: Optional[str]
 
@@ -78,6 +79,7 @@ class NotionHabit(
             due_at_month=
             aggregate_root.gen_params.due_at_month.as_int() if aggregate_root.gen_params.due_at_month else None,
             skip_rule=str(aggregate_root.skip_rule),
+            repeats_in_period_count=aggregate_root.repeats_in_period_count,
             suspended=aggregate_root.suspended,
             project_ref_id=str(aggregate_root.project_ref_id),
             project_name=format_name_for_option(extra_info.project_name))
@@ -119,8 +121,9 @@ class NotionHabit(
                 due_at_month=
                 RecurringTaskDueAtMonth.from_raw(habit_period, self.due_at_month)
                 if self.due_at_month else None),
-            suspended=self.suspended,
             skip_rule=RecurringTaskSkipRule.from_raw(self.skip_rule) if self.skip_rule else None,
+            repeats_in_period_count=self.repeats_in_period_count,
+            suspended=self.suspended,
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
@@ -165,6 +168,7 @@ class NotionHabit(
                         if self.due_at_month else None)),
                 skip_rule=UpdateAction.change_to(
                     RecurringTaskSkipRule.from_raw(self.skip_rule) if self.skip_rule else None),
+                repeats_in_period_count=UpdateAction.change_to(self.repeats_in_period_count),
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
         if self.suspended:

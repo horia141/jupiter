@@ -166,13 +166,17 @@ class NotionHabitsManager(HabitNotionManager):
             "name": "Due At Month",
             "type": "number",
         },
-        "suspended": {
-            "name": "Suspended",
-            "type": "checkbox",
-        },
         "skip-rule": {
             "name": "Skip Rule",
             "type": "text"
+        },
+        "repeats-in-period": {
+            "name": "Repeats In Period",
+            "type": "number"
+        },
+        "suspended": {
+            "name": "Suspended",
+            "type": "checkbox",
         },
         "last-edited-time": {
             "name": "Last Edited Time",
@@ -197,6 +201,7 @@ class NotionHabitsManager(HabitNotionManager):
         NotionFieldProps(name="due-at-day", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="due-at-time", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="skip-rule", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="repeats-in-period", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="suspended", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="archived", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="ref-id", show=NotionFieldShow.SHOW),
@@ -266,12 +271,16 @@ class NotionHabitsManager(HabitNotionManager):
                 "property": "due-at-month",
                 "visible": True
             }, {
-                "width": 50,
-                "property": "suspended",
+                "width": 100,
+                "property": "skip-rule",
                 "visible": True
             }, {
                 "width": 100,
-                "property": "skip-rule",
+                "property": "repeats-in-period",
+                "visible": True
+            }, {
+                "width": 50,
+                "property": "suspended",
                 "visible": True
             }, {
                 "width": 50,
@@ -388,11 +397,14 @@ class NotionHabitsManager(HabitNotionManager):
                 "property": "due-at-month",
                 "visible": False
             }, {
-                "property": "suspended",
-                "visible": True
-            }, {
                 "property": "skip-rule",
                 "visible": False
+            }, {
+                "property": "repeats-in-period",
+                "visible": False
+            }, {
+                "property": "suspended",
+                "visible": True
             }, {
                 "property": "last-edited-time",
                 "visible": False
@@ -458,11 +470,15 @@ class NotionHabitsManager(HabitNotionManager):
                 "visible": True
             }, {
                 "width": 100,
-                "property": "suspended",
+                "property": "skip-rule",
                 "visible": True
             }, {
                 "width": 100,
-                "property": "skip-rule",
+                "property": "repeats-in-period",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "suspended",
                 "visible": True
             }, {
                 "width": 100,
@@ -648,8 +664,9 @@ class NotionHabitsManager(HabitNotionManager):
             notion_row.due_at_time = row.due_at_time
             notion_row.due_at_day = row.due_at_day
             notion_row.due_at_month = row.due_at_month
-            notion_row.suspended = row.suspended
             notion_row.skip_rule = row.skip_rule
+            notion_row.repeats_in_period = row.repeats_in_period_count
+            notion_row.suspended = row.suspended
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
@@ -679,8 +696,9 @@ class NotionHabitsManager(HabitNotionManager):
             due_at_time=habit_notion_row.due_at_time,
             due_at_day=habit_notion_row.due_at_day,
             due_at_month=habit_notion_row.due_at_month,
-            suspended=habit_notion_row.suspended,
             skip_rule=habit_notion_row.skip_rule,
+            repeats_in_period_count=habit_notion_row.repeats_in_period,
+            suspended=habit_notion_row.suspended,
             last_edited_time=
             Timestamp.from_notion(habit_notion_row.last_edited_time),
             ref_id=EntityId.from_raw(habit_notion_row.ref_id) if habit_notion_row.ref_id else None)

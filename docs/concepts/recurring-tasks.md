@@ -106,6 +106,9 @@ But by specifying either a start or an end to this interval, you can control whe
 tasks are generated. The rule is that the period interval for an inbox tasks intersects successfully
 the active interval.
 
+A recurring task can have a repeat count. This makes the task actually be generated multiple times
+in a given time period. It's easier to model some habits - like reading 10 books in a year.
+
 A recurring task can be suspended, via the `Suspended` property. Being marked as such means
 that the task won't be generated at all. For example, going to the gym might be suspended while
 you're recovering from an illness.

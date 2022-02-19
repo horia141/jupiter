@@ -47,6 +47,7 @@ class HabitUpdateUseCase(AppMutationUseCase['HabitUpdateUseCase.Args', None]):
         due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
         due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
         skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]]
+        repeats_in_period_count: UpdateAction[Optional[int]]
 
     _global_properties: Final[GlobalProperties]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
@@ -83,7 +84,8 @@ class HabitUpdateUseCase(AppMutationUseCase['HabitUpdateUseCase.Args', None]):
                 args.actionable_from_month.should_change or \
                 args.due_at_time.should_change or \
                 args.due_at_day.should_change or \
-                args.due_at_month.should_change
+                args.due_at_month.should_change or \
+                args.repeats_in_period_count.should_change
 
             if args.period.should_change or \
                 args.eisen.should_change or \
@@ -113,6 +115,7 @@ class HabitUpdateUseCase(AppMutationUseCase['HabitUpdateUseCase.Args', None]):
                     name=args.name,
                     gen_params=habit_gen_params,
                     skip_rule=args.skip_rule,
+                    repeats_in_period_count=args.repeats_in_period_count,
                     source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time())
 
@@ -144,6 +147,7 @@ class HabitUpdateUseCase(AppMutationUseCase['HabitUpdateUseCase.Args', None]):
                         project_ref_id=project.ref_id,
                         name=schedule.full_name,
                         timeline=schedule.timeline,
+                        repeat_index=inbox_task.recurring_repeat_index,
                         actionable_date=schedule.actionable_date,
                         due_date=schedule.due_time,
                         eisen=habit.gen_params.eisen,

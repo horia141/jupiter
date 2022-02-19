@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import groupby
 from operator import itemgetter
-from typing import Optional, Iterable, Final, Dict, List, cast, Tuple, DefaultDict
+from typing import Optional, Iterable, Final, Dict, List, cast, DefaultDict
 
 import pendulum
 from pendulum import UTC
@@ -101,13 +101,6 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
         done_cnt: int
         done_ratio: float
         completed_ratio: float
-        current_streak_size: int
-        longest_streak_size: int
-        zero_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
-        one_streak_size_histogram: Dict[int, int] = field(hash=False, compare=False, repr=False, default_factory=dict)
-        avg_done_total: float = field(hash=False, compare=False, repr=False, default=0)
-        avg_done_last_period: Dict[RecurringTaskPeriod, float] = \
-            field(hash=False, compare=False, repr=False, default_factory=dict)
         streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
     @dataclass(frozen=True)
@@ -308,9 +301,7 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                 archived=all_habits_by_ref_id[k].archived,
                 suspended=all_habits_by_ref_id[k].suspended,
                 period=all_habits_by_ref_id[k].gen_params.period,
-                summary=self._run_report_for_inbox_for_recurring_tasks(
-                    all_habits_by_ref_id[k].gen_params.period, args.right_now, schedule,
-                    [vx[1] for vx in v]))
+                summary=self._run_report_for_inbox_for_recurring_tasks(schedule, [vx[1] for vx in v]))
             for (k, v) in
             groupby(sorted(
                 [(it.habit_ref_id, it)
@@ -325,9 +316,7 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
             ReportUseCase.PerChoreBreakdownItem(
                 name=all_chores_by_ref_id[k].name,
                 archived=all_chores_by_ref_id[k].archived,
-                summary=self._run_report_for_inbox_for_recurring_tasks(
-                    all_chores_by_ref_id[k].gen_params.period, args.right_now, schedule,
-                    [vx[1] for vx in v]))
+                summary=self._run_report_for_inbox_for_recurring_tasks(schedule, [vx[1] for vx in v]))
             for (k, v) in
             groupby(sorted(
                 [(it.chore_ref_id, it)
@@ -447,26 +436,10 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0,
             completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt) if created_cnt > 0 else 0.0)
 
+    @staticmethod
     def _run_report_for_inbox_for_recurring_tasks(
-            self, recurring_task_period: RecurringTaskPeriod, right_now: Timestamp, schedule: Schedule,
-            inbox_tasks: List[InboxTask]) -> 'RecurringTaskSummary':
-
-        def _build_bigger_periods_and_schedules() -> List[Tuple[RecurringTaskPeriod, Schedule]]:
-            the_bigger_periods_and_schedules = []
-            the_current_period = recurring_task_period
-            the_bigger_period = ReportUseCase._one_bigger_than_period(the_current_period)
-
-            while the_current_period != the_bigger_period:
-                the_bigger_schedule = schedules.get_schedule(
-                    the_bigger_period, EntityName("Helper"), right_now, self._global_properties.timezone,
-                    None, None, None, None, None, None)
-
-                the_bigger_periods_and_schedules.append((the_bigger_period, the_bigger_schedule))
-                the_current_period = the_bigger_period
-                the_bigger_period = ReportUseCase._one_bigger_than_period(the_current_period)
-
-            return the_bigger_periods_and_schedules
-
+            schedule: Schedule, inbox_tasks: List[InboxTask]) -> 'RecurringTaskSummary':
+        # The simple summary computations here.
         created_cnt = 0
         accepted_cnt = 0
         working_cnt = 0
@@ -490,72 +463,41 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                     and schedule.contains_timestamp(cast(Timestamp, inbox_task.accepted_time)):
                 accepted_cnt += 1
 
-        bigger_periods_and_schedules = _build_bigger_periods_and_schedules()
-
-        longest_streak_size = 0
-        zero_current_streak_size = 0
-        zero_streak_size_histogram: Dict[int, int] = {}
-        one_current_streak_size = 0
-        one_streak_size_histogram: Dict[int, int] = {}
-        sorted_inbox_tasks = sorted(
-            (it for it in inbox_tasks if schedule.contains_timestamp(it.created_time)), key=lambda it: it.created_time)
+        # The streak computations here.
+        sorted_inbox_tasks = \
+            sorted(
+                (it for it in inbox_tasks if schedule.contains_timestamp(it.created_time)),
+                key=lambda it: (it.created_time, it.recurring_repeat_index))
         used_skip_once = False
-        done_cnt_with_one_streak = 0
-        done_cnt_with_one_streak_per_last_period: Dict[RecurringTaskPeriod, int] = \
-            {bp: 0 for bp, _ in bigger_periods_and_schedules}
-        total_cnt_per_last_period: Dict[RecurringTaskPeriod, int] = \
-            {bp: 0 for bp, _ in bigger_periods_and_schedules}
         streak_plot = []
 
         for inbox_task_idx, inbox_task in enumerate(sorted_inbox_tasks):
-            for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
-                if inbox_task.due_date is None:
-                    LOGGER.warning(f'There is an inbox task here without a due date "{inbox_task.name}"')
-                    continue
-                if bigger_period_schedule.contains_adate(inbox_task.due_date):
-                    total_cnt_per_last_period[bigger_period] += 1
             if inbox_task.status == InboxTaskStatus.DONE:
-                zero_current_streak_size += 1
-                one_current_streak_size += 1
-                done_cnt_with_one_streak += 1
-                for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
-                    if inbox_task.due_date is not None and bigger_period_schedule.contains_adate(inbox_task.due_date):
-                        done_cnt_with_one_streak_per_last_period[bigger_period] += 1
-                streak_plot.append("X")
+                if inbox_task.recurring_repeat_index is None:
+                    streak_plot.append("X")
+                elif inbox_task.recurring_repeat_index == 0:
+                    streak_plot.append("1")
+                else:
+                    streak_plot[-1] = str(int(streak_plot[-1], base=10) + 1)
             else:
-                longest_streak_size = max(zero_current_streak_size, longest_streak_size)
-                if zero_current_streak_size > 0:
-                    zero_streak_size_histogram[zero_current_streak_size] = \
-                        zero_streak_size_histogram.get(zero_current_streak_size, 0) + 1
-                zero_current_streak_size = 0
-
                 if inbox_task_idx != 0 \
                         and inbox_task_idx != len(sorted_inbox_tasks) - 1 \
                         and sorted_inbox_tasks[inbox_task_idx - 1].status == InboxTaskStatus.DONE \
                         and sorted_inbox_tasks[inbox_task_idx + 1].status == InboxTaskStatus.DONE \
                         and not used_skip_once:
-                    one_current_streak_size += 1
                     used_skip_once = True
-                    done_cnt_with_one_streak += 1
-                    for bigger_period, bigger_period_schedule in bigger_periods_and_schedules:
-                        if inbox_task.due_date is not None and \
-                                bigger_period_schedule.contains_adate(inbox_task.due_date):
-                            done_cnt_with_one_streak_per_last_period[bigger_period] += 1
-                    streak_plot.append("x")
+                    if inbox_task.recurring_repeat_index is None:
+                        streak_plot.append("x")
+                    elif inbox_task.recurring_repeat_index == 0:
+                        streak_plot.append("1")
+                    else:
+                        streak_plot[-1] = str(int(streak_plot[-1], base=10) + 1)
                 else:
-                    if one_current_streak_size > 0:
-                        one_streak_size_histogram[one_current_streak_size] = \
-                            one_streak_size_histogram.get(one_current_streak_size, 0) + 1
-                    one_current_streak_size = 0
                     used_skip_once = False
-                    streak_plot.append("." if inbox_task_idx < (len(sorted_inbox_tasks) - 1) else "?")
-        longest_streak_size = max(zero_current_streak_size, longest_streak_size)
-        if zero_current_streak_size > 0:
-            zero_streak_size_histogram[zero_current_streak_size] = \
-                zero_streak_size_histogram.get(zero_current_streak_size, 0) + 1
-        if one_current_streak_size > 0:
-            one_streak_size_histogram[one_current_streak_size] = \
-                one_streak_size_histogram.get(one_current_streak_size, 0) + 1
+                    if inbox_task.recurring_repeat_index is None:
+                        streak_plot.append("." if inbox_task_idx < (len(sorted_inbox_tasks) - 1) else "?")
+                    elif inbox_task.recurring_repeat_index == 0:
+                        streak_plot.append("0" if inbox_task_idx < (len(sorted_inbox_tasks) - 1) else "?")
 
         return ReportUseCase.RecurringTaskSummary(
             created_cnt=created_cnt,
@@ -566,17 +508,6 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
             completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt) if created_cnt > 0 else 0.0,
-            current_streak_size=zero_current_streak_size,
-            longest_streak_size=longest_streak_size,
-            zero_streak_size_histogram=zero_streak_size_histogram,
-            one_streak_size_histogram=one_streak_size_histogram,
-            avg_done_total=float(done_cnt_with_one_streak) / len(sorted_inbox_tasks)
-            if len(sorted_inbox_tasks) > 0 else 0,
-            avg_done_last_period={
-                bigger_period: float(done_cnt_with_one_streak_per_last_period[bigger_period]) /
-                               total_cnt_per_last_period[bigger_period]
-                               if total_cnt_per_last_period[bigger_period] else 0
-                for bigger_period, _ in bigger_periods_and_schedules},
             streak_plot="".join(streak_plot))
 
     @staticmethod
@@ -613,18 +544,3 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
             not_done_cnt=not_done_cnt,
             not_done_projects=not_done_projects,
             done_projects=done_projects)
-
-    @staticmethod
-    def _one_bigger_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:
-        if period == RecurringTaskPeriod.YEARLY:
-            return RecurringTaskPeriod.YEARLY
-        elif period == RecurringTaskPeriod.QUARTERLY:
-            return RecurringTaskPeriod.YEARLY
-        elif period == RecurringTaskPeriod.MONTHLY:
-            return RecurringTaskPeriod.QUARTERLY
-        elif period == RecurringTaskPeriod.WEEKLY:
-            return RecurringTaskPeriod.MONTHLY
-        elif period == RecurringTaskPeriod.DAILY:
-            return RecurringTaskPeriod.WEEKLY
-        else:
-            raise RuntimeError(f"Invalid period {period}")

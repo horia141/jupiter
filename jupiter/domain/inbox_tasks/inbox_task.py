@@ -120,6 +120,7 @@ class InboxTask(AggregateRoot):
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
     recurring_timeline: Optional[str]
+    recurring_repeat_index: Optional[int]
     recurring_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
     accepted_time: Optional[Timestamp]
     working_time: Optional[Timestamp]
@@ -157,6 +158,7 @@ class InboxTask(AggregateRoot):
             actionable_date=actionable_date or (big_plan.actionable_date if big_plan else None),
             due_date=due_date or (big_plan.due_date if big_plan else None),
             recurring_timeline=None,
+            recurring_repeat_index=None,
             recurring_gen_right_now=None,
             accepted_time=created_time if status.is_accepted_or_more else None,
             working_time=created_time if status.is_working_or_more else None,
@@ -166,9 +168,10 @@ class InboxTask(AggregateRoot):
     @staticmethod
     def new_inbox_task_for_habit(
             inbox_task_collection_ref_id: EntityId, name: InboxTaskName, project_ref_id: EntityId,
-            habit_ref_id: EntityId, recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp,
-            eisen: Eisen, difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
-            due_date: Optional[ADate], source: EventSource, created_time: Timestamp) -> 'InboxTask':
+            habit_ref_id: EntityId, recurring_task_timeline: str, recurring_task_repeat_index: Optional[int],
+            recurring_task_gen_right_now: Timestamp, eisen: Eisen, difficulty: Optional[Difficulty],
+            actionable_date: Optional[ADate], due_date: Optional[ADate], source: EventSource,
+            created_time: Timestamp) -> 'InboxTask':
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -186,13 +189,14 @@ class InboxTask(AggregateRoot):
             chore_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
-            name=name,
+            name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
             recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=recurring_task_repeat_index,
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
@@ -229,6 +233,7 @@ class InboxTask(AggregateRoot):
             actionable_date=actionable_date,
             due_date=due_date,
             recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
@@ -266,6 +271,7 @@ class InboxTask(AggregateRoot):
             actionable_date=actionable_date,
             due_date=due_date,
             recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
@@ -303,6 +309,7 @@ class InboxTask(AggregateRoot):
             actionable_date=actionable_date,
             due_date=due_date,
             recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
@@ -339,6 +346,7 @@ class InboxTask(AggregateRoot):
             actionable_date=due_date.subtract_days(preparation_days_cnt),
             due_date=due_date,
             recurring_timeline=recurring_task_timeline,
+            recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
@@ -395,20 +403,21 @@ class InboxTask(AggregateRoot):
             InboxTask.UpdatedLinkToBigPlan.make_event_from_frame_args(source, self.version, modification_time))
 
     def update_link_to_habit(
-            self, project_ref_id: EntityId, name: InboxTaskName, timeline: str, actionable_date: Optional[ADate],
-            due_date: ADate, eisen: Eisen, difficulty: Optional[Difficulty], source: EventSource,
-            modification_time: Timestamp) -> 'InboxTask':
+            self, project_ref_id: EntityId, name: InboxTaskName, timeline: str, repeat_index: Optional[int],
+            actionable_date: Optional[ADate], due_date: ADate, eisen: Eisen, difficulty: Optional[Difficulty],
+            source: EventSource, modification_time: Timestamp) -> 'InboxTask':
         """Update all the info associated with a habit."""
         if self.source is not InboxTaskSource.HABIT:
             raise Exception(f"Cannot associate a task which is not a habit for '{self.name}'")
         return self._new_version(
             project_ref_id=project_ref_id,
-            name=name,
+            name=InboxTask._build_name_for_habit(name, repeat_index),
             actionable_date=actionable_date,
             due_date=due_date,
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
+            recurring_repeat_index=repeat_index,
             new_event=InboxTask.UpdatedLinkToHabit.make_event_from_frame_args(source, self.version, modification_time))
 
     def update_link_to_chore(
@@ -617,6 +626,13 @@ class InboxTask(AggregateRoot):
             return RecurringTaskPeriod.QUARTERLY
         else:
             return RecurringTaskPeriod.YEARLY
+
+    @staticmethod
+    def _build_name_for_habit(name: InboxTaskName, repeat_index: Optional[int]) -> InboxTaskName:
+        if repeat_index is not None:
+            return InboxTaskName.from_raw(f"{name} [{repeat_index + 1}]")
+        else:
+            return name
 
     @staticmethod
     def _build_name_for_collection_task(name: InboxTaskName) -> InboxTaskName:

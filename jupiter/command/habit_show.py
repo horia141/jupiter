@@ -60,6 +60,7 @@ class HabitShow(command.Command):
                   f'\n    eisen="{habit.gen_params.eisen.value}"' +
                   f' difficulty={difficulty_str}' +
                   f' skip_rule={habit.skip_rule or "none"}' +
+                  (f' repeats={habit.repeats_in_period_count}' if habit.repeats_in_period_count else '') +
                   f' suspended={habit.suspended}' +
                   f'\n    due_at_time={habit.gen_params.due_at_time or "none"}' +
                   f' due_at_day={habit.gen_params.due_at_day or "none"}' +

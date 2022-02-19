@@ -299,17 +299,6 @@ class Report(command.Command):
                         print(f"        Done: {habit_item.summary.done_cnt}", end=" ")
                         print(f"({habit_item.summary.done_ratio * 100:.0f}%)")
                         print(f"        Completed Ratio: {habit_item.summary.completed_ratio * 100:.0f}%")
-                        print(f"        Current Streak: {habit_item.summary.current_streak_size}")
-                        print(f"        Longest Streak: {habit_item.summary.longest_streak_size}")
-                        if habit_item.summary.one_streak_size_histogram:
-                            print("        Streak Sizes (Max 1 Skip):")
-                            for streak_size in sorted(habit_item.summary.one_streak_size_histogram.keys()):
-                                print(f"        {streak_size} =>", end=" ")
-                                print(f"{habit_item.summary.one_streak_size_histogram[streak_size]}")
-                        print("        Avg Done:")
-                        print(f"          Overall: {habit_item.summary.avg_done_total * 100:2.1f}%")
-                        for bigger_period, bigger_result in habit_item.summary.avg_done_last_period.items():
-                            print(f"        {bigger_period.for_notion()}: {bigger_result * 100:2.1f}%")
 
         if "chores" in breakdowns:
             print("  By Chore:")

@@ -357,6 +357,7 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     project_ref_id=project.ref_id,
                     name=schedule.full_name,
                     timeline=schedule.timeline,
+                    repeat_index=inbox_task.recurring_repeat_index,
                     actionable_date=schedule.actionable_date,
                     due_date=schedule.due_time,
                     eisen=habit.gen_params.eisen,

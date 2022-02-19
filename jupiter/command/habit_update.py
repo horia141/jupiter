@@ -103,6 +103,13 @@ class HabitUpdate(command.Command):
         skip_rule.add_argument(
             "--clear-skip_rule", dest="clear_skip_rule", default=False, action="store_const",
             const=True, help="Clear the skip rule of the habit")
+        repeats_in_period_count = parser.add_mutually_exclusive_group()
+        repeats_in_period_count.add_argument(
+            "--repeats-in-period", dest="repeats_in_period_count", type=int,
+            help="THow many times should the task repeat in the period")
+        repeats_in_period_count.add_argument(
+            "--clear-repeats-in-period", dest="clear_repeats_in_period_count", default=False, action="store_const",
+            const=True, help="Clear the repeats in period parameter")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -173,6 +180,13 @@ class HabitUpdate(command.Command):
             skip_rule = UpdateAction.change_to(RecurringTaskSkipRule.from_raw(args.skip_rule))
         else:
             skip_rule = UpdateAction.do_nothing()
+        repeats_in_period_count: UpdateAction[Optional[int]]
+        if args.clear_repeats_in_period_count:
+            repeats_in_period_count = UpdateAction.change_to(None)
+        elif args.repeats_in_period_count:
+            repeats_in_period_count = UpdateAction.change_to(args.repeats_in_period_count)
+        else:
+            repeats_in_period_count = UpdateAction.do_nothing()
         self._command.execute(HabitUpdateUseCase.Args(
             ref_id=ref_id,
             name=name,
@@ -184,4 +198,5 @@ class HabitUpdate(command.Command):
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
-            skip_rule=skip_rule))
+            skip_rule=skip_rule,
+            repeats_in_period_count=repeats_in_period_count))

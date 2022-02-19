@@ -90,13 +90,6 @@ class ADate(Value):
             return datetime.datetime(
                 self._surely_the_date.year, self._surely_the_date.month, self._surely_the_date.day, tzinfo=UTC)
 
-    def to_timestamp(self) -> Timestamp:
-        """Transform a date to a timestamp."""
-        if self._the_datetime is not None:
-            return Timestamp.from_date_and_time(self._the_datetime)
-        else:
-            return Timestamp.from_date(self._surely_the_date)
-
     @staticmethod
     def to_user_str(timezone: Timezone, adate: Optional['ADate']) -> str:
         """Transform a date to something meaningful to a user."""

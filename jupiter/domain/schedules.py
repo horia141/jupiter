@@ -197,14 +197,6 @@ class Schedule(abc.ABC):
     def end_day(self) -> ADate:
         """The end day of the interval represented by the schedule block."""
 
-    def contains_adate(self, adate: ADate) -> bool:
-        """Tests whether a particular datetime is in the schedule block."""
-        first_day_dt = pendulum.DateTime(self.first_day.year, self.first_day.month, self.first_day.day, tzinfo=UTC)
-        end_day_dt = \
-            pendulum.DateTime(self.end_day.year, self.end_day.month, self.end_day.day, tzinfo=UTC).end_of("day")
-        adate_ts = adate.to_timestamp().value.end_of("day")
-        return typing.cast(bool, first_day_dt <= adate_ts) and typing.cast(bool, adate_ts <= end_day_dt)
-
     def contains_timestamp(self, timestamp: Timestamp) -> bool:
         """Tests whether a particular datetime is in the schedule block."""
         first_day_dt = pendulum.DateTime(self.first_day.year, self.first_day.month, self.first_day.day, tzinfo=UTC)

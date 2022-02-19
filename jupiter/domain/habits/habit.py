@@ -6,6 +6,7 @@ from jupiter.domain.habits.habit_name import HabitName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
+from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
@@ -43,18 +44,25 @@ class Habit(AggregateRoot):
     project_ref_id: EntityId
     name: HabitName
     gen_params: RecurringTaskGenParams
-    suspended: bool
     skip_rule: Optional[RecurringTaskSkipRule]
+    suspended: bool
+    repeats_in_period_count: Optional[int]
 
     @staticmethod
     def new_habit(
             habit_collection_ref_id: EntityId, archived: bool, project_ref_id: EntityId, name: HabitName,
-            gen_params: RecurringTaskGenParams, skip_rule: Optional[RecurringTaskSkipRule], suspended: bool,
-            source: EventSource, created_time: Timestamp) -> 'Habit':
+            gen_params: RecurringTaskGenParams, skip_rule: Optional[RecurringTaskSkipRule],
+            repeats_in_period_count: Optional[int], suspended: bool,source: EventSource,
+            created_time: Timestamp) -> 'Habit':
         """Create a habit."""
         Habit._check_actionable_and_due_date_configs(
             gen_params.actionable_from_day, gen_params.actionable_from_month,
             gen_params.due_at_day, gen_params.due_at_month)
+        if repeats_in_period_count is not None:
+            if gen_params.period == RecurringTaskPeriod.DAILY:
+                raise InputValidationError("Repeats for daily habits are not allowed")
+            if repeats_in_period_count < 2:
+                raise InputValidationError("Repeats in period needs to be strictly greater than 1 if specified")
 
         habit = Habit(
             ref_id=BAD_REF_ID,
@@ -69,6 +77,7 @@ class Habit(AggregateRoot):
             name=name,
             gen_params=gen_params,
             skip_rule=skip_rule,
+            repeats_in_period_count=repeats_in_period_count,
             suspended=suspended)
         return habit
 
@@ -83,7 +92,8 @@ class Habit(AggregateRoot):
 
     def update(
             self, name: UpdateAction[HabitName], gen_params: UpdateAction[RecurringTaskGenParams],
-            skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]], source: EventSource,
+            skip_rule: UpdateAction[Optional[RecurringTaskSkipRule]],
+            repeats_in_period_count: UpdateAction[Optional[int]], source: EventSource,
             modification_time: Timestamp) -> 'Habit':
         """Update the habit."""
         if gen_params.should_change:
@@ -94,10 +104,17 @@ class Habit(AggregateRoot):
         else:
             the_gen_params = self.gen_params
 
+        if repeats_in_period_count.should_change and repeats_in_period_count.value is not None:
+            if the_gen_params.period == RecurringTaskPeriod.DAILY:
+                raise InputValidationError("Repeats for daily habits are not allowed")
+            if repeats_in_period_count.value < 2:
+                raise InputValidationError("Repeats in period needs to be strictly greater than 1 if specified")
+
         return self._new_version(
             name=name.or_else(self.name),
             gen_params=the_gen_params,
             skip_rule=skip_rule.or_else(self.skip_rule),
+            repeats_in_period_count=repeats_in_period_count.or_else(self.repeats_in_period_count),
             new_event=Habit.Updated.make_event_from_frame_args(source, self.version, modification_time))
 
     def suspend(self, source: EventSource, modification_time: Timestamp) -> 'Habit':

@@ -59,6 +59,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
     due_date: Optional[ADate]
     from_script: bool
     recurring_timeline: Optional[str]
+    recurring_repeat_index: Optional[int]
     recurring_period: Optional[str]
     recurring_gen_right_now: Optional[ADate]
 
@@ -87,6 +88,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             due_date=aggregate_root.due_date,
             from_script=aggregate_root.source.is_from_script,
             recurring_timeline=aggregate_root.recurring_timeline,
+            recurring_repeat_index=aggregate_root.recurring_repeat_index,
             recurring_period=aggregate_root.recurring_period.for_notion() if aggregate_root.recurring_period else None,
             recurring_gen_right_now=
             ADate.from_timestamp(aggregate_root.recurring_gen_right_now)

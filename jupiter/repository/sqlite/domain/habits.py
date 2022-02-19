@@ -155,8 +155,9 @@ class SqliteHabitRepository(HabitRepository):
             Column('gen_params_due_at_time', String, nullable=True),
             Column('gen_params_due_at_day', Integer, nullable=True),
             Column('gen_params_due_at_month', Integer, nullable=True),
-            Column('suspended', Boolean, nullable=False),
             Column('skip_rule', String, nullable=True),
+            Column('repeats_in_period_count', Integer, nullable=True),
+            Column('suspended', Boolean, nullable=False),
             keep_existing=True)
         self._habit_event_table = build_event_table(self._habit_table, metadata)
 
@@ -176,20 +177,18 @@ class SqliteHabitRepository(HabitRepository):
                     name=str(habit.name),
                     gen_params_period=habit.gen_params.period.value if habit.gen_params else None,
                     gen_params_eisen=habit.gen_params.eisen.value if habit.gen_params else None,
-                    gen_params_difficulty=habit.gen_params.difficulty.value
-                    if habit.gen_params and habit.gen_params.difficulty else None,
-                    gen_params_actionable_from_day=habit.gen_params.actionable_from_day.as_int()
-                    if habit.gen_params and habit.gen_params.actionable_from_day else None,
-                    gen_params_actionable_from_month=habit.gen_params.actionable_from_month.as_int()
-                    if habit.gen_params and habit.gen_params.actionable_from_month else None,
-                    gen_params_due_at_time=str(habit.gen_params.due_at_time)
-                    if habit.gen_params and habit.gen_params.due_at_time else None,
-                    gen_params_due_at_day=habit.gen_params.due_at_day.as_int()
-                    if habit.gen_params and habit.gen_params.due_at_day else None,
-                    gen_params_due_at_month=habit.gen_params.due_at_month.as_int()
-                    if habit.gen_params and habit.gen_params.due_at_month else None,
-                    suspended=habit.suspended,
-                    skip_rule=str(habit.skip_rule) if habit.skip_rule else None))
+                    gen_params_difficulty=habit.gen_params.difficulty.value if habit.gen_params.difficulty else None,
+                    gen_params_actionable_from_day=
+                    habit.gen_params.actionable_from_day.as_int() if habit.gen_params.actionable_from_day else None,
+                    gen_params_actionable_from_month=
+                    habit.gen_params.actionable_from_month.as_int() if habit.gen_params.actionable_from_month else None,
+                    gen_params_due_at_time=str(habit.gen_params.due_at_time) if habit.gen_params.due_at_time else None,
+                    gen_params_due_at_day=habit.gen_params.due_at_day.as_int() if habit.gen_params.due_at_day else None,
+                    gen_params_due_at_month=
+                    habit.gen_params.due_at_month.as_int() if habit.gen_params.due_at_month else None,
+                    skip_rule=str(habit.skip_rule) if habit.skip_rule else None,
+                    repeats_in_period_count=habit.repeats_in_period_count,
+                    suspended=habit.suspended))
         habit = habit.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._habit_event_table, habit)
         return habit
@@ -211,20 +210,18 @@ class SqliteHabitRepository(HabitRepository):
                 name=str(habit.name),
                 gen_params_period=habit.gen_params.period.value if habit.gen_params else None,
                 gen_params_eisen=habit.gen_params.eisen.value if habit.gen_params else None,
-                gen_params_difficulty=habit.gen_params.difficulty.value
-                if habit.gen_params and habit.gen_params.difficulty else None,
-                gen_params_actionable_from_day=habit.gen_params.actionable_from_day.as_int()
-                if habit.gen_params and habit.gen_params.actionable_from_day else None,
-                gen_params_actionable_from_month=habit.gen_params.actionable_from_month.as_int()
-                if habit.gen_params and habit.gen_params.actionable_from_month else None,
-                gen_params_due_at_time=str(habit.gen_params.due_at_time)
-                if habit.gen_params and habit.gen_params.due_at_time else None,
-                gen_params_due_at_day=habit.gen_params.due_at_day.as_int()
-                if habit.gen_params and habit.gen_params.due_at_day else None,
-                gen_params_due_at_month=habit.gen_params.due_at_month.as_int()
-                if habit.gen_params and habit.gen_params.due_at_month else None,
-                suspended=habit.suspended,
-                skip_rule=str(habit.skip_rule) if habit.skip_rule else None))
+                gen_params_difficulty=habit.gen_params.difficulty.value if habit.gen_params.difficulty else None,
+                gen_params_actionable_from_day=
+                habit.gen_params.actionable_from_day.as_int() if habit.gen_params.actionable_from_day else None,
+                gen_params_actionable_from_month=
+                habit.gen_params.actionable_from_month.as_int() if habit.gen_params.actionable_from_month else None,
+                gen_params_due_at_time=str(habit.gen_params.due_at_time) if habit.gen_params.due_at_time else None,
+                gen_params_due_at_day=habit.gen_params.due_at_day.as_int() if habit.gen_params.due_at_day else None,
+                gen_params_due_at_month=
+                habit.gen_params.due_at_month.as_int() if habit.gen_params.due_at_month else None,
+                repeats_in_period_count=habit.repeats_in_period_count,
+                skip_rule=str(habit.skip_rule) if habit.skip_rule else None,
+                suspended=habit.suspended))
         if result.rowcount == 0:
             raise HabitNotFoundError(f"Habit with id {habit.ref_id} does not exist")
         upsert_events(self._connection, self._habit_event_table, habit)
@@ -304,5 +301,6 @@ class SqliteHabitRepository(HabitRepository):
                 if row["gen_params_due_at_day"] is not None else None,
                 due_at_month=RecurringTaskDueAtMonth(row["gen_params_due_at_month"])
                 if row["gen_params_due_at_month"] is not None else None),
-            suspended=row["suspended"],
-            skip_rule=RecurringTaskSkipRule.from_raw(row["skip_rule"]) if row["skip_rule"] else None)
+            skip_rule=RecurringTaskSkipRule.from_raw(row["skip_rule"]) if row["skip_rule"] else None,
+            repeats_in_period_count=row["repeats_in_period_count"],
+            suspended=row["suspended"])

@@ -265,6 +265,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": "Recurring Timeline",
             "type": "text"
         },
+        "repeat-index": {
+            "name": "Recurring Repeat Index",
+            "type": "number"
+        },
         "period": {
             "name": "Recurring Period",
             "type": "select",
@@ -305,6 +309,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="repeat-index", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="recurring-task-gen-right-now", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="last-edited-time", show=NotionFieldShow.HIDE)
     ]
@@ -410,6 +415,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "timeline",
+            "visible": False
+        }, {
+            "property": "repeat-index",
             "visible": False
         }, {
             "property": "period",
@@ -518,6 +526,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "timeline",
             "visible": False
         }, {
+            "property": "repeat-index",
+            "visible": False
+        }, {
             "property": "period",
             "visible": True
         }, {
@@ -615,6 +626,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "timeline",
+            "visible": False
+        }, {
+            "property": "repeat-index",
             "visible": False
         }, {
             "property": "period",
@@ -1273,6 +1287,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "property": "timeline",
                 "visible": False
             }, {
+                "property": "repeat-index",
+                "visible": False
+            }, {
                 "property": "period",
                 "visible": True
             }, {
@@ -1364,6 +1381,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             }, {
                 "width": 100,
                 "property": "timeline",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "repeat-index",
                 "visible": True
             }, {
                 "width": 100,
@@ -1587,6 +1608,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_row.due_date = row.due_date.to_notion(self._global_properties.timezone) if row.due_date else None
             notion_row.from_script = row.from_script
             notion_row.recurring_timeline = row.recurring_timeline
+            notion_row.recurring_repeat_index = row.recurring_repeat_index
             notion_row.recurring_period = row.recurring_period
             notion_row.recurring_gen_right_now = \
                 row.recurring_gen_right_now.to_notion(self._global_properties.timezone) \
@@ -1620,6 +1642,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             if inbox_task_notion_row.due_date else None,
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
+            recurring_repeat_index=inbox_task_notion_row.recurring_repeat_index,
             recurring_period=inbox_task_notion_row.recurring_period,
             recurring_gen_right_now=
             ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.recurring_gen_right_now)

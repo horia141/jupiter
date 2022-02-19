@@ -151,6 +151,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             Column('actionable_date', DateTime, nullable=True),
             Column('due_date', DateTime, nullable=True),
             Column('recurring_timeline', String, nullable=True),
+            Column('recurring_repeat_index', Integer, nullable=True),
             Column('recurring_gen_right_now', DateTime, nullable=True),
             Column('accepted_time', DateTime, nullable=True),
             Column('working_time', DateTime, nullable=True),
@@ -184,6 +185,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                     actionable_date=inbox_task.actionable_date.to_db() if inbox_task.actionable_date else None,
                     due_date=inbox_task.due_date.to_db() if inbox_task.due_date else None,
                     recurring_timeline=inbox_task.recurring_timeline,
+                    recurring_repeat_index=inbox_task.recurring_repeat_index,
                     recurring_gen_right_now=
                     inbox_task.recurring_gen_right_now.to_db() if inbox_task.recurring_gen_right_now else None,
                     accepted_time=inbox_task.accepted_time.to_db() if inbox_task.accepted_time else None,
@@ -220,6 +222,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 actionable_date=inbox_task.actionable_date.to_db() if inbox_task.actionable_date else None,
                 due_date=inbox_task.due_date.to_db() if inbox_task.due_date else None,
                 recurring_timeline=inbox_task.recurring_timeline,
+                recurring_repeat_index=inbox_task.recurring_repeat_index,
                 recurring_gen_right_now=
                 inbox_task.recurring_gen_right_now.to_db() if inbox_task.recurring_gen_right_now else None,
                 accepted_time=inbox_task.accepted_time.to_db() if inbox_task.accepted_time else None,
@@ -326,6 +329,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             actionable_date=ADate.from_db(row["actionable_date"]) if row["actionable_date"] else None,
             due_date=ADate.from_db(row["due_date"]) if row["due_date"] else None,
             recurring_timeline=row["recurring_timeline"],
+            recurring_repeat_index=row["recurring_repeat_index"],
             recurring_gen_right_now=
             Timestamp.from_db(row["recurring_gen_right_now"]) if row["recurring_gen_right_now"] else None,
             accepted_time=Timestamp.from_db(row["accepted_time"]) if row["accepted_time"] else None,

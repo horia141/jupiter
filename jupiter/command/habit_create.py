@@ -62,6 +62,10 @@ class HabitCreate(command.Command):
                             help="The month of the interval the task will be due on")
         parser.add_argument("--start-at-date", dest="start_at_date",
                             help="The date from which tasks should be generated")
+        parser.add_argument("--skip-rule", dest="skip_rule", help="The skip rule for the task")
+        parser.add_argument(
+            "--repeats-in-period", dest="repeats_in_period_count", type=int,
+            help="How many times should the task repeat in the period")
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -82,6 +86,7 @@ class HabitCreate(command.Command):
         due_at_month = RecurringTaskDueAtMonth.from_raw(period, args.due_at_month) \
             if args.due_at_month else None
         skip_rule = RecurringTaskSkipRule.from_raw(args.skip_rule) if args.skip_rule else None
+        repeats_in_period_count = args.repeats_in_period_count
         self._command.execute(HabitCreateUseCase.Args(
             project_key=project_key,
             name=name,
@@ -93,4 +98,5 @@ class HabitCreate(command.Command):
             due_at_time=due_at_time,
             due_at_day=due_at_day,
             due_at_month=due_at_month,
-            skip_rule=skip_rule))
+            skip_rule=skip_rule,
+            repeats_in_period_count=repeats_in_period_count))

@@ -1,6 +1,7 @@
 """The command for generating new tasks."""
 import logging
 import typing
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Final, Iterable, Optional, List, Dict, Tuple, FrozenSet
 
@@ -12,6 +13,7 @@ from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
+from jupiter.domain.inbox_tasks.service.remove_service import InboxTaskRemoveService
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.persons.person import Person
@@ -102,12 +104,13 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
                         filter_sources=[InboxTaskSource.HABIT],
                         allow_archived=True, filter_habit_ref_ids=(rt.ref_id for rt in all_habits))
 
-            all_inbox_tasks_by_habit_ref_id_and_timeline = {}
+            all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[Tuple[EntityId, str], List[InboxTask]] =\
+                defaultdict(list)
             for inbox_task in all_collection_inbox_tasks:
                 if inbox_task.habit_ref_id is None or inbox_task.recurring_timeline is None:
                     raise Exception(f"Expected that inbox task with id='{inbox_task.ref_id}'")
                 all_inbox_tasks_by_habit_ref_id_and_timeline[
-                    (inbox_task.habit_ref_id, inbox_task.recurring_timeline)] = inbox_task
+                    (inbox_task.habit_ref_id, inbox_task.recurring_timeline)].append(inbox_task)
 
             for habit in all_habits:
                 LOGGER.info(f"Generating inbox tasks for '{habit.name}'")
@@ -271,7 +274,7 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             right_now: Timestamp,
             period_filter: Optional[FrozenSet[RecurringTaskPeriod]],
             habit: Habit,
-            all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[Tuple[EntityId, str], InboxTask],
+            all_inbox_tasks_by_habit_ref_id_and_timeline: Dict[Tuple[EntityId, str], List[InboxTask]],
             sync_even_if_not_modified: bool) -> None:
         if habit.suspended:
             LOGGER.info(f"Skipping '{habit.name}' because it is suspended")
@@ -293,64 +296,84 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
         LOGGER.info(f"Upserting '{habit.name}'")
 
-        found_task = all_inbox_tasks_by_habit_ref_id_and_timeline.get((habit.ref_id, schedule.timeline), None)
+        all_found_tasks_by_repeat_index: Dict[Optional[int], InboxTask] = \
+            {ft.recurring_repeat_index: ft
+             for ft in all_inbox_tasks_by_habit_ref_id_and_timeline.get((habit.ref_id, schedule.timeline), [])}
+        repeat_idx_to_keep: typing.Set[Optional[int]] = set()
 
-        if found_task:
-            LOGGER.info(f"Found a task '{found_task.name}'")
+        for task_idx in range(habit.repeats_in_period_count or 1):
+            real_task_idx = task_idx if habit.repeats_in_period_count is not None else None
+            found_task = all_found_tasks_by_repeat_index.get(real_task_idx, None)
 
-            if not sync_even_if_not_modified and found_task.last_modified_time >= habit.last_modified_time:
-                LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
-                return
+            if found_task:
+                LOGGER.info(f"Found a task '{found_task.name}'")
 
-            found_task = \
-                found_task.update_link_to_habit(
-                    project_ref_id=project.ref_id,
-                    name=schedule.full_name,
-                    timeline=schedule.timeline,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
-                    eisen=habit.gen_params.eisen,
-                    difficulty=habit.gen_params.difficulty,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time())
+                repeat_idx_to_keep.add(task_idx)
 
-            with self._storage_engine.get_unit_of_work() as uow:
-                uow.inbox_task_repository.save(found_task)
+                if not sync_even_if_not_modified and found_task.last_modified_time >= habit.last_modified_time:
+                    LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
+                    return
 
-            if found_task.archived:
-                return
+                found_task = \
+                    found_task.update_link_to_habit(
+                        project_ref_id=project.ref_id,
+                        name=schedule.full_name,
+                        timeline=schedule.timeline,
+                        repeat_index=real_task_idx,
+                        actionable_date=schedule.actionable_date,
+                        due_date=schedule.due_time,
+                        eisen=habit.gen_params.eisen,
+                        difficulty=habit.gen_params.difficulty,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time())
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task)
-            LOGGER.info("Applied Notion changes")
-        else:
-            with self._storage_engine.get_unit_of_work() as uow:
-                inbox_task = InboxTask.new_inbox_task_for_habit(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    name=schedule.full_name,
-                    project_ref_id=project.ref_id,
-                    habit_ref_id=habit.ref_id,
-                    recurring_task_timeline=schedule.timeline,
-                    recurring_task_gen_right_now=right_now,
-                    eisen=habit.gen_params.eisen,
-                    difficulty=habit.gen_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time())
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.save(found_task)
 
-                inbox_task = uow.inbox_task_repository.create(inbox_task)
-                LOGGER.info("Applied local changes")
+                if found_task.archived:
+                    return
 
-            if inbox_task.archived:
-                return
+                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
+                self._inbox_task_notion_manager.upsert_inbox_task(
+                    found_task.inbox_task_collection_ref_id, notion_inbox_task)
+                LOGGER.info("Applied Notion changes")
+            else:
+                with self._storage_engine.get_unit_of_work() as uow:
+                    inbox_task = InboxTask.new_inbox_task_for_habit(
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                        name=schedule.full_name,
+                        project_ref_id=project.ref_id,
+                        habit_ref_id=habit.ref_id,
+                        recurring_task_timeline=schedule.timeline,
+                        recurring_task_repeat_index=real_task_idx,
+                        recurring_task_gen_right_now=right_now,
+                        eisen=habit.gen_params.eisen,
+                        difficulty=habit.gen_params.difficulty,
+                        actionable_date=schedule.actionable_date,
+                        due_date=schedule.due_time,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time())
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
-            LOGGER.info("Applied Notion changes")
+                    inbox_task = uow.inbox_task_repository.create(inbox_task)
+                    LOGGER.info("Applied local changes")
+
+                if inbox_task.archived:
+                    return
+
+                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
+                self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+                LOGGER.info("Applied Notion changes")
+
+        inbox_task_remove_service = InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager)
+        for task in all_found_tasks_by_repeat_index.values():
+            if task.recurring_repeat_index is None:
+                continue
+            if task.recurring_repeat_index in repeat_idx_to_keep:
+                continue
+            LOGGER.info(f"Removing extra habit inbox task {task.name}")
+            inbox_task_remove_service.do_it(task)
 
     def _generate_inbox_tasks_for_chore(
             self,
