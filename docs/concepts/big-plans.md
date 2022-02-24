@@ -27,6 +27,10 @@ like this:
 
 ![Big plans image](../assets/concepts-big-plan-page.png)
 
+A nice view is the timeline one:
+
+![Bit plans timeline](../assets/concepts-big-plans-timeline.png)
+
 The state evolution diagram is:
 
 ![Big plan states](../assets/concepts-big-plan-states.png)
@@ -74,4 +78,3 @@ columns.
 It also has a useful _timeline_ view, which is a Gnatt chart of sorts.
 
 ![Big Plans Timeline](../assets/concepts-big-plans-timeline.png)
-

@@ -29,7 +29,7 @@ currency, the count of an event, etc.
 Metrics can have a _collection project_ and _collection period_. It makes sense to record (or collect)
 the value of a metric regularly. Think of your weight or the number of kilometers run in a week. To
 allow for this, special collection inbox tasks can be generated for the metric, just like a
-[recurring task](./recurring-tasks.md). The collection period will determine how often the task
+[habit](habits.md). The collection period will determine how often the task
 is generated (weekly, monthly, etc.). The inbox tasks will go to the configured [project](./projects.md)
 if it is present, or to the [default workspace one](./workspaces.md) if it is missing. If none
 are present, generation will fail. There's also all the other collection parameters (actionable

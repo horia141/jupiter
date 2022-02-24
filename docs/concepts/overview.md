@@ -14,19 +14,24 @@ are _separate_ from it, and could just as easily be implemented via pen & paper.
 As a quick reference, here is the list of the more important concepts:
 
 * _Workspace_: the _place_ where all the work in Jupiter happens.
-* _Project_: the _place_ where some of the work happens. This is normally a
-  neatly defined part such as "Personal" goals or "Career" goals, etc.
 * _Task_: an atomic unit of work. This is normally something like "Congratulate
   Jeff on the speech", or "Buy new socks".
-* _Recurring task_: a template for tasks which occurs regularly. This is either
-  some sort of chore, like "Change AC filters", or some sort of habit, such as
-  "Walk 10K steps".
+* _Habit_: a regular activity, usually one that is centered on _you_. Think
+  "Walk 10K steps" or "Meditate for 5 minutes". A habit will generate a task periodically
+   which needs to be acted upon.
+* _Chore_: a regular activity, usually one that is imposed by the outside world. Think
+  "Pay mortgage" or "Take car in for checks". A chore will generate a task periodically
+  which needs to be acted upon.
 * _Big plan_: a larger unit of work, consisting of multiple tasks. This is normally
   something like "Plan a family vacation", or "Get a talk accepted to a conference".
+* _Project_: a larger and longer-term container for work. This is normally a
+  neatly defined part such as "Personal" goals or "Career" goals, etc.
 * _Smart list_: a list of things! It can record books to read, visited restaurants,
   movies to watch, etc.
 * _Metric_: a measure of the evolution in time of some aspect of your life. Think
   weight, days gone to the gym, or marathons ran!
+* _Person_: a family member, friend, acquaintance, etc you wish to keep in touch with, or
+  otherwise know about in a more formal way.
 
 The rest of the document will cover each of these in greater detail.
 

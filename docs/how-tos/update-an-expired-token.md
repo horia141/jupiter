@@ -5,7 +5,7 @@ From time to time you'll encounter the following error message from Jupiter:
 ```bash
 $ jupiter sync
 /// Output omitted
-The Notion connection's token has expired, please refresh it with 'workspace-update'
+The Notion connection's token has expired, please refresh it with 'notion-connection-update-token'
 ```
 
 Due to the way the [Notion](https://notion.so) integration is done, you need to explicitly provide an "access token"

@@ -4,7 +4,7 @@ Launched on 2021/12/18
 
 This version introduces:
 
-* Added support for a "personal relationship manager" feature. Read more in the [PRM section](../concepts/prm.md).
+* Added support for a "personal relationship manager" feature. Read more in the [PRM section](../concepts/persons.md).
 * Entities which can be associated with a project, can now use a default project.
 * Faster local -> Notion updates
 * Moved some entities to SQLite storage from the text based one. It's faster and safer.

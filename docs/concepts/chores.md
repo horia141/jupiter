@@ -1,19 +1,18 @@
-# Recurring Tasks
+# Chores
 
-A recurring task is some periodic and atomic unit of work. Recurring tasks live in the
-"recurring tasks" view, but they're instantiated as regular tasks in the "inbox". A recurring
-task is ideal to model work which needs to be done periodically, like a chore or a habit.
+a regular activity, usually one that is imposed by the outside world.. Chores live in the
+"chores" view, but they're instantiated as regular tasks in the "inbox".
 
-For example, you can have a recurring task like "Clean out AC filters every week", or
-"Pay home insurance every month", or "Walk more than 10000 steps every day".
+For example, you can have a chore like "Clean out AC filters every week", or
+"Pay home insurance every month".
 
-In the recurring tasks view, the task templates might look like this:
+In the chores view, the task templates might look like this:
 
-![Recurring tasks templates](../assets/concepts-inbox-recurring.png)
+![Chores templates](../assets/concepts-chores-view.png)
 
-## Recurring Tasks Properties
+## Chores Properties
 
-Recurring tasks have a _period_ and a _period interval_. The former is set via the `period`
+Chores have a _period_ and a _period interval_. The former is set via the `period`
 property and the latter is derived uniquely from this. The period can be one of:
 
 * _Daily_: a task which needs to happen once a day. In a year there will be 365 or 366
@@ -40,9 +39,9 @@ period.
 While in the inbox, the instantiated tasks might look like this - notice the "Weekly" and
 "Monthly" labels:
 
-![Inbox with recurring tasks](../assets/concepts-inbox-recurring.png)
+![Inbox with chores](../assets/concepts-chores-instantiated.png)
 
-The instantiated task in the inbox is constructed from the recurring task template, but
+The instantiated task in the inbox is constructed from the chore template, but
 it also changes in the following way:
 
 * The name contains the period interval for which the task is active. So "Pay home
@@ -52,7 +51,7 @@ it also changes in the following way:
 * The "From Script", "Recurring Period" and "Recurring Timeline" fields are populated. But
   they are rather implementation details.
 
-Recurring tasks can also have an actionable date. By default there is none, and the generated
+Chores can also have an actionable date. By default there is none, and the generated
 inbox task won't have an actionable date. If you specify an `actionable_from_day` and/or
 `actionable_from_month` properties, they will determine the inbox tasks to have one. They work like
 so:
@@ -64,7 +63,7 @@ so:
   set the actionable date to. If `actionable_from_day` is not set, the first day of the month is
   used, otherwise the specified day is used.
 
-Recurring tasks also have a deadline. By default the deadline is the end day of the period
+Chores also have a deadline. By default the deadline is the end day of the period
 interval, at midnight. You can override it however to specify, via the `due_at_day` and
 `due_at_time` properties. They work like so:
 
@@ -83,9 +82,9 @@ interval, at midnight. You can override it however to specify, via the `due_at_d
 
 In Notion an instantiated task might look like this then:
 
-![Instantiated recurring task image](../assets/concepts-instantiated-recurring-task.png)
+![Instantiated chore image](../assets/concepts-chores-instantiated.png)
 
-Recurring tasks can be configured to skip certain periods via a skip rule. This is
+Chores can be configured to skip certain periods via a skip rule. This is
 specified via the `skip_rule` property, which can be one of:
 
 * `odd`: skips the odd numbered intervals for the period. More precisely, the day/week/
@@ -96,30 +95,27 @@ specified via the `skip_rule` property, which can be one of:
   `skip_rule: [1, 4, 7]` and `period: "weekly"`then the 1st, 4th and 7th weeks of the year
   are skipped.
 
-A recurring task can be mark as "must do", via the `Must Do` property. Being marked
+A chore can be mark as "must do", via the `Must Do` property. Being marked
 as such that will cause it to ignore vacations. For example, paying rent or taking some medicine
 can't be interrupted by a vacation.
 
-A recurring task can also have an _active interval_. This is a time interval in which tasks
+A chore can also have an _active interval_. This is a time interval in which tasks
 should be generated. By default the interval is "empty", so inbox tasks are always generated.
 But by specifying either a start or an end to this interval, you can control when exactly
 tasks are generated. The rule is that the period interval for an inbox tasks intersects successfully
 the active interval.
 
-A recurring task can have a repeat count. This makes the task actually be generated multiple times
-in a given time period. It's easier to model some habits - like reading 10 books in a year.
-
-A recurring task can be suspended, via the `Suspended` property. Being marked as such means
+A chore can be suspended, via the `Suspended` property. Being marked as such means
 that the task won't be generated at all. For example, going to the gym might be suspended while
 you're recovering from an illness.
 
-A recurring task can also have a difficulty, just like a regular task. This will be copied
+A chore can also have a difficulty, just like a regular task. This will be copied
 to all the instantiated tasks that are created.
 
-Similarly, a recurring task can have the Eisenhower properties. These will be copied to
+Similarly, a chore can have the Eisenhower properties. These will be copied to
 all the instantiated tasks that are created.
 
-Recurring tasks are created via the `jupiter gen` command. This has some special
+Chores are created via the `jupiter gen` command. This has some special
 forms too:
 
 * `jupiter gen` is the standard form and inserts all of the
@@ -129,11 +125,11 @@ forms too:
 * `jupiter gen --date=YYYY-MM-DD` does an insert as if the day
   were the one given by the `date` argument. Useful for creating tasks in the days before
   the start of a certain week or month.
-* `jupiter gen {projectKey} --period=PERIOD` does an insert only on the
+* `jupiter gen --period=PERIOD` does an insert only on the
   tasks with a certain period. Useful to speed up inserts when you know you only want
   new tasks for the next day or week.
 
-Recurring tasks interact with vacations too. More precisely, if a task's period interval
+Chores interact with vacations too. More precisely, if a task's period interval
 is fully contained within a vacation, that task won't be instantiated in the inbox via
 `jupiter gen`. For example, if you have a vacation from Monday `2020-02-09` to
 Sunday `2020-02-15`, then all daily and weekly tasks for that week won't be created, but
@@ -141,28 +137,16 @@ all monthly, quarterly and yearly ones will.
 
 The `jupiter gen` command is idempotent, as described above. Furthermore it does
 not affect task status, or any extra edits on a particular instance of a task. If any property
-of the recurring task template which get copied over to the instance is modified, then the command
+of the chore template which get copied over to the instance is modified, then the command
 will take care to update the instance too. Only archived and removed tasks are regenerated.
 
-## Recurring Tasks Interactions Summary
+## Chores Interactions Summary
 
 You can:
 
-* Create a recurring task via `recurring-tasks-create`, or by creating a new entry in the "Recurring Tasks" view.
-* Remove a recurring task via `recurring-tasks-remove`, or by clicking the archive checkbox the entry in the "Recurring
- Tasks" view.
-* Change the name of a recurring task via `recurring-tasks-set-name`, or by changing the name of the task in Notion.
-* Change the deadline of a recurring task via `recurring-tasks-set-deadline`, or by changing the deadline of the task
-  in Notion.
-* Change the difficulty of a recurring task via `recurring-tasks-set-difficulty`, or by changing the difficulty of
-  the task in Notion.
-* Change the Eisenhower status of a recurring task via `recurring-tasks-set-eisen`, or by changing the status in Notion.
-* Change the must do status of a recurring task via `recurring-tasks-set-must-do`, or by changing it in Notion.
-* Change the period of a recurring task via `recurring-tasks-set-period`, or by changing it in Notion, by dragging the
-  task to another column.
-* Change the skip rule of a recurring task via `recurring-tasks-set-skip-rule`, or by changing it in Notion.
-* Change the active interval for a recurring task via `recurring-tasks-set-active-interval`, or by changing the start
-  and end dates in Notion.
-* Suspend a recurring task via `recurring-tasks-suspend`, or by checking the attribute in Notion.
-* Unsuspend a recurring task via `recurring-tasks-unsuspend`, or by checking the attribute in Notion.
-* Show info about the recurring task via `recurring-tasks-show`.
+* Create a chore via `chore-create`, or by creating a new entry in the "Chores" view.
+* Remove a chore via `chore-arhive`, or by clicking the archive checkbox the entry in the "Chores" view.
+* Any of the properties of a chore can be changed via `chore-update`, or by editing the task in Notion.
+* A chore can be suspended via `chore-suspend` and unsuspended via `chore-unsuspend`.
+  Or by editing the task in Notion.
+* Show info about the chore via `chore-show`.
