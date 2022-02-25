@@ -17,7 +17,7 @@ $ mkdir my-jupiter-work-dir # A dir where you manage local Jupiter data.
 $ cd my-jupiter-work-dir
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data \
-    horia141/jupiter:latest --help
+    horia141/jupiter:latest init --help
 ```
 
 ## GitHub
@@ -49,7 +49,7 @@ $ mkdir my-jupiter-work-dir # A dir where you manage local Jupiter data.
 $ cd my-jupiter-work-dir
 $ docker run \
     -it --rm --name jupiter-app -v $(pwd):/data \
-    horia141/jupiter:latest --help
+    horia141/jupiter:latest init --help
 ```
 
 Alternatively, you can use the scripts locally, like so:
