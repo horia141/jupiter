@@ -1,5 +1,6 @@
 """A repository for workspaces."""
 import abc
+from typing import Optional
 
 from jupiter.domain.workspaces.workspace import Workspace
 
@@ -26,3 +27,7 @@ class WorkspaceRepository(abc.ABC):
     @abc.abstractmethod
     def load(self) -> Workspace:
         """Loads the workspace."""
+
+    @abc.abstractmethod
+    def load_optional(self) -> Optional[Workspace]:
+        """Loads the workspace but returns null if there isn't one."""

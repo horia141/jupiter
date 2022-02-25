@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
-from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
@@ -32,8 +32,7 @@ class Workspace(AggregateRoot):
 
     @staticmethod
     def new_workspace(
-            name: WorkspaceName, timezone: Timezone, default_project_ref_id: EntityId,
-            source: EventSource, created_time: Timestamp) -> 'Workspace':
+            name: WorkspaceName, timezone: Timezone, source: EventSource, created_time: Timestamp) -> 'Workspace':
         """Create a new workspace."""
         workspace = Workspace(
             ref_id=EntityId.from_raw('0'),
@@ -45,7 +44,7 @@ class Workspace(AggregateRoot):
             events=[Workspace.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             name=name,
             timezone=timezone,
-            default_project_ref_id=default_project_ref_id)
+            default_project_ref_id=BAD_REF_ID)
         return workspace
 
     def update(

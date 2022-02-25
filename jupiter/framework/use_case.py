@@ -129,6 +129,22 @@ class UseCase(Generic[UseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):
         """Execute the command's action."""
 
 
+class MutationNoContextUseCase(
+        Generic[UseCaseArgs, UseCaseResult],
+        UseCase[None, UseCaseArgs, UseCaseResult],
+        abc.ABC):
+    """A command which does some sort of mutation, but cannot rely on a context."""
+
+    def _build_context(self) -> None:
+        """Construct the context for the use case."""
+        return None
+
+    def execute(self, args: UseCaseArgs) -> UseCaseResult:
+        """Execute the command's action."""
+        LOGGER.info(f"Invoking no-context mutation command {self.__class__.__name__} with args {args}")
+        return self._execute(None, args)
+
+
 class MutationUseCase(
         Generic[UseCaseContext, UseCaseArgs, UseCaseResult],
         UseCase[UseCaseContext, UseCaseArgs, UseCaseResult],

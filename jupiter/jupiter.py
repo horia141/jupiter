@@ -241,7 +241,6 @@ def main() -> None:
         Initialize(
             InitUseCase(
                 time_provider,
-                invocation_recorder,
                 domain_storage_engine,
                 notion_workspace_manager,
                 notion_vacation_manager,
@@ -823,9 +822,12 @@ def _get_timezone() -> Timezone:
                 global_properties.alembic_migrations_path))
 
     with storage_engine.get_unit_of_work() as uow:
-        workspace = uow.workspace_repository.load()
+        workspace = uow.workspace_repository.load_optional()
 
-    return workspace.timezone
+    if workspace is not None:
+        return workspace.timezone
+    else:
+        return global_properties.timezone
 
 
 def _map_log_level_to_log_class(log_level: str) -> int:
