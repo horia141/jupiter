@@ -19,7 +19,10 @@ idempotent. The key plays the same part it does for a project, is a unique ident
 smart list, and must be some nice string with no spaces or funny characters like `books` or `movies`.
 It will be used as a reference to the project in other commands.
 
-On their own, smart lists have a single property - their name.
+Smart lists have a name.
+
+They also have an icon, which is a nice unicode glyph like 📖 or 🍺 which serves to visually
+distinguish the smart list.
 
 ## Interaction Summary
 

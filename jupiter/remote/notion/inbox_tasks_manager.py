@@ -12,13 +12,13 @@ from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, InboxTaskBigPlanLabel, \
+from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskCollectionNotFoundError, NotionInboxTaskNotFoundError
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.domain.recurring_task_type import RecurringTaskType
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
+from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
@@ -37,8 +37,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
     """The centralised point for interacting with Notion inbox tasks."""
 
     _KEY: ClassVar[str] = "inbox-tasks"
-
     _PAGE_NAME: ClassVar[str] = "Inbox Tasks"
+    _PAGE_ICON: ClassVar[str] = "📥"
 
     _STATUS: ClassVar[JSONDictType] = {
         "Not Started": {
@@ -83,13 +83,17 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": InboxTaskSource.USER.for_notion(),
             "color": "blue"
         },
+        "Habit": {
+            "name": InboxTaskSource.HABIT.for_notion(),
+            "color": "yellow"
+        },
+        "Chore": {
+            "name": InboxTaskSource.CHORE.for_notion(),
+            "color": "gray"
+        },
         "Big Plan": {
             "name": InboxTaskSource.BIG_PLAN.for_notion(),
             "color": "green"
-        },
-        "Recurring Task": {
-            "name": InboxTaskSource.RECURRING_TASK.for_notion(),
-            "color": "yellow"
         },
         "Metric": {
             "name": InboxTaskSource.METRIC.for_notion(),
@@ -162,19 +166,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         }
     }
 
-    _RECURRING_TASK_TYPE: ClassVar[JSONDictType] = {
-        "Chore": {
-            "name": RecurringTaskType.CHORE.for_notion(),
-            "color": "green",
-            "in_board": True
-        },
-        "Habit": {
-            "name": RecurringTaskType.HABIT.for_notion(),
-            "color": "blue",
-            "in_board": True
-        }
-    }
-
     _SCHEMA: ClassVar[JSONDictType] = {
         "title": {
             "name": "Name",
@@ -206,6 +197,15 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _SOURCE.values()]
         },
+        "project-ref-id": {
+            "name": "Project Id",
+            "type": "text"
+        },
+        "project-name": {
+            "name": "Project",
+            "type": "select",
+            "options": [{"color": "gray", "id": str(uuid.uuid4()), "value": "None"}]
+        },
         "big-plan-ref-id": {
             "name": "Big Plan Id",
             "type": "text"
@@ -215,8 +215,12 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "type": "select",
             "options": [{"color": "gray", "id": str(uuid.uuid4()), "value": "None"}]
         },
-        "recurring-task-ref-id": {
-            "name": "Recurring Task Id",
+        "habit-ref-id": {
+            "name": "Habit Id",
+            "type": "text"
+        },
+        "chore-ref-id": {
+            "name": "Chore Id",
             "type": "text"
         },
         "metric-ref-id": {
@@ -261,6 +265,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": "Recurring Timeline",
             "type": "text"
         },
+        "repeat-index": {
+            "name": "Recurring Repeat Index",
+            "type": "number"
+        },
         "period": {
             "name": "Recurring Period",
             "type": "select",
@@ -269,15 +277,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "id": str(uuid.uuid4()),
                 "value": cast(Dict[str, str], v)["name"]
             } for v in _RECURRING_TASK_PERIOD.values()]
-        },
-        "recurring-task-type": {
-            "name": "Recurring Type",
-            "type": "select",
-            "options": [{
-                "color": cast(Dict[str, str], v)["color"],
-                "id": str(uuid.uuid4()),
-                "value": cast(Dict[str, str], v)["name"]
-            } for v in _RECURRING_TASK_TYPE.values()]
         },
         "recurring-task-gen-right-now": {
             "name": "Recurring Gen Right Now",
@@ -299,113 +298,23 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         NotionFieldProps(name="due-date", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="archived", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="ref-id", show=NotionFieldShow.SHOW),
+        NotionFieldProps(name="project-ref-id", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="project-name", show=NotionFieldShow.SHOW),
         NotionFieldProps(name="big-plan-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="bigplan2", show=NotionFieldShow.HIDE_IF_EMPTY),
-        NotionFieldProps(name="recurring-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
-        NotionFieldProps(name="recurring-task-type", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="habit-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="chore-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="metric-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="person-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
+        NotionFieldProps(name="repeat-index", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="recurring-task-gen-right-now", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="last-edited-time", show=NotionFieldShow.HIDE)
     ]
 
-    _KANBAN_FORMAT: ClassVar[JSONDictType] = {
-        "board_groups": [{
-            "property": "status",
-            "type": "select",
-            "value": cast(Dict[str, str], v)["name"],
-            "hidden": not cast(Dict[str, bool], v)["in_board"]
-        } for v in _STATUS.values()] + [{
-            "property": "status",
-            "type": "select",
-            "hidden": True
-        }],
-        "board_groups2": [{
-            "property": "status",
-            "value": {
-                "type": "select",
-                "value": cast(Dict[str, str], v)["name"]
-            },
-            "hidden": not cast(Dict[str, bool], v)["in_board"]
-        } for v in _STATUS.values()] + [{
-            "property": "status",
-            "value": {
-                "type": "select"
-            },
-            "hidden": True
-        }],
-        "board_columns_by": {
-            "property": "status",
-            "type": "select",
-            "sort": {"type": "manual"},
-            "hideEmptyGroups": False,
-            "disableBoardColorColumns": False
-        },
-        "board_properties": [{
-            "property": "ref-id",
-            "visible": False
-        }, {
-            "property": "status",
-            "visible": False
-        }, {
-            "property": "source",
-            "visible": True
-        }, {
-            "property": "archived",
-            "visible": False
-        }, {
-            "property": "big-plan-ref-id",
-            "visible": False
-        }, {
-            "property": "bigplan2",
-            "visible": True
-        }, {
-            "property": "recurring-task-ref-id",
-            "visible": False
-        }, {
-            "property": "metric-ref-id",
-            "visible": False
-        }, {
-            "property": "person-ref-id",
-            "visible": False
-        }, {
-            "property": "actionable-date",
-            "visible": False
-        }, {
-            "property": "due-date",
-            "visible": True
-        }, {
-            "property": "eisen",
-            "visible": True
-        }, {
-            "property": "difficulty",
-            "visible": True
-        }, {
-            "property": "fromscript",
-            "visible": False
-        }, {
-            "property": "timeline",
-            "visible": False
-        }, {
-            "property": "period",
-            "visible": True
-        }, {
-            "property": "recurring-task-type",
-            "visible": True
-        }, {
-            "property": "recurring-task-gen-right-now",
-            "visible": False
-        }, {
-            "property": "last-edited-time",
-            "visible": False
-        }],
-        "board_cover_size": "small"
-    }
-
-    _KANBAN_WITH_EISEN_SUBGROUP_FORMAT: ClassVar[JSONDictType] = {
+    _KANBAN_BY_EISEN_SUBGROUP_FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
             "property": "status",
             "type": "select",
@@ -466,13 +375,22 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "archived",
             "visible": False
         }, {
+            "property": "project-ref-id",
+            "visible": False
+        }, {
+            "property": "project-name",
+            "visible": True
+        }, {
             "property": "big-plan-ref-id",
             "visible": False
         }, {
             "property": "bigplan2",
             "visible": True
         }, {
-            "property": "recurring-task-ref-id",
+            "property": "habit-ref-id",
+            "visible": False
+        }, {
+            "property": "chore-ref-id",
             "visible": False
         }, {
             "property": "metric-ref-id",
@@ -499,10 +417,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "timeline",
             "visible": False
         }, {
-            "property": "period",
-            "visible": True
+            "property": "repeat-index",
+            "visible": False
         }, {
-            "property": "recurring-task-type",
+            "property": "period",
             "visible": True
         }, {
             "property": "recurring-task-gen-right-now",
@@ -512,6 +430,403 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }],
         "board_cover_size": "small"
+    }
+
+    _KANBAN_BY_PROJECT_SUBGROUP_FORMAT: ClassVar[JSONDictType] = {
+        "board_groups": [{
+            "property": "status",
+            "type": "select",
+            "value": cast(Dict[str, str], v)["name"],
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "type": "select",
+            "hidden": True
+        }],
+        "board_groups2": [{
+            "property": "status",
+            "value": {
+                "type": "select",
+                "value": cast(Dict[str, str], v)["name"]
+            },
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "value": {
+                "type": "select"
+            },
+            "hidden": True
+        }],
+        "board_columns_by": {
+            "property": "status",
+            "type": "select",
+            "sort": {"type": "manual"},
+            "hideEmptyGroups": False,
+            "disableBoardColorColumns": False
+        },
+        "collection_group_by": {
+            "property": "project-name",
+            "sort": {
+                "type": "manual"
+            },
+            "type": "select"
+        },
+        "board_properties": [{
+            "property": "ref-id",
+            "visible": False
+        }, {
+            "property": "status",
+            "visible": False
+        }, {
+            "property": "source",
+            "visible": True
+        }, {
+            "property": "archived",
+            "visible": False
+        }, {
+            "property": "project-ref-id",
+            "visible": False
+        }, {
+            "property": "project-name",
+            "visible": False
+        }, {
+            "property": "big-plan-ref-id",
+            "visible": False
+        }, {
+            "property": "bigplan2",
+            "visible": True
+        }, {
+            "property": "habit-ref-id",
+            "visible": False
+        }, {
+            "property": "chore-ref-id",
+            "visible": False
+        }, {
+            "property": "metric-ref-id",
+            "visible": False
+        }, {
+            "property": "person-ref-id",
+            "visible": False
+        }, {
+            "property": "actionable-date",
+            "visible": False
+        }, {
+            "property": "due-date",
+            "visible": True
+        }, {
+            "property": "eisen",
+            "visible": True
+        }, {
+            "property": "difficulty",
+            "visible": True
+        }, {
+            "property": "fromscript",
+            "visible": False
+        }, {
+            "property": "timeline",
+            "visible": False
+        }, {
+            "property": "repeat-index",
+            "visible": False
+        }, {
+            "property": "period",
+            "visible": True
+        }, {
+            "property": "recurring-task-gen-right-now",
+            "visible": False
+        }, {
+            "property": "last-edited-time",
+            "visible": False
+        }],
+        "board_cover_size": "small"
+    }
+
+    _KANBAN_FORMAT: ClassVar[JSONDictType] = {
+        "board_groups": [{
+            "property": "status",
+            "type": "select",
+            "value": cast(Dict[str, str], v)["name"],
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "type": "select",
+            "hidden": True
+        }],
+        "board_groups2": [{
+            "property": "status",
+            "value": {
+                "type": "select",
+                "value": cast(Dict[str, str], v)["name"]
+            },
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "value": {
+                "type": "select"
+            },
+            "hidden": True
+        }],
+        "board_columns_by": {
+            "property": "status",
+            "type": "select",
+            "sort": {"type": "manual"},
+            "hideEmptyGroups": False,
+            "disableBoardColorColumns": False
+        },
+        "board_properties": [{
+            "property": "ref-id",
+            "visible": False
+        }, {
+            "property": "status",
+            "visible": False
+        }, {
+            "property": "source",
+            "visible": True
+        }, {
+            "property": "archived",
+            "visible": False
+        }, {
+            "property": "project-ref-id",
+            "visible": False
+        }, {
+            "property": "project-name",
+            "visible": False
+        }, {
+            "property": "big-plan-ref-id",
+            "visible": False
+        }, {
+            "property": "bigplan2",
+            "visible": True
+        }, {
+            "property": "habit-ref-id",
+            "visible": False
+        }, {
+            "property": "chore-ref-id",
+            "visible": False
+        }, {
+            "property": "metric-ref-id",
+            "visible": False
+        }, {
+            "property": "person-ref-id",
+            "visible": False
+        }, {
+            "property": "actionable-date",
+            "visible": False
+        }, {
+            "property": "due-date",
+            "visible": True
+        }, {
+            "property": "eisen",
+            "visible": True
+        }, {
+            "property": "difficulty",
+            "visible": True
+        }, {
+            "property": "fromscript",
+            "visible": False
+        }, {
+            "property": "timeline",
+            "visible": False
+        }, {
+            "property": "repeat-index",
+            "visible": False
+        }, {
+            "property": "period",
+            "visible": True
+        }, {
+            "property": "recurring-task-gen-right-now",
+            "visible": False
+        }, {
+            "property": "last-edited-time",
+            "visible": False
+        }],
+        "board_cover_size": "small"
+    }
+
+    _KANBAN_BY_EISEN_SUBGROUPS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Kanban By Eisen",
+        "type": "board",
+        "query2": {
+            "group_by": "status",
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "eisen",
+                "direction": "ascending"
+            }, {
+                "property": "difficulty",
+                "direction": "ascending"
+            }, {
+                "property": "fromscript",
+                "direction": "ascending"
+            }, {
+                "property": "period",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "today"
+                            }
+                        }
+                    }, {
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }]
+            }
+        },
+        "format": _KANBAN_BY_EISEN_SUBGROUP_FORMAT
+    }
+
+    _KANBAN_HABITS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Kanban Habits",
+        "type": "board",
+        "query2": {
+            "group_by": "status",
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "eisen",
+                "direction": "ascending"
+            }, {
+                "property": "difficulty",
+                "direction": "ascending"
+            }, {
+                "property": "fromscript",
+                "direction": "ascending"
+            }, {
+                "property": "period",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }, {
+                    "property": "source",
+                    "filter": {
+                        "operator": "enum_is",
+                        "value": {
+                            "type": "exact",
+                            "value": InboxTaskSource.HABIT.for_notion()
+                        }
+                    }
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "today"
+                            }
+                        }
+                    }, {
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }]
+            }
+        },
+        "format": _KANBAN_FORMAT
+    }
+
+    _KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Kanban By Project",
+        "type": "board",
+        "query2": {
+            "group_by": "status",
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "eisen",
+                "direction": "ascending"
+            }, {
+                "property": "difficulty",
+                "direction": "ascending"
+            }, {
+                "property": "fromscript",
+                "direction": "ascending"
+            }, {
+                "property": "period",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }, {
+                    "operator": "or",
+                    "filters": [{
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "date_is_on_or_before",
+                            "value": {
+                                "type": "relative",
+                                "value": "today"
+                            }
+                        }
+                    }, {
+                        "property": "actionable-date",
+                        "filter": {
+                            "operator": "is_empty"
+                        }
+                    }]
+                }]
+            }
+        },
+        "format": _KANBAN_BY_PROJECT_SUBGROUP_FORMAT
     }
 
     _KANBAN_ALL_VIEW_SCHEMA: ClassVar[JSONDictType] = {
@@ -547,7 +862,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -571,65 +886,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             }
         },
         "format": _KANBAN_FORMAT
-    }
-
-    _KANBAN_WITH_EISEN_SUBGROUPS_VIEW_SCHEMA: ClassVar[JSONDictType] = {
-        "name": "Kanban With Eisen",
-        "type": "board",
-        "query2": {
-            "group_by": "status",
-            "filter_operator": "and",
-            "aggregations": [{
-                "aggregator": "count"
-            }],
-            "sort": [{
-                "property": "due-date",
-                "direction": "ascending"
-            }, {
-                "property": "eisen",
-                "direction": "ascending"
-            }, {
-                "property": "difficulty",
-                "direction": "ascending"
-            }, {
-                "property": "fromscript",
-                "direction": "ascending"
-            }, {
-                "property": "period",
-                "direction": "ascending"
-            }],
-            "filter": {
-                "operator": "and",
-                "filters": [{
-                    "property": "archived",
-                    "filter": {
-                        "operator": "checkbox_is_not",
-                        "value": {
-                            "type": "exact",
-                            "value": "True"
-                        }
-                    }
-                }, {
-                    "operator": "or",
-                    "filters": [{
-                        "property": "actionable-date",
-                        "filter": {
-                            "operator": "date_is_on_or_before",
-                            "value": {
-                                "type": "relative",
-                                "value": "today"
-                            }
-                        }
-                    }, {
-                        "property": "actionable-date",
-                        "filter": {
-                            "operator": "is_empty"
-                        }
-                    }]
-                }]
-            }
-        },
-        "format": _KANBAN_WITH_EISEN_SUBGROUP_FORMAT
     }
 
     _KANBAN_URGENT_VIEW_SCHEMA: ClassVar[JSONDictType] = {
@@ -665,7 +921,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -734,7 +990,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -810,7 +1066,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -886,7 +1142,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -957,7 +1213,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }, {
@@ -989,13 +1245,22 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "property": "archived",
                 "visible": False
             }, {
+                "property": "project-ref-id",
+                "visible": False
+            }, {
+                "property": "project-name",
+                "visible": True
+            }, {
                 "property": "big-plan-ref-id",
                 "visible": False
             }, {
                 "property": "bigplan2",
                 "visible": True
             }, {
-                "property": "recurring-task-ref-id",
+                "property": "habit-ref-id",
+                "visible": False
+            }, {
+                "property": "chore-ref-id",
                 "visible": False
             }, {
                 "property": "metric-ref-id",
@@ -1022,10 +1287,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "property": "timeline",
                 "visible": False
             }, {
-                "property": "period",
-                "visible": True
+                "property": "repeat-index",
+                "visible": False
             }, {
-                "property": "recurring-task-type",
+                "property": "period",
                 "visible": True
             }, {
                 "property": "recurring-task-gen-right-now",
@@ -1051,6 +1316,14 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "visible": True
             }, {
                 "width": 100,
+                "property": "project-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "project-name",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "big-plan-ref-id",
                 "visible": True
             }, {
@@ -1059,7 +1332,11 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "visible": True
             }, {
                 "width": 100,
-                "property": "recurring-task-ref-id",
+                "property": "habit-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "chore-ref-id",
                 "visible": True
             }, {
                 "width": 100,
@@ -1107,11 +1384,11 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "visible": True
             }, {
                 "width": 100,
-                "property": "period",
+                "property": "repeat-index",
                 "visible": True
             }, {
                 "width": 100,
-                "property": "recurring-task-type",
+                "property": "period",
                 "visible": True
             }, {
                 "width": 100,
@@ -1141,25 +1418,29 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         self._collections_manager = collections_manager
 
     def upsert_inbox_task_collection(
-            self, notion_project: NotionProject,
+            self, notion_workspace: NotionWorkspace,
             inbox_task_collection: NotionInboxTaskCollection) -> NotionInboxTaskCollection:
         """Upsert the Notion-side inbox task."""
         collection_link = self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{inbox_task_collection.ref_id}"),
-            parent_page_notion_id=notion_project.notion_id,
+            parent_page_notion_id=notion_workspace.notion_id,
             name=self._PAGE_NAME,
+            icon=self._PAGE_ICON,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
-            view_schemas={
-                "kanban_all_view_id": NotionInboxTasksManager._KANBAN_ALL_VIEW_SCHEMA,
-                "kanban_with_eisen_subgroup_view_id": NotionInboxTasksManager._KANBAN_WITH_EISEN_SUBGROUPS_VIEW_SCHEMA,
-                "kanban_urgent_view_id": NotionInboxTasksManager._KANBAN_URGENT_VIEW_SCHEMA,
-                "kanban_due_today_view_id": NotionInboxTasksManager._KANBAN_DUE_TODAY_VIEW_SCHEMA,
-                "kanban_due_this_week_view_id": NotionInboxTasksManager._KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA,
-                "kanban_due_this_month_view_id": NotionInboxTasksManager._KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA,
-                "calendar_view_id": NotionInboxTasksManager._CALENDAR_VIEW_SCHEMA,
-                "database_view_id": NotionInboxTasksManager._DATABASE_VIEW_SCHEMA
-            })
+            view_schemas=[
+                ("kanban_by_eisen_subgroup_view_id", NotionInboxTasksManager._KANBAN_BY_EISEN_SUBGROUPS_VIEW_SCHEMA),
+                ("kanban_habits_view_id", NotionInboxTasksManager._KANBAN_HABITS_VIEW_SCHEMA),
+                ("kanban_by_project_subgroup_view_id",
+                 NotionInboxTasksManager._KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA),
+                ("kanban_all_view_id", NotionInboxTasksManager._KANBAN_ALL_VIEW_SCHEMA),
+                ("kanban_urgent_view_id", NotionInboxTasksManager._KANBAN_URGENT_VIEW_SCHEMA),
+                ("kanban_due_today_view_id", NotionInboxTasksManager._KANBAN_DUE_TODAY_VIEW_SCHEMA),
+                ("kanban_due_this_week_view_id", NotionInboxTasksManager._KANBAN_DUE_THIS_WEEK_VIEW_SCHEMA),
+                ("kanban_due_this_month_view_id", NotionInboxTasksManager._KANBAN_DUE_THIS_MONTH_VIEW_SCHEMA),
+                ("calendar_view_id", NotionInboxTasksManager._CALENDAR_VIEW_SCHEMA),
+                ("database_view_id", NotionInboxTasksManager._DATABASE_VIEW_SCHEMA)
+            ])
 
         return NotionInboxTaskCollection(
             notion_id=collection_link.collection_notion_id,
@@ -1176,17 +1457,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             raise NotionInboxTaskCollectionNotFoundError(
                 f"Notion inbox task collection with id {ref_id} was not found") from err
 
-    def remove_inbox_tasks_collection(self, ref_id: EntityId) -> None:
-        """Remove the Notion-side structure for this collection."""
-        try:
-            return self._collections_manager.remove_collection(
-                NotionLockKey(f"{self._KEY}:{ref_id}"))
-        except NotionCollectionNotFoundError as err:
-            raise NotionInboxTaskCollectionNotFoundError(
-                f"Notion inbox task collection with id {ref_id} was not found") from err
-
     def upsert_inbox_tasks_big_plan_field_options(
-            self, ref_id: EntityId, big_plans_labels: Iterable[InboxTaskBigPlanLabel]) -> None:
+            self, ref_id: EntityId, big_plans_labels: Iterable[NotionFieldLabel]) -> None:
         """Upsert the Notion-side structure for the 'big plan' select field."""
         inbox_big_plan_options = [{
             "color": self._get_stable_color(str(bp.notion_link_uuid)),
@@ -1198,8 +1470,42 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         new_schema["bigplan2"]["options"] = inbox_big_plan_options  # type: ignore
 
         self._collections_manager.save_collection_no_merge(
-            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, new_schema)
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, self._PAGE_ICON, new_schema, "bigplan2")
         LOGGER.info("Updated the schema for the associated inbox")
+
+    def upsert_inbox_tasks_project_field_options(
+            self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
+        """Upsert the Notion-side structure for the 'project' select field."""
+        inbox_big_plan_options = [{
+            "color": self._get_stable_color(str(pl.notion_link_uuid)),
+            "id": str(pl.notion_link_uuid),
+            "value": format_name_for_option(pl.name)
+        } for pl in project_labels]
+
+        new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
+        new_schema["project-name"]["options"] = inbox_big_plan_options  # type: ignore
+
+        self._collections_manager.save_collection_no_merge(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, self._PAGE_ICON, new_schema, "project-name")
+        LOGGER.info("Updated the schema for the associated inbox")
+
+        new_view: JSONDictType = copy.deepcopy(NotionInboxTasksManager._KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA)
+        new_view["format"]["collection_groups"] = [{  # type: ignore
+            "property": "project-name",
+            "value": {
+                "type": "select",
+                "value": format_name_for_option(pl.name)
+            },
+            "hidden": False
+        } for pl in sorted(project_labels, key=lambda x: x.created_time)] + [{
+            "property": "project-name",
+            "value": {"type": "select"},
+            "hidden": True
+        }]
+
+        self._collections_manager.quick_update_view_for_collection(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), "kanban_by_project_subgroup_view_id", new_view)
+        LOGGER.info("Updated the projects view for the associated inbox")
 
     def upsert_inbox_task(
             self, inbox_task_collection_ref_id: EntityId, inbox_task: NotionInboxTask) -> NotionInboxTask:
@@ -1285,10 +1591,13 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_row.title = row.name
             notion_row.source = row.source
             notion_row.archived = row.archived
+            notion_row.project_id = row.project_ref_id
+            notion_row.project = row.project_name
             notion_row.big_plan_id = row.big_plan_ref_id
             if row.big_plan_name:
                 notion_row.big_plan = row.big_plan_name
-            notion_row.recurring_task_id = row.recurring_task_ref_id
+            notion_row.habit_id = row.habit_ref_id
+            notion_row.chore_id = row.chore_ref_id
             notion_row.metric_id = row.metric_ref_id
             notion_row.person_id = row.person_ref_id
             notion_row.status = row.status
@@ -1299,8 +1608,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_row.due_date = row.due_date.to_notion(self._global_properties.timezone) if row.due_date else None
             notion_row.from_script = row.from_script
             notion_row.recurring_timeline = row.recurring_timeline
+            notion_row.recurring_repeat_index = row.recurring_repeat_index
             notion_row.recurring_period = row.recurring_period
-            notion_row.recurring_type = row.recurring_type
             notion_row.recurring_gen_right_now = \
                 row.recurring_gen_right_now.to_notion(self._global_properties.timezone) \
                 if row.recurring_gen_right_now else None
@@ -1316,9 +1625,12 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             source=inbox_task_notion_row.source,
             name=inbox_task_notion_row.title,
             archived=inbox_task_notion_row.archived,
+            project_ref_id=inbox_task_notion_row.project_id,
+            project_name=inbox_task_notion_row.project,
             big_plan_ref_id=inbox_task_notion_row.big_plan_id,
             big_plan_name=inbox_task_notion_row.big_plan,
-            recurring_task_ref_id=inbox_task_notion_row.recurring_task_id,
+            habit_ref_id=inbox_task_notion_row.habit_id,
+            chore_ref_id=inbox_task_notion_row.chore_id,
             metric_ref_id=inbox_task_notion_row.metric_id,
             person_ref_id=inbox_task_notion_row.person_id,
             status=inbox_task_notion_row.status,
@@ -1330,8 +1642,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             if inbox_task_notion_row.due_date else None,
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
+            recurring_repeat_index=inbox_task_notion_row.recurring_repeat_index,
             recurring_period=inbox_task_notion_row.recurring_period,
-            recurring_type=inbox_task_notion_row.recurring_type,
             recurring_gen_right_now=
             ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.recurring_gen_right_now)
             if inbox_task_notion_row.recurring_gen_right_now else None,

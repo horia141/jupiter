@@ -11,11 +11,11 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.InverseExtraInfo']):
+class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.InverseInfo']):
     """A smart list tag on Notion-side."""
 
     @dataclass(frozen=True)
-    class InverseExtraInfo:
+    class InverseInfo:
         """Extra info for the Notion to app copy."""
         smart_list_ref_id: EntityId
 
@@ -31,7 +31,7 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
             last_edited_time=aggregate_root.last_modified_time,
             name=str(aggregate_root.tag_name))
 
-    def new_aggregate_root(self, extra_info: InverseExtraInfo) -> SmartListTag:
+    def new_aggregate_root(self, extra_info: InverseInfo) -> SmartListTag:
         """Create a new smart list tag from this."""
         return SmartListTag.new_smart_list_tag(
             smart_list_ref_id=extra_info.smart_list_ref_id,
@@ -39,7 +39,7 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: SmartListTag, extra_info: InverseExtraInfo) -> SmartListTag:
+    def apply_to_aggregate_root(self, aggregate_root: SmartListTag, extra_info: InverseInfo) -> SmartListTag:
         """Apply to an already existing smart list tag."""
         smart_list_tag_name = SmartListTagName.from_raw(self.name)
         return aggregate_root.update(

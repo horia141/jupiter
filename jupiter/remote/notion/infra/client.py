@@ -75,14 +75,17 @@ class NotionClient:
 
     # 1.For big pages.
 
-    def create_regular_page(self, name: str, parent_page: Optional[PageBlock] = None) -> PageBlock:
+    def create_regular_page(self, name: str, icon: Optional[str], parent_page: Optional[PageBlock] = None) -> PageBlock:
         """Create a page in a space."""
         if parent_page is not None:
             new_page = parent_page.children.add_new(PageBlock)
+            new_page.icon = icon
             new_page.title = name
             return new_page
         else:
-            return self._space.add_page(name)
+            new_page = self._space.add_page(name)
+            new_page.icon = icon
+            return new_page
 
     def get_regular_page(self, page_id: NotionId) -> PageBlock:
         """Find a page from a space, with a given id."""

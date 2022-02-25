@@ -192,11 +192,13 @@ never-returning-functions=sys.exit
 
 # Format style used to check logging format string. `old` means using %
 # formatting, `new` is for `{}` formatting,and `fstr` is for f-strings.
-logging-format-style=fstr
+logging-format-style=new
 
 # Logging modules to check that the string format arguments are in logging
 # function parameter format.
 logging-modules=logging
+
+disable=logging-fstring-interpolation
 
 
 [SPELLING]
@@ -407,7 +409,11 @@ const-naming-style=UPPER_CASE
 
 # Regular expression matching correct constant names. Overrides const-naming-
 # style.
-#const-rgx=
+# const-rgx=
+
+# Class constants naming style
+# class-const-naming-style=UPPER_CASE
+class-const-rgx=(([a-z_][a-z0-9_]*)|([A-Z_][A-Z0-9_]*)|(__.*__))$
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
@@ -556,13 +562,13 @@ max-attributes=32
 max-bool-expr=10
 
 # Maximum number of branch for function / method body.
-max-branches=64
+max-branches=72
 
 # Maximum number of locals for function / method body.
-max-locals=64
+max-locals=72
 
 # Maximum number of parents for a class (see R0901).
-max-parents=7
+max-parents=10
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=64
@@ -571,7 +577,7 @@ max-public-methods=64
 max-returns=16
 
 # Maximum number of statements in function / method body.
-max-statements=256
+max-statements=312
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0

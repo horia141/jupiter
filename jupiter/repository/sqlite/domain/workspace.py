@@ -1,8 +1,9 @@
 """The SQLite based Workspace repository."""
-from typing import Final
+from typing import Final, Optional
 
 from sqlalchemy import Table, MetaData, Integer, Boolean, DateTime, Column, String, insert, update, select
 from sqlalchemy.engine import Connection, Result
+from sqlalchemy.exc import OperationalError
 
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository, WorkspaceNotFoundError, \
@@ -43,7 +44,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
         """Create a workspace."""
         try:
             workspace = self.load()
-            raise WorkspaceAlreadyExistsError(f"Workspace already exists")
+            raise WorkspaceAlreadyExistsError("Workspace already exists")
         except WorkspaceNotFoundError:
             pass
         result = self._connection.execute(
@@ -57,7 +58,8 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 name=str(workspace.name),
                 timezone=str(workspace.timezone),
                 default_project_ref_id=
-                workspace.default_project_ref_id.as_int() if workspace.default_project_ref_id else None))
+                workspace.default_project_ref_id.as_int()
+                if workspace.default_project_ref_id is not BAD_REF_ID else None))
         workspace = workspace.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._workspace_event_table, workspace)
         return workspace
@@ -78,7 +80,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 default_project_ref_id=
                 workspace.default_project_ref_id.as_int() if workspace.default_project_ref_id else None))
         if result.rowcount == 0:
-            raise WorkspaceNotFoundError(f"The workspace does not exist")
+            raise WorkspaceNotFoundError("The workspace does not exist")
         upsert_events(self._connection, self._workspace_event_table, workspace)
         return workspace
 
@@ -87,8 +89,21 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
         query_stmt = select(self._workspace_table)
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise WorkspaceNotFoundError(f"Missing workspace")
+            raise WorkspaceNotFoundError("Missing workspace")
         return self._row_to_entity(result)
+
+    def load_optional(self) -> Optional[Workspace]:
+        """Load the workspace."""
+        query_stmt = select(self._workspace_table)
+        try:
+            result = self._connection.execute(query_stmt).first()
+            if result is None:
+                return None
+            return self._row_to_entity(result)
+        except OperationalError as err:
+            if str(err).find("no such table: workspace") >= 0:
+                return None
+            raise
 
     @staticmethod
     def _row_to_entity(row: Result) -> Workspace:

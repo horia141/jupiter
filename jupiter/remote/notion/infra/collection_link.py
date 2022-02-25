@@ -1,6 +1,6 @@
 """A Notion collection link."""
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
@@ -52,7 +52,7 @@ class NotionCollectionLink:
             created_time=self.created_time,
             last_modified_time=modification_time)
 
-    def with_extra(self, name: str) -> 'NotionCollectionLinkExtra':
+    def with_extra(self, name: str, icon: Optional[str]) -> 'NotionCollectionLinkExtra':
         """Return the Notion page info with some little extra."""
         return NotionCollectionLinkExtra(
             key=self.key,
@@ -61,7 +61,8 @@ class NotionCollectionLink:
             view_notion_ids=self.view_notion_ids,
             created_time=self.created_time,
             last_modified_time=self.last_modified_time,
-            name=name)
+            name=name,
+            icon=icon)
 
 
 @dataclass()
@@ -74,3 +75,4 @@ class NotionCollectionLinkExtra:
     created_time: Timestamp
     last_modified_time: Timestamp
     name: str
+    icon: Optional[str]

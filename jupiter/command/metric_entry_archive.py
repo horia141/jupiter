@@ -1,10 +1,9 @@
 """UseCase for archiving a metric entry."""
-
 import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.metrics.entry.archive import MetricEntryArchiveUseCase
 from jupiter.framework.base.entity_id import EntityId
 
@@ -37,4 +36,4 @@ class MetricEntryArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(ref_id)
+        self._command.execute(MetricEntryArchiveUseCase.Args(ref_id=ref_id))

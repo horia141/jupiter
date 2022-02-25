@@ -29,9 +29,10 @@ class BigPlanRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def find_all(
             self,
+            big_plan_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_big_plan_collection_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
         """Find all big plans."""
 
     @abc.abstractmethod

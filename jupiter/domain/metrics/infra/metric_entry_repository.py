@@ -27,16 +27,12 @@ class MetricEntryRepository(Repository, abc.ABC):
         """Load a given metric entry."""
 
     @abc.abstractmethod
-    def find_all_for_metric(self, metric_ref_id: EntityId, allow_archived: bool = False) -> List[MetricEntry]:
-        """Retrieve all metric entries for a given metric."""
-
-    @abc.abstractmethod
     def find_all(
             self,
+            metric_ref_id: EntityId,
             allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_metric_ref_ids: Optional[Iterable[EntityId]] = None) -> List[MetricEntry]:
-        """Find all metric entries matching some criteria."""
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[MetricEntry]:
+        """Retrieve all metric entries for a given metric."""
 
     @abc.abstractmethod
     def remove(self, ref_id: EntityId) -> MetricEntry:

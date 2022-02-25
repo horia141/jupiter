@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
@@ -46,8 +46,10 @@ class Sync(command.Command):
                             help="Sync only these particular tasks")
         parser.add_argument("--big-plan-id", dest="big_plan_ref_ids", default=[], action="append",
                             help="Sync only these particular big plans")
-        parser.add_argument("--recurring-task-id", dest="recurring_task_ref_ids", default=[], action="append",
-                            help="Sync only these recurring tasks")
+        parser.add_argument("--habit-id", dest="habit_ref_ids", default=[], action="append",
+                            help="Sync only these habits")
+        parser.add_argument("--chore-id", dest="chore_ref_ids", default=[], action="append",
+                            help="Sync only these chores")
         parser.add_argument("--smart-list", dest="smart_list_keys", default=[], action="append",
                             help="Sync only these smart lists")
         parser.add_argument("--smart-list-item-id", dest="smart_list_item_ref_ids", default=[], action="append",
@@ -67,32 +69,30 @@ class Sync(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        sync_targets = [SyncTarget.from_raw(st) for st in args.sync_targets]\
+        sync_targets = \
+            [SyncTarget.from_raw(st) for st in args.sync_targets]\
             if len(args.sync_targets) > 0 else list(st for st in SyncTarget if st is not SyncTarget.STRUCTURE)
-        vacation_ref_ids = [EntityId.from_raw(v) for v in args.vacation_ref_ids] \
-            if len(args.vacation_ref_ids) > 0 else None
+        vacation_ref_ids = \
+            [EntityId.from_raw(v) for v in args.vacation_ref_ids] if len(args.vacation_ref_ids) > 0 else None
         project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
-        inbox_task_ref_ids = [EntityId.from_raw(bp)
-                              for bp in args.inbox_task_ref_ids] \
-            if len(args.inbox_task_ref_ids) > 0 else None
-        big_plan_ref_ids = [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids] \
-            if len(args.big_plan_ref_ids) > 0 else None
-        recurring_task_ref_ids = [EntityId.from_raw(rt)
-                                  for rt in args.recurring_task_ref_ids] \
-            if len(args.recurring_task_ref_ids) > 0 else None
-        smart_list_keys = [SmartListKey.from_raw(sl) for sl in args.smart_list_keys] \
-            if len(args.smart_list_keys) > 0 else None
-        smart_list_item_ref_ids = [EntityId.from_raw(sli)
-                                   for sli in args.smart_list_item_ref_ids] \
+        inbox_task_ref_ids = \
+            [EntityId.from_raw(bp) for bp in args.inbox_task_ref_ids] if len(args.inbox_task_ref_ids) > 0 else None
+        big_plan_ref_ids = \
+            [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids] if len(args.big_plan_ref_ids) > 0 else None
+        habit_ref_ids = [EntityId.from_raw(rt) for rt in args.habit_ref_ids] if len(args.habit_ref_ids) > 0 else None
+        chore_ref_ids = [EntityId.from_raw(rt) for rt in args.chore_ref_ids] if len(args.chore_ref_ids) > 0 else None
+        smart_list_keys = \
+            [SmartListKey.from_raw(sl) for sl in args.smart_list_keys] if len(args.smart_list_keys) > 0 else None
+        smart_list_item_ref_ids = \
+            [EntityId.from_raw(sli) for sli in args.smart_list_item_ref_ids] \
             if len(args.smart_list_item_ref_ids) > 0 else None
-        metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] \
-            if len(args.metric_keys) > 0 else None
-        metric_entry_ref_ids = [EntityId.from_raw(sli)
-                                for sli in args.metric_entry_ref_ids] \
-            if len(args.metric_entry_ref_ids) > 0 else None
-        person_ref_ids = [EntityId.from_raw(sli)
-                          for sli in args.person_ref_ids] \
-            if len(args.person_ref_ids) > 0 else None
+        metric_keys = \
+            [MetricKey.from_raw(mk) for mk in args.metric_keys] if len(args.metric_keys) > 0 else None
+        metric_entry_ref_ids = \
+            [EntityId.from_raw(sli) for sli in args.metric_entry_ref_ids] \
+                if len(args.metric_entry_ref_ids) > 0 else None
+        person_ref_ids = \
+            [EntityId.from_raw(sli) for sli in args.person_ref_ids] if len(args.person_ref_ids) > 0 else None
         sync_prefer = SyncPrefer.from_raw(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
@@ -104,7 +104,8 @@ class Sync(command.Command):
             filter_project_keys=project_keys,
             filter_inbox_task_ref_ids=inbox_task_ref_ids,
             filter_big_plan_ref_ids=big_plan_ref_ids,
-            filter_recurring_task_ref_ids=recurring_task_ref_ids,
+            filter_habit_ref_ids=habit_ref_ids,
+            filter_chore_ref_ids=chore_ref_ids,
             filter_smart_list_keys=smart_list_keys,
             filter_smart_list_item_ref_ids=smart_list_item_ref_ids,
             filter_metric_keys=metric_keys,

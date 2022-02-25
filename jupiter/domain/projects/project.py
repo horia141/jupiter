@@ -1,4 +1,5 @@
 """The project."""
+import uuid
 from dataclasses import dataclass
 
 from jupiter.domain.projects.project_key import ProjectKey
@@ -22,15 +23,17 @@ class Project(AggregateRoot):
     class Updated(AggregateRoot.Updated):
         """Updated event."""
 
-    workspace_ref_id: EntityId
+    project_collection_ref_id: EntityId
     key: ProjectKey
     name: ProjectName
+    notion_link_uuid: uuid.UUID
 
     @staticmethod
     def new_project(
-            workspace_ref_id: EntityId, key: ProjectKey, name: ProjectName, source: EventSource,
+            project_collection_ref_id: EntityId, key: ProjectKey, name: ProjectName, source: EventSource,
             created_time: Timestamp) -> 'Project':
         """Create a project."""
+        notion_link_uuid = uuid.uuid4()
         project = Project(
             ref_id=BAD_REF_ID,
             version=FIRST_VERSION,
@@ -38,10 +41,13 @@ class Project(AggregateRoot):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[Project.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id,
+            events=[
+                Project.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time, notion_link_uuid=notion_link_uuid,)],
+            project_collection_ref_id=project_collection_ref_id,
             key=key,
-            name=name)
+            name=name,
+            notion_link_uuid=notion_link_uuid)
         return project
 
     def update(self, name: UpdateAction[ProjectName], source: EventSource, modification_time: Timestamp) -> 'Project':

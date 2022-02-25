@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.smart_lists.tag.update import SmartListTagUpdateUseCase
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.framework.update_action import UpdateAction

@@ -9,16 +9,18 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class SyncTarget(enum.Enum):
     """What exactly to sync."""
+
     STRUCTURE = "structure"
     WORKSPACE = "workspace"
     VACATIONS = "vacations"
     PROJECTS = "projects"
     INBOX_TASKS = "inbox-tasks"
-    RECURRING_TASKS = "recurring-tasks"
+    HABITS = "habits"
+    CHORES = "chores"
     BIG_PLANS = "big-plans"
     SMART_LISTS = "smart-lists"
     METRICS = "metrics"
-    PRM = "prm"
+    PERSONS = "persons"
 
     @staticmethod
     def from_raw(sync_target_raw: Optional[str]) -> 'SyncTarget':

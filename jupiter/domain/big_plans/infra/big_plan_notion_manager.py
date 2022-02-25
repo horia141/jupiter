@@ -5,14 +5,10 @@ from typing import Optional, Iterable
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.projects.notion_project import NotionProject
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
+from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-
-
-class NotionBigPlanCollectionNotFoundError(Exception):
-    """Exception raised when a Notion big plan collection was not found."""
-
 
 class NotionBigPlanNotFoundError(Exception):
     """Exception raised when a Notion big plan was not found."""
@@ -23,17 +19,14 @@ class BigPlanNotionManager(abc.ABC):
 
     @abc.abstractmethod
     def upsert_big_plan_collection(
-            self, notion_project: NotionProject,
+            self, notion_workspace: NotionWorkspace,
             big_plan_collection: NotionBigPlanCollection) -> NotionBigPlanCollection:
         """Upsert the Notion-side big plan."""
 
     @abc.abstractmethod
-    def load_big_plan_collection(self, ref_id: EntityId) -> NotionBigPlanCollection:
-        """Retrieve the Notion-side big plan collection."""
-
-    @abc.abstractmethod
-    def remove_big_plans_collection(self, ref_id: EntityId) -> None:
-        """Remove the Notion-side structure for this collection."""
+    def upsert_big_plans_project_field_options(
+            self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
+        """Upsert the Notion-side structure for the 'project' select field."""
 
     @abc.abstractmethod
     def upsert_big_plan(

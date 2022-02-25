@@ -1,37 +1,36 @@
 """The command for finding vacations."""
 from dataclasses import dataclass
-from typing import Final, Optional, List
+from typing import Optional, List
 
-from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
-class VacationFindUseCase(UseCase['VacationFindUseCase.Args', 'VacationFindUseCase.Response']):
+class VacationFindUseCase(AppReadonlyUseCase['VacationFindUseCase.Args', 'VacationFindUseCase.Result']):
     """The command for finding vacations."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         allow_archived: bool
         filter_ref_ids: Optional[List[EntityId]]
 
-    @dataclass()
-    class Response:
-        """Response object."""
-
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
+        """Result object."""
         vacations: List[Vacation]
 
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(self, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._storage_engine = storage_engine
-
-    def execute(self, args: Args) -> 'Response':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
-            vacations = uow.vacation_repository.find_all(
-                allow_archived=args.allow_archived, filter_ref_ids=args.filter_ref_ids)
-        return self.Response(vacations=vacations)
+            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
+            vacations = \
+                uow.vacation_repository.find_all(
+                    vacation_collection_ref_id=vacation_collection.ref_id,
+                    allow_archived=args.allow_archived,
+                    filter_ref_ids=args.filter_ref_ids)
+        return self.Result(vacations=vacations)

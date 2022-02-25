@@ -38,4 +38,4 @@ class SmartListTagRemove(command.Command):
         """Callback to execute when the command is invoked."""
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
         for ref_id in ref_ids:
-            self._command.execute(ref_id)
+            self._command.execute(SmartListTagRemoveUseCase.Args(ref_id=ref_id))

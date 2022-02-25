@@ -29,6 +29,7 @@ class VacationRepository(Repository, abc.ABC):
     @abc.abstractmethod
     def find_all(
             self,
+            vacation_collection_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Vacation]:
         """Find all vacations matching some criteria."""

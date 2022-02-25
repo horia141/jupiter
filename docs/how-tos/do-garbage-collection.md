@@ -20,9 +20,9 @@ You can filter by project, and even tell it to work in parts. But in broad terms
 * Correct data drift issues - sometimes you'll get duplicate entries for what should be the same task or big plan.
   Garbage collection will make sure only one copy remains. Checkout [this article](./fix-data-inconsistencies.md) for
   details
-* Actually remove all archived inbox tasks, big plans, and recurring tasks from Notion.
+* Actually remove all archived inbox tasks, big plans, habits, etc from Notion.
 
-It's good to run `gc` periodically - once a week or so - depending on the volume of work you're handling.
+It's good to run `gc` periodically. Once a week or so is enough depending on the volume of work you're handling.
 
 ---
 [1] Mostly because of the way Jupiter sets up Notion, not necessarily because of an intrinsic issue with Notion.

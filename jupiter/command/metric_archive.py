@@ -2,7 +2,7 @@
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.metrics.archive import MetricArchiveUseCase
 from jupiter.domain.metrics.metric_key import MetricKey
 
@@ -33,4 +33,4 @@ class MetricArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
-        self._command.execute(args=metric_key)
+        self._command.execute(MetricArchiveUseCase.Args(key=metric_key))

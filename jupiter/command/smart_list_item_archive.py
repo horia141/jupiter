@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.smart_lists.item.archive import SmartListItemArchiveUseCase
 from jupiter.framework.base.entity_id import EntityId
 
@@ -37,4 +37,4 @@ class SmartListItemArchive(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(ref_id)
+        self._command.execute(SmartListItemArchiveUseCase.Args(ref_id=ref_id))

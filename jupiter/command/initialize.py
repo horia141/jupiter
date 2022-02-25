@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.timezone import Timezone
@@ -59,5 +59,9 @@ class Initialize(command.Command):
         first_project_name = ProjectName.from_raw(args.first_project_name)
 
         self._command.execute(InitUseCase.Args(
-            name=name, timezone=timezone, notion_space_id=notion_space_id, notion_token=notion_token,
-            first_project_key=first_project_key, first_project_name=first_project_name))
+            name=name,
+            timezone=timezone,
+            notion_space_id=notion_space_id,
+            notion_token=notion_token,
+            first_project_key=first_project_key,
+            first_project_name=first_project_name))

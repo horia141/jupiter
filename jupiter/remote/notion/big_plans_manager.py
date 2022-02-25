@@ -1,4 +1,6 @@
 """The centralised point for interacting with Notion big plans."""
+import copy
+import hashlib
 import logging
 import uuid
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable
@@ -8,13 +10,14 @@ from notion.collection import CollectionRowBlock
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, \
-    NotionBigPlanCollectionNotFoundError, NotionBigPlanNotFoundError
+    NotionBigPlanNotFoundError
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.notion_inbox_task_collection import NotionInboxTaskCollection
-from jupiter.domain.projects.notion_project import NotionProject
+from jupiter.domain.remote.notion.field_label import NotionFieldLabel
+from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
@@ -22,8 +25,7 @@ from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey, format_name_for_option
 from jupiter.remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, \
     NotionFieldShow
-from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionNotFoundError, \
-    NotionCollectionItemNotFoundError
+from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionItemNotFoundError
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -34,8 +36,8 @@ class NotionBigPlansManager(BigPlanNotionManager):
     """The centralised point for interacting with Notion big plans."""
 
     _KEY: ClassVar[str] = "big-plans"
-
     _PAGE_NAME: ClassVar[str] = "Big Plans"
+    _PAGE_ICON: ClassVar[str] = "🌍"
 
     _STATUS: ClassVar[JSONDictType] = {
         "Not Started": {
@@ -96,6 +98,15 @@ class NotionBigPlansManager(BigPlanNotionManager):
             "name": "Archived",
             "type": "checkbox"
         },
+        "project-ref-id": {
+            "name": "Project Id",
+            "type": "text"
+        },
+        "project-name": {
+            "name": "Project",
+            "type": "select",
+            "options": [{"color": "gray", "id": str(uuid.uuid4()), "value": "None"}]
+        },
         "last-edited-time": {
             "name": "Last Edited Time",
             "type": "last_edited_time"
@@ -112,9 +123,75 @@ class NotionBigPlansManager(BigPlanNotionManager):
         NotionFieldProps("actionable-date", NotionFieldShow.SHOW),
         NotionFieldProps("due-date", NotionFieldShow.SHOW),
         NotionFieldProps("archived", NotionFieldShow.SHOW),
+        NotionFieldProps("project-ref-id", NotionFieldShow.HIDE),
+        NotionFieldProps("project-name", NotionFieldShow.SHOW),
         NotionFieldProps("ref-id", NotionFieldShow.SHOW),
         NotionFieldProps("last-edited-time", NotionFieldShow.HIDE),
     ]
+
+    _KANBAN_WITH_PROJECT_SUBGROUP_FORMAT: ClassVar[JSONDictType] = {
+        "board_groups": [{
+            "property": "status",
+            "type": "select",
+            "value": cast(Dict[str, str], v)["name"],
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "type": "select",
+            "hidden": True
+        }],
+        "board_groups2": [{
+            "property": "status",
+            "value": {
+                "type": "select",
+                "value": cast(Dict[str, str], v)["name"]
+            },
+            "hidden": not cast(Dict[str, bool], v)["in_board"]
+        } for v in _STATUS.values()] + [{
+            "property": "status",
+            "value": {
+                "type": "select"
+            },
+            "hidden": True
+        }],
+        "board_columns_by": {
+            "property": "status",
+            "type": "select",
+            "sort": {"type": "manual"},
+            "hideEmptyGroups": False,
+            "disableBoardColorColumns": False
+        },
+        "collection_group_by": {
+            "property": "project-name",
+            "sort": {
+                "type": "manual"
+            },
+            "type": "select"
+        },
+        "board_properties": [{
+            "property": "status",
+            "visible": False
+        }, {
+            "property": "actionable-date",
+            "visible": False
+        }, {
+            "property": "due-date",
+            "visible": True
+        }, {
+            "property": "archived",
+            "visible": False
+        }, {
+            "property": "project-ref-id",
+            "visible": False
+        }, {
+            "property": "project-name",
+            "visible": False
+        }, {
+            "property": "last-edited-time",
+            "visible": False
+        }],
+        "board_cover_size": "small"
+    }
 
     _FORMAT: ClassVar[JSONDictType] = {
         "board_groups": [{
@@ -146,7 +223,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
             "visible": False
         }, {
             "property": "actionable-date",
-            "visible": True
+            "visible": False
         }, {
             "property": "due-date",
             "visible": True
@@ -154,10 +231,164 @@ class NotionBigPlansManager(BigPlanNotionManager):
             "property": "archived",
             "visible": False
         }, {
+            "property": "project-ref-id",
+            "visible": False
+        }, {
+            "property": "project-name",
+            "visible": True
+        }, {
             "property": "last-edited-time",
             "visible": False
         }],
         "board_cover_size": "small"
+    }
+
+    _TIMELINE_BY_PROJECT_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Timeline By Project",
+        "type": "timeline",
+        "query2": {
+            "timeline_by": "actionable-date",
+            "timeline_by_end": "due-date",
+            "aggregations": [{
+                "property": "title",
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "actionable-date",
+                "direction": "ascending"
+            }, {
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "status",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }]
+            }
+        },
+        "format": {
+            "collection_group_by": {
+                "property": "project-name",
+                "sort": {
+                    "type": "manual"
+                },
+                "type": "select"
+            },
+            "timeline_show_table": True,
+            "timeline_properties": [{
+                "property": "title",
+                "visible": True
+            }, {
+                "property": "status",
+                "visible": True
+            }],
+            "timeline_preference": {
+                "zoomLevel": "year"
+            },
+            "timeline_table_properties": [{
+                "width": 400,
+                "property": "title",
+                "visible": True
+            }]
+        }
+    }
+
+    _TIMELINE_ALL_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Timeline All",
+        "type": "timeline",
+        "query2": {
+            "timeline_by": "actionable-date",
+            "timeline_by_end": "due-date",
+            "aggregations": [{
+                "property": "title",
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "actionable-date",
+                "direction": "ascending"
+            }, {
+                "property": "due-date",
+                "direction": "ascending"
+            }, {
+                "property": "status",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }]
+            }
+        },
+        "format": {
+            "timeline_preference": {
+                "zoomLevel": "year"
+            },
+            "timeline_show_table": True,
+            "timeline_properties": [{
+                "property": "title",
+                "visible": True
+            }, {
+                "property": "status",
+                "visible": True
+            }, {
+                "property": "project-name",
+                "visible": True
+            }],
+            "timeline_table_properties": [{
+                "width": 400,
+                "property": "title",
+                "visible": True
+            }]
+        }
+    }
+
+    _KANBAN_BY_PROJECT_VIEW_SCHEMA: ClassVar[JSONDictType] = {
+        "name": "Kanban By Project",
+        "type": "board",
+        "query2": {
+            "group_by": "status",
+            "filter_operator": "and",
+            "aggregations": [{
+                "aggregator": "count"
+            }],
+            "sort": [{
+                "property": "due-date",
+                "direction": "ascending"
+            }],
+            "filter": {
+                "operator": "and",
+                "filters": [{
+                    "property": "archived",
+                    "filter": {
+                        "operator": "checkbox_is_not",
+                        "value": {
+                            "type": "exact",
+                            "value": True
+                        }
+                    }
+                }]
+            }
+        },
+        "format": _KANBAN_WITH_PROJECT_SUBGROUP_FORMAT
     }
 
     _KANBAN_ALL_VIEW_SCHEMA: ClassVar[JSONDictType] = {
@@ -181,7 +412,7 @@ class NotionBigPlansManager(BigPlanNotionManager):
                         "operator": "checkbox_is_not",
                         "value": {
                             "type": "exact",
-                            "value": "True"
+                            "value": True
                         }
                     }
                 }]
@@ -190,57 +421,12 @@ class NotionBigPlansManager(BigPlanNotionManager):
         "format": _FORMAT
     }
 
-    _TIMELINE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
-        "name": "Timeline",
-        "type": "timeline",
-        "query2": {
-            "timeline_by": "actionable-date",
-            "timeline_by_end": "due-date",
-            "aggregations": [{
-                "property": "title",
-                "aggregator": "count"
-            }],
-            "sort": [{
-                "property": "due-date",
-                "direction": "ascending"
-            }],
-            "filter": {
-                "operator": "and",
-                "filters": [{
-                    "property": "archived",
-                    "filter": {
-                        "operator": "checkbox_is_not",
-                        "value": {
-                            "type": "exact",
-                            "value": "True"
-                        }
-                    }
-                }]
-            }
-        },
-        "format": {
-            "timeline_show_table": True,
-            "timeline_properties": [{
-                "property": "title",
-                "visible": True
-            }, {
-                "property": "status",
-                "visible": True
-            }],
-            "timeline_table_properties": [{
-                "width": 200,
-                "property": "title",
-                "visible": True
-            }]
-        }
-    }
-
     _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Database",
         "type": "table",
         "format": {
             "table_properties": [{
-                "width": 300,
+                "width": 400,
                 "property": "title",
                 "visible": True
             }, {
@@ -265,6 +451,14 @@ class NotionBigPlansManager(BigPlanNotionManager):
                 "visible": True
             }, {
                 "width": 100,
+                "property": "project-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "project-name",
+                "visible": True
+            }, {
+                "width": 100,
                 "property": "last-edited-time",
                 "visible": True
             }]
@@ -284,48 +478,79 @@ class NotionBigPlansManager(BigPlanNotionManager):
         self._collections_manager = collections_manager
 
     def upsert_big_plan_collection(
-            self, notion_project: NotionProject,
+            self, notion_workspace: NotionWorkspace,
             big_plan_collection: NotionBigPlanCollection) -> NotionBigPlanCollection:
         """Upsert the Notion-side big plan."""
         collection_link = \
             self._collections_manager.upsert_collection(
                 key=NotionLockKey(f"{self._KEY}:{big_plan_collection.ref_id}"),
-                parent_page_notion_id=notion_project.notion_id,
+                parent_page_notion_id=notion_workspace.notion_id,
                 name=self._PAGE_NAME,
+                icon=self._PAGE_ICON,
                 schema=self._SCHEMA,
                 schema_properties=self._SCHEMA_PROPERTIES,
-                view_schemas={
-                    "kanban_all_view_id": NotionBigPlansManager._KANBAN_ALL_VIEW_SCHEMA,
-                    "timeline_view_id": NotionBigPlansManager._TIMELINE_VIEW_SCHEMA,
-                    "database_view_id": NotionBigPlansManager._DATABASE_VIEW_SCHEMA
-                })
+                view_schemas=[
+                    ("timeline_by_project_view_id", NotionBigPlansManager._TIMELINE_BY_PROJECT_VIEW_SCHEMA),
+                    ("timeline_all_view_id", NotionBigPlansManager._TIMELINE_ALL_VIEW_SCHEMA),
+                    ("kanban_by_project_view_id", NotionBigPlansManager._KANBAN_BY_PROJECT_VIEW_SCHEMA),
+                    ("kanban_all_view_id", NotionBigPlansManager._KANBAN_ALL_VIEW_SCHEMA),
+                    ("database_view_id", NotionBigPlansManager._DATABASE_VIEW_SCHEMA)
+                ])
 
         return NotionBigPlanCollection(
             notion_id=collection_link.collection_notion_id,
             ref_id=big_plan_collection.ref_id)
 
-    def load_big_plan_collection(self, ref_id: EntityId) -> NotionBigPlanCollection:
-        """Upsert the Notion-side big plan."""
-        try:
-            big_plan_collection_link = \
-                self._collections_manager.load_collection(
-                    key=NotionLockKey(f"{self._KEY}:{ref_id}"))
-        except NotionCollectionNotFoundError as err:
-            raise NotionBigPlanCollectionNotFoundError(
-                f"Could not find big plan collection with id {ref_id} locally") from err
+    def upsert_big_plans_project_field_options(
+            self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
+        """Upsert the Notion-side structure for the 'project' select field."""
+        inbox_big_plan_options = [{
+            "color": self._get_stable_color(str(pl.notion_link_uuid)),
+            "id": str(pl.notion_link_uuid),
+            "value": format_name_for_option(pl.name)
+        } for pl in project_labels]
 
-        return NotionBigPlanCollection(
-            ref_id=ref_id,
-            notion_id=big_plan_collection_link.collection_notion_id)
+        new_schema: JSONDictType = copy.deepcopy(self._SCHEMA)
+        new_schema["project-name"]["options"] = inbox_big_plan_options  # type: ignore
 
-    def remove_big_plans_collection(self, ref_id: EntityId) -> None:
-        """Remove the Notion-side structure for this collection."""
-        try:
-            return self._collections_manager.remove_collection(
-                NotionLockKey(f"{self._KEY}:{ref_id}"))
-        except NotionCollectionNotFoundError as err:
-            raise NotionBigPlanCollectionNotFoundError(
-                f"Notion big plan collection with id {ref_id} could not be found") from err
+        self._collections_manager.save_collection_no_merge(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), self._PAGE_NAME, self._PAGE_ICON, new_schema, "project-name")
+        LOGGER.info("Updated the schema for the associated big plans")
+
+        timeline_new_view: JSONDictType = copy.deepcopy(NotionBigPlansManager._TIMELINE_BY_PROJECT_VIEW_SCHEMA)
+        timeline_new_view["format"]["collection_groups"] = [{  # type: ignore
+            "property": "project-name",
+            "value": {
+                "type": "select",
+                "value": format_name_for_option(pl.name)
+            },
+            "hidden": False
+        } for pl in sorted(project_labels, key=lambda x: x.created_time)] + [{
+            "property": "project-name",
+            "value": {"type": "select"},
+            "hidden": True
+        }]
+
+        self._collections_manager.quick_update_view_for_collection(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), "timeline_by_project_view_id", timeline_new_view)
+
+        kanban_new_view: JSONDictType = copy.deepcopy(NotionBigPlansManager._KANBAN_BY_PROJECT_VIEW_SCHEMA)
+        kanban_new_view["format"]["collection_groups"] = [{  # type: ignore
+            "property": "project-name",
+            "value": {
+                "type": "select",
+                "value": format_name_for_option(pl.name)
+            },
+            "hidden": False
+        } for pl in sorted(project_labels, key=lambda x: x.created_time)] + [{
+            "property": "project-name",
+            "value": {"type": "select"},
+            "hidden": True
+        }]
+
+        self._collections_manager.quick_update_view_for_collection(
+            NotionLockKey(f"{self._KEY}:{ref_id}"), "kanban_by_project_view_id", kanban_new_view)
+        LOGGER.info("Updated the projects view for the associated big plan")
 
     def upsert_big_plan(
             self, big_plan_collection_ref_id: EntityId, big_plan: NotionBigPlan,
@@ -421,6 +646,8 @@ class NotionBigPlansManager(BigPlanNotionManager):
             notion_row.actionable_date = \
                 row.actionable_date.to_notion(self._global_properties.timezone) if row.actionable_date else None
             notion_row.due_date = row.due_date.to_notion(self._global_properties.timezone) if row.due_date else None
+            notion_row.project_id = row.project_ref_id
+            notion_row.project = row.project_name
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
@@ -447,6 +674,8 @@ class NotionBigPlansManager(BigPlanNotionManager):
             if big_plan_notion_row.actionable_date else None,
             due_date=ADate.from_notion(self._global_properties.timezone, big_plan_notion_row.due_date)
             if big_plan_notion_row.due_date else None,
+            project_ref_id=big_plan_notion_row.project_id,
+            project_name=big_plan_notion_row.project,
             last_edited_time=
             Timestamp.from_notion(big_plan_notion_row.last_edited_time),
             ref_id=EntityId.from_raw(big_plan_notion_row.ref_id) if big_plan_notion_row.ref_id else None)
@@ -532,3 +761,19 @@ class NotionBigPlansManager(BigPlanNotionManager):
                 }]
             }
         }
+
+    @staticmethod
+    def _get_stable_color(option_id: str) -> str:
+        """Return a random-ish yet stable color for a given name."""
+        colors = [
+            "gray",
+            "brown",
+            "orange",
+            "yellow",
+            "green",
+            "blue",
+            "purple",
+            "pink",
+            "red"
+        ]
+        return colors[hashlib.sha256(option_id.encode("utf-8")).digest()[0] % len(colors)]

@@ -15,15 +15,16 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import MutationUseCaseInvocationRecorder, UseCaseArgsBase
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 
-class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
+class InboxTaskUpdateUseCase(AppMutationUseCase['InboxTaskUpdateUseCase.Args', None]):
     """The command for updating a inbox task."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         ref_id: EntityId
         name: UpdateAction[InboxTaskName]
@@ -33,22 +34,23 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
         actionable_date: UpdateAction[Optional[ADate]]
         due_date: UpdateAction[Optional[ADate]]
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
             inbox_task_notion_manager: InboxTaskNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = storage_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._inbox_task_notion_manager = inbox_task_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             inbox_task = uow.inbox_task_repository.load_by_id(args.ref_id)
+            project = uow.project_repository.load_by_id(inbox_task.project_ref_id)
 
             try:
                 inbox_task = inbox_task.update(
@@ -64,9 +66,10 @@ class InboxTaskUpdateUseCase(UseCase['InboxTaskUpdateUseCase.Args', None]):
             if inbox_task.big_plan_ref_id is not None:
                 big_plan = uow.big_plan_repository.load_by_id(inbox_task.big_plan_ref_id)
 
+        direct_info = \
+            NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=big_plan.name if big_plan else None)
         notion_inbox_task = \
             self._inbox_task_notion_manager.load_inbox_task(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
         notion_inbox_task = \
-            notion_inbox_task.join_with_aggregate_root(
-                inbox_task, NotionInboxTask.DirectInfo(big_plan.name if big_plan else None))
+            notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
         self._inbox_task_notion_manager.save_inbox_task(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)

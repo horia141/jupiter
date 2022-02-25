@@ -2,7 +2,7 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen

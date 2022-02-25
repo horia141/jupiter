@@ -6,10 +6,12 @@ be stable and fast, and have sufficient supporting infrastructure (website, docs
 New features:
 
 * Support a journal
-* Support habits as separated from chores
 * Support megaplans
 * Define visual identity
 * Translate app and docs in one other language
+* Integration with Google Calendar
+* Email and Slack as sources for inbox tasks
+* Integrate with YouTube, Spotify, Apple Music, Amazon, etc for smart lists support, playlists creation, etc
 
 Public infrastructure:
 
@@ -21,7 +23,6 @@ Public infrastructure:
 
 Quality:
 
-* (In Progress) Switch from text files to SQLite storage
 * Upgrade to Notion public API (when available)
 
 Beyond this the plans get _ambitious_. Here's some product-wise plans:
@@ -30,8 +31,4 @@ Beyond this the plans get _ambitious_. Here's some product-wise plans:
  services
 * Build a graphical client as a counterpart to the CLI one, and an alternative to the Notion one
 * Support integration with other Notion-like apps
-* Allow task creation via email or chatbots
-* Build a Slack app and allow control via Slack commands
-* Integrate with Google calendar / iCal for task source, as well as to export a calendar with all the tasks
-* Integrate with YouTube, Spotify, Apple Music, Amazon, etc for smart lists support, playlists creation, etc
 * Build a hosting/SaaS setup for all of the above

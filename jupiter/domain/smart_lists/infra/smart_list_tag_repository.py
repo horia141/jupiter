@@ -28,20 +28,13 @@ class SmartListTagRepository(Repository, abc.ABC):
         """Load a given smart list tag."""
 
     @abc.abstractmethod
-    def find_all_for_smart_list(
-            self, smart_list_ref_id: EntityId,
-            allow_archived: bool = False,
-            filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> List[SmartListTag]:
-        """Retrieve all smart list tags for a given smart list."""
-
-    @abc.abstractmethod
     def find_all(
             self,
+            smart_list_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> List[SmartListTag]:
-        """Find all smart list tags matching some criteria."""
+        """Retrieve all smart list tags for a given smart list."""
 
     @abc.abstractmethod
     def remove(self, ref_id: EntityId) -> SmartListTag:

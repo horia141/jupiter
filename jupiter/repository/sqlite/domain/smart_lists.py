@@ -6,12 +6,16 @@ from sqlalchemy import Table, Integer, Boolean, DateTime, ForeignKey, String, Co
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
 
+from jupiter.domain.entity_icon import EntityIcon
+from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository, \
+    SmartListCollectionNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository, \
     SmartListItemNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepository, SmartListAlreadyExistsError, \
     SmartListNotFoundError
 from jupiter.domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository, SmartListTagNotFoundError
 from jupiter.domain.smart_lists.smart_list import SmartList
+from jupiter.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
@@ -22,6 +26,102 @@ from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.repository.sqlite.infra.events import build_event_table, upsert_events, remove_events
+
+
+class SqliteSmartListCollectionRepository(SmartListCollectionRepository):
+    """The smart list collection repository."""
+
+    _connection: Final[Connection]
+    _smart_list_collection_table: Final[Table]
+    _smart_list_collection_event_table: Final[Table]
+
+    def __init__(self, connection: Connection, metadata: MetaData) -> None:
+        """Constructor."""
+        self._connection = connection
+        self._smart_list_collection_table = Table(
+            'smart_list_collection',
+            metadata,
+            Column('ref_id', Integer, primary_key=True, autoincrement=True),
+            Column('version', Integer, nullable=False),
+            Column('archived', Boolean, nullable=False),
+            Column('created_time', DateTime, nullable=False),
+            Column('last_modified_time', DateTime, nullable=False),
+            Column('archived_time', DateTime, nullable=True),
+            Column(
+                'workspace_ref_id', Integer, ForeignKey("workspace_ref_id.ref_id"),
+                unique=True, index=True, nullable=False),
+            keep_existing=True)
+        self._smart_list_collection_event_table = build_event_table(self._smart_list_collection_table, metadata)
+
+    def create(self, smart_list_collection: SmartListCollection) -> SmartListCollection:
+        """Create a smart list collection."""
+        result = self._connection.execute(
+            insert(self._smart_list_collection_table).values(
+                ref_id=smart_list_collection.ref_id.as_int() if smart_list_collection.ref_id != BAD_REF_ID else None,
+                version=smart_list_collection.version,
+                archived=smart_list_collection.archived,
+                created_time=smart_list_collection.created_time.to_db(),
+                last_modified_time=smart_list_collection.last_modified_time.to_db(),
+                archived_time=
+                smart_list_collection.archived_time.to_db() if smart_list_collection.archived_time else None,
+                workspace_ref_id=smart_list_collection.workspace_ref_id.as_int()))
+        smart_list_collection = smart_list_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._smart_list_collection_event_table, smart_list_collection)
+        return smart_list_collection
+
+    def save(self, smart_list_collection: SmartListCollection) -> SmartListCollection:
+        """Save a big smart list collection."""
+        result = self._connection.execute(
+            update(self._smart_list_collection_table)
+            .where(self._smart_list_collection_table.c.ref_id == smart_list_collection.ref_id.as_int())
+            .values(
+                version=smart_list_collection.version,
+                archived=smart_list_collection.archived,
+                created_time=smart_list_collection.created_time.to_db(),
+                last_modified_time=smart_list_collection.last_modified_time.to_db(),
+                archived_time=
+                smart_list_collection.archived_time.to_db() if smart_list_collection.archived_time else None,
+                workspace_ref_id=smart_list_collection.workspace_ref_id.as_int()))
+        if result.rowcount == 0:
+            raise SmartListCollectionNotFoundError("The smart list collection does not exist")
+        upsert_events(self._connection, self._smart_list_collection_event_table, smart_list_collection)
+        return smart_list_collection
+
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListCollection:
+        """Load a smart list collection."""
+        query_stmt = \
+            select(self._smart_list_collection_table)\
+                .where(self._smart_list_collection_table.c.ref_id == ref_id.as_int())
+        if not allow_archived:
+            query_stmt = query_stmt.where(self._smart_list_collection_table.c.archived.is_(False))
+        result = self._connection.execute(query_stmt).first()
+        if result is None:
+            raise SmartListCollectionNotFoundError(f"Smart list collection with id {ref_id} does not exist")
+        return self._row_to_entity(result)
+
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> SmartListCollection:
+        """Load a smart list collection for a given project."""
+        query_stmt = \
+            select(self._smart_list_collection_table)\
+                .where(self._smart_list_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+        result = self._connection.execute(query_stmt).first()
+        if result is None:
+            raise SmartListCollectionNotFoundError(
+                f"Smart list collection for workspace {workspace_ref_id} does not exist")
+        return self._row_to_entity(result)
+
+    @staticmethod
+    def _row_to_entity(row: Result) -> SmartListCollection:
+        return SmartListCollection(
+            ref_id=EntityId.from_raw(str(row["ref_id"])),
+            version=row["version"],
+            archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
+            if row["archived_time"] else None,
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            events=[],
+            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])))
 
 
 class SqliteSmartListRepository(SmartListRepository):
@@ -43,9 +143,10 @@ class SqliteSmartListRepository(SmartListRepository):
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
             Column('archived_time', DateTime, nullable=True),
-            Column('workspace_ref_id', Integer, ForeignKey('workspace.ref_id'), nullable=False),
+            Column('smart_list_collection_ref_id', Integer, ForeignKey('smart_list_collection.ref_id'), nullable=False),
             Column('the_key', String(32), nullable=False),
             Column('name', String(100), nullable=False),
+            Column('icon', String(1), nullable=True),
             keep_existing=True)
         self._smart_list_event_table = build_event_table(self._smart_list_table, metadata)
 
@@ -60,9 +161,10 @@ class SqliteSmartListRepository(SmartListRepository):
                     created_time=smart_list.created_time.to_db(),
                     last_modified_time=smart_list.last_modified_time.to_db(),
                     archived_time=smart_list.archived_time.to_db() if smart_list.archived_time else None,
-                    workspace_ref_id=smart_list.workspace_ref_id.as_int(),
+                    smart_list_collection_ref_id=smart_list.smart_list_collection_ref_id.as_int(),
                     the_key=str(smart_list.key),
-                    name=str(smart_list.name)))
+                    name=str(smart_list.name),
+                    icon=smart_list.icon.to_safe() if smart_list.icon else None))
         except IntegrityError as err:
             raise SmartListAlreadyExistsError(f"Smart list with key {smart_list.key} already exists") from err
         smart_list = smart_list.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -80,17 +182,21 @@ class SqliteSmartListRepository(SmartListRepository):
                 created_time=smart_list.created_time.to_db(),
                 last_modified_time=smart_list.last_modified_time.to_db(),
                 archived_time=smart_list.archived_time.to_db() if smart_list.archived_time else None,
-                workspace_ref_id=smart_list.workspace_ref_id.as_int(),
+                smart_list_collection_ref_id=smart_list.smart_list_collection_ref_id.as_int(),
                 the_key=str(smart_list.key),
-                name=str(smart_list.name)))
+                name=str(smart_list.name),
+                icon=smart_list.icon.to_safe() if smart_list.icon else None))
         if result.rowcount == 0:
-            raise SmartListNotFoundError(f"The smart list does not exist")
+            raise SmartListNotFoundError("The smart list does not exist")
         upsert_events(self._connection, self._smart_list_event_table, smart_list)
         return smart_list
 
-    def load_by_key(self, key: SmartListKey) -> SmartList:
+    def load_by_key(self, smart_list_collection_ref_id: EntityId, key: SmartListKey) -> SmartList:
         """Load the smart list by key."""
-        query_stmt = select(self._smart_list_table).where(self._smart_list_table.c.the_key == str(key))
+        query_stmt = \
+            select(self._smart_list_table)\
+                .where(self._smart_list_table.c.smart_list_collection_ref_id == smart_list_collection_ref_id.as_int())\
+                .where(self._smart_list_table.c.the_key == str(key))
         result = self._connection.execute(query_stmt).first()
         if result is None:
             raise SmartListNotFoundError(f"Smart list with key {key} does not exist")
@@ -107,10 +213,15 @@ class SqliteSmartListRepository(SmartListRepository):
         return self._row_to_entity(result)
 
     def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            self,
+            smart_list_collection_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_keys: Optional[Iterable[SmartListKey]] = None) -> List[SmartList]:
         """Retrieve all smart lists."""
-        query_stmt = select(self._smart_list_table)
+        query_stmt = \
+            select(self._smart_list_table)\
+            .where(self._smart_list_table.c.smart_list_collection_ref_id == smart_list_collection_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._smart_list_table.c.archived.is_(False))
         if filter_ref_ids:
@@ -143,9 +254,10 @@ class SqliteSmartListRepository(SmartListRepository):
             if row["archived_time"] else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])),
+            smart_list_collection_ref_id=EntityId.from_raw(str(row["smart_list_collection_ref_id"])),
             key=SmartListKey.from_raw(row["the_key"]),
-            name=SmartListName.from_raw(row["name"]))
+            name=SmartListName.from_raw(row["name"]),
+            icon=EntityIcon.from_safe(row["icon"]) if row["icon"] else None)
 
 
 class SqliteSmartListTagRepository(SmartListTagRepository):
@@ -202,7 +314,7 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
                 smart_list_ref_id=smart_list_tag.smart_list_ref_id.as_int(),
                 tag_name=str(smart_list_tag.tag_name)))
         if result.rowcount == 0:
-            raise SmartListTagNotFoundError(f"The smart list tag does not exist")
+            raise SmartListTagNotFoundError("The smart list tag does not exist")
         upsert_events(self._connection, self._smart_list_tag_event_table, smart_list_tag)
         return smart_list_tag
 
@@ -216,35 +328,19 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
             raise SmartListTagNotFoundError(f"The smart list tag with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def find_all_for_smart_list(
-            self, smart_list_ref_id: EntityId, allow_archived: bool = False,
-            filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> List[SmartListTag]:
-        """Retrieve all smart list tags for a given smart list."""
-        query_stmt = select(self._smart_list_tag_table)\
-            .where(self._smart_list_tag_table.c.smart_list_ref_id == smart_list_ref_id.as_int())
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._smart_list_tag_table.c.archived.is_(False))
-        if filter_tag_names:
-            query_stmt = query_stmt.where(self._smart_list_tag_table.c.tag_name.in_(str(fi) for fi in filter_tag_names))
-        results = self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
     def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None,
+            self,
+            smart_list_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_tag_names: Optional[Iterable[SmartListTagName]] = None) -> List[SmartListTag]:
         """Find all smart list tags."""
-        query_stmt = select(self._smart_list_tag_table)
+        query_stmt = select(self._smart_list_tag_table) \
+            .where(self._smart_list_tag_table.c.smart_list_ref_id == smart_list_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._smart_list_tag_table.c.archived.is_(False))
         if filter_ref_ids:
             query_stmt = query_stmt.where(self._smart_list_tag_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_smart_list_ref_ids:
-            query_stmt = \
-                query_stmt\
-                .where(
-                    self._smart_list_tag_table.c.smart_list_ref_id.in_(
-                        slrf.as_int() for slrf in filter_smart_list_ref_ids))
         if filter_tag_names:
             query_stmt = query_stmt.where(self._smart_list_tag_table.c.tag_name.in_(str(fi) for fi in filter_tag_names))
         results = self._connection.execute(query_stmt)
@@ -339,7 +435,7 @@ class SqliteSmartListItemRepository(SmartListItemRepository):
                 tags_ref_id=[ti.as_int() for ti in smart_list_item.tags_ref_id],
                 url=str(smart_list_item.url) if smart_list_item.url else None))
         if result.rowcount == 0:
-            raise SmartListItemNotFoundError(f"The smart list item does not exist")
+            raise SmartListItemNotFoundError("The smart list item does not exist")
         upsert_events(self._connection, self._smart_list_item_event_table, smart_list_item)
         return smart_list_item
 
@@ -353,33 +449,22 @@ class SqliteSmartListItemRepository(SmartListItemRepository):
             raise SmartListItemNotFoundError(f"Smart list item with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def find_all_for_smart_list(self, smart_list_ref_id: EntityId, allow_archived: bool = False) -> List[SmartListItem]:
-        """Find all smart list items for a give smart list."""
-        query_stmt = select(self._smart_list_item_table) \
-            .where(self._smart_list_item_table.c.smart_list_ref_id == smart_list_ref_id.as_int())
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._smart_list_item_table.c.archived.is_(False))
-        results = self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
     def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_smart_list_ref_ids: Optional[Iterable[EntityId]] = None, filter_is_done: Optional[bool] = None,
+            self,
+            smart_list_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_is_done: Optional[bool] = None,
             filter_tag_ref_ids: Optional[Iterable[EntityId]] = None) -> List[SmartListItem]:
         """Find all smart list items."""
-        query_stmt = select(self._smart_list_item_table)
+        query_stmt = select(self._smart_list_item_table) \
+            .where(self._smart_list_item_table.c.smart_list_ref_id == smart_list_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._smart_list_item_table.c.archived.is_(False))
         if filter_ref_ids:
             query_stmt = \
                 query_stmt\
                 .where(self._smart_list_item_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_smart_list_ref_ids:
-            query_stmt = \
-                query_stmt\
-                .where(
-                    self._smart_list_item_table.c.smart_list_ref_id.in_(
-                        fi.as_int() for fi in filter_smart_list_ref_ids))
         if filter_is_done:
             query_stmt = query_stmt.where(self._smart_list_item_table.c.is_done.is_(filter_is_done))
         results = self._connection.execute(query_stmt)

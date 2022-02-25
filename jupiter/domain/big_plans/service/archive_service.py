@@ -44,11 +44,11 @@ class BigPlanArchiveService:
             big_plan_collection = uow.big_plan_collection_repository.load_by_id(big_plan.big_plan_collection_ref_id)
 
             inbox_task_collection = \
-                uow.inbox_task_collection_repository.load_by_project(big_plan_collection.project_ref_id)
+                uow.inbox_task_collection_repository.load_by_workspace(big_plan_collection.workspace_ref_id)
             inbox_tasks_to_archive = \
                 uow.inbox_task_repository.find_all(
-                    allow_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id],
-                    filter_inbox_task_collection_ref_ids=[inbox_task_collection.ref_id])
+                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    allow_archived=False, filter_big_plan_ref_ids=[big_plan.ref_id])
             archived_inbox_tasks = []
             for inbox_task in inbox_tasks_to_archive:
                 inbox_task = inbox_task.mark_archived(self._source, self._time_provider.get_current_time())

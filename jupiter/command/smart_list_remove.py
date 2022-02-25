@@ -3,7 +3,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.smart_lists.remove import SmartListRemoveUseCase
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 
@@ -38,4 +38,4 @@ class SmartListsRemove(command.Command):
         """Callback to execute when the command is invoked."""
         smart_list_keys = [SmartListKey.from_raw(srk) for srk in args.smart_list_keys]
         for key in smart_list_keys:
-            self._command.execute(key)
+            self._command.execute(SmartListRemoveUseCase.Args(key=key))

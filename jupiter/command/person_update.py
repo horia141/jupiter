@@ -3,18 +3,18 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.prm.person_birthday import PersonBirthday
-from jupiter.domain.prm.person_relationship import PersonRelationship
+from jupiter.domain.persons.person_birthday import PersonBirthday
+from jupiter.domain.persons.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.update_action import UpdateAction
-from jupiter.use_cases.prm.person.update import PersonUpdateUseCase
+from jupiter.use_cases.persons.update import PersonUpdateUseCase
 
 LOGGER = logging.getLogger(__name__)
 

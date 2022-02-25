@@ -4,7 +4,7 @@ import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.metrics.entry.remove import MetricEntryRemoveUseCase
 from jupiter.framework.base.entity_id import EntityId
 
@@ -39,4 +39,4 @@ class MetricEntryRemove(command.Command):
         """Callback to execute when the command is invoked."""
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
         for ref_id in ref_ids:
-            self._the_command.execute(ref_id)
+            self._the_command.execute(MetricEntryRemoveUseCase.Args(ref_id=ref_id))

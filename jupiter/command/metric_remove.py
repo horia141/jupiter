@@ -2,7 +2,7 @@
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.use_cases.metrics.remove import MetricRemoveUseCase
 from jupiter.domain.metrics.metric_key import MetricKey
 
@@ -35,4 +35,4 @@ class MetricRemove(command.Command):
         """Callback to execute when the command is invoked."""
         metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys]
         for key in metric_keys:
-            self._command.execute(key)
+            self._command.execute(MetricRemoveUseCase.Args(key=key))

@@ -1,11 +1,10 @@
 # Tasks Generation
 
 Tasks generation is a periodic action you must perform. It takes the _templates_ that are
-[recurring tasks](recurring-tasks.md) and turns them into real [inbox tasks](inbox-tasks.md).
-It also generates [metric collection tasks](metrics.md) and [person catch up taks](prm.md)
-in a similar fashion.
+[habits](habits.md), [chores](chores.md), [metrics](metrics.md) or [persons](persons.md) and turns them into real
+[inbox tasks](inbox-tasks.md).
 
-It needs to be performed daily usually, or the lowest period any of your recurring tasks have.
+It needs to be performed daily usually.
 
 The command itself is simply called `gen` and you can invoke it as:
 
@@ -26,7 +25,7 @@ Some things to note:
 * The command is idempotent, so you can run it however many times you want and it'll do the right thing.
 * Via the `--date` argument you can run generation for a date different than today - either in the future or in the
   past.
+* You can limit it to habits, chores, metrics, or persons via the `--target` option.
 * You can limit it for a particular project too via the `--project` option.
-* You can filter for specific recurring tasks, metrics, and persons.
-* You can choose to generate only particular entities.
+* You can filter for specific habits, chores, metrics, and persons.
 * Check the help for more options via `jupiter gen --help`.

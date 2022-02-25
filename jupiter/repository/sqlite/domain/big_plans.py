@@ -38,7 +38,9 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
             Column('created_time', DateTime, nullable=False),
             Column('last_modified_time', DateTime, nullable=False),
             Column('archived_time', DateTime, nullable=True),
-            Column('project_ref_id', Integer, ForeignKey("project.ref_id"), unique=True, nullable=False),
+            Column(
+                'workspace_ref_id', Integer, ForeignKey("workspace_ref_id.ref_id"),
+                unique=True, index=True, nullable=False),
             keep_existing=True)
         self._big_plan_collection_event_table = build_event_table(self._big_plan_collection_table, metadata)
 
@@ -52,7 +54,7 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
                 created_time=big_plan_collection.created_time.to_db(),
                 last_modified_time=big_plan_collection.last_modified_time.to_db(),
                 archived_time=big_plan_collection.archived_time.to_db() if big_plan_collection.archived_time else None,
-                project_ref_id=big_plan_collection.project_ref_id.as_int()))
+                workspace_ref_id=big_plan_collection.workspace_ref_id.as_int()))
         big_plan_collection = big_plan_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._big_plan_collection_event_table, big_plan_collection)
         return big_plan_collection
@@ -68,9 +70,9 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
                 created_time=big_plan_collection.created_time.to_db(),
                 last_modified_time=big_plan_collection.last_modified_time.to_db(),
                 archived_time=big_plan_collection.archived_time.to_db() if big_plan_collection.archived_time else None,
-                project_ref_id=big_plan_collection.project_ref_id.as_int()))
+                workspace_ref_id=big_plan_collection.workspace_ref_id.as_int()))
         if result.rowcount == 0:
-            raise BigPlanCollectionNotFoundError(f"The big plan collection does not exist")
+            raise BigPlanCollectionNotFoundError("The big plan collection does not exist")
         upsert_events(self._connection, self._big_plan_collection_event_table, big_plan_collection)
         return big_plan_collection
 
@@ -86,43 +88,14 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
             raise BigPlanCollectionNotFoundError(f"Big plan collection with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def load_by_project(self, project_ref_id: EntityId) -> BigPlanCollection:
+    def load_by_workspace(self, workspace_ref_id: EntityId) -> BigPlanCollection:
         """Load a big plan collection for a given project."""
         query_stmt = \
             select(self._big_plan_collection_table)\
-                .where(self._big_plan_collection_table.c.project_ref_id == project_ref_id.as_int())
+                .where(self._big_plan_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise BigPlanCollectionNotFoundError(f"Big plan collection for project {project_ref_id} does not exist")
-        return self._row_to_entity(result)
-
-    def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlanCollection]:
-        """Retrieve all big plan collections."""
-        query_stmt = select(self._big_plan_collection_table)
-        if not allow_archived:
-            query_stmt = query_stmt.where(self._big_plan_collection_table.c.archived.is_(False))
-        if filter_ref_ids:
-            query_stmt = \
-                query_stmt.where(self._big_plan_collection_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_project_ref_ids:
-            query_stmt = query_stmt.where(
-                self._big_plan_collection_table.c.project_ref_id.in_(fi.as_int() for fi in filter_project_ref_ids))
-        results = self._connection.execute(query_stmt)
-        return [self._row_to_entity(row) for row in results]
-
-    def remove(self, ref_id: EntityId) -> BigPlanCollection:
-        """Remove a big plan collection."""
-        query_stmt = \
-            select(self._big_plan_collection_table)\
-                .where(self._big_plan_collection_table.c.ref_id == ref_id.as_int())
-        result = self._connection.execute(query_stmt).first()
-        if result is None:
-            raise BigPlanCollectionNotFoundError(f"big plan collection with id {ref_id} does not exist")
-        self._connection.execute(
-            delete(self._big_plan_collection_table).where(self._big_plan_collection_table.c.ref_id == ref_id.as_int()))
-        remove_events(self._connection, self._big_plan_collection_event_table, ref_id)
+            raise BigPlanCollectionNotFoundError(f"Big plan collection for workspace {workspace_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -136,7 +109,7 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
             if row["archived_time"] else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
-            project_ref_id=EntityId.from_raw(str(row["project_ref_id"])))
+            workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])))
 
 
 class SqliteBigPlanRepository(BigPlanRepository):
@@ -159,6 +132,7 @@ class SqliteBigPlanRepository(BigPlanRepository):
             Column('last_modified_time', DateTime, nullable=False),
             Column('archived_time', DateTime, nullable=True),
             Column('big_plan_collection_ref_id', Integer, ForeignKey("big_plan_collection.ref_id"), nullable=False),
+            Column('project_ref_id', Integer, ForeignKey('project.ref_id'), nullable=False, index=True),
             Column('name', Unicode(), nullable=False),
             Column('status', String(16), nullable=False),
             Column('actionable_date', DateTime, nullable=True),
@@ -182,6 +156,7 @@ class SqliteBigPlanRepository(BigPlanRepository):
                     last_modified_time=big_plan.last_modified_time.to_db(),
                     archived_time=big_plan.archived_time.to_db() if big_plan.archived_time else None,
                     big_plan_collection_ref_id=big_plan.big_plan_collection_ref_id.as_int(),
+                    project_ref_id=big_plan.project_ref_id.as_int(),
                     name=str(big_plan.name),
                     status=str(big_plan.status),
                     actionable_date=big_plan.actionable_date.to_db() if big_plan.actionable_date else None,
@@ -207,6 +182,7 @@ class SqliteBigPlanRepository(BigPlanRepository):
                 last_modified_time=big_plan.last_modified_time.to_db(),
                 archived_time=big_plan.archived_time.to_db() if big_plan.archived_time else None,
                 big_plan_collection_ref_id=big_plan.big_plan_collection_ref_id.as_int(),
+                project_ref_id=big_plan.project_ref_id.as_int(),
                 name=str(big_plan.name),
                 status=str(big_plan.status),
                 actionable_date=big_plan.actionable_date.to_db() if big_plan.actionable_date else None,
@@ -231,18 +207,23 @@ class SqliteBigPlanRepository(BigPlanRepository):
         return self._row_to_entity(result)
 
     def find_all(
-            self, allow_archived: bool = False, filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_big_plan_collection_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
+            self,
+            big_plan_collection_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
         """Find all the big plans."""
-        query_stmt = select(self._big_plan_table)
+        query_stmt = \
+            select(self._big_plan_table) \
+            .where(self._big_plan_table.c.big_plan_collection_ref_id == big_plan_collection_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._big_plan_table.c.archived.is_(False))
         if filter_ref_ids:
             query_stmt = query_stmt.where(self._big_plan_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids))
-        if filter_big_plan_collection_ref_ids:
-            query_stmt = query_stmt.where(
-                self._big_plan_table.c.big_plan_collection_ref_id.in_(
-                    fi.as_int() for fi in filter_big_plan_collection_ref_ids))
+        if filter_project_ref_ids:
+            query_stmt = \
+                query_stmt.where(
+                    self._big_plan_table.c.project_ref_id.in_(fi.as_int() for fi in filter_project_ref_ids))
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
@@ -269,6 +250,7 @@ class SqliteBigPlanRepository(BigPlanRepository):
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
             big_plan_collection_ref_id=EntityId.from_raw(str(row["big_plan_collection_ref_id"])),
+            project_ref_id=EntityId.from_raw(str(row["project_ref_id"])),
             name=BigPlanName.from_raw(row["name"]),
             status=BigPlanStatus.from_raw(row["status"]),
             actionable_date=ADate.from_db(row["actionable_date"]) if row["actionable_date"] else None,

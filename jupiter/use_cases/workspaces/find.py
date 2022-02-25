@@ -1,32 +1,29 @@
 """The command for finding workspaces."""
 from dataclasses import dataclass
-from typing import Final
 
 from jupiter.domain.projects.project import Project
-from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.workspaces.workspace import Workspace
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
-class WorkspaceFindUseCase(UseCase[None, 'WorkspaceFindUseCase.Response']):
+class WorkspaceFindUseCase(AppReadonlyUseCase['WorkspaceFindUseCase.Args', 'WorkspaceFindUseCase.Result']):
     """The command for finding workspaces."""
 
-    @dataclass()
-    class Response:
-        """Response object."""
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
+        """Args."""
+
+    @dataclass(frozen=True)
+    class Result(UseCaseResultBase):
+        """Result object."""
 
         workspace: Workspace
         default_project: Project
 
-    _storage_engine: Final[DomainStorageEngine]
-
-    def __init__(self, storage_engine: DomainStorageEngine) -> None:
-        """Constructor."""
-        self._storage_engine = storage_engine
-
-    def execute(self, args: None) -> 'Response':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
         """Execute the command's action."""
+        workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            workspace = uow.workspace_repository.load()
             default_project = uow.project_repository.load_by_id(workspace.default_project_ref_id)
-        return self.Response(workspace=workspace, default_project=default_project)
+        return self.Result(workspace=workspace, default_project=default_project)

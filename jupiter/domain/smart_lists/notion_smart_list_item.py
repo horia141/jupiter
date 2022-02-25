@@ -16,16 +16,16 @@ from jupiter.framework.update_action import UpdateAction
 
 @dataclass(frozen=True)
 class NotionSmartListItem(
-        NotionRow[SmartListItem, 'NotionSmartListItem.DirectExtraInfo', 'NotionSmartListItem.InverseExtraInfo']):
+        NotionRow[SmartListItem, 'NotionSmartListItem.DirectInfo', 'NotionSmartListItem.InverseInfo']):
     """A smart list item on Notion-side."""
 
     @dataclass(frozen=True)
-    class DirectExtraInfo:
+    class DirectInfo:
         """Extra info for the app to Notion copy."""
         tags_by_ref_id: Dict[EntityId, SmartListTag]
 
     @dataclass(frozen=True)
-    class InverseExtraInfo:
+    class InverseInfo:
         """Extra info for the Notion to app copy."""
         smart_list_ref_id: EntityId
         tags_by_name: Dict[SmartListTagName, SmartListTag]
@@ -36,7 +36,7 @@ class NotionSmartListItem(
     url: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: SmartListItem, extra_info: DirectExtraInfo) -> 'NotionSmartListItem':
+    def new_notion_row(aggregate_root: SmartListItem, extra_info: DirectInfo) -> 'NotionSmartListItem':
         """Construct a new Notion row from a given smart list item."""
         return NotionSmartListItem(
             notion_id=BAD_NOTION_ID,
@@ -48,7 +48,7 @@ class NotionSmartListItem(
             tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in aggregate_root.tags_ref_id],
             url=str(aggregate_root.url))
 
-    def new_aggregate_root(self, extra_info: InverseExtraInfo) -> SmartListItem:
+    def new_aggregate_root(self, extra_info: InverseInfo) -> SmartListItem:
         """Create a new smart list item from this."""
         return SmartListItem.new_smart_list_item(
             archived=self.archived,
@@ -60,7 +60,7 @@ class NotionSmartListItem(
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseExtraInfo) -> SmartListItem:
+    def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseInfo) -> SmartListItem:
         """Apply to an already existing smart list item."""
         return aggregate_root \
             .update(

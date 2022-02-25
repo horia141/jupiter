@@ -16,6 +16,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
     """The centralised point for interacting with Notion workspaces."""
 
     _KEY: ClassVar[str] = "workspaces"
+    _PAGE_ICON: ClassVar[str] = "⭐"
 
     _pages_manager: Final[NotionPagesManager]
 
@@ -25,7 +26,9 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
 
     def upsert_workspace(self, workspace: NotionWorkspace) -> NotionWorkspace:
         """Upsert the root Notion structure."""
-        workspace_page = self._pages_manager.upsert_page(NotionLockKey(self._KEY), workspace.name)
+        workspace_page = \
+            self._pages_manager.upsert_page(
+                NotionLockKey(f"{self._KEY}:{workspace.ref_id}"), workspace.name, self._PAGE_ICON)
 
         return NotionWorkspace(
             name=workspace.name,
@@ -35,17 +38,18 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
     def save_workspace(self, notion_workspace: NotionWorkspace) -> NotionWorkspace:
         """Change the root Notion structure."""
         try:
-            self._pages_manager.save_page(NotionLockKey(self._KEY), notion_workspace.name)
+            self._pages_manager.save_page(
+                NotionLockKey(f"{self._KEY}:{notion_workspace.ref_id}"), notion_workspace.name, self._PAGE_ICON)
         except NotionPageNotFoundError as err:
-            raise NotionWorkspaceNotFoundError(f"Cannot find Notion workspace") from err
+            raise NotionWorkspaceNotFoundError("Cannot find Notion workspace") from err
         return notion_workspace
 
     def load_workspace(self, ref_id: EntityId) -> NotionWorkspace:
         """Retrieve the workspace from Notion side."""
         try:
-            workspace_page = self._pages_manager.get_page_extra(NotionLockKey(self._KEY))
+            workspace_page = self._pages_manager.get_page_extra(NotionLockKey(f"{self._KEY}:{ref_id}"))
         except NotionPageNotFoundError as err:
-            raise NotionWorkspaceNotFoundError(f"Cannot find Notion workspace") from err
+            raise NotionWorkspaceNotFoundError("Cannot find Notion workspace") from err
         return NotionWorkspace(
             name=workspace_page.name,
             notion_id=workspace_page.notion_id,

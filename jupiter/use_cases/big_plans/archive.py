@@ -11,39 +11,44 @@ from jupiter.domain.inbox_tasks.service.big_plan_ref_options_update_service impo
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCase
+from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
+from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class BigPlanArchiveUseCase(UseCase['BigPlanArchiveUseCase.Args', None]):
+class BigPlanArchiveUseCase(AppMutationUseCase['BigPlanArchiveUseCase.Args', None]):
     """The command for archiving a big plan."""
 
-    @dataclass()
-    class Args:
+    @dataclass(frozen=True)
+    class Args(UseCaseArgsBase):
         """Args."""
         ref_id: EntityId
 
-    _time_provider: Final[TimeProvider]
-    _storage_engine: Final[DomainStorageEngine]
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _big_plan_notion_manager: Final[BigPlanNotionManager]
 
     def __init__(
-            self, time_provider: TimeProvider,
-            inbox_task_engine: DomainStorageEngine, inbox_task_notion_manager: InboxTaskNotionManager,
+            self,
+            time_provider: TimeProvider,
+            invocation_recorder: MutationUseCaseInvocationRecorder,
+            storage_engine: DomainStorageEngine,
+            inbox_task_notion_manager: InboxTaskNotionManager,
             big_plan_notion_manager: BigPlanNotionManager) -> None:
         """Constructor."""
-        self._time_provider = time_provider
-        self._storage_engine = inbox_task_engine
+        super().__init__(time_provider, invocation_recorder, storage_engine)
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
 
-    def execute(self, args: Args) -> None:
+    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
+        workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
             inbox_tasks_for_big_plan = uow.inbox_task_repository.find_all(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
                 filter_big_plan_ref_ids=[args.ref_id])
 
         inbox_task_archive_service = \
@@ -69,8 +74,8 @@ class BigPlanArchiveUseCase(UseCase['BigPlanArchiveUseCase.Args', None]):
         except NotionBigPlanNotFoundError:
             LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")
 
-        LOGGER.info(f"Archived the big plan")
+        LOGGER.info("Archived the big plan")
 
         InboxTaskBigPlanRefOptionsUpdateService(
             self._storage_engine, self._inbox_task_notion_manager).sync(big_plan_collection)
-        LOGGER.info(f"Updated the schema for the associated inbox")
+        LOGGER.info("Updated the schema for the associated inbox")

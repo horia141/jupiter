@@ -10,6 +10,6 @@ Luckily, `sync` can be run in this way too via:
 $ jupiter sync --prefer local
 ```
 
-This won't mean new Notion-side entities won't be created, just that for already existing ones, the local versions will
-be used. Be careful that you'll lose your Notion-side changes this way. All the other filtering options work, so you
-can be really surgical about this sync.
+This won't mean new Notion-side entities are not created, just that for already existing ones, the local versions
+will be used. Be careful that you'll lose your Notion-side changes this way. All the other filtering options work,
+so you can be really surgical about this sync.

@@ -3,7 +3,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.adate import ADate
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.projects.project_key import ProjectKey
@@ -59,14 +59,16 @@ class InboxTaskShow(command.Command):
 
         for inbox_task_entry in response.inbox_tasks:
             inbox_task = inbox_task_entry.inbox_task
+            habit = inbox_task_entry.habit
+            chore = inbox_task_entry.chore
             big_plan = inbox_task_entry.big_plan
-            recurring_task = inbox_task_entry.recurring_task
             print(f'id={inbox_task.ref_id} {inbox_task.name}' +
                   f' source={inbox_task.source.for_notion()}' +
                   f' status={inbox_task.status.value}' +
                   f' archived="{inbox_task.archived}"' +
+                  (f' habit="{habit.name}"' if habit else "") +
+                  (f' habit="{chore.name}"' if chore else "") +
                   (f' big_plan="{big_plan.name}"' if big_plan else "") +
-                  (f' recurring_task="{recurring_task.name}"' if recurring_task else "") +
                   f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"' +
                   f'\n    created_time="{inbox_task.created_time}"' +
                   f' eisen={inbox_task.eisen.for_notion()}' +

@@ -4,7 +4,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.workspaces.change_default_project import WorkspaceChangeDefaultProjectUseCase
 

@@ -2,12 +2,12 @@
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
-import jupiter.command.command as command
+from jupiter.command import command
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
-from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -39,14 +39,11 @@ class MetricUpdate(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument("--metric", dest="metric_key", required=True, help="The key of the metric")
         parser.add_argument("--name", dest="name", required=False, help="The name of the metric")
-        collection_project_group = parser.add_mutually_exclusive_group()
-        collection_project_group.add_argument(
-            "--collection-project", dest="collection_project_key", required=False,
-            help="The project key to generate recurring collection tasks")
-        collection_project_group.add_argument(
-            "--clear-collection-project", dest="clear_collection_project_key",
-            required=False, default=False, action="store_const", const=True,
-            help="Clear the collection project")
+        icon = parser.add_mutually_exclusive_group()
+        icon.add_argument("--icon", dest="icon", help="The icon or :alias: for the metric")
+        icon.add_argument(
+            "--clear-icon", dest="clear_icon", default=False, action="store_const", const=True,
+            help="Clear the icon and use the default one")
         collection_period_group = parser.add_mutually_exclusive_group()
         collection_period_group.add_argument(
             "--collection-period", dest="collection_period", required=False,
@@ -130,13 +127,13 @@ class MetricUpdate(command.Command):
             name = UpdateAction.change_to(MetricName.from_raw(args.name))
         else:
             name = UpdateAction.do_nothing()
-        collection_project_key: UpdateAction[Optional[ProjectKey]]
-        if args.clear_collection_project_key:
-            collection_project_key = UpdateAction.change_to(None)
-        elif args.collection_project_key is not None:
-            collection_project_key = UpdateAction.change_to(ProjectKey.from_raw(args.collection_project_key))
+        icon: UpdateAction[Optional[EntityIcon]]
+        if args.clear_icon:
+            icon = UpdateAction.change_to(None)
+        elif args.icon:
+            icon = UpdateAction.change_to(EntityIcon.from_raw(args.icon))
         else:
-            collection_project_key = UpdateAction.do_nothing()
+            icon = UpdateAction.do_nothing()
         collection_period: UpdateAction[Optional[RecurringTaskPeriod]]
         if args.clear_collection_period:
             collection_period = UpdateAction.change_to(None)
@@ -203,7 +200,7 @@ class MetricUpdate(command.Command):
             MetricUpdateUseCase.Args(
                 key=metric_key,
                 name=name,
-                collection_project_key=collection_project_key,
+                icon=icon,
                 collection_period=collection_period,
                 collection_eisen=collection_eisen,
                 collection_difficulty=collection_difficulty,
