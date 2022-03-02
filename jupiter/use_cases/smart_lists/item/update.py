@@ -88,7 +88,7 @@ class SmartListItemUpdateUseCase(AppMutationUseCase['SmartListItemUpdateUseCase.
         notion_smart_list_item = \
             self._smart_list_notion_manager.load_smart_list_item(
                 smart_list_collection.ref_id, smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
-        notion_smart_list_item = notion_smart_list_item.join_with_aggregate_root(
+        notion_smart_list_item = notion_smart_list_item.join_with_entity(
             smart_list_item,
             NotionSmartListItem.DirectInfo({t.ref_id: t for t in smart_list_tags.values()}))
         self._smart_list_notion_manager.save_smart_list_item(

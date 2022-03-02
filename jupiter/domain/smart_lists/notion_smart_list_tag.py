@@ -22,16 +22,16 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
     name: str
 
     @staticmethod
-    def new_notion_row(aggregate_root: SmartListTag, extra_info: None) -> 'NotionSmartListTag':
+    def new_notion_row(entity: SmartListTag, extra_info: None) -> 'NotionSmartListTag':
         """Construct a new Notion row from a given smart list tag."""
         return NotionSmartListTag(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            archived=aggregate_root.archived,
-            last_edited_time=aggregate_root.last_modified_time,
-            name=str(aggregate_root.tag_name))
+            ref_id=entity.ref_id,
+            archived=entity.archived,
+            last_edited_time=entity.last_modified_time,
+            name=str(entity.tag_name))
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> SmartListTag:
+    def new_entity(self, extra_info: InverseInfo) -> SmartListTag:
         """Create a new smart list tag from this."""
         return SmartListTag.new_smart_list_tag(
             smart_list_ref_id=extra_info.smart_list_ref_id,
@@ -39,12 +39,12 @@ class NotionSmartListTag(NotionRow[SmartListTag, None, 'NotionSmartListTag.Inver
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: SmartListTag, extra_info: InverseInfo) -> SmartListTag:
+    def apply_to_entity(self, entity: SmartListTag, extra_info: InverseInfo) -> SmartListTag:
         """Apply to an already existing smart list tag."""
         smart_list_tag_name = SmartListTagName.from_raw(self.name)
-        return aggregate_root.update(
+        return entity.update(
             tag_name=UpdateAction.change_to(smart_list_tag_name),
             source=EventSource.NOTION,
             modification_time=
             self.last_edited_time
-            if smart_list_tag_name != aggregate_root.tag_name else aggregate_root.last_modified_time)
+            if smart_list_tag_name != entity.tag_name else entity.last_modified_time)

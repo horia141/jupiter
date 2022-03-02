@@ -42,35 +42,35 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
     birthday: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: Person, extra_info: None) -> 'NotionPerson':
-        """Construct a new Notion row from a given aggregate root."""
+    def new_notion_row(entity: Person, extra_info: None) -> 'NotionPerson':
+        """Construct a new Notion row from a given entity."""
         return NotionPerson(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            name=str(aggregate_root.name),
-            archived=aggregate_root.archived,
-            relationship=aggregate_root.relationship.for_notion(),
-            catch_up_period=aggregate_root.catch_up_params.period.for_notion()
-            if aggregate_root.catch_up_params else None,
-            catch_up_eisen=aggregate_root.catch_up_params.eisen.for_notion()
-            if aggregate_root.catch_up_params else None,
-            catch_up_difficulty=aggregate_root.catch_up_params.difficulty.for_notion()
-            if aggregate_root.catch_up_params and aggregate_root.catch_up_params.difficulty else None,
-            catch_up_actionable_from_day=aggregate_root.catch_up_params.actionable_from_day.as_int()
-            if aggregate_root.catch_up_params and aggregate_root.catch_up_params.actionable_from_day else None,
-            catch_up_actionable_from_month=aggregate_root.catch_up_params.actionable_from_month.as_int()
-            if aggregate_root.catch_up_params and aggregate_root.catch_up_params.actionable_from_month else None,
-            catch_up_due_at_time=str(aggregate_root.catch_up_params.due_at_time)
-            if aggregate_root.catch_up_params and aggregate_root.catch_up_params.due_at_time else None,
-            catch_up_due_at_day=aggregate_root.catch_up_params.due_at_day.as_int()
-            if aggregate_root.catch_up_params and aggregate_root.catch_up_params.due_at_day else None,
-            catch_up_due_at_month=aggregate_root.catch_up_params.due_at_month.as_int()
-            if aggregate_root.catch_up_params and aggregate_root.catch_up_params.due_at_month else None,
-            birthday=str(aggregate_root.birthday) if aggregate_root.birthday else None)
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            name=str(entity.name),
+            archived=entity.archived,
+            relationship=entity.relationship.for_notion(),
+            catch_up_period=entity.catch_up_params.period.for_notion()
+            if entity.catch_up_params else None,
+            catch_up_eisen=entity.catch_up_params.eisen.for_notion()
+            if entity.catch_up_params else None,
+            catch_up_difficulty=entity.catch_up_params.difficulty.for_notion()
+            if entity.catch_up_params and entity.catch_up_params.difficulty else None,
+            catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day.as_int()
+            if entity.catch_up_params and entity.catch_up_params.actionable_from_day else None,
+            catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month.as_int()
+            if entity.catch_up_params and entity.catch_up_params.actionable_from_month else None,
+            catch_up_due_at_time=str(entity.catch_up_params.due_at_time)
+            if entity.catch_up_params and entity.catch_up_params.due_at_time else None,
+            catch_up_due_at_day=entity.catch_up_params.due_at_day.as_int()
+            if entity.catch_up_params and entity.catch_up_params.due_at_day else None,
+            catch_up_due_at_month=entity.catch_up_params.due_at_month.as_int()
+            if entity.catch_up_params and entity.catch_up_params.due_at_month else None,
+            birthday=str(entity.birthday) if entity.birthday else None)
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> Person:
-        """Construct a new aggregate root from this notion row."""
+    def new_entity(self, extra_info: InverseInfo) -> Person:
+        """Construct a new entity from this notion row."""
         person_name = PersonName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
         person_catch_up_params = None
@@ -102,8 +102,8 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: Person, extra_info: InverseInfo) -> Person:
-        """Obtain the aggregate root form of this, with a possible error."""
+    def apply_to_entity(self, entity: Person, extra_info: InverseInfo) -> Person:
+        """Obtain the entity form of this, with a possible error."""
         person_name = PersonName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
         person_catch_up_params = None
@@ -125,7 +125,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
                 if self.catch_up_due_at_month else None)
         person_birthday = PersonBirthday.from_raw(self.birthday) if self.birthday else None
 
-        return aggregate_root\
+        return entity\
             .update(
                 name=UpdateAction.change_to(person_name),
                 relationship=UpdateAction.change_to(person_relationship),

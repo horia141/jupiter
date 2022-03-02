@@ -159,7 +159,7 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
             uow.person_repository.save(person)
 
         notion_person = self._person_notion_manager.load_person(person_collection.ref_id, person.ref_id)
-        notion_person = notion_person.join_with_aggregate_root(person, None)
+        notion_person = notion_person.join_with_entity(person, None)
         self._person_notion_manager.save_person(person_collection.ref_id, notion_person)
 
         # TODO(horia141): also create tasks here!
@@ -216,7 +216,7 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
+                notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
                 self._inbox_task_notion_manager.save_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")
@@ -258,7 +258,7 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
+                notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
                 self._inbox_task_notion_manager.save_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

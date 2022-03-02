@@ -127,7 +127,7 @@ class ChoreUpdateUseCase(AppMutationUseCase['ChoreUpdateUseCase.Args', None]):
 
         chore_direct_info = NotionChore.DirectInfo(project_name=project.name)
         notion_chore = self._chore_notion_manager.load_chore(chore.chore_collection_ref_id, chore.ref_id)
-        notion_chore = notion_chore.join_with_aggregate_root(chore, chore_direct_info)
+        notion_chore = notion_chore.join_with_entity(chore, chore_direct_info)
         self._chore_notion_manager.save_chore(chore.chore_collection_ref_id, notion_chore)
 
         if need_to_change_inbox_tasks:
@@ -168,7 +168,7 @@ class ChoreUpdateUseCase(AppMutationUseCase['ChoreUpdateUseCase.Args', None]):
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, inbox_task_direct_info)
+                notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
                 self._inbox_task_notion_manager.save_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

@@ -22,24 +22,24 @@ class NotionSmartList(NotionEntity[SmartList]):
     icon: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: SmartList) -> 'NotionSmartList':
-        """Construct a new Notion row from a given aggregate root."""
+    def new_notion_row(entity: SmartList) -> 'NotionSmartList':
+        """Construct a new Notion row from a given entity."""
         return NotionSmartList(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            name=str(aggregate_root.name),
-            icon=aggregate_root.icon.to_safe() if aggregate_root.icon else None)
+            ref_id=entity.ref_id,
+            name=str(entity.name),
+            icon=entity.icon.to_safe() if entity.icon else None)
 
-    def apply_to_aggregate_root(self, aggregate_root: SmartList, modification_time: Timestamp) -> SmartList:
-        """Obtain the aggregate root form of this, with a possible error."""
+    def apply_to_entity(self, entity: SmartList, modification_time: Timestamp) -> SmartList:
+        """Obtain the entity form of this, with a possible error."""
         LOGGER.info(self)
         name = SmartListName.from_raw(self.name)
         icon = EntityIcon.from_safe(self.icon) if self.icon else None
-        return aggregate_root.update(
+        return entity.update(
             name=UpdateAction.change_to(name),
             icon=UpdateAction.change_to(icon),
             source=EventSource.NOTION,
             modification_time=
             modification_time
-            if (name != aggregate_root.name or icon != aggregate_root.icon)
-            else aggregate_root.last_modified_time)
+            if (name != entity.name or icon != entity.icon)
+            else entity.last_modified_time)

@@ -46,5 +46,5 @@ class WorkspaceUpdateUseCase(AppMutationUseCase['WorkspaceUpdateUseCase.Args', N
             uow.workspace_repository.save(workspace)
 
         notion_workspace = self._workspace_notion_manager.load_workspace(workspace.ref_id)
-        notion_workspace = notion_workspace.join_with_aggregate_root(workspace)
+        notion_workspace = notion_workspace.join_with_entity(workspace)
         self._workspace_notion_manager.save_workspace(notion_workspace)

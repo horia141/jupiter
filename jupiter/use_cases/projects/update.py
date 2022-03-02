@@ -68,7 +68,7 @@ class ProjectUpdateUseCase(AppMutationUseCase['ProjectUpdateUseCase.Args', None]
         LOGGER.info("Applied local changes")
 
         notion_project = self._project_notion_manager.load_project(project_collection.ref_id, project.ref_id)
-        notion_project = notion_project.join_with_aggregate_root(project, NotionProject.DirectInfo())
+        notion_project = notion_project.join_with_entity(project, NotionProject.DirectInfo())
         self._project_notion_manager.save_project(project_collection.ref_id, notion_project)
         LOGGER.info("Applied Notion changes")
 

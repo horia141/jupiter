@@ -53,6 +53,6 @@ class SmartListTagUpdateUseCase(AppMutationUseCase['SmartListTagUpdateUseCase.Ar
         notion_smart_list_tag = \
             self._smart_list_notion_manager.load_smart_list_tag(
                 smart_list_collection.ref_id, smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
-        notion_smart_list_tag = notion_smart_list_tag.join_with_aggregate_root(smart_list_tag, None)
+        notion_smart_list_tag = notion_smart_list_tag.join_with_entity(smart_list_tag, None)
         self._smart_list_notion_manager.save_smart_list_tag(
             smart_list_collection.ref_id, smart_list_tag.smart_list_ref_id, notion_smart_list_tag)

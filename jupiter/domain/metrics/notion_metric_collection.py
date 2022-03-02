@@ -12,13 +12,13 @@ class NotionMetricCollection(NotionEntity[MetricCollection]):
     """A metric collection on Notion-side."""
 
     @staticmethod
-    def new_notion_row(aggregate_root: MetricCollection) -> 'NotionMetricCollection':
-        """Construct a new Notion row from a given aggregate root."""
+    def new_notion_row(entity: MetricCollection) -> 'NotionMetricCollection':
+        """Construct a new Notion row from a given entity."""
         return NotionMetricCollection(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id)
+            ref_id=entity.ref_id)
 
-    def apply_to_aggregate_root(
-            self, aggregate_root: MetricCollection, modification_time: Timestamp) -> MetricCollection:
-        """Obtain the aggregate root form of this, with a possible error."""
-        return aggregate_root
+    def apply_to_entity(
+            self, entity: MetricCollection, modification_time: Timestamp) -> MetricCollection:
+        """Obtain the entity form of this, with a possible error."""
+        return entity

@@ -1,22 +1,22 @@
 """The person collection."""
 from dataclasses import dataclass
 
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
 @dataclass(frozen=True)
-class PersonCollection(AggregateRoot):
+class PersonCollection(Entity):
     """The personal relationship database."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Create event."""
 
     @dataclass(frozen=True)
-    class ChangeCatchUpProjectRefId(AggregateRoot.Updated):
+    class ChangeCatchUpProjectRefId(Entity.Updated):
         """Change catch up project ref id."""
 
     workspace_ref_id: EntityId

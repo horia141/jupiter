@@ -12,13 +12,13 @@ class NotionPersonCollection(NotionEntity[PersonCollection]):
     """A person collection on Notion-side."""
 
     @staticmethod
-    def new_notion_row(aggregate_root: PersonCollection) -> 'NotionPersonCollection':
-        """Construct a new Notion row from a given aggregate root."""
+    def new_notion_row(entity: PersonCollection) -> 'NotionPersonCollection':
+        """Construct a new Notion row from a given entity."""
         return NotionPersonCollection(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id)
+            ref_id=entity.ref_id)
 
-    def apply_to_aggregate_root(
-            self, aggregate_root: PersonCollection, modification_time: Timestamp) -> PersonCollection:
-        """Obtain the aggregate root form of this, with a possible error."""
-        return aggregate_root
+    def apply_to_entity(
+            self, entity: PersonCollection, modification_time: Timestamp) -> PersonCollection:
+        """Obtain the entity form of this, with a possible error."""
+        return entity

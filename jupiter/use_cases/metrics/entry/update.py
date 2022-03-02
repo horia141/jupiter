@@ -53,6 +53,6 @@ class MetricEntryUpdateUseCase(AppMutationUseCase['MetricEntryUpdateUseCase.Args
         notion_metric_entry = \
             self._notion_manager.load_metric_entry(
                 metric_collection.ref_id, metric_entry.metric_ref_id, metric_entry.ref_id)
-        notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry, None)
+        notion_metric_entry = notion_metric_entry.join_with_entity(metric_entry, None)
         self._notion_manager.save_metric_entry(
             metric_collection.ref_id, metric_entry.metric_ref_id, notion_metric_entry)

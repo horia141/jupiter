@@ -63,7 +63,7 @@ class ProjectSyncService:
 
             if notion_project.ref_id is None:
                 new_project = \
-                    notion_project.new_aggregate_root(
+                    notion_project.new_entity(
                         NotionProject.InverseInfo(project_collection_ref_id=project_collection.ref_id))
 
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -73,7 +73,7 @@ class ProjectSyncService:
                     project_collection.ref_id, new_project.ref_id, notion_project.notion_id)
                 LOGGER.info("Linked the new project with local entries")
 
-                notion_project = notion_project.join_with_aggregate_root(new_project, NotionProject.DirectInfo())
+                notion_project = notion_project.join_with_entity(new_project, NotionProject.DirectInfo())
                 self._project_notion_manager.save_project(project_collection.ref_id, notion_project)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_project}")
 
@@ -92,7 +92,7 @@ class ProjectSyncService:
                         continue
 
                     updated_project = \
-                        notion_project.apply_to_aggregate_root(
+                        notion_project.apply_to_entity(
                             project, NotionProject.InverseInfo(project_collection_ref_id=project_collection.ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -108,7 +108,7 @@ class ProjectSyncService:
                         continue
 
                     updated_notion_project = \
-                        notion_project.join_with_aggregate_root(project, NotionProject.DirectInfo())
+                        notion_project.join_with_entity(project, NotionProject.DirectInfo())
 
                     self._project_notion_manager.save_project(project_collection.ref_id, updated_notion_project)
 

@@ -7,7 +7,7 @@ from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -15,15 +15,15 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Metric(AggregateRoot):
+class Metric(Entity):
     """A metric."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     metric_collection_ref_id: EntityId

@@ -1,4 +1,4 @@
-"""Framework level elements for aggregate roots."""
+"""Framework level elements for entities."""
 import dataclasses
 from dataclasses import dataclass
 from typing import Optional, List, TypeVar, Union, cast
@@ -10,12 +10,12 @@ from jupiter.framework.event import Event, EventKind, EventSource
 FIRST_VERSION = 0
 
 
-_AggregateRootType = TypeVar('_AggregateRootType', bound='AggregateRoot')
+_EntityType = TypeVar('_EntityType', bound='Entity')
 
 
 @dataclass(frozen=True)
-class AggregateRoot:
-    """The base class for all aggregate roots."""
+class Entity:
+    """The base class for all entities."""
 
     @dataclass(frozen=True)
     class Created(Event):
@@ -62,8 +62,8 @@ class AggregateRoot:
     events: List[Event] = dataclasses.field(compare=False, hash=False)
 
     def _new_version(
-            self: _AggregateRootType, new_event: Event,
-            **kwargs: Union[None, bool, str, int, float, object]) -> _AggregateRootType:
+            self: _EntityType, new_event: Event,
+            **kwargs: Union[None, bool, str, int, float, object]) -> _EntityType:
         # To hell with your types!
         # We only want to create a new version if there's any actual change in the root. This means we both
         # create a new object, and we increment it's version, and emit a new event. Otherwise we just return
@@ -80,7 +80,7 @@ class AggregateRoot:
                 new_events = self.events.copy()
                 new_events.append(new_event)
                 return cast(
-                    _AggregateRootType,
+                    _EntityType,
                     dataclasses.replace(
                         self,
                         version=new_event.entity_version,
@@ -89,20 +89,20 @@ class AggregateRoot:
                         **kwargs))
         return self
 
-    def assign_ref_id(self: _AggregateRootType, ref_id: EntityId) -> _AggregateRootType:
+    def assign_ref_id(self: _EntityType, ref_id: EntityId) -> _EntityType:
         """Assign a ref id to the root."""
         return dataclasses.replace(self, ref_id=ref_id)
 
-    def mark_archived(self: _AggregateRootType, source: EventSource, archived_time: Timestamp) -> _AggregateRootType:
+    def mark_archived(self: _EntityType, source: EventSource, archived_time: Timestamp) -> _EntityType:
         """Archive the root."""
         return self._new_version(
             archived=True,
             archived_time=archived_time,
-            new_event=AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
+            new_event=Entity.Archived.make_event_from_frame_args(source, self.version, archived_time))
 
     def change_archived(
-            self: _AggregateRootType, archived: bool, source: EventSource,
-            archived_time: Timestamp) -> _AggregateRootType:
+            self: _EntityType, archived: bool, source: EventSource,
+            archived_time: Timestamp) -> _EntityType:
         """Change the archival status."""
         if self.archived == archived:
             return self
@@ -110,9 +110,9 @@ class AggregateRoot:
             return self._new_version(
                 archived=True,
                 archived_time=archived_time,
-                new_event=AggregateRoot.Archived.make_event_from_frame_args(source, self.version, archived_time))
+                new_event=Entity.Archived.make_event_from_frame_args(source, self.version, archived_time))
         else:
             return self._new_version(
                 archived=False,
                 archived_time=None,
-                new_event=AggregateRoot.Restore.make_event_from_frame_args(source, self.version, archived_time))
+                new_event=Entity.Restore.make_event_from_frame_args(source, self.version, archived_time))

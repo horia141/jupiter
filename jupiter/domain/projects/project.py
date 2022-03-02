@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -12,15 +12,15 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Project(AggregateRoot):
+class Project(Entity):
     """The project."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     project_collection_ref_id: EntityId

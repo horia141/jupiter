@@ -3,22 +3,22 @@ from dataclasses import dataclass
 
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
 @dataclass(frozen=True)
-class NotionConnection(AggregateRoot):
+class NotionConnection(Entity):
     """The Notion connection."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class UpdateToken(AggregateRoot.Updated):
+    class UpdateToken(Entity.Updated):
         """Updated access token."""
 
     workspace_ref_id: EntityId

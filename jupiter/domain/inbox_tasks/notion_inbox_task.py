@@ -64,37 +64,37 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
     recurring_gen_right_now: Optional[ADate]
 
     @staticmethod
-    def new_notion_row(aggregate_root: InboxTask, extra_info: DirectInfo) -> 'NotionInboxTask':
+    def new_notion_row(entity: InboxTask, extra_info: DirectInfo) -> 'NotionInboxTask':
         """Construct a new Notion row from a given inbox task."""
         return NotionInboxTask(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            source=aggregate_root.source.for_notion(),
-            name=str(aggregate_root.name),
-            archived=aggregate_root.archived,
-            project_ref_id=str(aggregate_root.project_ref_id),
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            source=entity.source.for_notion(),
+            name=str(entity.name),
+            archived=entity.archived,
+            project_ref_id=str(entity.project_ref_id),
             project_name=format_name_for_option(extra_info.project_name),
-            big_plan_ref_id=str(aggregate_root.big_plan_ref_id) if aggregate_root.big_plan_ref_id else None,
+            big_plan_ref_id=str(entity.big_plan_ref_id) if entity.big_plan_ref_id else None,
             big_plan_name=format_name_for_option(extra_info.big_plan_name) if extra_info.big_plan_name else None,
-            habit_ref_id=str(aggregate_root.habit_ref_id) if aggregate_root.habit_ref_id else None,
-            chore_ref_id=str(aggregate_root.chore_ref_id) if aggregate_root.chore_ref_id else None,
-            metric_ref_id=str(aggregate_root.metric_ref_id) if aggregate_root.metric_ref_id else None,
-            person_ref_id=str(aggregate_root.person_ref_id) if aggregate_root.person_ref_id else None,
-            status=aggregate_root.status.for_notion(),
-            eisen=aggregate_root.eisen.for_notion(),
-            difficulty=aggregate_root.difficulty.for_notion() if aggregate_root.difficulty else None,
-            actionable_date=aggregate_root.actionable_date,
-            due_date=aggregate_root.due_date,
-            from_script=aggregate_root.source.is_from_script,
-            recurring_timeline=aggregate_root.recurring_timeline,
-            recurring_repeat_index=aggregate_root.recurring_repeat_index,
-            recurring_period=aggregate_root.recurring_period.for_notion() if aggregate_root.recurring_period else None,
+            habit_ref_id=str(entity.habit_ref_id) if entity.habit_ref_id else None,
+            chore_ref_id=str(entity.chore_ref_id) if entity.chore_ref_id else None,
+            metric_ref_id=str(entity.metric_ref_id) if entity.metric_ref_id else None,
+            person_ref_id=str(entity.person_ref_id) if entity.person_ref_id else None,
+            status=entity.status.for_notion(),
+            eisen=entity.eisen.for_notion(),
+            difficulty=entity.difficulty.for_notion() if entity.difficulty else None,
+            actionable_date=entity.actionable_date,
+            due_date=entity.due_date,
+            from_script=entity.source.is_from_script,
+            recurring_timeline=entity.recurring_timeline,
+            recurring_repeat_index=entity.recurring_repeat_index,
+            recurring_period=entity.recurring_period.for_notion() if entity.recurring_period else None,
             recurring_gen_right_now=
-            ADate.from_timestamp(aggregate_root.recurring_gen_right_now)
-            if aggregate_root.recurring_gen_right_now else None)
+            ADate.from_timestamp(entity.recurring_gen_right_now)
+            if entity.recurring_gen_right_now else None)
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> InboxTask:
+    def new_entity(self, extra_info: InverseInfo) -> InboxTask:
         """Create a new inbox task from this."""
         inbox_task_name = InboxTaskName.from_raw(self.name)
 
@@ -153,7 +153,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: InboxTask, extra_info: InverseInfo) -> InboxTask:
+    def apply_to_entity(self, entity: InboxTask, extra_info: InverseInfo) -> InboxTask:
         """Apply to an already existing inbox task."""
         project_ref_id = EntityId.from_raw(self.project_ref_id) \
             if self.project_ref_id else None
@@ -180,20 +180,20 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             big_plan = \
                 extra_info.all_big_plans_by_name[format_name_for_option(inbox_task_big_plan_name)]
 
-        new_aggregate_root = aggregate_root
+        new_entity = entity
 
         if big_plan is not None:
-            new_aggregate_root = new_aggregate_root.associate_with_big_plan(
+            new_entity = new_entity.associate_with_big_plan(
                 project_ref_id=big_plan.project_ref_id, big_plan_ref_id=big_plan.ref_id,
                 _big_plan_name=big_plan.name, source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
-        elif aggregate_root.allow_user_changes:
-            new_aggregate_root = \
-                new_aggregate_root.release_from_big_plan(EventSource.NOTION, modification_time=self.last_edited_time)
+        elif entity.allow_user_changes:
+            new_entity = \
+                new_entity.release_from_big_plan(EventSource.NOTION, modification_time=self.last_edited_time)
 
-        if aggregate_root.allow_user_changes:
-            new_aggregate_root = \
-                new_aggregate_root \
+        if entity.allow_user_changes:
+            new_entity = \
+                new_entity \
                 .change_project(
                     project_ref_id=project.ref_id,
                     source=EventSource.NOTION,
@@ -209,11 +209,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                     source=EventSource.NOTION,
                     modification_time=self.last_edited_time)
         else:
-            new_aggregate_root = new_aggregate_root.update_generated(
+            new_entity = new_entity.update_generated(
                 status=UpdateAction.change_to(InboxTaskStatus.from_raw(self.status)),
                 actionable_date=UpdateAction.change_to(self.actionable_date),
                 due_date=UpdateAction.change_to(self.due_date),
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
-        return new_aggregate_root.change_archived(
+        return new_entity.change_archived(
             archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

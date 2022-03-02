@@ -54,5 +54,5 @@ class SmartListUpdateUseCase(AppMutationUseCase['SmartListUpdateUseCase.Args', N
 
         notion_smart_list = \
             self._smart_list_notion_manager.load_smart_list(smart_list_collection.ref_id, smart_list.ref_id)
-        notion_smart_list = notion_smart_list.join_with_aggregate_root(smart_list)
+        notion_smart_list = notion_smart_list.join_with_entity(smart_list)
         self._smart_list_notion_manager.save_smart_list(smart_list_collection.ref_id, notion_smart_list)

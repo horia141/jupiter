@@ -169,7 +169,7 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
                     filter_metric_ref_ids=[metric.ref_id])
 
         notion_metric = self._metric_notion_manager.load_metric(metric_collection.ref_id, metric.ref_id)
-        notion_metric = notion_metric.join_with_aggregate_root(metric)
+        notion_metric = notion_metric.join_with_entity(metric)
         self._metric_notion_manager.save_metric(metric_collection.ref_id, notion_metric)
 
         # Change the inbox tasks
@@ -212,7 +212,7 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-                notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
+                notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
                 self._inbox_task_notion_manager.save_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

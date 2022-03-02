@@ -14,7 +14,7 @@ from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -34,75 +34,75 @@ class CannotModifyGeneratedTaskError(Exception):
 
 
 @dataclass(frozen=True)
-class InboxTask(AggregateRoot):
+class InboxTask(Entity):
     """An inbox task."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class GeneratedForHabit(AggregateRoot.Created):
+    class GeneratedForHabit(Entity.Created):
         """Generated for a habit event."""
 
     @dataclass(frozen=True)
-    class GeneratedForChore(AggregateRoot.Created):
+    class GeneratedForChore(Entity.Created):
         """Generated for a chore event."""
 
     @dataclass(frozen=True)
-    class GeneratedForMetricCollection(AggregateRoot.Created):
+    class GeneratedForMetricCollection(Entity.Created):
         """Generated for metric collection event."""
 
     @dataclass(frozen=True)
-    class GeneratedForPersonCatchUp(AggregateRoot.Created):
+    class GeneratedForPersonCatchUp(Entity.Created):
         """Generated for person catch up event."""
 
     @dataclass(frozen=True)
-    class GeneratedForPersonBirthday(AggregateRoot.Created):
+    class GeneratedForPersonBirthday(Entity.Created):
         """Generated for person birthday event."""
 
     @dataclass(frozen=True)
-    class ChangeProject(AggregateRoot.Updated):
+    class ChangeProject(Entity.Updated):
         """Changed the project event."""
 
     @dataclass(frozen=True)
-    class AssociatedWithBigPlan(AggregateRoot.Updated):
+    class AssociatedWithBigPlan(Entity.Updated):
         """Associated with big plan event."""
 
     @dataclass(frozen=True)
-    class ReleaseFromBigPlan(AggregateRoot.Updated):
+    class ReleaseFromBigPlan(Entity.Updated):
         """Release from big plan event."""
 
     @dataclass(frozen=True)
-    class UpdatedLinkToBigPlan(AggregateRoot.Updated):
+    class UpdatedLinkToBigPlan(Entity.Updated):
         """Updated link to big plan event."""
 
     @dataclass(frozen=True)
-    class UpdatedLinkToHabit(AggregateRoot.Updated):
+    class UpdatedLinkToHabit(Entity.Updated):
         """Updated link to habit event."""
 
     @dataclass(frozen=True)
-    class UpdatedLinkToChore(AggregateRoot.Updated):
+    class UpdatedLinkToChore(Entity.Updated):
         """Updated link to chore event."""
 
     @dataclass(frozen=True)
-    class UpdatedLinkToMetricCollection(AggregateRoot.Updated):
+    class UpdatedLinkToMetricCollection(Entity.Updated):
         """Updated link to recurring task event."""
 
     @dataclass(frozen=True)
-    class UpdatedLinkToPersonCatchUp(AggregateRoot.Updated):
+    class UpdatedLinkToPersonCatchUp(Entity.Updated):
         """Updated link to a person catch up task event."""
 
     @dataclass(frozen=True)
-    class UpdatedLinkToPersonBirthday(AggregateRoot.Updated):
+    class UpdatedLinkToPersonBirthday(Entity.Updated):
         """Updated link to a person birthday task event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     @dataclass(frozen=True)
-    class UpdatedGenerated(AggregateRoot.Updated):
+    class UpdatedGenerated(Entity.Updated):
         """Updated event."""
 
     inbox_task_collection_ref_id: EntityId
@@ -516,7 +516,7 @@ class InboxTask(AggregateRoot):
             self, name: UpdateAction[InboxTaskName], status: UpdateAction[InboxTaskStatus],
             actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
             eisen: UpdateAction[Eisen], difficulty: UpdateAction[Optional[Difficulty]],
-            source: EventSource, modification_time: Timestamp, event_type: Type[AggregateRoot.Updated]) -> 'InboxTask':
+            source: EventSource, modification_time: Timestamp, event_type: Type[Entity.Updated]) -> 'InboxTask':
         """Update the inbox task."""
         if name.should_change:
             if not self.source.allow_user_changes:

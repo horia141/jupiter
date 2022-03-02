@@ -103,7 +103,7 @@ class HabitChangeProjectUseCase(AppMutationUseCase['HabitChangeProjectUseCase.Ar
             self._habit_notion_manager.load_habit(
                 habit.habit_collection_ref_id, habit.ref_id)
         notion_habit = \
-            notion_habit.join_with_aggregate_root(habit, habit_direct_info)
+            notion_habit.join_with_entity(habit, habit_direct_info)
         self._habit_notion_manager.save_habit(habit.habit_collection_ref_id, notion_habit)
 
         for inbox_task in all_inbox_tasks:
@@ -113,7 +113,7 @@ class HabitChangeProjectUseCase(AppMutationUseCase['HabitChangeProjectUseCase.Ar
                 self._inbox_task_notion_manager.load_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
             notion_inbox_task = \
-                notion_inbox_task.join_with_aggregate_root(inbox_task, inbox_task_direct_info)
+                notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
             self._inbox_task_notion_manager.save_inbox_task(
                 inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")

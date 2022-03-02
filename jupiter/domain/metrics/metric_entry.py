@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -11,15 +11,15 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class MetricEntry(AggregateRoot):
+class MetricEntry(Entity):
     """A metric entry."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     metric_ref_id: EntityId

@@ -70,5 +70,5 @@ class InboxTaskChangeProjectUseCase(AppMutationUseCase['InboxTaskChangeProjectUs
         direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=big_plan_name)
         notion_inbox_task = \
             self._inbox_task_notion_manager.load_inbox_task(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-        notion_inbox_task = notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
+        notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
         self._inbox_task_notion_manager.save_inbox_task(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)

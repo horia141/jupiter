@@ -8,7 +8,7 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -17,27 +17,27 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Habit(AggregateRoot):
+class Habit(Entity):
     """A habit."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class ChangeProject(AggregateRoot.Updated):
+    class ChangeProject(Entity.Updated):
         """Changed the project event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     @dataclass(frozen=True)
-    class Suspended(AggregateRoot.Updated):
+    class Suspended(Entity.Updated):
         """Suspended event."""
 
     @dataclass(frozen=True)
-    class Unsuspended(AggregateRoot.Updated):
+    class Unsuspended(Entity.Updated):
         """Unsuspend event."""
 
     habit_collection_ref_id: EntityId

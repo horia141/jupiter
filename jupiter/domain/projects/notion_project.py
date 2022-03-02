@@ -28,17 +28,17 @@ class NotionProject(NotionRow[Project, 'NotionProject.DirectInfo', 'NotionProjec
     name: str
 
     @staticmethod
-    def new_notion_row(aggregate_root: Project, extra_info: DirectInfo) -> 'NotionProject':
+    def new_notion_row(entity: Project, extra_info: DirectInfo) -> 'NotionProject':
         """Construct a Notion row from the Project."""
         return NotionProject(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            key=str(aggregate_root.key),
-            name=str(aggregate_root.name))
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            archived=entity.archived,
+            key=str(entity.key),
+            name=str(entity.name))
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> Project:
+    def new_entity(self, extra_info: InverseInfo) -> Project:
         """Create a new project from this."""
         key = ProjectKey.from_raw(self.key)
         name = ProjectName.from_raw(self.name)
@@ -50,11 +50,11 @@ class NotionProject(NotionRow[Project, 'NotionProject.DirectInfo', 'NotionProjec
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: Project, extra_info: InverseInfo) -> 'Project':
+    def apply_to_entity(self, entity: Project, extra_info: InverseInfo) -> 'Project':
         """Apply an existing Notion row to a project."""
         name = ProjectName.from_raw(self.name)
 
-        return aggregate_root.update(
+        return entity.update(
             name=UpdateAction.change_to(name),
             source=EventSource.NOTION,
             modification_time=self.last_edited_time)

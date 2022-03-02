@@ -59,37 +59,37 @@ class NotionChore(
     project_name: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: Chore, extra_info: DirectInfo) -> 'NotionChore':
+    def new_notion_row(entity: Chore, extra_info: DirectInfo) -> 'NotionChore':
         """Construct a new Notion row from a given chore."""
         return NotionChore(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            period=aggregate_root.gen_params.period.for_notion(),
-            eisen=aggregate_root.gen_params.eisen.for_notion(),
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            archived=entity.archived,
+            name=str(entity.name),
+            period=entity.gen_params.period.for_notion(),
+            eisen=entity.gen_params.eisen.for_notion(),
             difficulty=
-            aggregate_root.gen_params.difficulty.for_notion() if aggregate_root.gen_params.difficulty else None,
+            entity.gen_params.difficulty.for_notion() if entity.gen_params.difficulty else None,
             actionable_from_day=
-            aggregate_root.gen_params.actionable_from_day.as_int()
-            if aggregate_root.gen_params.actionable_from_day else None,
+            entity.gen_params.actionable_from_day.as_int()
+            if entity.gen_params.actionable_from_day else None,
             actionable_from_month=
-            aggregate_root.gen_params.actionable_from_month.as_int()
-            if aggregate_root.gen_params.actionable_from_month else None,
-            due_at_time=str(aggregate_root.gen_params.due_at_time) if aggregate_root.gen_params.due_at_time else None,
-            due_at_day=aggregate_root.gen_params.due_at_day.as_int() if aggregate_root.gen_params.due_at_day else None,
+            entity.gen_params.actionable_from_month.as_int()
+            if entity.gen_params.actionable_from_month else None,
+            due_at_time=str(entity.gen_params.due_at_time) if entity.gen_params.due_at_time else None,
+            due_at_day=entity.gen_params.due_at_day.as_int() if entity.gen_params.due_at_day else None,
             due_at_month=
-            aggregate_root.gen_params.due_at_month.as_int() if aggregate_root.gen_params.due_at_month else None,
-            skip_rule=str(aggregate_root.skip_rule),
-            start_at_date=aggregate_root.start_at_date,
-            end_at_date=aggregate_root.end_at_date,
-            suspended=aggregate_root.suspended,
-            must_do=aggregate_root.must_do,
-            project_ref_id=str(aggregate_root.project_ref_id),
+            entity.gen_params.due_at_month.as_int() if entity.gen_params.due_at_month else None,
+            skip_rule=str(entity.skip_rule),
+            start_at_date=entity.start_at_date,
+            end_at_date=entity.end_at_date,
+            suspended=entity.suspended,
+            must_do=entity.must_do,
+            project_ref_id=str(entity.project_ref_id),
             project_name=format_name_for_option(extra_info.project_name))
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> Chore:
+    def new_entity(self, extra_info: InverseInfo) -> Chore:
         """Create a new chore from this."""
         chore_period = RecurringTaskPeriod.from_raw(self.period)
 
@@ -134,7 +134,7 @@ class NotionChore(
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: Chore, extra_info: InverseInfo) -> Chore:
+    def apply_to_entity(self, entity: Chore, extra_info: InverseInfo) -> Chore:
         """Apply to an already existing chore."""
         chore_period = RecurringTaskPeriod.from_raw(self.period)
 
@@ -150,7 +150,7 @@ class NotionChore(
         else:
             project = extra_info.default_project
 
-        new_aggregate_root = aggregate_root \
+        new_entity = entity \
             .change_project(
                 project_ref_id=project.ref_id, source=EventSource.NOTION, modification_time=self.last_edited_time) \
             .update(
@@ -177,15 +177,15 @@ class NotionChore(
                 skip_rule=UpdateAction.change_to(
                     RecurringTaskSkipRule.from_raw(self.skip_rule) if self.skip_rule else None),
                 start_at_date=UpdateAction.change_to(
-                    self.start_at_date if self.start_at_date else aggregate_root.start_at_date),
+                    self.start_at_date if self.start_at_date else entity.start_at_date),
                 end_at_date=UpdateAction.change_to(self.end_at_date),
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
         if self.suspended:
-            new_aggregate_root = new_aggregate_root\
+            new_entity = new_entity\
                .suspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
         else:
-            new_aggregate_root = new_aggregate_root\
+            new_entity = new_entity\
                 .unsuspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
-        return new_aggregate_root.change_archived(
+        return new_entity.change_archived(
             archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

@@ -6,7 +6,7 @@ from typing import Optional
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -14,19 +14,19 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class BigPlan(AggregateRoot):
+class BigPlan(Entity):
     """A big plan."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class ChangeProject(AggregateRoot.Updated):
+    class ChangeProject(Entity.Updated):
         """Changed the project event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     big_plan_collection_ref_id: EntityId

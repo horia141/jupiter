@@ -85,7 +85,7 @@ class BigPlanSyncService:
             if notion_big_plan.ref_id is None:
                 # If the big plan doesn't exist locally, we create it!
 
-                new_big_plan = notion_big_plan.new_aggregate_root(inverse_info)
+                new_big_plan = notion_big_plan.new_entity(inverse_info)
 
                 with self._storage_engine.get_unit_of_work() as save_uow:
                     new_big_plan = save_uow.big_plan_repository.create(new_big_plan)
@@ -98,7 +98,7 @@ class BigPlanSyncService:
                 direct_info = \
                     NotionBigPlan.DirectInfo(project_name=all_projects_map[new_big_plan.project_ref_id].name)
                 notion_big_plan = \
-                    notion_big_plan.join_with_aggregate_root(new_big_plan, direct_info)
+                    notion_big_plan.join_with_entity(new_big_plan, direct_info)
                 self._big_plan_notion_manager.save_big_plan(
                     big_plan_collection.ref_id, notion_big_plan, inbox_task_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_big_plan}")
@@ -117,7 +117,7 @@ class BigPlanSyncService:
                         LOGGER.info(f"Skipping {notion_big_plan.name} because it was not modified")
                         continue
 
-                    updated_big_plan = notion_big_plan.apply_to_aggregate_root(big_plan, inverse_info)
+                    updated_big_plan = notion_big_plan.apply_to_entity(big_plan, inverse_info)
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.big_plan_repository.save(updated_big_plan)
                     all_big_plans_set[notion_big_plan.ref_id] = updated_big_plan
@@ -129,7 +129,7 @@ class BigPlanSyncService:
                         direct_info = \
                             NotionBigPlan.DirectInfo(project_name=all_projects_map[big_plan.project_ref_id].name)
                         updated_notion_big_plan = \
-                            notion_big_plan.join_with_aggregate_root(updated_big_plan, direct_info)
+                            notion_big_plan.join_with_entity(updated_big_plan, direct_info)
                         self._big_plan_notion_manager.save_big_plan(
                             big_plan_collection.ref_id, updated_notion_big_plan)
                         LOGGER.info(f"Applies changes on Notion side too as {updated_notion_big_plan}")
@@ -142,7 +142,7 @@ class BigPlanSyncService:
 
                     direct_info = \
                         NotionBigPlan.DirectInfo(project_name=all_projects_map[big_plan.project_ref_id].name)
-                    updated_notion_big_plan = notion_big_plan.join_with_aggregate_root(big_plan, direct_info)
+                    updated_notion_big_plan = notion_big_plan.join_with_entity(big_plan, direct_info)
                     self._big_plan_notion_manager.save_big_plan(
                         big_plan_collection.ref_id, updated_notion_big_plan, inbox_task_collection)
                     all_notion_big_plans_set[notion_big_plan.ref_id] = updated_notion_big_plan

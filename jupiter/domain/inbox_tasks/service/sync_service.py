@@ -92,7 +92,7 @@ class InboxTaskSyncService:
 
             if notion_inbox_task.ref_id is None:
                 # If the inbox task doesn't exist locally, we create it!
-                new_inbox_task = notion_inbox_task.new_aggregate_root(inverse_info)
+                new_inbox_task = notion_inbox_task.new_entity(inverse_info)
 
                 with self._storage_engine.get_unit_of_work() as save_uow:
                     new_inbox_task = save_uow.inbox_task_repository.create(new_inbox_task)
@@ -109,7 +109,7 @@ class InboxTaskSyncService:
                         all_big_plans_map[new_inbox_task.big_plan_ref_id].name
                         if new_inbox_task.big_plan_ref_id else None)
                 notion_inbox_task = \
-                    notion_inbox_task.join_with_aggregate_root(new_inbox_task, direct_info)
+                    notion_inbox_task.join_with_entity(new_inbox_task, direct_info)
                 self._inbox_task_notion_manager.save_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
                 LOGGER.info(f"Applied changes on Notion side too as {notion_inbox_task}")
 
@@ -128,7 +128,7 @@ class InboxTaskSyncService:
                         LOGGER.info(f"Skipping {notion_inbox_task.name} because it was not modified")
                         continue
 
-                    updated_inbox_task = notion_inbox_task.apply_to_aggregate_root(inbox_task, inverse_info)
+                    updated_inbox_task = notion_inbox_task.apply_to_entity(inbox_task, inverse_info)
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.inbox_task_repository.save(updated_inbox_task)
                     all_inbox_tasks_set[notion_inbox_task.ref_id] = updated_inbox_task
@@ -142,7 +142,7 @@ class InboxTaskSyncService:
                                 all_big_plans_map[
                                     inbox_task.big_plan_ref_id].name if inbox_task.big_plan_ref_id else None)
                         update_notion_inbox_task = \
-                            notion_inbox_task.join_with_aggregate_root(updated_inbox_task, direct_info)
+                            notion_inbox_task.join_with_entity(updated_inbox_task, direct_info)
                         self._inbox_task_notion_manager.save_inbox_task(
                             inbox_task_collection.ref_id, update_notion_inbox_task)
                         LOGGER.info(f"Applies changes on Notion side too as {update_notion_inbox_task}")
@@ -159,7 +159,7 @@ class InboxTaskSyncService:
                             big_plan_name=
                             all_big_plans_map[inbox_task.big_plan_ref_id].name if inbox_task.big_plan_ref_id else None)
                     updated_notion_inbox_task = \
-                        notion_inbox_task.join_with_aggregate_root(inbox_task, direct_info)
+                        notion_inbox_task.join_with_entity(inbox_task, direct_info)
                     self._inbox_task_notion_manager.save_inbox_task(
                         inbox_task_collection.ref_id, updated_notion_inbox_task)
                     all_notion_inbox_tasks_set[notion_inbox_task.ref_id] = updated_notion_inbox_task

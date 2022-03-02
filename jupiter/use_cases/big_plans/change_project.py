@@ -79,7 +79,7 @@ class BigPlanChangeProjectUseCase(AppMutationUseCase['BigPlanChangeProjectUseCas
 
         notion_big_plan = \
             self._big_plan_notion_manager.load_big_plan(big_plan.big_plan_collection_ref_id, big_plan.ref_id)
-        notion_big_plan = notion_big_plan.join_with_aggregate_root(big_plan, big_plan_direct_info)
+        notion_big_plan = notion_big_plan.join_with_entity(big_plan, big_plan_direct_info)
         self._big_plan_notion_manager.save_big_plan(big_plan.big_plan_collection_ref_id, notion_big_plan)
 
         for inbox_task in all_inbox_tasks:
@@ -89,7 +89,7 @@ class BigPlanChangeProjectUseCase(AppMutationUseCase['BigPlanChangeProjectUseCas
                 self._inbox_task_notion_manager.load_inbox_task(
                     inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
             notion_inbox_task = \
-                notion_inbox_task.join_with_aggregate_root(inbox_task, inbox_task_direct_info)
+                notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
             self._inbox_task_notion_manager.save_inbox_task(
                 inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")

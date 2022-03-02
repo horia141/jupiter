@@ -12,13 +12,13 @@ class NotionBigPlanCollection(NotionEntity[BigPlanCollection]):
     """A big plan collection on Notion-side."""
 
     @staticmethod
-    def new_notion_row(aggregate_root: BigPlanCollection) -> 'NotionBigPlanCollection':
-        """Construct a new Notion row from a given aggregate root."""
+    def new_notion_row(entity: BigPlanCollection) -> 'NotionBigPlanCollection':
+        """Construct a new Notion row from a given entity."""
         return NotionBigPlanCollection(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id)
+            ref_id=entity.ref_id)
 
-    def apply_to_aggregate_root(
-            self, aggregate_root: BigPlanCollection, modification_time: Timestamp) -> BigPlanCollection:
-        """Obtain the aggregate root form of this, with a possible error."""
-        return aggregate_root
+    def apply_to_entity(
+            self, entity: BigPlanCollection, modification_time: Timestamp) -> BigPlanCollection:
+        """Obtain the entity form of this, with a possible error."""
+        return entity

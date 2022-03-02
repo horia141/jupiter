@@ -25,18 +25,18 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseI
     notes: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: MetricEntry, extra_info: None) -> 'NotionMetricEntry':
+    def new_notion_row(entity: MetricEntry, extra_info: None) -> 'NotionMetricEntry':
         """Construct a new Notion row from a given metric entry."""
         return NotionMetricEntry(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            collection_time=aggregate_root.collection_time,
-            value=aggregate_root.value,
-            notes=aggregate_root.notes)
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            archived=entity.archived,
+            collection_time=entity.collection_time,
+            value=entity.value,
+            notes=entity.notes)
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> MetricEntry:
+    def new_entity(self, extra_info: InverseInfo) -> MetricEntry:
         """Create a new metric entry from this."""
         return MetricEntry.new_metric_entry(
             archived=self.archived,
@@ -47,9 +47,9 @@ class NotionMetricEntry(NotionRow[MetricEntry, None, 'NotionMetricEntry.InverseI
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: MetricEntry, extra_info: InverseInfo) -> MetricEntry:
+    def apply_to_entity(self, entity: MetricEntry, extra_info: InverseInfo) -> MetricEntry:
         """Apply to an already existing metric entry."""
-        return aggregate_root\
+        return entity\
             .update(
                 collection_time=UpdateAction.change_to(self.collection_time),
                 value=UpdateAction.change_to(self.value),

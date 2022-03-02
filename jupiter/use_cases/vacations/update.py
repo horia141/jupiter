@@ -55,5 +55,5 @@ class VacationUpdateUseCase(AppMutationUseCase['VacationUpdateUseCase.Args', Non
             uow.vacation_repository.save(vacation)
 
         notion_vacation = self._vacation_notion_manager.load_vacation(vacation_collection.ref_id, args.ref_id)
-        notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
+        notion_vacation = notion_vacation.join_with_entity(vacation, None)
         self._vacation_notion_manager.save_vacation(vacation_collection.ref_id, notion_vacation)

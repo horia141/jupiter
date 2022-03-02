@@ -5,7 +5,7 @@ from sqlalchemy import Table, MetaData, Column, Integer, ForeignKey, DateTime, S
 from sqlalchemy.dialects.sqlite import insert as sqliteInsert
 from sqlalchemy.engine import Connection
 
-from jupiter.framework.aggregate_root import AggregateRoot
+from jupiter.framework.entity import Entity
 from jupiter.framework.base.entity_id import EntityId
 
 LOGGER = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def build_event_table(entity_table: Table, metadata: MetaData) -> Table:
         keep_existing=True)
 
 
-def upsert_events(connection: Connection, event_table: Table, aggreggate_root: AggregateRoot) -> None:
+def upsert_events(connection: Connection, event_table: Table, aggreggate_root: Entity) -> None:
     """Upsert all the events for a given entity in an events table."""
     for event_idx, event in enumerate(aggreggate_root.events):
         connection.execute(
@@ -44,7 +44,7 @@ def upsert_events(connection: Connection, event_table: Table, aggreggate_root: A
             .on_conflict_do_nothing(index_elements=['owner_ref_id', 'timestamp', 'session_index', 'name']))
 
 
-def remove_events(connection: Connection, event_table: Table, aggregate_root_ref_id: EntityId) -> None:
+def remove_events(connection: Connection, event_table: Table, entity_ref_id: EntityId) -> None:
     """Remove all the events for a given entity in an events table."""
     connection.execute(
-        delete(event_table).where(event_table.c.owner_ref_id == aggregate_root_ref_id.as_int()))
+        delete(event_table).where(event_table.c.owner_ref_id == entity_ref_id.as_int()))

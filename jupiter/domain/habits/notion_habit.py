@@ -56,35 +56,35 @@ class NotionHabit(
     project_name: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: Habit, extra_info: DirectInfo) -> 'NotionHabit':
+    def new_notion_row(entity: Habit, extra_info: DirectInfo) -> 'NotionHabit':
         """Construct a new Notion row from a given habit."""
         return NotionHabit(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            period=aggregate_root.gen_params.period.for_notion(),
-            eisen=aggregate_root.gen_params.eisen.for_notion(),
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            archived=entity.archived,
+            name=str(entity.name),
+            period=entity.gen_params.period.for_notion(),
+            eisen=entity.gen_params.eisen.for_notion(),
             difficulty=
-            aggregate_root.gen_params.difficulty.for_notion() if aggregate_root.gen_params.difficulty else None,
+            entity.gen_params.difficulty.for_notion() if entity.gen_params.difficulty else None,
             actionable_from_day=
-            aggregate_root.gen_params.actionable_from_day.as_int()
-            if aggregate_root.gen_params.actionable_from_day else None,
+            entity.gen_params.actionable_from_day.as_int()
+            if entity.gen_params.actionable_from_day else None,
             actionable_from_month=
-            aggregate_root.gen_params.actionable_from_month.as_int()
-            if aggregate_root.gen_params.actionable_from_month else None,
-            due_at_time=str(aggregate_root.gen_params.due_at_time) if aggregate_root.gen_params.due_at_time else None,
-            due_at_day=aggregate_root.gen_params.due_at_day.as_int() if aggregate_root.gen_params.due_at_day else None,
+            entity.gen_params.actionable_from_month.as_int()
+            if entity.gen_params.actionable_from_month else None,
+            due_at_time=str(entity.gen_params.due_at_time) if entity.gen_params.due_at_time else None,
+            due_at_day=entity.gen_params.due_at_day.as_int() if entity.gen_params.due_at_day else None,
             due_at_month=
-            aggregate_root.gen_params.due_at_month.as_int() if aggregate_root.gen_params.due_at_month else None,
-            skip_rule=str(aggregate_root.skip_rule),
-            repeats_in_period_count=aggregate_root.repeats_in_period_count,
-            suspended=aggregate_root.suspended,
-            project_ref_id=str(aggregate_root.project_ref_id),
+            entity.gen_params.due_at_month.as_int() if entity.gen_params.due_at_month else None,
+            skip_rule=str(entity.skip_rule),
+            repeats_in_period_count=entity.repeats_in_period_count,
+            suspended=entity.suspended,
+            project_ref_id=str(entity.project_ref_id),
             project_name=format_name_for_option(extra_info.project_name))
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> Habit:
+    def new_entity(self, extra_info: InverseInfo) -> Habit:
         """Create a new habit from this."""
         habit_period = RecurringTaskPeriod.from_raw(self.period)
 
@@ -127,7 +127,7 @@ class NotionHabit(
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: Habit, extra_info: InverseInfo) -> Habit:
+    def apply_to_entity(self, entity: Habit, extra_info: InverseInfo) -> Habit:
         """Apply to an already existing habit."""
         habit_period = RecurringTaskPeriod.from_raw(self.period)
 
@@ -143,7 +143,7 @@ class NotionHabit(
         else:
             project = extra_info.default_project
 
-        new_aggregate_root = aggregate_root \
+        new_entity = entity \
             .change_project(
                 project_ref_id=project.ref_id, source=EventSource.NOTION, modification_time=self.last_edited_time) \
             .update(
@@ -172,10 +172,10 @@ class NotionHabit(
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
         if self.suspended:
-            new_aggregate_root = new_aggregate_root\
+            new_entity = new_entity\
                .suspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
         else:
-            new_aggregate_root = new_aggregate_root\
+            new_entity = new_entity\
                 .unsuspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
-        return new_aggregate_root.change_archived(
+        return new_entity.change_archived(
             archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)

@@ -90,7 +90,7 @@ class ChoreSyncService:
             if notion_chore.ref_id is None:
                 # If the big plan doesn't exist locally, we create it!
 
-                new_chore = notion_chore.new_aggregate_root(inverse_info)
+                new_chore = notion_chore.new_entity(inverse_info)
 
                 with self._storage_engine.get_unit_of_work() as save_uow:
                     new_chore = save_uow.chore_repository.create(new_chore)
@@ -104,7 +104,7 @@ class ChoreSyncService:
                     NotionChore.DirectInfo(
                         project_name=all_projects_map[new_chore.project_ref_id].name)
                 notion_chore = \
-                    notion_chore.join_with_aggregate_root(new_chore, direct_info)
+                    notion_chore.join_with_entity(new_chore, direct_info)
                 self._chore_notion_manager.save_chore(
                     chore_collection.ref_id, notion_chore, inbox_task_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_chore}")
@@ -124,7 +124,7 @@ class ChoreSyncService:
                         continue
 
                     updated_chore = \
-                        notion_chore.apply_to_aggregate_root(chore, inverse_info)
+                        notion_chore.apply_to_entity(chore, inverse_info)
                     # TODO(horia141: handle archival here! The same in all other flows! BIG ISSUE!
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.chore_repository.save(updated_chore)
@@ -138,7 +138,7 @@ class ChoreSyncService:
                             NotionChore.DirectInfo(
                                 project_name=all_projects_map[chore.project_ref_id].name)
                         updated_notion_chore = \
-                            notion_chore.join_with_aggregate_root(updated_chore, direct_info)
+                            notion_chore.join_with_entity(updated_chore, direct_info)
                         self._chore_notion_manager.save_chore(
                             chore_collection.ref_id, updated_notion_chore, inbox_task_collection)
                         LOGGER.info(f"Applies changes on Notion side too as {updated_notion_chore}")
@@ -153,7 +153,7 @@ class ChoreSyncService:
                         NotionChore.DirectInfo(
                             project_name=all_projects_map[chore.project_ref_id].name)
                     updated_notion_chore = \
-                        notion_chore.join_with_aggregate_root(chore, direct_info)
+                        notion_chore.join_with_entity(chore, direct_info)
                     self._chore_notion_manager.save_chore(
                         chore_collection.ref_id, updated_notion_chore, inbox_task_collection)
                     all_notion_chores_set[notion_chore.ref_id] = updated_notion_chore

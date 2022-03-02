@@ -60,7 +60,7 @@ class VacationSyncService:
 
             if notion_vacation.ref_id is None:
                 new_vacation = \
-                    notion_vacation.new_aggregate_root(
+                    notion_vacation.new_entity(
                         NotionVacation.InverseInfo(vacation_collection_ref_id=vacation_collection.ref_id))
 
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -70,7 +70,7 @@ class VacationSyncService:
                     vacation_collection.ref_id, new_vacation.ref_id, notion_vacation.notion_id)
                 LOGGER.info("Linked the new vacation with local entries")
 
-                notion_vacation = notion_vacation.join_with_aggregate_root(new_vacation, None)
+                notion_vacation = notion_vacation.join_with_entity(new_vacation, None)
                 self._vacation_notion_manager.save_vacation(vacation_collection.ref_id, notion_vacation)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_vacation}")
 
@@ -89,7 +89,7 @@ class VacationSyncService:
                         continue
 
                     updated_vacation = \
-                        notion_vacation.apply_to_aggregate_root(
+                        notion_vacation.apply_to_entity(
                             vacation, NotionVacation.InverseInfo(vacation_collection_ref_id=vacation_collection.ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -104,7 +104,7 @@ class VacationSyncService:
                         LOGGER.info(f"Skipping {notion_vacation.name} because it was not modified")
                         continue
 
-                    updated_notion_vacation = notion_vacation.join_with_aggregate_root(vacation, None)
+                    updated_notion_vacation = notion_vacation.join_with_entity(vacation, None)
 
                     self._vacation_notion_manager.save_vacation(vacation_collection.ref_id, updated_notion_vacation)
 

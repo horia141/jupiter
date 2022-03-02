@@ -29,13 +29,13 @@ class WorkspaceSyncService:
         notion_workspace = self._workspace_notion_manager.load_workspace(workspace.ref_id)
 
         if sync_prefer == SyncPrefer.NOTION:
-            workspace = notion_workspace.apply_to_aggregate_root(workspace, right_now)
+            workspace = notion_workspace.apply_to_entity(workspace, right_now)
 
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.workspace_repository.save(workspace)
             LOGGER.info("Changed workspace from Notion")
         elif sync_prefer == SyncPrefer.LOCAL:
-            notion_workspace = notion_workspace.join_with_aggregate_root(workspace)
+            notion_workspace = notion_workspace.join_with_entity(workspace)
             self._workspace_notion_manager.save_workspace(notion_workspace)
             LOGGER.info("Applied changes on Notion side")
         else:

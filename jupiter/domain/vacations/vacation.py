@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -13,15 +13,15 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Vacation(AggregateRoot):
+class Vacation(Entity):
     """A vacation."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     vacation_collection_ref_id: EntityId

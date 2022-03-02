@@ -42,5 +42,5 @@ class ChoreUnsuspendUseCase(AppMutationUseCase['ChoreUnsuspendUseCase.Args', Non
 
         direct_info = NotionChore.DirectInfo(project_name=project.name)
         notion_chore = self._chore_notion_manager.load_chore(chore.chore_collection_ref_id, chore.ref_id)
-        notion_chore = notion_chore.join_with_aggregate_root(chore, direct_info)
+        notion_chore = notion_chore.join_with_entity(chore, direct_info)
         self._chore_notion_manager.save_chore(chore.chore_collection_ref_id, notion_chore)

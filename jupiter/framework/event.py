@@ -38,7 +38,7 @@ class EventSource(enum.Enum):
 
 @dataclass(frozen=True)
 class Event:
-    """An event for an aggregate root."""
+    """An event for an entity."""
 
     source: EventSource
     entity_version: int
@@ -64,8 +64,8 @@ class Event:
                 frame_args = {}
                 for arg_name in args.args:
                     if arg_name in ('self', 'source', 'event_type'):
-                        # This is called from some sort of method of an aggregate root class and we're looking
-                        # at this frame. There is a self and it's the aggregate root itself! Ditto don't need to
+                        # This is called from some sort of method of an entity class and we're looking
+                        # at this frame. There is a self and it's the entity itself! Ditto don't need to
                         # map the source again. Nor the special `event_type'.
                         continue
                     frame_args[arg_name] = args.locals[arg_name]

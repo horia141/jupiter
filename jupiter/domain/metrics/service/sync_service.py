@@ -46,11 +46,11 @@ class MetricSyncService:
             notion_metric = self._metric_notion_manager.load_metric(metric_collection.ref_id, metric.ref_id)
 
             if sync_prefer == SyncPrefer.LOCAL:
-                updated_notion_metric = notion_metric.join_with_aggregate_root(metric)
+                updated_notion_metric = notion_metric.join_with_entity(metric)
                 self._metric_notion_manager.save_metric(metric_collection.ref_id, updated_notion_metric)
                 LOGGER.info("Applied changes to Notion")
             elif sync_prefer == SyncPrefer.NOTION:
-                metric = notion_metric.apply_to_aggregate_root(metric, right_now)
+                metric = notion_metric.apply_to_entity(metric, right_now)
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.metric_repository.save(metric)
                 LOGGER.info("Applied local change")
@@ -98,7 +98,7 @@ class MetricSyncService:
             if notion_metric_entry.ref_id is None:
                 # If the metric entry doesn't exist locally, we create it.
                 new_metric_entry = \
-                    notion_metric_entry.new_aggregate_root(NotionMetricEntry.InverseInfo(metric.ref_id))
+                    notion_metric_entry.new_entity(NotionMetricEntry.InverseInfo(metric.ref_id))
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_metric_entry = uow.metric_entry_repository.create(new_metric_entry)
                 LOGGER.info(f"Found new metric entry from Notion '{new_metric_entry.collection_time}'")
@@ -107,7 +107,7 @@ class MetricSyncService:
                     metric_collection.ref_id, metric.ref_id, new_metric_entry.ref_id, notion_metric_entry.notion_id)
                 LOGGER.info("Linked the new metric entry with local entries")
 
-                notion_metric_entry = notion_metric_entry.join_with_aggregate_root(new_metric_entry, None)
+                notion_metric_entry = notion_metric_entry.join_with_entity(new_metric_entry, None)
                 self._metric_notion_manager.save_metric_entry(
                     metric_collection.ref_id, metric.ref_id, notion_metric_entry)
                 LOGGER.info("Applied changes on Notion side too")
@@ -126,7 +126,7 @@ class MetricSyncService:
                         continue
 
                     updated_metric_entry = \
-                        notion_metric_entry.apply_to_aggregate_root(
+                        notion_metric_entry.apply_to_entity(
                             metric_entry, NotionMetricEntry.InverseInfo(metric.ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -139,7 +139,7 @@ class MetricSyncService:
                         LOGGER.info(f"Skipping '{notion_metric_entry.collection_time}' because it was not modified")
                         continue
 
-                    updated_notion_metric_entry = notion_metric_entry.join_with_aggregate_root(metric_entry, None)
+                    updated_notion_metric_entry = notion_metric_entry.join_with_entity(metric_entry, None)
                     self._metric_notion_manager.save_metric_entry(
                         metric_collection.ref_id, metric.ref_id, updated_notion_metric_entry)
                     LOGGER.info(f"Changed metric entry '{notion_metric_entry.collection_time}' from local")

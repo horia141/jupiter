@@ -42,5 +42,5 @@ class HabitSuspendUseCase(AppMutationUseCase['HabitSuspendUseCase.Args', None]):
 
         direct_info = NotionHabit.DirectInfo(project_name=project.name)
         notion_habit = self._habit_notion_manager.load_habit(habit.habit_collection_ref_id, habit.ref_id)
-        notion_habit = notion_habit.join_with_aggregate_root(habit, direct_info)
+        notion_habit = notion_habit.join_with_entity(habit, direct_info)
         self._habit_notion_manager.save_habit(habit.habit_collection_ref_id, notion_habit)

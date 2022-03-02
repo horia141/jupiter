@@ -64,7 +64,7 @@ class PersonSyncService:
 
             if notion_person.ref_id is None:
                 new_person = \
-                    notion_person.new_aggregate_root(NotionPerson.InverseInfo(person_collection.ref_id))
+                    notion_person.new_entity(NotionPerson.InverseInfo(person_collection.ref_id))
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_person = uow.person_repository.create(new_person)
@@ -73,7 +73,7 @@ class PersonSyncService:
                     person_collection.ref_id, new_person.ref_id, notion_person.notion_id)
                 LOGGER.info("Linked the new person with local entries")
 
-                notion_person = notion_person.join_with_aggregate_root(new_person, None)
+                notion_person = notion_person.join_with_entity(new_person, None)
                 self._person_notion_manager.save_person(person_collection.ref_id, notion_person)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_person}")
 
@@ -90,7 +90,7 @@ class PersonSyncService:
                         continue
 
                     updated_person = \
-                        notion_person.apply_to_aggregate_root(
+                        notion_person.apply_to_entity(
                             person, NotionPerson.InverseInfo(person_collection.ref_id))
 
                     with self._storage_engine.get_unit_of_work() as uow:
@@ -102,7 +102,7 @@ class PersonSyncService:
                         LOGGER.info(f"Skipping {notion_person.name} because it was not modified")
                         continue
 
-                    updated_notion_person = notion_person.join_with_aggregate_root(person, None)
+                    updated_notion_person = notion_person.join_with_entity(person, None)
 
                     self._person_notion_manager.save_person(person_collection.ref_id, updated_notion_person)
                     all_notion_persons_set[notion_person.ref_id] = updated_notion_person

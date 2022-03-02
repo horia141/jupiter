@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.url import URL
-from jupiter.framework.aggregate_root import AggregateRoot, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -12,15 +12,15 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class SmartListItem(AggregateRoot):
+class SmartListItem(Entity):
     """A smart list item."""
 
     @dataclass(frozen=True)
-    class Created(AggregateRoot.Created):
+    class Created(Entity.Created):
         """Created event."""
 
     @dataclass(frozen=True)
-    class Updated(AggregateRoot.Updated):
+    class Updated(Entity.Updated):
         """Updated event."""
 
     smart_list_ref_id: EntityId

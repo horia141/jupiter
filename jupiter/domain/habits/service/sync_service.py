@@ -90,7 +90,7 @@ class HabitSyncService:
             if notion_habit.ref_id is None:
                 # If the big plan doesn't exist locally, we create it!
 
-                new_habit = notion_habit.new_aggregate_root(inverse_info)
+                new_habit = notion_habit.new_entity(inverse_info)
 
                 with self._storage_engine.get_unit_of_work() as save_uow:
                     new_habit = save_uow.habit_repository.create(new_habit)
@@ -104,7 +104,7 @@ class HabitSyncService:
                     NotionHabit.DirectInfo(
                         project_name=all_projects_map[new_habit.project_ref_id].name)
                 notion_habit = \
-                    notion_habit.join_with_aggregate_root(new_habit, direct_info)
+                    notion_habit.join_with_entity(new_habit, direct_info)
                 self._habit_notion_manager.save_habit(
                     habit_collection.ref_id, notion_habit, inbox_task_collection)
                 LOGGER.info(f"Applies changes on Notion side too as {notion_habit}")
@@ -124,7 +124,7 @@ class HabitSyncService:
                         continue
 
                     updated_habit = \
-                        notion_habit.apply_to_aggregate_root(habit, inverse_info)
+                        notion_habit.apply_to_entity(habit, inverse_info)
                     # TODO(horia141: handle archival here! The same in all other flows! BIG ISSUE!
                     with self._storage_engine.get_unit_of_work() as save_uow:
                         save_uow.habit_repository.save(updated_habit)
@@ -137,7 +137,7 @@ class HabitSyncService:
                             NotionHabit.DirectInfo(
                                 project_name=all_projects_map[habit.project_ref_id].name)
                         updated_notion_habit = \
-                            notion_habit.join_with_aggregate_root(updated_habit, direct_info)
+                            notion_habit.join_with_entity(updated_habit, direct_info)
                         self._habit_notion_manager.save_habit(
                             habit_collection.ref_id, updated_notion_habit, inbox_task_collection)
                         LOGGER.info(f"Applies changes on Notion side too as {updated_notion_habit}")
@@ -152,7 +152,7 @@ class HabitSyncService:
                         NotionHabit.DirectInfo(
                             project_name=all_projects_map[habit.project_ref_id].name)
                     updated_notion_habit = \
-                        notion_habit.join_with_aggregate_root(habit, direct_info)
+                        notion_habit.join_with_entity(habit, direct_info)
                     self._habit_notion_manager.save_habit(
                         habit_collection.ref_id, updated_notion_habit, inbox_task_collection)
                     all_notion_habits_set[notion_habit.ref_id] = updated_notion_habit

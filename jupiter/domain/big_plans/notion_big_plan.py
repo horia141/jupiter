@@ -41,21 +41,21 @@ class NotionBigPlan(NotionRow[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPla
     project_name: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: BigPlan, extra_info: DirectInfo) -> 'NotionBigPlan':
+    def new_notion_row(entity: BigPlan, extra_info: DirectInfo) -> 'NotionBigPlan':
         """Construct a new Notion row from a given big plan."""
         return NotionBigPlan(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            status=aggregate_root.status.for_notion(),
-            actionable_date=aggregate_root.actionable_date,
-            due_date=aggregate_root.due_date,
-            project_ref_id=str(aggregate_root.project_ref_id),
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            archived=entity.archived,
+            name=str(entity.name),
+            status=entity.status.for_notion(),
+            actionable_date=entity.actionable_date,
+            due_date=entity.due_date,
+            project_ref_id=str(entity.project_ref_id),
             project_name=format_name_for_option(extra_info.project_name))
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> BigPlan:
+    def new_entity(self, extra_info: InverseInfo) -> BigPlan:
         """Create a new big plan from this."""
         project_ref_id = EntityId.from_raw(self.project_ref_id) \
             if self.project_ref_id else None
@@ -80,7 +80,7 @@ class NotionBigPlan(NotionRow[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPla
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: BigPlan, extra_info: InverseInfo) -> BigPlan:
+    def apply_to_entity(self, entity: BigPlan, extra_info: InverseInfo) -> BigPlan:
         """Apply to an already existing big plan."""
         project_ref_id = EntityId.from_raw(self.project_ref_id) \
             if self.project_ref_id else None
@@ -94,7 +94,7 @@ class NotionBigPlan(NotionRow[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPla
         else:
             project = extra_info.default_project
 
-        return aggregate_root\
+        return entity\
             .change_project(
                 project_ref_id=project.ref_id, source=EventSource.NOTION, modification_time=self.last_edited_time) \
             .update(

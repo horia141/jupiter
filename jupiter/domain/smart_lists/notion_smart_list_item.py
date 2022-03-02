@@ -36,19 +36,19 @@ class NotionSmartListItem(
     url: Optional[str]
 
     @staticmethod
-    def new_notion_row(aggregate_root: SmartListItem, extra_info: DirectInfo) -> 'NotionSmartListItem':
+    def new_notion_row(entity: SmartListItem, extra_info: DirectInfo) -> 'NotionSmartListItem':
         """Construct a new Notion row from a given smart list item."""
         return NotionSmartListItem(
             notion_id=BAD_NOTION_ID,
-            ref_id=aggregate_root.ref_id,
-            last_edited_time=aggregate_root.last_modified_time,
-            archived=aggregate_root.archived,
-            name=str(aggregate_root.name),
-            is_done=aggregate_root.is_done,
-            tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in aggregate_root.tags_ref_id],
-            url=str(aggregate_root.url))
+            ref_id=entity.ref_id,
+            last_edited_time=entity.last_modified_time,
+            archived=entity.archived,
+            name=str(entity.name),
+            is_done=entity.is_done,
+            tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in entity.tags_ref_id],
+            url=str(entity.url))
 
-    def new_aggregate_root(self, extra_info: InverseInfo) -> SmartListItem:
+    def new_entity(self, extra_info: InverseInfo) -> SmartListItem:
         """Create a new smart list item from this."""
         return SmartListItem.new_smart_list_item(
             archived=self.archived,
@@ -60,9 +60,9 @@ class NotionSmartListItem(
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_aggregate_root(self, aggregate_root: SmartListItem, extra_info: InverseInfo) -> SmartListItem:
+    def apply_to_entity(self, entity: SmartListItem, extra_info: InverseInfo) -> SmartListItem:
         """Apply to an already existing smart list item."""
-        return aggregate_root \
+        return entity \
             .update(
                 name=UpdateAction.change_to(SmartListItemName.from_raw(self.name)),
                 is_done=UpdateAction.change_to(self.is_done),
