@@ -127,7 +127,7 @@ class Habit(Entity):
 
     def unsuspend(self, source: EventSource, modification_time: Timestamp) -> 'Habit':
         """Unsuspend the habit."""
-        if self.suspended:
+        if not self.suspended:
             return self
         return self._new_version(
             suspended=False,
