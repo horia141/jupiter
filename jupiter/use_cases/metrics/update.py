@@ -208,6 +208,9 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
 
+                if inbox_task.archived:
+                    continue
+
                 direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
                 notion_inbox_task = \
                     self._inbox_task_notion_manager.load_inbox_task(
