@@ -60,7 +60,7 @@ class PersonCreateUseCase(AppMutationUseCase['PersonCreateUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
 
             catch_up_params = None
             if args.catch_up_period is not None:
@@ -81,5 +81,5 @@ class PersonCreateUseCase(AppMutationUseCase['PersonCreateUseCase.Args', None]):
                     created_time=self._time_provider.get_current_time())
             person = uow.person_repository.create(person)
 
-        notion_person = NotionPerson.new_notion_row(person, None)
-        self._person_notion_manager.upsert_person(person_collection.ref_id, notion_person)
+        notion_person = NotionPerson.new_notion_entity(person, None)
+        self._person_notion_manager.upsert_leaf(person_collection.ref_id, notion_person, None)

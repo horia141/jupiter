@@ -44,9 +44,9 @@ class MetricChangeCollectionProjectUseCase(AppMutationUseCase['MetricChangeColle
         """Execute the command's action."""
         workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
             old_catch_up_project_ref_id = metric_collection.collection_project_ref_id
 
             if args.collection_project_key is not None:
@@ -63,15 +63,15 @@ class MetricChangeCollectionProjectUseCase(AppMutationUseCase['MetricChangeColle
             uow.metric_collection_repository.save(metric_collection)
 
             metrics =\
-                uow.metric_repository.find_all(metric_collection_ref_id=metric_collection.ref_id, allow_archived=False)
+                uow.metric_repository.find_all(parent_ref_id=metric_collection.ref_id, allow_archived=False)
 
         if old_catch_up_project_ref_id != collection_project_ref_id and len(metrics) > 0:
             LOGGER.info("Moving all inbox tasks too")
             with self._storage_engine.get_unit_of_work() as inbox_task_uow:
-                inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
                 all_collection_inbox_tasks = \
-                    inbox_task_uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    inbox_task_uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         filter_sources=[InboxTaskSource.METRIC],
                         filter_person_ref_ids=[m.ref_id for m in metrics])

@@ -74,33 +74,33 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
-            all_vacations = uow.vacation_repository.find_all(vacation_collection_ref_id=vacation_collection.ref_id)
+            vacation_collection = uow.vacation_collection_repository.load_by_parent(workspace.ref_id)
+            all_vacations = uow.vacation_repository.find_all(parent_ref_id=vacation_collection.ref_id)
 
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
-            all_projects = uow.project_repository.find_all(project_collection_ref_id=project_collection.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
+            all_projects = uow.project_repository.find_all(parent_ref_id=project_collection.ref_id)
             all_syncable_projects = \
-                uow.project_repository.find_all(
-                    project_collection_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
+                uow.project_repository.find_all_with_filters(
+                    parent_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
             all_projects_by_ref_id = {p.ref_id: p for p in all_projects}
             filter_project_ref_ids = [p.ref_id for p in all_syncable_projects]
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
-            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_parent(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_parent(workspace.ref_id)
 
         if SyncTarget.HABITS in args.gen_targets:
             with self._storage_engine.get_unit_of_work() as uow:
                 all_habits = \
-                    uow.habit_repository.find_all(
-                        habit_collection_ref_id=habit_collection.ref_id,
+                    uow.habit_repository.find_all_with_filters(
+                        parent_ref_id=habit_collection.ref_id,
                         filter_ref_ids=args.filter_habit_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids)
 
             with self._storage_engine.get_unit_of_work() as uow:
                 all_collection_inbox_tasks = \
-                    uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         filter_sources=[InboxTaskSource.HABIT],
                         allow_archived=True, filter_habit_ref_ids=(rt.ref_id for rt in all_habits))
 
@@ -128,15 +128,15 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
         if SyncTarget.CHORES in args.gen_targets:
             with self._storage_engine.get_unit_of_work() as uow:
                 all_chores = \
-                    uow.chore_repository.find_all(
-                        chore_collection_ref_id=chore_collection.ref_id,
+                    uow.chore_repository.find_all_with_filters(
+                        parent_ref_id=chore_collection.ref_id,
                         filter_ref_ids=args.filter_chore_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids)
 
             with self._storage_engine.get_unit_of_work() as uow:
                 all_collection_inbox_tasks = \
-                    uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         filter_sources=[InboxTaskSource.CHORE],
                         allow_archived=True, filter_chore_ref_ids=(rt.ref_id for rt in all_chores))
 
@@ -163,14 +163,14 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
         if SyncTarget.METRICS in args.gen_targets:
             with self._storage_engine.get_unit_of_work() as uow:
-                metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+                metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
                 all_metrics = \
                     uow.metric_repository.find_all(
-                        metric_collection_ref_id=metric_collection.ref_id, filter_keys=args.filter_metric_keys)
+                        parent_ref_id=metric_collection.ref_id, filter_keys=args.filter_metric_keys)
 
                 all_collection_inbox_tasks = \
-                    uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         filter_sources=[InboxTaskSource.METRIC], allow_archived=True,
                         filter_metric_ref_ids=[m.ref_id for m in all_metrics])
 
@@ -202,19 +202,19 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
 
         if SyncTarget.PERSONS in args.gen_targets:
             with self._storage_engine.get_unit_of_work() as uow:
-                person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+                person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
                 all_persons = \
                     uow.person_repository.find_all(
-                        person_collection_ref_id=person_collection.ref_id, filter_ref_ids=args.filter_person_ref_ids)
+                        parent_ref_id=person_collection.ref_id, filter_ref_ids=args.filter_person_ref_ids)
 
                 all_catch_up_inbox_tasks = \
-                    uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
                         filter_person_ref_ids=[m.ref_id for m in all_persons])
                 all_birthday_inbox_tasks = \
-                    uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
                         filter_person_ref_ids=[m.ref_id for m in all_persons])
 
@@ -333,10 +333,11 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
                 if found_task.archived:
                     return
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-                notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
-                self._inbox_task_notion_manager.upsert_inbox_task(
-                    found_task.inbox_task_collection_ref_id, notion_inbox_task)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+                notion_inbox_task = NotionInboxTask.new_notion_entity(found_task, direct_info)
+                self._inbox_task_notion_manager.upsert_leaf(
+                    found_task.inbox_task_collection_ref_id, notion_inbox_task, None)
                 LOGGER.info("Applied Notion changes")
             else:
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -361,9 +362,10 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
                 if inbox_task.archived:
                     return
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-                notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-                self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+                notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+                self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
                 LOGGER.info("Applied Notion changes")
 
         inbox_task_remove_service = InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager)
@@ -444,10 +446,10 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if found_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -471,9 +473,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if inbox_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
 
     def _generate_collection_inbox_tasks_for_metric(
@@ -526,10 +528,10 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if found_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -553,9 +555,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if inbox_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
 
     def _generate_catch_up_inbox_tasks_for_person(
@@ -608,10 +610,10 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if found_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -635,9 +637,9 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if inbox_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
 
     def _generate_birthday_inbox_task_for_person(
@@ -684,10 +686,10 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if found_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(found_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")
         else:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -709,7 +711,7 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
             if inbox_task.archived:
                 return
 
-            direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
-            notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-            self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
             LOGGER.info("Applied Notion changes")

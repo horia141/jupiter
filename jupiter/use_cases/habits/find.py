@@ -38,22 +38,22 @@ class HabitFindUseCase(AppReadonlyUseCase['HabitFindUseCase.Args', 'HabitFindUse
         with self._storage_engine.get_unit_of_work() as uow:
             filter_project_ref_ids: Optional[List[EntityId]] = None
             if args.filter_project_keys:
-                project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+                project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
                 projects = \
-                    uow.project_repository.find_all(
-                        project_collection_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
+                    uow.project_repository.find_all_with_filters(
+                        parent_ref_id=project_collection.ref_id, filter_keys=args.filter_project_keys)
                 filter_project_ref_ids = [p.ref_id for p in projects]
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_parent(workspace.ref_id)
 
-            habits = uow.habit_repository.find_all(
-                habit_collection_ref_id=habit_collection.ref_id,
+            habits = uow.habit_repository.find_all_with_filters(
+                parent_ref_id=habit_collection.ref_id,
                 allow_archived=args.show_archived, filter_ref_ids=args.filter_ref_ids,
                 filter_project_ref_ids=filter_project_ref_ids)
 
-            inbox_tasks = uow.inbox_task_repository.find_all(
-                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+            inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True, filter_habit_ref_ids=(bp.ref_id for bp in habits))
 
         return HabitFindUseCase.Result(

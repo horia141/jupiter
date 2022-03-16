@@ -5,37 +5,60 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
-from typing import Final, Iterator, Optional
+from typing import Final, Iterator, Optional, Type
 
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.future import Engine
 
+from jupiter.domain.big_plans.big_plan import BigPlan
+from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository
 from jupiter.domain.big_plans.infra.big_plan_repository import BigPlanRepository
+from jupiter.domain.chores.chore import Chore
+from jupiter.domain.chores.chore_collection import ChoreCollection
 from jupiter.domain.chores.infra.chore_collection_repository import ChoreCollectionRepository
 from jupiter.domain.chores.infra.chore_repository import ChoreRepository
+from jupiter.domain.habits.habit import Habit
+from jupiter.domain.habits.habit_collection import HabitCollection
 from jupiter.domain.habits.infra.habit_collection_repository import HabitCollectionRepository
 from jupiter.domain.habits.infra.habit_repository import HabitRepository
+from jupiter.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository
 from jupiter.domain.inbox_tasks.infra.inbox_task_repository import InboxTaskRepository
 from jupiter.domain.metrics.infra.metric_collection_repository import MetricCollectionRepository
 from jupiter.domain.metrics.infra.metric_entry_repository import MetricEntryRepository
 from jupiter.domain.metrics.infra.metric_repository import MetricRepository
+from jupiter.domain.metrics.metric import Metric
+from jupiter.domain.metrics.metric_collection import MetricCollection
+from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.persons.infra.person_collection_repository import PersonCollectionRepository
 from jupiter.domain.persons.infra.person_repository import PersonRepository
+from jupiter.domain.persons.person import Person
+from jupiter.domain.persons.person_collection import PersonCollection
 from jupiter.domain.projects.infra.project_collection_repository import ProjectCollectionRepository
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
-from jupiter.domain.remote.notion.collection_repository import NotionConnectionRepository
+from jupiter.domain.projects.project import Project
+from jupiter.domain.projects.project_collection import ProjectCollection
+from jupiter.domain.remote.notion.connection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
 from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepository
 from jupiter.domain.smart_lists.infra.smart_list_tag_repository import SmartListTagRepository
-from jupiter.domain.storage_engine import DomainUnitOfWork, DomainStorageEngine
+from jupiter.domain.smart_lists.smart_list import SmartList
+from jupiter.domain.smart_lists.smart_list_collection import SmartListCollection
+from jupiter.domain.smart_lists.smart_list_item import SmartListItem
+from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
+from jupiter.domain.storage_engine import DomainUnitOfWork, DomainStorageEngine, LeafType, TrunkType, BranchType, \
+    BranchEntityKeyType
 from jupiter.domain.vacations.infra.vacation_collection_repository import VacationCollectionRepository
 from jupiter.domain.vacations.infra.vacation_repository import VacationRepository
+from jupiter.domain.vacations.vacation import Vacation
+from jupiter.domain.vacations.vacation_collection import VacationCollection
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository
+from jupiter.framework.repository import LeafEntityRepository, TrunkEntityRepository, BranchEntityRepository
 from jupiter.repository.sqlite.domain.big_plans import SqliteBigPlanCollectionRepository, SqliteBigPlanRepository
 from jupiter.repository.sqlite.domain.chores import SqliteChoreCollectionRepository, SqliteChoreRepository
 from jupiter.repository.sqlite.domain.habits import SqliteHabitCollectionRepository, SqliteHabitRepository
@@ -251,6 +274,64 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def notion_connection_repository(self) -> NotionConnectionRepository:
         """The Notion connection repository."""
         return self._notion_connection_repository
+
+    def get_trunk_repository_for(self, trunk_type: Type[TrunkType]) -> TrunkEntityRepository[TrunkType]:
+        """Get a trunk repository by type."""
+        if trunk_type == VacationCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._vacation_collection_repository)
+        elif trunk_type == ProjectCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._project_collection_repository)
+        elif trunk_type == InboxTaskCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._inbox_task_collection_repository)
+        elif trunk_type == HabitCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._habit_collection_repository)
+        elif trunk_type == ChoreCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._chore_collection_repository)
+        elif trunk_type == BigPlanCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._big_plan_collection_repository)
+        elif trunk_type == MetricCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._metric_collection_repository)
+        elif trunk_type == SmartListCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._smart_list_collection_repository)
+        elif trunk_type == PersonCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._person_collection_repository)
+        else:
+            raise Exception(f"Unknown trunk repository type {trunk_type}")
+
+    def get_branch_repository_for(
+            self, branch_type: Type[BranchType]) -> BranchEntityRepository[BranchEntityKeyType, BranchType]:
+        """Get a branch repository by type."""
+        if branch_type == Metric:
+            return typing.cast(BranchEntityRepository[BranchEntityKeyType, BranchType], self._metric_repository)
+        elif branch_type == SmartList:
+            return typing.cast(BranchEntityRepository[BranchEntityKeyType, BranchType], self._smart_list_repository)
+        else:
+            raise Exception(f"Unknown branch repository type {branch_type}")
+
+    def get_leaf_repository_for(self, leaf_type: Type[LeafType]) -> LeafEntityRepository[LeafType]:
+        """Get a leaf repository by type."""
+        if leaf_type == Vacation:
+            return typing.cast(LeafEntityRepository[LeafType], self._vacation_repository)
+        elif leaf_type == Project:
+            return typing.cast(LeafEntityRepository[LeafType], self._project_repository)
+        elif leaf_type == InboxTask:
+            return typing.cast(LeafEntityRepository[LeafType], self._inbox_task_repository)
+        elif leaf_type == Habit:
+            return typing.cast(LeafEntityRepository[LeafType], self._habit_repository)
+        elif leaf_type == Chore:
+            return typing.cast(LeafEntityRepository[LeafType], self._chore_repository)
+        elif leaf_type == BigPlan:
+            return typing.cast(LeafEntityRepository[LeafType], self._big_plan_repository)
+        elif leaf_type == MetricEntry:
+            return typing.cast(LeafEntityRepository[LeafType], self._metric_entry_repository)
+        elif leaf_type == SmartListItem:
+            return typing.cast(LeafEntityRepository[LeafType], self._smart_list_item_repository)
+        elif leaf_type == SmartListTag:
+            return typing.cast(LeafEntityRepository[LeafType], self._smart_list_tag_reposiotry)
+        elif leaf_type == Person:
+            return typing.cast(LeafEntityRepository[LeafType], self._person_repository)
+        else:
+            raise Exception(f"Unknown leaf repository type {leaf_type}")
 
 
 class SqliteDomainStorageEngine(DomainStorageEngine):

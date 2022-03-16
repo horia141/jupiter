@@ -40,7 +40,7 @@ class SmartListTagCreateUseCase(AppMutationUseCase['SmartListTagCreateUseCase.Ar
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             metric = uow.smart_list_repository.load_by_key(smart_list_collection.ref_id, args.smart_list_key)
             smart_list_tag = \
@@ -49,6 +49,6 @@ class SmartListTagCreateUseCase(AppMutationUseCase['SmartListTagCreateUseCase.Ar
                     created_time=self._time_provider.get_current_time())
             smart_list_tag = uow.smart_list_tag_repository.create(smart_list_tag)
 
-        notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
-        self._smart_list_notion_manager.upsert_smart_list_tag(
+        notion_smart_list_tag = NotionSmartListTag.new_notion_entity(smart_list_tag)
+        self._smart_list_notion_manager.upsert_branch_tag(
             smart_list_collection.ref_id, metric.ref_id, notion_smart_list_tag)

@@ -6,7 +6,7 @@ from jupiter.domain.persons.person_birthday import PersonBirthday
 from jupiter.domain.persons.person_name import PersonName
 from jupiter.domain.persons.person_relationship import PersonRelationship
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -14,7 +14,7 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Person(Entity):
+class Person(LeafEntity):
     """A person."""
 
     @dataclass(frozen=True)
@@ -74,3 +74,8 @@ class Person(Entity):
             return 14
         else:
             return 2
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.person_collection_ref_id

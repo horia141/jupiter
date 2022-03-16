@@ -47,12 +47,12 @@ class SmartListItemCreateUseCase(AppMutationUseCase['SmartListItemCreateUseCase.
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
             smart_list = uow.smart_list_repository.load_by_key(smart_list_collection.ref_id, args.smart_list_key)
             smart_list_tags = \
                 {t.tag_name: t
-                 for t in uow.smart_list_tag_repository.find_all(
-                     smart_list_ref_id=smart_list.ref_id, filter_tag_names=args.tag_names)}
+                 for t in uow.smart_list_tag_repository.find_all_with_filters(
+                     parent_ref_id=smart_list.ref_id, filter_tag_names=args.tag_names)}
             for tag_name in args.tag_names:
                 if tag_name in smart_list_tags:
                     continue
@@ -70,12 +70,12 @@ class SmartListItemCreateUseCase(AppMutationUseCase['SmartListItemCreateUseCase.
             smart_list_item = uow.smart_list_item_repository.create(smart_list_item)
 
         for smart_list_tag in smart_list_tags.values():
-            notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
-            self._smart_list_notion_manager.upsert_smart_list_tag(
+            notion_smart_list_tag = NotionSmartListTag.new_notion_entity(smart_list_tag)
+            self._smart_list_notion_manager.upsert_branch_tag(
                 smart_list_collection.ref_id, smart_list.ref_id, notion_smart_list_tag)
         notion_smart_list_item = \
-            NotionSmartListItem.new_notion_row(
+            NotionSmartListItem.new_notion_entity(
                 smart_list_item,
                 NotionSmartListItem.DirectInfo({t.ref_id: t for t in smart_list_tags.values()}))
-        self._smart_list_notion_manager.upsert_smart_list_item(
-            smart_list_collection.ref_id, smart_list.ref_id, notion_smart_list_item)
+        self._smart_list_notion_manager.upsert_leaf(
+            smart_list_collection.ref_id, smart_list.ref_id, notion_smart_list_item, None)

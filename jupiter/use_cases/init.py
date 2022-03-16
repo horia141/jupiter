@@ -195,47 +195,46 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
 
         LOGGER.info("Applied local changes")
 
-        new_notion_workspace = NotionWorkspace.new_notion_row(new_workspace)
+        new_notion_workspace = NotionWorkspace.new_notion_entity(new_workspace)
         new_notion_workspace = self._workspace_notion_manager.upsert_workspace(new_notion_workspace)
 
         LOGGER.info("Creating vacations structure")
-        new_notion_vacation_collection = NotionVacationCollection.new_notion_row(new_vacation_collection)
-        self._vacation_notion_manager.upsert_root_page(new_notion_workspace, new_notion_vacation_collection)
+        new_notion_vacation_collection = NotionVacationCollection.new_notion_entity(new_vacation_collection)
+        self._vacation_notion_manager.upsert_trunk(new_notion_workspace, new_notion_vacation_collection)
 
         LOGGER.info("Creating projects structure")
-        new_notion_project_collection = NotionProjectCollection.new_notion_row(new_project_collection)
-        self._project_notion_manager.upsert_root_page(new_notion_workspace, new_notion_project_collection)
-        new_notion_default_project = NotionProject.new_notion_row(new_default_project, NotionProject.DirectInfo())
-        self._project_notion_manager.upsert_project(new_project_collection.ref_id, new_notion_default_project)
+        new_notion_project_collection = NotionProjectCollection.new_notion_entity(new_project_collection)
+        self._project_notion_manager.upsert_trunk(new_notion_workspace, new_notion_project_collection)
+        new_notion_default_project = NotionProject.new_notion_entity(new_default_project, None)
+        self._project_notion_manager.upsert_leaf(new_project_collection.ref_id, new_notion_default_project, None)
 
         LOGGER.info("Creating inbox tasks structure")
-        new_notion_inbox_task_collection = NotionInboxTaskCollection.new_notion_row(new_inbox_task_collection)
-        self._inbox_task_notion_manager.upsert_inbox_task_collection(
-            new_notion_workspace, new_notion_inbox_task_collection)
+        new_notion_inbox_task_collection = NotionInboxTaskCollection.new_notion_entity(new_inbox_task_collection)
+        self._inbox_task_notion_manager.upsert_trunk(new_notion_workspace, new_notion_inbox_task_collection)
 
         LOGGER.info("Creating habits structure")
-        new_notion_habit_collection = NotionHabitCollection.new_notion_row(new_habit_collection)
-        self._habit_notion_manager.upsert_habit_collection(new_notion_workspace, new_notion_habit_collection)
+        new_notion_habit_collection = NotionHabitCollection.new_notion_entity(new_habit_collection)
+        self._habit_notion_manager.upsert_trunk(new_notion_workspace, new_notion_habit_collection)
 
         LOGGER.info("Creating chores structure")
-        new_notion_chore_collection = NotionChoreCollection.new_notion_row(new_chore_collection)
-        self._chore_notion_manager.upsert_chore_collection(new_notion_workspace, new_notion_chore_collection)
+        new_notion_chore_collection = NotionChoreCollection.new_notion_entity(new_chore_collection)
+        self._chore_notion_manager.upsert_trunk(new_notion_workspace, new_notion_chore_collection)
 
         LOGGER.info("Creating big plans structure")
-        new_notion_big_plan_collection = NotionBigPlanCollection.new_notion_row(new_big_plan_collection)
-        self._big_plan_notion_manager.upsert_big_plan_collection(new_notion_workspace, new_notion_big_plan_collection)
+        new_notion_big_plan_collection = NotionBigPlanCollection.new_notion_entity(new_big_plan_collection)
+        self._big_plan_notion_manager.upsert_trunk(new_notion_workspace, new_notion_big_plan_collection)
 
         LOGGER.info("Creating lists structure")
-        new_notion_smart_list_collection = NotionSmartListCollection.new_notion_row(new_smart_list_collection)
-        self._smart_list_notion_manager.upsert_root_page(new_notion_workspace, new_notion_smart_list_collection)
+        new_notion_smart_list_collection = NotionSmartListCollection.new_notion_entity(new_smart_list_collection)
+        self._smart_list_notion_manager.upsert_trunk(new_notion_workspace, new_notion_smart_list_collection)
 
         LOGGER.info("Creating metrics structure")
-        new_notion_metric_collection = NotionMetricCollection.new_notion_row(new_metric_collection)
-        self._metric_notion_manager.upsert_root_page(new_notion_workspace, new_notion_metric_collection)
+        new_notion_metric_collection = NotionMetricCollection.new_notion_entity(new_metric_collection)
+        self._metric_notion_manager.upsert_trunk(new_notion_workspace, new_notion_metric_collection)
 
         LOGGER.info("Creating the persons structure")
-        new_notion_person_collection = NotionPersonCollection.new_notion_row(new_person_collection)
-        self._person_notion_manager.upsert_root_page(new_notion_workspace, new_notion_person_collection)
+        new_notion_person_collection = NotionPersonCollection.new_notion_entity(new_person_collection)
+        self._person_notion_manager.upsert_trunk(new_notion_workspace, new_notion_person_collection)
 
         ProjectLabelUpdateService(
             self._storage_engine,

@@ -53,7 +53,7 @@ class HabitChangeProjectUseCase(AppMutationUseCase['HabitChangeProjectUseCase.Ar
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
             if args.project_key:
                 project = uow.project_repository.load_by_key(project_collection.ref_id, args.project_key)
@@ -69,10 +69,10 @@ class HabitChangeProjectUseCase(AppMutationUseCase['HabitChangeProjectUseCase.Ar
 
             uow.habit_repository.save(habit)
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
             all_inbox_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_habit_ref_ids=[habit.ref_id])
 
             for inbox_task in all_inbox_tasks:
@@ -97,23 +97,19 @@ class HabitChangeProjectUseCase(AppMutationUseCase['HabitChangeProjectUseCase.Ar
                 uow.inbox_task_repository.save(inbox_task)
                 LOGGER.info(f'Updating the associated inbox task "{inbox_task.name}"')
 
-        habit_direct_info = NotionHabit.DirectInfo(project_name=project.name)
+        habit_direct_info = NotionHabit.DirectInfo(all_projects_map={project.ref_id: project})
 
         notion_habit = \
-            self._habit_notion_manager.load_habit(
-                habit.habit_collection_ref_id, habit.ref_id)
+            self._habit_notion_manager.load_leaf(habit.habit_collection_ref_id, habit.ref_id)
         notion_habit = \
             notion_habit.join_with_entity(habit, habit_direct_info)
-        self._habit_notion_manager.save_habit(habit.habit_collection_ref_id, notion_habit)
+        self._habit_notion_manager.save_leaf(habit.habit_collection_ref_id, notion_habit)
 
         for inbox_task in all_inbox_tasks:
             inbox_task_direct_info = \
-                NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
             notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-            notion_inbox_task = \
-                notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
-            self._inbox_task_notion_manager.save_inbox_task(
-                inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.load_leaf(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+            notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
+            self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")

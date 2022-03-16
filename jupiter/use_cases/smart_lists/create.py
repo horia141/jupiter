@@ -45,7 +45,7 @@ class SmartListCreateUseCase(AppMutationUseCase['SmartListCreateUseCase.Args', N
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             smart_list = \
                 SmartList.new_smart_list(
@@ -59,8 +59,8 @@ class SmartListCreateUseCase(AppMutationUseCase['SmartListCreateUseCase.Args', N
                     source=EventSource.CLI, created_time=self._time_provider.get_current_time())
             smart_list_default_tag = uow.smart_list_tag_repository.create(smart_list_default_tag)
 
-        notion_smart_list = NotionSmartList.new_notion_row(smart_list)
-        self._smart_list_notion_manager.upsert_smart_list(smart_list_collection.ref_id, notion_smart_list)
-        notion_smart_list_default_tag = NotionSmartListTag.new_notion_row(smart_list_default_tag, None)
-        self._smart_list_notion_manager.upsert_smart_list_tag(
+        notion_smart_list = NotionSmartList.new_notion_entity(smart_list)
+        self._smart_list_notion_manager.upsert_branch(smart_list_collection.ref_id, notion_smart_list)
+        notion_smart_list_default_tag = NotionSmartListTag.new_notion_entity(smart_list_default_tag)
+        self._smart_list_notion_manager.upsert_branch_tag(
             smart_list_collection.ref_id, smart_list.ref_id, notion_smart_list_default_tag)

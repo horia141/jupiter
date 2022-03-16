@@ -1,7 +1,7 @@
 """A repository for mutation use cases invocation records."""
 import abc
 
-from jupiter.framework.storage import Repository
+from jupiter.framework.repository import Repository
 from jupiter.framework.use_case import MutationUseCaseInvocationRecord, UseCaseArgs
 
 

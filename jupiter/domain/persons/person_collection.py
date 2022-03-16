@@ -1,14 +1,14 @@
 """The person collection."""
 from dataclasses import dataclass
 
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, TrunkEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
 @dataclass(frozen=True)
-class PersonCollection(Entity):
+class PersonCollection(TrunkEntity):
     """The personal relationship database."""
 
     @dataclass(frozen=True)
@@ -49,3 +49,8 @@ class PersonCollection(Entity):
             catch_up_project_ref_id=catch_up_project_ref_id,
             new_event=
             PersonCollection.ChangeCatchUpProjectRefId.make_event_from_frame_args(source, self.version, modified_time))
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.workspace_ref_id

@@ -140,21 +140,21 @@ class NotionMetricManager(MetricNotionManager):
         self._pages_manager = pages_manager
         self._collections_manager = collections_manager
 
-    def upsert_root_page(
-            self, notion_workspace: NotionWorkspace, metric_collection: NotionMetricCollection) -> None:
+    def upsert_trunk(
+            self, parent: NotionWorkspace, trunk: NotionMetricCollection) -> None:
         """Upsert the root page for the metrics section."""
         self._pages_manager.upsert_page(
-            NotionLockKey(f"{self._KEY}:{metric_collection.ref_id}"), self._PAGE_NAME, self._PAGE_ICON,
-            notion_workspace.notion_id)
+            NotionLockKey(f"{self._KEY}:{trunk.ref_id}"), self._PAGE_NAME, self._PAGE_ICON,
+            parent.notion_id)
 
-    def upsert_metric(self, metric_collection_ref_id: EntityId, metric: NotionMetric) -> NotionMetric:
+    def upsert_branch(self, trunk_ref_id: EntityId, branch: NotionMetric) -> NotionMetric:
         """Upsert the Notion-side metric."""
-        root_page = self._pages_manager.get_page(NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}"))
-        metric_link = self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric.ref_id}"),
+        root_page = self._pages_manager.get_page(NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+        branch_link = self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch.ref_id}"),
             parent_page_notion_id=root_page.notion_id,
-            name=metric.name,
-            icon=metric.icon,
+            name=branch.name,
+            icon=branch.icon,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
             view_schemas=[
@@ -162,133 +162,131 @@ class NotionMetricManager(MetricNotionManager):
             ])
 
         return NotionMetric(
-            name=metric.name,
-            icon=metric.icon,
-            ref_id=metric.ref_id,
-            notion_id=metric_link.collection_notion_id)
+            name=branch.name,
+            icon=branch.icon,
+            ref_id=branch.ref_id,
+            notion_id=branch_link.collection_notion_id)
 
-    def save_metric(self, metric_collection_ref_id: EntityId, metric: NotionMetric) -> NotionMetric:
+    def save_branch(self, trunk_ref_id: EntityId, branch: NotionMetric) -> NotionMetric:
         """Save a metric collection."""
         try:
             self._collections_manager.save_collection(
-                key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric.ref_id}"),
-                new_name=metric.name,
-                new_icon=metric.icon,
+                key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch.ref_id}"),
+                new_name=branch.name,
+                new_icon=branch.icon,
                 new_schema=self._SCHEMA)
         except NotionCollectionNotFoundError as err:
-            raise NotionMetricNotFoundError(f"Could not find metric with id {metric.ref_id} locally") from err
-        return metric
+            raise NotionMetricNotFoundError(f"Could not find metric with id {branch.ref_id} locally") from err
+        return branch
 
-    def load_metric(self, metric_collection_ref_id: EntityId, ref_id: EntityId) -> NotionMetric:
+    def load_branch(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> NotionMetric:
         """Load a metric collection."""
         try:
-            metric_link = self._collections_manager.load_collection(
-                key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{ref_id}"))
+            branch_link = self._collections_manager.load_collection(
+                key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"))
         except NotionCollectionNotFoundError as err:
-            raise NotionMetricNotFoundError(f"Could not find metric with id {ref_id} locally") from err
+            raise NotionMetricNotFoundError(f"Could not find metric with id {branch_ref_id} locally") from err
 
         return NotionMetric(
-            name=metric_link.name,
-            icon=metric_link.icon,
-            ref_id=ref_id,
-            notion_id=metric_link.collection_notion_id)
+            name=branch_link.name,
+            icon=branch_link.icon,
+            ref_id=branch_ref_id,
+            notion_id=branch_link.collection_notion_id)
 
-    def remove_metric(self, metric_collection_ref_id: EntityId, ref_id: EntityId) -> None:
+    def remove_branch(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> None:
         """Remove a metric on Notion-side."""
         try:
             self._collections_manager.remove_collection(
-                NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{ref_id}"))
+                NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"))
         except NotionCollectionNotFoundError as err:
-            raise NotionMetricNotFoundError(f"Could not find metric with id {ref_id} locally") from err
+            raise NotionMetricNotFoundError(f"Could not find metric with id {branch_ref_id} locally") from err
 
-    def upsert_metric_entry(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId,
-            metric_entry: NotionMetricEntry) -> NotionMetricEntry:
+    def upsert_leaf(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId,
+            leaf: NotionMetricEntry, extra_info: None) -> NotionMetricEntry:
         """Upsert a metric entry on Notion-side."""
         link = \
             self._collections_manager.upsert_collection_item(
-                key=NotionLockKey(f"{metric_entry.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"),
-                new_row=metric_entry,
+                key=NotionLockKey(f"{leaf.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
+                new_row=leaf,
                 copy_row_to_notion_row=self._copy_row_to_notion_row)
         return link.item_info
 
-    def save_metric_entry(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId,
-            metric_entry: NotionMetricEntry) -> NotionMetricEntry:
+    def save_leaf(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId,
+            leaf: NotionMetricEntry, extra_info: typing.Optional[None] = None) -> NotionMetricEntry:
         """Update the Notion-side metric with new data."""
         try:
             link = \
                 self._collections_manager.save_collection_item(
-                    key=NotionLockKey(f"{metric_entry.ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"),
-                    row=metric_entry,
+                    key=NotionLockKey(f"{leaf.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
+                    row=leaf,
                     copy_row_to_notion_row=self._copy_row_to_notion_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionMetricEntryNotFoundError(
-                f"Notion metric entry with id {metric_entry.ref_id} does not exist") from err
+                f"Notion metric entry with id {leaf.ref_id} does not exist") from err
 
-    def load_metric_entry(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId, ref_id: EntityId) -> NotionMetricEntry:
+    def load_leaf(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId) -> NotionMetricEntry:
         """Load a particular metric entry."""
         try:
             link = \
                 self._collections_manager.load_collection_item(
-                    key=NotionLockKey(f"{ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"),
+                    key=NotionLockKey(f"{leaf_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionMetricEntryNotFoundError(
-                f"Notion metric entry with id {ref_id} does not exist") from err
+                f"Notion metric entry with id {leaf_ref_id} does not exist") from err
 
-    def load_all_metric_entries(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId) -> typing.Iterable[NotionMetricEntry]:
+    def load_all_leaves(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> typing.Iterable[NotionMetricEntry]:
         """Retrieve all the Notion-side metric entrys."""
         return [l.item_info for l in
                 self._collections_manager.load_all_collection_items(
-                    collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
-    def remove_metric_entry(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId,
-            metric_entry_ref_id: typing.Optional[EntityId]) -> None:
+    def remove_leaf(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: typing.Optional[EntityId]) -> None:
         """Remove a metric on Notion-side."""
         try:
             self._collections_manager.remove_collection_item(
-                key=NotionLockKey(f"{metric_entry_ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"))
+                key=NotionLockKey(f"{leaf_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"))
         except NotionCollectionItemNotFoundError as err:
             raise NotionMetricEntryNotFoundError(
-                f"Notion metric entry with id {metric_ref_id} does not exist") from err
+                f"Notion metric entry with id {branch_ref_id} does not exist") from err
 
-    def drop_all_metric_entries(self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId) -> None:
+    def drop_all_leaves(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> None:
         """Remove all metric entries Notion-side."""
         self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"))
 
-    def link_local_and_notion_entries_for_metric(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId, ref_id: EntityId,
-            notion_id: NotionId) -> None:
-        """Link a local entity with the Notion one, useful in syncing processes."""
-        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
-            key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"),
-            ref_id=ref_id,
-            notion_id=notion_id)
-
-    def load_all_saved_metric_entries_ref_ids(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId) -> typing.Iterable[EntityId]:
+    def load_all_saved_ref_ids(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> typing.Iterable[EntityId]:
         """Retrieve all the saved ref ids for the metric entries."""
         return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"))
 
-    def load_all_saved_metric_entries_notion_ids(
-            self, metric_collection_ref_id: EntityId, metric_ref_id: EntityId) -> typing.Iterable[NotionId]:
+    def load_all_saved_notion_ids(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> typing.Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for these metrics entries."""
         return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{metric_collection_ref_id}:{metric_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"))
+
+    def link_local_and_notion_leaves(
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId, notion_id: NotionId) -> None:
+        """Link a local entity with the Notion one, useful in syncing processes."""
+        self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
+            key=NotionLockKey(f"{leaf_ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
+            ref_id=leaf_ref_id,
+            notion_id=notion_id)
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionMetricEntry, notion_row: CollectionRowBlock) -> CollectionRowBlock:

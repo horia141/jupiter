@@ -1,8 +1,11 @@
 """Framework level elements for entities."""
+import abc
 import dataclasses
 from dataclasses import dataclass
 from typing import Optional, List, TypeVar, Union, cast
 
+from jupiter.domain.entity_key import EntityKey
+from jupiter.domain.tag_name import TagName
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import Event, EventKind, EventSource
@@ -116,3 +119,65 @@ class Entity:
                 archived=False,
                 archived_time=None,
                 new_event=Entity.Restore.make_event_from_frame_args(source, self.version, archived_time))
+
+
+@dataclass(frozen=True)
+class RootEntity(Entity):
+    """An entity without any parent."""
+    # example: workspace, user
+
+
+@dataclass(frozen=True)
+class TrunkEntity(Entity, abc.ABC):
+    """An entity with children, which is also a singleton."""
+    # examples:  vacations collection, projects collection, smart list collection, integrations collection,
+    # Zapier+Mail collection, etc
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent of this trunk entity."""
+        raise NotImplementedError("""Needs to be implemented.""")
+
+
+@dataclass(frozen=True)
+class StubEntity(Entity):
+    """An entity with no children, but which is also a singleton."""
+    # examples: notion connection, GitHub connection, GSuite collection, etc
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent of this stub entity."""
+        raise NotImplementedError("""Needs to be implemented.""")
+
+
+@dataclass(frozen=True)
+class BranchEntity(Entity):
+    """An entity with leaf children, which is also a group child of another sort of branch."""
+    # examples: smart list, metric, feeds (future)
+
+    @property
+    def branch_key(self) -> EntityKey:
+        """The unique key for this branch entity."""
+        raise NotImplementedError("""Needs to be implemented.""")
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent of this branch entity."""
+        raise NotImplementedError("""Needs to be implemented.""")
+
+
+@dataclass(frozen=True)
+class LeafEntity(Entity):
+    """An entity  with no children, sitting as a child of some other branch entity, at the top of the entity tree."""
+    # examples: inbox task, vacation, project, smart list item etc.
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent of this branch entity."""
+        raise NotImplementedError("""Needs to be implemented.""")
+
+
+@dataclass(frozen=True)
+class BranchTagEntity(LeafEntity, abc.ABC):
+    """A leaf entity serving as a tag for other entities on a branch.."""
+    tag_name: TagName

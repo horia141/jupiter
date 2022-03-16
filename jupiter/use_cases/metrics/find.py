@@ -48,15 +48,15 @@ class MetricFindUseCase(AppReadonlyUseCase['MetricFindUseCase.Args', 'MetricFind
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
             metrics = \
                 uow.metric_repository.find_all(
-                    metric_collection_ref_id=metric_collection.ref_id,
+                    parent_ref_id=metric_collection.ref_id,
                     allow_archived=args.allow_archived,
                     filter_keys=args.filter_keys)
             metric_entries = \
                 itertools.chain(*(uow.metric_entry_repository.find_all(
-                    metric_ref_id=m.ref_id, allow_archived=args.allow_archived) for m in metrics))
+                    parent_ref_id=m.ref_id, allow_archived=args.allow_archived) for m in metrics))
             metric_entries_by_ref_ids: Dict[EntityId, List[MetricEntry]] = {}
 
             collection_project = uow.project_repository.load_by_id(metric_collection.collection_project_ref_id)
@@ -68,10 +68,10 @@ class MetricFindUseCase(AppReadonlyUseCase['MetricFindUseCase.Args', 'MetricFind
                     metric_entries_by_ref_ids[metric_entry.metric_ref_id].append(metric_entry)
 
             metric_collection_inbox_tasks_by_ref_id: DefaultDict[EntityId, List[InboxTask]] = defaultdict(list)
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
             all_inbox_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     filter_sources=[InboxTaskSource.METRIC],
                     filter_metric_ref_ids=[m.ref_id for m in metrics])
 

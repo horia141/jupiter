@@ -6,12 +6,15 @@ from typing import Final, Optional, Iterable
 
 from jupiter.domain import schedules
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
+from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
 from jupiter.domain.big_plans.service.sync_service import BigPlanSyncService
 from jupiter.domain.chores.infra.chore_notion_manager import ChoreNotionManager
+from jupiter.domain.chores.notion_chore import NotionChore
 from jupiter.domain.chores.notion_chore_collection import NotionChoreCollection
 from jupiter.domain.chores.service.sync_service import ChoreSyncService
 from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager
+from jupiter.domain.habits.notion_habit import NotionHabit
 from jupiter.domain.habits.notion_habit_collection import NotionHabitCollection
 from jupiter.domain.habits.service.sync_service import HabitSyncService
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -29,19 +32,19 @@ from jupiter.domain.metrics.service.sync_service import MetricSyncService
 from jupiter.domain.persons.infra.person_notion_manager import PersonNotionManager
 from jupiter.domain.persons.notion_person_collection import NotionPersonCollection
 from jupiter.domain.persons.person_birthday import PersonBirthday
-from jupiter.domain.persons.service.sync_service import PersonSyncService
+from jupiter.domain.persons.service.sync_service import PersonSyncServiceNew
 from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionManager
 from jupiter.domain.projects.notion_project_collection import NotionProjectCollection
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.service.project_label_update_service import ProjectLabelUpdateService
-from jupiter.domain.projects.service.sync_service import ProjectSyncService
+from jupiter.domain.projects.service.sync_service import ProjectSyncServiceNew
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
 from jupiter.domain.smart_lists.notion_smart_list_collection import NotionSmartListCollection
-from jupiter.domain.smart_lists.service.sync_service import SmartListSyncService
+from jupiter.domain.smart_lists.service.sync_service import SmartListSyncServiceNew
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
@@ -55,6 +58,7 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
+from jupiter.remote.notion.common import format_name_for_option
 from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
@@ -138,60 +142,60 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
         notion_workspace = self._workspace_notion_manager.load_workspace(workspace.ref_id)
 
         with self._storage_engine.get_unit_of_work() as uow:
-            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
-            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
-            big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            vacation_collection = uow.vacation_collection_repository.load_by_parent(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_parent(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_parent(workspace.ref_id)
+            big_plan_collection = uow.big_plan_collection_repository.load_by_parent(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
 
             all_smart_lists = \
                 uow.smart_list_repository.find_all(
-                    smart_list_collection_ref_id=smart_list_collection.ref_id, allow_archived=True)
+                    parent_ref_id=smart_list_collection.ref_id, allow_archived=True)
             all_metrics = \
-                uow.metric_repository.find_all(metric_collection_ref_id=metric_collection.ref_id, allow_archived=True)
+                uow.metric_repository.find_all(parent_ref_id=metric_collection.ref_id, allow_archived=True)
             all_persons = \
-                uow.person_repository.find_all(person_collection_ref_id=person_collection.ref_id, allow_archived=True)
+                uow.person_repository.find_all(parent_ref_id=person_collection.ref_id, allow_archived=True)
 
         if SyncTarget.STRUCTURE in args.sync_targets:
             LOGGER.info("Recreating vacations structure")
-            notion_vacation_collection = NotionVacationCollection.new_notion_row(vacation_collection)
-            self._vacation_notion_manager.upsert_root_page(notion_workspace, notion_vacation_collection)
+            notion_vacation_collection = NotionVacationCollection.new_notion_entity(vacation_collection)
+            self._vacation_notion_manager.upsert_trunk(notion_workspace, notion_vacation_collection)
 
             LOGGER.info("Recreating projects structure")
-            notion_project_collection = NotionProjectCollection.new_notion_row(project_collection)
-            self._project_notion_manager.upsert_root_page(notion_workspace, notion_project_collection)
+            notion_project_collection = NotionProjectCollection.new_notion_entity(project_collection)
+            self._project_notion_manager.upsert_trunk(notion_workspace, notion_project_collection)
 
             LOGGER.info("Recreating inbox tasks structure")
-            notion_inbox_task_collection = NotionInboxTaskCollection.new_notion_row(inbox_task_collection)
-            self._inbox_task_notion_manager.upsert_inbox_task_collection(notion_workspace, notion_inbox_task_collection)
+            notion_inbox_task_collection = NotionInboxTaskCollection.new_notion_entity(inbox_task_collection)
+            self._inbox_task_notion_manager.upsert_trunk(notion_workspace, notion_inbox_task_collection)
 
             LOGGER.info("Recreating habits structure")
-            notion_habit_collection = NotionHabitCollection.new_notion_row(habit_collection)
-            self._habit_notion_manager.upsert_habit_collection(notion_workspace, notion_habit_collection)
+            notion_habit_collection = NotionHabitCollection.new_notion_entity(habit_collection)
+            self._habit_notion_manager.upsert_trunk(notion_workspace, notion_habit_collection)
 
             LOGGER.info("Recreating chores structure")
-            notion_chore_collection = NotionChoreCollection.new_notion_row(chore_collection)
-            self._chore_notion_manager.upsert_chore_collection(notion_workspace, notion_chore_collection)
+            notion_chore_collection = NotionChoreCollection.new_notion_entity(chore_collection)
+            self._chore_notion_manager.upsert_trunk(notion_workspace, notion_chore_collection)
 
             LOGGER.info("Recreating big plan structure")
-            notion_big_plan_collection = NotionBigPlanCollection.new_notion_row(big_plan_collection)
-            self._big_plan_notion_manager.upsert_big_plan_collection(notion_workspace, notion_big_plan_collection)
+            notion_big_plan_collection = NotionBigPlanCollection.new_notion_entity(big_plan_collection)
+            self._big_plan_notion_manager.upsert_trunk(notion_workspace, notion_big_plan_collection)
 
             LOGGER.info("Recreating lists structure")
-            notion_smart_list_collection = NotionSmartListCollection.new_notion_row(smart_list_collection)
-            self._smart_list_notion_manager.upsert_root_page(notion_workspace, notion_smart_list_collection)
+            notion_smart_list_collection = NotionSmartListCollection.new_notion_entity(smart_list_collection)
+            self._smart_list_notion_manager.upsert_trunk(notion_workspace, notion_smart_list_collection)
 
             LOGGER.info("Recreating metrics structure")
-            notion_metric_collection = NotionMetricCollection.new_notion_row(metric_collection)
-            self._metric_notion_manager.upsert_root_page(notion_workspace, notion_metric_collection)
+            notion_metric_collection = NotionMetricCollection.new_notion_entity(metric_collection)
+            self._metric_notion_manager.upsert_trunk(notion_workspace, notion_metric_collection)
 
             LOGGER.info("Recreating the persons structure")
-            notion_person_collection = NotionPersonCollection.new_notion_row(person_collection)
-            self._person_notion_manager.upsert_root_page(notion_workspace, notion_person_collection)
+            notion_person_collection = NotionPersonCollection.new_notion_entity(person_collection)
+            self._person_notion_manager.upsert_trunk(notion_workspace, notion_person_collection)
 
         if SyncTarget.WORKSPACE in args.sync_targets:
             LOGGER.info("Syncing the workspace")
@@ -204,18 +208,33 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
             LOGGER.info("Syncing the vacations")
             vacation_sync_service = VacationSyncService(self._storage_engine, self._vacation_notion_manager)
             vacation_sync_service.sync(
-                workspace, args.drop_all_notion, args.sync_even_if_not_modified, args.filter_vacation_ref_ids,
-                args.sync_prefer)
+                parent_ref_id=workspace.ref_id,
+                upsert_info=None,
+                direct_info=None,
+                inverse_info=None,
+                drop_all_notion_side=args.drop_all_notion,
+                sync_even_if_not_modified=args.sync_even_if_not_modified,
+                filter_ref_ids=args.filter_vacation_ref_ids,
+                sync_prefer=args.sync_prefer)
 
         if SyncTarget.PROJECTS in sync_targets:
             LOGGER.info("Syncing the projects")
-            project_sync_service = ProjectSyncService(self._storage_engine, self._project_notion_manager)
-            all_projects = project_sync_service.sync(
-                workspace=workspace,
-                filter_project_keys=args.filter_project_keys,
-                drop_all_notion_side=args.drop_all_notion,
-                sync_even_if_not_modified=args.sync_even_if_not_modified,
-                sync_prefer=args.sync_prefer)
+            filter_project_ref_ids = None
+            filter_project_keys = list(args.filter_project_keys) if args.filter_project_keys else None
+            if filter_project_keys:
+                with self._storage_engine.get_unit_of_work() as uow:
+                    filter_project_ref_ids = uow.project_repository.exchange_keys_for_ref_ids(filter_project_keys)
+            project_sync_service = ProjectSyncServiceNew(self._storage_engine, self._project_notion_manager)
+            project_sync_result = \
+                project_sync_service.sync(
+                    parent_ref_id=workspace.ref_id,
+                    upsert_info=None,
+                    direct_info=None,
+                    inverse_info=None,
+                    drop_all_notion_side=args.drop_all_notion,
+                    sync_even_if_not_modified=args.sync_even_if_not_modified,
+                    filter_ref_ids=filter_project_ref_ids,
+                    sync_prefer=args.sync_prefer)
 
             ProjectLabelUpdateService(
                 self._storage_engine,
@@ -223,17 +242,16 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 self._habit_notion_manager,
                 self._chore_notion_manager,
                 self._big_plan_notion_manager) \
-                .sync(workspace, all_projects)
+                .sync(workspace, project_sync_result.all)
 
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.NOTION, time_provider=self._time_provider,
             storage_engine=self._storage_engine, inbox_task_notion_manager=self._inbox_task_notion_manager)
 
-        notion_inbox_task_collection = \
-            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
+        notion_inbox_task_collection = self._inbox_task_notion_manager.load_trunk(inbox_task_collection.ref_id)
 
         with self._storage_engine.get_unit_of_work() as uow:
-            all_projects = uow.project_repository.find_all(project_collection_ref_id=project_collection.ref_id)
+            all_projects = uow.project_repository.find_all(parent_ref_id=project_collection.ref_id)
         projects_by_ref_id = {p.ref_id: p for p in all_projects}
         filter_project_ref_ids = None
         if args.filter_project_keys:
@@ -241,67 +259,86 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
 
         if SyncTarget.BIG_PLANS in sync_targets:
             LOGGER.info("Syncing big plans")
+            all_projects_by_name = {format_name_for_option(p.name): p for p in all_projects}
+            all_projects_map = {p.ref_id: p for p in all_projects}
+            default_project = all_projects_map[workspace.default_project_ref_id]
             big_plan_sync_service = \
-                BigPlanSyncService(self._time_provider, self._storage_engine, self._big_plan_notion_manager)
+                BigPlanSyncService(self._storage_engine, self._big_plan_notion_manager)
             all_big_plans = \
-                big_plan_sync_service.big_plans_sync(
-                    workspace=workspace,
-                    all_projects=all_projects,
-                    inbox_task_collection=notion_inbox_task_collection,
+                big_plan_sync_service.sync(
+                    parent_ref_id=workspace.ref_id,
+                    upsert_info=notion_inbox_task_collection,
+                    direct_info=NotionBigPlan.DirectInfo(all_projects_map=all_projects_map),
+                    inverse_info=NotionBigPlan.InverseInfo(
+                        default_project=default_project,
+                        all_projects_by_name=all_projects_by_name,
+                        all_projects_map=all_projects_map),
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
                     filter_ref_ids=args.filter_big_plan_ref_ids,
-                    filter_project_ref_ids=filter_project_ref_ids,
-                    sync_prefer=args.sync_prefer)
+                    sync_prefer=args.sync_prefer).all
             InboxTaskBigPlanRefOptionsUpdateService(
                 self._storage_engine, self._inbox_task_notion_manager) \
                 .sync(big_plan_collection)
         else:
             with self._storage_engine.get_unit_of_work() as uow:
-                all_big_plans = uow.big_plan_repository.find_all(
-                    big_plan_collection_ref_id=big_plan_collection.ref_id,
+                all_big_plans = uow.big_plan_repository.find_all_with_filters(
+                    parent_ref_id=big_plan_collection.ref_id,
                     allow_archived=True, filter_ref_ids=args.filter_big_plan_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
         big_plans_by_ref_id = {bp.ref_id: bp for bp in all_big_plans}
 
         if SyncTarget.HABITS in sync_targets:
             LOGGER.info("Syncing habits")
-            habit_sync_service = HabitSyncService(self._time_provider, self._storage_engine, self._habit_notion_manager)
+            all_projects_by_name = {format_name_for_option(p.name): p for p in all_projects}
+            all_projects_map = {p.ref_id: p for p in all_projects}
+            default_project = all_projects_map[workspace.default_project_ref_id]
+            habit_sync_service = HabitSyncService(self._storage_engine, self._habit_notion_manager)
             all_habits = \
-                habit_sync_service.habits_sync(
-                    workspace=workspace,
-                    all_projects=all_projects,
-                    inbox_task_collection=notion_inbox_task_collection,
+                habit_sync_service.sync(
+                    parent_ref_id=workspace.ref_id,
+                    upsert_info=notion_inbox_task_collection,
+                    direct_info=NotionHabit.DirectInfo(all_projects_map=all_projects_map),
+                    inverse_info=NotionHabit.InverseInfo(
+                        default_project=default_project,
+                        all_projects_by_name=all_projects_by_name,
+                        all_projects_map=all_projects_map),
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
                     filter_ref_ids=args.filter_habit_ref_ids,
-                    filter_project_ref_ids=filter_project_ref_ids,
-                    sync_prefer=args.sync_prefer)
+                    sync_prefer=args.sync_prefer).all
         else:
             with self._storage_engine.get_unit_of_work() as uow:
-                all_habits = uow.habit_repository.find_all(
-                    habit_collection_ref_id=habit_collection.ref_id,
+                all_habits = uow.habit_repository.find_all_with_filters(
+                    parent_ref_id=habit_collection.ref_id,
                     allow_archived=True, filter_ref_ids=args.filter_habit_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
         habits_by_ref_id = {rt.ref_id: rt for rt in all_habits}
 
         if SyncTarget.CHORES in sync_targets:
             LOGGER.info("Syncing chores")
-            chore_sync_service = ChoreSyncService(self._time_provider, self._storage_engine, self._chore_notion_manager)
+            all_projects_by_name = {format_name_for_option(p.name): p for p in all_projects}
+            all_projects_map = {p.ref_id: p for p in all_projects}
+            default_project = all_projects_map[workspace.default_project_ref_id]
+            chore_sync_service = ChoreSyncService(self._storage_engine, self._chore_notion_manager)
             all_chores = \
-                chore_sync_service.chores_sync(
-                    workspace=workspace,
-                    all_projects=all_projects,
-                    inbox_task_collection=notion_inbox_task_collection,
+                chore_sync_service.sync(
+                    parent_ref_id=workspace.ref_id,
+                    upsert_info=notion_inbox_task_collection,
+                    direct_info=NotionChore.DirectInfo(
+                        all_projects_map=all_projects_map),
+                    inverse_info=NotionChore.InverseInfo(
+                        default_project=default_project,
+                        all_projects_by_name=all_projects_by_name,
+                        all_projects_map=all_projects_map),
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
                     filter_ref_ids=args.filter_chore_ref_ids,
-                    filter_project_ref_ids=filter_project_ref_ids,
-                    sync_prefer=args.sync_prefer)
+                    sync_prefer=args.sync_prefer).all
         else:
             with self._storage_engine.get_unit_of_work() as uow:
-                all_chores = uow.chore_repository.find_all(
-                    chore_collection_ref_id=chore_collection.ref_id,
+                all_chores = uow.chore_repository.find_all_with_filters(
+                    parent_ref_id=chore_collection.ref_id,
                     allow_archived=True, filter_ref_ids=args.filter_chore_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
         chores_by_ref_id = {rt.ref_id: rt for rt in all_chores}
@@ -309,21 +346,33 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
         if SyncTarget.INBOX_TASKS in args.sync_targets:
             LOGGER.info("Syncing inbox tasks")
             inbox_task_sync_service = \
-                InboxTaskSyncService(self._time_provider, self._storage_engine, self._inbox_task_notion_manager)
+                InboxTaskSyncService(self._storage_engine, self._inbox_task_notion_manager)
+            all_big_plans_by_name = {format_name_for_option(bp.name): bp for bp in all_big_plans}
+            all_big_plans_map = {bp.ref_id: bp for bp in all_big_plans}
+            all_projects_by_name = {format_name_for_option(p.name): p for p in all_projects}
+            all_projects_map = {p.ref_id: p for p in all_projects}
+            default_project = all_projects_map[workspace.default_project_ref_id]
             all_inbox_tasks = \
-                inbox_task_sync_service.inbox_tasks_sync(
-                    workspace=workspace,
-                    all_projects=all_projects,
-                    all_big_plans=all_big_plans,
+                inbox_task_sync_service.sync(
+                    parent_ref_id=workspace.ref_id,
+                    upsert_info=None,
+                    direct_info=NotionInboxTask.DirectInfo(
+                        all_projects_map=all_projects_map,
+                        all_big_plans_map=all_big_plans_map),
+                    inverse_info=NotionInboxTask.InverseInfo(
+                        default_project=default_project,
+                        all_projects_by_name=all_projects_by_name,
+                        all_projects_map=all_projects_map,
+                        all_big_plans_by_name=all_big_plans_by_name,
+                        all_big_plans_map=all_big_plans_map),
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
                     filter_ref_ids=args.filter_inbox_task_ref_ids,
-                    filter_project_ref_ids=filter_project_ref_ids,
-                    sync_prefer=args.sync_prefer)
+                    sync_prefer=args.sync_prefer).all
         else:
             with self._storage_engine.get_unit_of_work() as uow:
-                all_inbox_tasks = uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                all_inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_ref_ids=args.filter_inbox_task_ref_ids,
                     filter_project_ref_ids=filter_project_ref_ids)
 
@@ -341,7 +390,7 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     continue
                 habit = habits_by_ref_id[inbox_task.habit_ref_id]
                 project = projects_by_ref_id[habit.project_ref_id]
-                if habit.last_modified_time < self._time_provider.get_current_time():
+                if not habit.last_modified_time.is_within_ten_minutes(self._time_provider.get_current_time()):
                     LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
@@ -368,13 +417,14 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(
+                    self._inbox_task_notion_manager.load_leaf(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                self._inbox_task_notion_manager.save_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_leaf(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None)
                 LOGGER.info("Applied Notion changes")
 
         if SyncTarget.CHORES in args.sync_targets:
@@ -391,7 +441,7 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     continue
                 chore = chores_by_ref_id[inbox_task.chore_ref_id]
                 project = projects_by_ref_id[chore.project_ref_id]
-                if chore.last_modified_time < self._time_provider.get_current_time():
+                if not chore.last_modified_time.is_within_ten_minutes(self._time_provider.get_current_time()):
                     LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Updating inbox task '{inbox_task.name}'")
@@ -417,13 +467,14 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(
+                    self._inbox_task_notion_manager.load_leaf(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                self._inbox_task_notion_manager.save_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_leaf(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None)
                 LOGGER.info("Applied Notion changes")
 
         if SyncTarget.BIG_PLANS in sync_targets:
@@ -475,14 +526,15 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     continue
 
                 LOGGER.info(f"Syncing smart list '{smart_list.name}'")
-                smart_list_sync_service = SmartListSyncService(self._storage_engine, self._smart_list_notion_manager)
+                smart_list_sync_service = SmartListSyncServiceNew(self._storage_engine, self._smart_list_notion_manager)
                 smart_list_sync_service.sync(
-                    workspace=workspace,
                     right_now=self._time_provider.get_current_time(),
-                    smart_list=smart_list,
+                    parent_ref_id=workspace.ref_id,
+                    branch=smart_list,
+                    upsert_info=None,
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
-                    filter_smart_list_item_ref_ids=args.filter_smart_list_item_ref_ids,
+                    filter_ref_ids=args.filter_smart_list_item_ref_ids,
                     sync_prefer=args.sync_prefer)
 
         if SyncTarget.METRICS in sync_targets:
@@ -495,18 +547,21 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 LOGGER.info(f"Syncing metric '{metric.name}'")
                 metric_sync_service = MetricSyncService(self._storage_engine, self._metric_notion_manager)
                 metric_sync_service.sync(
-                    workspace=workspace,
                     right_now=self._time_provider.get_current_time(),
-                    metric=metric,
+                    parent_ref_id=workspace.ref_id,
+                    branch=metric,
+                    upsert_info=None,
+                    direct_info=None,
+                    inverse_info=None,
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
-                    filter_metric_entry_ref_ids=args.filter_metric_entry_ref_ids,
+                    filter_ref_ids=args.filter_metric_entry_ref_ids,
                     sync_prefer=args.sync_prefer)
 
             with self._storage_engine.get_unit_of_work() as uow:
                 all_metric_collection_tasks = \
-                    uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True, filter_sources=[InboxTaskSource.METRIC],
                         filter_metric_ref_ids=[m.ref_id for m in all_metrics])
 
@@ -518,7 +573,7 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 if args.filter_metric_keys is not None and metric.key not in args.filter_metric_keys:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of metric filtering")
                     continue
-                if metric.last_modified_time < self._time_provider.get_current_time():
+                if not metric.last_modified_time.is_within_ten_minutes(self._time_provider.get_current_time()):
                     LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
@@ -543,34 +598,38 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(
+                    self._inbox_task_notion_manager.load_leaf(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                self._inbox_task_notion_manager.save_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_leaf(
+                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None)
                 LOGGER.info("Applied Notion changes")
 
         if SyncTarget.PERSONS in sync_targets:
             LOGGER.info("Syncing the persons")
             project = projects_by_ref_id[person_collection.catch_up_project_ref_id]
-            person_sync_service = PersonSyncService(self._storage_engine, self._person_notion_manager)
+            person_sync_service = PersonSyncServiceNew(self._storage_engine, self._person_notion_manager)
             persons = \
                 person_sync_service.sync(
-                    workspace=workspace,
+                    parent_ref_id=workspace.ref_id,
+                    upsert_info=None,
+                    direct_info=None,
+                    inverse_info=None,
                     drop_all_notion_side=args.drop_all_notion,
                     sync_even_if_not_modified=args.sync_even_if_not_modified,
                     filter_ref_ids=args.filter_person_ref_ids,
-                    sync_prefer=args.sync_prefer)
+                    sync_prefer=args.sync_prefer).all
             all_persons_by_ref_id = {p.ref_id: p for p in persons}
             with self._storage_engine.get_unit_of_work() as uow:
-                all_person_catch_up_tasks = uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                all_person_catch_up_tasks = uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
                     filter_person_ref_ids=[p.ref_id for p in all_persons])
-                all_person_birthday_tasks = uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                all_person_birthday_tasks = uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
                     filter_person_ref_ids=[p.ref_id for p in all_persons])
 
@@ -581,7 +640,7 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 if args.filter_person_ref_ids is not None and person.ref_id not in args.filter_person_ref_ids:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
                     continue
-                if person.last_modified_time < self._time_provider.get_current_time():
+                if not person.last_modified_time.is_within_ten_minutes(self._time_provider.get_current_time()):
                     LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
@@ -609,13 +668,14 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.inbox_task_repository.save(inbox_task)
 
-                    direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                    direct_info =\
+                        NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                     notion_inbox_task = \
-                        self._inbox_task_notion_manager.load_inbox_task(
+                        self._inbox_task_notion_manager.load_leaf(
                             inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                     notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                    self._inbox_task_notion_manager.save_inbox_task(
-                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None)
                     LOGGER.info("Applied Notion changes")
 
             for inbox_task in all_person_birthday_tasks:
@@ -625,7 +685,7 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                 if args.filter_person_ref_ids is not None and person.ref_id not in args.filter_person_ref_ids:
                     LOGGER.info(f"Skipping inbox task '{inbox_task.name}' on account of inbox task filterring")
                     continue
-                if person.last_modified_time < self._time_provider.get_current_time():
+                if not person.last_modified_time.is_within_ten_minutes(self._time_provider.get_current_time()):
                     LOGGER.info(f"Skipping {inbox_task.name} because it was not modified")
                     continue
                 LOGGER.info(f"Syncing inbox task '{inbox_task.name}'")
@@ -652,11 +712,12 @@ class SyncUseCase(AppMutationUseCase['SyncUseCase.Args', None]):
                     with self._storage_engine.get_unit_of_work() as uow:
                         uow.inbox_task_repository.save(inbox_task)
 
-                    direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                    direct_info = \
+                        NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                     notion_inbox_task = \
-                        self._inbox_task_notion_manager.load_inbox_task(
+                        self._inbox_task_notion_manager.load_leaf(
                             inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                     notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                    self._inbox_task_notion_manager.save_inbox_task(
-                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None)
                     LOGGER.info("Applied Notion changes")

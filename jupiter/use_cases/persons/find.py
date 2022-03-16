@@ -30,11 +30,11 @@ class PersonFindUseCase(AppReadonlyUseCase['PersonFindUseCase.Args', 'PersonFind
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
             catch_up_project = uow.project_repository.load_by_id(person_collection.catch_up_project_ref_id)
             persons = \
                 uow.person_repository.find_all(
-                    person_collection_ref_id=person_collection.ref_id,
+                    parent_ref_id=person_collection.ref_id,
                     allow_archived=args.allow_archived,
                     filter_ref_ids=args.filter_person_ref_ids)
 

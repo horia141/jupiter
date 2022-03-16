@@ -1,14 +1,14 @@
 """A habit collection."""
 from dataclasses import dataclass
 
-from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.entity import Entity, FIRST_VERSION, TrunkEntity
 from jupiter.framework.event import EventSource
 
 
 @dataclass(frozen=True)
-class HabitCollection(Entity):
+class HabitCollection(TrunkEntity):
     """A habit collection."""
 
     @dataclass(frozen=True)
@@ -31,3 +31,8 @@ class HabitCollection(Entity):
             events=[HabitCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             workspace_ref_id=workspace_ref_id)
         return habit_collection
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.workspace_ref_id

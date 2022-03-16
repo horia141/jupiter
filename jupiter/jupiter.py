@@ -79,20 +79,11 @@ from jupiter.command.vacation_update import VacationUpdate
 from jupiter.command.workspace_change_default_project import WorkspaceChangeDefaultProject
 from jupiter.command.workspace_show import WorkspaceShow
 from jupiter.command.workspace_update import WorkspaceUpdate
-from jupiter.domain.big_plans.infra.big_plan_notion_manager import NotionBigPlanNotFoundError
-from jupiter.domain.chores.infra.chore_notion_manager import NotionChoreNotFoundError
-from jupiter.domain.habits.infra.habit_notion_manager import NotionHabitNotFoundError
-from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import NotionInboxTaskNotFoundError
-from jupiter.domain.metrics.infra.metric_notion_manager import NotionMetricNotFoundError, NotionMetricEntryNotFoundError
-from jupiter.domain.persons.infra.person_notion_manager import NotionPersonNotFoundError
-from jupiter.domain.projects.infra.project_notion_manager import NotionProjectNotFoundError
-from jupiter.domain.smart_lists.infra.smart_list_notion_manager import NotionSmartListNotFoundError, \
-    NotionSmartListTagNotFoundError, NotionSmartListItemNotFoundError
 from jupiter.domain.timezone import Timezone
-from jupiter.domain.vacations.infra.vacation_notion_manager import NotionVacationNotFoundError
 from jupiter.domain.workspaces.infra.workspace_notion_manager import NotionWorkspaceNotFoundError
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceNotFoundError, WorkspaceAlreadyExistsError
 from jupiter.framework.errors import InputValidationError
+from jupiter.framework.repository import EntityNotFoundError
 from jupiter.remote.notion.big_plans_manager import NotionBigPlansManager
 from jupiter.remote.notion.chores_manager import NotionChoresManager
 from jupiter.remote.notion.habits_manager import NotionHabitsManager
@@ -789,15 +780,7 @@ def main() -> None:
         print(
             f"The Notion connection's token has expired, please refresh it with '{NotionConnectionUpdateToken.name()}'")
         print(f"For more information checkout: {global_properties.docs_update_expired_token_url}")
-    except (NotionVacationNotFoundError,
-            NotionProjectNotFoundError,
-            NotionInboxTaskNotFoundError,
-            NotionHabitNotFoundError,
-            NotionChoreNotFoundError,
-            NotionBigPlanNotFoundError,
-            NotionMetricNotFoundError, NotionMetricEntryNotFoundError,
-            NotionSmartListNotFoundError, NotionSmartListTagNotFoundError, NotionSmartListItemNotFoundError,
-            NotionPersonNotFoundError) as err:
+    except EntityNotFoundError as err:
         print(f"For more information checkout: {global_properties.docs_fix_data_inconsistencies_url}")
         raise err
 

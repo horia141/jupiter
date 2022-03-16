@@ -1,9 +1,10 @@
 """The SQLite base chores repository."""
-from typing import Optional, Iterable, Final
+from typing import Optional, Iterable, Final, List
 
 from sqlalchemy import insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, Unicode, \
     ForeignKey, update, select, delete
 from sqlalchemy.engine import Connection, Result
+from sqlalchemy.exc import IntegrityError
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
@@ -12,7 +13,7 @@ from jupiter.domain.chores.chore import Chore
 from jupiter.domain.chores.chore_collection import ChoreCollection
 from jupiter.domain.chores.chore_name import ChoreName
 from jupiter.domain.chores.infra.chore_collection_repository \
-    import ChoreCollectionRepository, ChoreCollectionNotFoundError
+    import ChoreCollectionRepository, ChoreCollectionNotFoundError, ChoreCollectionAlreadyExistsError
 from jupiter.domain.chores.infra.chore_repository import ChoreRepository, \
     ChoreNotFoundError
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -51,41 +52,45 @@ class SqliteChoreCollectionRepository(ChoreCollectionRepository):
             keep_existing=True)
         self._chore_collection_event_table = build_event_table(self._chore_collection_table, metadata)
 
-    def create(self, chore_collection: ChoreCollection) -> ChoreCollection:
+    def create(self, entity: ChoreCollection) -> ChoreCollection:
         """Create a chore collection."""
-        result = self._connection.execute(
-            insert(self._chore_collection_table).values(
-                ref_id=
-                chore_collection.ref_id.as_int() if chore_collection.ref_id != BAD_REF_ID else None,
-                version=chore_collection.version,
-                archived=chore_collection.archived,
-                created_time=chore_collection.created_time.to_db(),
-                last_modified_time=chore_collection.last_modified_time.to_db(),
-                archived_time=
-                chore_collection.archived_time.to_db() if chore_collection.archived_time else None,
-                workspace_ref_id=chore_collection.workspace_ref_id.as_int()))
-        chore_collection = \
-            chore_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._chore_collection_event_table, chore_collection)
-        return chore_collection
+        try:
+            result = self._connection.execute(
+                insert(self._chore_collection_table).values(
+                    ref_id=
+                    entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    version=entity.version,
+                    archived=entity.archived,
+                    created_time=entity.created_time.to_db(),
+                    last_modified_time=entity.last_modified_time.to_db(),
+                    archived_time=
+                    entity.archived_time.to_db() if entity.archived_time else None,
+                    workspace_ref_id=entity.workspace_ref_id.as_int()))
+        except IntegrityError as err:
+            raise ChoreCollectionAlreadyExistsError(
+                f"Chore collection for workspace {entity.workspace_ref_id} already exists") from err
+        entity = \
+            entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._chore_collection_event_table, entity)
+        return entity
 
-    def save(self, chore_collection: ChoreCollection) -> ChoreCollection:
+    def save(self, entity: ChoreCollection) -> ChoreCollection:
         """Save a chore collection."""
         result = self._connection.execute(
             update(self._chore_collection_table)
-            .where(self._chore_collection_table.c.ref_id == chore_collection.ref_id.as_int())
+            .where(self._chore_collection_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=chore_collection.version,
-                archived=chore_collection.archived,
-                created_time=chore_collection.created_time.to_db(),
-                last_modified_time=chore_collection.last_modified_time.to_db(),
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
                 archived_time=
-                chore_collection.archived_time.to_db() if chore_collection.archived_time else None,
-                workspace_ref_id=chore_collection.workspace_ref_id.as_int()))
+                entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int()))
         if result.rowcount == 0:
             raise ChoreCollectionNotFoundError("The chore collection does not exist")
-        upsert_events(self._connection, self._chore_collection_event_table, chore_collection)
-        return chore_collection
+        upsert_events(self._connection, self._chore_collection_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> ChoreCollection:
         """Retrieve a chore collection."""
@@ -99,15 +104,15 @@ class SqliteChoreCollectionRepository(ChoreCollectionRepository):
             raise ChoreCollectionNotFoundError(f"Chore collection with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def load_by_workspace(self, workspace_ref_id: EntityId) -> ChoreCollection:
+    def load_by_parent(self, parent_ref_id: EntityId) -> ChoreCollection:
         """Retrieve a chore collection for a project."""
         query_stmt = \
             select(self._chore_collection_table)\
-            .where(self._chore_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+            .where(self._chore_collection_table.c.workspace_ref_id == parent_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
             raise ChoreCollectionNotFoundError(
-                f"Chore collection for workspace {workspace_ref_id} does not exist")
+                f"Chore collection for workspace {parent_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -164,81 +169,81 @@ class SqliteChoreRepository(ChoreRepository):
             keep_existing=True)
         self._chore_event_table = build_event_table(self._chore_table, metadata)
 
-    def create(self, chore: Chore) -> Chore:
+    def create(self, entity: Chore) -> Chore:
         """Create a chore."""
         result = self._connection.execute(
             insert(self._chore_table)\
                 .values(
-                    ref_id=chore.ref_id.as_int() if chore.ref_id != BAD_REF_ID else None,
-                    version=chore.version,
-                    archived=chore.archived,
-                    created_time=chore.created_time.to_db(),
-                    last_modified_time=chore.last_modified_time.to_db(),
-                    archived_time=chore.archived_time.to_db() if chore.archived_time else None,
-                    chore_collection_ref_id=chore.chore_collection_ref_id.as_int(),
-                    project_ref_id=chore.project_ref_id.as_int(),
-                    name=str(chore.name),
-                    gen_params_period=chore.gen_params.period.value if chore.gen_params else None,
-                    gen_params_eisen=chore.gen_params.eisen.value if chore.gen_params else None,
-                    gen_params_difficulty=chore.gen_params.difficulty.value
-                    if chore.gen_params and chore.gen_params.difficulty else None,
-                    gen_params_actionable_from_day=chore.gen_params.actionable_from_day.as_int()
-                    if chore.gen_params and chore.gen_params.actionable_from_day else None,
-                    gen_params_actionable_from_month=chore.gen_params.actionable_from_month.as_int()
-                    if chore.gen_params and chore.gen_params.actionable_from_month else None,
-                    gen_params_due_at_time=str(chore.gen_params.due_at_time)
-                    if chore.gen_params and chore.gen_params.due_at_time else None,
-                    gen_params_due_at_day=chore.gen_params.due_at_day.as_int()
-                    if chore.gen_params and chore.gen_params.due_at_day else None,
-                    gen_params_due_at_month=chore.gen_params.due_at_month.as_int()
-                    if chore.gen_params and chore.gen_params.due_at_month else None,
-                    suspended=chore.suspended,
-                    must_do=chore.must_do,
-                    skip_rule=str(chore.skip_rule) if chore.skip_rule else None,
-                    start_at_date=chore.start_at_date.to_db(),
-                    end_at_date=chore.end_at_date.to_db() if chore.end_at_date else None))
-        chore = chore.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._chore_event_table, chore)
-        return chore
+                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    version=entity.version,
+                    archived=entity.archived,
+                    created_time=entity.created_time.to_db(),
+                    last_modified_time=entity.last_modified_time.to_db(),
+                    archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                    chore_collection_ref_id=entity.chore_collection_ref_id.as_int(),
+                    project_ref_id=entity.project_ref_id.as_int(),
+                    name=str(entity.name),
+                    gen_params_period=entity.gen_params.period.value if entity.gen_params else None,
+                    gen_params_eisen=entity.gen_params.eisen.value if entity.gen_params else None,
+                    gen_params_difficulty=entity.gen_params.difficulty.value
+                    if entity.gen_params and entity.gen_params.difficulty else None,
+                    gen_params_actionable_from_day=entity.gen_params.actionable_from_day.as_int()
+                    if entity.gen_params and entity.gen_params.actionable_from_day else None,
+                    gen_params_actionable_from_month=entity.gen_params.actionable_from_month.as_int()
+                    if entity.gen_params and entity.gen_params.actionable_from_month else None,
+                    gen_params_due_at_time=str(entity.gen_params.due_at_time)
+                    if entity.gen_params and entity.gen_params.due_at_time else None,
+                    gen_params_due_at_day=entity.gen_params.due_at_day.as_int()
+                    if entity.gen_params and entity.gen_params.due_at_day else None,
+                    gen_params_due_at_month=entity.gen_params.due_at_month.as_int()
+                    if entity.gen_params and entity.gen_params.due_at_month else None,
+                    suspended=entity.suspended,
+                    must_do=entity.must_do,
+                    skip_rule=str(entity.skip_rule) if entity.skip_rule else None,
+                    start_at_date=entity.start_at_date.to_db(),
+                    end_at_date=entity.end_at_date.to_db() if entity.end_at_date else None))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._chore_event_table, entity)
+        return entity
 
-    def save(self, chore: Chore) -> Chore:
+    def save(self, entity: Chore) -> Chore:
         """Save a chore."""
         result = self._connection.execute(
             update(self._chore_table)
-            .where(self._chore_table.c.ref_id == chore.ref_id.as_int())
+            .where(self._chore_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=chore.ref_id.as_int() if chore.ref_id != BAD_REF_ID else None,
-                version=chore.version,
-                archived=chore.archived,
-                created_time=chore.created_time.to_db(),
-                last_modified_time=chore.last_modified_time.to_db(),
-                archived_time=chore.archived_time.to_db() if chore.archived_time else None,
-                chore_collection_ref_id=chore.chore_collection_ref_id.as_int(),
-                project_ref_id=chore.project_ref_id.as_int(),
-                name=str(chore.name),
-                gen_params_period=chore.gen_params.period.value if chore.gen_params else None,
-                gen_params_eisen=chore.gen_params.eisen.value if chore.gen_params else None,
-                gen_params_difficulty=chore.gen_params.difficulty.value
-                if chore.gen_params and chore.gen_params.difficulty else None,
-                gen_params_actionable_from_day=chore.gen_params.actionable_from_day.as_int()
-                if chore.gen_params and chore.gen_params.actionable_from_day else None,
-                gen_params_actionable_from_month=chore.gen_params.actionable_from_month.as_int()
-                if chore.gen_params and chore.gen_params.actionable_from_month else None,
-                gen_params_due_at_time=str(chore.gen_params.due_at_time)
-                if chore.gen_params and chore.gen_params.due_at_time else None,
-                gen_params_due_at_day=chore.gen_params.due_at_day.as_int()
-                if chore.gen_params and chore.gen_params.due_at_day else None,
-                gen_params_due_at_month=chore.gen_params.due_at_month.as_int()
-                if chore.gen_params and chore.gen_params.due_at_month else None,
-                suspended=chore.suspended,
-                must_do=chore.must_do,
-                skip_rule=str(chore.skip_rule) if chore.skip_rule else None,
-                start_at_date=chore.start_at_date.to_db(),
-                end_at_date=chore.end_at_date.to_db() if chore.end_at_date else None))
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                chore_collection_ref_id=entity.chore_collection_ref_id.as_int(),
+                project_ref_id=entity.project_ref_id.as_int(),
+                name=str(entity.name),
+                gen_params_period=entity.gen_params.period.value if entity.gen_params else None,
+                gen_params_eisen=entity.gen_params.eisen.value if entity.gen_params else None,
+                gen_params_difficulty=entity.gen_params.difficulty.value
+                if entity.gen_params and entity.gen_params.difficulty else None,
+                gen_params_actionable_from_day=entity.gen_params.actionable_from_day.as_int()
+                if entity.gen_params and entity.gen_params.actionable_from_day else None,
+                gen_params_actionable_from_month=entity.gen_params.actionable_from_month.as_int()
+                if entity.gen_params and entity.gen_params.actionable_from_month else None,
+                gen_params_due_at_time=str(entity.gen_params.due_at_time)
+                if entity.gen_params and entity.gen_params.due_at_time else None,
+                gen_params_due_at_day=entity.gen_params.due_at_day.as_int()
+                if entity.gen_params and entity.gen_params.due_at_day else None,
+                gen_params_due_at_month=entity.gen_params.due_at_month.as_int()
+                if entity.gen_params and entity.gen_params.due_at_month else None,
+                suspended=entity.suspended,
+                must_do=entity.must_do,
+                skip_rule=str(entity.skip_rule) if entity.skip_rule else None,
+                start_at_date=entity.start_at_date.to_db(),
+                end_at_date=entity.end_at_date.to_db() if entity.end_at_date else None))
         if result.rowcount == 0:
-            raise ChoreNotFoundError(f"Chore with id {chore.ref_id} does not exist")
-        upsert_events(self._connection, self._chore_event_table, chore)
-        return chore
+            raise ChoreNotFoundError(f"Chore with id {entity.ref_id} does not exist")
+        upsert_events(self._connection, self._chore_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Chore:
         """Retrieve a chore."""
@@ -252,16 +257,27 @@ class SqliteChoreRepository(ChoreRepository):
 
     def find_all(
             self,
-            chore_collection_ref_id: EntityId,
+            parent_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Chore]:
+        """Retrieve chore."""
+        return self.find_all_with_filters(
+            parent_ref_id=parent_ref_id,
+            allow_archived=allow_archived,
+            filter_ref_ids=filter_ref_ids)
+
+    def find_all_with_filters(
+            self,
+            parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[Chore]:
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Chore]:
         """Retrieve chore."""
         query_stmt = \
             select(self._chore_table) \
             .where(
                 self._chore_table.c.chore_collection_ref_id
-                == chore_collection_ref_id.as_int())
+                == parent_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._chore_table.c.archived.is_(False))
         if filter_ref_ids:

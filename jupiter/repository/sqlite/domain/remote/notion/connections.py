@@ -5,7 +5,7 @@ from sqlalchemy import Table, MetaData, Integer, Boolean, DateTime, Column, Stri
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
 
-from jupiter.domain.remote.notion.collection_repository import NotionConnectionRepository, \
+from jupiter.domain.remote.notion.connection_repository import NotionConnectionRepository, \
     NotionConnectionAlreadyExistsError, NotionConnectionNotFoundError
 from jupiter.domain.remote.notion.connection import NotionConnection
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
@@ -41,55 +41,55 @@ class SqliteNotionConnectionRepository(NotionConnectionRepository):
             keep_existing=True)
         self._notion_connection_event_table = build_event_table(self._notion_connection_table, metadata)
 
-    def create(self, notion_connection: NotionConnection) -> NotionConnection:
+    def create(self, entity: NotionConnection) -> NotionConnection:
         """Create a Notion connection."""
         try:
             result = self._connection.execute(
                 insert(self._notion_connection_table).values(
-                    ref_id=notion_connection.ref_id.as_int() if notion_connection.ref_id != BAD_REF_ID else None,
-                    version=notion_connection.version,
-                    archived=notion_connection.archived,
-                    created_time=notion_connection.created_time.to_db(),
-                    last_modified_time=notion_connection.last_modified_time.to_db(),
-                    archived_time=notion_connection.archived_time.to_db() if notion_connection.archived_time else None,
-                    workspace_ref_id=notion_connection.workspace_ref_id.as_int(),
-                    space_id=str(notion_connection.space_id),
-                    token=str(notion_connection.token)))
+                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    version=entity.version,
+                    archived=entity.archived,
+                    created_time=entity.created_time.to_db(),
+                    last_modified_time=entity.last_modified_time.to_db(),
+                    archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                    workspace_ref_id=entity.workspace_ref_id.as_int(),
+                    space_id=str(entity.space_id),
+                    token=str(entity.token)))
         except IntegrityError as err:
             raise NotionConnectionAlreadyExistsError(
-                f"Notion connection for workspace {notion_connection.workspace_ref_id} already exists") from err
-        notion_connection = notion_connection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._notion_connection_event_table, notion_connection)
-        return notion_connection
+                f"Notion connection for workspace {entity.workspace_ref_id} already exists") from err
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._notion_connection_event_table, entity)
+        return entity
 
-    def save(self, notion_connection: NotionConnection) -> NotionConnection:
+    def save(self, entity: NotionConnection) -> NotionConnection:
         """Save a Notion connection."""
         result = self._connection.execute(
             update(self._notion_connection_table)
-            .where(self._notion_connection_table.c.ref_id == notion_connection.ref_id.as_int())
+            .where(self._notion_connection_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=notion_connection.version,
-                archived=notion_connection.archived,
-                created_time=notion_connection.created_time.to_db(),
-                last_modified_time=notion_connection.last_modified_time.to_db(),
-                archived_time=notion_connection.archived_time.to_db() if notion_connection.archived_time else None,
-                workspace_ref_id=notion_connection.workspace_ref_id.as_int(),
-                space_id=str(notion_connection.space_id),
-                token=str(notion_connection.token)))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int(),
+                space_id=str(entity.space_id),
+                token=str(entity.token)))
         if result.rowcount == 0:
             raise NotionConnectionNotFoundError(
-                f"The Notion connection does not exist for workspace {notion_connection.workspace_ref_id}")
-        upsert_events(self._connection, self._notion_connection_event_table, notion_connection)
-        return notion_connection
+                f"The Notion connection does not exist for workspace {entity.workspace_ref_id}")
+        upsert_events(self._connection, self._notion_connection_event_table, entity)
+        return entity
 
-    def load_for_workspace(self, workspace_ref_id: EntityId) -> NotionConnection:
+    def load_by_parent(self, parent_ref_id: EntityId) -> NotionConnection:
         """Load the Notion connection for the workspace."""
         query_stmt = \
             select(self._notion_connection_table)\
-            .where(self._notion_connection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+            .where(self._notion_connection_table.c.workspace_ref_id == parent_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise NotionConnectionNotFoundError(f"Notion connection for workspace {workspace_ref_id} does not exist")
+            raise NotionConnectionNotFoundError(f"Notion connection for workspace {parent_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod

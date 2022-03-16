@@ -1,15 +1,14 @@
 """A descriptor for a Notion collection item."""
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Any
 
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
-from jupiter.framework.notion import BaseNotionRow
+from jupiter.framework.notion import NotionLeafEntity
 from jupiter.remote.notion.common import NotionLockKey
 
-
-ItemType = TypeVar("ItemType", bound=BaseNotionRow)
+ItemType = TypeVar("ItemType", bound=NotionLeafEntity[Any, Any, Any])
 
 
 @dataclass(frozen=True)

@@ -41,46 +41,46 @@ class SqliteVacationCollectionRepository(VacationCollectionRepository):
             keep_existing=True)
         self._vacation_collection_event_table = build_event_table(self._vacation_collection_table, metadata)
 
-    def create(self, vacation_collection: VacationCollection) -> VacationCollection:
+    def create(self, entity: VacationCollection) -> VacationCollection:
         """Create a vacation collection."""
         result = self._connection.execute(
             insert(self._vacation_collection_table).values(
-                ref_id=vacation_collection.ref_id.as_int() if vacation_collection.ref_id != BAD_REF_ID else None,
-                version=vacation_collection.version,
-                archived=vacation_collection.archived,
-                created_time=vacation_collection.created_time.to_db(),
-                last_modified_time=vacation_collection.last_modified_time.to_db(),
-                archived_time=vacation_collection.archived_time.to_db() if vacation_collection.archived_time else None,
-                workspace_ref_id=vacation_collection.workspace_ref_id.as_int()))
-        vacation_collection = vacation_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._vacation_collection_event_table, vacation_collection)
-        return vacation_collection
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int()))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._vacation_collection_event_table, entity)
+        return entity
 
-    def save(self, vacation_collection: VacationCollection) -> VacationCollection:
+    def save(self, entity: VacationCollection) -> VacationCollection:
         """Save a big vacation collection."""
         result = self._connection.execute(
             update(self._vacation_collection_table)
-            .where(self._vacation_collection_table.c.ref_id == vacation_collection.ref_id.as_int())
+            .where(self._vacation_collection_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=vacation_collection.version,
-                archived=vacation_collection.archived,
-                created_time=vacation_collection.created_time.to_db(),
-                last_modified_time=vacation_collection.last_modified_time.to_db(),
-                archived_time=vacation_collection.archived_time.to_db() if vacation_collection.archived_time else None,
-                workspace_ref_id=vacation_collection.workspace_ref_id.as_int()))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int()))
         if result.rowcount == 0:
             raise VacationCollectionNotFoundError("The vacation collection does not exist")
-        upsert_events(self._connection, self._vacation_collection_event_table, vacation_collection)
-        return vacation_collection
+        upsert_events(self._connection, self._vacation_collection_event_table, entity)
+        return entity
 
-    def load_by_workspace(self, workspace_ref_id: EntityId) -> VacationCollection:
+    def load_by_parent(self, parent_ref_id: EntityId) -> VacationCollection:
         """Load a vacation collection for a given vacation."""
         query_stmt = \
             select(self._vacation_collection_table)\
-                .where(self._vacation_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+                .where(self._vacation_collection_table.c.workspace_ref_id == parent_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise VacationCollectionNotFoundError(f"Big plan collection for vacation {workspace_ref_id} does not exist")
+            raise VacationCollectionNotFoundError(f"Vacation collection for workspace {parent_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -123,43 +123,43 @@ class SqliteVacationRepository(VacationRepository):
             keep_existing=True)
         self._vacation_event_table = build_event_table(self._vacation_table, metadata)
 
-    def create(self, vacation: Vacation) -> Vacation:
+    def create(self, entity: Vacation) -> Vacation:
         """Create a vacation."""
         result = self._connection.execute(
             insert(self._vacation_table).values(
-                ref_id=vacation.ref_id.as_int() if vacation.ref_id != BAD_REF_ID else None,
-                version=vacation.version,
-                archived=vacation.archived,
-                created_time=vacation.created_time.to_db(),
-                last_modified_time=vacation.last_modified_time.to_db(),
-                archived_time=vacation.archived_time.to_db() if vacation.archived_time else None,
-                vacation_collection_ref_id=vacation.vacation_collection_ref_id.as_int(),
-                name=str(vacation.name),
-                start_date=vacation.start_date.to_db(),
-                end_date=vacation.end_date.to_db()))
-        vacation = vacation.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._vacation_event_table, vacation)
-        return vacation
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                vacation_collection_ref_id=entity.vacation_collection_ref_id.as_int(),
+                name=str(entity.name),
+                start_date=entity.start_date.to_db(),
+                end_date=entity.end_date.to_db()))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._vacation_event_table, entity)
+        return entity
 
-    def save(self, vacation: Vacation) -> Vacation:
+    def save(self, entity: Vacation) -> Vacation:
         """Save a vacation."""
         result = self._connection.execute(
             update(self._vacation_table)
-            .where(self._vacation_table.c.ref_id == vacation.ref_id.as_int())
+            .where(self._vacation_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=vacation.version,
-                archived=vacation.archived,
-                created_time=vacation.created_time.to_db(),
-                last_modified_time=vacation.last_modified_time.to_db(),
-                archived_time=vacation.archived_time.to_db() if vacation.archived_time else None,
-                vacation_collection_ref_id=vacation.vacation_collection_ref_id.as_int(),
-                name=str(vacation.name),
-                start_date=vacation.start_date.to_db(),
-                end_date=vacation.end_date.to_db()))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                vacation_collection_ref_id=entity.vacation_collection_ref_id.as_int(),
+                name=str(entity.name),
+                start_date=entity.start_date.to_db(),
+                end_date=entity.end_date.to_db()))
         if result.rowcount == 0:
             raise VacationNotFoundError("The vacation does not exist")
-        upsert_events(self._connection, self._vacation_event_table, vacation)
-        return vacation
+        upsert_events(self._connection, self._vacation_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Vacation:
         """Load a vacation."""
@@ -172,12 +172,12 @@ class SqliteVacationRepository(VacationRepository):
         return self._row_to_entity(result)
 
     def find_all(
-            self, vacation_collection_ref_id: EntityId, allow_archived: bool = False,
+            self, parent_ref_id: EntityId, allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Vacation]:
         """Retrieve all vacations."""
         query_stmt = \
             select(self._vacation_table)\
-            .where(self._vacation_table.c.vacation_collection_ref_id == vacation_collection_ref_id.as_int())
+            .where(self._vacation_table.c.vacation_collection_ref_id == parent_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._vacation_table.c.archived.is_(False))
         if filter_ref_ids:
@@ -185,7 +185,7 @@ class SqliteVacationRepository(VacationRepository):
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    def remove(self, ref_id: EntityId) -> None:
+    def remove(self, ref_id: EntityId) -> Vacation:
         """Remove a vacation."""
         query_stmt = select(self._vacation_table).where(self._vacation_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
@@ -193,6 +193,7 @@ class SqliteVacationRepository(VacationRepository):
             raise VacationNotFoundError(f"Vacation with id {ref_id} does not exist")
         remove_events(self._connection, self._vacation_event_table, ref_id)
         self._connection.execute(delete(self._vacation_table).where(self._vacation_table.c.ref_id == ref_id.as_int()))
+        return self._row_to_entity(result)
 
     @staticmethod
     def _row_to_entity(row: Result) -> Vacation:

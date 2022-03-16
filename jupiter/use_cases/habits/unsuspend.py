@@ -40,7 +40,7 @@ class HabitUnsuspendUseCase(AppMutationUseCase['HabitUnsuspendUseCase.Args', Non
             habit = habit.unsuspend(source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.habit_repository.save(habit)
 
-        direct_info = NotionHabit.DirectInfo(project_name=project.name)
-        notion_habit = self._habit_notion_manager.load_habit(habit.habit_collection_ref_id, habit.ref_id)
+        direct_info = NotionHabit.DirectInfo(all_projects_map={project.ref_id: project})
+        notion_habit = self._habit_notion_manager.load_leaf(habit.habit_collection_ref_id, habit.ref_id)
         notion_habit = notion_habit.join_with_entity(habit, direct_info)
-        self._habit_notion_manager.save_habit(habit.habit_collection_ref_id, notion_habit)
+        self._habit_notion_manager.save_leaf(habit.habit_collection_ref_id, notion_habit)

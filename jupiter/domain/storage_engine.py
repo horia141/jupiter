@@ -1,12 +1,13 @@
 """Domain-level storage interaction."""
 import abc
 from contextlib import contextmanager
-from typing import Iterator
+from typing import Iterator, Type, TypeVar
 
 from jupiter.domain.big_plans.infra.big_plan_collection_repository import BigPlanCollectionRepository
 from jupiter.domain.big_plans.infra.big_plan_repository import BigPlanRepository
 from jupiter.domain.chores.infra.chore_collection_repository import ChoreCollectionRepository
 from jupiter.domain.chores.infra.chore_repository import ChoreRepository
+from jupiter.domain.entity_key import EntityKey
 from jupiter.domain.habits.infra.habit_collection_repository import HabitCollectionRepository
 from jupiter.domain.habits.infra.habit_repository import HabitRepository
 from jupiter.domain.inbox_tasks.infra.inbox_task_collection_repository import InboxTaskCollectionRepository
@@ -18,7 +19,7 @@ from jupiter.domain.persons.infra.person_collection_repository import PersonColl
 from jupiter.domain.persons.infra.person_repository import PersonRepository
 from jupiter.domain.projects.infra.project_collection_repository import ProjectCollectionRepository
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
-from jupiter.domain.remote.notion.collection_repository import NotionConnectionRepository
+from jupiter.domain.remote.notion.connection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
 from jupiter.domain.smart_lists.infra.smart_list_repository import SmartListRepository
@@ -26,6 +27,13 @@ from jupiter.domain.smart_lists.infra.smart_list_tag_repository import SmartList
 from jupiter.domain.vacations.infra.vacation_collection_repository import VacationCollectionRepository
 from jupiter.domain.vacations.infra.vacation_repository import VacationRepository
 from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository
+from jupiter.framework.entity import LeafEntity, TrunkEntity, BranchEntity
+from jupiter.framework.repository import TrunkEntityRepository, LeafEntityRepository, BranchEntityRepository
+
+TrunkType = TypeVar("TrunkType", bound=TrunkEntity)
+BranchEntityKeyType = TypeVar("BranchEntityKeyType", bound=EntityKey)
+BranchType = TypeVar("BranchType", bound=BranchEntity)
+LeafType = TypeVar("LeafType", bound=LeafEntity)
 
 
 class DomainUnitOfWork(abc.ABC):
@@ -145,6 +153,19 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def notion_connection_repository(self) -> NotionConnectionRepository:
         """The Notion connection repository."""
+
+    @abc.abstractmethod
+    def get_trunk_repository_for(self, trunk_type: Type[TrunkType]) -> TrunkEntityRepository[TrunkType]:
+        """Lookup a trunk repository by a given type."""
+
+    @abc.abstractmethod
+    def get_branch_repository_for(
+            self, branch_type: Type[BranchType]) -> BranchEntityRepository[BranchEntityKeyType, BranchType]:
+        """Lookup a branch repository by a given type."""
+
+    @abc.abstractmethod
+    def get_leaf_repository_for(self, leaf_type: Type[LeafType]) -> LeafEntityRepository[LeafType]:
+        """Lookup a leaf repository by a given type."""
 
 
 class DomainStorageEngine(abc.ABC):

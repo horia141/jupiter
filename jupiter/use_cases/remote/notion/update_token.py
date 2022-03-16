@@ -19,7 +19,7 @@ class NotionConnectionUpdateTokenUseCase(AppMutationUseCase['NotionConnectionUpd
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
-            notion_connection = uow.notion_connection_repository.load_for_workspace(workspace.ref_id)
+            notion_connection = uow.notion_connection_repository.load_by_parent(workspace.ref_id)
             notion_connection = \
                 notion_connection.update_token(args.token, EventSource.CLI, self._time_provider.get_current_time())
             uow.notion_connection_repository.save(notion_connection)

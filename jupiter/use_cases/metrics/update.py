@@ -73,7 +73,7 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
             metric = uow.metric_repository.load_by_key(metric_collection.ref_id, args.key)
 
             # Change the metrics
@@ -159,18 +159,18 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
 
             uow.metric_repository.save(metric)
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
 
             metric_collection_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     filter_sources=[InboxTaskSource.METRIC],
                     allow_archived=True,
                     filter_metric_ref_ids=[metric.ref_id])
 
-        notion_metric = self._metric_notion_manager.load_metric(metric_collection.ref_id, metric.ref_id)
+        notion_metric = self._metric_notion_manager.load_branch(metric_collection.ref_id, metric.ref_id)
         notion_metric = notion_metric.join_with_entity(metric)
-        self._metric_notion_manager.save_metric(metric_collection.ref_id, notion_metric)
+        self._metric_notion_manager.save_branch(metric_collection.ref_id, notion_metric)
 
         # Change the inbox tasks
         if metric.collection_params is None:
@@ -211,11 +211,11 @@ class MetricUpdateUseCase(AppMutationUseCase['MetricUpdateUseCase.Args', None]):
                 if inbox_task.archived:
                     continue
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(
+                    self._inbox_task_notion_manager.load_leaf(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                self._inbox_task_notion_manager.save_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

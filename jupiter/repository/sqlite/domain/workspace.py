@@ -40,49 +40,49 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             keep_existing=True)
         self._workspace_event_table = build_event_table(self._workspace_table, metadata)
 
-    def create(self, workspace: Workspace) -> Workspace:
+    def create(self, entity: Workspace) -> Workspace:
         """Create a workspace."""
         try:
-            workspace = self.load()
+            entity = self.load()
             raise WorkspaceAlreadyExistsError("Workspace already exists")
         except WorkspaceNotFoundError:
             pass
         result = self._connection.execute(
             insert(self._workspace_table).values(
-                ref_id=workspace.ref_id.as_int() if workspace.ref_id != BAD_REF_ID else None,
-                version=workspace.version,
-                archived=workspace.archived,
-                created_time=workspace.created_time.to_db(),
-                last_modified_time=workspace.last_modified_time.to_db(),
-                archived_time=workspace.archived_time.to_db() if workspace.archived_time else None,
-                name=str(workspace.name),
-                timezone=str(workspace.timezone),
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                name=str(entity.name),
+                timezone=str(entity.timezone),
                 default_project_ref_id=
-                workspace.default_project_ref_id.as_int()
-                if workspace.default_project_ref_id is not BAD_REF_ID else None))
-        workspace = workspace.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._workspace_event_table, workspace)
-        return workspace
+                entity.default_project_ref_id.as_int()
+                if entity.default_project_ref_id is not BAD_REF_ID else None))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._workspace_event_table, entity)
+        return entity
 
-    def save(self, workspace: Workspace) -> Workspace:
+    def save(self, entity: Workspace) -> Workspace:
         """Save the workspace."""
         result = self._connection.execute(
             update(self._workspace_table)
-            .where(self._workspace_table.c.ref_id == workspace.ref_id.as_int())
+            .where(self._workspace_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=workspace.version,
-                archived=workspace.archived,
-                created_time=workspace.created_time.to_db(),
-                last_modified_time=workspace.last_modified_time.to_db(),
-                archived_time=workspace.archived_time.to_db() if workspace.archived_time else None,
-                name=str(workspace.name),
-                timezone=str(workspace.timezone),
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                name=str(entity.name),
+                timezone=str(entity.timezone),
                 default_project_ref_id=
-                workspace.default_project_ref_id.as_int() if workspace.default_project_ref_id else None))
+                entity.default_project_ref_id.as_int() if entity.default_project_ref_id else None))
         if result.rowcount == 0:
             raise WorkspaceNotFoundError("The workspace does not exist")
-        upsert_events(self._connection, self._workspace_event_table, workspace)
-        return workspace
+        upsert_events(self._connection, self._workspace_event_table, entity)
+        return entity
 
     def load(self) -> Workspace:
         """Load the workspace."""

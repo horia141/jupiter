@@ -10,13 +10,13 @@ from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.event import EventSource
-from jupiter.framework.notion import NotionRow
+from jupiter.framework.notion import NotionLeafEntity, NotionLeafApplyToEntityResult
 from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
 class NotionSmartListItem(
-        NotionRow[SmartListItem, 'NotionSmartListItem.DirectInfo', 'NotionSmartListItem.InverseInfo']):
+        NotionLeafEntity[SmartListItem, 'NotionSmartListItem.DirectInfo', 'NotionSmartListItem.InverseInfo']):
     """A smart list item on Notion-side."""
 
     @dataclass(frozen=True)
@@ -27,7 +27,6 @@ class NotionSmartListItem(
     @dataclass(frozen=True)
     class InverseInfo:
         """Extra info for the Notion to app copy."""
-        smart_list_ref_id: EntityId
         tags_by_name: Dict[SmartListTagName, SmartListTag]
 
     name: str
@@ -36,7 +35,7 @@ class NotionSmartListItem(
     url: Optional[str]
 
     @staticmethod
-    def new_notion_row(entity: SmartListItem, extra_info: DirectInfo) -> 'NotionSmartListItem':
+    def new_notion_entity(entity: SmartListItem, extra_info: DirectInfo) -> 'NotionSmartListItem':
         """Construct a new Notion row from a given smart list item."""
         return NotionSmartListItem(
             notion_id=BAD_NOTION_ID,
@@ -48,11 +47,11 @@ class NotionSmartListItem(
             tags=[str(extra_info.tags_by_ref_id[t].tag_name) for t in entity.tags_ref_id],
             url=str(entity.url))
 
-    def new_entity(self, extra_info: InverseInfo) -> SmartListItem:
+    def new_entity(self, parent_ref_id: EntityId, extra_info: InverseInfo) -> SmartListItem:
         """Create a new smart list item from this."""
         return SmartListItem.new_smart_list_item(
             archived=self.archived,
-            smart_list_ref_id=extra_info.smart_list_ref_id,
+            smart_list_ref_id=parent_ref_id,
             name=SmartListItemName.from_raw(self.name),
             is_done=self.is_done,
             tags_ref_id=[extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags],
@@ -60,17 +59,25 @@ class NotionSmartListItem(
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_entity(self, entity: SmartListItem, extra_info: InverseInfo) -> SmartListItem:
+    def apply_to_entity(
+            self, entity: SmartListItem, extra_info: InverseInfo) -> NotionLeafApplyToEntityResult[SmartListItem]:
         """Apply to an already existing smart list item."""
-        return entity \
-            .update(
-                name=UpdateAction.change_to(SmartListItemName.from_raw(self.name)),
-                is_done=UpdateAction.change_to(self.is_done),
-                tags_ref_id=
-                UpdateAction.change_to(
-                    [extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags]),
-                url=UpdateAction.change_to(URL.from_raw(self.url) if self.url else None),
-                source=EventSource.NOTION,
-                modification_time=self.last_edited_time) \
-            .change_archived(
-                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
+        return \
+            NotionLeafApplyToEntityResult.just(
+                entity \
+                    .update(
+                        name=UpdateAction.change_to(SmartListItemName.from_raw(self.name)),
+                        is_done=UpdateAction.change_to(self.is_done),
+                        tags_ref_id=
+                        UpdateAction.change_to(
+                            [extra_info.tags_by_name[SmartListTagName.from_raw(t)].ref_id for t in self.tags]),
+                        url=UpdateAction.change_to(URL.from_raw(self.url) if self.url else None),
+                        source=EventSource.NOTION,
+                        modification_time=self.last_edited_time) \
+                    .change_archived(
+                        archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time))
+
+    @property
+    def nice_name(self) -> str:
+        """A nice name for the Notion-side entity."""
+        return self.name

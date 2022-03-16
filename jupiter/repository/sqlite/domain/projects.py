@@ -1,6 +1,6 @@
 """The SQLite based projects repository."""
 import uuid
-from typing import Final, Optional, Iterable
+from typing import Final, Optional, Iterable, List
 
 from sqlalchemy import insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, ForeignKey, update, \
     select, delete
@@ -44,46 +44,46 @@ class SqliteProjectCollectionRepository(ProjectCollectionRepository):
             keep_existing=True)
         self._project_collection_event_table = build_event_table(self._project_collection_table, metadata)
 
-    def create(self, project_collection: ProjectCollection) -> ProjectCollection:
+    def create(self, entity: ProjectCollection) -> ProjectCollection:
         """Create a project collection."""
         result = self._connection.execute(
             insert(self._project_collection_table).values(
-                ref_id=project_collection.ref_id.as_int() if project_collection.ref_id != BAD_REF_ID else None,
-                version=project_collection.version,
-                archived=project_collection.archived,
-                created_time=project_collection.created_time.to_db(),
-                last_modified_time=project_collection.last_modified_time.to_db(),
-                archived_time=project_collection.archived_time.to_db() if project_collection.archived_time else None,
-                workspace_ref_id=project_collection.workspace_ref_id.as_int()))
-        project_collection = project_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._project_collection_event_table, project_collection)
-        return project_collection
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int()))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._project_collection_event_table, entity)
+        return entity
 
-    def save(self, project_collection: ProjectCollection) -> ProjectCollection:
+    def save(self, entity: ProjectCollection) -> ProjectCollection:
         """Save a big project collection."""
         result = self._connection.execute(
             update(self._project_collection_table)
-            .where(self._project_collection_table.c.ref_id == project_collection.ref_id.as_int())
+            .where(self._project_collection_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=project_collection.version,
-                archived=project_collection.archived,
-                created_time=project_collection.created_time.to_db(),
-                last_modified_time=project_collection.last_modified_time.to_db(),
-                archived_time=project_collection.archived_time.to_db() if project_collection.archived_time else None,
-                workspace_ref_id=project_collection.workspace_ref_id.as_int()))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int()))
         if result.rowcount == 0:
             raise ProjectCollectionNotFoundError("The project collection does not exist")
-        upsert_events(self._connection, self._project_collection_event_table, project_collection)
-        return project_collection
+        upsert_events(self._connection, self._project_collection_event_table, entity)
+        return entity
 
-    def load_by_workspace(self, workspace_ref_id: EntityId) -> ProjectCollection:
+    def load_by_parent(self, parent_ref_id: EntityId) -> ProjectCollection:
         """Load a project collection for a given project."""
         query_stmt = \
             select(self._project_collection_table)\
-                .where(self._project_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+                .where(self._project_collection_table.c.workspace_ref_id == parent_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise ProjectCollectionNotFoundError(f"Big plan collection for project {workspace_ref_id} does not exist")
+            raise ProjectCollectionNotFoundError(f"Big plan collection for project {parent_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -126,46 +126,46 @@ class SqliteProjectRepository(ProjectRepository):
             keep_existing=True)
         self._project_event_table = build_event_table(self._project_table, metadata)
 
-    def create(self, project: Project) -> Project:
+    def create(self, entity: Project) -> Project:
         """Create a project."""
         try:
             result = self._connection.execute(
                 insert(self._project_table).values(
-                    ref_id=project.ref_id.as_int() if project.ref_id != BAD_REF_ID else None,
-                    version=project.version,
-                    archived=project.archived,
-                    created_time=project.created_time.to_db(),
-                    last_modified_time=project.last_modified_time.to_db(),
-                    archived_time=project.archived_time.to_db() if project.archived_time else None,
-                    project_collection_ref_id=project.project_collection_ref_id.as_int(),
-                    the_key=str(project.key),
-                    name=str(project.name),
-                    notion_link_uuid=str(project.notion_link_uuid)))
+                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    version=entity.version,
+                    archived=entity.archived,
+                    created_time=entity.created_time.to_db(),
+                    last_modified_time=entity.last_modified_time.to_db(),
+                    archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                    project_collection_ref_id=entity.project_collection_ref_id.as_int(),
+                    the_key=str(entity.key),
+                    name=str(entity.name),
+                    notion_link_uuid=str(entity.notion_link_uuid)))
         except IntegrityError as err:
-            raise ProjectAlreadyExistsError(f"Project with key {project.key} already exists") from err
-        project = project.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._project_event_table, project)
-        return project
+            raise ProjectAlreadyExistsError(f"Project with key {entity.key} already exists") from err
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._project_event_table, entity)
+        return entity
 
-    def save(self, project: Project) -> Project:
+    def save(self, entity: Project) -> Project:
         """Save a project."""
         result = self._connection.execute(
             update(self._project_table)
-            .where(self._project_table.c.ref_id == project.ref_id.as_int())
+            .where(self._project_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=project.version,
-                archived=project.archived,
-                created_time=project.created_time.to_db(),
-                last_modified_time=project.last_modified_time.to_db(),
-                archived_time=project.archived_time.to_db() if project.archived_time else None,
-                project_collection_ref_id=project.project_collection_ref_id.as_int(),
-                the_key=str(project.key),
-                name=str(project.name),
-                notion_link_uuid=str(project.notion_link_uuid)))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                project_collection_ref_id=entity.project_collection_ref_id.as_int(),
+                the_key=str(entity.key),
+                name=str(entity.name),
+                notion_link_uuid=str(entity.notion_link_uuid)))
         if result.rowcount == 0:
             raise ProjectNotFoundError("The project does not exist")
-        upsert_events(self._connection, self._project_event_table, project)
-        return project
+        upsert_events(self._connection, self._project_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Project:
         """Retrieve a project."""
@@ -188,16 +188,39 @@ class SqliteProjectRepository(ProjectRepository):
             raise ProjectNotFoundError(f"Project with key {key} does not exist")
         return self._row_to_entity(result)
 
+    def exchange_keys_for_ref_ids(self, project_keys: List[ProjectKey]) -> List[EntityId]:
+        """Retrieve a particular project by its key."""
+        query_stmt = \
+            select(self._project_table.c.ref_id)\
+                .where(self._project_table.c.the_key.in_(project_keys))
+        result = self._connection.execute(query_stmt)
+        ref_ids = [EntityId.from_raw(row["ref_id"]) for row in result]
+        if len(ref_ids) != len(project_keys):
+            raise ProjectNotFoundError(
+                f"Could not find all projects for keys {','.join(str(pk) for pk in project_keys)}")
+        return ref_ids
+
     def find_all(
             self,
-            project_collection_ref_id: EntityId,
+            parent_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Project]:
+        """Find all projects."""
+        return self.find_all_with_filters(
+            parent_ref_id=parent_ref_id,
+            allow_archived=allow_archived,
+            filter_ref_ids=filter_ref_ids)
+
+    def find_all_with_filters(
+            self,
+            parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_keys: Optional[Iterable[ProjectKey]] = None) -> Iterable[Project]:
+            filter_keys: Optional[Iterable[ProjectKey]] = None) -> List[Project]:
         """Find all projects."""
         query_stmt = \
             select(self._project_table) \
-            .where(self._project_table.c.project_collection_ref_id == project_collection_ref_id.as_int())
+            .where(self._project_table.c.project_collection_ref_id == parent_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._project_table.c.archived.is_(False))
         if filter_ref_ids:
@@ -209,7 +232,7 @@ class SqliteProjectRepository(ProjectRepository):
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
-    def remove(self, ref_id: EntityId) -> None:
+    def remove(self, ref_id: EntityId) -> Project:
         """Remove a project."""
         query_stmt = select(self._project_table).where(self._project_table.c.ref_id == ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
@@ -217,6 +240,7 @@ class SqliteProjectRepository(ProjectRepository):
             raise ProjectNotFoundError(f"Project with id {ref_id} does not exist")
         remove_events(self._connection, self._project_event_table, ref_id)
         self._connection.execute(delete(self._project_table).where(self._project_table.c.ref_id == ref_id.as_int()))
+        return self._row_to_entity(result)
 
     @staticmethod
     def _row_to_entity(row: Result) -> Project:

@@ -3,15 +3,15 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
-from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class MetricEntry(Entity):
+class MetricEntry(LeafEntity):
     """A metric entry."""
 
     @dataclass(frozen=True)
@@ -55,3 +55,8 @@ class MetricEntry(Entity):
             value=value.or_else(self.value),
             notes=notes.or_else(self.notes),
             new_event=MetricEntry.Updated.make_event_from_frame_args(source, self.version, modification_time))
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.metric_ref_id

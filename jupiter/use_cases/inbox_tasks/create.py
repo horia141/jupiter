@@ -7,7 +7,6 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -55,7 +54,7 @@ class InboxTaskCreateUseCase(AppMutationUseCase['InboxTaskCreateUseCase.Args', N
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
             if args.project_key is not None:
                 project = uow.project_repository.load_by_key(project_collection.ref_id, args.project_key)
@@ -65,12 +64,12 @@ class InboxTaskCreateUseCase(AppMutationUseCase['InboxTaskCreateUseCase.Args', N
                 project_ref_id = workspace.default_project_ref_id
 
             big_plan: Optional[BigPlan] = None
-            big_plan_name: Optional[EntityName] = None
+            all_big_plans_map = {}
             if args.big_plan_ref_id:
                 big_plan = uow.big_plan_repository.load_by_id(args.big_plan_ref_id)
-                big_plan_name = big_plan.name
+                all_big_plans_map = {big_plan.ref_id: big_plan}
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
 
             inbox_task = InboxTask.new_inbox_task(
                 inbox_task_collection_ref_id=inbox_task_collection.ref_id,
@@ -89,7 +88,8 @@ class InboxTaskCreateUseCase(AppMutationUseCase['InboxTaskCreateUseCase.Args', N
             inbox_task = uow.inbox_task_repository.create(inbox_task)
             LOGGER.info("Applied local changes")
 
-        direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=big_plan_name)
-        notion_inbox_task = NotionInboxTask.new_notion_row(inbox_task, direct_info)
-        self._inbox_task_notion_manager.upsert_inbox_task(inbox_task_collection.ref_id, notion_inbox_task)
+        direct_info = \
+            NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map=all_big_plans_map)
+        notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+        self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
         LOGGER.info("Applied Notion changes")

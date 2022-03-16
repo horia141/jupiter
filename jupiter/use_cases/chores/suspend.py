@@ -40,7 +40,7 @@ class ChoreSuspendUseCase(AppMutationUseCase['ChoreSuspendUseCase.Args', None]):
             chore = chore.suspend(source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
             uow.chore_repository.save(chore)
 
-        direct_info = NotionChore.DirectInfo(project_name=project.name)
-        notion_chore = self._chore_notion_manager.load_chore(chore.chore_collection_ref_id, chore.ref_id)
+        direct_info = NotionChore.DirectInfo(all_projects_map={project.ref_id: project})
+        notion_chore = self._chore_notion_manager.load_leaf(chore.chore_collection_ref_id, chore.ref_id)
         notion_chore = notion_chore.join_with_entity(chore, direct_info)
-        self._chore_notion_manager.save_chore(chore.chore_collection_ref_id, notion_chore)
+        self._chore_notion_manager.save_leaf(chore.chore_collection_ref_id, notion_chore)

@@ -39,7 +39,6 @@ class InboxTaskArchiveService:
 
         # Apply Notion changes
         try:
-            self._inbox_task_notion_manager.remove_inbox_task(
-                inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+            self._inbox_task_notion_manager.remove_leaf(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
         except NotionInboxTaskNotFoundError:
             LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")

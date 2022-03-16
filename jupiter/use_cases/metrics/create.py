@@ -62,7 +62,7 @@ class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
 
         collection_params = None
         with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
 
             if args.collection_period is not None:
                 collection_params = \
@@ -91,5 +91,5 @@ class MetricCreateUseCase(AppMutationUseCase['MetricCreateUseCase.Args', None]):
             except MetricAlreadyExistsError as err:
                 raise InputValidationError(f"Metric with key {metric.key} already exists") from err
 
-        notion_metric = NotionMetric.new_notion_row(metric)
-        self._metric_notion_manager.upsert_metric(metric_collection.ref_id, notion_metric)
+        notion_metric = NotionMetric.new_notion_entity(metric)
+        self._metric_notion_manager.upsert_branch(metric_collection.ref_id, notion_metric)

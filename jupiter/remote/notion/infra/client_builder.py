@@ -3,7 +3,7 @@ from typing import Final, Optional
 
 import requests
 
-from jupiter.domain.remote.notion.collection_repository import NotionConnectionNotFoundError
+from jupiter.domain.remote.notion.connection_repository import NotionConnectionNotFoundError
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.remote.notion.infra.client import NotionClient, NotionClientConfig
 
@@ -35,7 +35,7 @@ class NotionClientBuilder:
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
             try:
-                notion_connection = uow.notion_connection_repository.load_for_workspace(workspace.ref_id)
+                notion_connection = uow.notion_connection_repository.load_by_parent(workspace.ref_id)
             except NotionConnectionNotFoundError as err:
                 raise MissingNotionConnectionError() from err
 

@@ -8,19 +8,19 @@ from jupiter.domain.metrics.metric_name import MetricName
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
-from jupiter.framework.notion import NotionEntity
+from jupiter.framework.notion import NotionBranchEntity
 from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class NotionMetric(NotionEntity[Metric]):
+class NotionMetric(NotionBranchEntity[Metric]):
     """A metric on Notion-side."""
 
     name: str
     icon: Optional[str]
 
     @staticmethod
-    def new_notion_row(entity: Metric) -> 'NotionMetric':
+    def new_notion_entity(entity: Metric) -> 'NotionMetric':
         """Construct a new Notion row from a given entity."""
         return NotionMetric(
             notion_id=BAD_NOTION_ID,

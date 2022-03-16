@@ -65,7 +65,7 @@ class HabitCreateUseCase(AppMutationUseCase['HabitCreateUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
             if args.project_key is not None:
                 project = uow.project_repository.load_by_key(project_collection.ref_id, args.project_key)
@@ -74,8 +74,8 @@ class HabitCreateUseCase(AppMutationUseCase['HabitCreateUseCase.Args', None]):
                 project = uow.project_repository.load_by_id(workspace.default_project_ref_id)
                 project_ref_id = workspace.default_project_ref_id
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_parent(workspace.ref_id)
 
             habit = Habit.new_habit(
                 habit_collection_ref_id=habit_collection.ref_id,
@@ -100,11 +100,10 @@ class HabitCreateUseCase(AppMutationUseCase['HabitCreateUseCase.Args', None]):
                 uow.habit_repository.create(habit)
             LOGGER.info("Applied local changes")
 
-        notion_inbox_task_collection = \
-            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
+        notion_inbox_task_collection = self._inbox_task_notion_manager.load_trunk(inbox_task_collection.ref_id)
 
-        direct_info = NotionHabit.DirectInfo(project_name=project.name)
-        notion_habit = NotionHabit.new_notion_row(habit, direct_info)
-        self._habit_notion_manager.upsert_habit(
+        direct_info = NotionHabit.DirectInfo(all_projects_map={project.ref_id: project})
+        notion_habit = NotionHabit.new_notion_entity(habit, direct_info)
+        self._habit_notion_manager.upsert_leaf(
             habit_collection.ref_id, notion_habit, notion_inbox_task_collection)
         LOGGER.info("Applied Notion changes")

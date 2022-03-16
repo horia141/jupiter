@@ -45,9 +45,9 @@ class PersonChangeCatchUpProjectUseCase(AppMutationUseCase['PersonChangeCatchUpP
         """Execute the command's action."""
         workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
             old_catch_up_project_ref_id = person_collection.catch_up_project_ref_id
 
             if args.catch_up_project_key is not None:
@@ -64,16 +64,16 @@ class PersonChangeCatchUpProjectUseCase(AppMutationUseCase['PersonChangeCatchUpP
             uow.person_collection_repository.save(person_collection)
 
             persons = \
-                uow.person_repository.find_all(person_collection_ref_id=person_collection.ref_id, allow_archived=False)
+                uow.person_repository.find_all(parent_ref_id=person_collection.ref_id, allow_archived=False)
             persons_by_ref_id = {p.ref_id: p for p in persons}
 
         if old_catch_up_project_ref_id != catch_up_project_ref_id and len(persons) > 0:
             LOGGER.info("Moving all inbox tasks too")
             with self._storage_engine.get_unit_of_work() as inbox_task_uow:
-                inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+                inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
                 all_catch_up_inbox_tasks = \
-                    inbox_task_uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    inbox_task_uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
                         filter_person_ref_ids=[p.ref_id for p in persons])
@@ -90,8 +90,8 @@ class PersonChangeCatchUpProjectUseCase(AppMutationUseCase['PersonChangeCatchUpP
                         modification_time=self._time_provider.get_current_time())
                     uow.inbox_task_repository.save(inbox_task)
                 all_birthday_inbox_tasks = \
-                    inbox_task_uow.inbox_task_repository.find_all(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    inbox_task_uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
                         filter_person_ref_ids=[p.ref_id for p in persons])

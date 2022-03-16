@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.url import URL
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -12,7 +12,7 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class SmartListItem(Entity):
+class SmartListItem(LeafEntity):
     """A smart list item."""
 
     @dataclass(frozen=True)
@@ -61,3 +61,8 @@ class SmartListItem(Entity):
             tags_ref_id=tags_ref_id.or_else(self.tags_ref_id),
             url=url.or_else(self.url),
             new_event=SmartListItem.Updated.make_event_from_frame_args(source, self.version, modification_time))
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.smart_list_ref_id

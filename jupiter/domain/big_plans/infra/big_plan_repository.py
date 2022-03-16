@@ -1,40 +1,24 @@
 """A repository of big plans."""
 import abc
-from typing import Optional, Iterable
+from typing import Optional, Iterable, List
 
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.storage import Repository
+from jupiter.framework.repository import LeafEntityRepository, LeafEntityNotFoundError
 
 
-class BigPlanNotFoundError(Exception):
+class BigPlanNotFoundError(LeafEntityNotFoundError):
     """Error raised when a big plan was not found."""
 
 
-class BigPlanRepository(Repository, abc.ABC):
+class BigPlanRepository(LeafEntityRepository[BigPlan], abc.ABC):
     """A repository of big plans."""
 
     @abc.abstractmethod
-    def create(self, big_plan: BigPlan) -> BigPlan:
-        """Create a big plan."""
-
-    @abc.abstractmethod
-    def save(self, big_plan: BigPlan) -> BigPlan:
-        """Save a big plan - it should already exist."""
-
-    @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BigPlan:
-        """Load a big plan by id."""
-
-    @abc.abstractmethod
-    def find_all(
+    def find_all_with_filters(
             self,
-            big_plan_collection_ref_id: EntityId,
+            parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[BigPlan]:
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> List[BigPlan]:
         """Find all big plans."""
-
-    @abc.abstractmethod
-    def remove(self, ref_id: EntityId) -> BigPlan:
-        """Hard remove a big plan - an irreversible operation."""

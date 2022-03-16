@@ -36,10 +36,10 @@ class MetricRemoveService:
             uow.metric_repository.remove(metric.ref_id)
 
             workspace = uow.workspace_repository.load()
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
 
-            all_inbox_tasks = uow.inbox_task_repository.find_all(
-                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+            all_inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True, filter_metric_ref_ids=[metric.ref_id])
 
         inbox_task_remove_service = InboxTaskRemoveService(self._storage_engine, self._inbox_task_notion_manager)
@@ -48,6 +48,6 @@ class MetricRemoveService:
 
         # This needs to take into account notion entries too.
         try:
-            self._metric_notion_manager.remove_metric(metric_collection.ref_id, metric.ref_id)
+            self._metric_notion_manager.remove_branch(metric_collection.ref_id, metric.ref_id)
         except NotionMetricNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

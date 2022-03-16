@@ -39,12 +39,12 @@ class VacationArchiveUseCase(AppMutationUseCase['VacationArchiveUseCase.Args', N
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
+            vacation_collection = uow.vacation_collection_repository.load_by_parent(workspace.ref_id)
             vacation = uow.vacation_repository.load_by_id(args.ref_id)
             vacation = vacation.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.vacation_repository.save(vacation)
 
         try:
-            self._vacation_notion_manager.remove_vacation(vacation_collection.ref_id, vacation.ref_id)
+            self._vacation_notion_manager.remove_leaf(vacation_collection.ref_id, vacation.ref_id)
         except NotionVacationNotFoundError:
             LOGGER.info("Skipping archival on Notion side because vacation was not found")

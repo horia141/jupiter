@@ -17,25 +17,24 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
-from jupiter.framework.notion import NotionRow
+from jupiter.framework.notion import NotionLeafEntity, NotionLeafApplyToEntityResult
 from jupiter.framework.update_action import UpdateAction
 from jupiter.remote.notion.common import format_name_for_option
 
 
 @dataclass(frozen=True)
-class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'NotionInboxTask.InverseInfo']):
+class NotionInboxTask(NotionLeafEntity[InboxTask, 'NotionInboxTask.DirectInfo', 'NotionInboxTask.InverseInfo']):
     """A inbox task on Notion-side."""
 
     @dataclass(frozen=True)
     class DirectInfo:
         """Info when copying from the app to Notion."""
-        project_name: ProjectName
-        big_plan_name: Optional[EntityName]
+        all_projects_map: Dict[EntityId, Project]
+        all_big_plans_map: Dict[EntityId, BigPlan]
 
     @dataclass(frozen=True)
     class InverseInfo:
         """Info when copying from Notion to the app."""
-        inbox_task_collection_ref_id: EntityId
         default_project: Project
         all_projects_by_name: Dict[str, Project]
         all_projects_map: Dict[EntityId, Project]
@@ -64,7 +63,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
     recurring_gen_right_now: Optional[ADate]
 
     @staticmethod
-    def new_notion_row(entity: InboxTask, extra_info: DirectInfo) -> 'NotionInboxTask':
+    def new_notion_entity(entity: InboxTask, extra_info: DirectInfo) -> 'NotionInboxTask':
         """Construct a new Notion row from a given inbox task."""
         return NotionInboxTask(
             notion_id=BAD_NOTION_ID,
@@ -74,9 +73,11 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             name=str(entity.name),
             archived=entity.archived,
             project_ref_id=str(entity.project_ref_id),
-            project_name=format_name_for_option(extra_info.project_name),
+            project_name=format_name_for_option(extra_info.all_projects_map[entity.project_ref_id].name),
             big_plan_ref_id=str(entity.big_plan_ref_id) if entity.big_plan_ref_id else None,
-            big_plan_name=format_name_for_option(extra_info.big_plan_name) if extra_info.big_plan_name else None,
+            big_plan_name=
+            format_name_for_option(extra_info.all_big_plans_map[entity.big_plan_ref_id].name)
+            if entity.big_plan_ref_id else None,
             habit_ref_id=str(entity.habit_ref_id) if entity.habit_ref_id else None,
             chore_ref_id=str(entity.chore_ref_id) if entity.chore_ref_id else None,
             metric_ref_id=str(entity.metric_ref_id) if entity.metric_ref_id else None,
@@ -94,14 +95,12 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             ADate.from_timestamp(entity.recurring_gen_right_now)
             if entity.recurring_gen_right_now else None)
 
-    def new_entity(self, extra_info: InverseInfo) -> InboxTask:
+    def new_entity(self, parent_ref_id: EntityId, extra_info: InverseInfo) -> InboxTask:
         """Create a new inbox task from this."""
         inbox_task_name = InboxTaskName.from_raw(self.name)
 
-        project_ref_id = EntityId.from_raw(self.project_ref_id) \
-            if self.project_ref_id else None
-        project_name = ProjectName.from_raw(self.project_name) \
-            if self.project_name else None
+        project_ref_id = EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
+        project_name = ProjectName.from_raw(self.project_name) if self.project_name else None
 
         if project_ref_id is not None:
             project = extra_info.all_projects_map[project_ref_id]
@@ -140,7 +139,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             raise InputValidationError("Trying to create an inbox task for a person from Notion")
 
         return InboxTask.new_inbox_task(
-            inbox_task_collection_ref_id=extra_info.inbox_task_collection_ref_id,
+            inbox_task_collection_ref_id=parent_ref_id,
             project_ref_id=project.ref_id,
             archived=self.archived,
             name=inbox_task_name,
@@ -153,32 +152,30 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_entity(self, entity: InboxTask, extra_info: InverseInfo) -> InboxTask:
+    def apply_to_entity(self, entity: InboxTask, extra_info: InverseInfo) -> NotionLeafApplyToEntityResult[InboxTask]:
         """Apply to an already existing inbox task."""
-        project_ref_id = EntityId.from_raw(self.project_ref_id) \
-            if self.project_ref_id else None
-        project_name = ProjectName.from_raw(self.project_name) \
-            if self.project_name else None
+        should_modify_on_notion = False
+        project_ref_id = EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
+        project_name = ProjectName.from_raw(self.project_name) if self.project_name else None
 
         if project_ref_id is not None:
             project = extra_info.all_projects_map[project_ref_id]
         elif project_name is not None:
             project = extra_info.all_projects_by_name[format_name_for_option(project_name)]
+            should_modify_on_notion = True
         else:
             project = extra_info.default_project
+            should_modify_on_notion = True
 
-        inbox_task_big_plan_ref_id = \
-            EntityId.from_raw(self.big_plan_ref_id) \
-                if self.big_plan_ref_id else None
-        inbox_task_big_plan_name = BigPlanName.from_raw(self.big_plan_name) \
-            if self.big_plan_name else None
+        inbox_task_big_plan_ref_id = EntityId.from_raw(self.big_plan_ref_id) if self.big_plan_ref_id else None
+        inbox_task_big_plan_name = BigPlanName.from_raw(self.big_plan_name) if self.big_plan_name else None
 
         big_plan = None
         if inbox_task_big_plan_ref_id is not None:
             big_plan = extra_info.all_big_plans_map[inbox_task_big_plan_ref_id]
         elif inbox_task_big_plan_name is not None:
-            big_plan = \
-                extra_info.all_big_plans_by_name[format_name_for_option(inbox_task_big_plan_name)]
+            big_plan = extra_info.all_big_plans_by_name[format_name_for_option(inbox_task_big_plan_name)]
+            should_modify_on_notion = True
 
         new_entity = entity
 
@@ -188,8 +185,7 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 _big_plan_name=big_plan.name, source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
         elif entity.allow_user_changes:
-            new_entity = \
-                new_entity.release_from_big_plan(EventSource.NOTION, modification_time=self.last_edited_time)
+            new_entity = new_entity.release_from_big_plan(EventSource.NOTION, modification_time=self.last_edited_time)
 
         if entity.allow_user_changes:
             new_entity = \
@@ -215,5 +211,12 @@ class NotionInboxTask(NotionRow[InboxTask, 'NotionInboxTask.DirectInfo', 'Notion
                 due_date=UpdateAction.change_to(self.due_date),
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time)
-        return new_entity.change_archived(
+        new_entity = new_entity.change_archived(
             archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
+
+        return NotionLeafApplyToEntityResult(new_entity, should_modify_on_notion)
+
+    @property
+    def nice_name(self) -> str:
+        """A nice name for the Notion-side entity."""
+        return self.name

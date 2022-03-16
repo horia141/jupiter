@@ -43,7 +43,7 @@ class PersonRemoveUseCase(AppMutationUseCase['PersonRemoveUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
             person = uow.person_repository.load_by_id(args.ref_id)
 
         PersonRemoveService(self._storage_engine, self._person_notion_manager, self._inbox_task_notion_manager)\

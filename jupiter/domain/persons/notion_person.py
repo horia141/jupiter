@@ -16,18 +16,13 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.event import EventSource
-from jupiter.framework.notion import NotionRow
+from jupiter.framework.notion import NotionLeafEntity, NotionLeafApplyToEntityResult
 from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
+class NotionPerson(NotionLeafEntity[Person, None, None]):
     """A person on Notion-side."""
-
-    @dataclass(frozen=True)
-    class InverseInfo:
-        """Inverse info."""
-        person_collection_ref_id: EntityId
 
     name: str
     relationship: Optional[str]
@@ -42,7 +37,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
     birthday: Optional[str]
 
     @staticmethod
-    def new_notion_row(entity: Person, extra_info: None) -> 'NotionPerson':
+    def new_notion_entity(entity: Person, extra_info: None) -> 'NotionPerson':
         """Construct a new Notion row from a given entity."""
         return NotionPerson(
             notion_id=BAD_NOTION_ID,
@@ -69,7 +64,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
             if entity.catch_up_params and entity.catch_up_params.due_at_month else None,
             birthday=str(entity.birthday) if entity.birthday else None)
 
-    def new_entity(self, extra_info: InverseInfo) -> Person:
+    def new_entity(self, parent_ref_id: EntityId, extra_info: None) -> Person:
         """Construct a new entity from this notion row."""
         person_name = PersonName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
@@ -94,7 +89,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
         person_birthday = PersonBirthday.from_raw(self.birthday) if self.birthday else None
 
         return Person.new_person(
-            person_collection_ref_id=extra_info.person_collection_ref_id,
+            person_collection_ref_id=parent_ref_id,
             name=person_name,
             relationship=person_relationship,
             catch_up_params=person_catch_up_params,
@@ -102,7 +97,7 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_entity(self, entity: Person, extra_info: InverseInfo) -> Person:
+    def apply_to_entity(self, entity: Person, extra_info: None) -> NotionLeafApplyToEntityResult[Person]:
         """Obtain the entity form of this, with a possible error."""
         person_name = PersonName.from_raw(self.name)
         person_relationship = PersonRelationship.from_raw(self.relationship)
@@ -125,13 +120,20 @@ class NotionPerson(NotionRow[Person, None, 'NotionPerson.InverseInfo']):
                 if self.catch_up_due_at_month else None)
         person_birthday = PersonBirthday.from_raw(self.birthday) if self.birthday else None
 
-        return entity\
-            .update(
-                name=UpdateAction.change_to(person_name),
-                relationship=UpdateAction.change_to(person_relationship),
-                catch_up_params=UpdateAction.change_to(person_catch_up_params),
-                birthday=UpdateAction.change_to(person_birthday),
-                source=EventSource.NOTION,
-                modification_time=self.last_edited_time)\
-            .change_archived(
-                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
+        return \
+            NotionLeafApplyToEntityResult.just(
+                entity\
+                    .update(
+                        name=UpdateAction.change_to(person_name),
+                        relationship=UpdateAction.change_to(person_relationship),
+                        catch_up_params=UpdateAction.change_to(person_catch_up_params),
+                        birthday=UpdateAction.change_to(person_birthday),
+                        source=EventSource.NOTION,
+                        modification_time=self.last_edited_time)\
+                    .change_archived(
+                        archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time))
+
+    @property
+    def nice_name(self) -> str:
+        """A nice name for the Notion-side entity."""
+        return self.name

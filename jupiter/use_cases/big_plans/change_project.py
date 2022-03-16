@@ -47,7 +47,7 @@ class BigPlanChangeProjectUseCase(AppMutationUseCase['BigPlanChangeProjectUseCas
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
             if args.project_key:
                 project = uow.project_repository.load_by_key(project_collection.ref_id, args.project_key)
@@ -63,10 +63,10 @@ class BigPlanChangeProjectUseCase(AppMutationUseCase['BigPlanChangeProjectUseCas
 
             uow.big_plan_repository.save(big_plan)
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
             all_inbox_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_big_plan_ref_ids=[big_plan.ref_id])
 
             for inbox_task in all_inbox_tasks:
@@ -75,21 +75,18 @@ class BigPlanChangeProjectUseCase(AppMutationUseCase['BigPlanChangeProjectUseCas
                 uow.inbox_task_repository.save(inbox_task)
                 LOGGER.info(f'Updating the associated inbox task "{inbox_task.name}"')
 
-        big_plan_direct_info = NotionBigPlan.DirectInfo(project_name=project.name)
+        big_plan_direct_info = NotionBigPlan.DirectInfo(all_projects_map={project.ref_id: project})
 
-        notion_big_plan = \
-            self._big_plan_notion_manager.load_big_plan(big_plan.big_plan_collection_ref_id, big_plan.ref_id)
+        notion_big_plan = self._big_plan_notion_manager.load_leaf(big_plan.big_plan_collection_ref_id, big_plan.ref_id)
         notion_big_plan = notion_big_plan.join_with_entity(big_plan, big_plan_direct_info)
-        self._big_plan_notion_manager.save_big_plan(big_plan.big_plan_collection_ref_id, notion_big_plan)
+        self._big_plan_notion_manager.save_leaf(big_plan.big_plan_collection_ref_id, notion_big_plan)
 
         for inbox_task in all_inbox_tasks:
             inbox_task_direct_info = \
-                NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=big_plan.name)
+                NotionInboxTask.DirectInfo(
+                    all_projects_map={project.ref_id: project}, all_big_plans_map={big_plan.ref_id: big_plan})
             notion_inbox_task = \
-                self._inbox_task_notion_manager.load_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
-            notion_inbox_task = \
-                notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
-            self._inbox_task_notion_manager.save_inbox_task(
-                inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.load_leaf(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+            notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, inbox_task_direct_info)
+            self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
             LOGGER.info("Applied Notion changes")

@@ -45,16 +45,16 @@ class PersonArchiveUseCase(AppMutationUseCase['PersonArchiveUseCase.Args', None]
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
             person = uow.person_repository.load_by_id(args.ref_id)
 
             person = person.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.person_repository.save(person)
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
             all_inbox_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     filter_sources=[InboxTaskSource.PERSON_BIRTHDAY, InboxTaskSource.PERSON_BIRTHDAY],
                     filter_person_ref_ids=[person.ref_id])
 
@@ -65,6 +65,6 @@ class PersonArchiveUseCase(AppMutationUseCase['PersonArchiveUseCase.Args', None]
             inbox_task_archive_service.do_it(inbox_task)
 
         try:
-            self._person_notion_manager.remove_person(person_collection.ref_id, person.ref_id)
+            self._person_notion_manager.remove_leaf(person_collection.ref_id, person.ref_id)
         except NotionPersonNotFoundError:
             LOGGER.warning("Skipping archival on Notion side because person was not found")

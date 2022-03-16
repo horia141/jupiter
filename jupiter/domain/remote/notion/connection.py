@@ -3,14 +3,14 @@ from dataclasses import dataclass
 
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, StubEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
 
 
 @dataclass(frozen=True)
-class NotionConnection(Entity):
+class NotionConnection(StubEntity):
     """The Notion connection."""
 
     @dataclass(frozen=True)
@@ -48,3 +48,8 @@ class NotionConnection(Entity):
         return self._new_version(
             token=token,
             new_event=NotionConnection.UpdateToken.make_event_from_frame_args(source, self.version, modification_time))
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.workspace_ref_id

@@ -504,13 +504,11 @@ class NotionHabitsManager(HabitNotionManager):
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_habit_collection(
-            self, notion_workspace: NotionWorkspace,
-            habit_collection: NotionHabitCollection) -> NotionHabitCollection:
+    def upsert_trunk(self, parent: NotionWorkspace, trunk: NotionHabitCollection) -> None:
         """Upsert the Notion-side habit."""
-        collection_link = self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{habit_collection.ref_id}"),
-            parent_page_notion_id=notion_workspace.notion_id,
+        self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{trunk.ref_id}"),
+            parent_page_notion_id=parent.notion_id,
             name=self._PAGE_NAME,
             icon=self._PAGE_ICON,
             schema=self._SCHEMA,
@@ -520,10 +518,6 @@ class NotionHabitsManager(HabitNotionManager):
                 ("kanban_all_view_id", NotionHabitsManager._KANBAN_ALL_VIEW_SCHEMA),
                 ("database_view_id", NotionHabitsManager._DATABASE_VIEW_SCHEMA)
             ])
-
-        return NotionHabitCollection(
-            notion_id=collection_link.collection_notion_id,
-            ref_id=habit_collection.ref_id)
 
     def upsert_habits_project_field_options(
             self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
@@ -559,90 +553,89 @@ class NotionHabitsManager(HabitNotionManager):
             NotionLockKey(f"{self._KEY}:{ref_id}"), "database_by_project_view_id", new_view)
         LOGGER.info("Updated the projects view for the associated habits")
 
-    def upsert_habit(
-            self, habit_collection_ref_id: EntityId, habit: NotionHabit,
-            inbox_collection_link: NotionInboxTaskCollection) -> NotionHabit:
+    def upsert_leaf(
+            self, trunk_ref_id: EntityId, leaf: NotionHabit, extra_info: NotionInboxTaskCollection) -> NotionHabit:
         """Upsert a habit."""
         link = \
             self._collections_manager.upsert_collection_item(
-                key=NotionLockKey(f"{habit.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"),
-                new_row=habit,
-                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+                key=NotionLockKey(f"{leaf.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                new_row=leaf,
+                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, extra_info))
         return link.item_info
 
-    def save_habit(
-            self, habit_collection_ref_id: EntityId, habit: NotionHabit,
-            inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionHabit:
+    def save_leaf(
+            self, trunk_ref_id: EntityId, leaf: NotionHabit,
+            extra_info: Optional[NotionInboxTaskCollection] = None) -> NotionHabit:
         """Update the Notion-side habit with new data."""
         try:
             link = \
                 self._collections_manager.save_collection_item(
-                    key=NotionLockKey(f"{habit.ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"),
-                    row=habit,
+                    key=NotionLockKey(f"{leaf.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                    row=leaf,
                     copy_row_to_notion_row=
-                    lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+                    lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, extra_info))
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionHabitNotFoundError(
-                f"Notion habit with id {habit.ref_id} could not be found") from err
+                f"Notion habit with id {leaf.ref_id} could not be found") from err
 
-    def load_habit(self, habit_collection_ref_id: EntityId, ref_id: EntityId) -> NotionHabit:
+    def load_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> NotionHabit:
         """Retrieve the Notion-side habit associated with a particular entity."""
         try:
             link = \
                 self._collections_manager.load_collection_item(
-                    key=NotionLockKey(f"{ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"),
+                    key=NotionLockKey(f"{leaf_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionHabitNotFoundError(
-                f"Notion habit with id {ref_id} could not be found") from err
+                f"Notion habit with id {leaf_ref_id} could not be found") from err
 
-    def load_all_habits(
-            self, habit_collection_ref_id: EntityId) -> Iterable[NotionHabit]:
+    def load_all_leaves(
+            self, trunk_ref_id: EntityId) -> Iterable[NotionHabit]:
         """Retrieve all the Notion-side habits."""
         return [l.item_info for l in
                 self._collections_manager.load_all_collection_items(
-                    collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
-    def remove_habit(self, habit_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
+    def remove_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         try:
             self._collections_manager.remove_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"))
+                key=NotionLockKey(f"{leaf_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
         except NotionCollectionItemNotFoundError as err:
             raise NotionHabitNotFoundError(
-                f"Notion habit with id {ref_id} could not be found") from err
+                f"Notion habit with id {leaf_ref_id} could not be found") from err
 
-    def drop_all_habits(self, habit_collection_ref_id: EntityId) -> None:
+    def drop_all_leaves(self, trunk_ref_id: EntityId) -> None:
         """Remove all habits Notion-side."""
         self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
 
-    def link_local_and_notion_habit(
-            self, habit_collection_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+    def load_all_saved_ref_ids(self, trunk_ref_id: EntityId) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the habits tasks."""
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+
+    def load_all_saved_notion_ids(
+            self, trunk_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+
+    def link_local_and_notion_leaves(
+            self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
         self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
-            collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id)
-
-    def load_all_saved_habits_notion_ids(
-            self, habit_collection_ref_id: EntityId) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"))
-
-    def load_all_saved_habits_ref_ids(self, habit_collection_ref_id: EntityId) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids for the habits tasks."""
-        return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{habit_collection_ref_id}"))
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionHabit, notion_row: CollectionRowBlock,

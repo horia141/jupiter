@@ -20,6 +20,18 @@ pretty = True
 [mypy-jupiter.framework.notion.*]
 disallow_any_explicit = False
 
+[mypy-jupiter.framework.notion_manager.*]
+disallow_any_explicit = False
+
+[mypy-jupiter.domain.notion_sync_service.*]
+disallow_any_explicit = False
+
+[mypy-jupiter.remote.notion.infra.collection_item_link.*]
+disallow_any_explicit = False
+
+[mypy-jupiter.remote.notion.infra.collections_manager.*]
+disallow_any_explicit = False
+
 [mypy-jsonschema.*]
 ignore_missing_imports = True
 

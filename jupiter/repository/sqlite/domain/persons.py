@@ -48,46 +48,48 @@ class SqlitePersonCollectionRepository(PersonCollectionRepository):
             keep_existing=True)
         self._person_collection_event_table = build_event_table(self._person_collection_table, metadata)
 
-    def create(self, person_collection: PersonCollection) -> PersonCollection:
+    def create(self, entity: PersonCollection) -> PersonCollection:
         """Create a Person."""
         result = \
             self._connection.execute(insert(self._person_collection_table).values(
-                ref_id=person_collection.ref_id.as_int() if person_collection.ref_id != BAD_REF_ID else None,
-                version=person_collection.version,
-                archived=person_collection.archived,
-                created_time=person_collection.created_time.to_db(),
-                last_modified_time=person_collection.last_modified_time.to_db(),
-                archived_time=person_collection.archived_time.to_db() if person_collection.archived_time else None,
-                workspace_ref_id=person_collection.workspace_ref_id.as_int(),
-                catch_up_project_ref_id=person_collection.catch_up_project_ref_id.as_int()))
-        person_collection = person_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._person_collection_event_table, person_collection)
-        return person_collection
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int(),
+                catch_up_project_ref_id=entity.catch_up_project_ref_id.as_int()))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._person_collection_event_table, entity)
+        return entity
 
-    def save(self, person_collection: PersonCollection) -> PersonCollection:
+    def save(self, entity: PersonCollection) -> PersonCollection:
         """Save a Person - it should already exist."""
         result = self._connection.execute(
             update(self._person_collection_table)
-            .where(self._person_collection_table.c.ref_id == person_collection.ref_id.as_int())
+            .where(self._person_collection_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=person_collection.version,
-                archived=person_collection.archived,
-                created_time=person_collection.created_time.to_db(),
-                last_modified_time=person_collection.last_modified_time.to_db(),
-                archived_time=person_collection.archived_time.to_db() if person_collection.archived_time else None,
-                workspace_ref_id=person_collection.workspace_ref_id.as_int(),
-                catch_up_project_ref_id=person_collection.catch_up_project_ref_id.as_int()))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int(),
+                catch_up_project_ref_id=entity.catch_up_project_ref_id.as_int()))
         if result.rowcount == 0:
             raise PersonCollectionNotFoundError("The Person does not exist")
-        upsert_events(self._connection, self._person_collection_event_table, person_collection)
-        return person_collection
+        upsert_events(self._connection, self._person_collection_event_table, entity)
+        return entity
 
-    def load_by_workspace(self, workspace_ref_id: EntityId) -> PersonCollection:
+    def load_by_parent(self, parent_ref_id: EntityId) -> PersonCollection:
         """Load the Person."""
-        query_stmt = select(self._person_collection_table)
+        query_stmt = \
+            select(self._person_collection_table)\
+                .where(self._person_collection_table.c.workspace_ref_id == parent_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
-            raise PersonCollectionNotFoundError("Missing Person")
+            raise PersonCollectionNotFoundError(f"Person collection for workspace {parent_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -139,67 +141,67 @@ class SqlitePersonRepository(PersonRepository):
             keep_existing=True)
         self._person_event_table = build_event_table(self._person_table, metadata)
 
-    def create(self, person: Person) -> Person:
+    def create(self, entity: Person) -> Person:
         """Create a person."""
         try:
             result = self._connection.execute(insert(self._person_table).values(
-                ref_id=person.ref_id.as_int() if person.ref_id != BAD_REF_ID else None,
-                version=person.version,
-                archived=person.archived,
-                created_time=person.created_time.to_db(),
-                last_modified_time=person.last_modified_time.to_db(),
-                archived_time=person.archived_time.to_db() if person.archived_time else None,
-                person_collection_ref_id=person.person_collection_ref_id.as_int(),
-                name=str(person.name),
-                relationship=person.relationship.value,
-                catch_up_period=person.catch_up_params.period.value if person.catch_up_params else None,
-                catch_up_eisen=person.catch_up_params.eisen.value if person.catch_up_params else None,
-                catch_up_difficulty=person.catch_up_params.difficulty.value
-                if person.catch_up_params and person.catch_up_params.difficulty else None,
-                catch_up_actionable_from_day=person.catch_up_params.actionable_from_day
-                if person.catch_up_params else None,
-                catch_up_actionable_from_month=person.catch_up_params.actionable_from_month
-                if person.catch_up_params else None,
-                catch_up_due_at_time=person.catch_up_params.due_at_time if person.catch_up_params else None,
-                catch_up_due_at_day=person.catch_up_params.due_at_day if person.catch_up_params else None,
-                catch_up_due_at_month=person.catch_up_params.due_at_month if person.catch_up_params else None,
-                birthday=str(person.birthday) if person.birthday else None))
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                person_collection_ref_id=entity.person_collection_ref_id.as_int(),
+                name=str(entity.name),
+                relationship=entity.relationship.value,
+                catch_up_period=entity.catch_up_params.period.value if entity.catch_up_params else None,
+                catch_up_eisen=entity.catch_up_params.eisen.value if entity.catch_up_params else None,
+                catch_up_difficulty=entity.catch_up_params.difficulty.value
+                if entity.catch_up_params and entity.catch_up_params.difficulty else None,
+                catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day
+                if entity.catch_up_params else None,
+                catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month
+                if entity.catch_up_params else None,
+                catch_up_due_at_time=entity.catch_up_params.due_at_time if entity.catch_up_params else None,
+                catch_up_due_at_day=entity.catch_up_params.due_at_day if entity.catch_up_params else None,
+                catch_up_due_at_month=entity.catch_up_params.due_at_month if entity.catch_up_params else None,
+                birthday=str(entity.birthday) if entity.birthday else None))
         except IntegrityError as err:
-            raise PersonAlreadyExistsError(f"Person with name {person.name} already exists") from err
-        person = person.assign_ref_id(EntityId.from_raw(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._person_event_table, person)
-        return person
+            raise PersonAlreadyExistsError(f"Person with name {entity.name} already exists") from err
+        entity = entity.assign_ref_id(EntityId.from_raw(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._person_event_table, entity)
+        return entity
 
-    def save(self, person: Person) -> Person:
+    def save(self, entity: Person) -> Person:
         """Save a person - it should already exist."""
         result = self._connection.execute(
             update(self._person_table)
-            .where(self._person_table.c.ref_id == person.ref_id.as_int())
+            .where(self._person_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=person.version,
-                archived=person.archived,
-                created_time=person.created_time.to_db(),
-                last_modified_time=person.last_modified_time.to_db(),
-                archived_time=person.archived_time.to_db() if person.archived_time else None,
-                person_collection_ref_id=person.person_collection_ref_id.as_int(),
-                name=str(person.name),
-                relationship=person.relationship.value,
-                catch_up_period=person.catch_up_params.period.value if person.catch_up_params else None,
-                catch_up_eisen=person.catch_up_params.eisen.value if person.catch_up_params else None,
-                catch_up_difficulty=person.catch_up_params.difficulty.value
-                if person.catch_up_params and person.catch_up_params.difficulty else None,
-                catch_up_actionable_from_day=person.catch_up_params.actionable_from_day
-                if person.catch_up_params else None,
-                catch_up_actionable_from_month=person.catch_up_params.actionable_from_month
-                if person.catch_up_params else None,
-                catch_up_due_at_time=person.catch_up_params.due_at_time if person.catch_up_params else None,
-                catch_up_due_at_day=person.catch_up_params.due_at_day if person.catch_up_params else None,
-                catch_up_due_at_month=person.catch_up_params.due_at_month if person.catch_up_params else None,
-                birthday=str(person.birthday) if person.birthday else None))
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                person_collection_ref_id=entity.person_collection_ref_id.as_int(),
+                name=str(entity.name),
+                relationship=entity.relationship.value,
+                catch_up_period=entity.catch_up_params.period.value if entity.catch_up_params else None,
+                catch_up_eisen=entity.catch_up_params.eisen.value if entity.catch_up_params else None,
+                catch_up_difficulty=entity.catch_up_params.difficulty.value
+                if entity.catch_up_params and entity.catch_up_params.difficulty else None,
+                catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day
+                if entity.catch_up_params else None,
+                catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month
+                if entity.catch_up_params else None,
+                catch_up_due_at_time=entity.catch_up_params.due_at_time if entity.catch_up_params else None,
+                catch_up_due_at_day=entity.catch_up_params.due_at_day if entity.catch_up_params else None,
+                catch_up_due_at_month=entity.catch_up_params.due_at_month if entity.catch_up_params else None,
+                birthday=str(entity.birthday) if entity.birthday else None))
         if result.rowcount == 0:
-            raise PersonNotFoundError(f"A person with id {person.ref_id} does not exist")
-        upsert_events(self._connection, self._person_event_table, person)
-        return person
+            raise PersonNotFoundError(f"A person with id {entity.ref_id} does not exist")
+        upsert_events(self._connection, self._person_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Person:
         """Find a person by id."""
@@ -213,13 +215,13 @@ class SqlitePersonRepository(PersonRepository):
 
     def find_all(
             self,
-            person_collection_ref_id: EntityId,
+            parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Person]:
         """Find all person matching some criteria."""
         query_stmt = \
             select(self._person_table)\
-            .where(self._person_table.c.person_collection_ref_id == person_collection_ref_id.as_int())
+            .where(self._person_table.c.person_collection_ref_id == parent_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._person_table.c.archived.is_(False))
         if filter_ref_ids:

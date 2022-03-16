@@ -40,14 +40,14 @@ class SmartListItemArchiveUseCase(AppMutationUseCase['SmartListItemArchiveUseCas
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             smart_list_item = uow.smart_list_item_repository.load_by_id(args.ref_id)
             smart_list_item = smart_list_item.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.smart_list_item_repository.save(smart_list_item)
 
         try:
-            self._smart_list_notion_manager.remove_smart_list_item(
+            self._smart_list_notion_manager.remove_leaf(
                 smart_list_collection.ref_id, smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
         except NotionSmartListItemNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

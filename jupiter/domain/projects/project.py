@@ -4,15 +4,15 @@ from dataclasses import dataclass
 
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
-from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Project(Entity):
+class Project(LeafEntity):
     """The project."""
 
     @dataclass(frozen=True)
@@ -55,3 +55,8 @@ class Project(Entity):
         return self._new_version(
             name=name.or_else(self.name),
             new_event=Project.Updated.make_event_from_frame_args(source, self.version, modification_time))
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.project_collection_ref_id

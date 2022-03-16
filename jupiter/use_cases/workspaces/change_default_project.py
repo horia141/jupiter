@@ -19,7 +19,7 @@ class WorkspaceChangeDefaultProjectUseCase(AppMutationUseCase['WorkspaceChangeDe
         """Execute the command's action."""
         workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
             project = uow.project_repository.load_by_key(project_collection.ref_id, args.default_project_key)
 
             workspace = \

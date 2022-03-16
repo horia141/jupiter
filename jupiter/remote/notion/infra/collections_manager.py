@@ -11,10 +11,11 @@ from notion.collection import CollectionRowBlock
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.json import JSONDictType
-from jupiter.framework.notion import BaseNotionRow
+from jupiter.framework.notion import NotionLeafEntity
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, \
     NotionCollectionBlockNotFound, NotionCollectionRowNotFound
+from jupiter.remote.notion.infra.client_builder import NotionClientBuilder
 from jupiter.remote.notion.infra.collection_field_tag_link import NotionCollectionFieldTagLink, \
     NotionCollectionFieldTagLinkExtra
 from jupiter.remote.notion.infra.collection_field_tag_link_repository import NotionCollectionFieldTagLinkNotFoundError
@@ -22,7 +23,6 @@ from jupiter.remote.notion.infra.collection_item_link import NotionCollectionIte
 from jupiter.remote.notion.infra.collection_item_link_repository import NotionCollectionItemLinkNotFoundError
 from jupiter.remote.notion.infra.collection_link import NotionCollectionLink, NotionCollectionLinkExtra
 from jupiter.remote.notion.infra.collection_link_repository import NotionCollectionLinkNotFoundError
-from jupiter.remote.notion.infra.client_builder import NotionClientBuilder
 from jupiter.remote.notion.infra.storage_engine import NotionStorageEngine
 from jupiter.utils.time_provider import TimeProvider
 
@@ -41,7 +41,7 @@ class NotionCollectionItemNotFoundError(Exception):
     """Error raised when a particular collection item cannot be found."""
 
 
-ItemType = TypeVar("ItemType", bound=BaseNotionRow)
+ItemType = TypeVar("ItemType", bound=NotionLeafEntity[typing.Any, typing.Any, typing.Any])
 CopyRowToNotionRowType = Callable[[NotionClient, ItemType, CollectionRowBlock], CollectionRowBlock]
 CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
 

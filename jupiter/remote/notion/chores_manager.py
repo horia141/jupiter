@@ -537,13 +537,11 @@ class NotionChoresManager(ChoreNotionManager):
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_chore_collection(
-            self, notion_workspace: NotionWorkspace,
-            chore_collection: NotionChoreCollection) -> NotionChoreCollection:
+    def upsert_trunk(self, parent: NotionWorkspace, trunk: NotionChoreCollection) -> None:
         """Upsert the Notion-side chore."""
-        collection_link = self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{chore_collection.ref_id}"),
-            parent_page_notion_id=notion_workspace.notion_id,
+        self._collections_manager.upsert_collection(
+            key=NotionLockKey(f"{self._KEY}:{trunk.ref_id}"),
+            parent_page_notion_id=parent.notion_id,
             name=self._PAGE_NAME,
             icon=self._PAGE_ICON,
             schema=self._SCHEMA,
@@ -553,10 +551,6 @@ class NotionChoresManager(ChoreNotionManager):
                 ("kanban_all_view_id", NotionChoresManager._KANBAN_ALL_VIEW_SCHEMA),
                 ("database_view_id", NotionChoresManager._DATABASE_VIEW_SCHEMA)
             ])
-
-        return NotionChoreCollection(
-            notion_id=collection_link.collection_notion_id,
-            ref_id=chore_collection.ref_id)
 
     def upsert_chores_project_field_options(
             self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]) -> None:
@@ -592,90 +586,89 @@ class NotionChoresManager(ChoreNotionManager):
             NotionLockKey(f"{self._KEY}:{ref_id}"), "database_by_project_view_id", new_view)
         LOGGER.info("Updated the projects view for the associated chores")
 
-    def upsert_chore(
-            self, chore_collection_ref_id: EntityId, chore: NotionChore,
-            inbox_collection_link: NotionInboxTaskCollection) -> NotionChore:
+    def upsert_leaf(
+            self, trunk_ref_id: EntityId, leaf: NotionChore, extra_info: NotionInboxTaskCollection) -> NotionChore:
         """Upsert a chore."""
         link = \
             self._collections_manager.upsert_collection_item(
-                key=NotionLockKey(f"{chore.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"),
-                new_row=chore,
-                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+                key=NotionLockKey(f"{leaf.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                new_row=leaf,
+                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, extra_info))
         return link.item_info
 
-    def save_chore(
-            self, chore_collection_ref_id: EntityId, chore: NotionChore,
-            inbox_collection_link: Optional[NotionInboxTaskCollection] = None) -> NotionChore:
+    def save_leaf(
+            self, trunk_ref_id: EntityId, leaf: NotionChore,
+            extra_info: Optional[NotionInboxTaskCollection] = None) -> NotionChore:
         """Update the Notion-side chore with new data."""
         try:
             link = \
                 self._collections_manager.save_collection_item(
-                    key=NotionLockKey(f"{chore.ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"),
-                    row=chore,
+                    key=NotionLockKey(f"{leaf.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                    row=leaf,
                     copy_row_to_notion_row=
-                    lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, inbox_collection_link))
+                    lambda c, r, nr: self._copy_row_to_notion_row(c, r, nr, extra_info))
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionChoreNotFoundError(
-                f"Notion chore with id {chore.ref_id} could not be found") from err
+                f"Notion chore with id {leaf.ref_id} could not be found") from err
 
-    def load_chore(self, chore_collection_ref_id: EntityId, ref_id: EntityId) -> NotionChore:
+    def load_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> NotionChore:
         """Retrieve the Notion-side chore associated with a particular entity."""
         try:
             link = \
                 self._collections_manager.load_collection_item(
-                    key=NotionLockKey(f"{ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"),
+                    key=NotionLockKey(f"{leaf_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
             raise NotionChoreNotFoundError(
-                f"Notion chore with id {ref_id} could not be found") from err
+                f"Notion chore with id {leaf_ref_id} could not be found") from err
 
-    def load_all_chores(
-            self, chore_collection_ref_id: EntityId) -> Iterable[NotionChore]:
+    def load_all_leaves(
+            self, trunk_ref_id: EntityId) -> Iterable[NotionChore]:
         """Retrieve all the Notion-side chores."""
         return [l.item_info for l in
                 self._collections_manager.load_all_collection_items(
-                    collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
-    def remove_chore(self, chore_collection_ref_id: EntityId, ref_id: Optional[EntityId]) -> None:
+    def remove_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: Optional[EntityId]) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         try:
             self._collections_manager.remove_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"))
+                key=NotionLockKey(f"{leaf_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
         except NotionCollectionItemNotFoundError as err:
             raise NotionChoreNotFoundError(
-                f"Notion chore with id {ref_id} could not be found") from err
+                f"Notion chore with id {leaf_ref_id} could not be found") from err
 
-    def drop_all_chores(self, chore_collection_ref_id: EntityId) -> None:
+    def drop_all_leaves(self, trunk_ref_id: EntityId) -> None:
         """Remove all chores Notion-side."""
         self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
 
-    def link_local_and_notion_chore(
-            self, chore_collection_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+    def load_all_saved_ref_ids(self, trunk_ref_id: EntityId) -> Iterable[EntityId]:
+        """Retrieve all the saved ref ids for the chores tasks."""
+        return self._collections_manager.load_all_collection_items_saved_ref_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+
+    def load_all_saved_notion_ids(
+            self, trunk_ref_id: EntityId) -> Iterable[NotionId]:
+        """Retrieve all the saved Notion-ids for these tasks."""
+        return self._collections_manager.load_all_collection_items_saved_notion_ids(
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+
+    def link_local_and_notion_leaves(
+            self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
         self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
-            collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id)
-
-    def load_all_saved_chores_notion_ids(
-            self, chore_collection_ref_id: EntityId) -> Iterable[NotionId]:
-        """Retrieve all the saved Notion-ids for these tasks."""
-        return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"))
-
-    def load_all_saved_chores_ref_ids(self, chore_collection_ref_id: EntityId) -> Iterable[EntityId]:
-        """Retrieve all the saved ref ids for the chores tasks."""
-        return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{chore_collection_ref_id}"))
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionChore, notion_row: CollectionRowBlock,

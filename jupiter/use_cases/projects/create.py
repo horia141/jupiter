@@ -59,7 +59,7 @@ class ProjectCreateUseCase(AppMutationUseCase['ProjectCreateUseCase.Args', None]
         """Execute the command's action."""
         workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
             new_project = \
                 Project.new_project(
@@ -69,8 +69,8 @@ class ProjectCreateUseCase(AppMutationUseCase['ProjectCreateUseCase.Args', None]
             new_project = uow.project_repository.create(new_project)
         LOGGER.info("Applied local changes")
 
-        new_notion_project = NotionProject.new_notion_row(new_project, NotionProject.DirectInfo())
-        self._project_notion_manager.upsert_project(project_collection.ref_id, new_notion_project)
+        new_notion_project = NotionProject.new_notion_entity(new_project, None)
+        self._project_notion_manager.upsert_leaf(project_collection.ref_id, new_notion_project, None)
         LOGGER.info("Applied Notion changes")
 
         with self._storage_engine.get_unit_of_work() as uow:

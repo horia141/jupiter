@@ -45,21 +45,21 @@ class MetricArchiveUseCase(AppMutationUseCase['MetricArchiveUseCase.Args', None]
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
 
             metric = uow.metric_repository.load_by_key(metric_collection.ref_id, args.key)
 
-            for metric_entry in uow.metric_entry_repository.find_all(metric_ref_id=metric.ref_id):
+            for metric_entry in uow.metric_entry_repository.find_all(parent_ref_id=metric.ref_id):
                 metric_entry = metric_entry.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
                 uow.metric_entry_repository.save(metric_entry)
 
             metric = metric.mark_archived(EventSource.CLI, self._time_provider.get_current_time())
             uow.metric_repository.save(metric)
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
             all_inbox_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     filter_sources=[InboxTaskSource.METRIC],
                     filter_metric_ref_ids=[metric.ref_id])
 
@@ -72,6 +72,6 @@ class MetricArchiveUseCase(AppMutationUseCase['MetricArchiveUseCase.Args', None]
 
         # TODO(horia141): process Notion side entries too
         try:
-            self._metric_notion_manager.remove_metric(metric_collection.ref_id, metric.ref_id)
+            self._metric_notion_manager.remove_branch(metric_collection.ref_id, metric.ref_id)
         except NotionMetricNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

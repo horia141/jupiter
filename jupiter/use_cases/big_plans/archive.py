@@ -46,9 +46,9 @@ class BigPlanArchiveUseCase(AppMutationUseCase['BigPlanArchiveUseCase.Args', Non
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            inbox_tasks_for_big_plan = uow.inbox_task_repository.find_all(
-                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            inbox_tasks_for_big_plan = uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
                 filter_big_plan_ref_ids=[args.ref_id])
 
         inbox_task_archive_service = \
@@ -69,7 +69,7 @@ class BigPlanArchiveUseCase(AppMutationUseCase['BigPlanArchiveUseCase.Args', Non
         LOGGER.info("Applied local changes")
         # Apply Notion changes
         try:
-            self._big_plan_notion_manager.remove_big_plan(big_plan.big_plan_collection_ref_id, args.ref_id)
+            self._big_plan_notion_manager.remove_leaf(big_plan.big_plan_collection_ref_id, args.ref_id)
             LOGGER.info("Applied Notion changes")
         except NotionBigPlanNotFoundError:
             LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")

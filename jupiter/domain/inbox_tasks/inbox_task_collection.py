@@ -1,14 +1,14 @@
 """A inbox task collection."""
 from dataclasses import dataclass
 
-from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.entity import Entity, FIRST_VERSION, TrunkEntity
 from jupiter.framework.event import EventSource
 
 
 @dataclass(frozen=True)
-class InboxTaskCollection(Entity):
+class InboxTaskCollection(TrunkEntity):
     """A inbox task collection."""
 
     @dataclass(frozen=True)
@@ -31,3 +31,8 @@ class InboxTaskCollection(Entity):
             events=[InboxTaskCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
             workspace_ref_id=workspace_ref_id)
         return inbox_task_collection
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.workspace_ref_id

@@ -41,13 +41,13 @@ class SmartListTagRemoveUseCase(AppMutationUseCase['SmartListTagRemoveUseCase.Ar
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             smart_list_tag = uow.smart_list_tag_repository.remove(args.ref_id)
 
             smart_list_items = \
-                uow.smart_list_item_repository.find_all(
-                    smart_list_ref_id=smart_list_tag.smart_list_ref_id,
+                uow.smart_list_item_repository.find_all_with_filters(
+                    parent_ref_id=smart_list_tag.smart_list_ref_id,
                     allow_archived=True,
                     filter_tag_ref_ids=[args.ref_id])
 
@@ -64,7 +64,7 @@ class SmartListTagRemoveUseCase(AppMutationUseCase['SmartListTagRemoveUseCase.Ar
                 uow.smart_list_item_repository.save(smart_list_item)
 
         try:
-            self._smart_list_notion_manager.remove_smart_list_tag(
+            self._smart_list_notion_manager.remove_branch_tag(
                 smart_list_collection.ref_id, smart_list_tag.smart_list_ref_id, smart_list_tag.ref_id)
         except NotionSmartListTagNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

@@ -40,7 +40,6 @@ class MetricEntryRemoveUseCase(AppMutationUseCase['MetricEntryRemoveUseCase.Args
             metric = uow.metric_repository.load_by_id(metric_entry.metric_ref_id)
 
         try:
-            self._metric_notion_manager.remove_metric_entry(
-                metric.metric_collection_ref_id, metric.ref_id, metric_entry.ref_id)
+            self._metric_notion_manager.remove_leaf(metric.metric_collection_ref_id, metric.ref_id, metric_entry.ref_id)
         except NotionMetricEntryNotFoundError:
             LOGGER.info("Skipping archival on Notion side because metric was not found")

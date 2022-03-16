@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -13,7 +13,7 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Vacation(Entity):
+class Vacation(LeafEntity):
     """A vacation."""
 
     @dataclass(frozen=True)
@@ -74,3 +74,8 @@ class Vacation(Entity):
         vacation_end_date = self.end_date.end_of_day()
         return typing.cast(bool, vacation_start_date <= start_date) and \
                typing.cast(bool, end_date <= vacation_end_date)
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.vacation_collection_ref_id

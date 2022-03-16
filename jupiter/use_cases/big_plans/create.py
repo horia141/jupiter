@@ -50,7 +50,7 @@ class BigPlanCreateUseCase(AppMutationUseCase['BigPlanCreateUseCase.Args', None]
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_workspace(workspace.ref_id)
+            project_collection = uow.project_collection_repository.load_by_parent(workspace.ref_id)
 
             if args.project_key is not None:
                 project = uow.project_repository.load_by_key(project_collection.ref_id, args.project_key)
@@ -59,8 +59,8 @@ class BigPlanCreateUseCase(AppMutationUseCase['BigPlanCreateUseCase.Args', None]
                 project = uow.project_repository.load_by_id(workspace.default_project_ref_id)
                 project_ref_id = workspace.default_project_ref_id
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            big_plan_collection = uow.big_plan_collection_repository.load_by_parent(workspace.ref_id)
 
             big_plan = BigPlan.new_big_plan(
                 big_plan_collection_ref_id=big_plan_collection.ref_id,
@@ -74,12 +74,11 @@ class BigPlanCreateUseCase(AppMutationUseCase['BigPlanCreateUseCase.Args', None]
                 created_time=self._time_provider.get_current_time())
             big_plan = uow.big_plan_repository.create(big_plan)
 
-        notion_inbox_tasks_collection = \
-            self._inbox_task_notion_manager.load_inbox_task_collection(inbox_task_collection.ref_id)
+        notion_inbox_tasks_collection = self._inbox_task_notion_manager.load_trunk(inbox_task_collection.ref_id)
 
-        direct_info = NotionBigPlan.DirectInfo(project_name=project.name)
-        notion_big_plan = NotionBigPlan.new_notion_row(big_plan, direct_info)
-        self._big_plan_notion_manager.upsert_big_plan(
+        direct_info = NotionBigPlan.DirectInfo(all_projects_map={project.ref_id: project})
+        notion_big_plan = NotionBigPlan.new_notion_entity(big_plan, direct_info)
+        self._big_plan_notion_manager.upsert_leaf(
             big_plan_collection.ref_id, notion_big_plan, notion_inbox_tasks_collection)
 
         InboxTaskBigPlanRefOptionsUpdateService(

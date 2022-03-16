@@ -18,25 +18,24 @@ from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import BAD_NOTION_ID
 from jupiter.framework.event import EventSource
-from jupiter.framework.notion import NotionRow
+from jupiter.framework.notion import NotionLeafEntity, NotionLeafApplyToEntityResult
 from jupiter.framework.update_action import UpdateAction
 from jupiter.remote.notion.common import format_name_for_option
 
 
 @dataclass(frozen=True)
 class NotionChore(
-        NotionRow[Chore, 'NotionChore.DirectInfo', 'NotionChore.InverseInfo']):
+        NotionLeafEntity[Chore, 'NotionChore.DirectInfo', 'NotionChore.InverseInfo']):
     """A chore on Notion-side."""
 
     @dataclass(frozen=True)
     class DirectInfo:
         """Info when copying from the app to Notion."""
-        project_name: ProjectName
+        all_projects_map: Dict[EntityId, Project]
 
     @dataclass(frozen=True)
     class InverseInfo:
         """Info when copying from Notion to app side."""
-        chore_collection_ref_id: EntityId
         default_project: Project
         all_projects_by_name: Dict[str, Project]
         all_projects_map: Dict[EntityId, Project]
@@ -59,7 +58,7 @@ class NotionChore(
     project_name: Optional[str]
 
     @staticmethod
-    def new_notion_row(entity: Chore, extra_info: DirectInfo) -> 'NotionChore':
+    def new_notion_entity(entity: Chore, extra_info: DirectInfo) -> 'NotionChore':
         """Construct a new Notion row from a given chore."""
         return NotionChore(
             notion_id=BAD_NOTION_ID,
@@ -87,16 +86,14 @@ class NotionChore(
             suspended=entity.suspended,
             must_do=entity.must_do,
             project_ref_id=str(entity.project_ref_id),
-            project_name=format_name_for_option(extra_info.project_name))
+            project_name=format_name_for_option(extra_info.all_projects_map[entity.project_ref_id].name))
 
-    def new_entity(self, extra_info: InverseInfo) -> Chore:
+    def new_entity(self, parent_ref_id: EntityId, extra_info: InverseInfo) -> Chore:
         """Create a new chore from this."""
         chore_period = RecurringTaskPeriod.from_raw(self.period)
 
-        project_ref_id = EntityId.from_raw(self.project_ref_id) \
-            if self.project_ref_id else None
-        project_name = ProjectName.from_raw(self.project_name) \
-            if self.project_name else None
+        project_ref_id = EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
+        project_name = ProjectName.from_raw(self.project_name) if self.project_name else None
 
         if project_ref_id is not None:
             project = extra_info.all_projects_map[project_ref_id]
@@ -106,7 +103,7 @@ class NotionChore(
             project = extra_info.default_project
 
         return Chore.new_chore(
-            chore_collection_ref_id=extra_info.chore_collection_ref_id,
+            chore_collection_ref_id=parent_ref_id,
             project_ref_id=project.ref_id,
             archived=self.archived,
             name=ChoreName.from_raw(self.name),
@@ -134,21 +131,27 @@ class NotionChore(
             source=EventSource.NOTION,
             created_time=self.last_edited_time)
 
-    def apply_to_entity(self, entity: Chore, extra_info: InverseInfo) -> Chore:
+    def apply_to_entity(self, entity: Chore, extra_info: InverseInfo) -> NotionLeafApplyToEntityResult[Chore]:
         """Apply to an already existing chore."""
+        should_modify_on_notion = False
         chore_period = RecurringTaskPeriod.from_raw(self.period)
 
-        project_ref_id = EntityId.from_raw(self.project_ref_id) \
-            if self.project_ref_id else None
-        project_name = ProjectName.from_raw(self.project_name) \
-            if self.project_name else None
+        project_ref_id = EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
+        project_name = ProjectName.from_raw(self.project_name) if self.project_name else None
 
         if project_ref_id is not None:
             project = extra_info.all_projects_map[project_ref_id]
         elif project_name is not None:
+            should_modify_on_notion = True
             project = extra_info.all_projects_by_name[format_name_for_option(project_name)]
         else:
+            should_modify_on_notion = True
             project = extra_info.default_project
+
+        good_start_at_date = self.start_at_date
+        if good_start_at_date is None:
+            good_start_at_date = entity.start_at_date
+            should_modify_on_notion = True
 
         new_entity = entity \
             .change_project(
@@ -187,5 +190,12 @@ class NotionChore(
         else:
             new_entity = new_entity\
                 .unsuspend(source=EventSource.NOTION, modification_time=self.last_edited_time)
-        return new_entity.change_archived(
+        new_entity = new_entity.change_archived(
             archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
+
+        return NotionLeafApplyToEntityResult(new_entity, should_modify_on_notion)
+
+    @property
+    def nice_name(self) -> str:
+        """A nice name for the Notion-side entity."""
+        return self.name

@@ -8,16 +8,16 @@ from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
-from jupiter.framework.entity import Entity, FIRST_VERSION
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Chore(Entity):
+class Chore(LeafEntity):
     """A chore."""
 
     @dataclass(frozen=True)
@@ -172,3 +172,8 @@ class Chore(Entity):
         if actionable_from_month == due_at_month and actionable_from_day.as_int() > due_at_day.as_int():
             raise InputValidationError(
                 f"Actionable day {actionable_from_day} should be before due day {due_at_day}")
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.chore_collection_ref_id

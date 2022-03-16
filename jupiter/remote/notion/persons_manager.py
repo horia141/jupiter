@@ -1,6 +1,6 @@
 """The centralised point for interacting with the Notion persons database."""
 import uuid
-from typing import Iterable, ClassVar, cast, Dict, Final
+from typing import Iterable, ClassVar, cast, Dict, Final, Optional
 
 from notion.collection import CollectionRowBlock
 
@@ -302,11 +302,11 @@ class NotionPersonManager(PersonNotionManager):
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_root_page(self, notion_workspace: NotionWorkspace, person_collection: NotionPersonCollection) -> None:
+    def upsert_trunk(self, parent: NotionWorkspace, trunk: NotionPersonCollection) -> None:
         """Upsert the root Notion structure."""
         self._collections_manager.upsert_collection(
-            key=NotionLockKey(f"{self._KEY}:{person_collection.ref_id}"),
-            parent_page_notion_id=notion_workspace.notion_id,
+            key=NotionLockKey(f"{self._KEY}:{trunk.ref_id}"),
+            parent_page_notion_id=parent.notion_id,
             name=self._PAGE_NAME,
             icon=self._PAGE_ICON,
             schema=self._SCHEMA,
@@ -315,76 +315,80 @@ class NotionPersonManager(PersonNotionManager):
                 ("database_view_id", self._DATABASE_VIEW_SCHEMA)
             ])
 
-    def upsert_person(self, person_collection_ref_id: EntityId, notion_person: NotionPerson) -> None:
+    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: NotionPerson, extra_info: None) -> NotionPerson:
         """Upsert a person on Notion-side."""
-        self._collections_manager.upsert_collection_item(
-            key=NotionLockKey(f"{notion_person.ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"),
-            new_row=notion_person,
-            copy_row_to_notion_row=self._copy_row_to_notion_row)
+        link = \
+            self._collections_manager.upsert_collection_item(
+                key=NotionLockKey(f"{leaf.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                new_row=leaf,
+                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        return link.item_info
 
-    def save_person(self, person_collection_ref_id: EntityId, notion_person: NotionPerson) -> None:
+    def save_leaf(self, trunk_ref_id: EntityId, leaf: NotionPerson, extra_info: Optional[None] = None) -> NotionPerson:
         """Save an already existing person on Notion-side."""
         try:
-            self._collections_manager.save_collection_item(
-                key=NotionLockKey(f"{notion_person.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"),
-                row=notion_person,
-                copy_row_to_notion_row=self._copy_row_to_notion_row)
+            link = \
+                self._collections_manager.save_collection_item(
+                    key=NotionLockKey(f"{leaf.ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                    row=leaf,
+                    copy_row_to_notion_row=self._copy_row_to_notion_row)
+            return link.item_info
         except NotionCollectionItemNotFoundError as err:
-            raise NotionPersonNotFoundError(f"Person with id {notion_person.ref_id} could not be found") from err
+            raise NotionPersonNotFoundError(f"Person with id {leaf.ref_id} could not be found") from err
 
-    def load_person(self, person_collection_ref_id: EntityId, ref_id: EntityId) -> NotionPerson:
+    def load_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> NotionPerson:
         """Retrieve a person from Notion-side."""
         try:
             link = \
                 self._collections_manager.load_collection_item(
-                    key=NotionLockKey(f"{ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"),
+                    key=NotionLockKey(f"{leaf_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
-            raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
+            raise NotionPersonNotFoundError(f"Person with id {leaf_ref_id} could not be found") from err
 
-    def load_all_persons(self, person_collection_ref_id: EntityId) -> Iterable[NotionPerson]:
+    def load_all_leaves(self, trunk_ref_id: EntityId) -> Iterable[NotionPerson]:
         """Retrieve all persons from Notion-side."""
         return [l.item_info for l in
                 self._collections_manager.load_all_collection_items(
-                    collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"),
+                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                     copy_notion_row_to_row=self._copy_notion_row_to_row)]
 
-    def remove_person(self, person_collection_ref_id: EntityId, ref_id: EntityId) -> None:
+    def remove_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> None:
         """Remove a person on Notion-side."""
         try:
             self._collections_manager.remove_collection_item(
-                key=NotionLockKey(f"{ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"))
+                key=NotionLockKey(f"{leaf_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
         except NotionCollectionItemNotFoundError as err:
-            raise NotionPersonNotFoundError(f"Person with id {ref_id} could not be found") from err
+            raise NotionPersonNotFoundError(f"Person with id {leaf_ref_id} could not be found") from err
 
-    def drop_all_persons(self, person_collection_ref_id: EntityId) -> None:
+    def drop_all_leaves(self, trunk_ref_id: EntityId) -> None:
         """Drop all persons on Notion-side."""
         self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
 
-    def link_local_and_notion_entries(
-            self, person_collection_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+    def link_local_and_notion_leaves(
+            self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
         """Link a local and Notion version of the entities."""
         self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
-            collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id)
 
-    def load_all_saved_person_ref_ids(self, person_collection_ref_id: EntityId) -> Iterable[EntityId]:
+    def load_all_saved_ref_ids(self, trunk_ref_id: EntityId) -> Iterable[EntityId]:
         """Load ids of all persons we know about from Notion side."""
         return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
 
-    def load_all_saved_person_notion_ids(self, person_collection_ref_id: EntityId) -> Iterable[NotionId]:
+    def load_all_saved_notion_ids(self, trunk_ref_id: EntityId) -> Iterable[NotionId]:
         """Load ids of all persons we know about from Notion side."""
         return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{person_collection_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
 
     def _copy_row_to_notion_row(
             self, client: NotionClient, row: NotionPerson, notion_row: CollectionRowBlock) -> CollectionRowBlock:

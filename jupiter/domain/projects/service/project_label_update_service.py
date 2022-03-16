@@ -39,10 +39,10 @@ class ProjectLabelUpdateService:
         project_labels = [NotionFieldLabel(p.notion_link_uuid, p.name, p.created_time) for p in projects]
 
         with self._storage_engine.get_unit_of_work() as uow:
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
-            habit_collection = uow.habit_collection_repository.load_by_workspace(workspace.ref_id)
-            chore_collection = uow.chore_collection_repository.load_by_workspace(workspace.ref_id)
-            big_plan_collection = uow.big_plan_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
+            habit_collection = uow.habit_collection_repository.load_by_parent(workspace.ref_id)
+            chore_collection = uow.chore_collection_repository.load_by_parent(workspace.ref_id)
+            big_plan_collection = uow.big_plan_collection_repository.load_by_parent(workspace.ref_id)
 
         self._inbox_task_notion_manager.upsert_inbox_tasks_project_field_options(
             inbox_task_collection.ref_id, project_labels)

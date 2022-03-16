@@ -1,9 +1,10 @@
 """The SQLite base habits repository."""
-from typing import Optional, Iterable, Final
+from typing import Optional, Iterable, Final, List
 
 from sqlalchemy import insert, MetaData, Table, Column, Integer, Boolean, DateTime, String, Unicode, \
     ForeignKey, update, select, delete
 from sqlalchemy.engine import Connection, Result
+from sqlalchemy.exc import IntegrityError
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -11,7 +12,7 @@ from jupiter.domain.habits.habit import Habit
 from jupiter.domain.habits.habit_collection import HabitCollection
 from jupiter.domain.habits.habit_name import HabitName
 from jupiter.domain.habits.infra.habit_collection_repository \
-    import HabitCollectionRepository, HabitCollectionNotFoundError
+    import HabitCollectionRepository, HabitCollectionNotFoundError, HabitCollectionAlreadyExistsError
 from jupiter.domain.habits.infra.habit_repository import HabitRepository, \
     HabitNotFoundError
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -50,41 +51,45 @@ class SqliteHabitCollectionRepository(HabitCollectionRepository):
             keep_existing=True)
         self._habit_collection_event_table = build_event_table(self._habit_collection_table, metadata)
 
-    def create(self, habit_collection: HabitCollection) -> HabitCollection:
+    def create(self, entity: HabitCollection) -> HabitCollection:
         """Create a habit collection."""
-        result = self._connection.execute(
-            insert(self._habit_collection_table).values(
-                ref_id=
-                habit_collection.ref_id.as_int() if habit_collection.ref_id != BAD_REF_ID else None,
-                version=habit_collection.version,
-                archived=habit_collection.archived,
-                created_time=habit_collection.created_time.to_db(),
-                last_modified_time=habit_collection.last_modified_time.to_db(),
-                archived_time=
-                habit_collection.archived_time.to_db() if habit_collection.archived_time else None,
-                workspace_ref_id=habit_collection.workspace_ref_id.as_int()))
-        habit_collection = \
-            habit_collection.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._habit_collection_event_table, habit_collection)
-        return habit_collection
+        try:
+            result = self._connection.execute(
+                insert(self._habit_collection_table).values(
+                    ref_id=
+                    entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    version=entity.version,
+                    archived=entity.archived,
+                    created_time=entity.created_time.to_db(),
+                    last_modified_time=entity.last_modified_time.to_db(),
+                    archived_time=
+                    entity.archived_time.to_db() if entity.archived_time else None,
+                    workspace_ref_id=entity.workspace_ref_id.as_int()))
+        except IntegrityError as err:
+            raise HabitCollectionAlreadyExistsError(
+                f"Habit collection for workspace {entity.workspace_ref_id} already exists") from err
+        entity = \
+            entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._habit_collection_event_table, entity)
+        return entity
 
-    def save(self, habit_collection: HabitCollection) -> HabitCollection:
+    def save(self, entity: HabitCollection) -> HabitCollection:
         """Save a habit collection."""
         result = self._connection.execute(
             update(self._habit_collection_table)
-            .where(self._habit_collection_table.c.ref_id == habit_collection.ref_id.as_int())
+            .where(self._habit_collection_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                version=habit_collection.version,
-                archived=habit_collection.archived,
-                created_time=habit_collection.created_time.to_db(),
-                last_modified_time=habit_collection.last_modified_time.to_db(),
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
                 archived_time=
-                habit_collection.archived_time.to_db() if habit_collection.archived_time else None,
-                workspace_ref_id=habit_collection.workspace_ref_id.as_int()))
+                entity.archived_time.to_db() if entity.archived_time else None,
+                workspace_ref_id=entity.workspace_ref_id.as_int()))
         if result.rowcount == 0:
             raise HabitCollectionNotFoundError("The habit collection does not exist")
-        upsert_events(self._connection, self._habit_collection_event_table, habit_collection)
-        return habit_collection
+        upsert_events(self._connection, self._habit_collection_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> HabitCollection:
         """Retrieve a habit collection."""
@@ -98,15 +103,15 @@ class SqliteHabitCollectionRepository(HabitCollectionRepository):
             raise HabitCollectionNotFoundError(f"Habit collection with id {ref_id} does not exist")
         return self._row_to_entity(result)
 
-    def load_by_workspace(self, workspace_ref_id: EntityId) -> HabitCollection:
+    def load_by_parent(self, parent_ref_id: EntityId) -> HabitCollection:
         """Retrieve a habit collection for a project."""
         query_stmt = \
             select(self._habit_collection_table)\
-            .where(self._habit_collection_table.c.workspace_ref_id == workspace_ref_id.as_int())
+            .where(self._habit_collection_table.c.workspace_ref_id == parent_ref_id.as_int())
         result = self._connection.execute(query_stmt).first()
         if result is None:
             raise HabitCollectionNotFoundError(
-                f"Habit collection for workspace {workspace_ref_id} does not exist")
+                f"Habit collection for workspace {parent_ref_id} does not exist")
         return self._row_to_entity(result)
 
     @staticmethod
@@ -161,71 +166,74 @@ class SqliteHabitRepository(HabitRepository):
             keep_existing=True)
         self._habit_event_table = build_event_table(self._habit_table, metadata)
 
-    def create(self, habit: Habit) -> Habit:
+    def create(self, entity: Habit) -> Habit:
         """Create a habit."""
         result = self._connection.execute(
             insert(self._habit_table)\
                 .values(
-                    ref_id=habit.ref_id.as_int() if habit.ref_id != BAD_REF_ID else None,
-                    version=habit.version,
-                    archived=habit.archived,
-                    created_time=habit.created_time.to_db(),
-                    last_modified_time=habit.last_modified_time.to_db(),
-                    archived_time=habit.archived_time.to_db() if habit.archived_time else None,
-                    habit_collection_ref_id=habit.habit_collection_ref_id.as_int(),
-                    project_ref_id=habit.project_ref_id.as_int(),
-                    name=str(habit.name),
-                    gen_params_period=habit.gen_params.period.value if habit.gen_params else None,
-                    gen_params_eisen=habit.gen_params.eisen.value if habit.gen_params else None,
-                    gen_params_difficulty=habit.gen_params.difficulty.value if habit.gen_params.difficulty else None,
+                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    version=entity.version,
+                    archived=entity.archived,
+                    created_time=entity.created_time.to_db(),
+                    last_modified_time=entity.last_modified_time.to_db(),
+                    archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                    habit_collection_ref_id=entity.habit_collection_ref_id.as_int(),
+                    project_ref_id=entity.project_ref_id.as_int(),
+                    name=str(entity.name),
+                    gen_params_period=entity.gen_params.period.value if entity.gen_params else None,
+                    gen_params_eisen=entity.gen_params.eisen.value if entity.gen_params else None,
+                    gen_params_difficulty=entity.gen_params.difficulty.value if entity.gen_params.difficulty else None,
                     gen_params_actionable_from_day=
-                    habit.gen_params.actionable_from_day.as_int() if habit.gen_params.actionable_from_day else None,
+                    entity.gen_params.actionable_from_day.as_int() if entity.gen_params.actionable_from_day else None,
                     gen_params_actionable_from_month=
-                    habit.gen_params.actionable_from_month.as_int() if habit.gen_params.actionable_from_month else None,
-                    gen_params_due_at_time=str(habit.gen_params.due_at_time) if habit.gen_params.due_at_time else None,
-                    gen_params_due_at_day=habit.gen_params.due_at_day.as_int() if habit.gen_params.due_at_day else None,
+                    entity.gen_params.actionable_from_month.as_int()
+                    if entity.gen_params.actionable_from_month else None,
+                    gen_params_due_at_time=str(entity.gen_params.due_at_time)
+                    if entity.gen_params.due_at_time else None,
+                    gen_params_due_at_day=entity.gen_params.due_at_day.as_int()
+                    if entity.gen_params.due_at_day else None,
                     gen_params_due_at_month=
-                    habit.gen_params.due_at_month.as_int() if habit.gen_params.due_at_month else None,
-                    skip_rule=str(habit.skip_rule) if habit.skip_rule else None,
-                    repeats_in_period_count=habit.repeats_in_period_count,
-                    suspended=habit.suspended))
-        habit = habit.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
-        upsert_events(self._connection, self._habit_event_table, habit)
-        return habit
+                    entity.gen_params.due_at_month.as_int() if entity.gen_params.due_at_month else None,
+                    skip_rule=str(entity.skip_rule) if entity.skip_rule else None,
+                    repeats_in_period_count=entity.repeats_in_period_count,
+                    suspended=entity.suspended))
+        entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
+        upsert_events(self._connection, self._habit_event_table, entity)
+        return entity
 
-    def save(self, habit: Habit) -> Habit:
+    def save(self, entity: Habit) -> Habit:
         """Save a habit."""
         result = self._connection.execute(
             update(self._habit_table)
-            .where(self._habit_table.c.ref_id == habit.ref_id.as_int())
+            .where(self._habit_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=habit.ref_id.as_int() if habit.ref_id != BAD_REF_ID else None,
-                version=habit.version,
-                archived=habit.archived,
-                created_time=habit.created_time.to_db(),
-                last_modified_time=habit.last_modified_time.to_db(),
-                archived_time=habit.archived_time.to_db() if habit.archived_time else None,
-                habit_collection_ref_id=habit.habit_collection_ref_id.as_int(),
-                project_ref_id=habit.project_ref_id.as_int(),
-                name=str(habit.name),
-                gen_params_period=habit.gen_params.period.value if habit.gen_params else None,
-                gen_params_eisen=habit.gen_params.eisen.value if habit.gen_params else None,
-                gen_params_difficulty=habit.gen_params.difficulty.value if habit.gen_params.difficulty else None,
+                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                version=entity.version,
+                archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                habit_collection_ref_id=entity.habit_collection_ref_id.as_int(),
+                project_ref_id=entity.project_ref_id.as_int(),
+                name=str(entity.name),
+                gen_params_period=entity.gen_params.period.value if entity.gen_params else None,
+                gen_params_eisen=entity.gen_params.eisen.value if entity.gen_params else None,
+                gen_params_difficulty=entity.gen_params.difficulty.value if entity.gen_params.difficulty else None,
                 gen_params_actionable_from_day=
-                habit.gen_params.actionable_from_day.as_int() if habit.gen_params.actionable_from_day else None,
+                entity.gen_params.actionable_from_day.as_int() if entity.gen_params.actionable_from_day else None,
                 gen_params_actionable_from_month=
-                habit.gen_params.actionable_from_month.as_int() if habit.gen_params.actionable_from_month else None,
-                gen_params_due_at_time=str(habit.gen_params.due_at_time) if habit.gen_params.due_at_time else None,
-                gen_params_due_at_day=habit.gen_params.due_at_day.as_int() if habit.gen_params.due_at_day else None,
+                entity.gen_params.actionable_from_month.as_int() if entity.gen_params.actionable_from_month else None,
+                gen_params_due_at_time=str(entity.gen_params.due_at_time) if entity.gen_params.due_at_time else None,
+                gen_params_due_at_day=entity.gen_params.due_at_day.as_int() if entity.gen_params.due_at_day else None,
                 gen_params_due_at_month=
-                habit.gen_params.due_at_month.as_int() if habit.gen_params.due_at_month else None,
-                repeats_in_period_count=habit.repeats_in_period_count,
-                skip_rule=str(habit.skip_rule) if habit.skip_rule else None,
-                suspended=habit.suspended))
+                entity.gen_params.due_at_month.as_int() if entity.gen_params.due_at_month else None,
+                repeats_in_period_count=entity.repeats_in_period_count,
+                skip_rule=str(entity.skip_rule) if entity.skip_rule else None,
+                suspended=entity.suspended))
         if result.rowcount == 0:
-            raise HabitNotFoundError(f"Habit with id {habit.ref_id} does not exist")
-        upsert_events(self._connection, self._habit_event_table, habit)
-        return habit
+            raise HabitNotFoundError(f"Habit with id {entity.ref_id} does not exist")
+        upsert_events(self._connection, self._habit_event_table, entity)
+        return entity
 
     def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> Habit:
         """Retrieve a habit."""
@@ -239,16 +247,27 @@ class SqliteHabitRepository(HabitRepository):
 
     def find_all(
             self,
-            habit_collection_ref_id: EntityId,
+            parent_ref_id: EntityId,
+            allow_archived: bool = False,
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Habit]:
+        """Retrieve habit."""
+        return self.find_all_with_filters(
+            parent_ref_id=parent_ref_id,
+            allow_archived=allow_archived,
+            filter_ref_ids=filter_ref_ids)
+
+    def find_all_with_filters(
+            self,
+            parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> Iterable[Habit]:
+            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Habit]:
         """Retrieve habit."""
         query_stmt = \
             select(self._habit_table) \
             .where(
                 self._habit_table.c.habit_collection_ref_id
-                == habit_collection_ref_id.as_int())
+                == parent_ref_id.as_int())
         if not allow_archived:
             query_stmt = query_stmt.where(self._habit_table.c.archived.is_(False))
         if filter_ref_ids:

@@ -47,15 +47,15 @@ class SmartListItemUpdateUseCase(AppMutationUseCase['SmartListItemUpdateUseCase.
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             smart_list_item = uow.smart_list_item_repository.load_by_id(args.ref_id)
 
             if args.tags.should_change:
                 smart_list_tags = \
                     {t.tag_name: t
-                     for t in uow.smart_list_tag_repository.find_all(
-                         smart_list_ref_id=smart_list_item.smart_list_ref_id, filter_tag_names=args.tags.value)}
+                     for t in uow.smart_list_tag_repository.find_all_with_filters(
+                         parent_ref_id=smart_list_item.smart_list_ref_id, filter_tag_names=args.tags.value)}
                 for tag in args.tags.value:
                     if tag in smart_list_tags:
                         continue
@@ -82,14 +82,14 @@ class SmartListItemUpdateUseCase(AppMutationUseCase['SmartListItemUpdateUseCase.
             uow.smart_list_item_repository.save(smart_list_item)
 
         for smart_list_tag in smart_list_tags.values():
-            notion_smart_list_tag = NotionSmartListTag.new_notion_row(smart_list_tag, None)
-            self._smart_list_notion_manager.upsert_smart_list_tag(
+            notion_smart_list_tag = NotionSmartListTag.new_notion_entity(smart_list_tag)
+            self._smart_list_notion_manager.upsert_branch_tag(
                 smart_list_collection.ref_id, smart_list_item.smart_list_ref_id, notion_smart_list_tag)
         notion_smart_list_item = \
-            self._smart_list_notion_manager.load_smart_list_item(
+            self._smart_list_notion_manager.load_leaf(
                 smart_list_collection.ref_id, smart_list_item.smart_list_ref_id, smart_list_item.ref_id)
         notion_smart_list_item = notion_smart_list_item.join_with_entity(
             smart_list_item,
             NotionSmartListItem.DirectInfo({t.ref_id: t for t in smart_list_tags.values()}))
-        self._smart_list_notion_manager.save_smart_list_item(
+        self._smart_list_notion_manager.save_leaf(
             smart_list_collection.ref_id, smart_list_item.smart_list_ref_id, notion_smart_list_item)

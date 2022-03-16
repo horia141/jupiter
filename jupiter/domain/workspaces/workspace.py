@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, RootEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -11,7 +11,7 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class Workspace(Entity):
+class Workspace(RootEntity):
     """The workspace where everything happens."""
 
     @dataclass(frozen=True)

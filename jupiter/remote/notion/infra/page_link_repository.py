@@ -2,7 +2,7 @@
 import abc
 from typing import Optional
 
-from jupiter.framework.storage import Repository
+from jupiter.framework.repository import Repository
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.page_link import NotionPageLink
 

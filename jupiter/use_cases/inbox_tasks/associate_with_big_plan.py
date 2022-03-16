@@ -55,21 +55,25 @@ class InboxTaskAssociateWithBigPlanUseCase(AppMutationUseCase['InboxTaskAssociat
                             project_ref_id=big_plan.project_ref_id, big_plan_ref_id=args.big_plan_ref_id,
                             _big_plan_name=big_plan_name, source=EventSource.CLI,
                             modification_time=self._time_provider.get_current_time())
+                    all_big_plans = {big_plan.ref_id: big_plan}
                 else:
                     project = uow.project_repository.load_by_id(inbox_task.project_ref_id)
                     big_plan_name = None
                     inbox_task = \
                         inbox_task.release_from_big_plan(
                             source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
+                    all_big_plans = {}
             except CannotModifyGeneratedTaskError as err:
                 raise InputValidationError(f"Modifying a generated task's field {err.field} is not possible") from err
 
             uow.inbox_task_repository.save(inbox_task)
 
-        direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=big_plan_name)
+        direct_info = \
+            NotionInboxTask.DirectInfo(
+                all_projects_map={project.ref_id: project}, all_big_plans_map=all_big_plans)
         notion_inbox_task = \
-            self._inbox_task_notion_manager.load_inbox_task(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+            self._inbox_task_notion_manager.load_leaf(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
         notion_inbox_task = \
             notion_inbox_task.join_with_entity(inbox_task, direct_info)
-        self._inbox_task_notion_manager.save_inbox_task(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+        self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
         LOGGER.info("Applied Notion changes")

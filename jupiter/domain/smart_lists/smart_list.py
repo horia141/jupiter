@@ -3,9 +3,10 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.entity_icon import EntityIcon
+from jupiter.domain.entity_key import EntityKey
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_name import SmartListName
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, BranchEntity
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.event import EventSource
@@ -13,7 +14,7 @@ from jupiter.framework.update_action import UpdateAction
 
 
 @dataclass(frozen=True)
-class SmartList(Entity):
+class SmartList(BranchEntity):
     """A smart list."""
 
     @dataclass(frozen=True)
@@ -56,3 +57,13 @@ class SmartList(Entity):
             name=name.or_else(self.name),
             icon=icon.or_else(self.icon),
             new_event=SmartList.Updated.make_event_from_frame_args(source, self.version, modification_time))
+
+    @property
+    def branch_key(self) -> EntityKey:
+        """The key."""
+        return self.key
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.smart_list_collection_ref_id

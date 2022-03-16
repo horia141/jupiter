@@ -27,10 +27,10 @@ class VacationFindUseCase(AppReadonlyUseCase['VacationFindUseCase.Args', 'Vacati
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
+            vacation_collection = uow.vacation_collection_repository.load_by_parent(workspace.ref_id)
             vacations = \
                 uow.vacation_repository.find_all(
-                    vacation_collection_ref_id=vacation_collection.ref_id,
+                    parent_ref_id=vacation_collection.ref_id,
                     allow_archived=args.allow_archived,
                     filter_ref_ids=args.filter_ref_ids)
         return self.Result(vacations=vacations)

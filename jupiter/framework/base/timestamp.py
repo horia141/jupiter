@@ -79,6 +79,11 @@ class Timestamp(Value):
         """The raw date of the timestamp."""
         return self._the_ts.date()
 
+    def is_within_ten_minutes(self, other: 'Timestamp') -> bool:
+        """Whether this and the other timestamp are closer in time than ten minutes."""
+        # pylint: disable=protected-access
+        return abs(cast(int, self._the_ts.int_timestamp) - cast(int, other._the_ts.int_timestamp)) <= 600
+
     @property
     def value(self) -> pendulum.DateTime:
         """The value as a time."""

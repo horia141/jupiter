@@ -4,38 +4,21 @@ from typing import Optional, List, Iterable
 
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.storage import Repository
+from jupiter.framework.repository import LeafEntityRepository, LeafEntityNotFoundError
 
 
-class SmartListItemNotFoundError(Exception):
+class SmartListItemNotFoundError(LeafEntityNotFoundError):
     """Error raised when a smart list item is not found."""
 
 
-class SmartListItemRepository(Repository, abc.ABC):
+class SmartListItemRepository(LeafEntityRepository[SmartListItem], abc.ABC):
     """A repository of smart list entries."""
-
     @abc.abstractmethod
-    def create(self, smart_list_item: SmartListItem) -> SmartListItem:
-        """Create a smart list item."""
-
-    @abc.abstractmethod
-    def save(self, smart_list_item: SmartListItem) -> SmartListItem:
-        """Save a smart list item - it should already exist."""
-
-    @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListItem:
-        """Load a given smart list item."""
-
-    @abc.abstractmethod
-    def find_all(
+    def find_all_with_filters(
             self,
-            smart_list_ref_id: EntityId,
+            parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_is_done: Optional[bool] = None,
             filter_tag_ref_ids: Optional[Iterable[EntityId]] = None) -> List[SmartListItem]:
         """Find all smart list entries matching some criteria."""
-
-    @abc.abstractmethod
-    def remove(self, ref_id: EntityId) -> SmartListItem:
-        """Hard remove a smart list - an irreversible operation."""

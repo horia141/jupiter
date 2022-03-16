@@ -42,7 +42,7 @@ class VacationUpdateUseCase(AppMutationUseCase['VacationUpdateUseCase.Args', Non
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            vacation_collection = uow.vacation_collection_repository.load_by_workspace(workspace.ref_id)
+            vacation_collection = uow.vacation_collection_repository.load_by_parent(workspace.ref_id)
             vacation = uow.vacation_repository.load_by_id(args.ref_id)
 
             vacation = vacation.update(
@@ -54,6 +54,6 @@ class VacationUpdateUseCase(AppMutationUseCase['VacationUpdateUseCase.Args', Non
 
             uow.vacation_repository.save(vacation)
 
-        notion_vacation = self._vacation_notion_manager.load_vacation(vacation_collection.ref_id, args.ref_id)
+        notion_vacation = self._vacation_notion_manager.load_leaf(vacation_collection.ref_id, args.ref_id)
         notion_vacation = notion_vacation.join_with_entity(vacation, None)
-        self._vacation_notion_manager.save_vacation(vacation_collection.ref_id, notion_vacation)
+        self._vacation_notion_manager.save_leaf(vacation_collection.ref_id, notion_vacation)

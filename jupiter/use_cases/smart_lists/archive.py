@@ -40,7 +40,7 @@ class SmartListArchiveUseCase(AppMutationUseCase['SmartListArchiveUseCase.Args',
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             smart_list = uow.smart_list_repository.load_by_key(smart_list_collection.ref_id, args.key)
 
@@ -57,7 +57,7 @@ class SmartListArchiveUseCase(AppMutationUseCase['SmartListArchiveUseCase.Args',
             LOGGER.info("Applied local changes")
 
         try:
-            self._smart_list_notion_manager.remove_smart_list(smart_list_collection.ref_id, smart_list.ref_id)
+            self._smart_list_notion_manager.remove_branch(smart_list_collection.ref_id, smart_list.ref_id)
             LOGGER.info("Applied Notion changes")
         except NotionSmartListNotFoundError:
             LOGGER.info("Skipping archival on Notion side because smart list was not found")

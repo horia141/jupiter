@@ -75,7 +75,7 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            person_collection = uow.person_collection_repository.load_by_workspace(workspace.ref_id)
+            person_collection = uow.person_collection_repository.load_by_parent(workspace.ref_id)
             person = uow.person_repository.load_by_id(args.ref_id)
 
             # Change the person.
@@ -158,24 +158,24 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
 
             uow.person_repository.save(person)
 
-        notion_person = self._person_notion_manager.load_person(person_collection.ref_id, person.ref_id)
+        notion_person = self._person_notion_manager.load_leaf(person_collection.ref_id, person.ref_id)
         notion_person = notion_person.join_with_entity(person, None)
-        self._person_notion_manager.save_person(person_collection.ref_id, notion_person)
+        self._person_notion_manager.save_leaf(person_collection.ref_id, notion_person)
 
         # TODO(horia141): also create tasks here!
         # TODO(horia141): what if we change other person properties not just catch up params?
         # Change the catch up inbox tasks
         with self._storage_engine.get_unit_of_work() as uow:
             project = uow.project_repository.load_by_id(person_collection.catch_up_project_ref_id)
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_workspace(workspace.ref_id)
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(workspace.ref_id)
             person_catch_up_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_sources=[InboxTaskSource.PERSON_CATCH_UP],
                     filter_person_ref_ids=[person.ref_id])
             person_birthday_tasks = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_sources=[InboxTaskSource.PERSON_BIRTHDAY],
                     filter_person_ref_ids=[person.ref_id])
 
@@ -212,13 +212,13 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(
+                    self._inbox_task_notion_manager.load_leaf(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                self._inbox_task_notion_manager.save_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")
 
         # Change the birthday inbox tasks
@@ -254,11 +254,11 @@ class PersonUpdateUseCase(AppMutationUseCase['PersonUpdateUseCase.Args', None]):
                 with self._storage_engine.get_unit_of_work() as uow:
                     uow.inbox_task_repository.save(inbox_task)
 
-                direct_info = NotionInboxTask.DirectInfo(project_name=project.name, big_plan_name=None)
+                direct_info = \
+                    NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
                 notion_inbox_task = \
-                    self._inbox_task_notion_manager.load_inbox_task(
+                    self._inbox_task_notion_manager.load_leaf(
                         inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
                 notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
-                self._inbox_task_notion_manager.save_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
                 LOGGER.info("Applied Notion changes")

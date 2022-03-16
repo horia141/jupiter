@@ -36,25 +36,23 @@ class HabitRemoveService:
                 uow.habit_collection_repository.load_by_id(habit.habit_collection_ref_id)
 
             inbox_task_collection = \
-                uow.inbox_task_collection_repository.load_by_workspace(habit_collection.workspace_ref_id)
+                uow.inbox_task_collection_repository.load_by_parent(habit_collection.workspace_ref_id)
             inbox_tasks_to_archive = \
-                uow.inbox_task_repository.find_all(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                uow.inbox_task_repository.find_all_with_filters(
+                    parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True, filter_habit_ref_ids=[habit.ref_id])
             for inbox_task in inbox_tasks_to_archive:
                 uow.inbox_task_repository.remove(inbox_task.ref_id)
 
         try:
-            self._habit_notion_manager.remove_habit(
-                habit.habit_collection_ref_id, habit.ref_id)
+            self._habit_notion_manager.remove_leaf(habit.habit_collection_ref_id, habit.ref_id)
         except NotionHabitNotFoundError:
             # If we can't find this locally it means it's already gone
             LOGGER.info("Skipping removal on Notion side because habit was not found")
 
         for inbox_task in inbox_tasks_to_archive:
             try:
-                self._inbox_task_notion_manager.remove_inbox_task(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+                self._inbox_task_notion_manager.remove_leaf(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
             except NotionInboxTaskNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info("Skipping removal on Notion side because inbox task was not found")

@@ -43,7 +43,7 @@ class MetricRemoveUseCase(AppMutationUseCase['MetricRemoveUseCase.Args', None]):
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_workspace(workspace.ref_id)
+            metric_collection = uow.metric_collection_repository.load_by_parent(workspace.ref_id)
             metric = uow.metric_repository.load_by_key(metric_collection.ref_id, args.key)
 
         MetricRemoveService(self._storage_engine, self._inbox_task_notion_manager, self._metric_notion_manager)\

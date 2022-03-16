@@ -14,7 +14,7 @@ from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.framework.entity import Entity, FIRST_VERSION
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
@@ -34,7 +34,7 @@ class CannotModifyGeneratedTaskError(Exception):
 
 
 @dataclass(frozen=True)
-class InboxTask(Entity):
+class InboxTask(LeafEntity):
     """An inbox task."""
 
     @dataclass(frozen=True)
@@ -626,6 +626,11 @@ class InboxTask(Entity):
             return RecurringTaskPeriod.QUARTERLY
         else:
             return RecurringTaskPeriod.YEARLY
+
+    @property
+    def parent_ref_id(self) -> EntityId:
+        """The parent."""
+        return self.inbox_task_collection_ref_id
 
     @staticmethod
     def _build_name_for_habit(name: InboxTaskName, repeat_index: Optional[int]) -> InboxTaskName:

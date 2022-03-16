@@ -41,22 +41,22 @@ class SmartListFindUseCase(AppReadonlyUseCase['SmartListFindUseCase.Args', 'Smar
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_workspace(workspace.ref_id)
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(workspace.ref_id)
 
             smart_lists = \
                 uow.smart_list_repository.find_all(
-                    smart_list_collection_ref_id=smart_list_collection.ref_id,
+                    parent_ref_id=smart_list_collection.ref_id,
                     allow_archived=args.allow_archived,
                     filter_keys=args.filter_keys)
             smart_list_tags = \
-                itertools.chain(*(uow.smart_list_tag_repository.find_all(
-                                    smart_list_ref_id=sl.ref_id,
+                itertools.chain(*(uow.smart_list_tag_repository.find_all_with_filters(
+                                    parent_ref_id=sl.ref_id,
                                     allow_archived=args.allow_archived,
                                     filter_tag_names=args.filter_tag_names)
                     for sl in smart_lists))
             smart_list_items = \
-                itertools.chain(*(uow.smart_list_item_repository.find_all(
-                                    smart_list_ref_id=sl.ref_id,
+                itertools.chain(*(uow.smart_list_item_repository.find_all_with_filters(
+                                    parent_ref_id=sl.ref_id,
                                     allow_archived=args.allow_archived,
                                     filter_is_done=args.filter_is_done,
                                     filter_tag_ref_ids=

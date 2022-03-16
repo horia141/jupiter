@@ -1,3 +1,6 @@
+fast-lint:
+	./scripts/fast-lint.sh
+
 lint:
 	./scripts/lint.sh
 
