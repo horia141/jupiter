@@ -56,9 +56,8 @@ Alternatively, you can use the scripts locally, like so:
 
 ```bash
 $ cd jupiter
-$ python3 -m venv venv
-$ source venv/bin/activate
-$ pip install -r requirements.txt
+$ poetry shell
+$ poetry install
 ```
 
 Now, instead of running the Docker image, you can directly run the scripts, like so:

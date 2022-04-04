@@ -1,9 +1,0 @@
-git+https://github.com/horia141/notion-py@dont-update-views#egg=notion
-pendulum==2.0.5
-python-dotenv==0.20.0
-pytz==2022.1
-requests==2.27.1
-coloredlogs==15.0.1
-SQLAlchemy==1.4.34
-alembic==1.7.7
-emoji==1.7.0

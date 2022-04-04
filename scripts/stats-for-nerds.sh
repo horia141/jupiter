@@ -14,12 +14,21 @@ cloc \
   README.md \
   docs/ \
   mkdocs.yml \
-  requirements.txt \
-  requirements-dev.txt \
+  pyproject.toml \
   scripts/ \
   migrations/ \
   jupiter/
 
-libyear -r requirements.txt
+REQS_FILE=$(mktemp)
 
-libyear -r requirements-dev.txt
+poetry export -f requirements.txt --output "${REQS_FILE}" --without-hashes
+sed -i -e 's/; .*//g' "${REQS_FILE}"
+libyear -r "${REQS_FILE}"
+
+DEV_REQS_FILE=$(mktemp)
+JUSTDEV_REQS_FILE=$(mktemp)
+
+poetry export -f requirements.txt --output "${DEV_REQS_FILE}" --without-hashes --dev
+sed -i -e 's/; .*//g' "${DEV_REQS_FILE}"
+grep -Fvxf "${REQS_FILE}" "${DEV_REQS_FILE}"  > "${JUSTDEV_REQS_FILE}"
+libyear -r "${JUSTDEV_REQS_FILE}"

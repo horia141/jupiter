@@ -4,7 +4,11 @@ set -ex
 
 MAX_LIBYEARS=20
 
-LIVE_LIBYEARS=$(libyear -r requirements.txt | grep "system is" | awk -F 'system is | libyears' '{print $2}')
+REQS_FILE=$(mktemp)
+
+poetry export -f requirements.txt --output "${REQS_FILE}" --without-hashes
+sed -i -e 's/; .*//g' "${REQS_FILE}"
+LIVE_LIBYEARS=$(libyear -r "${REQS_FILE}" | grep "system is" | awk -F 'system is | libyears' '{print $2}')
 
 if [ "${LIVE_LIBYEARS}" = 'up-to-date!' ]
 then
@@ -15,7 +19,14 @@ then
   exit 1
 fi
 
-DEV_LIBYEARS=$(libyear -r requirements-dev.txt | grep "system is" | awk -F 'system is | libyears' '{print $2}')
+DEV_REQS_FILE=$(mktemp)
+JUSTDEV_REQS_FILE=$(mktemp)
+
+poetry export -f requirements.txt --output "${DEV_REQS_FILE}" --without-hashes --dev
+sed -i -e 's/; .*//g' "${DEV_REQS_FILE}"
+grep -Fvxf "${REQS_FILE}" "${DEV_REQS_FILE}"  > "${JUSTDEV_REQS_FILE}"
+
+DEV_LIBYEARS=$(libyear -r "${JUSTDEV_REQS_FILE}" | grep "system is" | awk -F 'system is | libyears' '{print $2}')
 
 if [ "${DEV_LIBYEARS}" = 'up-to-date!' ]
 then

@@ -5,10 +5,7 @@ set -e
 # Prepare environment
 
 brew install shellcheck
-pip install -r requirements-dev.txt
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+poetry install --no-interactive --no-ansi
 sudo gem install mdl
 docker pull hadolint/hadolint:latest-debian
-
-# Prepare dependencies
-
-pip install -r requirements.txt

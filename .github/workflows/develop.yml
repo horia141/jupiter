@@ -23,6 +23,20 @@ jobs:
         uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6
+      - name: Install Poetry
+        uses: dschep/install-poetry-action@v1.2
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v1
+        id: cache
+        with:
+          path: ~/.virtualenvs
+          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ hashFiles('**/poetry.lock') }}
+      - name: Set Poetry config
+        run: |
+          poetry config settings.virtualenvs.in-project false
+          poetry config settings.virtualenvs.path ~/.virtualenvs
       - name: Prepare for CI
         run: ./scripts/setup-for-ci.sh
       - name: Check scripts
