@@ -4,7 +4,7 @@ set -ex
 
 # Prepare environment
 
-poetry shell
+source .venv/bin/activate
 poetry install --no-interaction --no-ansi
 gem install mdl
 docker pull hadolint/hadolint:latest-debian

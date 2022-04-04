@@ -23,6 +23,11 @@ jobs:
         uses: actions/setup-ruby@v1
         with:
           ruby-version: 2.6
+      - name: Load cached Poetry installation
+        uses: actions/cache@v2
+        with:
+          path: ~/.local
+          key: poetry-0  # increment to reset cache
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
@@ -39,4 +44,6 @@ jobs:
       - name: Prepare for CI
         run: ./scripts/setup-for-ci.sh
       - name: Check scripts
-        run: ./scripts/check.sh
+        run: |
+          source .venv/bin/activate
+          ./scripts/check.sh
