@@ -4,6 +4,9 @@ fast-lint:
 check:
 	./scripts/check.sh
 
+fix-style:
+	./scripts/fix-style.sh
+
 migration-test:
 	./scripts/migration.sh
 
@@ -19,4 +22,4 @@ docker-push:
 stats-for-nerds:
 	./scripts/stats-for-nerds.sh
 
-.PHONY: fast-lint check docs migration-test docker-build docker-push stats-for-nerds
+.PHONY: fast-lint check fix-style docs migration-test docker-build docker-push stats-for-nerds

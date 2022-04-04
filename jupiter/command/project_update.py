@@ -33,8 +33,15 @@ class ProjectUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project_key", required=True, help="The key of the project")
-        parser.add_argument("--name", dest="name", required=False, help="The name of the project")
+        parser.add_argument(
+            "--project",
+            dest="project_key",
+            required=True,
+            help="The key of the project",
+        )
+        parser.add_argument(
+            "--name", dest="name", required=False, help="The name of the project"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -43,4 +50,6 @@ class ProjectUpdate(command.Command):
             project_name = UpdateAction.change_to(ProjectName.from_raw(args.name))
         else:
             project_name = UpdateAction.do_nothing()
-        self._command.execute(ProjectUpdateUseCase.Args(key=project_key, name=project_name))
+        self._command.execute(
+            ProjectUpdateUseCase.Args(key=project_key, name=project_name)
+        )

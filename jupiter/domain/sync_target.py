@@ -24,7 +24,7 @@ class SyncTarget(enum.Enum):
     SLACK_TASKS = "slack-tasks"
 
     @staticmethod
-    def from_raw(sync_target_raw: Optional[str]) -> 'SyncTarget':
+    def from_raw(sync_target_raw: Optional[str]) -> "SyncTarget":
         """Validate and clean the big plan status."""
         if not sync_target_raw:
             raise InputValidationError("Expected sync target to be non-null")
@@ -33,7 +33,8 @@ class SyncTarget(enum.Enum):
 
         if sync_target_str not in SyncTarget.all_values():
             raise InputValidationError(
-                f"Expected sync prefer '{sync_target_raw}' to be one of '{','.join(SyncTarget.all_values())}'")
+                f"Expected sync prefer '{sync_target_raw}' to be one of '{','.join(SyncTarget.all_values())}'"
+            )
 
         return SyncTarget(sync_target_str)
 

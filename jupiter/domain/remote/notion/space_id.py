@@ -16,7 +16,7 @@ class NotionSpaceId(Value):
     _the_id: str
 
     @staticmethod
-    def from_raw(notion_space_id_raw: Optional[str]) -> 'NotionSpaceId':
+    def from_raw(notion_space_id_raw: Optional[str]) -> "NotionSpaceId":
         """Validate and clean a Notion space id."""
         if not notion_space_id_raw:
             raise InputValidationError("Expected Notion space id to be non-null")
@@ -28,7 +28,8 @@ class NotionSpaceId(Value):
 
         if not _NOTION_SPACE_ID_RE.match(notion_space_id):
             raise InputValidationError(
-                f"Expected workspace space id '{notion_space_id}' to match '{_NOTION_SPACE_ID_RE.pattern}")
+                f"Expected workspace space id '{notion_space_id}' to match '{_NOTION_SPACE_ID_RE.pattern}"
+            )
 
         return NotionSpaceId(notion_space_id)
 

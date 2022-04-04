@@ -1,13 +1,27 @@
 """The SQLite based Workspace repository."""
 from typing import Final, Optional
 
-from sqlalchemy import Table, MetaData, Integer, Boolean, DateTime, Column, String, insert, update, select
+from sqlalchemy import (
+    Table,
+    MetaData,
+    Integer,
+    Boolean,
+    DateTime,
+    Column,
+    String,
+    insert,
+    update,
+    select,
+)
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import OperationalError
 
 from jupiter.domain.timezone import Timezone
-from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceRepository, WorkspaceNotFoundError, \
-    WorkspaceAlreadyExistsError
+from jupiter.domain.workspaces.infra.workspace_repository import (
+    WorkspaceRepository,
+    WorkspaceNotFoundError,
+    WorkspaceAlreadyExistsError,
+)
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.base.entity_id import BAD_REF_ID, EntityId
@@ -26,18 +40,19 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
         """Constructor."""
         self._connection = connection
         self._workspace_table = Table(
-            'workspace',
+            "workspace",
             metadata,
-            Column('ref_id', Integer, primary_key=True, autoincrement=True),
-            Column('version', Integer, nullable=False),
-            Column('archived', Boolean, nullable=False),
-            Column('created_time', DateTime, nullable=False),
-            Column('last_modified_time', DateTime, nullable=False),
-            Column('archived_time', DateTime, nullable=True),
-            Column('name', String(100), nullable=False),
-            Column('timezone', String(100), nullable=False),
-            Column('default_project_ref_id', Integer, nullable=True),
-            keep_existing=True)
+            Column("ref_id", Integer, primary_key=True, autoincrement=True),
+            Column("version", Integer, nullable=False),
+            Column("archived", Boolean, nullable=False),
+            Column("created_time", DateTime, nullable=False),
+            Column("last_modified_time", DateTime, nullable=False),
+            Column("archived_time", DateTime, nullable=True),
+            Column("name", String(100), nullable=False),
+            Column("timezone", String(100), nullable=False),
+            Column("default_project_ref_id", Integer, nullable=True),
+            keep_existing=True,
+        )
         self._workspace_event_table = build_event_table(self._workspace_table, metadata)
 
     def create(self, entity: Workspace) -> Workspace:
@@ -57,12 +72,16 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
                 last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                archived_time=entity.archived_time.to_db()
+                if entity.archived_time
+                else None,
                 name=str(entity.name),
                 timezone=str(entity.timezone),
-                default_project_ref_id=
-                entity.default_project_ref_id.as_int()
-                if entity.default_project_ref_id is not BAD_REF_ID else None))
+                default_project_ref_id=entity.default_project_ref_id.as_int()
+                if entity.default_project_ref_id is not BAD_REF_ID
+                else None
+            )
+        )
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
         upsert_events(self._connection, self._workspace_event_table, entity)
         return entity
@@ -77,11 +96,16 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
                 last_modified_time=entity.last_modified_time.to_db(),
-                archived_time=entity.archived_time.to_db() if entity.archived_time else None,
+                archived_time=entity.archived_time.to_db()
+                if entity.archived_time
+                else None,
                 name=str(entity.name),
                 timezone=str(entity.timezone),
-                default_project_ref_id=
-                entity.default_project_ref_id.as_int() if entity.default_project_ref_id else None))
+                default_project_ref_id=entity.default_project_ref_id.as_int()
+                if entity.default_project_ref_id
+                else None,
+            )
+        )
         if result.rowcount == 0:
             raise WorkspaceNotFoundError("The workspace does not exist")
         upsert_events(self._connection, self._workspace_event_table, entity)
@@ -116,9 +140,13 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             archived=row["archived"],
             created_time=Timestamp.from_db(row["created_time"]),
             archived_time=Timestamp.from_db(row["archived_time"])
-            if row["archived_time"] else None,
+            if row["archived_time"]
+            else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
             name=WorkspaceName.from_raw(row["name"]),
             timezone=Timezone.from_raw(row["timezone"]),
-            default_project_ref_id=EntityId.from_raw(str(row["default_project_ref_id"])))
+            default_project_ref_id=EntityId.from_raw(
+                str(row["default_project_ref_id"])
+            ),
+        )

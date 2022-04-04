@@ -10,7 +10,7 @@ from jupiter.framework.value import Value
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
 
-_TagNameT = TypeVar('_TagNameT', bound='TagName')
+_TagNameT = TypeVar("_TagNameT", bound="TagName")
 
 
 @dataclass(frozen=True)
@@ -26,21 +26,26 @@ class TagName(Value):
         if not tag_raw:
             raise InputValidationError("Expected tag to be non-null")
 
-        tag: str = " ".join(word for word in tag_raw.strip().split(" ") if len(word) > 0)
+        tag: str = " ".join(
+            word for word in tag_raw.strip().split(" ") if len(word) > 0
+        )
 
         if len(tag) == 0:
             raise InputValidationError("Expected tag to be non-empty")
 
         if not _TAG_RE.match(tag):
             raise InputValidationError(
-                f"Expected entity id '{tag_raw}' to match '{_TAG_RE.pattern}'")
+                f"Expected entity id '{tag_raw}' to match '{_TAG_RE.pattern}'"
+            )
 
         return cls(tag)
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, TagName):
-            raise Exception(f"Cannot compare an tag name with {other.__class__.__name__}")
+            raise Exception(
+                f"Cannot compare an tag name with {other.__class__.__name__}"
+            )
         return self._the_tag < other._the_tag
 
     def __str__(self) -> str:

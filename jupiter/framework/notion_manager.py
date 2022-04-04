@@ -4,8 +4,13 @@ from typing import TypeVar, Any, Generic, Iterable, Optional, Union
 
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.notion import NotionRootEntity, NotionTrunkEntity, NotionLeafEntity, NotionBranchEntity, \
-    NotionBranchTagEntity
+from jupiter.framework.notion import (
+    NotionRootEntity,
+    NotionTrunkEntity,
+    NotionLeafEntity,
+    NotionBranchEntity,
+    NotionBranchTagEntity,
+)
 
 ParentT = TypeVar("ParentT", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
 TrunkT = TypeVar("TrunkT", bound=NotionTrunkEntity[Any])
@@ -32,16 +37,25 @@ class NotionManager(Generic[ParentT, TrunkT], abc.ABC):
 
 
 class ParentTrunkLeafNotionManager(
-        Generic[ParentT, TrunkT, LeafT, LeafExtraInfoT], NotionManager[ParentT, TrunkT], abc.ABC):
+    Generic[ParentT, TrunkT, LeafT, LeafExtraInfoT],
+    NotionManager[ParentT, TrunkT],
+    abc.ABC,
+):
     """A manager for an entity structure consisting of a parent (a root or trunk) and a trunk with various leafs."""
 
     @abc.abstractmethod
-    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: LeafT, extra_info: LeafExtraInfoT) -> LeafT:
+    def upsert_leaf(
+        self, trunk_ref_id: EntityId, leaf: LeafT, extra_info: LeafExtraInfoT
+    ) -> LeafT:
         """Upsert a leaf on Notion-side."""
 
     @abc.abstractmethod
     def save_leaf(
-            self, trunk_ref_id: EntityId, leaf: LeafT, extra_info: Optional[LeafExtraInfoT] = None) -> LeafT:
+        self,
+        trunk_ref_id: EntityId,
+        leaf: LeafT,
+        extra_info: Optional[LeafExtraInfoT] = None,
+    ) -> LeafT:
         """Upsert a leaf on Notion-side."""
 
     @abc.abstractmethod
@@ -69,14 +83,17 @@ class ParentTrunkLeafNotionManager(
         """Load ids of all leafs we know about from Notion side."""
 
     @abc.abstractmethod
-    def link_local_and_notion_leaves(self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+    def link_local_and_notion_leaves(
+        self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId
+    ) -> None:
         """Link a local and Notion version of the entities."""
 
 
 class ParentTrunkBranchLeafNotionManager(
-        Generic[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
-        NotionManager[ParentT, TrunkT],
-        abc.ABC):
+    Generic[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
+    NotionManager[ParentT, TrunkT],
+    abc.ABC,
+):
     """A manager for an entity structure consisting of a parent, a trunk with many branches and leaves."""
 
     @abc.abstractmethod
@@ -97,28 +114,40 @@ class ParentTrunkBranchLeafNotionManager(
 
     @abc.abstractmethod
     def upsert_leaf(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf: LeafT,
-            extra_info: LeafExtraInfoT) -> LeafT:
+        self,
+        trunk_ref_id: EntityId,
+        branch_ref_id: EntityId,
+        leaf: LeafT,
+        extra_info: LeafExtraInfoT,
+    ) -> LeafT:
         """Upsert a branch leaf on Notion-side."""
 
     @abc.abstractmethod
     def save_leaf(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf: LeafT,
-            extra_info: Optional[LeafExtraInfoT] = None) -> LeafT:
+        self,
+        trunk_ref_id: EntityId,
+        branch_ref_id: EntityId,
+        leaf: LeafT,
+        extra_info: Optional[LeafExtraInfoT] = None,
+    ) -> LeafT:
         """Save an already existing branch leaf on Notion-side."""
 
     @abc.abstractmethod
     def load_leaf(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId) -> LeafT:
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId
+    ) -> LeafT:
         """Load a particular branch leaf."""
 
     @abc.abstractmethod
     def load_all_leaves(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[LeafT]:
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId
+    ) -> Iterable[LeafT]:
         """Load all branch leaves."""
 
     @abc.abstractmethod
-    def remove_leaf(self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId) -> None:
+    def remove_leaf(
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId
+    ) -> None:
         """Remove a branch on Notion-side."""
 
     @abc.abstractmethod
@@ -126,59 +155,86 @@ class ParentTrunkBranchLeafNotionManager(
         """Remove all branch leaves Notion-side."""
 
     @abc.abstractmethod
-    def load_all_saved_ref_ids(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[EntityId]:
+    def load_all_saved_ref_ids(
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId
+    ) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the branch leaves."""
 
     @abc.abstractmethod
-    def load_all_saved_notion_ids(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[NotionId]:
+    def load_all_saved_notion_ids(
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId
+    ) -> Iterable[NotionId]:
         """Retrieve all the saved Notion ids for the branch leaves."""
 
     @abc.abstractmethod
     def link_local_and_notion_leaves(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId, notion_id: NotionId) -> None:
+        self,
+        trunk_ref_id: EntityId,
+        branch_ref_id: EntityId,
+        leaf_ref_id: EntityId,
+        notion_id: NotionId,
+    ) -> None:
         """Link a local entity with the Notion one, useful in syncing processes."""
 
 
 class ParentTrunkBranchLeafAndTagNotionManager(
-        Generic[ParentT, TrunkT, BranchT, LeafT, BranchTagT, LeafExtraInfoT],
-        ParentTrunkBranchLeafNotionManager[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
-        abc.ABC):
+    Generic[ParentT, TrunkT, BranchT, LeafT, BranchTagT, LeafExtraInfoT],
+    ParentTrunkBranchLeafNotionManager[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
+    abc.ABC,
+):
     """A manager for an entity structure consisting of a parent, a trunk with many branches and leaves and tags."""
 
     @abc.abstractmethod
     def upsert_branch_tag(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagT) -> BranchTagT:
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagT
+    ) -> BranchTagT:
         """Upsert a branch tag on Notion-side."""
 
     @abc.abstractmethod
     def save_branch_tag(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagT) -> BranchTagT:
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagT
+    ) -> BranchTagT:
         """Update the Notion-side branch tag with new data."""
 
     @abc.abstractmethod
-    def load_branch_tag(self, trunk_ref_id: EntityId, branch_ref_id: EntityId, ref_id: EntityId) -> BranchTagT:
+    def load_branch_tag(
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId, ref_id: EntityId
+    ) -> BranchTagT:
         """Retrieve all the Notion-side branch tags."""
 
     @abc.abstractmethod
-    def load_all_branch_tags(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[BranchTagT]:
+    def load_all_branch_tags(
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId
+    ) -> Iterable[BranchTagT]:
         """Retrieve all the Notion-side branch tags."""
 
     @abc.abstractmethod
     def remove_branch_tag(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag_ref_id: Optional[EntityId]) -> None:
+        self,
+        trunk_ref_id: EntityId,
+        branch_ref_id: EntityId,
+        branch_tag_ref_id: Optional[EntityId],
+    ) -> None:
         """Remove a branch tag on Notion-side."""
 
     @abc.abstractmethod
-    def drop_all_branch_tags(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> None:
+    def drop_all_branch_tags(
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId
+    ) -> None:
         """Remove all branch tags Notion-side."""
 
     @abc.abstractmethod
     def load_all_saved_branch_tags_notion_ids(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[NotionId]:
+        self, trunk_ref_id: EntityId, branch_ref_id: EntityId
+    ) -> Iterable[NotionId]:
         """Retrieve all the Notion ids for the branch tags."""
 
     @abc.abstractmethod
     def link_local_and_notion_branch_tags(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag_ref_id: EntityId,
-            notion_id: NotionId) -> None:
+        self,
+        trunk_ref_id: EntityId,
+        branch_ref_id: EntityId,
+        branch_tag_ref_id: EntityId,
+        notion_id: NotionId,
+    ) -> None:
         """Link a local tag with the Notion one, useful in syncing processes."""

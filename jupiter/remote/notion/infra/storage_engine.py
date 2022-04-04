@@ -3,9 +3,15 @@ import abc
 from contextlib import contextmanager
 from typing import Iterator
 
-from jupiter.remote.notion.infra.collection_field_tag_link_repository import NotionCollectionFieldTagLinkRepository
-from jupiter.remote.notion.infra.collection_item_link_repository import NotionCollectionItemLinkRepository
-from jupiter.remote.notion.infra.collection_link_repository import NotionCollectionLinkRepository
+from jupiter.remote.notion.infra.collection_field_tag_link_repository import (
+    NotionCollectionFieldTagLinkRepository,
+)
+from jupiter.remote.notion.infra.collection_item_link_repository import (
+    NotionCollectionItemLinkRepository,
+)
+from jupiter.remote.notion.infra.collection_link_repository import (
+    NotionCollectionLinkRepository,
+)
 from jupiter.remote.notion.infra.page_link_repository import NotionPageLinkRepository
 
 
@@ -24,12 +30,16 @@ class NotionUnitOfWork(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def notion_collection_field_tag_link_repository(self) -> NotionCollectionFieldTagLinkRepository:
+    def notion_collection_field_tag_link_repository(
+        self,
+    ) -> NotionCollectionFieldTagLinkRepository:
         """The Notion collection field tag link repository."""
 
     @property
     @abc.abstractmethod
-    def notion_collection_item_link_repository(self) -> NotionCollectionItemLinkRepository:
+    def notion_collection_item_link_repository(
+        self,
+    ) -> NotionCollectionItemLinkRepository:
         """The Notion collection item link repository."""
 
 

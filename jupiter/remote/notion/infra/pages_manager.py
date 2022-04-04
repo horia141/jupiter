@@ -23,16 +23,23 @@ class NotionPagesManager:
     _storage_engine: Final[NotionStorageEngine]
 
     def __init__(
-            self, time_provider: TimeProvider, client_builder: NotionClientBuilder,
-            storage_engine: NotionStorageEngine) -> None:
+        self,
+        time_provider: TimeProvider,
+        client_builder: NotionClientBuilder,
+        storage_engine: NotionStorageEngine,
+    ) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._client_builder = client_builder
         self._storage_engine = storage_engine
 
     def upsert_page(
-            self, key: NotionLockKey, name: str, icon: Optional[str],
-            parent_page_notion_id: Optional[NotionId] = None) -> NotionPageLink:
+        self,
+        key: NotionLockKey,
+        name: str,
+        icon: Optional[str],
+        parent_page_notion_id: Optional[NotionId] = None,
+    ) -> NotionPageLink:
         """Create a page with a given name."""
         notion_client = self._client_builder.get_notion_client()
 
@@ -40,35 +47,55 @@ class NotionPagesManager:
             found_notion_page_link = uow.notion_page_link_repository.load_optional(key)
 
         if found_notion_page_link:
-            page_block = notion_client.get_regular_page(found_notion_page_link.notion_id)
+            page_block = notion_client.get_regular_page(
+                found_notion_page_link.notion_id
+            )
             if page_block.alive:
                 page_block.title = name
                 page_block.icon = icon
 
-                if parent_page_notion_id is not None and page_block.get("parent_id") != str(parent_page_notion_id):
+                if parent_page_notion_id is not None and page_block.get(
+                    "parent_id"
+                ) != str(parent_page_notion_id):
                     # Kind of expensive operation here!
-                    page_block.move_to(notion_client.get_regular_page(parent_page_notion_id))
+                    page_block.move_to(
+                        notion_client.get_regular_page(parent_page_notion_id)
+                    )
 
                 with self._storage_engine.get_unit_of_work() as uow:
-                    new_notion_page_link = found_notion_page_link.mark_update(self._time_provider.get_current_time())
+                    new_notion_page_link = found_notion_page_link.mark_update(
+                        self._time_provider.get_current_time()
+                    )
                     uow.notion_page_link_repository.save(new_notion_page_link)
 
                 return new_notion_page_link
 
-        parent_page_block = notion_client.get_regular_page(parent_page_notion_id) if parent_page_notion_id else None
-        new_page_block = notion_client.create_regular_page(name, icon, parent_page_block)
+        parent_page_block = (
+            notion_client.get_regular_page(parent_page_notion_id)
+            if parent_page_notion_id
+            else None
+        )
+        new_page_block = notion_client.create_regular_page(
+            name, icon, parent_page_block
+        )
 
         with self._storage_engine.get_unit_of_work() as uow:
-            new_notion_page_link = \
-                NotionPageLink.new_notion_page_link(
-                    key=key, notion_id=new_page_block.id, creation_time=self._time_provider.get_current_time())
+            new_notion_page_link = NotionPageLink.new_notion_page_link(
+                key=key,
+                notion_id=new_page_block.id,
+                creation_time=self._time_provider.get_current_time(),
+            )
             uow.notion_page_link_repository.create(new_notion_page_link)
 
         return new_notion_page_link
 
     def save_page(
-            self, key: NotionLockKey, name: str, icon: Optional[str],
-            parent_page_notion_id: Optional[NotionId] = None) -> NotionPageLink:
+        self,
+        key: NotionLockKey,
+        name: str,
+        icon: Optional[str],
+        parent_page_notion_id: Optional[NotionId] = None,
+    ) -> NotionPageLink:
         """Save a page with a given name."""
         notion_client = self._client_builder.get_notion_client()
 
@@ -77,17 +104,23 @@ class NotionPagesManager:
                 notion_page_link = uow.notion_page_link_repository.load(key)
             page_block = notion_client.get_regular_page(notion_page_link.notion_id)
         except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
-            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
+            raise NotionPageNotFoundError(
+                f"The Notion page identified by {key} does not exist"
+            ) from err
 
         page_block.title = name
         page_block.icon = icon
 
-        if parent_page_notion_id is not None and page_block.get("parent_id") != str(parent_page_notion_id):
+        if parent_page_notion_id is not None and page_block.get("parent_id") != str(
+            parent_page_notion_id
+        ):
             # Kind of expensive operation here!
             page_block.move_to(notion_client.get_regular_page(parent_page_notion_id))
 
         with self._storage_engine.get_unit_of_work() as uow:
-            new_notion_page_link = notion_page_link.mark_update(self._time_provider.get_current_time())
+            new_notion_page_link = notion_page_link.mark_update(
+                self._time_provider.get_current_time()
+            )
             uow.notion_page_link_repository.save(new_notion_page_link)
 
         return new_notion_page_link
@@ -98,7 +131,9 @@ class NotionPagesManager:
             with self._storage_engine.get_unit_of_work() as uow:
                 return uow.notion_page_link_repository.load(key)
         except NotionPageLinkNotFoundError as err:
-            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
+            raise NotionPageNotFoundError(
+                f"The Notion page identified by {key} does not exist"
+            ) from err
 
     def get_page_extra(self, key: NotionLockKey) -> NotionPageLinkExtra:
         """Get a page with a given key."""
@@ -109,6 +144,8 @@ class NotionPagesManager:
                 notion_page_link = uow.notion_page_link_repository.load(key)
             page_block = notion_client.get_regular_page(notion_page_link.notion_id)
         except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
-            raise NotionPageNotFoundError(f"The Notion page identified by {key} does not exist") from err
+            raise NotionPageNotFoundError(
+                f"The Notion page identified by {key} does not exist"
+            ) from err
 
         return notion_page_link.with_extra(page_block.title, page_block.icon)

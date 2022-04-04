@@ -19,7 +19,8 @@ class SmartListCollection(TrunkEntity):
 
     @staticmethod
     def new_smart_list_collection(
-            workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'SmartListCollection':
+        workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp
+    ) -> "SmartListCollection":
         """Create a smart list collection."""
         smart_list_collection = SmartListCollection(
             ref_id=BAD_REF_ID,
@@ -28,8 +29,13 @@ class SmartListCollection(TrunkEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[SmartListCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id)
+            events=[
+                SmartListCollection.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
+            workspace_ref_id=workspace_ref_id,
+        )
         return smart_list_collection
 
     @property

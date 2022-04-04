@@ -11,8 +11,6 @@ class NotionChoreCollection(NotionTrunkEntity[ChoreCollection]):
     """A chore collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: ChoreCollection) -> 'NotionChoreCollection':
+    def new_notion_entity(entity: ChoreCollection) -> "NotionChoreCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionChoreCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionChoreCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

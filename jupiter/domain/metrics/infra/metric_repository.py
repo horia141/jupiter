@@ -3,8 +3,11 @@ import abc
 
 from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.metrics.metric_key import MetricKey
-from jupiter.framework.repository import BranchEntityRepository, BranchEntityAlreadyExistsError,\
-    BranchEntityNotFoundError
+from jupiter.framework.repository import (
+    BranchEntityRepository,
+    BranchEntityAlreadyExistsError,
+    BranchEntityNotFoundError,
+)
 
 
 class MetricAlreadyExistsError(BranchEntityAlreadyExistsError):

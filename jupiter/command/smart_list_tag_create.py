@@ -32,12 +32,22 @@ class SmartListTagCreate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--smart-list", dest="smart_list_key", required=True,
-                            help="The key of the smart list to add the tag to")
-        parser.add_argument("--name", dest="name", required=True, help="The name of the smart list")
+        parser.add_argument(
+            "--smart-list",
+            dest="smart_list_key",
+            required=True,
+            help="The key of the smart list to add the tag to",
+        )
+        parser.add_argument(
+            "--name", dest="name", required=True, help="The name of the smart list"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         tag_name = SmartListTagName.from_raw(args.name)
-        self._command.execute(SmartListTagCreateUseCase.Args(smart_list_key=smart_list_key, tag_name=tag_name))
+        self._command.execute(
+            SmartListTagCreateUseCase.Args(
+                smart_list_key=smart_list_key, tag_name=tag_name
+            )
+        )

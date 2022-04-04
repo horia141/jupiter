@@ -15,17 +15,18 @@ class MetricUnit(enum.Enum):
     WEIGHT = "weight"
 
     @staticmethod
-    def from_raw(metric_unit_raw: Optional[str]) -> 'MetricUnit':
+    def from_raw(metric_unit_raw: Optional[str]) -> "MetricUnit":
         """Validate and clean an metric unit."""
         if not metric_unit_raw:
             raise InputValidationError("Expected metric unit to be non-null")
 
-        metric_unit_str: str = '-'.join(metric_unit_raw.strip().lower().split(' '))
+        metric_unit_str: str = "-".join(metric_unit_raw.strip().lower().split(" "))
 
         if metric_unit_str not in MetricUnit.all_values():
             raise InputValidationError(
-                f"Expected metric unit '{metric_unit_raw}' to be " +
-                f"one of '{','.join(MetricUnit.all_values())}'")
+                f"Expected metric unit '{metric_unit_raw}' to be "
+                + f"one of '{','.join(MetricUnit.all_values())}'"
+            )
 
         return MetricUnit(metric_unit_str)
 

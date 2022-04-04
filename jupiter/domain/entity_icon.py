@@ -15,7 +15,7 @@ class EntityIcon(Value):
     _the_icon: str
 
     @staticmethod
-    def from_raw(entity_icon_raw: Optional[str]) -> 'EntityIcon':
+    def from_raw(entity_icon_raw: Optional[str]) -> "EntityIcon":
         """Validate and clean an entity icon."""
         if not entity_icon_raw:
             raise InputValidationError("Expected entity icon to be non-null")
@@ -33,7 +33,7 @@ class EntityIcon(Value):
         return EntityIcon(entity_icon)
 
     @staticmethod
-    def from_safe(entity_icon_raw: str) -> 'EntityIcon':
+    def from_safe(entity_icon_raw: str) -> "EntityIcon":
         """Transform to an entity icon from a safe string."""
         return EntityIcon(entity_icon_raw)
 

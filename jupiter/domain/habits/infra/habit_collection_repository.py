@@ -3,7 +3,11 @@ import abc
 
 from jupiter.domain.habits.habit_collection import HabitCollection
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.repository import TrunkEntityRepository, TrunkEntityNotFoundError, TrunkEntityAlreadyExistsError
+from jupiter.framework.repository import (
+    TrunkEntityRepository,
+    TrunkEntityNotFoundError,
+    TrunkEntityAlreadyExistsError,
+)
 
 
 class HabitCollectionAlreadyExistsError(TrunkEntityAlreadyExistsError):
@@ -18,5 +22,7 @@ class HabitCollectionRepository(TrunkEntityRepository[HabitCollection], abc.ABC)
     """A repository of habit collections."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> HabitCollection:
+    def load_by_id(
+        self, ref_id: EntityId, allow_archived: bool = False
+    ) -> HabitCollection:
         """Retrieve a habit collection by its id."""

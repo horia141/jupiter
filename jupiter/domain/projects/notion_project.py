@@ -19,7 +19,7 @@ class NotionProject(NotionLeafEntity[Project, None, None]):
     name: str
 
     @staticmethod
-    def new_notion_entity(entity: Project, extra_info: None) -> 'NotionProject':
+    def new_notion_entity(entity: Project, extra_info: None) -> "NotionProject":
         """Construct a Notion row from the Project."""
         return NotionProject(
             notion_id=BAD_NOTION_ID,
@@ -27,7 +27,8 @@ class NotionProject(NotionLeafEntity[Project, None, None]):
             last_edited_time=entity.last_modified_time,
             archived=entity.archived,
             key=str(entity.key),
-            name=str(entity.name))
+            name=str(entity.name),
+        )
 
     def new_entity(self, parent_ref_id: EntityId, extra_info: None) -> Project:
         """Create a new project from this."""
@@ -39,18 +40,22 @@ class NotionProject(NotionLeafEntity[Project, None, None]):
             key=key,
             name=name,
             source=EventSource.NOTION,
-            created_time=self.last_edited_time)
+            created_time=self.last_edited_time,
+        )
 
-    def apply_to_entity(self, entity: Project, extra_info: None) -> NotionLeafApplyToEntityResult[Project]:
+    def apply_to_entity(
+        self, entity: Project, extra_info: None
+    ) -> NotionLeafApplyToEntityResult[Project]:
         """Apply an existing Notion row to a project."""
         name = ProjectName.from_raw(self.name)
 
-        return \
-            NotionLeafApplyToEntityResult.just(
-                entity.update(
-                    name=UpdateAction.change_to(name),
-                    source=EventSource.NOTION,
-                    modification_time=self.last_edited_time))
+        return NotionLeafApplyToEntityResult.just(
+            entity.update(
+                name=UpdateAction.change_to(name),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time,
+            )
+        )
 
     @property
     def nice_name(self) -> str:

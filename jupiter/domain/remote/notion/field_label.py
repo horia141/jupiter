@@ -9,6 +9,7 @@ from jupiter.framework.base.timestamp import Timestamp
 @dataclass(frozen=True)
 class NotionFieldLabel:
     """A value for an Notion collection 'select' field label."""
+
     notion_link_uuid: uuid.UUID
     name: EntityName
     created_time: Timestamp

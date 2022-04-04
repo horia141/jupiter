@@ -32,8 +32,13 @@ class SmartList(BranchEntity):
 
     @staticmethod
     def new_smart_list(
-            smart_list_collection_ref_id: EntityId, key: SmartListKey, name: SmartListName, icon: Optional[EntityIcon],
-            source: EventSource, created_time: Timestamp) -> 'SmartList':
+        smart_list_collection_ref_id: EntityId,
+        key: SmartListKey,
+        name: SmartListName,
+        icon: Optional[EntityIcon],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "SmartList":
         """Create a smart list."""
         smart_list = SmartList(
             ref_id=BAD_REF_ID,
@@ -42,21 +47,33 @@ class SmartList(BranchEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[SmartList.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                SmartList.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             smart_list_collection_ref_id=smart_list_collection_ref_id,
             key=key,
             name=name,
-            icon=icon)
+            icon=icon,
+        )
         return smart_list
 
     def update(
-            self, name: UpdateAction[SmartListName], icon: UpdateAction[Optional[EntityIcon]],
-            source: EventSource, modification_time: Timestamp) -> 'SmartList':
+        self,
+        name: UpdateAction[SmartListName],
+        icon: UpdateAction[Optional[EntityIcon]],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "SmartList":
         """Change the name of the smart list."""
         return self._new_version(
             name=name.or_else(self.name),
             icon=icon.or_else(self.icon),
-            new_event=SmartList.Updated.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=SmartList.Updated.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     @property
     def branch_key(self) -> EntityKey:

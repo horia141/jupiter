@@ -4,7 +4,14 @@ from typing import Generic, TypeVar, Optional, Iterable, List
 
 from jupiter.domain.entity_key import EntityKey
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.entity import RootEntity, TrunkEntity, StubEntity, BranchEntity, LeafEntity, Entity
+from jupiter.framework.entity import (
+    RootEntity,
+    TrunkEntity,
+    StubEntity,
+    BranchEntity,
+    LeafEntity,
+    Entity,
+)
 
 
 class Repository(abc.ABC):
@@ -108,24 +115,30 @@ BranchEntityT = TypeVar("BranchEntityT", bound=BranchEntity)
 
 
 class BranchEntityRepository(
-        Generic[BranchEntityKeyT, BranchEntityT], EntityRepository[BranchEntityT], abc.ABC):
+    Generic[BranchEntityKeyT, BranchEntityT], EntityRepository[BranchEntityT], abc.ABC
+):
     """A repository for branch entities."""
 
     @abc.abstractmethod
-    def load_by_key(self, parent_ref_id: EntityId, key: BranchEntityKeyT) -> BranchEntityT:
+    def load_by_key(
+        self, parent_ref_id: EntityId, key: BranchEntityKeyT
+    ) -> BranchEntityT:
         """Find a branch by key."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BranchEntityT:
+    def load_by_id(
+        self, ref_id: EntityId, allow_archived: bool = False
+    ) -> BranchEntityT:
         """Find a branch by id."""
 
     @abc.abstractmethod
     def find_all(
-            self,
-            parent_ref_id: EntityId,
-            allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_keys: Optional[Iterable[BranchEntityKeyT]] = None) -> List[BranchEntityT]:
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool = False,
+        filter_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_keys: Optional[Iterable[BranchEntityKeyT]] = None,
+    ) -> List[BranchEntityT]:
         """Find all branches matching some criteria."""
 
     @abc.abstractmethod
@@ -149,10 +162,11 @@ class LeafEntityRepository(EntityRepository[LeafEntityT], abc.ABC):
 
     @abc.abstractmethod
     def find_all(
-            self,
-            parent_ref_id: EntityId,
-            allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[LeafEntityT]:
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool = False,
+        filter_ref_ids: Optional[Iterable[EntityId]] = None,
+    ) -> List[LeafEntityT]:
         """Find all leaves."""
 
     @abc.abstractmethod

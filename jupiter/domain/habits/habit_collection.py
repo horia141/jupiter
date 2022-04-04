@@ -19,7 +19,8 @@ class HabitCollection(TrunkEntity):
 
     @staticmethod
     def new_habit_collection(
-            workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'HabitCollection':
+        workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp
+    ) -> "HabitCollection":
         """Create a habit collection."""
         habit_collection = HabitCollection(
             ref_id=BAD_REF_ID,
@@ -28,8 +29,13 @@ class HabitCollection(TrunkEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[HabitCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id)
+            events=[
+                HabitCollection.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
+            workspace_ref_id=workspace_ref_id,
+        )
         return habit_collection
 
     @property

@@ -31,8 +31,15 @@ class SmartListItemRemove(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_ids", default=[], action="append",
-                            required=True, help="The if of the smart list item to hard remove")
+        parser.add_argument(
+            "--id",
+            type=str,
+            dest="ref_ids",
+            default=[],
+            action="append",
+            required=True,
+            help="The if of the smart list item to hard remove",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

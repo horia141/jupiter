@@ -22,7 +22,9 @@ class SlackTaskUpdate(command.Command):
     _global_properties: Final[GlobalProperties]
     _command: Final[SlackTaskUpdateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: SlackTaskUpdateUseCase) -> None:
+    def __init__(
+        self, global_properties: GlobalProperties, the_command: SlackTaskUpdateUseCase
+    ) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -39,45 +41,100 @@ class SlackTaskUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the slack task to modify")
-        parser.add_argument("--user", dest="user", required=False, help="The name of the Slack user from the message")
+        parser.add_argument(
+            "--id",
+            type=str,
+            dest="ref_id",
+            required=True,
+            help="The id of the slack task to modify",
+        )
+        parser.add_argument(
+            "--user",
+            dest="user",
+            required=False,
+            help="The name of the Slack user from the message",
+        )
         channel = parser.add_mutually_exclusive_group()
         channel.add_argument(
-            "--channel", dest="channel", help="The channel on which the Slack message was posted")
+            "--channel",
+            dest="channel",
+            help="The channel on which the Slack message was posted",
+        )
         channel.add_argument(
-            "--clear-channel", dest="clear_channel", default=False, action="store_const", const=True,
-            help="Clear the channel for the Slack message and assume it was a DM")
-        parser.add_argument("--message", dest="message", required=False, help="The Slack message")
+            "--clear-channel",
+            dest="clear_channel",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the channel for the Slack message and assume it was a DM",
+        )
+        parser.add_argument(
+            "--message", dest="message", required=False, help="The Slack message"
+        )
         name = parser.add_mutually_exclusive_group()
-        name.add_argument(
-            "--name", dest="name", help="The name of the generated task")
+        name.add_argument("--name", dest="name", help="The name of the generated task")
         channel.add_argument(
-            "--clear-name", dest="clear_name", default=False, action="store_const", const=True,
-            help="Clear the name of the generated task and use an auto-generated one")
+            "--clear-name",
+            dest="clear_name",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the name of the generated task and use an auto-generated one",
+        )
         parser.add_argument(
-            "--status", dest="status", required=False,
-            choices=InboxTaskStatus.all_values(), help="The status of the generated inbox task")
+            "--status",
+            dest="status",
+            required=False,
+            choices=InboxTaskStatus.all_values(),
+            help="The status of the generated inbox task",
+        )
         parser.add_argument(
-            "--eisen", dest="eisen", choices=Eisen.all_values(),
-            help="The Eisenhower matrix values to use for the task")
+            "--eisen",
+            dest="eisen",
+            choices=Eisen.all_values(),
+            help="The Eisenhower matrix values to use for the task",
+        )
         difficulty = parser.add_mutually_exclusive_group()
         difficulty.add_argument(
-            "--difficulty", dest="difficulty", choices=Difficulty.all_values(),
-            help="The difficulty to use for tasks")
+            "--difficulty",
+            dest="difficulty",
+            choices=Difficulty.all_values(),
+            help="The difficulty to use for tasks",
+        )
         difficulty.add_argument(
-            "--clear-difficulty", dest="clear_difficulty", default=False, action="store_const", const=True,
-            help="Clear the difficulty  of the inbox task")
+            "--clear-difficulty",
+            dest="clear_difficulty",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the difficulty  of the inbox task",
+        )
         actionable_date = parser.add_mutually_exclusive_group()
         actionable_date.add_argument(
-            "--actionable-date", dest="actionable_date", help="The actionable date of the slack task")
+            "--actionable-date",
+            dest="actionable_date",
+            help="The actionable date of the slack task",
+        )
         actionable_date.add_argument(
-            "--clear-actionable-date", dest="clear_actionable_date", default=False, action="store_const", const=True,
-            help="Clear the actionable date of the slack task")
+            "--clear-actionable-date",
+            dest="clear_actionable_date",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the actionable date of the slack task",
+        )
         due_date = parser.add_mutually_exclusive_group()
-        due_date.add_argument("--due-date", dest="due_date", help="The due date of the slack task")
         due_date.add_argument(
-            "--clear-due-date", dest="clear_due_date", default=False, action="store_const", const=True,
-            help="Clear the due date of the slack task")
+            "--due-date", dest="due_date", help="The due date of the slack task"
+        )
+        due_date.add_argument(
+            "--clear-due-date",
+            dest="clear_due_date",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the due date of the slack task",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -125,25 +182,31 @@ class SlackTaskUpdate(command.Command):
         if args.clear_actionable_date:
             actionable_date = UpdateAction.change_to(None)
         elif args.actionable_date:
-            actionable_date = \
-                UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.actionable_date))
+            actionable_date = UpdateAction.change_to(
+                ADate.from_raw(self._global_properties.timezone, args.actionable_date)
+            )
         else:
             actionable_date = UpdateAction.do_nothing()
         due_date: UpdateAction[Optional[ADate]]
         if args.clear_due_date:
             due_date = UpdateAction.change_to(None)
         elif args.due_date:
-            due_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.due_date))
+            due_date = UpdateAction.change_to(
+                ADate.from_raw(self._global_properties.timezone, args.due_date)
+            )
         else:
             due_date = UpdateAction.do_nothing()
-        self._command.execute(SlackTaskUpdateUseCase.Args(
-            ref_id=ref_id,
-            user=user,
-            channel=channel,
-            message=message,
-            generation_name=name,
-            generation_status=status,
-            generation_eisen=eisen,
-            generation_difficulty=difficulty,
-            generation_actionable_date=actionable_date,
-            generation_due_datee=due_date))
+        self._command.execute(
+            SlackTaskUpdateUseCase.Args(
+                ref_id=ref_id,
+                user=user,
+                channel=channel,
+                message=message,
+                generation_name=name,
+                generation_status=status,
+                generation_eisen=eisen,
+                generation_difficulty=difficulty,
+                generation_actionable_date=actionable_date,
+                generation_due_datee=due_date,
+            )
+        )

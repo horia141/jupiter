@@ -29,8 +29,14 @@ class MetricEntry(LeafEntity):
 
     @staticmethod
     def new_metric_entry(
-            archived: bool, metric_ref_id: EntityId, collection_time: ADate, value: float, notes: Optional[str],
-            source: EventSource, created_time: Timestamp) -> 'MetricEntry':
+        archived: bool,
+        metric_ref_id: EntityId,
+        collection_time: ADate,
+        value: float,
+        notes: Optional[str],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "MetricEntry":
         """Create a metric entry."""
         metric_entry = MetricEntry(
             ref_id=BAD_REF_ID,
@@ -39,22 +45,35 @@ class MetricEntry(LeafEntity):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            events=[MetricEntry.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                MetricEntry.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             metric_ref_id=metric_ref_id,
             collection_time=collection_time,
             value=value,
-            notes=notes)
+            notes=notes,
+        )
         return metric_entry
 
     def update(
-            self, collection_time: UpdateAction[ADate], value: UpdateAction[float], notes: UpdateAction[Optional[str]],
-            source: EventSource, modification_time: Timestamp) -> 'MetricEntry':
+        self,
+        collection_time: UpdateAction[ADate],
+        value: UpdateAction[float],
+        notes: UpdateAction[Optional[str]],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "MetricEntry":
         """Change the metric entry."""
         return self._new_version(
             collection_time=collection_time.or_else(self.collection_time),
             value=value.or_else(self.value),
             notes=notes.or_else(self.notes),
-            new_event=MetricEntry.Updated.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=MetricEntry.Updated.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     @property
     def parent_ref_id(self) -> EntityId:

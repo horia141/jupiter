@@ -13,7 +13,9 @@ class RecurringTaskSkipRule(Value):
     _skip_rule: str
 
     @staticmethod
-    def from_raw(recurring_task_skip_rule_raw: Optional[str]) -> 'RecurringTaskSkipRule':
+    def from_raw(
+        recurring_task_skip_rule_raw: Optional[str],
+    ) -> "RecurringTaskSkipRule":
         """Validate and clean the recurring task skip rule."""
         if not recurring_task_skip_rule_raw:
             raise InputValidationError("Expected the skip rule info to be non-null")

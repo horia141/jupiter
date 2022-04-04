@@ -35,18 +35,44 @@ class SmartListItemUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True,
-                            help="The smart list item to update")
-        parser.add_argument("--name", dest="name", required=True, help="The name of the smart list item")
-        parser.add_argument("--done", dest="is_done", default=False, action="store_const", const=True,
-                            help="Mark the smart list item as done")
-        parser.add_argument("--not-done", dest="is_not_done", default=False, action="store_const", const=True,
-                            help="Mark the smart list item as not done")
-        parser.add_argument("--tag", dest="tags", default=[], action="append",
-                            help="Tags for the smart list item")
+        parser.add_argument(
+            "--id", dest="ref_id", required=True, help="The smart list item to update"
+        )
+        parser.add_argument(
+            "--name", dest="name", required=True, help="The name of the smart list item"
+        )
+        parser.add_argument(
+            "--done",
+            dest="is_done",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Mark the smart list item as done",
+        )
+        parser.add_argument(
+            "--not-done",
+            dest="is_not_done",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Mark the smart list item as not done",
+        )
+        parser.add_argument(
+            "--tag",
+            dest="tags",
+            default=[],
+            action="append",
+            help="Tags for the smart list item",
+        )
         parser.add_argument("--url", dest="url", help="An url for the smart list item")
-        parser.add_argument("--clear-url", dest="clear_url", default=False,
-                            action="store_const", const=True, help="Clear the url")
+        parser.add_argument(
+            "--clear-url",
+            dest="clear_url",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the url",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -62,7 +88,9 @@ class SmartListItemUpdate(command.Command):
         else:
             is_done = UpdateAction.do_nothing()
         if len(args.tags) > 0:
-            tags = UpdateAction.change_to([SmartListTagName.from_raw(t) for t in args.tags])
+            tags = UpdateAction.change_to(
+                [SmartListTagName.from_raw(t) for t in args.tags]
+            )
         else:
             tags = UpdateAction.do_nothing()
         url: UpdateAction[Optional[URL]]
@@ -72,5 +100,8 @@ class SmartListItemUpdate(command.Command):
             url = UpdateAction.change_to(URL.from_raw(args.url))
         else:
             url = UpdateAction.do_nothing()
-        self._command.execute(SmartListItemUpdateUseCase.Args(
-            ref_id=ref_id, name=name, tags=tags, is_done=is_done, url=url))
+        self._command.execute(
+            SmartListItemUpdateUseCase.Args(
+                ref_id=ref_id, name=name, tags=tags, is_done=is_done, url=url
+            )
+        )

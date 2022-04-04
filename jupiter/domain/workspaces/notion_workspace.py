@@ -17,19 +17,22 @@ class NotionWorkspace(NotionRootEntity[Workspace]):
     name: str
 
     @staticmethod
-    def new_notion_entity(entity: Workspace) -> 'NotionWorkspace':
+    def new_notion_entity(entity: Workspace) -> "NotionWorkspace":
         """Construct a Notion workspace out of a workspace."""
         return NotionWorkspace(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id,
-            name=str(entity.name))
+            notion_id=BAD_NOTION_ID, ref_id=entity.ref_id, name=str(entity.name)
+        )
 
-    def apply_to_entity(self, entity: Workspace, modification_time: Timestamp) -> 'Workspace':
+    def apply_to_entity(
+        self, entity: Workspace, modification_time: Timestamp
+    ) -> "Workspace":
         """Apply a Notion workspace to an already existing workspace."""
         workspace_name = WorkspaceName.from_raw(self.name)
         return entity.update(
             name=UpdateAction.change_to(workspace_name),
             timezone=UpdateAction.do_nothing(),
             source=EventSource.NOTION,
-            modification_time=
-            modification_time if workspace_name != entity.name else entity.last_modified_time)
+            modification_time=modification_time
+            if workspace_name != entity.name
+            else entity.last_modified_time,
+        )

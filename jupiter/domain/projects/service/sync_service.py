@@ -18,15 +18,21 @@ class ProjectSyncServiceNew(
         NotionProject,
         None,
         None,
-        None]):
+        None,
+    ]
+):
     """The service class for syncing the projects database between local and Notion."""
 
     def __init__(
-            self, storage_engine: DomainStorageEngine, project_notion_manager: ProjectNotionManager) -> None:
+        self,
+        storage_engine: DomainStorageEngine,
+        project_notion_manager: ProjectNotionManager,
+    ) -> None:
         """Constructor."""
         super().__init__(
             ProjectCollection,
             Project,
             NotionProject,
             storage_engine,
-            project_notion_manager)
+            project_notion_manager,
+        )

@@ -10,6 +10,7 @@ from jupiter.remote.notion.common import NotionLockKey
 @dataclass(frozen=True)
 class NotionCollectionLink:
     """A descriptor for a Notion collection."""
+
     key: NotionLockKey
     page_notion_id: NotionId
     collection_notion_id: NotionId
@@ -19,8 +20,12 @@ class NotionCollectionLink:
 
     @staticmethod
     def new_notion_collection_link(
-            key: NotionLockKey, page_notion_id: NotionId, collection_notion_id: NotionId,
-            view_notion_ids: Dict[str, NotionId], modification_time: Timestamp) -> 'NotionCollectionLink':
+        key: NotionLockKey,
+        page_notion_id: NotionId,
+        collection_notion_id: NotionId,
+        view_notion_ids: Dict[str, NotionId],
+        modification_time: Timestamp,
+    ) -> "NotionCollectionLink":
         """Construct a Notion collection link."""
         return NotionCollectionLink(
             key=key,
@@ -28,9 +33,10 @@ class NotionCollectionLink:
             collection_notion_id=collection_notion_id,
             view_notion_ids=view_notion_ids,
             created_time=modification_time,
-            last_modified_time=modification_time)
+            last_modified_time=modification_time,
+        )
 
-    def mark_update(self, modification_time: Timestamp) -> 'NotionCollectionLink':
+    def mark_update(self, modification_time: Timestamp) -> "NotionCollectionLink":
         """Update the collection link to mark that an update has occurred."""
         return NotionCollectionLink(
             key=self.key,
@@ -38,11 +44,16 @@ class NotionCollectionLink:
             collection_notion_id=self.collection_notion_id,
             view_notion_ids=self.view_notion_ids,
             created_time=self.created_time,
-            last_modified_time=modification_time)
+            last_modified_time=modification_time,
+        )
 
     def with_new_collection(
-            self, page_notion_id: NotionId, collection_notion_id: NotionId, view_notion_ids: Dict[str, NotionId],
-            modification_time: Timestamp) -> 'NotionCollectionLink':
+        self,
+        page_notion_id: NotionId,
+        collection_notion_id: NotionId,
+        view_notion_ids: Dict[str, NotionId],
+        modification_time: Timestamp,
+    ) -> "NotionCollectionLink":
         """Modify this Notion collection link with a new Notion-side collection."""
         return NotionCollectionLink(
             key=self.key,
@@ -50,9 +61,10 @@ class NotionCollectionLink:
             collection_notion_id=collection_notion_id,
             view_notion_ids=view_notion_ids,
             created_time=self.created_time,
-            last_modified_time=modification_time)
+            last_modified_time=modification_time,
+        )
 
-    def with_extra(self, name: str, icon: Optional[str]) -> 'NotionCollectionLinkExtra':
+    def with_extra(self, name: str, icon: Optional[str]) -> "NotionCollectionLinkExtra":
         """Return the Notion page info with some little extra."""
         return NotionCollectionLinkExtra(
             key=self.key,
@@ -62,12 +74,14 @@ class NotionCollectionLink:
             created_time=self.created_time,
             last_modified_time=self.last_modified_time,
             name=name,
-            icon=icon)
+            icon=icon,
+        )
 
 
 @dataclass()
 class NotionCollectionLinkExtra:
     """Glad we're going down the route of Windows."""
+
     key: NotionLockKey
     page_notion_id: NotionId
     collection_notion_id: NotionId

@@ -40,100 +40,164 @@ class PersonUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True, help="The id of the person")
-        parser.add_argument("--name", dest="name", required=False, help="The name of the person")
         parser.add_argument(
-            "--relationship", dest="relationship", required=False,
-            choices=PersonRelationship.all_values(), help="The person's relationship to you")
+            "--id", dest="ref_id", required=True, help="The id of the person"
+        )
+        parser.add_argument(
+            "--name", dest="name", required=False, help="The name of the person"
+        )
+        parser.add_argument(
+            "--relationship",
+            dest="relationship",
+            required=False,
+            choices=PersonRelationship.all_values(),
+            help="The person's relationship to you",
+        )
         catch_up_project = parser.add_mutually_exclusive_group()
         catch_up_project.add_argument(
-            "--catch-up-project", dest="catch_up_project_key", required=False,
-            help="The project key to generate recurring catch up tasks")
+            "--catch-up-project",
+            dest="catch_up_project_key",
+            required=False,
+            help="The project key to generate recurring catch up tasks",
+        )
         catch_up_project.add_argument(
-            "--clear-catch-up-project", dest="clear_catch_up_project_key",
-            required=False, default=False, action="store_const", const=True,
-            help="Clear the catch up project")
+            "--clear-catch-up-project",
+            dest="clear_catch_up_project_key",
+            required=False,
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the catch up project",
+        )
         catch_up_period = parser.add_mutually_exclusive_group()
         catch_up_period.add_argument(
-            "--catch-up-period", dest="catch_up_period", required=False,
+            "--catch-up-period",
+            dest="catch_up_period",
+            required=False,
             choices=RecurringTaskPeriod.all_values(),
-            help="The period at which a metric should be recorded")
+            help="The period at which a metric should be recorded",
+        )
         catch_up_period.add_argument(
-            "--clear-catch-up-period", dest="clear_catch_up_period", default=False,
-            action="store_const", const=True, help="Clear the catch up period")
+            "--clear-catch-up-period",
+            dest="clear_catch_up_period",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the catch up period",
+        )
         parser.add_argument(
-            "--catch-up-eisen", dest="catch_up_eisen", choices=Eisen.all_values(),
-            help="The Eisenhower matrix values to use for catch up tasks")
+            "--catch-up-eisen",
+            dest="catch_up_eisen",
+            choices=Eisen.all_values(),
+            help="The Eisenhower matrix values to use for catch up tasks",
+        )
         catch_up_difficulty = parser.add_mutually_exclusive_group()
         catch_up_difficulty.add_argument(
-            "--catch-up-difficulty", dest="catch_up_difficulty",
+            "--catch-up-difficulty",
+            dest="catch_up_difficulty",
             choices=Difficulty.all_values(),
-            help="The difficulty to use for catch up tasks")
+            help="The difficulty to use for catch up tasks",
+        )
         catch_up_difficulty.add_argument(
-            "--clear-catch-up-difficulty", dest="clear_catch_up_difficulty",
+            "--clear-catch-up-difficulty",
+            dest="clear_catch_up_difficulty",
             default=False,
-            action="store_const", const=True,
-            help="Clear the catch up difficulty")
+            action="store_const",
+            const=True,
+            help="Clear the catch up difficulty",
+        )
         catch_up_actionable_from_day = parser.add_mutually_exclusive_group()
         catch_up_actionable_from_day.add_argument(
-            "--catch-up-actionable-from-day", type=int,
+            "--catch-up-actionable-from-day",
+            type=int,
             dest="catch_up_actionable_from_day",
             metavar="DAY",
-            help="The day of the interval the catch up task will be actionable from")
+            help="The day of the interval the catch up task will be actionable from",
+        )
         catch_up_actionable_from_day.add_argument(
             "--clear-catch-up-actionable-from-day",
-            dest="clear_catch_up_actionable_from_day", default=False,
-            action="store_const", const=True,
-            help="Clear the catch up actionable day")
+            dest="clear_catch_up_actionable_from_day",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the catch up actionable day",
+        )
         catch_up_actionable_from_month = parser.add_mutually_exclusive_group()
         catch_up_actionable_from_month.add_argument(
-            "--catch-up-actionable-from-month", type=int,
+            "--catch-up-actionable-from-month",
+            type=int,
             dest="catch_up_actionable_from_month",
             metavar="MONTH",
-            help="The month of the interval the catch up task will be actionable from")
+            help="The month of the interval the catch up task will be actionable from",
+        )
         catch_up_actionable_from_month.add_argument(
             "--clear-catch-up-actionable-from-month",
             dest="clear_catch_up_actionable_from_month",
             default=False,
-            action="store_const", const=True,
-            help="Clear the catch up actionable month")
+            action="store_const",
+            const=True,
+            help="Clear the catch up actionable month",
+        )
         catch_up_due_at_time = parser.add_mutually_exclusive_group()
         catch_up_due_at_time.add_argument(
-            "--catch-up-due-at-time", dest="catch_up_due_at_time",
+            "--catch-up-due-at-time",
+            dest="catch_up_due_at_time",
             metavar="HH:MM",
-            help="The time a task will be due on")
+            help="The time a task will be due on",
+        )
         catch_up_due_at_time.add_argument(
             "--clear-catch-up-due-at-time",
             dest="clear_catch_up_due_at_time",
             default=False,
-            action="store_const", const=True,
-            help="Clear the catch up due time")
+            action="store_const",
+            const=True,
+            help="Clear the catch up due time",
+        )
         catch_up_due_at_day = parser.add_mutually_exclusive_group()
         catch_up_due_at_day.add_argument(
-            "--catch-up-due-at-day", type=int, dest="catch_up_due_at_day",
+            "--catch-up-due-at-day",
+            type=int,
+            dest="catch_up_due_at_day",
             metavar="DAY",
-            help="The day of the interval the catch up task will be due on")
+            help="The day of the interval the catch up task will be due on",
+        )
         catch_up_due_at_day.add_argument(
-            "--clear-catch-up-due-at-day", dest="clear_catch_up_due_at_day",
+            "--clear-catch-up-due-at-day",
+            dest="clear_catch_up_due_at_day",
             default=False,
-            action="store_const", const=True, help="Clear the catch up due day")
+            action="store_const",
+            const=True,
+            help="Clear the catch up due day",
+        )
         catch_up_due_at_month = parser.add_mutually_exclusive_group()
         catch_up_due_at_month.add_argument(
-            "--catch-up-due-at-month", type=int,
-            dest="catch_up_due_at_month", metavar="MONTH",
-            help="The month of the interval the catch up task will be due on")
+            "--catch-up-due-at-month",
+            type=int,
+            dest="catch_up_due_at_month",
+            metavar="MONTH",
+            help="The month of the interval the catch up task will be due on",
+        )
         catch_up_due_at_month.add_argument(
             "--clear-catch-up-due-at-month",
             dest="clear_catch_up_due_at_month",
             default=False,
-            action="store_const", const=True,
-            help="Clear the catch up due month")
+            action="store_const",
+            const=True,
+            help="Clear the catch up due month",
+        )
         birthday = parser.add_mutually_exclusive_group()
-        birthday.add_argument("--birthday", dest="birthday", required=False,
-                              help="The person's birthday")
-        birthday.add_argument("--clear-birthday", dest="clear_birthday", required=False,
-                              action="store_const", const=True, default=False,
-                              help="Clear the birthday")
+        birthday.add_argument(
+            "--birthday", dest="birthday", required=False, help="The person's birthday"
+        )
+        birthday.add_argument(
+            "--clear-birthday",
+            dest="clear_birthday",
+            required=False,
+            action="store_const",
+            const=True,
+            default=False,
+            help="Clear the birthday",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -143,7 +207,9 @@ class PersonUpdate(command.Command):
         else:
             name = UpdateAction.do_nothing()
         if args.relationship:
-            relationship = UpdateAction.change_to(PersonRelationship.from_raw(args.relationship))
+            relationship = UpdateAction.change_to(
+                PersonRelationship.from_raw(args.relationship)
+            )
         else:
             relationship = UpdateAction.do_nothing()
         catch_up_period: UpdateAction[Optional[RecurringTaskPeriod]]
@@ -151,7 +217,8 @@ class PersonUpdate(command.Command):
             catch_up_period = UpdateAction.change_to(None)
         elif args.catch_up_period is not None:
             catch_up_period = UpdateAction.change_to(
-                RecurringTaskPeriod.from_raw(args.catch_up_period))
+                RecurringTaskPeriod.from_raw(args.catch_up_period)
+            )
         else:
             catch_up_period = UpdateAction.do_nothing()
         if args.catch_up_eisen is not None:
@@ -163,7 +230,8 @@ class PersonUpdate(command.Command):
             catch_up_difficulty = UpdateAction.change_to(None)
         elif args.catch_up_difficulty is not None:
             catch_up_difficulty = UpdateAction.change_to(
-                Difficulty.from_raw(args.catch_up_difficulty))
+                Difficulty.from_raw(args.catch_up_difficulty)
+            )
         else:
             catch_up_difficulty = UpdateAction.do_nothing()
         catch_up_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
@@ -171,7 +239,10 @@ class PersonUpdate(command.Command):
             catch_up_actionable_from_day = UpdateAction.change_to(None)
         elif args.catch_up_actionable_from_day is not None:
             catch_up_actionable_from_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_day))
+                RecurringTaskDueAtDay.from_raw(
+                    RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_day
+                )
+            )
         else:
             catch_up_actionable_from_day = UpdateAction.do_nothing()
         catch_up_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
@@ -180,7 +251,9 @@ class PersonUpdate(command.Command):
         elif args.catch_up_actionable_from_month is not None:
             catch_up_actionable_from_month = UpdateAction.change_to(
                 RecurringTaskDueAtMonth.from_raw(
-                    RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_month))
+                    RecurringTaskPeriod.YEARLY, args.catch_up_actionable_from_month
+                )
+            )
         else:
             catch_up_actionable_from_month = UpdateAction.do_nothing()
         catch_up_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
@@ -188,7 +261,8 @@ class PersonUpdate(command.Command):
             catch_up_due_at_time = UpdateAction.change_to(None)
         elif args.catch_up_due_at_time is not None:
             catch_up_due_at_time = UpdateAction.change_to(
-                RecurringTaskDueAtTime.from_raw(args.catch_up_due_at_time))
+                RecurringTaskDueAtTime.from_raw(args.catch_up_due_at_time)
+            )
         else:
             catch_up_due_at_time = UpdateAction.do_nothing()
         catch_up_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
@@ -196,7 +270,10 @@ class PersonUpdate(command.Command):
             catch_up_due_at_day = UpdateAction.change_to(None)
         elif args.catch_up_due_at_day is not None:
             catch_up_due_at_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.catch_up_due_at_day))
+                RecurringTaskDueAtDay.from_raw(
+                    RecurringTaskPeriod.YEARLY, args.catch_up_due_at_day
+                )
+            )
         else:
             catch_up_due_at_day = UpdateAction.do_nothing()
         catch_up_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
@@ -205,7 +282,9 @@ class PersonUpdate(command.Command):
         elif args.catch_up_due_at_month is not None:
             catch_up_due_at_month = UpdateAction.change_to(
                 RecurringTaskDueAtMonth.from_raw(
-                    RecurringTaskPeriod.YEARLY, args.catch_up_due_at_month))
+                    RecurringTaskPeriod.YEARLY, args.catch_up_due_at_month
+                )
+            )
         else:
             catch_up_due_at_month = UpdateAction.do_nothing()
         birthday: UpdateAction[Optional[PersonBirthday]]
@@ -216,16 +295,19 @@ class PersonUpdate(command.Command):
         else:
             birthday = UpdateAction.do_nothing()
 
-        self._command.execute(PersonUpdateUseCase.Args(
-            ref_id=ref_id,
-            name=name,
-            relationship=relationship,
-            catch_up_period=catch_up_period,
-            catch_up_eisen=catch_up_eisen,
-            catch_up_difficulty=catch_up_difficulty,
-            catch_up_actionable_from_day=catch_up_actionable_from_day,
-            catch_up_actionable_from_month=catch_up_actionable_from_month,
-            catch_up_due_at_time=catch_up_due_at_time,
-            catch_up_due_at_day=catch_up_due_at_day,
-            catch_up_due_at_month=catch_up_due_at_month,
-            birthday=birthday))
+        self._command.execute(
+            PersonUpdateUseCase.Args(
+                ref_id=ref_id,
+                name=name,
+                relationship=relationship,
+                catch_up_period=catch_up_period,
+                catch_up_eisen=catch_up_eisen,
+                catch_up_difficulty=catch_up_difficulty,
+                catch_up_actionable_from_day=catch_up_actionable_from_day,
+                catch_up_actionable_from_month=catch_up_actionable_from_month,
+                catch_up_due_at_time=catch_up_due_at_time,
+                catch_up_due_at_day=catch_up_due_at_day,
+                catch_up_due_at_month=catch_up_due_at_month,
+                birthday=birthday,
+            )
+        )

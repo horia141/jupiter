@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class InboxTaskSource(enum.Enum):
     """The origin of an inbox task."""
+
     USER = "user"
     BIG_PLAN = "big-plan"
     HABIT = "habit"
@@ -30,20 +31,27 @@ class InboxTaskSource(enum.Enum):
     @property
     def allow_user_changes(self) -> bool:
         """Allow user changes for an inbox task."""
-        return self in (InboxTaskSource.USER, InboxTaskSource.BIG_PLAN, InboxTaskSource.SLACK_TASK)
+        return self in (
+            InboxTaskSource.USER,
+            InboxTaskSource.BIG_PLAN,
+            InboxTaskSource.SLACK_TASK,
+        )
 
     @staticmethod
-    def from_raw(inbox_task_source_raw: Optional[str]) -> 'InboxTaskSource':
+    def from_raw(inbox_task_source_raw: Optional[str]) -> "InboxTaskSource":
         """Validate and clean the big plan source."""
         if not inbox_task_source_raw:
             raise InputValidationError("Expected inbox task source to be non-null")
 
-        inbox_task_source_str: str = '-'.join(inbox_task_source_raw.strip().lower().split(' '))
+        inbox_task_source_str: str = "-".join(
+            inbox_task_source_raw.strip().lower().split(" ")
+        )
 
         if inbox_task_source_str not in InboxTaskSource.all_values():
             raise InputValidationError(
-                f"Expected inbox task source '{inbox_task_source_raw}' to be " +
-                f"one of '{','.join(InboxTaskSource.all_values())}'")
+                f"Expected inbox task source '{inbox_task_source_raw}' to be "
+                + f"one of '{','.join(InboxTaskSource.all_values())}'"
+            )
 
         return InboxTaskSource(inbox_task_source_str)
 

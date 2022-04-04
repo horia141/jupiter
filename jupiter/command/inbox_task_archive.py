@@ -32,7 +32,13 @@ class InboxTaskArchive(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The if of the big plan")
+        parser.add_argument(
+            "--id",
+            type=str,
+            dest="ref_id",
+            required=True,
+            help="The if of the big plan",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

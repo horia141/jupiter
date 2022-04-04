@@ -20,7 +20,7 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
     notes: Optional[str]
 
     @staticmethod
-    def new_notion_entity(entity: MetricEntry, extra_info: None) -> 'NotionMetricEntry':
+    def new_notion_entity(entity: MetricEntry, extra_info: None) -> "NotionMetricEntry":
         """Construct a new Notion row from a given metric entry."""
         return NotionMetricEntry(
             notion_id=BAD_NOTION_ID,
@@ -29,7 +29,8 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
             archived=entity.archived,
             collection_time=entity.collection_time,
             value=entity.value,
-            notes=entity.notes)
+            notes=entity.notes,
+        )
 
     def new_entity(self, parent_ref_id: EntityId, extra_info: None) -> MetricEntry:
         """Create a new metric entry from this."""
@@ -40,22 +41,26 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
             value=self.value,
             notes=self.notes,
             source=EventSource.NOTION,
-            created_time=self.last_edited_time)
+            created_time=self.last_edited_time,
+        )
 
     def apply_to_entity(
-            self, entity: MetricEntry, extra_info: None) -> NotionLeafApplyToEntityResult[MetricEntry]:
+        self, entity: MetricEntry, extra_info: None
+    ) -> NotionLeafApplyToEntityResult[MetricEntry]:
         """Apply to an already existing metric entry."""
-        return \
-            NotionLeafApplyToEntityResult.just(
-                entity\
-                    .update(
-                        collection_time=UpdateAction.change_to(self.collection_time),
-                        value=UpdateAction.change_to(self.value),
-                        notes=UpdateAction.change_to(self.notes),
-                        source=EventSource.NOTION,
-                        modification_time=self.last_edited_time)\
-                    .change_archived(
-                        archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time))
+        return NotionLeafApplyToEntityResult.just(
+            entity.update(
+                collection_time=UpdateAction.change_to(self.collection_time),
+                value=UpdateAction.change_to(self.value),
+                notes=UpdateAction.change_to(self.notes),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time,
+            ).change_archived(
+                archived=self.archived,
+                source=EventSource.NOTION,
+                archived_time=self.last_edited_time,
+            )
+        )
 
     @property
     def nice_name(self) -> str:

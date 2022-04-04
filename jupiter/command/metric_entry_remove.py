@@ -32,8 +32,14 @@ class MetricEntryRemove(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_ids", required=True, default=[], action="append",
-                            help="The ids of the metric entries")
+        parser.add_argument(
+            "--id",
+            dest="ref_ids",
+            required=True,
+            default=[],
+            action="append",
+            help="The ids of the metric entries",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

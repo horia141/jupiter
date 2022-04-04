@@ -10,9 +10,13 @@ class SmartListCollectionNotFoundError(TrunkEntityNotFoundError):
     """Error raised when a smart list collection is not found."""
 
 
-class SmartListCollectionRepository(TrunkEntityRepository[SmartListCollection], abc.ABC):
+class SmartListCollectionRepository(
+    TrunkEntityRepository[SmartListCollection], abc.ABC
+):
     """A repository of smart list collections."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> SmartListCollection:
+    def load_by_id(
+        self, ref_id: EntityId, allow_archived: bool = False
+    ) -> SmartListCollection:
         """Retrieve a smart list collection by its id."""

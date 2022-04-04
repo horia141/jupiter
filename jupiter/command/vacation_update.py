@@ -17,7 +17,9 @@ class VacationUpdate(command.Command):
     _global_properties: Final[GlobalProperties]
     _command: Final[VacationUpdateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: VacationUpdateUseCase) -> None:
+    def __init__(
+        self, global_properties: GlobalProperties, the_command: VacationUpdateUseCase
+    ) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -34,10 +36,25 @@ class VacationUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_id", required=True, help="The id of the vacation to modify")
-        parser.add_argument("--name", dest="name", required=False, help="The name of the vacation")
-        parser.add_argument("--start-date", dest="start_date", required=False, help="The vacation start date")
-        parser.add_argument("--end-date", dest="end_date", required=False, help="The vacation end date")
+        parser.add_argument(
+            "--id",
+            type=str,
+            dest="ref_id",
+            required=True,
+            help="The id of the vacation to modify",
+        )
+        parser.add_argument(
+            "--name", dest="name", required=False, help="The name of the vacation"
+        )
+        parser.add_argument(
+            "--start-date",
+            dest="start_date",
+            required=False,
+            help="The vacation start date",
+        )
+        parser.add_argument(
+            "--end-date", dest="end_date", required=False, help="The vacation end date"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -47,12 +64,19 @@ class VacationUpdate(command.Command):
         else:
             name = UpdateAction.do_nothing()
         if args.start_date is not None:
-            start_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.start_date))
+            start_date = UpdateAction.change_to(
+                ADate.from_raw(self._global_properties.timezone, args.start_date)
+            )
         else:
             start_date = UpdateAction.do_nothing()
         if args.end_date is not None:
-            end_date = UpdateAction.change_to(ADate.from_raw(self._global_properties.timezone, args.end_date))
+            end_date = UpdateAction.change_to(
+                ADate.from_raw(self._global_properties.timezone, args.end_date)
+            )
         else:
             end_date = UpdateAction.do_nothing()
-        self._command.execute(VacationUpdateUseCase.Args(
-            ref_id=ref_id, name=name, start_date=start_date, end_date=end_date))
+        self._command.execute(
+            VacationUpdateUseCase.Args(
+                ref_id=ref_id, name=name, start_date=start_date, end_date=end_date
+            )
+        )

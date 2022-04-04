@@ -9,12 +9,13 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.framework.update_action import UpdateAction
 
-EventT = TypeVar('EventT', bound='Event')
+EventT = TypeVar("EventT", bound="Event")
 
 
 @enum.unique
 class EventKind(enum.Enum):
     """The kind of an event."""
+
     CREATE = "Created"
     UPDATE = "Updated"
     ARCHIVE = "Archived"
@@ -28,6 +29,7 @@ class EventKind(enum.Enum):
 @enum.unique
 class EventSource(enum.Enum):
     """The source of the modification which this event records."""
+
     CLI = "cli"
     NOTION = "notion"
     SLACK = "slack"
@@ -48,8 +50,12 @@ class Event:
 
     @classmethod
     def make_event_from_frame_args(
-            cls: typing.Type[EventT], source: EventSource, entity_version: int, timestamp: Timestamp,
-            **kwargs: object) -> EventT:
+        cls: typing.Type[EventT],
+        source: EventSource,
+        entity_version: int,
+        timestamp: Timestamp,
+        **kwargs: object
+    ) -> EventT:
         """Construct the data for an event from the arguments of the method which calls this one."""
         frame = inspect.currentframe()
         if frame is None:
@@ -61,10 +67,12 @@ class Event:
                 raise Exception("There's no recovery from stuff like this - part two")
 
             try:
-                args = inspect.getargvalues(parent_frame)  # pylint: disable=deprecated-method
+                args = inspect.getargvalues(
+                    parent_frame
+                )  # pylint: disable=deprecated-method
                 frame_args = {}
                 for arg_name in args.args:
-                    if arg_name in ('self', 'source', 'event_type'):
+                    if arg_name in ("self", "source", "event_type"):
                         # This is called from some sort of method of an entity class and we're looking
                         # at this frame. There is a self and it's the entity itself! Ditto don't need to
                         # map the source again. Nor the special `event_type'.
@@ -72,8 +80,12 @@ class Event:
                     frame_args[arg_name] = args.locals[arg_name]
                 for kwarg_name, kwargs_value in kwargs.items():
                     frame_args[kwarg_name] = kwargs_value
-                new_event = \
-                    cls(source=source, entity_version=entity_version + 1, timestamp=timestamp, frame_args=frame_args)
+                new_event = cls(
+                    source=source,
+                    entity_version=entity_version + 1,
+                    timestamp=timestamp,
+                    frame_args=frame_args,
+                )
                 return new_event
             finally:
                 del parent_frame
@@ -86,9 +98,13 @@ class Event:
         for the_key, the_value in self.frame_args.items():
             if isinstance(the_value, UpdateAction):
                 if the_value.should_change:
-                    serialized_frame_args[the_key] = process_primitive_to_json(the_value.value, the_key)
+                    serialized_frame_args[the_key] = process_primitive_to_json(
+                        the_value.value, the_key
+                    )
             else:
-                serialized_frame_args[the_key] = process_primitive_to_json(the_value, the_key)
+                serialized_frame_args[the_key] = process_primitive_to_json(
+                    the_value, the_key
+                )
         return serialized_frame_args
 
     @property

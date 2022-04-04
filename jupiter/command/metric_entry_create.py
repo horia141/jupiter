@@ -33,20 +33,43 @@ class MetricEntryCreate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--metric", dest="metric_key", required=True, help="The key of the metric")
-        parser.add_argument("--collection-time", dest="collection_time", required=False,
-                            help="The time at which a metric should be recorded")
-        parser.add_argument("--value", dest="value", required=True, type=float,
-                            help="The value for the metric")
-        parser.add_argument("--notes", dest="notes", required=False, type=str,
-                            help="A note for the metric")
+        parser.add_argument(
+            "--metric", dest="metric_key", required=True, help="The key of the metric"
+        )
+        parser.add_argument(
+            "--collection-time",
+            dest="collection_time",
+            required=False,
+            help="The time at which a metric should be recorded",
+        )
+        parser.add_argument(
+            "--value",
+            dest="value",
+            required=True,
+            type=float,
+            help="The value for the metric",
+        )
+        parser.add_argument(
+            "--notes",
+            dest="notes",
+            required=False,
+            type=str,
+            help="A note for the metric",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
-        collection_time = ADate.from_str(args.collection_time) \
-            if args.collection_time else None
+        collection_time = (
+            ADate.from_str(args.collection_time) if args.collection_time else None
+        )
         value = args.value
         notes = args.notes
-        self._command.execute(MetricEntryCreateUseCase.Args(
-            metric_key=metric_key, collection_time=collection_time, value=value, notes=notes))
+        self._command.execute(
+            MetricEntryCreateUseCase.Args(
+                metric_key=metric_key,
+                collection_time=collection_time,
+                value=value,
+                notes=notes,
+            )
+        )

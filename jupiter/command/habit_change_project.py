@@ -30,13 +30,26 @@ class HabitChangeProject(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
-            "--id", type=str, dest="ref_id", required=True, help="Show only tasks selected by this id")
+            "--id",
+            type=str,
+            dest="ref_id",
+            required=True,
+            help="Show only tasks selected by this id",
+        )
         project = parser.add_mutually_exclusive_group()
         project.add_argument(
-            "--project", dest="project_key", help="The project key to reassign this habit to")
+            "--project",
+            dest="project_key",
+            help="The project key to reassign this habit to",
+        )
         project.add_argument(
-            "--clear-project", dest="clear_project", default=False, action="store_const", const=True,
-            help="Clear the project and use the default one")
+            "--clear-project",
+            dest="clear_project",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the project and use the default one",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -46,4 +59,6 @@ class HabitChangeProject(command.Command):
             project_key = None
         else:
             project_key = ProjectKey.from_raw(args.project_key)
-        self._command.execute(HabitChangeProjectUseCase.Args(ref_id=ref_id, project_key=project_key))
+        self._command.execute(
+            HabitChangeProjectUseCase.Args(ref_id=ref_id, project_key=project_key)
+        )

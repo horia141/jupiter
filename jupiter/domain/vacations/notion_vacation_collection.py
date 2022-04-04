@@ -11,8 +11,6 @@ class NotionVacationCollection(NotionTrunkEntity[VacationCollection]):
     """A vacation collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: VacationCollection) -> 'NotionVacationCollection':
+    def new_notion_entity(entity: VacationCollection) -> "NotionVacationCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionVacationCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionVacationCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

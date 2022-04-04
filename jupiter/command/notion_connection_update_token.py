@@ -5,7 +5,9 @@ from typing import Final
 
 from jupiter.command import command
 from jupiter.domain.remote.notion.token import NotionToken
-from jupiter.use_cases.remote.notion.update_token import NotionConnectionUpdateTokenUseCase
+from jupiter.use_cases.remote.notion.update_token import (
+    NotionConnectionUpdateTokenUseCase,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +33,9 @@ class NotionConnectionUpdateToken(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--token", dest="notion_token", required=False, help="The Notion token")
+        parser.add_argument(
+            "--token", dest="notion_token", required=False, help="The Notion token"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

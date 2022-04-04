@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class RecurringTaskPeriod(enum.Enum):
     """A period for a particular task."""
+
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
@@ -20,7 +21,7 @@ class RecurringTaskPeriod(enum.Enum):
         return str(self.value).capitalize()
 
     @staticmethod
-    def from_raw(recurring_task_period_raw: Optional[str]) -> 'RecurringTaskPeriod':
+    def from_raw(recurring_task_period_raw: Optional[str]) -> "RecurringTaskPeriod":
         """Validate and clean the recurring task period."""
         if not recurring_task_period_raw:
             raise InputValidationError("Expected recurring task period to be non-null")
@@ -29,8 +30,9 @@ class RecurringTaskPeriod(enum.Enum):
 
         if recurring_task_period_str not in RecurringTaskPeriod.all_values():
             raise InputValidationError(
-                f"Expected recurring task period '{recurring_task_period_raw}' to be " +
-                f"one of '{','.join(RecurringTaskPeriod.all_values())}'")
+                f"Expected recurring task period '{recurring_task_period_raw}' to be "
+                + f"one of '{','.join(RecurringTaskPeriod.all_values())}'"
+            )
 
         return RecurringTaskPeriod(recurring_task_period_str)
 
@@ -43,4 +45,5 @@ class RecurringTaskPeriod(enum.Enum):
             RecurringTaskPeriod.WEEKLY.value,
             RecurringTaskPeriod.MONTHLY.value,
             RecurringTaskPeriod.QUARTERLY.value,
-            RecurringTaskPeriod.YEARLY.value)
+            RecurringTaskPeriod.YEARLY.value,
+        )

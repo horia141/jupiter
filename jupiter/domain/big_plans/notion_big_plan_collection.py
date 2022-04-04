@@ -11,8 +11,6 @@ class NotionBigPlanCollection(NotionTrunkEntity[BigPlanCollection]):
     """A big plan collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: BigPlanCollection) -> 'NotionBigPlanCollection':
+    def new_notion_entity(entity: BigPlanCollection) -> "NotionBigPlanCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionBigPlanCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionBigPlanCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

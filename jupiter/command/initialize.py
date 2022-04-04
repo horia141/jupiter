@@ -36,18 +36,34 @@ class Initialize(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
+        parser.add_argument("--name", required=True, help="The workspace name to use")
         parser.add_argument(
-            "--name", required=True, help="The workspace name to use")
+            "--timezone", required=True, help="The timezone you're currently in"
+        )
         parser.add_argument(
-            "--timezone", required=True, help="The timezone you're currently in")
+            "--notion-space-id",
+            dest="notion_space_id",
+            required=True,
+            help="The Notion space id to use",
+        )
         parser.add_argument(
-            "--notion-space-id", dest="notion_space_id", required=True, help="The Notion space id to use")
+            "--notion-token",
+            dest="notion_token",
+            required=True,
+            help="The Notion access token to use",
+        )
         parser.add_argument(
-            "--notion-token", dest="notion_token", required=True, help="The Notion access token to use")
+            "--project-key",
+            dest="first_project_key",
+            required=True,
+            help="The key of the first project",
+        )
         parser.add_argument(
-            "--project-key", dest="first_project_key", required=True, help="The key of the first project")
-        parser.add_argument(
-            "--project-name", dest="first_project_name", required=True, help="The name of the first project")
+            "--project-name",
+            dest="first_project_name",
+            required=True,
+            help="The name of the first project",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -58,10 +74,13 @@ class Initialize(command.Command):
         first_project_key = ProjectKey.from_raw(args.first_project_key)
         first_project_name = ProjectName.from_raw(args.first_project_name)
 
-        self._command.execute(InitUseCase.Args(
-            name=name,
-            timezone=timezone,
-            notion_space_id=notion_space_id,
-            notion_token=notion_token,
-            first_project_key=first_project_key,
-            first_project_name=first_project_name))
+        self._command.execute(
+            InitUseCase.Args(
+                name=name,
+                timezone=timezone,
+                notion_space_id=notion_space_id,
+                notion_token=notion_token,
+                first_project_key=first_project_key,
+                first_project_name=first_project_name,
+            )
+        )

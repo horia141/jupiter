@@ -3,8 +3,9 @@ import abc
 from contextlib import contextmanager
 from typing import Iterator
 
-from jupiter.use_cases.infra.mutation_use_case_invocation_record_repository import \
-    MutationUseCaseInvocationRecordRepository
+from jupiter.use_cases.infra.mutation_use_case_invocation_record_repository import (
+    MutationUseCaseInvocationRecordRepository,
+)
 
 
 class UseCaseUnitOfWork(abc.ABC):
@@ -12,7 +13,9 @@ class UseCaseUnitOfWork(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def mutation_use_case_invocation_record_repository(self) -> MutationUseCaseInvocationRecordRepository:
+    def mutation_use_case_invocation_record_repository(
+        self,
+    ) -> MutationUseCaseInvocationRecordRepository:
         """The mutation use case invocation record repository."""
 
 

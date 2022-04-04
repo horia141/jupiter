@@ -32,34 +32,56 @@ class Workspace(RootEntity):
 
     @staticmethod
     def new_workspace(
-            name: WorkspaceName, timezone: Timezone, source: EventSource, created_time: Timestamp) -> 'Workspace':
+        name: WorkspaceName,
+        timezone: Timezone,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "Workspace":
         """Create a new workspace."""
         workspace = Workspace(
-            ref_id=EntityId.from_raw('0'),
+            ref_id=EntityId.from_raw("0"),
             version=FIRST_VERSION,
             archived=False,
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[Workspace.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                Workspace.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             name=name,
             timezone=timezone,
-            default_project_ref_id=BAD_REF_ID)
+            default_project_ref_id=BAD_REF_ID,
+        )
         return workspace
 
     def update(
-            self, name: UpdateAction[WorkspaceName], timezone: UpdateAction[Timezone],
-            source: EventSource, modification_time: Timestamp) -> 'Workspace':
+        self,
+        name: UpdateAction[WorkspaceName],
+        timezone: UpdateAction[Timezone],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "Workspace":
         """Update properties of the workspace."""
         return self._new_version(
             name=name.or_else(self.name),
             timezone=timezone.or_else(self.timezone),
-            new_event=Workspace.Updated.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=Workspace.Updated.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def change_default_project(
-            self, default_project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'Workspace':
+        self,
+        default_project_ref_id: EntityId,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "Workspace":
         """Change the default project of the workspace."""
         return self._new_version(
             default_project_ref_id=default_project_ref_id,
-            new_event=
-            Workspace.ChangedDefaultProject.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=Workspace.ChangedDefaultProject.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )

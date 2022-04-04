@@ -6,8 +6,14 @@ from typing import Generic, Final
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCaseArgs, UseCaseResult, MutationUseCase, MutationUseCaseInvocationRecorder, \
-    ReadonlyUseCase, UseCaseContextBase
+from jupiter.framework.use_case import (
+    UseCaseArgs,
+    UseCaseResult,
+    MutationUseCase,
+    MutationUseCaseInvocationRecorder,
+    ReadonlyUseCase,
+    UseCaseContextBase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -24,16 +30,20 @@ class AppUseCaseContext(UseCaseContextBase):
 
 
 class AppMutationUseCase(
-        Generic[UseCaseArgs, UseCaseResult], MutationUseCase[AppUseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):
+    Generic[UseCaseArgs, UseCaseResult],
+    MutationUseCase[AppUseCaseContext, UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
     """A command which does some sort of mutation for the app."""
 
     _storage_engine: Final[DomainStorageEngine]
 
     def __init__(
-            self,
-            time_provider: TimeProvider,
-            invocation_recorder: MutationUseCaseInvocationRecorder,
-            storage_engine: DomainStorageEngine) -> None:
+        self,
+        time_provider: TimeProvider,
+        invocation_recorder: MutationUseCaseInvocationRecorder,
+        storage_engine: DomainStorageEngine,
+    ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder)
         self._storage_engine = storage_engine
@@ -45,7 +55,10 @@ class AppMutationUseCase(
 
 
 class AppReadonlyUseCase(
-        Generic[UseCaseArgs, UseCaseResult], ReadonlyUseCase[AppUseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):
+    Generic[UseCaseArgs, UseCaseResult],
+    ReadonlyUseCase[AppUseCaseContext, UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
     """A command which does some sort of mutation for the app."""
 
     _storage_engine: Final[DomainStorageEngine]

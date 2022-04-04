@@ -2,7 +2,10 @@
 from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.projects.notion_project_collection import NotionProjectCollection
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
-from jupiter.framework.notion_manager import NotionLeafEntityNotFoundError, ParentTrunkLeafNotionManager
+from jupiter.framework.notion_manager import (
+    NotionLeafEntityNotFoundError,
+    ParentTrunkLeafNotionManager,
+)
 
 
 class NotionProjectNotFoundError(NotionLeafEntityNotFoundError):
@@ -10,5 +13,8 @@ class NotionProjectNotFoundError(NotionLeafEntityNotFoundError):
 
 
 class ProjectNotionManager(
-        ParentTrunkLeafNotionManager[NotionWorkspace, NotionProjectCollection, NotionProject, None]):
+    ParentTrunkLeafNotionManager[
+        NotionWorkspace, NotionProjectCollection, NotionProject, None
+    ]
+):
     """A manager of Notion-side projects."""

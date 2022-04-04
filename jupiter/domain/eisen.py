@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class Eisen(enum.Enum):
     """The Eisenhower status of a particular task."""
+
     IMPORTANT_AND_URGENT = "important-and-urgent"
     IMPORTANT = "important"
     URGENT = "urgent"
@@ -19,7 +20,7 @@ class Eisen(enum.Enum):
         return str(self.value).capitalize()
 
     @staticmethod
-    def from_raw(eisen_raw: Optional[str]) -> 'Eisen':
+    def from_raw(eisen_raw: Optional[str]) -> "Eisen":
         """Validate and clean a raw person relationship value."""
         if not eisen_raw:
             raise InputValidationError("Expected Eisenhower status to be non-null")
@@ -28,7 +29,8 @@ class Eisen(enum.Enum):
 
         if eisen_str not in Eisen.all_values():
             raise InputValidationError(
-                f"Expected Eisenhower status '{eisen_raw}' to be one of '{','.join(Eisen.all_values())}'")
+                f"Expected Eisenhower status '{eisen_raw}' to be one of '{','.join(Eisen.all_values())}'"
+            )
 
         return Eisen(eisen_str)
 

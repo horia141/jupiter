@@ -18,7 +18,7 @@ class Timezone(Value):
     _the_timezone: str
 
     @staticmethod
-    def from_raw(timezone_raw: Optional[str]) -> 'Timezone':
+    def from_raw(timezone_raw: Optional[str]) -> "Timezone":
         """Validate and clean a timezone."""
         if not timezone_raw:
             raise InputValidationError("Expected timezone to be non-null")

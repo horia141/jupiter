@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class InboxTaskStatus(enum.Enum):
     """The status of an inbox task."""
+
     # Created
     NOT_STARTED = "not-started"
     # Accepted
@@ -51,17 +52,20 @@ class InboxTaskStatus(enum.Enum):
         return self in (InboxTaskStatus.NOT_DONE, InboxTaskStatus.DONE)
 
     @staticmethod
-    def from_raw(inbox_task_status_raw: Optional[str]) -> 'InboxTaskStatus':
+    def from_raw(inbox_task_status_raw: Optional[str]) -> "InboxTaskStatus":
         """Validate and clean the big plan status."""
         if not inbox_task_status_raw:
             raise InputValidationError("Expected inbox task status to be non-null")
 
-        inbox_task_status_str: str = '-'.join(inbox_task_status_raw.strip().lower().split(' '))
+        inbox_task_status_str: str = "-".join(
+            inbox_task_status_raw.strip().lower().split(" ")
+        )
 
         if inbox_task_status_str not in InboxTaskStatus.all_values():
             raise InputValidationError(
-                f"Expected inbox task status '{inbox_task_status_raw}' to be " +
-                f"one of '{','.join(InboxTaskStatus.all_values())}'")
+                f"Expected inbox task status '{inbox_task_status_raw}' to be "
+                + f"one of '{','.join(InboxTaskStatus.all_values())}'"
+            )
 
         return InboxTaskStatus(inbox_task_status_str)
 

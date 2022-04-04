@@ -16,7 +16,7 @@ class NotionToken(Value):
     _the_token: str
 
     @staticmethod
-    def from_raw(notion_token_raw: Optional[str]) -> 'NotionToken':
+    def from_raw(notion_token_raw: Optional[str]) -> "NotionToken":
         """Validate and clean a workspace token."""
         if not notion_token_raw:
             raise InputValidationError("Expected Notion token to be non-null")
@@ -28,7 +28,8 @@ class NotionToken(Value):
 
         if not _NOTION_TOKEN_RE.match(notion_token):
             raise InputValidationError(
-                f"Expected workspace token '{notion_token}' to match '{_NOTION_TOKEN_RE.pattern}")
+                f"Expected workspace token '{notion_token}' to match '{_NOTION_TOKEN_RE.pattern}"
+            )
 
         return NotionToken(notion_token)
 

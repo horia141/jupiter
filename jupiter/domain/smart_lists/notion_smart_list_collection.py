@@ -11,8 +11,6 @@ class NotionSmartListCollection(NotionTrunkEntity[SmartListCollection]):
     """A smart list collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: SmartListCollection) -> 'NotionSmartListCollection':
+    def new_notion_entity(entity: SmartListCollection) -> "NotionSmartListCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionSmartListCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionSmartListCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

@@ -3,8 +3,11 @@ import abc
 
 from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
-from jupiter.framework.repository import BranchEntityRepository, BranchEntityAlreadyExistsError,\
-    BranchEntityNotFoundError
+from jupiter.framework.repository import (
+    BranchEntityRepository,
+    BranchEntityAlreadyExistsError,
+    BranchEntityNotFoundError,
+)
 
 
 class SmartListAlreadyExistsError(BranchEntityAlreadyExistsError):

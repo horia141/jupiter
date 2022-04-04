@@ -34,13 +34,27 @@ class SmartListUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--smart-list", dest="smart_list_key", required=True, help="The key of the smart list")
-        parser.add_argument("--name", dest="name", required=False, help="The name of the smart list")
+        parser.add_argument(
+            "--smart-list",
+            dest="smart_list_key",
+            required=True,
+            help="The key of the smart list",
+        )
+        parser.add_argument(
+            "--name", dest="name", required=False, help="The name of the smart list"
+        )
         icon = parser.add_mutually_exclusive_group()
-        icon.add_argument("--icon", dest="icon", help="The icon or :alias: for the smart list")
         icon.add_argument(
-            "--clear-icon", dest="clear_icon", default=False, action="store_const", const=True,
-            help="Clear the icon and use the default one")
+            "--icon", dest="icon", help="The icon or :alias: for the smart list"
+        )
+        icon.add_argument(
+            "--clear-icon",
+            dest="clear_icon",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the icon and use the default one",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -56,4 +70,6 @@ class SmartListUpdate(command.Command):
             icon = UpdateAction.change_to(EntityIcon.from_raw(args.icon))
         else:
             icon = UpdateAction.do_nothing()
-        self._command.execute(SmartListUpdateUseCase.Args(key=smart_list_key, name=name, icon=icon))
+        self._command.execute(
+            SmartListUpdateUseCase.Args(key=smart_list_key, name=name, icon=icon)
+        )

@@ -22,11 +22,16 @@ class MetricSyncService(
         NotionMetricEntry,
         None,
         None,
-        None]):
+        None,
+    ]
+):
     """The service class for syncing the metrics database between local and Notion."""
 
     def __init__(
-            self, storage_engine: DomainStorageEngine, metric_notion_manager: MetricNotionManager) -> None:
+        self,
+        storage_engine: DomainStorageEngine,
+        metric_notion_manager: MetricNotionManager,
+    ) -> None:
         """Constructor."""
         super().__init__(
             MetricCollection,
@@ -35,4 +40,5 @@ class MetricSyncService(
             NotionMetric,
             NotionMetricEntry,
             storage_engine,
-            metric_notion_manager)
+            metric_notion_manager,
+        )

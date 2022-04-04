@@ -11,8 +11,6 @@ class NotionPersonCollection(NotionTrunkEntity[PersonCollection]):
     """A person collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: PersonCollection) -> 'NotionPersonCollection':
+    def new_notion_entity(entity: PersonCollection) -> "NotionPersonCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionPersonCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionPersonCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

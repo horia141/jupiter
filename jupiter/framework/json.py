@@ -13,7 +13,9 @@ JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  #
 JSONDictType = Dict[str, JSONValueType]
 
 
-def process_primitive_to_json(primitive: typing.Union[None, int, float, str, object], key: str) -> JSONValueType:
+def process_primitive_to_json(
+    primitive: typing.Union[None, int, float, str, object], key: str
+) -> JSONValueType:
     """Transform a primitive-ish type to a JSON serializable object."""
     if primitive is None:
         return primitive
@@ -31,12 +33,18 @@ def process_primitive_to_json(primitive: typing.Union[None, int, float, str, obj
         return process_primitive_to_json(primitive.value, key)
     elif isinstance(primitive, Value):
         return str(primitive)  # A bit of a hack really!
-    elif 'Entity' in [t.__name__ for t in type(primitive).__mro__]:
-        return {"ref_id": str(getattr(primitive, "ref_id")), "aggregate-root-type": primitive.__class__.__name__}
+    elif "Entity" in [t.__name__ for t in type(primitive).__mro__]:
+        return {
+            "ref_id": str(getattr(primitive, "ref_id")),
+            "aggregate-root-type": primitive.__class__.__name__,
+        }
     elif isinstance(primitive, uuid.UUID):
         return str(primitive)
     elif dataclasses.is_dataclass(primitive):
-        return {k: process_primitive_to_json(v, k) for k, v in dataclasses.asdict(primitive).items()}
+        return {
+            k: process_primitive_to_json(v, k)
+            for k, v in dataclasses.asdict(primitive).items()
+        }
     elif isinstance(primitive, list):
         return [process_primitive_to_json(p, key) for p in primitive]
     elif isinstance(primitive, dict):
@@ -46,4 +54,6 @@ def process_primitive_to_json(primitive: typing.Union[None, int, float, str, obj
     elif isinstance(primitive, set):
         return [process_primitive_to_json(p, key) for p in primitive]
     else:
-        raise Exception(f"Invalid type for event field {key} of type {primitive.__class__.__name__}")
+        raise Exception(
+            f"Invalid type for event field {key} of type {primitive.__class__.__name__}"
+        )

@@ -20,15 +20,18 @@ class NotionSmartList(NotionBranchEntity[SmartList]):
     icon: Optional[str]
 
     @staticmethod
-    def new_notion_entity(entity: SmartList) -> 'NotionSmartList':
+    def new_notion_entity(entity: SmartList) -> "NotionSmartList":
         """Construct a new Notion row from a given entity."""
         return NotionSmartList(
             notion_id=BAD_NOTION_ID,
             ref_id=entity.ref_id,
             name=str(entity.name),
-            icon=entity.icon.to_safe() if entity.icon else None)
+            icon=entity.icon.to_safe() if entity.icon else None,
+        )
 
-    def apply_to_entity(self, entity: SmartList, modification_time: Timestamp) -> SmartList:
+    def apply_to_entity(
+        self, entity: SmartList, modification_time: Timestamp
+    ) -> SmartList:
         """Obtain the entity form of this, with a possible error."""
         name = SmartListName.from_raw(self.name)
         icon = EntityIcon.from_safe(self.icon) if self.icon else None
@@ -36,7 +39,7 @@ class NotionSmartList(NotionBranchEntity[SmartList]):
             name=UpdateAction.change_to(name),
             icon=UpdateAction.change_to(icon),
             source=EventSource.NOTION,
-            modification_time=
-            modification_time
+            modification_time=modification_time
             if (name != entity.name or icon != entity.icon)
-            else entity.last_modified_time)
+            else entity.last_modified_time,
+        )

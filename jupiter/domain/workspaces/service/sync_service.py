@@ -4,7 +4,9 @@ from typing import Final
 
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
-from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager
+from jupiter.domain.workspaces.infra.workspace_notion_manager import (
+    WorkspaceNotionManager,
+)
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.base.timestamp import Timestamp
 
@@ -17,7 +19,11 @@ class WorkspaceSyncService:
     _storage_engine: Final[DomainStorageEngine]
     _workspace_notion_manager: Final[WorkspaceNotionManager]
 
-    def __init__(self, storage_engine: DomainStorageEngine, workspace_notion_manager: WorkspaceNotionManager) -> None:
+    def __init__(
+        self,
+        storage_engine: DomainStorageEngine,
+        workspace_notion_manager: WorkspaceNotionManager,
+    ) -> None:
         """Constructor."""
         self._storage_engine = storage_engine
         self._workspace_notion_manager = workspace_notion_manager
@@ -26,7 +32,9 @@ class WorkspaceSyncService:
         """Execute the service's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
-        notion_workspace = self._workspace_notion_manager.load_workspace(workspace.ref_id)
+        notion_workspace = self._workspace_notion_manager.load_workspace(
+            workspace.ref_id
+        )
 
         if sync_prefer == SyncPrefer.NOTION:
             workspace = notion_workspace.apply_to_entity(workspace, right_now)

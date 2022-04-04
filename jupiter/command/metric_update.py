@@ -37,88 +37,140 @@ class MetricUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--metric", dest="metric_key", required=True, help="The key of the metric")
-        parser.add_argument("--name", dest="name", required=False, help="The name of the metric")
+        parser.add_argument(
+            "--metric", dest="metric_key", required=True, help="The key of the metric"
+        )
+        parser.add_argument(
+            "--name", dest="name", required=False, help="The name of the metric"
+        )
         icon = parser.add_mutually_exclusive_group()
-        icon.add_argument("--icon", dest="icon", help="The icon or :alias: for the metric")
         icon.add_argument(
-            "--clear-icon", dest="clear_icon", default=False, action="store_const", const=True,
-            help="Clear the icon and use the default one")
+            "--icon", dest="icon", help="The icon or :alias: for the metric"
+        )
+        icon.add_argument(
+            "--clear-icon",
+            dest="clear_icon",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the icon and use the default one",
+        )
         collection_period_group = parser.add_mutually_exclusive_group()
         collection_period_group.add_argument(
-            "--collection-period", dest="collection_period", required=False,
+            "--collection-period",
+            dest="collection_period",
+            required=False,
             choices=RecurringTaskPeriod.all_values(),
-            help="The period at which a metric should be recorded")
+            help="The period at which a metric should be recorded",
+        )
         collection_period_group.add_argument(
-            "--clear-collection-period", dest="clear_collection_period", default=False,
-            action="store_const", const=True, help="Clear the collection period")
+            "--clear-collection-period",
+            dest="clear_collection_period",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the collection period",
+        )
         parser.add_argument(
-            "--collection-eisen", dest="collection_eisen", choices=Eisen.all_values(),
-            help="The Eisenhower matrix values to use for collection tasks")
+            "--collection-eisen",
+            dest="collection_eisen",
+            choices=Eisen.all_values(),
+            help="The Eisenhower matrix values to use for collection tasks",
+        )
         collection_period_difficulty = parser.add_mutually_exclusive_group()
         collection_period_difficulty.add_argument(
-            "--collection-difficulty", dest="collection_difficulty",
+            "--collection-difficulty",
+            dest="collection_difficulty",
             choices=Difficulty.all_values(),
-            help="The difficulty to use for collection tasks")
+            help="The difficulty to use for collection tasks",
+        )
         collection_period_difficulty.add_argument(
-            "--clear-collection-difficulty", dest="clear_collection_difficulty",
+            "--clear-collection-difficulty",
+            dest="clear_collection_difficulty",
             default=False,
-            action="store_const", const=True,
-            help="Clear the collection difficulty")
+            action="store_const",
+            const=True,
+            help="Clear the collection difficulty",
+        )
         collection_period_actionable_from_day = parser.add_mutually_exclusive_group()
         collection_period_actionable_from_day.add_argument(
-            "--collection-actionable-from-day", type=int,
+            "--collection-actionable-from-day",
+            type=int,
             dest="collection_actionable_from_day",
             metavar="DAY",
-            help="The day of the interval the collection task will be actionable from")
+            help="The day of the interval the collection task will be actionable from",
+        )
         collection_period_actionable_from_day.add_argument(
             "--clear-collection-actionable-from-day",
-            dest="clear_collection_actionable_from_day", default=False,
-            action="store_const", const=True,
-            help="Clear the collection actionable day")
+            dest="clear_collection_actionable_from_day",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Clear the collection actionable day",
+        )
         collection_period_actionable_from_month = parser.add_mutually_exclusive_group()
         collection_period_actionable_from_month.add_argument(
-            "--collection-actionable-from-month", type=int,
+            "--collection-actionable-from-month",
+            type=int,
             dest="collection_actionable_from_month",
             metavar="MONTH",
-            help="The month of the interval the collection task will be actionable from")
+            help="The month of the interval the collection task will be actionable from",
+        )
         collection_period_actionable_from_month.add_argument(
             "--clear-collection-actionable-from-month",
             dest="clear_collection_actionable_from_month",
             default=False,
-            action="store_const", const=True,
-            help="Clear the collection actionable month")
+            action="store_const",
+            const=True,
+            help="Clear the collection actionable month",
+        )
         collection_period_due_at_time = parser.add_mutually_exclusive_group()
         collection_period_due_at_time.add_argument(
-            "--collection-due-at-time", dest="collection_due_at_time",
+            "--collection-due-at-time",
+            dest="collection_due_at_time",
             metavar="HH:MM",
-            help="The time a task will be due on")
+            help="The time a task will be due on",
+        )
         collection_period_due_at_time.add_argument(
             "--clear-collection-due-at-time",
             dest="clear_collection_due_at_time",
             default=False,
-            action="store_const", const=True,
-            help="Clear the collection due time")
+            action="store_const",
+            const=True,
+            help="Clear the collection due time",
+        )
         collection_period_due_at_day = parser.add_mutually_exclusive_group()
         collection_period_due_at_day.add_argument(
-            "--collection-due-at-day", type=int, dest="collection_due_at_day",
+            "--collection-due-at-day",
+            type=int,
+            dest="collection_due_at_day",
             metavar="DAY",
-            help="The day of the interval the collection task will be due on")
+            help="The day of the interval the collection task will be due on",
+        )
         collection_period_due_at_day.add_argument(
-            "--clear-collection-due-at-day", dest="clear_collection_due_at_day",
+            "--clear-collection-due-at-day",
+            dest="clear_collection_due_at_day",
             default=False,
-            action="store_const", const=True, help="Clear the collection due day")
+            action="store_const",
+            const=True,
+            help="Clear the collection due day",
+        )
         collection_period_due_at_month = parser.add_mutually_exclusive_group()
         collection_period_due_at_month.add_argument(
-            "--collection-due-at-month", type=int,
-            dest="collection_due_at_month", metavar="MONTH",
-            help="The month of the interval the collection task will be due on")
+            "--collection-due-at-month",
+            type=int,
+            dest="collection_due_at_month",
+            metavar="MONTH",
+            help="The month of the interval the collection task will be due on",
+        )
         collection_period_due_at_month.add_argument(
             "--clear-collection-due-at-month",
             dest="clear_collection_due_at_month",
             default=False,
-            action="store_const", const=True,
-            help="Clear the collection due month")
+            action="store_const",
+            const=True,
+            help="Clear the collection due month",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -139,11 +191,14 @@ class MetricUpdate(command.Command):
             collection_period = UpdateAction.change_to(None)
         elif args.collection_period is not None:
             collection_period = UpdateAction.change_to(
-                RecurringTaskPeriod.from_raw(args.collection_period))
+                RecurringTaskPeriod.from_raw(args.collection_period)
+            )
         else:
             collection_period = UpdateAction.do_nothing()
         if args.collection_eisen is not None:
-            collection_eisen = UpdateAction.change_to(Eisen.from_raw(args.collection_eisen))
+            collection_eisen = UpdateAction.change_to(
+                Eisen.from_raw(args.collection_eisen)
+            )
         else:
             collection_eisen = UpdateAction.do_nothing()
         collection_difficulty: UpdateAction[Optional[Difficulty]]
@@ -151,7 +206,8 @@ class MetricUpdate(command.Command):
             collection_difficulty = UpdateAction.change_to(None)
         elif args.collection_difficulty is not None:
             collection_difficulty = UpdateAction.change_to(
-                Difficulty.from_raw(args.collection_difficulty))
+                Difficulty.from_raw(args.collection_difficulty)
+            )
         else:
             collection_difficulty = UpdateAction.do_nothing()
         collection_actionable_from_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
@@ -159,24 +215,32 @@ class MetricUpdate(command.Command):
             collection_actionable_from_day = UpdateAction.change_to(None)
         elif args.collection_actionable_from_day is not None:
             collection_actionable_from_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.collection_actionable_from_day))
+                RecurringTaskDueAtDay.from_raw(
+                    RecurringTaskPeriod.YEARLY, args.collection_actionable_from_day
+                )
+            )
         else:
             collection_actionable_from_day = UpdateAction.do_nothing()
-        collection_actionable_from_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
+        collection_actionable_from_month: UpdateAction[
+            Optional[RecurringTaskDueAtMonth]
+        ]
         if args.clear_collection_actionable_from_month:
             collection_actionable_from_month = UpdateAction.change_to(None)
         elif args.collection_actionable_from_month is not None:
             collection_actionable_from_month = UpdateAction.change_to(
                 RecurringTaskDueAtMonth.from_raw(
-                    RecurringTaskPeriod.YEARLY, args.collection_actionable_from_month))
+                    RecurringTaskPeriod.YEARLY, args.collection_actionable_from_month
+                )
+            )
         else:
             collection_actionable_from_month = UpdateAction.do_nothing()
         collection_due_at_time: UpdateAction[Optional[RecurringTaskDueAtTime]]
         if args.clear_collection_due_at_time:
             collection_due_at_time = UpdateAction.change_to(None)
         elif args.collection_due_at_time is not None:
-            collection_due_at_time = \
-                UpdateAction.change_to(RecurringTaskDueAtTime.from_raw(args.collection_due_at_time))
+            collection_due_at_time = UpdateAction.change_to(
+                RecurringTaskDueAtTime.from_raw(args.collection_due_at_time)
+            )
         else:
             collection_due_at_time = UpdateAction.do_nothing()
         collection_due_at_day: UpdateAction[Optional[RecurringTaskDueAtDay]]
@@ -184,7 +248,10 @@ class MetricUpdate(command.Command):
             collection_due_at_day = UpdateAction.change_to(None)
         elif args.collection_due_at_day is not None:
             collection_due_at_day = UpdateAction.change_to(
-                RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.YEARLY, args.collection_due_at_day))
+                RecurringTaskDueAtDay.from_raw(
+                    RecurringTaskPeriod.YEARLY, args.collection_due_at_day
+                )
+            )
         else:
             collection_due_at_day = UpdateAction.do_nothing()
         collection_due_at_month: UpdateAction[Optional[RecurringTaskDueAtMonth]]
@@ -193,7 +260,9 @@ class MetricUpdate(command.Command):
         elif args.collection_due_at_month is not None:
             collection_due_at_month = UpdateAction.change_to(
                 RecurringTaskDueAtMonth.from_raw(
-                    RecurringTaskPeriod.YEARLY, args.collection_due_at_month))
+                    RecurringTaskPeriod.YEARLY, args.collection_due_at_month
+                )
+            )
         else:
             collection_due_at_month = UpdateAction.do_nothing()
         self._command.execute(
@@ -208,4 +277,6 @@ class MetricUpdate(command.Command):
                 collection_actionable_from_month=collection_actionable_from_month,
                 collection_due_at_time=collection_due_at_time,
                 collection_due_at_day=collection_due_at_day,
-                collection_due_at_month=collection_due_at_month))
+                collection_due_at_month=collection_due_at_month,
+            )
+        )

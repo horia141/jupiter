@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class PersonRelationship(enum.Enum):
     """The relationship the user has with a person."""
+
     FAMILY = "family"
     FRIEND = "friend"
     ACQUAINTANCE = "acquaintance"
@@ -22,17 +23,20 @@ class PersonRelationship(enum.Enum):
         return " ".join(s.capitalize() for s in str(self.value).split("-"))
 
     @staticmethod
-    def from_raw(person_relationship_raw: Optional[str]) -> 'PersonRelationship':
+    def from_raw(person_relationship_raw: Optional[str]) -> "PersonRelationship":
         """Validate and clean a raw person relationship value."""
         if not person_relationship_raw:
             raise InputValidationError("Expected sync target to be non-null")
 
-        person_relationship_str: str = '-'.join(person_relationship_raw.strip().lower().split())
+        person_relationship_str: str = "-".join(
+            person_relationship_raw.strip().lower().split()
+        )
 
         if person_relationship_str not in PersonRelationship.all_values():
             raise InputValidationError(
-                f"Expected sync prefer '{person_relationship_raw}' to be one of " +
-                f"'{','.join(PersonRelationship.all_values())}'")
+                f"Expected sync prefer '{person_relationship_raw}' to be one of "
+                + f"'{','.join(PersonRelationship.all_values())}'"
+            )
 
         return PersonRelationship(person_relationship_str)
 

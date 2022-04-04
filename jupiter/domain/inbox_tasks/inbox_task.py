@@ -14,7 +14,9 @@ from jupiter.domain.eisen import Eisen
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
-from jupiter.domain.push_integrations.push_generation_extra_info import PushGenerationExtraInfo
+from jupiter.domain.push_integrations.push_generation_extra_info import (
+    PushGenerationExtraInfo,
+)
 from jupiter.domain.push_integrations.slack.slack_channel_name import SlackChannelName
 from jupiter.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
@@ -135,17 +137,28 @@ class InboxTask(LeafEntity):
     notes: Optional[str]
     recurring_timeline: Optional[str]
     recurring_repeat_index: Optional[int]
-    recurring_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
+    recurring_gen_right_now: Optional[
+        Timestamp
+    ]  # Time for which this inbox task was generated
     accepted_time: Optional[Timestamp]
     working_time: Optional[Timestamp]
     completed_time: Optional[Timestamp]
 
     @staticmethod
     def new_inbox_task(
-            inbox_task_collection_ref_id: EntityId, archived: bool, name: InboxTaskName,
-            status: InboxTaskStatus, project_ref_id: EntityId, big_plan: Optional[BigPlan], eisen: Optional[Eisen],
-            difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate],
-            source: EventSource, created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        archived: bool,
+        name: InboxTaskName,
+        status: InboxTaskStatus,
+        project_ref_id: EntityId,
+        big_plan: Optional[BigPlan],
+        eisen: Optional[Eisen],
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Created an inbox task."""
         InboxTask._check_actionable_and_due_dates(actionable_date, due_date)
 
@@ -156,9 +169,15 @@ class InboxTask(LeafEntity):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
-            events=[InboxTask.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                InboxTask.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
-            source=InboxTaskSource.USER if big_plan is None else InboxTaskSource.BIG_PLAN,
+            source=InboxTaskSource.USER
+            if big_plan is None
+            else InboxTaskSource.BIG_PLAN,
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan.ref_id if big_plan else None,
             habit_ref_id=None,
@@ -170,7 +189,8 @@ class InboxTask(LeafEntity):
             status=status,
             eisen=eisen if eisen else Eisen.REGULAR,
             difficulty=difficulty,
-            actionable_date=actionable_date or (big_plan.actionable_date if big_plan else None),
+            actionable_date=actionable_date
+            or (big_plan.actionable_date if big_plan else None),
             due_date=due_date or (big_plan.due_date if big_plan else None),
             notes=None,
             recurring_timeline=None,
@@ -178,16 +198,26 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=None,
             accepted_time=created_time if status.is_accepted_or_more else None,
             working_time=created_time if status.is_working_or_more else None,
-            completed_time=created_time if status.is_completed else None)
+            completed_time=created_time if status.is_completed else None,
+        )
         return inbox_task
 
     @staticmethod
     def new_inbox_task_for_habit(
-            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, project_ref_id: EntityId,
-            habit_ref_id: EntityId, recurring_task_timeline: str, recurring_task_repeat_index: Optional[int],
-            recurring_task_gen_right_now: Timestamp, eisen: Eisen, difficulty: Optional[Difficulty],
-            actionable_date: Optional[ADate], due_date: Optional[ADate], source: EventSource,
-            created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        project_ref_id: EntityId,
+        habit_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_repeat_index: Optional[int],
+        recurring_task_gen_right_now: Timestamp,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -196,7 +226,11 @@ class InboxTask(LeafEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[InboxTask.GeneratedForHabit.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                InboxTask.GeneratedForHabit.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.HABIT,
             project_ref_id=project_ref_id,
@@ -218,15 +252,25 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
-            completed_time=None)
+            completed_time=None,
+        )
         return inbox_task
 
     @staticmethod
     def new_inbox_task_for_chore(
-            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, project_ref_id: EntityId,
-            chore_ref_id: EntityId, recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp,
-            eisen: Eisen, difficulty: Optional[Difficulty], actionable_date: Optional[ADate],
-            due_date: Optional[ADate], source: EventSource, created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        project_ref_id: EntityId,
+        chore_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -235,7 +279,11 @@ class InboxTask(LeafEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[InboxTask.GeneratedForChore.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                InboxTask.GeneratedForChore.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.CHORE,
             project_ref_id=project_ref_id,
@@ -257,15 +305,25 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
-            completed_time=None)
+            completed_time=None,
+        )
         return inbox_task
 
     @staticmethod
     def new_inbox_task_for_metric_collection(
-            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, project_ref_id: EntityId,
-            metric_ref_id: EntityId, recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp,
-            eisen: Eisen, difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_date: Optional[ADate],
-            source: EventSource, created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        project_ref_id: EntityId,
+        metric_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -275,7 +333,10 @@ class InboxTask(LeafEntity):
             archived_time=None,
             last_modified_time=created_time,
             events=[
-                InboxTask.GeneratedForMetricCollection.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+                InboxTask.GeneratedForMetricCollection.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.METRIC,
             project_ref_id=project_ref_id,
@@ -297,15 +358,25 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
-            completed_time=None)
+            completed_time=None,
+        )
         return inbox_task
 
     @staticmethod
     def new_inbox_task_for_person_catch_up(
-            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, project_ref_id: EntityId,
-            person_ref_id: EntityId, recurring_task_timeline: str, eisen: Eisen, difficulty: Optional[Difficulty],
-            recurring_task_gen_right_now: Timestamp, actionable_date: Optional[ADate],
-            due_date: Optional[ADate], source: EventSource, created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        project_ref_id: EntityId,
+        person_ref_id: EntityId,
+        recurring_task_timeline: str,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        recurring_task_gen_right_now: Timestamp,
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -315,7 +386,10 @@ class InboxTask(LeafEntity):
             archived_time=None,
             last_modified_time=created_time,
             events=[
-                InboxTask.GeneratedForPersonCatchUp.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+                InboxTask.GeneratedForPersonCatchUp.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.PERSON_CATCH_UP,
             project_ref_id=project_ref_id,
@@ -337,14 +411,23 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
-            completed_time=None)
+            completed_time=None,
+        )
         return inbox_task
 
     @staticmethod
     def new_inbox_task_for_person_birthday(
-            inbox_task_collection_ref_id: EntityId, name: InboxTaskName, project_ref_id: EntityId,
-            person_ref_id: EntityId, recurring_task_timeline: str, recurring_task_gen_right_now: Timestamp,
-            preparation_days_cnt: int, due_date: ADate, source: EventSource, created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        name: InboxTaskName,
+        project_ref_id: EntityId,
+        person_ref_id: EntityId,
+        recurring_task_timeline: str,
+        recurring_task_gen_right_now: Timestamp,
+        preparation_days_cnt: int,
+        due_date: ADate,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -354,7 +437,10 @@ class InboxTask(LeafEntity):
             archived_time=None,
             last_modified_time=created_time,
             events=[
-                InboxTask.GeneratedForPersonBirthday.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+                InboxTask.GeneratedForPersonBirthday.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.PERSON_BIRTHDAY,
             project_ref_id=project_ref_id,
@@ -376,15 +462,22 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=recurring_task_gen_right_now,
             accepted_time=created_time,
             working_time=None,
-            completed_time=None)
+            completed_time=None,
+        )
         return inbox_task
 
     @staticmethod
     def new_inbox_task_for_slack_task(
-            inbox_task_collection_ref_id: EntityId, project_ref_id: EntityId, slack_task_ref_id: EntityId,
-            user: SlackUserName, channel: Optional[SlackChannelName], message: str,
-            generation_extra_info: PushGenerationExtraInfo, source: EventSource,
-            created_time: Timestamp) -> 'InboxTask':
+        inbox_task_collection_ref_id: EntityId,
+        project_ref_id: EntityId,
+        slack_task_ref_id: EntityId,
+        user: SlackUserName,
+        channel: Optional[SlackChannelName],
+        message: str,
+        generation_extra_info: PushGenerationExtraInfo,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
         """Create an inbox task."""
         inbox_task = InboxTask(
             ref_id=BAD_REF_ID,
@@ -394,7 +487,10 @@ class InboxTask(LeafEntity):
             archived_time=None,
             last_modified_time=created_time,
             events=[
-                InboxTask.GeneratedForSlackTask.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+                InboxTask.GeneratedForSlackTask.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             inbox_task_collection_ref_id=inbox_task_collection_ref_id,
             source=InboxTaskSource.SLACK_TASK,
             project_ref_id=project_ref_id,
@@ -404,7 +500,9 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=slack_task_ref_id,
-            name=InboxTask._build_name_for_slack_task(user, channel, generation_extra_info),
+            name=InboxTask._build_name_for_slack_task(
+                user, channel, generation_extra_info
+            ),
             status=generation_extra_info.status or InboxTaskStatus.ACCEPTED,
             eisen=generation_extra_info.eisen or Eisen.REGULAR,
             difficulty=generation_extra_info.difficulty,
@@ -416,21 +514,34 @@ class InboxTask(LeafEntity):
             recurring_gen_right_now=None,
             accepted_time=created_time,
             working_time=None,
-            completed_time=None)
+            completed_time=None,
+        )
         return inbox_task
 
     def change_project(
-            self, project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Change the project for the inbox task."""
         if not self.source.allow_user_changes:
             raise CannotModifyGeneratedTaskError("project")
         return self._new_version(
             project_ref_id=project_ref_id,
-            new_event=InboxTask.ChangeProject.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.ChangeProject.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def associate_with_big_plan(
-            self, project_ref_id: EntityId, big_plan_ref_id: EntityId, _big_plan_name: BigPlanName,
-            source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        big_plan_ref_id: EntityId,
+        _big_plan_name: BigPlanName,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Associate an inbox task with a big plan."""
         if not self.source.allow_user_changes:
             raise CannotModifyGeneratedTaskError("big plan")
@@ -439,11 +550,14 @@ class InboxTask(LeafEntity):
             source=InboxTaskSource.BIG_PLAN,
             project_ref_id=project_ref_id,
             big_plan_ref_id=big_plan_ref_id,
-            new_event=
-            InboxTask.AssociatedWithBigPlan.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.AssociatedWithBigPlan.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def release_from_big_plan(
-            self, source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self, source: EventSource, modification_time: Timestamp
+    ) -> "InboxTask":
         """Release an inbox task from a big plan."""
         if not self.source.allow_user_changes:
             raise CannotModifyGeneratedTaskError("big plan")
@@ -451,30 +565,53 @@ class InboxTask(LeafEntity):
         return self._new_version(
             source=InboxTaskSource.USER,
             big_plan_ref_id=None,
-            new_event=
-            InboxTask.ReleaseFromBigPlan.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.ReleaseFromBigPlan.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_big_plan(
-            self, project_ref_id: EntityId, big_plan_ref_id: EntityId, source: EventSource,
-            modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        big_plan_ref_id: EntityId,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a big plan."""
         if self.source is not InboxTaskSource.BIG_PLAN:
-            raise InputValidationError(f"Cannot reassociate a task which isn't a big plan one '{self.name}'")
+            raise InputValidationError(
+                f"Cannot reassociate a task which isn't a big plan one '{self.name}'"
+            )
         if self.big_plan_ref_id != big_plan_ref_id:
-            raise InputValidationError(f"Cannot reassociate a task which is not with the big plan '{self.name}'")
+            raise InputValidationError(
+                f"Cannot reassociate a task which is not with the big plan '{self.name}'"
+            )
 
         return self._new_version(
             project_ref_id=project_ref_id,
-            new_event=
-            InboxTask.UpdatedLinkToBigPlan.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToBigPlan.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_habit(
-            self, project_ref_id: EntityId, name: InboxTaskName, timeline: str, repeat_index: Optional[int],
-            actionable_date: Optional[ADate], due_date: ADate, eisen: Eisen, difficulty: Optional[Difficulty],
-            source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        name: InboxTaskName,
+        timeline: str,
+        repeat_index: Optional[int],
+        actionable_date: Optional[ADate],
+        due_date: ADate,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a habit."""
         if self.source is not InboxTaskSource.HABIT:
-            raise Exception(f"Cannot associate a task which is not a habit for '{self.name}'")
+            raise Exception(
+                f"Cannot associate a task which is not a habit for '{self.name}'"
+            )
         return self._new_version(
             project_ref_id=project_ref_id,
             name=InboxTask._build_name_for_habit(name, repeat_index),
@@ -484,15 +621,28 @@ class InboxTask(LeafEntity):
             difficulty=difficulty,
             recurring_timeline=timeline,
             recurring_repeat_index=repeat_index,
-            new_event=InboxTask.UpdatedLinkToHabit.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToHabit.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_chore(
-            self, project_ref_id: EntityId, name: InboxTaskName, timeline: str, actionable_date: Optional[ADate],
-            due_date: ADate, eisen: Eisen, difficulty: Optional[Difficulty], source: EventSource,
-            modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        name: InboxTaskName,
+        timeline: str,
+        actionable_date: Optional[ADate],
+        due_date: ADate,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a chore."""
         if self.source is not InboxTaskSource.CHORE:
-            raise Exception(f"Cannot associate a task which is not a chore for '{self.name}'")
+            raise Exception(
+                f"Cannot associate a task which is not a chore for '{self.name}'"
+            )
         return self._new_version(
             project_ref_id=project_ref_id,
             name=name,
@@ -501,16 +651,28 @@ class InboxTask(LeafEntity):
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=timeline,
-            new_event=InboxTask.UpdatedLinkToChore.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToChore.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_metric(
-            self, project_ref_id: EntityId, name: InboxTaskName, recurring_timeline: str, eisen: Eisen,
-            difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_time: ADate, source: EventSource,
-            modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        name: InboxTaskName,
+        recurring_timeline: str,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_time: ADate,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a metric."""
         if self.source is not InboxTaskSource.METRIC:
             raise Exception(
-                f"Cannot associate a task which is not recurring with a recurring one '{self.name}'")
+                f"Cannot associate a task which is not recurring with a recurring one '{self.name}'"
+            )
         return self._new_version(
             project_ref_id=project_ref_id,
             name=self._build_name_for_collection_task(name),
@@ -519,17 +681,28 @@ class InboxTask(LeafEntity):
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=recurring_timeline,
-            new_event=
-            InboxTask.UpdatedLinkToMetricCollection.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToMetricCollection.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_person_catch_up(
-            self, project_ref_id: EntityId, name: InboxTaskName, recurring_timeline: str, eisen: Eisen,
-            difficulty: Optional[Difficulty], actionable_date: Optional[ADate], due_time: ADate, source: EventSource,
-            modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        name: InboxTaskName,
+        recurring_timeline: str,
+        eisen: Eisen,
+        difficulty: Optional[Difficulty],
+        actionable_date: Optional[ADate],
+        due_time: ADate,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a person."""
         if self.source is not InboxTaskSource.PERSON_CATCH_UP:
             raise Exception(
-                f"Cannot associate a task which is not recurring with a recurring one '{self.name}'")
+                f"Cannot associate a task which is not recurring with a recurring one '{self.name}'"
+            )
         return self._new_version(
             project_ref_id=project_ref_id,
             name=self._build_name_for_catch_up_task(name),
@@ -538,33 +711,52 @@ class InboxTask(LeafEntity):
             eisen=eisen,
             difficulty=difficulty,
             recurring_timeline=recurring_timeline,
-            new_event=
-            InboxTask.UpdatedLinkToPersonCatchUp.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToPersonCatchUp.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_person_birthday(
-            self, project_ref_id: EntityId, name: InboxTaskName, recurring_timeline: str, preparation_days_cnt: int,
-            due_time: ADate, source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        name: InboxTaskName,
+        recurring_timeline: str,
+        preparation_days_cnt: int,
+        due_time: ADate,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a person."""
         if self.source is not InboxTaskSource.PERSON_BIRTHDAY:
             raise Exception(
-                f"Cannot associate a task which is not recurring with a recurring one '{self.name}'")
+                f"Cannot associate a task which is not recurring with a recurring one '{self.name}'"
+            )
         return self._new_version(
             project_ref_id=project_ref_id,
             name=self._build_name_for_birthday_task(name),
             actionable_date=due_time.subtract_days(preparation_days_cnt),
             due_date=due_time,
             recurring_timeline=recurring_timeline,
-            new_event=
-            InboxTask.UpdatedLinkToPersonBirthday.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToPersonBirthday.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update_link_to_slack_task(
-            self, project_ref_id: EntityId, user: SlackUserName, channel: Optional[SlackChannelName],
-            generation_extra_info: PushGenerationExtraInfo, message: str, source: EventSource,
-            modification_time: Timestamp) -> 'InboxTask':
+        self,
+        project_ref_id: EntityId,
+        user: SlackUserName,
+        channel: Optional[SlackChannelName],
+        generation_extra_info: PushGenerationExtraInfo,
+        message: str,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update all the info associated with a person."""
         if self.source is not InboxTaskSource.SLACK_TASK:
             raise Exception(
-                f"Cannot update a task which is not a Slack one '{self.name}'")
+                f"Cannot update a task which is not a Slack one '{self.name}'"
+            )
         return self._new_version(
             project_ref_id=project_ref_id,
             name=self._build_name_for_slack_task(user, channel, generation_extra_info),
@@ -573,35 +765,68 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             notes=InboxTask._build_notes_for_slack_task(user, channel, message),
-            new_event=
-            InboxTask.UpdatedLinkToSlackTask.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=InboxTask.UpdatedLinkToSlackTask.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update(
-            self, name: UpdateAction[InboxTaskName], status: UpdateAction[InboxTaskStatus],
-            actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
-            eisen: UpdateAction[Eisen], difficulty: UpdateAction[Optional[Difficulty]],
-            source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self,
+        name: UpdateAction[InboxTaskName],
+        status: UpdateAction[InboxTaskStatus],
+        actionable_date: UpdateAction[Optional[ADate]],
+        due_date: UpdateAction[Optional[ADate]],
+        eisen: UpdateAction[Eisen],
+        difficulty: UpdateAction[Optional[Difficulty]],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update the inbox task."""
         return self._update(
-            name=name, status=status, actionable_date=actionable_date, due_date=due_date,
-            eisen=eisen, difficulty=difficulty, source=source, modification_time=modification_time,
-            event_type=self.Updated)
+            name=name,
+            status=status,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            eisen=eisen,
+            difficulty=difficulty,
+            source=source,
+            modification_time=modification_time,
+            event_type=self.Updated,
+        )
 
     def update_generated(
-            self, status: UpdateAction[InboxTaskStatus],
-            actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
-            source: EventSource, modification_time: Timestamp) -> 'InboxTask':
+        self,
+        status: UpdateAction[InboxTaskStatus],
+        actionable_date: UpdateAction[Optional[ADate]],
+        due_date: UpdateAction[Optional[ADate]],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
         """Update the inbox task parts that can be updated in a generated task."""
         return self._update(
-            name=UpdateAction.do_nothing(), status=status, actionable_date=actionable_date,
-            due_date=due_date, eisen=UpdateAction.do_nothing(), difficulty=UpdateAction.do_nothing(),
-            source=source, modification_time=modification_time, event_type=self.UpdatedGenerated)
+            name=UpdateAction.do_nothing(),
+            status=status,
+            actionable_date=actionable_date,
+            due_date=due_date,
+            eisen=UpdateAction.do_nothing(),
+            difficulty=UpdateAction.do_nothing(),
+            source=source,
+            modification_time=modification_time,
+            event_type=self.UpdatedGenerated,
+        )
 
     def _update(
-            self, name: UpdateAction[InboxTaskName], status: UpdateAction[InboxTaskStatus],
-            actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
-            eisen: UpdateAction[Eisen], difficulty: UpdateAction[Optional[Difficulty]],
-            source: EventSource, modification_time: Timestamp, event_type: Type[Entity.Updated]) -> 'InboxTask':
+        self,
+        name: UpdateAction[InboxTaskName],
+        status: UpdateAction[InboxTaskStatus],
+        actionable_date: UpdateAction[Optional[ADate]],
+        due_date: UpdateAction[Optional[ADate]],
+        eisen: UpdateAction[Eisen],
+        difficulty: UpdateAction[Optional[Difficulty]],
+        source: EventSource,
+        modification_time: Timestamp,
+        event_type: Type[Entity.Updated],
+    ) -> "InboxTask":
         """Update the inbox task."""
         if name.should_change:
             if not self.source.allow_user_changes:
@@ -619,7 +844,9 @@ class InboxTask(LeafEntity):
             if not self.status.is_accepted_or_more and status.value.is_accepted_or_more:
                 the_accepted_time = modification_time
                 updated_accepted_time = UpdateAction.change_to(modification_time)
-            elif self.status.is_accepted_or_more and not status.value.is_accepted_or_more:
+            elif (
+                self.status.is_accepted_or_more and not status.value.is_accepted_or_more
+            ):
                 the_accepted_time = None
                 updated_accepted_time = UpdateAction.change_to(None)
             else:
@@ -650,7 +877,7 @@ class InboxTask(LeafEntity):
             event_kwargs = {
                 "updated_accepted_time": updated_accepted_time,
                 "updated_working_time": updated_working_time,
-                "updated_completed_time": updated_completed_time
+                "updated_completed_time": updated_completed_time,
             }
         else:
             event_kwargs = {}
@@ -687,7 +914,10 @@ class InboxTask(LeafEntity):
             completed_time=the_completed_time,
             eisen=the_eisen,
             difficulty=the_difficulty,
-            new_event=event_type.make_event_from_frame_args(source, self.version, modification_time, **event_kwargs))
+            new_event=event_type.make_event_from_frame_args(
+                source, self.version, modification_time, **event_kwargs
+            ),
+        )
 
     @property
     def allow_user_changes(self) -> bool:
@@ -718,7 +948,9 @@ class InboxTask(LeafEntity):
         return self.inbox_task_collection_ref_id
 
     @staticmethod
-    def _build_name_for_habit(name: InboxTaskName, repeat_index: Optional[int]) -> InboxTaskName:
+    def _build_name_for_habit(
+        name: InboxTaskName, repeat_index: Optional[int]
+    ) -> InboxTaskName:
         if repeat_index is not None:
             return InboxTaskName.from_raw(f"{name} [{repeat_index + 1}]")
         else:
@@ -738,8 +970,10 @@ class InboxTask(LeafEntity):
 
     @staticmethod
     def _build_name_for_slack_task(
-            user: SlackUserName, channel: Optional[SlackChannelName],
-            generation_extra_info: PushGenerationExtraInfo) -> InboxTaskName:
+        user: SlackUserName,
+        channel: Optional[SlackChannelName],
+        generation_extra_info: PushGenerationExtraInfo,
+    ) -> InboxTaskName:
         if generation_extra_info.name is not None:
             return generation_extra_info.name
         if channel is not None:
@@ -747,24 +981,44 @@ class InboxTask(LeafEntity):
         return InboxTaskName(f"Respond to {user}'s DM")
 
     @staticmethod
-    def _build_notes_for_slack_task(user: SlackUserName, channel: Optional[SlackChannelName], message: str) -> str:
-        message = textwrap.dedent(f"""
+    def _build_notes_for_slack_task(
+        user: SlackUserName, channel: Optional[SlackChannelName], message: str
+    ) -> str:
+        message = textwrap.dedent(
+            f"""
             **user**: {user}
             **channel**: {str(channel) if channel else "DM"}
             **message**: {message}
-            """).strip()
+            """
+        ).strip()
         return message
 
     @staticmethod
-    def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:
+    def _check_actionable_and_due_dates(
+        actionable_date: Optional[ADate], due_date: Optional[ADate]
+    ) -> None:
         if actionable_date is None or due_date is None:
             return
 
-        actionable_date_ts = actionable_date if isinstance(actionable_date, pendulum.DateTime) else \
-            pendulum.DateTime(actionable_date.year, actionable_date.month, actionable_date.day, tzinfo=UTC)
-        due_date_ts = due_date if isinstance(due_date, pendulum.DateTime) else \
-            pendulum.DateTime(due_date.year, due_date.month, due_date.day, tzinfo=UTC)
+        actionable_date_ts = (
+            actionable_date
+            if isinstance(actionable_date, pendulum.DateTime)
+            else pendulum.DateTime(
+                actionable_date.year,
+                actionable_date.month,
+                actionable_date.day,
+                tzinfo=UTC,
+            )
+        )
+        due_date_ts = (
+            due_date
+            if isinstance(due_date, pendulum.DateTime)
+            else pendulum.DateTime(
+                due_date.year, due_date.month, due_date.day, tzinfo=UTC
+            )
+        )
 
         if actionable_date_ts > due_date_ts:
             raise Exception(
-                f"The actionable date {actionable_date} should be before the due date {due_date}")
+                f"The actionable date {actionable_date} should be before the due date {due_date}"
+            )

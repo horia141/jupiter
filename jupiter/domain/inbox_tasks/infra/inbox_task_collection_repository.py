@@ -10,9 +10,13 @@ class InboxTaskCollectionNotFoundError(TrunkEntityNotFoundError):
     """Error raised when an inbox task collection does not exist."""
 
 
-class InboxTaskCollectionRepository(TrunkEntityRepository[InboxTaskCollection], abc.ABC):
+class InboxTaskCollectionRepository(
+    TrunkEntityRepository[InboxTaskCollection], abc.ABC
+):
     """A repository of inbox task collections."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> InboxTaskCollection:
+    def load_by_id(
+        self, ref_id: EntityId, allow_archived: bool = False
+    ) -> InboxTaskCollection:
         """Retrieve a inbox task collection by its id."""

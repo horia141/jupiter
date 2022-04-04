@@ -18,15 +18,21 @@ class PersonSyncService(
         NotionPerson,
         None,
         None,
-        None]):
+        None,
+    ]
+):
     """The service class for syncing the persons between local and Notion."""
 
     def __init__(
-            self, storage_engine: DomainStorageEngine, person_notion_manager: PersonNotionManager) -> None:
+        self,
+        storage_engine: DomainStorageEngine,
+        person_notion_manager: PersonNotionManager,
+    ) -> None:
         """Constructor."""
         super().__init__(
             PersonCollection,
             Person,
             NotionPerson,
             storage_engine,
-            person_notion_manager)
+            person_notion_manager,
+        )

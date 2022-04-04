@@ -28,7 +28,9 @@ class MetricArchive(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--metric", dest="metric_key", required=True, help="The key of the metric")
+        parser.add_argument(
+            "--metric", dest="metric_key", required=True, help="The key of the metric"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

@@ -26,9 +26,13 @@ class UseCaseIOBase:
             field_value = getattr(self, field.name)
             if isinstance(field_value, UpdateAction):
                 if field_value.should_change:
-                    serialized_form[field.name] = process_primitive_to_json(field_value.value, field.name)
+                    serialized_form[field.name] = process_primitive_to_json(
+                        field_value.value, field.name
+                    )
             else:
-                serialized_form[field.name] = process_primitive_to_json(field_value, field.name)
+                serialized_form[field.name] = process_primitive_to_json(
+                    field_value, field.name
+                )
         return serialized_form
 
 
@@ -51,14 +55,15 @@ class UseCaseResultBase(UseCaseIOBase):
     """The base class for use case args results."""
 
 
-UseCaseContext = TypeVar('UseCaseContext', bound=UseCaseContextBase)
-UseCaseArgs = TypeVar('UseCaseArgs', bound=UseCaseArgsBase)
-UseCaseResult = TypeVar('UseCaseResult', bound=Union[None, UseCaseResultBase])
+UseCaseContext = TypeVar("UseCaseContext", bound=UseCaseContextBase)
+UseCaseArgs = TypeVar("UseCaseArgs", bound=UseCaseArgsBase)
+UseCaseResult = TypeVar("UseCaseResult", bound=Union[None, UseCaseResultBase])
 
 
 @enum.unique
 class MutationUseCaseInvocationResult(enum.Enum):
     """The result of a mutation use case invocation."""
+
     SUCCESS = "success"
     FAILURE = "failure"
 
@@ -80,8 +85,8 @@ class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
 
     @staticmethod
     def build_success(
-            owner_ref_id: EntityId, timestamp: Timestamp, name: str,
-            args: UseCaseArgs) -> 'MutationUseCaseInvocationRecord[UseCaseArgs]':
+        owner_ref_id: EntityId, timestamp: Timestamp, name: str, args: UseCaseArgs
+    ) -> "MutationUseCaseInvocationRecord[UseCaseArgs]":
         """Build a success case for an invocation."""
         return MutationUseCaseInvocationRecord(
             owner_ref_id=owner_ref_id,
@@ -89,12 +94,17 @@ class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
             name=name,
             args=args,
             result=MutationUseCaseInvocationResult.SUCCESS,
-            error_str=None)
+            error_str=None,
+        )
 
     @staticmethod
     def build_failure(
-            owner_ref_id: EntityId, timestamp: Timestamp, name: str,
-            args: UseCaseArgs, error: Exception) -> 'MutationUseCaseInvocationRecord[UseCaseArgs]':
+        owner_ref_id: EntityId,
+        timestamp: Timestamp,
+        name: str,
+        args: UseCaseArgs,
+        error: Exception,
+    ) -> "MutationUseCaseInvocationRecord[UseCaseArgs]":
         """Build a success case for an invocation."""
         return MutationUseCaseInvocationRecord(
             owner_ref_id=owner_ref_id,
@@ -102,14 +112,17 @@ class MutationUseCaseInvocationRecord(Generic[UseCaseArgs]):
             name=name,
             args=args,
             result=MutationUseCaseInvocationResult.FAILURE,
-            error_str=str(error))
+            error_str=str(error),
+        )
 
 
 class MutationUseCaseInvocationRecorder(abc.ABC):
     """A special type of recorder for mutation use cases which records the outcome of a particular use case."""
 
     @abc.abstractmethod
-    def record(self, invocation_record: MutationUseCaseInvocationRecord[UseCaseArgs]) -> None:
+    def record(
+        self, invocation_record: MutationUseCaseInvocationRecord[UseCaseArgs]
+    ) -> None:
         """Record the invocation of the use case."""
 
 
@@ -140,9 +153,10 @@ class EmptyContext(UseCaseContextBase):
 
 
 class MutationEmptyContextUseCase(
-        Generic[UseCaseArgs, UseCaseResult],
-        UseCase[EmptyContext, UseCaseArgs, UseCaseResult],
-        abc.ABC):
+    Generic[UseCaseArgs, UseCaseResult],
+    UseCase[EmptyContext, UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
     """A command which does some sort of mutation, but cannot rely on a context."""
 
     def _build_context(self) -> EmptyContext:
@@ -151,55 +165,72 @@ class MutationEmptyContextUseCase(
 
     def execute(self, args: UseCaseArgs) -> UseCaseResult:
         """Execute the command's action."""
-        LOGGER.info(f"Invoking no-context mutation command {self.__class__.__name__} with args {args}")
+        LOGGER.info(
+            f"Invoking no-context mutation command {self.__class__.__name__} with args {args}"
+        )
         return self._execute(EmptyContext(), args)
 
 
 class MutationUseCase(
-        Generic[UseCaseContext, UseCaseArgs, UseCaseResult],
-        UseCase[UseCaseContext, UseCaseArgs, UseCaseResult],
-        abc.ABC):
+    Generic[UseCaseContext, UseCaseArgs, UseCaseResult],
+    UseCase[UseCaseContext, UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
     """A command which does some sort of mutation."""
 
     _time_provider: Final[TimeProvider]
     _invocation_recorder: Final[MutationUseCaseInvocationRecorder]
 
-    def __init__(self, time_provider: TimeProvider, invocation_recorder: MutationUseCaseInvocationRecorder) -> None:
+    def __init__(
+        self,
+        time_provider: TimeProvider,
+        invocation_recorder: MutationUseCaseInvocationRecorder,
+    ) -> None:
         """Constructor."""
         self._time_provider = time_provider
         self._invocation_recorder = invocation_recorder
 
     def execute(self, args: UseCaseArgs) -> UseCaseResult:
         """Execute the command's action."""
-        LOGGER.info(f"Invoking mutation command {self.__class__.__name__} with args {args}")
+        LOGGER.info(
+            f"Invoking mutation command {self.__class__.__name__} with args {args}"
+        )
         context = self._build_context()
         try:
             result = self._execute(context, args)
-            invocation_record = \
-                MutationUseCaseInvocationRecord.build_success(
-                    context.owner_ref_id if context is not None else BAD_REF_ID,
-                    self._time_provider.get_current_time(), self.__class__.__name__, args)
+            invocation_record = MutationUseCaseInvocationRecord.build_success(
+                context.owner_ref_id if context is not None else BAD_REF_ID,
+                self._time_provider.get_current_time(),
+                self.__class__.__name__,
+                args,
+            )
             self._invocation_recorder.record(invocation_record)
             return result
         except InputValidationError:
             raise
         except Exception as err:
-            invocation_record = \
-                MutationUseCaseInvocationRecord.build_failure(
-                    context.owner_ref_id if context else BAD_REF_ID,
-                    self._time_provider.get_current_time(), self.__class__.__name__, args, err)
+            invocation_record = MutationUseCaseInvocationRecord.build_failure(
+                context.owner_ref_id if context else BAD_REF_ID,
+                self._time_provider.get_current_time(),
+                self.__class__.__name__,
+                args,
+                err,
+            )
             self._invocation_recorder.record(invocation_record)
             raise
 
 
 class ReadonlyUseCase(
-        Generic[UseCaseContext, UseCaseArgs, UseCaseResult],
-        UseCase[UseCaseContext, UseCaseArgs, UseCaseResult],
-        abc.ABC):
+    Generic[UseCaseContext, UseCaseArgs, UseCaseResult],
+    UseCase[UseCaseContext, UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
     """A command which only does reads."""
 
     def execute(self, args: UseCaseArgs) -> UseCaseResult:
         """Execute the command's action."""
-        LOGGER.info(f"Invoking readonly command {self.__class__.__name__} with args {args}")
+        LOGGER.info(
+            f"Invoking readonly command {self.__class__.__name__} with args {args}"
+        )
         context = self._build_context()
         return self._execute(context, args)

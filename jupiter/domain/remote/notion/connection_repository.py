@@ -1,7 +1,11 @@
 """The Notion connection repository."""
 
 from jupiter.domain.remote.notion.connection import NotionConnection
-from jupiter.framework.repository import StubEntityRepository, StubEntityAlreadyExistsError, StubEntityNotFoundError
+from jupiter.framework.repository import (
+    StubEntityRepository,
+    StubEntityAlreadyExistsError,
+    StubEntityNotFoundError,
+)
 
 
 class NotionConnectionAlreadyExistsError(StubEntityAlreadyExistsError):

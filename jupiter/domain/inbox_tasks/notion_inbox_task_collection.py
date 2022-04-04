@@ -11,8 +11,6 @@ class NotionInboxTaskCollection(NotionTrunkEntity[InboxTaskCollection]):
     """A inbox task collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: InboxTaskCollection) -> 'NotionInboxTaskCollection':
+    def new_notion_entity(entity: InboxTaskCollection) -> "NotionInboxTaskCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionInboxTaskCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionInboxTaskCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

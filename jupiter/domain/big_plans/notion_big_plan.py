@@ -17,17 +17,21 @@ from jupiter.remote.notion.common import format_name_for_option
 
 
 @dataclass(frozen=True)
-class NotionBigPlan(NotionLeafEntity[BigPlan, 'NotionBigPlan.DirectInfo', 'NotionBigPlan.InverseInfo']):
+class NotionBigPlan(
+    NotionLeafEntity[BigPlan, "NotionBigPlan.DirectInfo", "NotionBigPlan.InverseInfo"]
+):
     """A big plan on Notion-side."""
 
     @dataclass(frozen=True)
     class DirectInfo:
         """Info when copying from the app to Notion."""
+
         all_projects_map: Dict[EntityId, Project]
 
     @dataclass(frozen=True)
     class InverseInfo:
         """Extra info for the Notion to app sync."""
+
         default_project: Project
         all_projects_by_name: Dict[str, Project]
         all_projects_map: Dict[EntityId, Project]
@@ -40,7 +44,7 @@ class NotionBigPlan(NotionLeafEntity[BigPlan, 'NotionBigPlan.DirectInfo', 'Notio
     project_name: Optional[str]
 
     @staticmethod
-    def new_notion_entity(entity: BigPlan, extra_info: DirectInfo) -> 'NotionBigPlan':
+    def new_notion_entity(entity: BigPlan, extra_info: DirectInfo) -> "NotionBigPlan":
         """Construct a new Notion row from a given big plan."""
         return NotionBigPlan(
             notion_id=BAD_NOTION_ID,
@@ -52,17 +56,26 @@ class NotionBigPlan(NotionLeafEntity[BigPlan, 'NotionBigPlan.DirectInfo', 'Notio
             actionable_date=entity.actionable_date,
             due_date=entity.due_date,
             project_ref_id=str(entity.project_ref_id),
-            project_name=format_name_for_option(extra_info.all_projects_map[entity.parent_ref_id].name))
+            project_name=format_name_for_option(
+                extra_info.all_projects_map[entity.parent_ref_id].name
+            ),
+        )
 
     def new_entity(self, parent_ref_id: EntityId, extra_info: InverseInfo) -> BigPlan:
         """Create a new big plan from this."""
-        project_ref_id = EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
-        project_name = ProjectName.from_raw(self.project_name) if self.project_name else None
+        project_ref_id = (
+            EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
+        )
+        project_name = (
+            ProjectName.from_raw(self.project_name) if self.project_name else None
+        )
 
         if project_ref_id is not None:
             project = extra_info.all_projects_map[project_ref_id]
         elif project_name is not None:
-            project = extra_info.all_projects_by_name[format_name_for_option(project_name)]
+            project = extra_info.all_projects_by_name[
+                format_name_for_option(project_name)
+            ]
         else:
             project = extra_info.default_project
 
@@ -71,22 +84,33 @@ class NotionBigPlan(NotionLeafEntity[BigPlan, 'NotionBigPlan.DirectInfo', 'Notio
             big_plan_collection_ref_id=parent_ref_id,
             project_ref_id=project.ref_id,
             name=BigPlanName.from_raw(self.name),
-            status=BigPlanStatus.from_raw(self.status) if self.status else BigPlanStatus.NOT_STARTED,
+            status=BigPlanStatus.from_raw(self.status)
+            if self.status
+            else BigPlanStatus.NOT_STARTED,
             actionable_date=self.actionable_date,
             due_date=self.due_date,
             source=EventSource.NOTION,
-            created_time=self.last_edited_time)
+            created_time=self.last_edited_time,
+        )
 
-    def apply_to_entity(self, entity: BigPlan, extra_info: InverseInfo) -> NotionLeafApplyToEntityResult[BigPlan]:
+    def apply_to_entity(
+        self, entity: BigPlan, extra_info: InverseInfo
+    ) -> NotionLeafApplyToEntityResult[BigPlan]:
         """Apply to an already existing big plan."""
         should_modify_on_notion = False
-        project_ref_id = EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
-        project_name = ProjectName.from_raw(self.project_name) if self.project_name else None
+        project_ref_id = (
+            EntityId.from_raw(self.project_ref_id) if self.project_ref_id else None
+        )
+        project_name = (
+            ProjectName.from_raw(self.project_name) if self.project_name else None
+        )
 
         if project_ref_id is not None:
             project = extra_info.all_projects_map[project_ref_id]
         elif project_name is not None:
-            project = extra_info.all_projects_by_name[format_name_for_option(project_name)]
+            project = extra_info.all_projects_by_name[
+                format_name_for_option(project_name)
+            ]
             should_modify_on_notion = True
         else:
             project = extra_info.default_project
@@ -99,18 +123,26 @@ class NotionBigPlan(NotionLeafEntity[BigPlan, 'NotionBigPlan.DirectInfo', 'Notio
             clean_status = BigPlanStatus.NOT_STARTED
             should_modify_on_notion = True
 
-        new_entity = entity\
-            .change_project(
-                project_ref_id=project.ref_id, source=EventSource.NOTION, modification_time=self.last_edited_time) \
+        new_entity = (
+            entity.change_project(
+                project_ref_id=project.ref_id,
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time,
+            )
             .update(
                 name=UpdateAction.change_to(BigPlanName.from_raw(self.name)),
                 status=UpdateAction.change_to(clean_status),
                 actionable_date=UpdateAction.change_to(self.actionable_date),
                 due_date=UpdateAction.change_to(self.due_date),
                 source=EventSource.NOTION,
-                modification_time=self.last_edited_time)\
+                modification_time=self.last_edited_time,
+            )
             .change_archived(
-                archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time)
+                archived=self.archived,
+                source=EventSource.NOTION,
+                archived_time=self.last_edited_time,
+            )
+        )
 
         return NotionLeafApplyToEntityResult(new_entity, should_modify_on_notion)
 

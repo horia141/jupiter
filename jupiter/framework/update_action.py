@@ -2,7 +2,7 @@
 import typing
 from typing import TypeVar, Generic, Final, Optional
 
-UpdateActionT = TypeVar('UpdateActionT')
+UpdateActionT = TypeVar("UpdateActionT")
 
 
 class UpdateAction(Generic[UpdateActionT]):
@@ -11,18 +11,20 @@ class UpdateAction(Generic[UpdateActionT]):
     _should_change: Final[bool]
     _value: Optional[UpdateActionT]
 
-    def __init__(self, should_change: bool, value: Optional[UpdateActionT] = None) -> None:
+    def __init__(
+        self, should_change: bool, value: Optional[UpdateActionT] = None
+    ) -> None:
         """Constructor."""
         self._should_change = should_change
         self._value = value
 
     @staticmethod
-    def do_nothing() -> 'UpdateAction[UpdateActionT]':
+    def do_nothing() -> "UpdateAction[UpdateActionT]":
         """An update action where nothing needs to happen."""
         return UpdateAction[UpdateActionT](should_change=False)
 
     @staticmethod
-    def change_to(value: UpdateActionT) -> 'UpdateAction[UpdateActionT]':
+    def change_to(value: UpdateActionT) -> "UpdateAction[UpdateActionT]":
         """An update action where the value needs to be changed to a new value."""
         return UpdateAction[UpdateActionT](should_change=True, value=value)
 

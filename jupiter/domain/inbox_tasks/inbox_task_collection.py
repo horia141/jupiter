@@ -19,7 +19,8 @@ class InboxTaskCollection(TrunkEntity):
 
     @staticmethod
     def new_inbox_task_collection(
-            workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp) -> 'InboxTaskCollection':
+        workspace_ref_id: EntityId, source: EventSource, created_time: Timestamp
+    ) -> "InboxTaskCollection":
         """Create a inbox task collection."""
         inbox_task_collection = InboxTaskCollection(
             ref_id=BAD_REF_ID,
@@ -28,8 +29,13 @@ class InboxTaskCollection(TrunkEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[InboxTaskCollection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
-            workspace_ref_id=workspace_ref_id)
+            events=[
+                InboxTaskCollection.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
+            workspace_ref_id=workspace_ref_id,
+        )
         return inbox_task_collection
 
     @property

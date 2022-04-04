@@ -16,7 +16,7 @@ class URL(Value):
     _the_url: str
 
     @staticmethod
-    def from_raw(url_raw: Optional[str]) -> 'URL':
+    def from_raw(url_raw: Optional[str]) -> "URL":
         """Validate and clean a url."""
         if not url_raw:
             raise InputValidationError("Expected url to be non-null")

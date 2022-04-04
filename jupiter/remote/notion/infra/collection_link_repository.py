@@ -15,11 +15,15 @@ class NotionCollectionLinkRepository(Repository, abc.ABC):
     """The collections link repository."""
 
     @abc.abstractmethod
-    def create(self, notion_collection_link: NotionCollectionLink) -> NotionCollectionLink:
+    def create(
+        self, notion_collection_link: NotionCollectionLink
+    ) -> NotionCollectionLink:
         """Create a notion collection link."""
 
     @abc.abstractmethod
-    def save(self, notion_collection_link: NotionCollectionLink) -> NotionCollectionLink:
+    def save(
+        self, notion_collection_link: NotionCollectionLink
+    ) -> NotionCollectionLink:
         """Save a notion collection link."""
 
     @abc.abstractmethod

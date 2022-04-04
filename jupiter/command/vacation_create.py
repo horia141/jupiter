@@ -19,7 +19,9 @@ class VacationCreate(command.Command):
     _global_properties: Final[GlobalProperties]
     _command: Final[VacationCreateUseCase]
 
-    def __init__(self, global_properties: GlobalProperties, the_command: VacationCreateUseCase):
+    def __init__(
+        self, global_properties: GlobalProperties, the_command: VacationCreateUseCase
+    ):
         """Constructor."""
         self._global_properties = global_properties
         self._command = the_command
@@ -36,9 +38,18 @@ class VacationCreate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--name", dest="name", required=True, help="The name of the vacation")
-        parser.add_argument("--start-date", dest="start_date", required=True, help="The vacation start date")
-        parser.add_argument("--end-date", dest="end_date", required=True, help="The vacation end date")
+        parser.add_argument(
+            "--name", dest="name", required=True, help="The name of the vacation"
+        )
+        parser.add_argument(
+            "--start-date",
+            dest="start_date",
+            required=True,
+            help="The vacation start date",
+        )
+        parser.add_argument(
+            "--end-date", dest="end_date", required=True, help="The vacation end date"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -46,5 +57,8 @@ class VacationCreate(command.Command):
         start_date = ADate.from_raw(self._global_properties.timezone, args.start_date)
         end_date = ADate.from_raw(self._global_properties.timezone, args.end_date)
 
-        self._command.execute(VacationCreateUseCase.Args(
-            name=name, start_date=start_date, end_date=end_date))
+        self._command.execute(
+            VacationCreateUseCase.Args(
+                name=name, start_date=start_date, end_date=end_date
+            )
+        )

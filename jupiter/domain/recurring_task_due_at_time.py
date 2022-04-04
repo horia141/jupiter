@@ -16,20 +16,25 @@ class RecurringTaskDueAtTime(Value):
     _the_time: str
 
     @staticmethod
-    def from_raw(recurring_task_due_at_time_raw: Optional[str]) -> 'RecurringTaskDueAtTime':
+    def from_raw(
+        recurring_task_due_at_time_raw: Optional[str],
+    ) -> "RecurringTaskDueAtTime":
         """Validate and clean the due at time info."""
         if not recurring_task_due_at_time_raw:
             raise InputValidationError("Expected the due time info to be non-null")
 
-        recurring_task_due_at_time_str: str = recurring_task_due_at_time_raw.strip().lower()
+        recurring_task_due_at_time_str: str = (
+            recurring_task_due_at_time_raw.strip().lower()
+        )
 
         if len(recurring_task_due_at_time_str) == 0:
             raise InputValidationError("Expected due time info to be non-empty")
 
         if not _DUE_AT_TIME_RE.match(recurring_task_due_at_time_str):
             raise InputValidationError(
-                f"Expected due time info '{recurring_task_due_at_time_raw}' to " +
-                f"match '{_DUE_AT_TIME_RE.pattern}'")
+                f"Expected due time info '{recurring_task_due_at_time_raw}' to "
+                + f"match '{_DUE_AT_TIME_RE.pattern}'"
+            )
 
         return RecurringTaskDueAtTime(recurring_task_due_at_time_str)
 

@@ -7,7 +7,9 @@ from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
-class WorkspaceFindUseCase(AppReadonlyUseCase['WorkspaceFindUseCase.Args', 'WorkspaceFindUseCase.Result']):
+class WorkspaceFindUseCase(
+    AppReadonlyUseCase["WorkspaceFindUseCase.Args", "WorkspaceFindUseCase.Result"]
+):
     """The command for finding workspaces."""
 
     @dataclass(frozen=True)
@@ -21,9 +23,11 @@ class WorkspaceFindUseCase(AppReadonlyUseCase['WorkspaceFindUseCase.Args', 'Work
         workspace: Workspace
         default_project: Project
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> 'Result':
+    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
         """Execute the command's action."""
         workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:
-            default_project = uow.project_repository.load_by_id(workspace.default_project_ref_id)
+            default_project = uow.project_repository.load_by_id(
+                workspace.default_project_ref_id
+            )
         return self.Result(workspace=workspace, default_project=default_project)

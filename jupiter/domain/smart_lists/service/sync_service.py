@@ -1,8 +1,12 @@
 """Shared service for syncing smart lists."""
 from jupiter.domain.notion_sync_service import TrunkBranchLeafAndTagNotionSyncService
-from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager
+from jupiter.domain.smart_lists.infra.smart_list_notion_manager import (
+    SmartListNotionManager,
+)
 from jupiter.domain.smart_lists.notion_smart_list import NotionSmartList
-from jupiter.domain.smart_lists.notion_smart_list_collection import NotionSmartListCollection
+from jupiter.domain.smart_lists.notion_smart_list_collection import (
+    NotionSmartListCollection,
+)
 from jupiter.domain.smart_lists.notion_smart_list_item import NotionSmartListItem
 from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.smart_lists.smart_list import SmartList
@@ -24,11 +28,16 @@ class SmartListSyncServiceNew(
         NotionSmartList,
         NotionSmartListItem,
         NotionSmartListTag,
-        None]):
+        None,
+    ]
+):
     """The service class for syncing smart lists."""
 
     def __init__(
-            self, storage_engine: DomainStorageEngine, smart_list_notion_manager: SmartListNotionManager) -> None:
+        self,
+        storage_engine: DomainStorageEngine,
+        smart_list_notion_manager: SmartListNotionManager,
+    ) -> None:
         """Constructor."""
         super().__init__(
             SmartListCollection,
@@ -39,4 +48,5 @@ class SmartListSyncServiceNew(
             NotionSmartListItem,
             NotionSmartListTag,
             storage_engine,
-            smart_list_notion_manager)
+            smart_list_notion_manager,
+        )

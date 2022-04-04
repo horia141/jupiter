@@ -16,12 +16,12 @@ class NotionId(Value):
     _the_id: str
 
     @staticmethod
-    def make_brand_new() -> 'NotionId':
+    def make_brand_new() -> "NotionId":
         """Make a new NotionId."""
         return NotionId(str(uuid.uuid4()))
 
     @staticmethod
-    def from_raw(notion_id_raw: Optional[str]) -> 'NotionId':
+    def from_raw(notion_id_raw: Optional[str]) -> "NotionId":
         """Validate and clean an notion id."""
         if not notion_id_raw:
             raise InputValidationError("Expected Notion id to be non-null")
@@ -40,7 +40,9 @@ class NotionId(Value):
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, NotionId):
-            raise Exception(f"Cannot compare an notion id with {other.__class__.__name__}")
+            raise Exception(
+                f"Cannot compare an notion id with {other.__class__.__name__}"
+            )
         return self._the_id < other._the_id
 
     def __str__(self) -> str:

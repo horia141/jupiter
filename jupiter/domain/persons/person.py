@@ -33,9 +33,14 @@ class Person(LeafEntity):
 
     @staticmethod
     def new_person(
-            person_collection_ref_id: EntityId, name: PersonName, relationship: PersonRelationship,
-            catch_up_params: Optional[RecurringTaskGenParams], birthday: Optional[PersonBirthday], source: EventSource,
-            created_time: Timestamp) -> 'Person':
+        person_collection_ref_id: EntityId,
+        name: PersonName,
+        relationship: PersonRelationship,
+        catch_up_params: Optional[RecurringTaskGenParams],
+        birthday: Optional[PersonBirthday],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "Person":
         """Create a person."""
         person = Person(
             ref_id=BAD_REF_ID,
@@ -44,26 +49,38 @@ class Person(LeafEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[Person.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                Person.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             person_collection_ref_id=person_collection_ref_id,
             name=name,
             relationship=relationship,
             catch_up_params=catch_up_params,
-            birthday=birthday)
+            birthday=birthday,
+        )
         return person
 
     def update(
-            self, name: UpdateAction[PersonName], relationship: UpdateAction[PersonRelationship],
-            catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]],
-            birthday: UpdateAction[Optional[PersonBirthday]], source: EventSource,
-            modification_time: Timestamp) -> 'Person':
+        self,
+        name: UpdateAction[PersonName],
+        relationship: UpdateAction[PersonRelationship],
+        catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]],
+        birthday: UpdateAction[Optional[PersonBirthday]],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "Person":
         """Update info about the of the person."""
         return self._new_version(
             name=name.or_else(self.name),
             relationship=relationship.or_else(self.relationship),
             catch_up_params=catch_up_params.or_else(self.catch_up_params),
             birthday=birthday.or_else(self.birthday),
-            new_event=Person.Update.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=Person.Update.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     @property
     def preparation_days_cnt_for_birthday(self) -> int:

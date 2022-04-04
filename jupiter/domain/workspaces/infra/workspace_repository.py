@@ -2,7 +2,11 @@
 import abc
 
 from jupiter.domain.workspaces.workspace import Workspace
-from jupiter.framework.repository import RootEntityRepository, RootEntityAlreadyExistsError, RootEntityNotFoundError
+from jupiter.framework.repository import (
+    RootEntityRepository,
+    RootEntityAlreadyExistsError,
+    RootEntityNotFoundError,
+)
 
 
 class WorkspaceAlreadyExistsError(RootEntityAlreadyExistsError):

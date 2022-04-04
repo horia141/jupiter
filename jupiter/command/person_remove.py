@@ -31,7 +31,9 @@ class PersonRemove(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True, help="The id of the person")
+        parser.add_argument(
+            "--id", dest="ref_id", required=True, help="The id of the person"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

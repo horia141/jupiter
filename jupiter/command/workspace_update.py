@@ -33,10 +33,10 @@ class WorkspaceUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
+        parser.add_argument("--name", required=False, help="The plan name to use")
         parser.add_argument(
-            "--name", required=False, help="The plan name to use")
-        parser.add_argument(
-            "--timezone", required=False, help="The timezone you're currently in")
+            "--timezone", required=False, help="The timezone you're currently in"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

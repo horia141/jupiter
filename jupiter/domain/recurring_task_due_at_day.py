@@ -11,7 +11,7 @@ _RECURRING_TASK_DUE_AT_DAY_BOUNDS: Final[Dict[RecurringTaskPeriod, Tuple[int, in
     RecurringTaskPeriod.WEEKLY: (1, 6),
     RecurringTaskPeriod.MONTHLY: (1, 31),
     RecurringTaskPeriod.QUARTERLY: (1, 31),
-    RecurringTaskPeriod.YEARLY: (1, 31)
+    RecurringTaskPeriod.YEARLY: (1, 31),
 }
 
 
@@ -22,16 +22,22 @@ class RecurringTaskDueAtDay(Value):
     _the_day: int
 
     @staticmethod
-    def from_raw(period: RecurringTaskPeriod, recurring_task_due_at_day_raw: Optional[int]) -> 'RecurringTaskDueAtDay':
+    def from_raw(
+        period: RecurringTaskPeriod, recurring_task_due_at_day_raw: Optional[int]
+    ) -> "RecurringTaskDueAtDay":
         """Validate and clean the recurring task due at day info."""
         if not recurring_task_due_at_day_raw:
             raise InputValidationError("Expected the due day info to be non-null")
 
         bounds = _RECURRING_TASK_DUE_AT_DAY_BOUNDS[period]
 
-        if recurring_task_due_at_day_raw < bounds[0] or recurring_task_due_at_day_raw > bounds[1]:
+        if (
+            recurring_task_due_at_day_raw < bounds[0]
+            or recurring_task_due_at_day_raw > bounds[1]
+        ):
             raise InputValidationError(
-                f"Expected the due day info for {period} period to be a value between {bounds[0]} and {bounds[1]}")
+                f"Expected the due day info for {period} period to be a value between {bounds[0]} and {bounds[1]}"
+            )
 
         return RecurringTaskDueAtDay(recurring_task_due_at_day_raw)
 

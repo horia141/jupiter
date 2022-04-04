@@ -32,8 +32,13 @@ class VacationArchive(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", type=str, dest="ref_id", required=True,
-                            help="The id of the vacations to remove")
+        parser.add_argument(
+            "--id",
+            type=str,
+            dest="ref_id",
+            required=True,
+            help="The id of the vacations to remove",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

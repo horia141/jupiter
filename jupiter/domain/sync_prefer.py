@@ -9,11 +9,12 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class SyncPrefer(enum.Enum):
     """The source of data to prefer for a sync operation."""
+
     LOCAL = "local"
     NOTION = "notion"
 
     @staticmethod
-    def from_raw(sync_prefer_raw: Optional[str]) -> 'SyncPrefer':
+    def from_raw(sync_prefer_raw: Optional[str]) -> "SyncPrefer":
         """Validate and clean the big plan status."""
         if not sync_prefer_raw:
             raise InputValidationError("Expected sync prefer to be non-null")
@@ -22,7 +23,8 @@ class SyncPrefer(enum.Enum):
 
         if sync_prefer_str not in SyncPrefer.all_values():
             raise InputValidationError(
-                f"Expected sync prefer '{sync_prefer_raw}' to be one of '{','.join(SyncPrefer.all_values())}'")
+                f"Expected sync prefer '{sync_prefer_raw}' to be one of '{','.join(SyncPrefer.all_values())}'"
+            )
 
         return SyncPrefer(sync_prefer_str)
 

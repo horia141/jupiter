@@ -16,19 +16,22 @@ class SlackUserName(Value):
     _the_name: str
 
     @staticmethod
-    def from_raw(slack_user_name_raw: Optional[str]) -> 'SlackUserName':
+    def from_raw(slack_user_name_raw: Optional[str]) -> "SlackUserName":
         """Validate and clean a Slack user name."""
         if not slack_user_name_raw:
             raise InputValidationError("Expected Slack user name to be non-null")
 
-        slack_user_name: str = " ".join(word for word in slack_user_name_raw.strip().split(" ") if len(word) > 0)
+        slack_user_name: str = " ".join(
+            word for word in slack_user_name_raw.strip().split(" ") if len(word) > 0
+        )
 
         if len(slack_user_name) == 0:
             raise InputValidationError("Expected Slack user name to be non-empty")
 
         if not _SLACK_USER_NAME_RE.match(slack_user_name):
             raise InputValidationError(
-                f"Expected Slack user name '{slack_user_name_raw}' to match '{_SLACK_USER_NAME_RE.pattern}")
+                f"Expected Slack user name '{slack_user_name_raw}' to match '{_SLACK_USER_NAME_RE.pattern}"
+            )
 
         return SlackUserName(slack_user_name)
 

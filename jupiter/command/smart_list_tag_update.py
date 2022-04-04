@@ -33,8 +33,12 @@ class SmartListTagUpdate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--id", dest="ref_id", required=True, help="The id of the smart list tag")
-        parser.add_argument("--name", dest="tag_name", required=False, help="The name of the smart list")
+        parser.add_argument(
+            "--id", dest="ref_id", required=True, help="The id of the smart list tag"
+        )
+        parser.add_argument(
+            "--name", dest="tag_name", required=False, help="The name of the smart list"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
@@ -43,4 +47,6 @@ class SmartListTagUpdate(command.Command):
             tag_name = UpdateAction.change_to(SmartListTagName.from_raw(args.tag_name))
         else:
             tag_name = UpdateAction.do_nothing()
-        self._command.execute(SmartListTagUpdateUseCase.Args(ref_id=ref_id, tag_name=tag_name))
+        self._command.execute(
+            SmartListTagUpdateUseCase.Args(ref_id=ref_id, tag_name=tag_name)
+        )

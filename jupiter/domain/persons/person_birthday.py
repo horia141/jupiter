@@ -14,44 +14,52 @@ class PersonBirthday(Value):
 
     # pylint: disable=invalid-name
     _MONTH_NAME_INDEX: ClassVar[Dict[str, int]] = {
-        'Jan': 1,
-        'Feb': 2,
-        'Mar': 3,
-        'Apr': 4,
-        'May': 5,
-        'Jun': 6,
-        'Jul': 7,
-        'Aug': 8,
-        'Sep': 9,
-        'Oct': 10,
-        'Nov': 11,
-        'Dec': 12
+        "Jan": 1,
+        "Feb": 2,
+        "Mar": 3,
+        "Apr": 4,
+        "May": 5,
+        "Jun": 6,
+        "Jul": 7,
+        "Aug": 8,
+        "Sep": 9,
+        "Oct": 10,
+        "Nov": 11,
+        "Dec": 12,
     }
-    _MONTH_INDEX_NAME: ClassVar[Dict[int, str]] = {i: n for (n, i) in _MONTH_NAME_INDEX.items()}
+    _MONTH_INDEX_NAME: ClassVar[Dict[int, str]] = {
+        i: n for (n, i) in _MONTH_NAME_INDEX.items()
+    }
 
     day: int
     month: int
 
     @staticmethod
-    def from_raw(birthday_str: Optional[str]) -> 'PersonBirthday':
+    def from_raw(birthday_str: Optional[str]) -> "PersonBirthday":
         """Validate and clean a raw birthday given as 12 May."""
         if not birthday_str:
             raise InputValidationError("Expected birthday to be non null")
 
-        parts = birthday_str.strip().split(' ')
+        parts = birthday_str.strip().split(" ")
         if len(parts) != 2:
             raise InputValidationError(f"Invalid format for birthday '{birthday_str}'")
 
         try:
-            day = RecurringTaskDueAtDay.from_raw(RecurringTaskPeriod.MONTHLY, int(parts[0], base=10))
+            day = RecurringTaskDueAtDay.from_raw(
+                RecurringTaskPeriod.MONTHLY, int(parts[0], base=10)
+            )
             month = PersonBirthday._MONTH_NAME_INDEX[parts[1].capitalize()]
         except ValueError as err:
-            raise InputValidationError(f"Invalid format for day part of birthday '{birthday_str}'") from err
+            raise InputValidationError(
+                f"Invalid format for day part of birthday '{birthday_str}'"
+            ) from err
         except KeyError as err:
-            raise InputValidationError(f"Invalid format for month part of birthday '{birthday_str}'") from err
+            raise InputValidationError(
+                f"Invalid format for month part of birthday '{birthday_str}'"
+            ) from err
 
         return PersonBirthday(day.as_int(), month)
 
     def __str__(self) -> str:
         """String representation."""
-        return f'{self.day} {self._MONTH_INDEX_NAME[self.month]}'
+        return f"{self.day} {self._MONTH_INDEX_NAME[self.month]}"

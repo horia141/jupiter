@@ -22,7 +22,7 @@ class NotionVacation(NotionLeafEntity[Vacation, None, None]):
     end_date: Optional[ADate]
 
     @staticmethod
-    def new_notion_entity(entity: Vacation, extra_info: None) -> 'NotionVacation':
+    def new_notion_entity(entity: Vacation, extra_info: None) -> "NotionVacation":
         """Construct a new Notion row from a given vacation."""
         return NotionVacation(
             notion_id=BAD_NOTION_ID,
@@ -31,15 +31,20 @@ class NotionVacation(NotionLeafEntity[Vacation, None, None]):
             name=str(entity.name),
             archived=entity.archived,
             start_date=entity.start_date,
-            end_date=entity.end_date)
+            end_date=entity.end_date,
+        )
 
     def new_entity(self, parent_ref_id: EntityId, extra_info: None) -> Vacation:
         """Create a new vacation from this."""
         vacation_name = VacationName.from_raw(self.name)
         if self.start_date is None:
-            raise InputValidationError(f"Vacation '{self.name}' should have a start date")
+            raise InputValidationError(
+                f"Vacation '{self.name}' should have a start date"
+            )
         if self.end_date is None:
-            raise InputValidationError(f"Vacation '{self.name}' should have an end date")
+            raise InputValidationError(
+                f"Vacation '{self.name}' should have an end date"
+            )
         return Vacation.new_vacation(
             archived=self.archived,
             vacation_collection_ref_id=parent_ref_id,
@@ -47,26 +52,35 @@ class NotionVacation(NotionLeafEntity[Vacation, None, None]):
             start_date=self.start_date,
             end_date=self.end_date,
             source=EventSource.NOTION,
-            created_time=self.last_edited_time)
+            created_time=self.last_edited_time,
+        )
 
-    def apply_to_entity(self, entity: Vacation, extra_info: None) -> NotionLeafApplyToEntityResult[Vacation]:
+    def apply_to_entity(
+        self, entity: Vacation, extra_info: None
+    ) -> NotionLeafApplyToEntityResult[Vacation]:
         """Apply to an already existing vacation."""
         vacation_name = VacationName.from_raw(self.name)
         if self.start_date is None:
-            raise InputValidationError(f"Vacation '{self.name}' should have a start date")
+            raise InputValidationError(
+                f"Vacation '{self.name}' should have a start date"
+            )
         if self.end_date is None:
-            raise InputValidationError(f"Vacation '{self.name}' should have an end date")
-        return \
-            NotionLeafApplyToEntityResult.just(
-                entity\
-                    .update(
-                        name=UpdateAction.change_to(vacation_name),
-                        start_date=UpdateAction.change_to(self.start_date),
-                        end_date=UpdateAction.change_to(self.end_date),
-                        source=EventSource.NOTION,
-                        modification_time=self.last_edited_time)\
-                    .change_archived(
-                        archived=self.archived, source=EventSource.NOTION, archived_time=self.last_edited_time))
+            raise InputValidationError(
+                f"Vacation '{self.name}' should have an end date"
+            )
+        return NotionLeafApplyToEntityResult.just(
+            entity.update(
+                name=UpdateAction.change_to(vacation_name),
+                start_date=UpdateAction.change_to(self.start_date),
+                end_date=UpdateAction.change_to(self.end_date),
+                source=EventSource.NOTION,
+                modification_time=self.last_edited_time,
+            ).change_archived(
+                archived=self.archived,
+                source=EventSource.NOTION,
+                archived_time=self.last_edited_time,
+            )
+        )
 
     @property
     def nice_name(self) -> str:

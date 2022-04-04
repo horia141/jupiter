@@ -15,11 +15,15 @@ class NotionCollectionItemLinkRepository(Repository, abc.ABC):
     """The collections item link repository."""
 
     @abc.abstractmethod
-    def create(self, notion_collection_item_link: NotionCollectionItemLink) -> NotionCollectionItemLink:
+    def create(
+        self, notion_collection_item_link: NotionCollectionItemLink
+    ) -> NotionCollectionItemLink:
         """Create a notion collection item link."""
 
     @abc.abstractmethod
-    def save(self, notion_collection_item_link: NotionCollectionItemLink) -> NotionCollectionItemLink:
+    def save(
+        self, notion_collection_item_link: NotionCollectionItemLink
+    ) -> NotionCollectionItemLink:
         """Save a notion collection item link."""
 
     @abc.abstractmethod
@@ -31,7 +35,9 @@ class NotionCollectionItemLinkRepository(Repository, abc.ABC):
         """Load a particular notion collection item link or return null if it cannot be found."""
 
     @abc.abstractmethod
-    def find_all_for_collection(self, collection_key: NotionLockKey) -> Iterable[NotionCollectionItemLink]:
+    def find_all_for_collection(
+        self, collection_key: NotionLockKey
+    ) -> Iterable[NotionCollectionItemLink]:
         """Load all Notion collection item links for a particular collection."""
 
     @abc.abstractmethod

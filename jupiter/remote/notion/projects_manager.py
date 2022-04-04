@@ -4,7 +4,10 @@ from typing import Final, ClassVar, Iterable, Optional
 
 from notion.collection import CollectionRowBlock
 
-from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionManager, NotionProjectNotFoundError
+from jupiter.domain.projects.infra.project_notion_manager import (
+    ProjectNotionManager,
+    NotionProjectNotFoundError,
+)
 from jupiter.domain.projects.notion_project import NotionProject
 from jupiter.domain.projects.notion_project_collection import NotionProjectCollection
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
@@ -13,9 +16,16 @@ from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey
-from jupiter.remote.notion.infra.client import NotionClient, NotionCollectionSchemaProperties, NotionFieldProps, \
-    NotionFieldShow
-from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager, NotionCollectionItemNotFoundError
+from jupiter.remote.notion.infra.client import (
+    NotionClient,
+    NotionCollectionSchemaProperties,
+    NotionFieldProps,
+    NotionFieldShow,
+)
+from jupiter.remote.notion.infra.collections_manager import (
+    NotionCollectionsManager,
+    NotionCollectionItemNotFoundError,
+)
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
@@ -30,22 +40,10 @@ class NotionProjectsManager(ProjectNotionManager):
     _PAGE_ICON: ClassVar[str] = "💡"
 
     _SCHEMA: ClassVar[JSONDictType] = {
-        "title": {
-            "name": "Name",
-            "type": "title"
-        },
-        "key": {
-            "name": "Key",
-            "type": "text"
-        },
-        "last-edited-time": {
-            "name": "Last Edited Time",
-            "type": "last_edited_time"
-        },
-        "ref-id": {
-            "name": "Ref Id",
-            "type": "text"
-        }
+        "title": {"name": "Name", "type": "title"},
+        "key": {"name": "Key", "type": "text"},
+        "last-edited-time": {"name": "Last Edited Time", "type": "last_edited_time"},
+        "ref-id": {"name": "Ref Id", "type": "text"},
     }
 
     _SCHEMA_PROPERTIES: ClassVar[NotionCollectionSchemaProperties] = [
@@ -59,25 +57,18 @@ class NotionProjectsManager(ProjectNotionManager):
         "name": "Database",
         "type": "table",
         "format": {
-            "table_properties": [{
-                "width": 300,
-                "property": "title",
-                "visible": True
-            }, {
-                "width": 100,
-                "property": "key",
-                "visible": True,
-            }, {
-                "width": 200,
-                "property": "last-edited-time",
-                "visible": True
-            }, {
-                "width": 100,
-                "property": "ref-id",
-                "visible": False
-            }]
+            "table_properties": [
+                {"width": 300, "property": "title", "visible": True},
+                {
+                    "width": 100,
+                    "property": "key",
+                    "visible": True,
+                },
+                {"width": 200, "property": "last-edited-time", "visible": True},
+                {"width": 100, "property": "ref-id", "visible": False},
+            ]
         },
-        "query2": {}
+        "query2": {},
     }
 
     _global_properties: Final[GlobalProperties]
@@ -85,14 +76,19 @@ class NotionProjectsManager(ProjectNotionManager):
     _collections_manager: Final[NotionCollectionsManager]
 
     def __init__(
-            self, global_properties: GlobalProperties, time_provider: TimeProvider,
-            collections_manager: NotionCollectionsManager) -> None:
+        self,
+        global_properties: GlobalProperties,
+        time_provider: TimeProvider,
+        collections_manager: NotionCollectionsManager,
+    ) -> None:
         """Constructor."""
         self._global_properties = global_properties
         self._time_provider = time_provider
         self._collections_manager = collections_manager
 
-    def upsert_trunk(self, parent: NotionWorkspace, trunk: NotionProjectCollection) -> None:
+    def upsert_trunk(
+        self, parent: NotionWorkspace, trunk: NotionProjectCollection
+    ) -> None:
         """Upsert the root page for the projects section."""
         self._collections_manager.upsert_collection(
             key=NotionLockKey(f"{self._KEY}:{trunk.ref_id}"),
@@ -101,98 +97,123 @@ class NotionProjectsManager(ProjectNotionManager):
             icon=self._PAGE_ICON,
             schema=self._SCHEMA,
             schema_properties=self._SCHEMA_PROPERTIES,
-            view_schemas=[
-                ("database_view_id", self._DATABASE_VIEW_SCHEMA)
-            ])
+            view_schemas=[("database_view_id", self._DATABASE_VIEW_SCHEMA)],
+        )
 
-    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: NotionProject, extra_info: None) -> NotionProject:
+    def upsert_leaf(
+        self, trunk_ref_id: EntityId, leaf: NotionProject, extra_info: None
+    ) -> NotionProject:
         """Create a project."""
-        link = \
-            self._collections_manager.upsert_collection_item(
-                key=NotionLockKey(f"{leaf.ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                new_row=leaf,
-                copy_row_to_notion_row=self._copy_row_to_notion_row)
+        link = self._collections_manager.upsert_collection_item(
+            key=NotionLockKey(f"{leaf.ref_id}"),
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+            new_row=leaf,
+            copy_row_to_notion_row=self._copy_row_to_notion_row,
+        )
         return link.item_info
 
     def save_leaf(
-            self, trunk_ref_id: EntityId, leaf: NotionProject, extra_info: Optional[None] = None) -> NotionProject:
+        self,
+        trunk_ref_id: EntityId,
+        leaf: NotionProject,
+        extra_info: Optional[None] = None,
+    ) -> NotionProject:
         """Update a Notion-side project with new data."""
         try:
-            link = \
-                self._collections_manager.save_collection_item(
-                    key=NotionLockKey(f"{leaf.ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                    row=leaf,
-                    copy_row_to_notion_row=self._copy_row_to_notion_row)
+            link = self._collections_manager.save_collection_item(
+                key=NotionLockKey(f"{leaf.ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                row=leaf,
+                copy_row_to_notion_row=self._copy_row_to_notion_row,
+            )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
-            raise NotionProjectNotFoundError(f"Project with id {leaf.ref_id} could not be found") from err
+            raise NotionProjectNotFoundError(
+                f"Project with id {leaf.ref_id} could not be found"
+            ) from err
 
     def load_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> NotionProject:
         """Load a Notion-side project."""
         try:
-            link = \
-                self._collections_manager.load_collection_item(
-                    key=NotionLockKey(f"{leaf_ref_id}"),
-                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                    copy_notion_row_to_row=self._copy_notion_row_to_row)
+            link = self._collections_manager.load_collection_item(
+                key=NotionLockKey(f"{leaf_ref_id}"),
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                copy_notion_row_to_row=self._copy_notion_row_to_row,
+            )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
-            raise NotionProjectNotFoundError(f"Project with id {leaf_ref_id} could not be found") from err
+            raise NotionProjectNotFoundError(
+                f"Project with id {leaf_ref_id} could not be found"
+            ) from err
 
     def load_all_leaves(self, trunk_ref_id: EntityId) -> Iterable[NotionProject]:
         """Retrieve all the Notion-side project items."""
-        return [l.item_info for l in
-                self._collections_manager.load_all_collection_items(
-                    collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                    copy_notion_row_to_row=self._copy_notion_row_to_row)]
+        return [
+            l.item_info
+            for l in self._collections_manager.load_all_collection_items(
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                copy_notion_row_to_row=self._copy_notion_row_to_row,
+            )
+        ]
 
     def remove_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         try:
             self._collections_manager.remove_collection_item(
                 key=NotionLockKey(f"{leaf_ref_id}"),
-                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+                collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+            )
         except NotionCollectionItemNotFoundError as err:
-            raise NotionProjectNotFoundError(f"Project with id {leaf_ref_id} could not be found") from err
+            raise NotionProjectNotFoundError(
+                f"Project with id {leaf_ref_id} could not be found"
+            ) from err
 
     def drop_all_leaves(self, trunk_ref_id: EntityId) -> None:
         """Remove all projects Notion-side."""
         self._collections_manager.drop_all_collection_items(
-            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}")
+        )
 
     def load_all_saved_ref_ids(self, trunk_ref_id: EntityId) -> Iterable[EntityId]:
         """Retrieve all the saved ref ids for the projects."""
         return self._collections_manager.load_all_collection_items_saved_ref_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}")
+        )
 
     def load_all_saved_notion_ids(self, trunk_ref_id: EntityId) -> Iterable[NotionId]:
         """Retrieve all the saved Notion-ids for the projects."""
         return self._collections_manager.load_all_collection_items_saved_notion_ids(
-            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"))
+            collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}")
+        )
 
     def link_local_and_notion_leaves(
-            self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId) -> None:
+        self, trunk_ref_id: EntityId, ref_id: EntityId, notion_id: NotionId
+    ) -> None:
         """Link a local entity with the notion one, useful in syncing processes."""
         self._collections_manager.quick_link_local_and_notion_entries_for_collection_item(
             key=NotionLockKey(f"{ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
             ref_id=ref_id,
-            notion_id=notion_id)
+            notion_id=notion_id,
+        )
 
     def _copy_row_to_notion_row(
-            self, client: NotionClient, row: NotionProject, notion_row: CollectionRowBlock) -> CollectionRowBlock:
+        self, client: NotionClient, row: NotionProject, notion_row: CollectionRowBlock
+    ) -> CollectionRowBlock:
         """Copy the fields of the local row to the actual Notion structure."""
         with client.with_transaction():
             notion_row.title = row.name
             notion_row.key = row.key
-            notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
+            notion_row.last_edited_time = row.last_edited_time.to_notion(
+                self._global_properties.timezone
+            )
             notion_row.ref_id = str(row.ref_id) if row.ref_id else None
 
         return notion_row
 
-    def _copy_notion_row_to_row(self, project_notion_row: CollectionRowBlock) -> NotionProject:
+    def _copy_notion_row_to_row(
+        self, project_notion_row: CollectionRowBlock
+    ) -> NotionProject:
         """Transform the live system data to something suitable for basic storage."""
         # pylint: disable=no-self-use
         return NotionProject(
@@ -201,4 +222,7 @@ class NotionProjectsManager(ProjectNotionManager):
             name=project_notion_row.title,
             key=project_notion_row.key,
             last_edited_time=Timestamp.from_notion(project_notion_row.last_edited_time),
-            ref_id=EntityId.from_raw(project_notion_row.ref_id) if project_notion_row.ref_id else None)
+            ref_id=EntityId.from_raw(project_notion_row.ref_id)
+            if project_notion_row.ref_id
+            else None,
+        )

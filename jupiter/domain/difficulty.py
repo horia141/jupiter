@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class Difficulty(enum.Enum):
     """The difficulty of a particular task."""
+
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
@@ -18,7 +19,7 @@ class Difficulty(enum.Enum):
         return str(self.value).capitalize()
 
     @staticmethod
-    def from_raw(difficulty_raw: Optional[str]) -> 'Difficulty':
+    def from_raw(difficulty_raw: Optional[str]) -> "Difficulty":
         """Validate and clean the difficulty."""
         if not difficulty_raw:
             raise InputValidationError("Expected difficulty to be non-null")
@@ -27,7 +28,8 @@ class Difficulty(enum.Enum):
 
         if difficulty_str not in Difficulty.all_values():
             raise InputValidationError(
-                f"Expected difficulty '{difficulty_raw}' to be one of '{','.join(Difficulty.all_values())}'")
+                f"Expected difficulty '{difficulty_raw}' to be one of '{','.join(Difficulty.all_values())}'"
+            )
 
         return Difficulty(difficulty_str)
 

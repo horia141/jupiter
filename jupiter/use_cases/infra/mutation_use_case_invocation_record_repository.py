@@ -9,5 +9,7 @@ class MutationUseCaseInvocationRecordRepository(Repository, abc.ABC):
     """A repository for mutation use cases invocation records."""
 
     @abc.abstractmethod
-    def create(self, invocation_record: MutationUseCaseInvocationRecord[UseCaseArgs]) -> None:
+    def create(
+        self, invocation_record: MutationUseCaseInvocationRecord[UseCaseArgs]
+    ) -> None:
         """Create a new invocation record."""

@@ -10,7 +10,7 @@ from jupiter.framework.value import Value
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
 
 
-_EntityNameT = TypeVar('_EntityNameT', bound='EntityName')
+_EntityNameT = TypeVar("_EntityNameT", bound="EntityName")
 
 
 @dataclass(frozen=True)
@@ -21,26 +21,33 @@ class EntityName(Value):
     _the_name: str
 
     @classmethod
-    def from_raw(cls: Type[_EntityNameT], entity_name_raw: Optional[str]) -> _EntityNameT:
+    def from_raw(
+        cls: Type[_EntityNameT], entity_name_raw: Optional[str]
+    ) -> _EntityNameT:
         """Validate and clean a entity name."""
         if not entity_name_raw:
             raise InputValidationError("Expected entity name to be non-null")
 
-        entity_name: str = " ".join(word for word in entity_name_raw.strip().split(" ") if len(word) > 0)
+        entity_name: str = " ".join(
+            word for word in entity_name_raw.strip().split(" ") if len(word) > 0
+        )
 
         if len(entity_name) == 0:
             raise InputValidationError("Expected entity name to be non-empty")
 
         if not _ENTITY_NAME_RE.match(entity_name):
             raise InputValidationError(
-                f"Expected entity name '{entity_name_raw}' to match '{_ENTITY_NAME_RE.pattern}")
+                f"Expected entity name '{entity_name_raw}' to match '{_ENTITY_NAME_RE.pattern}"
+            )
 
         return cls(entity_name)
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, EntityName):
-            raise Exception(f"Cannot compare an entity name with {other.__class__.__name__}")
+            raise Exception(
+                f"Cannot compare an entity name with {other.__class__.__name__}"
+            )
         return self._the_name < other._the_name
 
     def __str__(self) -> str:

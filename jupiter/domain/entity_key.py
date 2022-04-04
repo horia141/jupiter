@@ -11,7 +11,7 @@ from jupiter.framework.value import Value
 _ENTITY_KEY_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
 
 
-_EntityKeyT = TypeVar('_EntityKeyT', bound='EntityKey')
+_EntityKeyT = TypeVar("_EntityKeyT", bound="EntityKey")
 
 
 @dataclass(frozen=True)
@@ -34,14 +34,17 @@ class EntityKey(Value, abc.ABC):
 
         if not _ENTITY_KEY_RE.match(entity_key_str):
             raise InputValidationError(
-                f"Expected entity key '{entity_key_raw}' to match '{_ENTITY_KEY_RE.pattern}'")
+                f"Expected entity key '{entity_key_raw}' to match '{_ENTITY_KEY_RE.pattern}'"
+            )
 
         return cls(entity_key_str)
 
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, EntityKey):
-            raise Exception(f"Cannot compare an entity id with {other.__class__.__name__}")
+            raise Exception(
+                f"Cannot compare an entity id with {other.__class__.__name__}"
+            )
         return self._the_key < other._the_key
 
     def __str__(self) -> str:

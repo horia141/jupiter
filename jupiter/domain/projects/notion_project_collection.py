@@ -11,8 +11,6 @@ class NotionProjectCollection(NotionTrunkEntity[ProjectCollection]):
     """A project collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: ProjectCollection) -> 'NotionProjectCollection':
+    def new_notion_entity(entity: ProjectCollection) -> "NotionProjectCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionProjectCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionProjectCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

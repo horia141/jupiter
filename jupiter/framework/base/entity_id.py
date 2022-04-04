@@ -19,7 +19,7 @@ class EntityId(Value):
     _the_id: str
 
     @staticmethod
-    def from_raw(entity_id_raw: Optional[str]) -> 'EntityId':
+    def from_raw(entity_id_raw: Optional[str]) -> "EntityId":
         """Validate and clean an entity id."""
         if not entity_id_raw:
             raise InputValidationError("Expected entity id to be non-null")
@@ -31,7 +31,8 @@ class EntityId(Value):
 
         if not _ENTITY_ID_RE.match(entity_id):
             raise InputValidationError(
-                f"Expected entity id '{entity_id_raw}' to match '{_ENTITY_ID_RE.pattern}")
+                f"Expected entity id '{entity_id_raw}' to match '{_ENTITY_ID_RE.pattern}"
+            )
 
         return EntityId(entity_id)
 
@@ -42,7 +43,9 @@ class EntityId(Value):
     def __lt__(self, other: object) -> bool:
         """Compare this with another."""
         if not isinstance(other, EntityId):
-            raise Exception(f"Cannot compare an entity id with {other.__class__.__name__}")
+            raise Exception(
+                f"Cannot compare an entity id with {other.__class__.__name__}"
+            )
         return self._the_id < other._the_id
 
     def __str__(self) -> str:

@@ -31,17 +31,34 @@ class ProjectShow(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--show-archived", dest="show_archived", default=False, action="store_true",
-                            help="Whether to show archived vacations or not")
-        parser.add_argument("--project", dest="project_keys", default=[], action="append",
-                            help="The project key to show")
+        parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
+            "--project",
+            dest="project_keys",
+            default=[],
+            action="append",
+            help="The project key to show",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
-        project_keys = [ProjectKey.from_raw(pk) for pk in args.project_keys] if len(args.project_keys) > 0 else None
-        response = \
-            self._command.execute(ProjectFindUseCase.Args(allow_archived=show_archived, filter_keys=project_keys))
+        project_keys = (
+            [ProjectKey.from_raw(pk) for pk in args.project_keys]
+            if len(args.project_keys) > 0
+            else None
+        )
+        response = self._command.execute(
+            ProjectFindUseCase.Args(
+                allow_archived=show_archived, filter_keys=project_keys
+            )
+        )
 
         for project in response.projects:
-            print(f'{project.key}: {project.name}')
+            print(f"{project.key}: {project.name}")

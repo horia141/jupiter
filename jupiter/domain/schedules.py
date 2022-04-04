@@ -32,11 +32,15 @@ class Schedule(abc.ABC):
 
     def __str__(self) -> str:
         """String representation."""
-        return f"Schedule({self.period} {self.first_day} {self.end_day} {self.timeline})"
+        return (
+            f"Schedule({self.period} {self.first_day} {self.end_day} {self.timeline})"
+        )
 
     def __repr__(self) -> str:
         """String representation."""
-        return f"Schedule({self.period} {self.first_day} {self.end_day} {self.timeline})"
+        return (
+            f"Schedule({self.period} {self.first_day} {self.end_day} {self.timeline})"
+        )
 
     @staticmethod
     def year_two_digits(date: Timestamp) -> str:
@@ -58,7 +62,7 @@ class Schedule(abc.ABC):
             9: 3,
             10: 4,
             11: 4,
-            12: 4
+            12: 4,
         }
 
         return month_to_quarter_num[date.month]
@@ -78,7 +82,7 @@ class Schedule(abc.ABC):
             9: "Q3",
             10: "Q4",
             11: "Q4",
-            12: "Q4"
+            12: "Q4",
         }
 
         return month_to_quarter[date.month]
@@ -98,7 +102,7 @@ class Schedule(abc.ABC):
             9: 7,
             10: 10,
             11: 10,
-            12: 10
+            12: 10,
         }
 
         return month_to_quarter[date.month]
@@ -118,7 +122,7 @@ class Schedule(abc.ABC):
             9: 9,
             10: 12,
             11: 12,
-            12: 12
+            12: 12,
         }
 
         return month_to_quarter[date.month]
@@ -138,7 +142,7 @@ class Schedule(abc.ABC):
             9: "Sep",
             10: "Oct",
             11: "Nov",
-            12: "Dec"
+            12: "Dec",
         }
 
         return month_to_month[date.month]
@@ -199,33 +203,48 @@ class Schedule(abc.ABC):
 
     def contains_timestamp(self, timestamp: Timestamp) -> bool:
         """Tests whether a particular datetime is in the schedule block."""
-        first_day_dt = pendulum.DateTime(self.first_day.year, self.first_day.month, self.first_day.day, tzinfo=UTC)
-        end_day_dt = \
-            pendulum.DateTime(self.end_day.year, self.end_day.month, self.end_day.day, tzinfo=UTC).end_of("day")
+        first_day_dt = pendulum.DateTime(
+            self.first_day.year, self.first_day.month, self.first_day.day, tzinfo=UTC
+        )
+        end_day_dt = pendulum.DateTime(
+            self.end_day.year, self.end_day.month, self.end_day.day, tzinfo=UTC
+        ).end_of("day")
         timestamp = timestamp.value.end_of("day")
-        return typing.cast(bool, first_day_dt <= timestamp) and typing.cast(bool, timestamp <= end_day_dt)
+        return typing.cast(bool, first_day_dt <= timestamp) and typing.cast(
+            bool, timestamp <= end_day_dt
+        )
 
 
 class DailySchedule(Schedule):
     """A daily schedule."""
 
     def __init__(
-            self, name: EntityName, right_now: Timestamp, timezone: Timezone,
-            skip_rule: Optional[RecurringTaskSkipRule] = None,
-            due_at_time: Optional[RecurringTaskDueAtTime] = None) -> None:
+        self,
+        name: EntityName,
+        right_now: Timestamp,
+        timezone: Timezone,
+        skip_rule: Optional[RecurringTaskSkipRule] = None,
+        due_at_time: Optional[RecurringTaskDueAtTime] = None,
+    ) -> None:
         """Construct a schedule."""
         self._date = typing.cast(pendulum.Date, right_now.value.date())
         self._due_date = typing.cast(pendulum.Date, right_now.value.date())
         self._actionable_date = None
         if due_at_time:
-            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
+            self._due_time = pendulum.parse(
+                f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone
+            )
         else:
             self._due_time = None
-        self._full_name = \
-            InboxTaskName(
-                f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}")
+        self._full_name = InboxTaskName(
+            f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}"
+        )
         self._timeline = self._generate_timeline(right_now)
-        self._should_skip = self._skip_helper(skip_rule, self._due_date.day_of_week) if skip_rule else False
+        self._should_skip = (
+            self._skip_helper(skip_rule, self._due_date.day_of_week)
+            if skip_rule
+            else False
+        )
 
     @property
     def period(self) -> RecurringTaskPeriod:
@@ -256,29 +275,47 @@ class WeeklySchedule(Schedule):
     """A monthly schedule."""
 
     def __init__(
-            self, name: EntityName, right_now: Timestamp, timezone: Timezone,
-            skip_rule: Optional[RecurringTaskSkipRule], actionable_from_day: Optional[RecurringTaskDueAtDay],
-            due_at_time: Optional[RecurringTaskDueAtTime], due_at_day: Optional[RecurringTaskDueAtDay]) -> None:
+        self,
+        name: EntityName,
+        right_now: Timestamp,
+        timezone: Timezone,
+        skip_rule: Optional[RecurringTaskSkipRule],
+        actionable_from_day: Optional[RecurringTaskDueAtDay],
+        due_at_time: Optional[RecurringTaskDueAtTime],
+        due_at_day: Optional[RecurringTaskDueAtDay],
+    ) -> None:
         """Construct a schedule."""
         super().__init__()
         start_of_week = right_now.value.start_of("week")
         self._date = typing.cast(pendulum.Date, right_now.value.date())
         if actionable_from_day:
-            self._actionable_date = \
-                typing.cast(pendulum.Date, start_of_week.add(days=actionable_from_day.as_int() - 1).date())
+            self._actionable_date = typing.cast(
+                pendulum.Date,
+                start_of_week.add(days=actionable_from_day.as_int() - 1).date(),
+            )
         else:
             self._actionable_date = None
         if due_at_day:
-            self._due_date = start_of_week.add(days=due_at_day.as_int() - 1).end_of("day")
+            self._due_date = start_of_week.add(days=due_at_day.as_int() - 1).end_of(
+                "day"
+            )
         else:
             self._due_date = start_of_week.end_of("week").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
+            self._due_time = pendulum.parse(
+                f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone
+            )
         else:
             self._due_time = None
-        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}")
+        self._full_name = InboxTaskName(
+            f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}"
+        )
         self._timeline = self._generate_timeline(start_of_week)
-        self._should_skip = self._skip_helper(skip_rule, self._due_date.week_of_year) if skip_rule else False
+        self._should_skip = (
+            self._skip_helper(skip_rule, self._due_date.week_of_year)
+            if skip_rule
+            else False
+        )
 
     @property
     def period(self) -> RecurringTaskPeriod:
@@ -308,29 +345,45 @@ class MonthlySchedule(Schedule):
     """A monthly schedule."""
 
     def __init__(
-            self, name: EntityName, right_now: Timestamp, timezone: Timezone,
-            skip_rule: Optional[RecurringTaskSkipRule], actionable_from_day: Optional[RecurringTaskDueAtDay],
-            due_at_time: Optional[RecurringTaskDueAtTime], due_at_day: Optional[RecurringTaskDueAtDay]) -> None:
+        self,
+        name: EntityName,
+        right_now: Timestamp,
+        timezone: Timezone,
+        skip_rule: Optional[RecurringTaskSkipRule],
+        actionable_from_day: Optional[RecurringTaskDueAtDay],
+        due_at_time: Optional[RecurringTaskDueAtTime],
+        due_at_day: Optional[RecurringTaskDueAtDay],
+    ) -> None:
         """Construct a schedule."""
         super().__init__()
         start_of_month = right_now.value.start_of("month")
         self._date = typing.cast(pendulum.Date, right_now.value.date())
         if actionable_from_day:
-            self._actionable_date = \
-                typing.cast(pendulum.Date, start_of_month.add(days=actionable_from_day.as_int() - 1).date())
+            self._actionable_date = typing.cast(
+                pendulum.Date,
+                start_of_month.add(days=actionable_from_day.as_int() - 1).date(),
+            )
         else:
             self._actionable_date = None
         if due_at_day:
-            self._due_date = start_of_month.add(days=due_at_day.as_int() - 1).end_of("day")
+            self._due_date = start_of_month.add(days=due_at_day.as_int() - 1).end_of(
+                "day"
+            )
         else:
             self._due_date = start_of_month.end_of("month").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
+            self._due_time = pendulum.parse(
+                f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone
+            )
         else:
             self._due_time = None
-        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}")
+        self._full_name = InboxTaskName(
+            f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}"
+        )
         self._timeline = self._generate_timeline(Timestamp(start_of_month))
-        self._should_skip = self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
+        self._should_skip = (
+            self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
+        )
 
     @property
     def period(self) -> RecurringTaskPeriod:
@@ -359,76 +412,107 @@ class QuarterlySchedule(Schedule):
     """A quarterly schedule."""
 
     def __init__(
-            self, name: EntityName, right_now: Timestamp, timezone: Timezone,
-            skip_rule: Optional[RecurringTaskSkipRule], actionable_from_day: Optional[RecurringTaskDueAtDay],
-            actionable_from_month: Optional[RecurringTaskDueAtMonth], due_at_time: Optional[RecurringTaskDueAtTime],
-            due_at_day: Optional[RecurringTaskDueAtDay], due_at_month: Optional[RecurringTaskDueAtMonth]) -> None:
+        self,
+        name: EntityName,
+        right_now: Timestamp,
+        timezone: Timezone,
+        skip_rule: Optional[RecurringTaskSkipRule],
+        actionable_from_day: Optional[RecurringTaskDueAtDay],
+        actionable_from_month: Optional[RecurringTaskDueAtMonth],
+        due_at_time: Optional[RecurringTaskDueAtTime],
+        due_at_day: Optional[RecurringTaskDueAtDay],
+        due_at_month: Optional[RecurringTaskDueAtMonth],
+    ) -> None:
         """Construct a schedule."""
         super().__init__()
         self._date = typing.cast(pendulum.Date, right_now.value.date())
         if actionable_from_month:
             if actionable_from_day:
-                self._actionable_date = typing.cast(pendulum.Date, right_now
-                                                    .value
-                                                    .on(right_now.value.year, self.month_to_quarter_start(right_now), 1)
-                                                    .start_of("month")
-                                                    .add(months=actionable_from_month.as_int() - 1)
-                                                    .add(days=actionable_from_day.as_int() - 1)
-                                                    .date())
+                self._actionable_date = typing.cast(
+                    pendulum.Date,
+                    right_now.value.on(
+                        right_now.value.year, self.month_to_quarter_start(right_now), 1
+                    )
+                    .start_of("month")
+                    .add(months=actionable_from_month.as_int() - 1)
+                    .add(days=actionable_from_day.as_int() - 1)
+                    .date(),
+                )
             else:
-                self._actionable_date = typing.cast(pendulum.Date, right_now
-                                                    .value
-                                                    .on(right_now.value.year, self.month_to_quarter_start(right_now), 1)
-                                                    .start_of("month")
-                                                    .add(months=actionable_from_month.as_int() - 1)
-                                                    .date())
+                self._actionable_date = typing.cast(
+                    pendulum.Date,
+                    right_now.value.on(
+                        right_now.value.year, self.month_to_quarter_start(right_now), 1
+                    )
+                    .start_of("month")
+                    .add(months=actionable_from_month.as_int() - 1)
+                    .date(),
+                )
         elif actionable_from_day:
-            self._actionable_date = typing.cast(pendulum.Date, right_now
-                                                .value
-                                                .on(right_now.value.year, self.month_to_quarter_start(right_now), 1)
-                                                .start_of("month")
-                                                .add(days=actionable_from_day.as_int() - 1)
-                                                .date())
+            self._actionable_date = typing.cast(
+                pendulum.Date,
+                right_now.value.on(
+                    right_now.value.year, self.month_to_quarter_start(right_now), 1
+                )
+                .start_of("month")
+                .add(days=actionable_from_day.as_int() - 1)
+                .date(),
+            )
         else:
             self._actionable_date = None
         if due_at_month:
             if due_at_day:
-                self._due_date = right_now\
-                    .value\
-                    .on(right_now.value.year, self.month_to_quarter_start(right_now), 1)\
-                    .start_of("month")\
-                    .add(months=due_at_month.as_int() - 1)\
-                    .add(days=due_at_day.as_int() - 1)\
+                self._due_date = (
+                    right_now.value.on(
+                        right_now.value.year, self.month_to_quarter_start(right_now), 1
+                    )
+                    .start_of("month")
+                    .add(months=due_at_month.as_int() - 1)
+                    .add(days=due_at_day.as_int() - 1)
                     .end_of("day")
+                )
             else:
-                self._due_date = right_now\
-                    .value\
-                    .on(right_now.value.year, self.month_to_quarter_start(right_now), 1)\
-                    .start_of("month")\
-                    .add(months=due_at_month.as_int() - 1)\
-                    .end_of("month")\
+                self._due_date = (
+                    right_now.value.on(
+                        right_now.value.year, self.month_to_quarter_start(right_now), 1
+                    )
+                    .start_of("month")
+                    .add(months=due_at_month.as_int() - 1)
+                    .end_of("month")
                     .end_of("day")
+                )
         elif due_at_day:
-            self._due_date = right_now\
-                .value\
-                .on(right_now.value.year, self.month_to_quarter_start(right_now), 1)\
-                .start_of("month")\
-                .add(days=due_at_day.as_int() - 1)\
+            self._due_date = (
+                right_now.value.on(
+                    right_now.value.year, self.month_to_quarter_start(right_now), 1
+                )
+                .start_of("month")
+                .add(days=due_at_day.as_int() - 1)
                 .end_of("day")
+            )
         else:
-            self._due_date = right_now\
-                .value\
-                .on(right_now.value.year, self.month_to_quarter_end(right_now), 1)\
-                .end_of("month")\
+            self._due_date = (
+                right_now.value.on(
+                    right_now.value.year, self.month_to_quarter_end(right_now), 1
+                )
+                .end_of("month")
                 .end_of("day")
+            )
         if due_at_time:
-            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
+            self._due_time = pendulum.parse(
+                f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone
+            )
         else:
             self._due_time = None
-        self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}")
+        self._full_name = InboxTaskName(
+            f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}"
+        )
         self._timeline = self._generate_timeline(right_now)
-        self._should_skip = \
-            self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date)) if skip_rule else False
+        self._should_skip = (
+            self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date))
+            if skip_rule
+            else False
+        )
 
     @property
     def period(self) -> RecurringTaskPeriod:
@@ -438,16 +522,26 @@ class QuarterlySchedule(Schedule):
     @property
     def first_day(self) -> ADate:
         """The first day of the interval represented by the schedule block."""
-        return ADate.from_date_and_time(pendulum\
-            .DateTime(self._date.year, self.month_to_quarter_start(self._date), self._date.day, tzinfo=UTC)\
-            .start_of("month"))
+        return ADate.from_date_and_time(
+            pendulum.DateTime(
+                self._date.year,
+                self.month_to_quarter_start(self._date),
+                self._date.day,
+                tzinfo=UTC,
+            ).start_of("month")
+        )
 
     @property
     def end_day(self) -> ADate:
         """The end day of the interval represented by the scedule block."""
-        return ADate.from_date_and_time(pendulum\
-            .DateTime(self._date.year, self.month_to_quarter_end(self._date), self._date.day, tzinfo=UTC)\
-            .end_of("month"))
+        return ADate.from_date_and_time(
+            pendulum.DateTime(
+                self._date.year,
+                self.month_to_quarter_end(self._date),
+                self._date.day,
+                tzinfo=UTC,
+            ).end_of("month")
+        )
 
     def _generate_timeline(self, right_now: Timestamp) -> str:
         year = f"{right_now.value.year}"
@@ -460,54 +554,71 @@ class YearlySchedule(Schedule):
     """A yearly schedule."""
 
     def __init__(
-            self, name: EntityName, right_now: Timestamp, timezone: Timezone,
-            actionable_from_day: Optional[RecurringTaskDueAtDay],
-            actionable_from_month: Optional[RecurringTaskDueAtMonth],
-            due_at_time: Optional[RecurringTaskDueAtTime], due_at_day: Optional[RecurringTaskDueAtDay],
-            due_at_month: Optional[RecurringTaskDueAtMonth]) -> None:
+        self,
+        name: EntityName,
+        right_now: Timestamp,
+        timezone: Timezone,
+        actionable_from_day: Optional[RecurringTaskDueAtDay],
+        actionable_from_month: Optional[RecurringTaskDueAtMonth],
+        due_at_time: Optional[RecurringTaskDueAtTime],
+        due_at_day: Optional[RecurringTaskDueAtDay],
+        due_at_month: Optional[RecurringTaskDueAtMonth],
+    ) -> None:
         """Construct a schedule."""
         super().__init__()
         self._date = typing.cast(pendulum.Date, right_now.value.date())
         if actionable_from_month:
             if actionable_from_day:
-                self._actionable_date = typing.cast(pendulum.Date, right_now
-                                                    .value
-                                                    .start_of("year")
-                                                    .add(months=actionable_from_month.as_int() - 1)
-                                                    .add(days=actionable_from_day.as_int() - 1)
-                                                    .date())
+                self._actionable_date = typing.cast(
+                    pendulum.Date,
+                    right_now.value.start_of("year")
+                    .add(months=actionable_from_month.as_int() - 1)
+                    .add(days=actionable_from_day.as_int() - 1)
+                    .date(),
+                )
             else:
-                self._actionable_date = typing.cast(pendulum.Date, right_now
-                                                    .value
-                                                    .start_of("year")
-                                                    .add(months=actionable_from_month.as_int() - 1)
-                                                    .date())
+                self._actionable_date = typing.cast(
+                    pendulum.Date,
+                    right_now.value.start_of("year")
+                    .add(months=actionable_from_month.as_int() - 1)
+                    .date(),
+                )
         elif actionable_from_day:
             self._actionable_date = typing.cast(
-                pendulum.Date, right_now.value.start_of("year").add(days=actionable_from_day.as_int() - 1).date())
+                pendulum.Date,
+                right_now.value.start_of("year")
+                .add(days=actionable_from_day.as_int() - 1)
+                .date(),
+            )
         else:
             self._actionable_date = None
         if due_at_month:
             if due_at_day:
-                self._due_date = right_now\
-                    .value\
-                    .start_of("year")\
-                    .add(months=due_at_month.as_int() - 1)\
-                    .add(days=due_at_day.as_int() - 1)\
+                self._due_date = (
+                    right_now.value.start_of("year")
+                    .add(months=due_at_month.as_int() - 1)
+                    .add(days=due_at_day.as_int() - 1)
                     .end_of("day")
+                )
             else:
-                self._due_date = right_now\
-                    .value\
-                    .start_of("year")\
-                    .add(months=due_at_month.as_int() - 1)\
-                    .end_of("month")\
+                self._due_date = (
+                    right_now.value.start_of("year")
+                    .add(months=due_at_month.as_int() - 1)
+                    .end_of("month")
                     .end_of("day")
+                )
         elif due_at_day:
-            self._due_date = right_now.value.start_of("year").add(days=due_at_day.as_int() - 1).end_of("day")
+            self._due_date = (
+                right_now.value.start_of("year")
+                .add(days=due_at_day.as_int() - 1)
+                .end_of("day")
+            )
         else:
             self._due_date = right_now.value.end_of("year").end_of("day")
         if due_at_time:
-            self._due_time = pendulum.parse(f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone)
+            self._due_time = pendulum.parse(
+                f"{self._due_date.to_date_string()} {due_at_time}", tz=timezone
+            )
         else:
             self._due_time = None
         self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}")
@@ -537,27 +648,63 @@ class YearlySchedule(Schedule):
 
 
 def get_schedule(
-        period: RecurringTaskPeriod, name: EntityName, right_now: Timestamp, timezone: DomainTimezone,
-        skip_rule: Optional[RecurringTaskSkipRule], actionable_from_day: Optional[RecurringTaskDueAtDay],
-        actionable_from_month: Optional[RecurringTaskDueAtMonth], due_at_time: Optional[RecurringTaskDueAtTime],
-        due_at_day: Optional[RecurringTaskDueAtDay], due_at_month: Optional[RecurringTaskDueAtMonth]) -> Schedule:
+    period: RecurringTaskPeriod,
+    name: EntityName,
+    right_now: Timestamp,
+    timezone: DomainTimezone,
+    skip_rule: Optional[RecurringTaskSkipRule],
+    actionable_from_day: Optional[RecurringTaskDueAtDay],
+    actionable_from_month: Optional[RecurringTaskDueAtMonth],
+    due_at_time: Optional[RecurringTaskDueAtTime],
+    due_at_day: Optional[RecurringTaskDueAtDay],
+    due_at_month: Optional[RecurringTaskDueAtMonth],
+) -> Schedule:
     """Build an appropriate schedule from the given parameters."""
     pendulum_timezone = pendulum.timezone(str(timezone))
     if period == RecurringTaskPeriod.DAILY:
         return DailySchedule(name, right_now, pendulum_timezone, skip_rule, due_at_time)
     elif period == RecurringTaskPeriod.WEEKLY:
         return WeeklySchedule(
-            name, right_now, pendulum_timezone, skip_rule, actionable_from_day, due_at_time, due_at_day)
+            name,
+            right_now,
+            pendulum_timezone,
+            skip_rule,
+            actionable_from_day,
+            due_at_time,
+            due_at_day,
+        )
     elif period == RecurringTaskPeriod.MONTHLY:
         return MonthlySchedule(
-            name, right_now, pendulum_timezone, skip_rule, actionable_from_day, due_at_time, due_at_day)
+            name,
+            right_now,
+            pendulum_timezone,
+            skip_rule,
+            actionable_from_day,
+            due_at_time,
+            due_at_day,
+        )
     elif period == RecurringTaskPeriod.QUARTERLY:
         return QuarterlySchedule(
-            name, right_now, pendulum_timezone, skip_rule, actionable_from_day, actionable_from_month, due_at_time,
-            due_at_day, due_at_month)
+            name,
+            right_now,
+            pendulum_timezone,
+            skip_rule,
+            actionable_from_day,
+            actionable_from_month,
+            due_at_time,
+            due_at_day,
+            due_at_month,
+        )
     elif period == RecurringTaskPeriod.YEARLY:
         return YearlySchedule(
-            name, right_now, pendulum_timezone, actionable_from_day, actionable_from_month, due_at_time, due_at_day,
-            due_at_month)
+            name,
+            right_now,
+            pendulum_timezone,
+            actionable_from_day,
+            actionable_from_month,
+            due_at_time,
+            due_at_day,
+            due_at_month,
+        )
     else:
         raise Exception(f"Invalid period {period}")

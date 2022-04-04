@@ -11,7 +11,8 @@ def main() -> None:
     coloredlogs.install(
         level=logging.INFO,
         fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S")
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     # time_provider = TimeProvider()
 

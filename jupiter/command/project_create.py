@@ -32,11 +32,20 @@ class ProjectCreate(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--project", dest="project_key", required=True, help="The key of the project")
-        parser.add_argument("--name", dest="name", required=True, help="The name of the project")
+        parser.add_argument(
+            "--project",
+            dest="project_key",
+            required=True,
+            help="The key of the project",
+        )
+        parser.add_argument(
+            "--name", dest="name", required=True, help="The name of the project"
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key)
         project_name = ProjectName.from_raw(args.name)
-        self._command.execute(ProjectCreateUseCase.Args(key=project_key, name=project_name))
+        self._command.execute(
+            ProjectCreateUseCase.Args(key=project_key, name=project_name)
+        )

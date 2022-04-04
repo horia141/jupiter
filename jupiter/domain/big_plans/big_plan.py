@@ -42,9 +42,16 @@ class BigPlan(LeafEntity):
 
     @staticmethod
     def new_big_plan(
-            archived: bool, big_plan_collection_ref_id: EntityId, project_ref_id: EntityId, name: BigPlanName,
-            status: BigPlanStatus, actionable_date: Optional[ADate], due_date: Optional[ADate], source: EventSource,
-            created_time: Timestamp) -> 'BigPlan':
+        archived: bool,
+        big_plan_collection_ref_id: EntityId,
+        project_ref_id: EntityId,
+        name: BigPlanName,
+        status: BigPlanStatus,
+        actionable_date: Optional[ADate],
+        due_date: Optional[ADate],
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "BigPlan":
         """Create a big plan."""
         notion_link_uuid = uuid.uuid4()
         accepted_time = created_time if status.is_accepted_or_more else None
@@ -60,8 +67,15 @@ class BigPlan(LeafEntity):
             last_modified_time=created_time,
             events=[
                 BigPlan.Created.make_event_from_frame_args(
-                    source, FIRST_VERSION, created_time, notion_link_uuid=notion_link_uuid,
-                    accepted_time=accepted_time, working_time=working_time, completed_time=completed_time)],
+                    source,
+                    FIRST_VERSION,
+                    created_time,
+                    notion_link_uuid=notion_link_uuid,
+                    accepted_time=accepted_time,
+                    working_time=working_time,
+                    completed_time=completed_time,
+                )
+            ],
             big_plan_collection_ref_id=big_plan_collection_ref_id,
             project_ref_id=project_ref_id,
             name=name,
@@ -71,22 +85,35 @@ class BigPlan(LeafEntity):
             notion_link_uuid=notion_link_uuid,
             accepted_time=accepted_time,
             working_time=working_time,
-            completed_time=completed_time)
+            completed_time=completed_time,
+        )
         return big_plan
 
     def change_project(
-            self, project_ref_id: EntityId, source: EventSource, modification_time: Timestamp) -> 'BigPlan':
+        self,
+        project_ref_id: EntityId,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "BigPlan":
         """Change the project for the inbox task."""
         if self.project_ref_id == project_ref_id:
             return self
         return self._new_version(
             project_ref_id=project_ref_id,
-            new_event=BigPlan.ChangeProject.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=BigPlan.ChangeProject.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     def update(
-            self, name: UpdateAction[BigPlanName], status: UpdateAction[BigPlanStatus],
-            actionable_date: UpdateAction[Optional[ADate]], due_date: UpdateAction[Optional[ADate]],
-            source: EventSource, modification_time: Timestamp) -> 'BigPlan':
+        self,
+        name: UpdateAction[BigPlanName],
+        status: UpdateAction[BigPlanStatus],
+        actionable_date: UpdateAction[Optional[ADate]],
+        due_date: UpdateAction[Optional[ADate]],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "BigPlan":
         """Update the big plan."""
         new_name = name.or_else(self.name)
 
@@ -98,7 +125,9 @@ class BigPlan(LeafEntity):
             if not self.status.is_accepted_or_more and status.value.is_accepted_or_more:
                 new_accepted_time = modification_time
                 updated_accepted_time = UpdateAction.change_to(modification_time)
-            elif self.status.is_accepted_or_more and not status.value.is_accepted_or_more:
+            elif (
+                self.status.is_accepted_or_more and not status.value.is_accepted_or_more
+            ):
                 new_accepted_time = None
                 updated_accepted_time = UpdateAction.change_to(None)
             else:
@@ -128,7 +157,7 @@ class BigPlan(LeafEntity):
             event_kwargs = {
                 "updated_accepted_time": updated_accepted_time,
                 "updated_working_time": updated_working_time,
-                "updated_completed_time":  updated_completed_time
+                "updated_completed_time": updated_completed_time,
             }
         else:
             event_kwargs = {}
@@ -145,8 +174,10 @@ class BigPlan(LeafEntity):
             completed_time=new_completed_time,
             actionable_date=new_actionable_date,
             due_date=new_due_date,
-            new_event=
-            BigPlan.Updated.make_event_from_frame_args(source, self.version, modification_time, **event_kwargs))
+            new_event=BigPlan.Updated.make_event_from_frame_args(
+                source, self.version, modification_time, **event_kwargs
+            ),
+        )
 
     @property
     def parent_ref_id(self) -> EntityId:

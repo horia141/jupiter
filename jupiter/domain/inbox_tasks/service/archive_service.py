@@ -3,8 +3,10 @@ import logging
 from typing import Final
 
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
-from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
-    NotionInboxTaskNotFoundError
+from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import (
+    InboxTaskNotionManager,
+    NotionInboxTaskNotFoundError,
+)
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
 from jupiter.utils.time_provider import TimeProvider
@@ -21,8 +23,12 @@ class InboxTaskArchiveService:
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
 
     def __init__(
-            self, source: EventSource, time_provider: TimeProvider, storage_engine: DomainStorageEngine,
-            inbox_task_notion_manager: InboxTaskNotionManager) -> None:
+        self,
+        source: EventSource,
+        time_provider: TimeProvider,
+        storage_engine: DomainStorageEngine,
+        inbox_task_notion_manager: InboxTaskNotionManager,
+    ) -> None:
         """Constructor."""
         self._source = source
         self._time_provider = time_provider
@@ -31,7 +37,9 @@ class InboxTaskArchiveService:
 
     def do_it(self, inbox_task: InboxTask) -> None:
         """Execute the service's action."""
-        inbox_task = inbox_task.mark_archived(self._source, self._time_provider.get_current_time())
+        inbox_task = inbox_task.mark_archived(
+            self._source, self._time_provider.get_current_time()
+        )
 
         with self._storage_engine.get_unit_of_work() as uow:
             uow.inbox_task_repository.save(inbox_task)
@@ -39,6 +47,10 @@ class InboxTaskArchiveService:
 
         # Apply Notion changes
         try:
-            self._inbox_task_notion_manager.remove_leaf(inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+            self._inbox_task_notion_manager.remove_leaf(
+                inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+            )
         except NotionInboxTaskNotFoundError:
-            LOGGER.info("Skipping archiving of Notion inbox task because it could not be found")
+            LOGGER.info(
+                "Skipping archiving of Notion inbox task because it could not be found"
+            )

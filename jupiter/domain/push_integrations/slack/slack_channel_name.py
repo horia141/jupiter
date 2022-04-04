@@ -16,19 +16,22 @@ class SlackChannelName(Value):
     _the_name: str
 
     @staticmethod
-    def from_raw(slack_channel_name_raw: Optional[str]) -> 'SlackChannelName':
+    def from_raw(slack_channel_name_raw: Optional[str]) -> "SlackChannelName":
         """Validate and clean a Slack channel name."""
         if not slack_channel_name_raw:
             raise InputValidationError("Expected Slack channel name to be non-null")
 
-        slack_channel_name: str = " ".join(word for word in slack_channel_name_raw.strip().split(" ") if len(word) > 0)
+        slack_channel_name: str = " ".join(
+            word for word in slack_channel_name_raw.strip().split(" ") if len(word) > 0
+        )
 
         if len(slack_channel_name) == 0:
             raise InputValidationError("Expected Slack channel name to be non-empty")
 
         if not _SLACK_CHANNEL_NAME_RE.match(slack_channel_name):
             raise InputValidationError(
-                f"Expected Slack channel name '{slack_channel_name_raw}' to match '{_SLACK_CHANNEL_NAME_RE.pattern}")
+                f"Expected Slack channel name '{slack_channel_name_raw}' to match '{_SLACK_CHANNEL_NAME_RE.pattern}"
+            )
 
         return SlackChannelName(slack_channel_name)
 

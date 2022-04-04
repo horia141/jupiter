@@ -8,3 +8,6 @@ mkdocs==1.3.0
 mypy==0.942
 types-requests==2.27.16
 icecream==2.1.2
+black==22.3
+pathspec==0.9.0
+click==8.0.0

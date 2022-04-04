@@ -27,8 +27,12 @@ class NotionConnection(StubEntity):
 
     @staticmethod
     def new_notion_connection(
-            workspace_ref_id: EntityId, space_id: NotionSpaceId, token: NotionToken,
-            source: EventSource, created_time: Timestamp) -> 'NotionConnection':
+        workspace_ref_id: EntityId,
+        space_id: NotionSpaceId,
+        token: NotionToken,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "NotionConnection":
         """Create a Notion connection."""
         notion_connection = NotionConnection(
             ref_id=BAD_REF_ID,
@@ -37,17 +41,27 @@ class NotionConnection(StubEntity):
             created_time=created_time,
             archived_time=None,
             last_modified_time=created_time,
-            events=[NotionConnection.Created.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            events=[
+                NotionConnection.Created.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
             workspace_ref_id=workspace_ref_id,
             space_id=space_id,
-            token=token)
+            token=token,
+        )
         return notion_connection
 
-    def update_token(self, token: NotionToken, source: EventSource, modification_time: Timestamp) -> 'NotionConnection':
+    def update_token(
+        self, token: NotionToken, source: EventSource, modification_time: Timestamp
+    ) -> "NotionConnection":
         """Update the access token for the Notion connection."""
         return self._new_version(
             token=token,
-            new_event=NotionConnection.UpdateToken.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=NotionConnection.UpdateToken.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     @property
     def parent_ref_id(self) -> EntityId:

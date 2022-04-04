@@ -31,8 +31,12 @@ class SmartListArchive(command.Command):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument("--smart-list", dest="smart_list_key", required=True,
-                            help="The key of the smart list to archive")
+        parser.add_argument(
+            "--smart-list",
+            dest="smart_list_key",
+            required=True,
+            help="The key of the smart list to archive",
+        )
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""

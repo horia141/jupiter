@@ -10,23 +10,29 @@ from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 
 
 class VacationSyncService(
-        TrunkLeafNotionSyncService[
-            VacationCollection,
-            Vacation,
-            NotionWorkspace,
-            NotionVacationCollection,
-            NotionVacation,
-            None,
-            None,
-            None]):
+    TrunkLeafNotionSyncService[
+        VacationCollection,
+        Vacation,
+        NotionWorkspace,
+        NotionVacationCollection,
+        NotionVacation,
+        None,
+        None,
+        None,
+    ]
+):
     """The service class for syncing the vacations database between local and Notion."""
 
     def __init__(
-            self, storage_engine: DomainStorageEngine, vacation_notion_manager: VacationNotionManager) -> None:
+        self,
+        storage_engine: DomainStorageEngine,
+        vacation_notion_manager: VacationNotionManager,
+    ) -> None:
         """Constructor."""
         super().__init__(
             VacationCollection,
             Vacation,
             NotionVacation,
             storage_engine,
-            vacation_notion_manager)
+            vacation_notion_manager,
+        )

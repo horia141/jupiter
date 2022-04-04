@@ -11,8 +11,6 @@ class NotionMetricCollection(NotionTrunkEntity[MetricCollection]):
     """A metric collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: MetricCollection) -> 'NotionMetricCollection':
+    def new_notion_entity(entity: MetricCollection) -> "NotionMetricCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionMetricCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionMetricCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

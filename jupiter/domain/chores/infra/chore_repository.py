@@ -16,9 +16,10 @@ class ChoreRepository(LeafEntityRepository[Chore], abc.ABC):
 
     @abc.abstractmethod
     def find_all_with_filters(
-            self,
-            parent_ref_id: EntityId,
-            allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_project_ref_ids: Optional[Iterable[EntityId]] = None) -> List[Chore]:
+        self,
+        parent_ref_id: EntityId,
+        allow_archived: bool = False,
+        filter_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_project_ref_ids: Optional[Iterable[EntityId]] = None,
+    ) -> List[Chore]:
         """Find all chores."""

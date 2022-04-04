@@ -11,8 +11,6 @@ class NotionHabitCollection(NotionTrunkEntity[HabitCollection]):
     """A habit collection on Notion-side."""
 
     @staticmethod
-    def new_notion_entity(entity: HabitCollection) -> 'NotionHabitCollection':
+    def new_notion_entity(entity: HabitCollection) -> "NotionHabitCollection":
         """Construct a new Notion row from a given entity."""
-        return NotionHabitCollection(
-            notion_id=BAD_NOTION_ID,
-            ref_id=entity.ref_id)
+        return NotionHabitCollection(notion_id=BAD_NOTION_ID, ref_id=entity.ref_id)

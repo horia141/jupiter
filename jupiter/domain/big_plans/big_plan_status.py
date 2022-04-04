@@ -9,6 +9,7 @@ from jupiter.framework.errors import InputValidationError
 @enum.unique
 class BigPlanStatus(enum.Enum):
     """The status of a big plan."""
+
     # Created
     NOT_STARTED = "not-started"
     # Accepted
@@ -50,17 +51,20 @@ class BigPlanStatus(enum.Enum):
         return self in (BigPlanStatus.NOT_DONE, BigPlanStatus.DONE)
 
     @staticmethod
-    def from_raw(big_plan_status_raw: Optional[str]) -> 'BigPlanStatus':
+    def from_raw(big_plan_status_raw: Optional[str]) -> "BigPlanStatus":
         """Validate and clean the big plan status."""
         if not big_plan_status_raw:
             raise InputValidationError("Expected big plan status to be non-null")
 
-        big_plan_status_str: str = '-'.join(big_plan_status_raw.strip().lower().split(' '))
+        big_plan_status_str: str = "-".join(
+            big_plan_status_raw.strip().lower().split(" ")
+        )
 
         if big_plan_status_str not in BigPlanStatus.all_values():
             raise InputValidationError(
-                f"Expected big plan status '{big_plan_status_raw}' to be " +
-                f"one of '{','.join(BigPlanStatus.all_values())}'")
+                f"Expected big plan status '{big_plan_status_raw}' to be "
+                + f"one of '{','.join(BigPlanStatus.all_values())}'"
+            )
 
         return BigPlanStatus(big_plan_status_str)
 

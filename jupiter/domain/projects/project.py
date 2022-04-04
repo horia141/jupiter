@@ -30,8 +30,12 @@ class Project(LeafEntity):
 
     @staticmethod
     def new_project(
-            project_collection_ref_id: EntityId, key: ProjectKey, name: ProjectName, source: EventSource,
-            created_time: Timestamp) -> 'Project':
+        project_collection_ref_id: EntityId,
+        key: ProjectKey,
+        name: ProjectName,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "Project":
         """Create a project."""
         notion_link_uuid = uuid.uuid4()
         project = Project(
@@ -43,18 +47,32 @@ class Project(LeafEntity):
             last_modified_time=created_time,
             events=[
                 Project.Created.make_event_from_frame_args(
-                    source, FIRST_VERSION, created_time, notion_link_uuid=notion_link_uuid,)],
+                    source,
+                    FIRST_VERSION,
+                    created_time,
+                    notion_link_uuid=notion_link_uuid,
+                )
+            ],
             project_collection_ref_id=project_collection_ref_id,
             key=key,
             name=name,
-            notion_link_uuid=notion_link_uuid)
+            notion_link_uuid=notion_link_uuid,
+        )
         return project
 
-    def update(self, name: UpdateAction[ProjectName], source: EventSource, modification_time: Timestamp) -> 'Project':
+    def update(
+        self,
+        name: UpdateAction[ProjectName],
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "Project":
         """Change the project."""
         return self._new_version(
             name=name.or_else(self.name),
-            new_event=Project.Updated.make_event_from_frame_args(source, self.version, modification_time))
+            new_event=Project.Updated.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
 
     @property
     def parent_ref_id(self) -> EntityId:
