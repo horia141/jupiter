@@ -2,4 +2,4 @@
 
 set -ex
 
-black jupiter
+poetry run black jupiter

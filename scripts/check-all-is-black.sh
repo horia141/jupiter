@@ -2,7 +2,7 @@
 
 set -e
 
-DIFF_OUTPUT=$(black --diff jupiter)
+DIFF_OUTPUT=$(poetry run black --diff jupiter)
 
 if [ -n "${DIFF_OUTPUT}" ]
 then
