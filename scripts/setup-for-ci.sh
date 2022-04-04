@@ -1,9 +1,10 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # Prepare environment
 
+poetry shell
 poetry install --no-interaction --no-ansi
 gem install mdl
 docker pull hadolint/hadolint:latest-debian

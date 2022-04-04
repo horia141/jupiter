@@ -1,10 +1,8 @@
 #!/bin/bash
 
-set -e
+set -ex
 
-DIFF_OUTPUT=$(poetry run black --diff jupiter)
-
-if [ -n "${DIFF_OUTPUT}" ]
+if ! poetry run black --check jupiter
 then
   echo "Styling inconsistency! Please run 'make fix-style' to auto-address style issues!"
   exit 1
