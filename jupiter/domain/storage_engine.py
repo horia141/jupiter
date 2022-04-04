@@ -34,10 +34,10 @@ from jupiter.domain.workspaces.infra.workspace_repository import WorkspaceReposi
 from jupiter.framework.entity import LeafEntity, TrunkEntity, BranchEntity
 from jupiter.framework.repository import TrunkEntityRepository, LeafEntityRepository, BranchEntityRepository
 
-TrunkType = TypeVar("TrunkType", bound=TrunkEntity)
-BranchEntityKeyType = TypeVar("BranchEntityKeyType", bound=EntityKey)
-BranchType = TypeVar("BranchType", bound=BranchEntity)
-LeafType = TypeVar("LeafType", bound=LeafEntity)
+TrunkT = TypeVar("TrunkT", bound=TrunkEntity)
+BranchEntityKeyT = TypeVar("BranchEntityKeyT", bound=EntityKey)
+BranchT = TypeVar("BranchT", bound=BranchEntity)
+LeafT = TypeVar("LeafT", bound=LeafEntity)
 
 
 class DomainUnitOfWork(abc.ABC):
@@ -174,16 +174,16 @@ class DomainUnitOfWork(abc.ABC):
         """The Slack task repository."""
 
     @abc.abstractmethod
-    def get_trunk_repository_for(self, trunk_type: Type[TrunkType]) -> TrunkEntityRepository[TrunkType]:
+    def get_trunk_repository_for(self, trunk_type: Type[TrunkT]) -> TrunkEntityRepository[TrunkT]:
         """Lookup a trunk repository by a given type."""
 
     @abc.abstractmethod
     def get_branch_repository_for(
-            self, branch_type: Type[BranchType]) -> BranchEntityRepository[BranchEntityKeyType, BranchType]:
+            self, branch_type: Type[BranchT]) -> BranchEntityRepository[BranchEntityKeyT, BranchT]:
         """Lookup a branch repository by a given type."""
 
     @abc.abstractmethod
-    def get_leaf_repository_for(self, leaf_type: Type[LeafType]) -> LeafEntityRepository[LeafType]:
+    def get_leaf_repository_for(self, leaf_type: Type[LeafT]) -> LeafEntityRepository[LeafT]:
         """Lookup a leaf repository by a given type."""
 
 

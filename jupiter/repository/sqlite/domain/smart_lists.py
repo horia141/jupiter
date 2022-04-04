@@ -55,9 +55,12 @@ class SqliteSmartListCollectionRepository(SmartListCollectionRepository):
 
     def create(self, entity: SmartListCollection) -> SmartListCollection:
         """Create a smart list collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._smart_list_collection_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
@@ -152,10 +155,13 @@ class SqliteSmartListRepository(SmartListRepository):
 
     def create(self, entity: SmartList) -> SmartList:
         """Create a smart list."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(
                 insert(self._smart_list_table).values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -286,9 +292,12 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
 
     def create(self, entity: SmartListTag) -> SmartListTag:
         """Create a smart list tag."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._smart_list_tag_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
@@ -412,9 +421,12 @@ class SqliteSmartListItemRepository(SmartListItemRepository):
 
     def create(self, entity: SmartListItem) -> SmartListItem:
         """Create a smart list item."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._smart_list_item_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

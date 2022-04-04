@@ -9,7 +9,7 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.framework.update_action import UpdateAction
 
-EventType = TypeVar('EventType', bound='Event')
+EventT = TypeVar('EventT', bound='Event')
 
 
 @enum.unique
@@ -48,8 +48,8 @@ class Event:
 
     @classmethod
     def make_event_from_frame_args(
-            cls: typing.Type[EventType], source: EventSource, entity_version: int, timestamp: Timestamp,
-            **kwargs: object) -> EventType:
+            cls: typing.Type[EventT], source: EventSource, entity_version: int, timestamp: Timestamp,
+            **kwargs: object) -> EventT:
         """Construct the data for an event from the arguments of the method which calls this one."""
         frame = inspect.currentframe()
         if frame is None:

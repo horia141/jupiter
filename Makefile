@@ -1,8 +1,8 @@
 fast-lint:
 	./scripts/fast-lint.sh
 
-lint:
-	./scripts/lint.sh
+check:
+	./scripts/check.sh
 
 migration-test:
 	./scripts/migration.sh
@@ -19,4 +19,4 @@ docker-push:
 stats-for-nerds:
 	./scripts/stats-for-nerds.sh
 
-.PHONY: lint docs migration-test docker-build docker-push stats-for-nerds
+.PHONY: fast-lint check docs migration-test docker-build docker-push stats-for-nerds

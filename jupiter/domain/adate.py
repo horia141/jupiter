@@ -6,7 +6,7 @@ from typing import Optional, cast
 
 from notion.collection import NotionDate
 import pendulum
-from pendulum import UTC
+from pendulum.tz import UTC
 
 from jupiter.domain.timezone import Timezone
 from jupiter.framework.base.timestamp import Timestamp

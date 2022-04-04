@@ -61,9 +61,12 @@ class SqliteMetricCollectionRepository(MetricCollectionRepository):
 
     def create(self, entity: MetricCollection) -> MetricCollection:
         """Create a metric collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._metric_collection_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
@@ -156,9 +159,12 @@ class SqliteMetricRepository(MetricRepository):
 
     def create(self, entity: Metric) -> Metric:
         """Create a metric."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(insert(self._metric_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
@@ -339,9 +345,12 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
 
     def create(self, entity: MetricEntry) -> MetricEntry:
         """Create a metric entry."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = \
             self._connection.execute(insert(self._metric_entry_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

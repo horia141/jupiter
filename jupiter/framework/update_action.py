@@ -2,34 +2,34 @@
 import typing
 from typing import TypeVar, Generic, Final, Optional
 
-UpdateActionType = TypeVar('UpdateActionType')
+UpdateActionT = TypeVar('UpdateActionT')
 
 
-class UpdateAction(Generic[UpdateActionType]):
+class UpdateAction(Generic[UpdateActionT]):
     """The update action for a field."""
 
     _should_change: Final[bool]
-    _value: Optional[UpdateActionType]
+    _value: Optional[UpdateActionT]
 
-    def __init__(self, should_change: bool, value: Optional[UpdateActionType] = None) -> None:
+    def __init__(self, should_change: bool, value: Optional[UpdateActionT] = None) -> None:
         """Constructor."""
         self._should_change = should_change
         self._value = value
 
     @staticmethod
-    def do_nothing() -> 'UpdateAction[UpdateActionType]':
+    def do_nothing() -> 'UpdateAction[UpdateActionT]':
         """An update action where nothing needs to happen."""
-        return UpdateAction[UpdateActionType](should_change=False)
+        return UpdateAction[UpdateActionT](should_change=False)
 
     @staticmethod
-    def change_to(value: UpdateActionType) -> 'UpdateAction[UpdateActionType]':
+    def change_to(value: UpdateActionT) -> 'UpdateAction[UpdateActionT]':
         """An update action where the value needs to be changed to a new value."""
-        return UpdateAction[UpdateActionType](should_change=True, value=value)
+        return UpdateAction[UpdateActionT](should_change=True, value=value)
 
-    def or_else(self, value_if_should_not_change: UpdateActionType) -> UpdateActionType:
+    def or_else(self, value_if_should_not_change: UpdateActionT) -> UpdateActionT:
         """Return the value of the action if it should change or the argument if it should not."""
         if self._should_change:
-            return typing.cast(UpdateActionType, self._value)
+            return typing.cast(UpdateActionT, self._value)
         else:
             return value_if_should_not_change
 
@@ -39,11 +39,11 @@ class UpdateAction(Generic[UpdateActionType]):
         return self._should_change
 
     @property
-    def value(self) -> UpdateActionType:
+    def value(self) -> UpdateActionT:
         """Return the value if it exists."""
         if not self._should_change:
             raise Exception("Trying to get the value when it's not there")
-        return typing.cast(UpdateActionType, self._value)
+        return typing.cast(UpdateActionT, self._value)
 
     def __repr__(self) -> str:
         """The representation of this action."""

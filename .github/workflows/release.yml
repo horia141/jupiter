@@ -23,8 +23,8 @@ jobs:
           ruby-version: 2.6
       - name: Prepare for CI
         run: ./scripts/setup-for-ci.sh
-      - name: Lint scripts
-        run: ./scripts/lint.sh
+      - name: Check scripts
+        run: ./scripts/check.sh
   publish_to_docker:
     name: Publish To Docker
     runs-on: ubuntu-latest

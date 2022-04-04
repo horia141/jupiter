@@ -10,7 +10,7 @@ from jupiter.framework.value import Value
 _ENTITY_NAME_RE: Final[Pattern[str]] = re.compile(r"^.+$")
 
 
-_EntityNameType = TypeVar('_EntityNameType', bound='EntityName')
+_EntityNameT = TypeVar('_EntityNameT', bound='EntityName')
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class EntityName(Value):
     _the_name: str
 
     @classmethod
-    def from_raw(cls: Type[_EntityNameType], entity_name_raw: Optional[str]) -> _EntityNameType:
+    def from_raw(cls: Type[_EntityNameT], entity_name_raw: Optional[str]) -> _EntityNameT:
         """Validate and clean a entity name."""
         if not entity_name_raw:
             raise InputValidationError("Expected entity name to be non-null")

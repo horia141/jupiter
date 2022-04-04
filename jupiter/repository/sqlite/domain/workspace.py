@@ -47,9 +47,12 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             raise WorkspaceAlreadyExistsError("Workspace already exists")
         except WorkspaceNotFoundError:
             pass
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._workspace_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

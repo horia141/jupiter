@@ -48,11 +48,13 @@ class SqliteSlackTaskCollectionRepository(SlackTaskCollectionRepository):
 
     def create(self, entity: SlackTaskCollection) -> SlackTaskCollection:
         """Create a slack task collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(
                 insert(self._slack_task_collection_table).values(
-                    ref_id=
-                    entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -158,10 +160,13 @@ class SqliteSlackTaskRepository(SlackTaskRepository):
 
     def create(self, entity: SlackTask) -> SlackTask:
         """Create the slack task."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._slack_task_table) \
                 .values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -183,7 +188,6 @@ class SqliteSlackTaskRepository(SlackTaskRepository):
             update(self._slack_task_table)
             .where(self._slack_task_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

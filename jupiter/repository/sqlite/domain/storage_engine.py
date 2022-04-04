@@ -58,8 +58,8 @@ from jupiter.domain.smart_lists.smart_list import SmartList
 from jupiter.domain.smart_lists.smart_list_collection import SmartListCollection
 from jupiter.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
-from jupiter.domain.storage_engine import DomainUnitOfWork, DomainStorageEngine, LeafType, TrunkType, BranchType, \
-    BranchEntityKeyType
+from jupiter.domain.storage_engine import DomainUnitOfWork, DomainStorageEngine, LeafT, TrunkT, BranchT, \
+    BranchEntityKeyT
 from jupiter.domain.vacations.infra.vacation_collection_repository import VacationCollectionRepository
 from jupiter.domain.vacations.infra.vacation_repository import VacationRepository
 from jupiter.domain.vacations.vacation import Vacation
@@ -310,67 +310,67 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         """The Notion connection repository."""
         return self._notion_connection_repository
 
-    def get_trunk_repository_for(self, trunk_type: Type[TrunkType]) -> TrunkEntityRepository[TrunkType]:
+    def get_trunk_repository_for(self, trunk_type: Type[TrunkT]) -> TrunkEntityRepository[TrunkT]:
         """Get a trunk repository by type."""
         if trunk_type == VacationCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._vacation_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._vacation_collection_repository)
         elif trunk_type == ProjectCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._project_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._project_collection_repository)
         elif trunk_type == InboxTaskCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._inbox_task_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._inbox_task_collection_repository)
         elif trunk_type == HabitCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._habit_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._habit_collection_repository)
         elif trunk_type == ChoreCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._chore_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._chore_collection_repository)
         elif trunk_type == BigPlanCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._big_plan_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._big_plan_collection_repository)
         elif trunk_type == MetricCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._metric_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._metric_collection_repository)
         elif trunk_type == SmartListCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._smart_list_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._smart_list_collection_repository)
         elif trunk_type == PersonCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._person_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._person_collection_repository)
         elif trunk_type == PushIntegrationGroup:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._push_integration_group_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._push_integration_group_repository)
         elif trunk_type == SlackTaskCollection:
-            return typing.cast(TrunkEntityRepository[TrunkType], self._slack_task_collection_repository)
+            return typing.cast(TrunkEntityRepository[TrunkT], self._slack_task_collection_repository)
         else:
             raise Exception(f"Unknown trunk repository type {trunk_type}")
 
     def get_branch_repository_for(
-            self, branch_type: Type[BranchType]) -> BranchEntityRepository[BranchEntityKeyType, BranchType]:
+            self, branch_type: Type[BranchT]) -> BranchEntityRepository[BranchEntityKeyT, BranchT]:
         """Get a branch repository by type."""
         if branch_type == Metric:
-            return typing.cast(BranchEntityRepository[BranchEntityKeyType, BranchType], self._metric_repository)
+            return typing.cast(BranchEntityRepository[BranchEntityKeyT, BranchT], self._metric_repository)
         elif branch_type == SmartList:
-            return typing.cast(BranchEntityRepository[BranchEntityKeyType, BranchType], self._smart_list_repository)
+            return typing.cast(BranchEntityRepository[BranchEntityKeyT, BranchT], self._smart_list_repository)
         else:
             raise Exception(f"Unknown branch repository type {branch_type}")
 
-    def get_leaf_repository_for(self, leaf_type: Type[LeafType]) -> LeafEntityRepository[LeafType]:
+    def get_leaf_repository_for(self, leaf_type: Type[LeafT]) -> LeafEntityRepository[LeafT]:
         """Get a leaf repository by type."""
         if leaf_type == Vacation:
-            return typing.cast(LeafEntityRepository[LeafType], self._vacation_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._vacation_repository)
         elif leaf_type == Project:
-            return typing.cast(LeafEntityRepository[LeafType], self._project_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._project_repository)
         elif leaf_type == InboxTask:
-            return typing.cast(LeafEntityRepository[LeafType], self._inbox_task_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._inbox_task_repository)
         elif leaf_type == Habit:
-            return typing.cast(LeafEntityRepository[LeafType], self._habit_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._habit_repository)
         elif leaf_type == Chore:
-            return typing.cast(LeafEntityRepository[LeafType], self._chore_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._chore_repository)
         elif leaf_type == BigPlan:
-            return typing.cast(LeafEntityRepository[LeafType], self._big_plan_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._big_plan_repository)
         elif leaf_type == MetricEntry:
-            return typing.cast(LeafEntityRepository[LeafType], self._metric_entry_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._metric_entry_repository)
         elif leaf_type == SmartListItem:
-            return typing.cast(LeafEntityRepository[LeafType], self._smart_list_item_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._smart_list_item_repository)
         elif leaf_type == SmartListTag:
-            return typing.cast(LeafEntityRepository[LeafType], self._smart_list_tag_reposiotry)
+            return typing.cast(LeafEntityRepository[LeafT], self._smart_list_tag_reposiotry)
         elif leaf_type == Person:
-            return typing.cast(LeafEntityRepository[LeafType], self._person_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._person_repository)
         elif leaf_type == SlackTask:
-            return typing.cast(LeafEntityRepository[LeafType], self._slack_task_repository)
+            return typing.cast(LeafEntityRepository[LeafT], self._slack_task_repository)
         else:
             raise Exception(f"Unknown leaf repository type {leaf_type}")
 

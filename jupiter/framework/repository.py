@@ -19,18 +19,18 @@ class EntityNotFoundError(Exception):
     """Error raised when an entity is not found."""
 
 
-EntityType = TypeVar("EntityType", bound=Entity)
+EntityT = TypeVar("EntityT", bound=Entity)
 
 
-class EntityRepository(Generic[EntityType], Repository, abc.ABC):
+class EntityRepository(Generic[EntityT], Repository, abc.ABC):
     """A repository for entities."""
 
     @abc.abstractmethod
-    def create(self, entity: EntityType) -> EntityType:
+    def create(self, entity: EntityT) -> EntityT:
         """Create an entity."""
 
     @abc.abstractmethod
-    def save(self, entity: EntityType) -> EntityType:
+    def save(self, entity: EntityT) -> EntityT:
         """Save an entity."""
 
 
@@ -42,18 +42,18 @@ class RootEntityNotFoundError(EntityNotFoundError):
     """Error raised when a root entity is not found."""
 
 
-RootEntityType = TypeVar("RootEntityType", bound=RootEntity)
+RootEntityT = TypeVar("RootEntityT", bound=RootEntity)
 
 
-class RootEntityRepository(EntityRepository[RootEntityType], abc.ABC):
+class RootEntityRepository(EntityRepository[RootEntityT], abc.ABC):
     """A repository for root entities."""
 
     @abc.abstractmethod
-    def load(self) -> RootEntityType:
+    def load(self) -> RootEntityT:
         """Loads the root entity."""
 
     @abc.abstractmethod
-    def load_optional(self) -> Optional[RootEntityType]:
+    def load_optional(self) -> Optional[RootEntityT]:
         """Loads the root entity but returns null if there isn't one."""
 
 
@@ -65,14 +65,14 @@ class TrunkEntityNotFoundError(EntityNotFoundError):
     """Error raised when a trunk entity is not found."""
 
 
-TrunkEntityType = TypeVar("TrunkEntityType", bound=TrunkEntity)
+TrunkEntityT = TypeVar("TrunkEntityT", bound=TrunkEntity)
 
 
-class TrunkEntityRepository(EntityRepository[TrunkEntityType], abc.ABC):
+class TrunkEntityRepository(EntityRepository[TrunkEntityT], abc.ABC):
     """A repository for trunk entities."""
 
     @abc.abstractmethod
-    def load_by_parent(self, parent_ref_id: EntityId) -> TrunkEntityType:
+    def load_by_parent(self, parent_ref_id: EntityId) -> TrunkEntityT:
         """Retrieve a trunk by its owning parent id."""
 
 
@@ -84,14 +84,14 @@ class StubEntityNotFoundError(EntityNotFoundError):
     """Error raised when a stub entity is not found."""
 
 
-StubEntityType = TypeVar("StubEntityType", bound=StubEntity)
+StubEntityT = TypeVar("StubEntityT", bound=StubEntity)
 
 
-class StubEntityRepository(EntityRepository[StubEntityType], abc.ABC):
+class StubEntityRepository(EntityRepository[StubEntityT], abc.ABC):
     """A repository for stub entities."""
 
     @abc.abstractmethod
-    def load_by_parent(self, parent_ref_id: EntityId) -> StubEntityType:
+    def load_by_parent(self, parent_ref_id: EntityId) -> StubEntityT:
         """Retrieve a stub by its owning parent id."""
 
 
@@ -103,20 +103,20 @@ class BranchEntityNotFoundError(EntityNotFoundError):
     """Error raised when a branch entity is not found."""
 
 
-BranchEntityKeyType = TypeVar("BranchEntityKeyType", bound=EntityKey)
-BranchEntityType = TypeVar("BranchEntityType", bound=BranchEntity)
+BranchEntityKeyT = TypeVar("BranchEntityKeyT", bound=EntityKey)
+BranchEntityT = TypeVar("BranchEntityT", bound=BranchEntity)
 
 
 class BranchEntityRepository(
-        Generic[BranchEntityKeyType, BranchEntityType], EntityRepository[BranchEntityType], abc.ABC):
+        Generic[BranchEntityKeyT, BranchEntityT], EntityRepository[BranchEntityT], abc.ABC):
     """A repository for branch entities."""
 
     @abc.abstractmethod
-    def load_by_key(self, parent_ref_id: EntityId, key: BranchEntityKeyType) -> BranchEntityType:
+    def load_by_key(self, parent_ref_id: EntityId, key: BranchEntityKeyT) -> BranchEntityT:
         """Find a branch by key."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BranchEntityType:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> BranchEntityT:
         """Find a branch by id."""
 
     @abc.abstractmethod
@@ -125,11 +125,11 @@ class BranchEntityRepository(
             parent_ref_id: EntityId,
             allow_archived: bool = False,
             filter_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_keys: Optional[Iterable[BranchEntityKeyType]] = None) -> List[BranchEntityType]:
+            filter_keys: Optional[Iterable[BranchEntityKeyT]] = None) -> List[BranchEntityT]:
         """Find all branches matching some criteria."""
 
     @abc.abstractmethod
-    def remove(self, ref_id: EntityId) -> BranchEntityType:
+    def remove(self, ref_id: EntityId) -> BranchEntityT:
         """Hard remove a branch - an irreversible operation."""
 
 
@@ -137,14 +137,14 @@ class LeafEntityNotFoundError(EntityNotFoundError):
     """Error raised when a leaf entity is not found."""
 
 
-LeafEntityType = TypeVar("LeafEntityType", bound=LeafEntity)
+LeafEntityT = TypeVar("LeafEntityT", bound=LeafEntity)
 
 
-class LeafEntityRepository(EntityRepository[LeafEntityType], abc.ABC):
+class LeafEntityRepository(EntityRepository[LeafEntityT], abc.ABC):
     """A repository for leaf entities."""
 
     @abc.abstractmethod
-    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> LeafEntityType:
+    def load_by_id(self, ref_id: EntityId, allow_archived: bool = False) -> LeafEntityT:
         """Load a leaf by id."""
 
     @abc.abstractmethod
@@ -152,9 +152,9 @@ class LeafEntityRepository(EntityRepository[LeafEntityType], abc.ABC):
             self,
             parent_ref_id: EntityId,
             allow_archived: bool = False,
-            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[LeafEntityType]:
+            filter_ref_ids: Optional[Iterable[EntityId]] = None) -> List[LeafEntityT]:
         """Find all leaves."""
 
     @abc.abstractmethod
-    def remove(self, ref_id: EntityId) -> LeafEntityType:
+    def remove(self, ref_id: EntityId) -> LeafEntityT:
         """Hard remove a leaf - an irreversible operation."""

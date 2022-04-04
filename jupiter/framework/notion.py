@@ -8,105 +8,105 @@ from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.entity import LeafEntity, TrunkEntity, BranchEntity, RootEntity, BranchTagEntity
 
-RootEntityType = TypeVar('RootEntityType', bound=RootEntity)
-_NotionRootEntitySubclass = TypeVar('_NotionRootEntitySubclass', bound='NotionRootEntity[Any]')
+RootEntityT = TypeVar('RootEntityT', bound=RootEntity)
+_NotionRootEntitySubclassT = TypeVar('_NotionRootEntitySubclassT', bound='NotionRootEntity[Any]')
 
 
 @dataclass(frozen=True)
-class NotionRootEntity(Generic[RootEntityType]):
+class NotionRootEntity(Generic[RootEntityT]):
     """Base class for Notion-side root entities."""
 
     notion_id: NotionId
     ref_id: EntityId
 
     @staticmethod
-    def new_notion_entity(entity: RootEntityType) -> 'NotionRootEntity[RootEntityType]':
+    def new_notion_entity(entity: RootEntityT) -> 'NotionRootEntity[RootEntityT]':
         """Construct a new Notion row from a given entity."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
-    def join_with_entity(self: _NotionRootEntitySubclass, entity: RootEntityType) -> _NotionRootEntitySubclass:
+    def join_with_entity(self: _NotionRootEntitySubclassT, entity: RootEntityT) -> _NotionRootEntitySubclassT:
         """Add to this Notion row from a given entity."""
         # The subexpression cast is just so we have a reference to Any and pyflakes will shut up!
         return cast(
-            _NotionRootEntitySubclass,
+            _NotionRootEntitySubclassT,
             dataclasses.replace(cast(Any, self.new_notion_entity(entity)), notion_id=self.notion_id))
 
-    def apply_to_entity(self, entity: RootEntityType, modification_time: Timestamp) -> RootEntityType:
+    def apply_to_entity(self, entity: RootEntityT, modification_time: Timestamp) -> RootEntityT:
         """Obtain the entity form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
 
-TrunkEntityType = TypeVar('TrunkEntityType', bound=TrunkEntity)
-_NotionTrunkEntitySubclass = TypeVar('_NotionTrunkEntitySubclass', bound='NotionTrunkEntity[Any]')
+TrunkEntityTypeT = TypeVar('TrunkEntityTypeT', bound=TrunkEntity)
+_NotionTrunkEntitySubclassT = TypeVar('_NotionTrunkEntitySubclassT', bound='NotionTrunkEntity[Any]')
 
 
 @dataclass(frozen=True)
-class NotionTrunkEntity(Generic[TrunkEntityType]):
+class NotionTrunkEntity(Generic[TrunkEntityTypeT]):
     """Base class for Notion-side trunk entities."""
 
     notion_id: NotionId
     ref_id: EntityId
 
     @staticmethod
-    def new_notion_entity(entity: TrunkEntityType) -> 'NotionTrunkEntity[TrunkEntityType]':
+    def new_notion_entity(entity: TrunkEntityTypeT) -> 'NotionTrunkEntity[TrunkEntityTypeT]':
         """Construct a new Notion row from a given entity."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
-    def join_with_entity(self: _NotionTrunkEntitySubclass, entity: TrunkEntityType) -> _NotionTrunkEntitySubclass:
+    def join_with_entity(self: _NotionTrunkEntitySubclassT, entity: TrunkEntityTypeT) -> _NotionTrunkEntitySubclassT:
         """Add to this Notion row from a given entity."""
         return cast(
-            _NotionTrunkEntitySubclass,
+            _NotionTrunkEntitySubclassT,
             dataclasses.replace(self.new_notion_entity(entity), notion_id=self.notion_id))
 
 
-BranchEntityType = TypeVar('BranchEntityType', bound=BranchEntity)
-_NotionBranchEntitySubclass = TypeVar('_NotionBranchEntitySubclass', bound='NotionBranchEntity[Any]')
+BranchEntityTypeT = TypeVar('BranchEntityTypeT', bound=BranchEntity)
+_NotionBranchEntitySubclassT = TypeVar('_NotionBranchEntitySubclassT', bound='NotionBranchEntity[Any]')
 
 
 @dataclass(frozen=True)
-class NotionBranchEntity(Generic[BranchEntityType]):
+class NotionBranchEntity(Generic[BranchEntityTypeT]):
     """Base class for Notion-side branch entities."""
 
     notion_id: NotionId
     ref_id: EntityId
 
     @staticmethod
-    def new_notion_entity(entity: BranchEntityType) -> 'NotionBranchEntity[BranchEntityType]':
+    def new_notion_entity(entity: BranchEntityTypeT) -> 'NotionBranchEntity[BranchEntityTypeT]':
         """Construct a new Notion row from a given entity."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
-    def join_with_entity(self: _NotionBranchEntitySubclass, entity: BranchEntityType) -> _NotionBranchEntitySubclass:
+    def join_with_entity(self: _NotionBranchEntitySubclassT, entity: BranchEntityTypeT) -> _NotionBranchEntitySubclassT:
         """Add to this Notion row from a given entity."""
         return cast(
-            _NotionBranchEntitySubclass,
+            _NotionBranchEntitySubclassT,
             dataclasses.replace(self.new_notion_entity(entity), notion_id=self.notion_id))
 
-    def apply_to_entity(self, entity: BranchEntityType, modification_time: Timestamp) -> BranchEntityType:
+    def apply_to_entity(self, entity: BranchEntityTypeT, modification_time: Timestamp) -> BranchEntityTypeT:
         """Obtain the entity form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
 
-LeafEntityType = TypeVar('LeafEntityType', bound=LeafEntity)
-NotionLeafEntityDirectInfoType = TypeVar('NotionLeafEntityDirectInfoType')
-NotionLeafEntityInverseInfoType = TypeVar('NotionLeafEntityInverseInfoType')
+LeafEntityT = TypeVar('LeafEntityT', bound=LeafEntity)
+NotionLeafEntityDirectInfoT = TypeVar('NotionLeafEntityDirectInfoT')
+NotionLeafEntityInverseInfoT = TypeVar('NotionLeafEntityInverseInfoT')
 
-_NotionLeafEntitySubclass = TypeVar('_NotionLeafEntitySubclass', bound='NotionLeafEntity[Any, Any, Any]')
+_NotionLeafEntitySubclassT = TypeVar('_NotionLeafEntitySubclassT', bound='NotionLeafEntity[Any, Any, Any]')
 
 
 @dataclass(frozen=True)
-class NotionLeafApplyToEntityResult(Generic[LeafEntityType]):
+class NotionLeafApplyToEntityResult(Generic[LeafEntityT]):
     """Result of the apply to entity call."""
-    entity: LeafEntityType
+    entity: LeafEntityT
     should_modify_on_notion: bool
 
     @staticmethod
-    def just(entity: LeafEntityType) -> 'NotionLeafApplyToEntityResult[LeafEntityType]':
+    def just(entity: LeafEntityT) -> 'NotionLeafApplyToEntityResult[LeafEntityT]':
         """Just the entity, but no modification."""
         return NotionLeafApplyToEntityResult(entity, False)
 
 
 @dataclass(frozen=True)
-class NotionLeafEntity(Generic[LeafEntityType, NotionLeafEntityDirectInfoType, NotionLeafEntityInverseInfoType]):
+class NotionLeafEntity(Generic[LeafEntityT, NotionLeafEntityDirectInfoT, NotionLeafEntityInverseInfoT]):
     """Base class for Notion-side leaf entities."""
 
     notion_id: NotionId
@@ -116,29 +116,29 @@ class NotionLeafEntity(Generic[LeafEntityType, NotionLeafEntityDirectInfoType, N
 
     @staticmethod
     def new_notion_entity(
-            entity: LeafEntityType,
-            extra_info: NotionLeafEntityDirectInfoType) \
-            -> 'NotionLeafEntity[LeafEntityType, NotionLeafEntityDirectInfoType, NotionLeafEntityInverseInfoType]':
+            entity: LeafEntityT,
+            extra_info: NotionLeafEntityDirectInfoT) \
+            -> 'NotionLeafEntity[LeafEntityT, NotionLeafEntityDirectInfoT, NotionLeafEntityInverseInfoT]':
         """Construct a new Notion row from a given entity."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
     def join_with_entity(
-            self: _NotionLeafEntitySubclass,
-            entity: LeafEntityType,
-            extra_info: NotionLeafEntityDirectInfoType) -> _NotionLeafEntitySubclass:
+            self: _NotionLeafEntitySubclassT,
+            entity: LeafEntityT,
+            extra_info: NotionLeafEntityDirectInfoT) -> _NotionLeafEntitySubclassT:
         """Add to this Notion row from a given entity."""
         return cast(
-            _NotionLeafEntitySubclass,
+            _NotionLeafEntitySubclassT,
             dataclasses.replace(self.new_notion_entity(entity, extra_info), notion_id=self.notion_id))
 
-    def new_entity(self, parent_ref_id: EntityId, extra_info: NotionLeafEntityInverseInfoType) -> LeafEntityType:
+    def new_entity(self, parent_ref_id: EntityId, extra_info: NotionLeafEntityInverseInfoT) -> LeafEntityT:
         """Construct a new entity from this notion row."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
     def apply_to_entity(
             self,
-            entity: LeafEntityType,
-            extra_info: NotionLeafEntityInverseInfoType) -> NotionLeafApplyToEntityResult[LeafEntityType]:
+            entity: LeafEntityT,
+            extra_info: NotionLeafEntityInverseInfoT) -> NotionLeafApplyToEntityResult[LeafEntityT]:
         """Obtain the entity form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
@@ -148,13 +148,13 @@ class NotionLeafEntity(Generic[LeafEntityType, NotionLeafEntityDirectInfoType, N
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
 
-BranchTagEntityType = TypeVar('BranchTagEntityType', bound=BranchTagEntity)
+BranchTagEntityT = TypeVar('BranchTagEntityT', bound=BranchTagEntity)
 
-_NotionBranchTagEntitySubclass = TypeVar('_NotionBranchTagEntitySubclass', bound='NotionBranchTagEntity[Any]')
+_NotionBranchTagEntitySubclassT = TypeVar('_NotionBranchTagEntitySubclassT', bound='NotionBranchTagEntity[Any]')
 
 
 @dataclass(frozen=True)
-class NotionBranchTagEntity(Generic[BranchTagEntityType]):
+class NotionBranchTagEntity(Generic[BranchTagEntityT]):
     """Base class for Notion-side leaf entities."""
 
     notion_id: NotionId
@@ -163,22 +163,22 @@ class NotionBranchTagEntity(Generic[BranchTagEntityType]):
     last_edited_time: Timestamp
 
     @staticmethod
-    def new_notion_entity(entity: BranchTagEntityType) -> 'NotionBranchTagEntity[BranchTagEntityType]':
+    def new_notion_entity(entity: BranchTagEntityT) -> 'NotionBranchTagEntity[BranchTagEntityT]':
         """Construct a new Notion row from a given entity."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
     def join_with_entity(
-            self: _NotionBranchTagEntitySubclass, entity: BranchTagEntityType) -> _NotionBranchTagEntitySubclass:
+            self: _NotionBranchTagEntitySubclassT, entity: BranchTagEntityT) -> _NotionBranchTagEntitySubclassT:
         """Add to this Notion row from a given entity."""
         return cast(
-            _NotionBranchTagEntitySubclass,
+            _NotionBranchTagEntitySubclassT,
             dataclasses.replace(self.new_notion_entity(entity), notion_id=self.notion_id))
 
-    def new_entity(self, parent_ref_id: EntityId) -> BranchTagEntityType:
+    def new_entity(self, parent_ref_id: EntityId) -> BranchTagEntityT:
         """Construct a new entity from this notion row."""
         raise NotImplementedError("Can't use a base NotionBranchTagEntity class.")
 
-    def apply_to_entity(self, entity: BranchTagEntityType) -> NotionLeafApplyToEntityResult[BranchTagEntityType]:
+    def apply_to_entity(self, entity: BranchTagEntityT) -> NotionLeafApplyToEntityResult[BranchTagEntityT]:
         """Obtain the entity form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionBranchTagEntity class.")
 

@@ -47,10 +47,13 @@ class SqliteBigPlanCollectionRepository(BigPlanCollectionRepository):
 
     def create(self, entity: BigPlanCollection) -> BigPlanCollection:
         """Create a big plan collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(
                 insert(self._big_plan_collection_table).values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -151,10 +154,13 @@ class SqliteBigPlanRepository(BigPlanRepository):
 
     def create(self, entity: BigPlan) -> BigPlan:
         """Create the big plan."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._big_plan_table) \
                 .values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -180,7 +186,6 @@ class SqliteBigPlanRepository(BigPlanRepository):
             update(self._big_plan_table)
             .where(self._big_plan_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

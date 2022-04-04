@@ -53,11 +53,13 @@ class SqliteHabitCollectionRepository(HabitCollectionRepository):
 
     def create(self, entity: HabitCollection) -> HabitCollection:
         """Create a habit collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(
                 insert(self._habit_collection_table).values(
-                    ref_id=
-                    entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -168,10 +170,13 @@ class SqliteHabitRepository(HabitRepository):
 
     def create(self, entity: Habit) -> Habit:
         """Create a habit."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._habit_table)\
                 .values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -207,7 +212,6 @@ class SqliteHabitRepository(HabitRepository):
             update(self._habit_table)
             .where(self._habit_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

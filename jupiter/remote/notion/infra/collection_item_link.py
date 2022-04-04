@@ -8,7 +8,7 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.notion import NotionLeafEntity
 from jupiter.remote.notion.common import NotionLockKey
 
-ItemType = TypeVar("ItemType", bound=NotionLeafEntity[Any, Any, Any])
+ItemT = TypeVar("ItemT", bound=NotionLeafEntity[Any, Any, Any])
 
 
 @dataclass(frozen=True)
@@ -55,7 +55,7 @@ class NotionCollectionItemLink:
             created_time=self.created_time,
             last_modified_time=modification_time)
 
-    def with_extra(self, item_info: ItemType) -> 'NotionCollectionItemLinkExtra[ItemType]':
+    def with_extra(self, item_info: ItemT) -> 'NotionCollectionItemLinkExtra[ItemT]':
         """Construct a new version of this with the extra Notion-side info."""
         return NotionCollectionItemLinkExtra(
             key=self.key,
@@ -68,7 +68,7 @@ class NotionCollectionItemLink:
 
 
 @dataclass(frozen=True)
-class NotionCollectionItemLinkExtra(Generic[ItemType]):
+class NotionCollectionItemLinkExtra(Generic[ItemT]):
     """A descriptor for a Notion collection tag associated to a field."""
     key: NotionLockKey
     collection_key: NotionLockKey
@@ -76,4 +76,4 @@ class NotionCollectionItemLinkExtra(Generic[ItemType]):
     notion_id: NotionId
     created_time: Timestamp
     last_modified_time: Timestamp
-    item_info: ItemType
+    item_info: ItemT

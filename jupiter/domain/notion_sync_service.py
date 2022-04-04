@@ -17,58 +17,58 @@ from jupiter.framework.notion_manager import ParentTrunkLeafNotionManager, Notio
 LOGGER = logging.getLogger(__name__)
 
 
-TrunkType = TypeVar("TrunkType", bound=TrunkEntity)
-BranchType = TypeVar("BranchType", bound=BranchEntity)
-LeafType = TypeVar("LeafType", bound=LeafEntity)
-BranchTagType = TypeVar("BranchTagType", bound=BranchTagEntity)
-NotionParentType = TypeVar("NotionParentType", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
-NotionTrunkType = TypeVar("NotionTrunkType", bound=NotionTrunkEntity[Any])
-NotionBranchType = TypeVar("NotionBranchType", bound=NotionBranchEntity[Any])
-NotionLeafType = TypeVar("NotionLeafType", bound=NotionLeafEntity[Any, Any, Any])
-NotionBranchTagType = TypeVar("NotionBranchTagType", bound=NotionBranchTagEntity[Any])
-NotionLeafUpsertExtraInfo = TypeVar("NotionLeafUpsertExtraInfo")
-NotionLeafDirectExtraInfo = TypeVar('NotionLeafDirectExtraInfo')
-NotionLeafInverseExtraInfo = TypeVar('NotionLeafInverseExtraInfo')
+TrunkT = TypeVar("TrunkT", bound=TrunkEntity)
+BranchT = TypeVar("BranchT", bound=BranchEntity)
+LeafT = TypeVar("LeafT", bound=LeafEntity)
+BranchTagT = TypeVar("BranchTagT", bound=BranchTagEntity)
+NotionParentT = TypeVar("NotionParentT", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
+NotionTrunkT = TypeVar("NotionTrunkT", bound=NotionTrunkEntity[Any])
+NotionBranchT = TypeVar("NotionBranchT", bound=NotionBranchEntity[Any])
+NotionLeafT = TypeVar("NotionLeafT", bound=NotionLeafEntity[Any, Any, Any])
+NotionBranchTagT = TypeVar("NotionBranchTagT", bound=NotionBranchTagEntity[Any])
+NotionLeafUpsertExtraInfoT = TypeVar("NotionLeafUpsertExtraInfoT")
+NotionLeafDirectExtraInfoT = TypeVar('NotionLeafDirectExtraInfoT')
+NotionLeafInverseExtraInfoT = TypeVar('NotionLeafInverseExtraInfoT')
 
 
 @dataclass(frozen=True)
-class SyncResult(Generic[LeafType]):
+class SyncResult(Generic[LeafT]):
     """The result of a sync."""
-    all: Iterable[LeafType]
-    created_locally: List[LeafType]
-    modified_locally: List[LeafType]
-    created_remotely: List[LeafType]
-    modified_remotely: List[LeafType]
+    all: Iterable[LeafT]
+    created_locally: List[LeafT]
+    modified_locally: List[LeafT]
+    created_remotely: List[LeafT]
+    modified_remotely: List[LeafT]
     removed_remotely: List[EntityId]
 
 
 class TrunkLeafNotionSyncService(
         Generic[
-            TrunkType,
-            LeafType,
-            NotionParentType,
-            NotionTrunkType,
-            NotionLeafType,
-            NotionLeafUpsertExtraInfo,
-            NotionLeafDirectExtraInfo,
-            NotionLeafInverseExtraInfo]):
+            TrunkT,
+            LeafT,
+            NotionParentT,
+            NotionTrunkT,
+            NotionLeafT,
+            NotionLeafUpsertExtraInfoT,
+            NotionLeafDirectExtraInfoT,
+            NotionLeafInverseExtraInfoT]):
     """The service class for syncing a linked set of entities between local and Notion."""
 
-    _trunk_type: Type[TrunkType]
-    _leaf_type: Type[LeafType]
-    _notion_leaf_type: Type[NotionLeafType]
+    _trunk_type: Type[TrunkT]
+    _leaf_type: Type[LeafT]
+    _notion_leaf_type: Type[NotionLeafT]
     _storage_engine: Final[DomainStorageEngine]
     _notion_manager: ParentTrunkLeafNotionManager[
-        NotionParentType, NotionTrunkType, NotionLeafType, NotionLeafUpsertExtraInfo]
+        NotionParentT, NotionTrunkT, NotionLeafT, NotionLeafUpsertExtraInfoT]
 
     def __init__(
             self,
-            trunk_type: Type[TrunkType],
-            leaf_type: Type[LeafType],
-            notion_leaf_type: Type[NotionLeafType],
+            trunk_type: Type[TrunkT],
+            leaf_type: Type[LeafT],
+            notion_leaf_type: Type[NotionLeafT],
             storage_engine: DomainStorageEngine,
             notion_manager: ParentTrunkLeafNotionManager[
-                NotionParentType, NotionTrunkType, NotionLeafType, NotionLeafUpsertExtraInfo]) -> None:
+                NotionParentT, NotionTrunkT, NotionLeafT, NotionLeafUpsertExtraInfoT]) -> None:
         """Constructor."""
         self._trunk_type = trunk_type
         self._leaf_type = leaf_type
@@ -79,24 +79,24 @@ class TrunkLeafNotionSyncService(
     def sync(
             self,
             parent_ref_id: EntityId,
-            upsert_info: NotionLeafUpsertExtraInfo,
-            direct_info: NotionLeafDirectExtraInfo,
-            inverse_info: NotionLeafInverseExtraInfo,
+            upsert_info: NotionLeafUpsertExtraInfoT,
+            direct_info: NotionLeafDirectExtraInfoT,
+            inverse_info: NotionLeafInverseExtraInfoT,
             drop_all_notion_side: bool,
             sync_even_if_not_modified: bool,
             filter_ref_ids: Optional[Iterable[EntityId]],
-            sync_prefer: SyncPrefer) -> SyncResult[LeafType]:
+            sync_prefer: SyncPrefer) -> SyncResult[LeafT]:
         """Synchronise entities between Notion and local storage."""
         filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
 
         with self._storage_engine.get_unit_of_work() as uow:
-            trunk: TrunkType = uow.get_trunk_repository_for(self._trunk_type).load_by_parent(parent_ref_id)
+            trunk: TrunkT = uow.get_trunk_repository_for(self._trunk_type).load_by_parent(parent_ref_id)
             all_leaves = \
                 uow.get_leaf_repository_for(self._leaf_type).find_all(
                     parent_ref_id=trunk.ref_id,
                     allow_archived=True,
                     filter_ref_ids=filter_ref_ids)
-        all_leaves_set: Dict[EntityId, LeafType] = {v.ref_id: v for v in all_leaves}
+        all_leaves_set: Dict[EntityId, LeafT] = {v.ref_id: v for v in all_leaves}
 
         if not drop_all_notion_side:
             all_notion_leaves = self._notion_manager.load_all_leaves(trunk.ref_id)
@@ -105,7 +105,7 @@ class TrunkLeafNotionSyncService(
             self._notion_manager.drop_all_leaves(trunk.ref_id)
             all_notion_leaves = []
             all_notion_leaves_notion_ids = set()
-        all_notion_leaves_set: Dict[EntityId, NotionLeafType] = {}
+        all_notion_leaves_set: Dict[EntityId, NotionLeafT] = {}
 
         created_locally = []
         modified_locally = []
@@ -202,7 +202,7 @@ class TrunkLeafNotionSyncService(
 
             # If the leaf does not exist on Notion side, we create it.
             notion_leaf = \
-                cast(NotionLeafType, self._notion_leaf_type.new_notion_entity(cast(Any, leaf), cast(Any, direct_info)))
+                cast(NotionLeafT, self._notion_leaf_type.new_notion_entity(cast(Any, leaf), cast(Any, direct_info)))
             self._notion_manager.upsert_leaf(trunk.ref_id, notion_leaf, upsert_info)
             all_notion_leaves_set[leaf.ref_id] = notion_leaf
             created_remotely.append(leaf)
@@ -219,38 +219,38 @@ class TrunkLeafNotionSyncService(
 
 class TrunkBranchLeafNotionSyncService(
         Generic[
-            TrunkType,
-            BranchType,
-            LeafType,
-            NotionParentType,
-            NotionTrunkType,
-            NotionBranchType,
-            NotionLeafType,
-            NotionLeafUpsertExtraInfo,
-            NotionLeafDirectExtraInfo,
-            NotionLeafInverseExtraInfo]):
+            TrunkT,
+            BranchT,
+            LeafT,
+            NotionParentT,
+            NotionTrunkT,
+            NotionBranchT,
+            NotionLeafT,
+            NotionLeafUpsertExtraInfoT,
+            NotionLeafDirectExtraInfoT,
+            NotionLeafInverseExtraInfoT]):
     """The service class for syncing a trunk branch leaf structure between local and Notion."""
 
-    _trunk_type: Type[TrunkType]
-    _branch_type: Type[BranchType]
-    _leaf_type: Type[LeafType]
-    _notion_branch_type: Type[NotionBranchType]
-    _notion_leaf_type: Type[NotionLeafType]
+    _trunk_type: Type[TrunkT]
+    _branch_type: Type[BranchT]
+    _leaf_type: Type[LeafT]
+    _notion_branch_type: Type[NotionBranchT]
+    _notion_leaf_type: Type[NotionLeafT]
     _storage_engine: Final[DomainStorageEngine]
     _notion_manager: ParentTrunkBranchLeafNotionManager[
-        NotionParentType, NotionTrunkType, NotionBranchType, NotionLeafType, NotionLeafUpsertExtraInfo]
+        NotionParentT, NotionTrunkT, NotionBranchT, NotionLeafT, NotionLeafUpsertExtraInfoT]
 
     def __init__(
             self,
-            trunk_type: Type[TrunkType],
-            branch_type: Type[BranchType],
-            leaf_type: Type[LeafType],
-            notion_branch_type: Type[NotionBranchType],
-            notion_leaf_type: Type[NotionLeafType],
+            trunk_type: Type[TrunkT],
+            branch_type: Type[BranchT],
+            leaf_type: Type[LeafT],
+            notion_branch_type: Type[NotionBranchT],
+            notion_leaf_type: Type[NotionLeafT],
             storage_engine: DomainStorageEngine,
             notion_manager: ParentTrunkBranchLeafNotionManager[
-                NotionParentType, NotionTrunkType, NotionBranchType, NotionLeafType,
-                NotionLeafUpsertExtraInfo]) -> None:
+                NotionParentT, NotionTrunkT, NotionBranchT, NotionLeafT,
+                NotionLeafUpsertExtraInfoT]) -> None:
         """Constructor."""
         self._trunk_type = trunk_type
         self._branch_type = branch_type
@@ -264,17 +264,17 @@ class TrunkBranchLeafNotionSyncService(
             self,
             right_now: Timestamp,
             parent_ref_id: EntityId,
-            branch: BranchType,
-            upsert_info: NotionLeafUpsertExtraInfo,
-            direct_info: NotionLeafDirectExtraInfo,
-            inverse_info: NotionLeafInverseExtraInfo,
+            branch: BranchT,
+            upsert_info: NotionLeafUpsertExtraInfoT,
+            direct_info: NotionLeafDirectExtraInfoT,
+            inverse_info: NotionLeafInverseExtraInfoT,
             drop_all_notion_side: bool,
             sync_even_if_not_modified: bool,
             filter_ref_ids: Optional[Iterable[EntityId]],
-            sync_prefer: SyncPrefer) -> SyncResult[LeafType]:
+            sync_prefer: SyncPrefer) -> SyncResult[LeafT]:
         """Synchronize a branch and its entries between Notion and local storage."""
         with self._storage_engine.get_unit_of_work() as uow:
-            trunk: TrunkType = uow.get_trunk_repository_for(self._trunk_type).load_by_parent(parent_ref_id)
+            trunk: TrunkT = uow.get_trunk_repository_for(self._trunk_type).load_by_parent(parent_ref_id)
 
         try:
             notion_branch = self._notion_manager.load_branch(trunk.ref_id, branch.ref_id)
@@ -292,7 +292,7 @@ class TrunkBranchLeafNotionSyncService(
                 raise Exception(f"Invalid preference {sync_prefer}")
         except NotionBranchEntityNotFoundError:
             LOGGER.info("Trying to recreate the branch")
-            notion_branch = cast(NotionBranchType, self._notion_branch_type.new_notion_entity(cast(Any, branch)))
+            notion_branch = cast(NotionBranchT, self._notion_branch_type.new_notion_entity(cast(Any, branch)))
             self._notion_manager.upsert_branch(trunk.ref_id, notion_branch)
 
         # Now synchronize the list items here.
@@ -304,7 +304,7 @@ class TrunkBranchLeafNotionSyncService(
                     parent_ref_id=branch.ref_id,
                     allow_archived=True,
                     filter_ref_ids=filter_ref_ids_set)
-        all_leaves_set: Dict[EntityId, LeafType] = {sli.ref_id: sli for sli in all_leaves}
+        all_leaves_set: Dict[EntityId, LeafT] = {sli.ref_id: sli for sli in all_leaves}
 
         if not drop_all_notion_side:
             all_notion_leaves = self._notion_manager.load_all_leaves(trunk.ref_id, branch.ref_id)
@@ -410,7 +410,7 @@ class TrunkBranchLeafNotionSyncService(
 
             # If the branch entry does not exist on Notion side, we create it.
             notion_leaf = \
-                cast(NotionLeafType, self._notion_leaf_type.new_notion_entity(cast(Any, leaf), cast(Any, direct_info)))
+                cast(NotionLeafT, self._notion_leaf_type.new_notion_entity(cast(Any, leaf), cast(Any, direct_info)))
             self._notion_manager.upsert_leaf(trunk.ref_id, branch.ref_id, notion_leaf, upsert_info)
             all_notion_leaves_set[leaf.ref_id] = notion_leaf
             created_remotely.append(leaf)
@@ -426,56 +426,56 @@ class TrunkBranchLeafNotionSyncService(
 
 
 @dataclass(frozen=True)
-class _NotionBranchLeafAndTagDirectInfo(Generic[BranchTagType]):
+class _NotionBranchLeafAndTagDirectInfo(Generic[BranchTagT]):
     """Extra info for the app to Notion copy."""
-    tags_by_ref_id: Dict[EntityId, BranchTagType]
+    tags_by_ref_id: Dict[EntityId, BranchTagT]
 
 
 @dataclass(frozen=True)
-class _NotionBranchLeafAndTagInverseInfo(Generic[BranchTagType]):
+class _NotionBranchLeafAndTagInverseInfo(Generic[BranchTagT]):
     """Extra info for the Notion to app copy."""
-    tags_by_name: Dict[TagName, BranchTagType]
+    tags_by_name: Dict[TagName, BranchTagT]
 
 
 class TrunkBranchLeafAndTagNotionSyncService(
         Generic[
-            TrunkType,
-            BranchType,
-            LeafType,
-            BranchTagType,
-            NotionParentType,
-            NotionTrunkType,
-            NotionBranchType,
-            NotionLeafType,
-            NotionBranchTagType,
-            NotionLeafUpsertExtraInfo]):
+            TrunkT,
+            BranchT,
+            LeafT,
+            BranchTagT,
+            NotionParentT,
+            NotionTrunkT,
+            NotionBranchT,
+            NotionLeafT,
+            NotionBranchTagT,
+            NotionLeafUpsertExtraInfoT]):
     """The service class for syncing a trunk branch leaf structure between local and Notion."""
 
-    _trunk_type: Type[TrunkType]
-    _branch_type: Type[BranchType]
-    _leaf_type: Type[LeafType]
-    _branch_tag_type: Type[BranchTagType]
-    _notion_branch_type: Type[NotionBranchType]
-    _notion_leaf_type: Type[NotionLeafType]
-    _notion_branch_tag_type: Type[NotionBranchTagType]
+    _trunk_type: Type[TrunkT]
+    _branch_type: Type[BranchT]
+    _leaf_type: Type[LeafT]
+    _branch_tag_type: Type[BranchTagT]
+    _notion_branch_type: Type[NotionBranchT]
+    _notion_leaf_type: Type[NotionLeafT]
+    _notion_branch_tag_type: Type[NotionBranchTagT]
     _storage_engine: Final[DomainStorageEngine]
     _notion_manager: ParentTrunkBranchLeafAndTagNotionManager[
-        NotionParentType, NotionTrunkType, NotionBranchType, NotionLeafType, NotionBranchTagType,
-        NotionLeafUpsertExtraInfo]
+        NotionParentT, NotionTrunkT, NotionBranchT, NotionLeafT, NotionBranchTagT,
+        NotionLeafUpsertExtraInfoT]
 
     def __init__(
             self,
-            trunk_type: Type[TrunkType],
-            branch_type: Type[BranchType],
-            leaf_type: Type[LeafType],
-            branch_tag_type: Type[BranchTagType],
-            notion_branch_type: Type[NotionBranchType],
-            notion_leaf_type: Type[NotionLeafType],
-            notion_branch_tag_type: Type[NotionBranchTagType],
+            trunk_type: Type[TrunkT],
+            branch_type: Type[BranchT],
+            leaf_type: Type[LeafT],
+            branch_tag_type: Type[BranchTagT],
+            notion_branch_type: Type[NotionBranchT],
+            notion_leaf_type: Type[NotionLeafT],
+            notion_branch_tag_type: Type[NotionBranchTagT],
             storage_engine: DomainStorageEngine,
             notion_manager: ParentTrunkBranchLeafAndTagNotionManager[
-                NotionParentType, NotionTrunkType, NotionBranchType, NotionLeafType, NotionBranchTagType,
-                NotionLeafUpsertExtraInfo]) -> None:
+                NotionParentT, NotionTrunkT, NotionBranchT, NotionLeafT, NotionBranchTagT,
+                NotionLeafUpsertExtraInfoT]) -> None:
         """Constructor."""
         self._trunk_type = trunk_type
         self._branch_type = branch_type
@@ -491,15 +491,15 @@ class TrunkBranchLeafAndTagNotionSyncService(
             self,
             right_now: Timestamp,
             parent_ref_id: EntityId,
-            branch: BranchType,
-            upsert_info: NotionLeafUpsertExtraInfo,
+            branch: BranchT,
+            upsert_info: NotionLeafUpsertExtraInfoT,
             drop_all_notion_side: bool,
             sync_even_if_not_modified: bool,
             filter_ref_ids: Optional[Iterable[EntityId]],
-            sync_prefer: SyncPrefer) -> SyncResult[LeafType]:
+            sync_prefer: SyncPrefer) -> SyncResult[LeafT]:
         """Synchronize a branch and its entries between Notion and local storage."""
         with self._storage_engine.get_unit_of_work() as uow:
-            trunk: TrunkType = uow.get_trunk_repository_for(self._trunk_type).load_by_parent(parent_ref_id)
+            trunk: TrunkT = uow.get_trunk_repository_for(self._trunk_type).load_by_parent(parent_ref_id)
 
         try:
             notion_branch = self._notion_manager.load_branch(trunk.ref_id, branch.ref_id)
@@ -517,7 +517,7 @@ class TrunkBranchLeafAndTagNotionSyncService(
                 raise Exception(f"Invalid preference {sync_prefer}")
         except NotionBranchEntityNotFoundError:
             LOGGER.info("Trying to recreate the branch")
-            notion_branch = cast(NotionBranchType, self._notion_branch_type.new_notion_entity(cast(Any, branch)))
+            notion_branch = cast(NotionBranchT, self._notion_branch_type.new_notion_entity(cast(Any, branch)))
             self._notion_manager.upsert_branch(trunk.ref_id, notion_branch)
 
         # Sync the tags
@@ -598,7 +598,7 @@ class TrunkBranchLeafAndTagNotionSyncService(
 
             # If the smart list item does not exist on Notion side, we create it.
             notion_branch_tag = \
-                cast(NotionBranchTagType, self._notion_branch_tag_type.new_notion_entity(cast(Any, branch_tag)))
+                cast(NotionBranchTagT, self._notion_branch_tag_type.new_notion_entity(cast(Any, branch_tag)))
             self._notion_manager.upsert_branch_tag(trunk.ref_id, branch.ref_id, notion_branch_tag)
             LOGGER.info(f"Created new branch tag on Notion side '{branch_tag.ref_id}'")
 
@@ -611,7 +611,7 @@ class TrunkBranchLeafAndTagNotionSyncService(
                     parent_ref_id=branch.ref_id,
                     allow_archived=True,
                     filter_ref_ids=filter_ref_ids_set)
-        all_leaves_set: Dict[EntityId, LeafType] = {sli.ref_id: sli for sli in all_leaves}
+        all_leaves_set: Dict[EntityId, LeafT] = {sli.ref_id: sli for sli in all_leaves}
 
         if not drop_all_notion_side:
             all_notion_leaves = self._notion_manager.load_all_leaves(trunk.ref_id, branch.ref_id)
@@ -720,7 +720,7 @@ class TrunkBranchLeafAndTagNotionSyncService(
 
             # If the branch entry does not exist on Notion side, we create it.
             notion_leaf =\
-                cast(NotionLeafType, self._notion_leaf_type.new_notion_entity(cast(Any, leaf), cast(Any, direct_info)))
+                cast(NotionLeafT, self._notion_leaf_type.new_notion_entity(cast(Any, leaf), cast(Any, direct_info)))
             self._notion_manager.upsert_leaf(trunk.ref_id, branch.ref_id, notion_leaf, upsert_info)
             all_notion_leaves_set[leaf.ref_id] = notion_leaf
             created_remotely.append(leaf)

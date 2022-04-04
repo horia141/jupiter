@@ -5,7 +5,7 @@ import logging
 from dataclasses import dataclass, fields
 from typing import TypeVar, Generic, Final, Optional, Union
 
-from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.json import process_primitive_to_json, JSONDictType
@@ -51,7 +51,7 @@ class UseCaseResultBase(UseCaseIOBase):
     """The base class for use case args results."""
 
 
-UseCaseContext = TypeVar('UseCaseContext', bound=Union[None, UseCaseContextBase])
+UseCaseContext = TypeVar('UseCaseContext', bound=UseCaseContextBase)
 UseCaseArgs = TypeVar('UseCaseArgs', bound=UseCaseArgsBase)
 UseCaseResult = TypeVar('UseCaseResult', bound=Union[None, UseCaseResultBase])
 
@@ -129,20 +129,30 @@ class UseCase(Generic[UseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):
         """Execute the command's action."""
 
 
-class MutationNoContextUseCase(
+@dataclass(frozen=True)
+class EmptyContext(UseCaseContextBase):
+    """An empty context."""
+
+    @property
+    def owner_ref_id(self) -> EntityId:
+        """The owner root entity id."""
+        return BAD_REF_ID
+
+
+class MutationEmptyContextUseCase(
         Generic[UseCaseArgs, UseCaseResult],
-        UseCase[None, UseCaseArgs, UseCaseResult],
+        UseCase[EmptyContext, UseCaseArgs, UseCaseResult],
         abc.ABC):
     """A command which does some sort of mutation, but cannot rely on a context."""
 
-    def _build_context(self) -> None:
+    def _build_context(self) -> EmptyContext:
         """Construct the context for the use case."""
-        return None
+        return EmptyContext()
 
     def execute(self, args: UseCaseArgs) -> UseCaseResult:
         """Execute the command's action."""
         LOGGER.info(f"Invoking no-context mutation command {self.__class__.__name__} with args {args}")
-        return self._execute(None, args)
+        return self._execute(EmptyContext(), args)
 
 
 class MutationUseCase(
@@ -167,7 +177,8 @@ class MutationUseCase(
             result = self._execute(context, args)
             invocation_record = \
                 MutationUseCaseInvocationRecord.build_success(
-                    context.owner_ref_id, self._time_provider.get_current_time(), self.__class__.__name__, args)
+                    context.owner_ref_id if context is not None else BAD_REF_ID,
+                    self._time_provider.get_current_time(), self.__class__.__name__, args)
             self._invocation_recorder.record(invocation_record)
             return result
         except InputValidationError:
@@ -175,7 +186,8 @@ class MutationUseCase(
         except Exception as err:
             invocation_record = \
                 MutationUseCaseInvocationRecord.build_failure(
-                    context.owner_ref_id, self._time_provider.get_current_time(), self.__class__.__name__, args, err)
+                    context.owner_ref_id if context else BAD_REF_ID,
+                    self._time_provider.get_current_time(), self.__class__.__name__, args, err)
             self._invocation_recorder.record(invocation_record)
             raise
 

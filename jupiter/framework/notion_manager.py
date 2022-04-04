@@ -7,12 +7,12 @@ from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.notion import NotionRootEntity, NotionTrunkEntity, NotionLeafEntity, NotionBranchEntity, \
     NotionBranchTagEntity
 
-ParentType = TypeVar("ParentType", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
-TrunkType = TypeVar("TrunkType", bound=NotionTrunkEntity[Any])
-BranchType = TypeVar("BranchType", bound=NotionBranchEntity[Any])
-LeafType = TypeVar("LeafType", bound=NotionLeafEntity[Any, Any, Any])
-BranchTagType = TypeVar("BranchTagType", bound=NotionBranchTagEntity[Any])
-LeafExtraInfoType = TypeVar("LeafExtraInfoType")
+ParentT = TypeVar("ParentT", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
+TrunkT = TypeVar("TrunkT", bound=NotionTrunkEntity[Any])
+BranchT = TypeVar("BranchT", bound=NotionBranchEntity[Any])
+LeafT = TypeVar("LeafT", bound=NotionLeafEntity[Any, Any, Any])
+BranchTagT = TypeVar("BranchTagT", bound=NotionBranchTagEntity[Any])
+LeafExtraInfoT = TypeVar("LeafExtraInfoT")
 
 
 class NotionBranchEntityNotFoundError(Exception):
@@ -23,33 +23,33 @@ class NotionLeafEntityNotFoundError(Exception):
     """Exception raised when a particular Notion leaf is not found."""
 
 
-class NotionManager(Generic[ParentType, TrunkType], abc.ABC):
+class NotionManager(Generic[ParentT, TrunkT], abc.ABC):
     """A manager of Notion entities."""
 
     @abc.abstractmethod
-    def upsert_trunk(self, parent: ParentType, trunk: TrunkType) -> None:
+    def upsert_trunk(self, parent: ParentT, trunk: TrunkT) -> None:
         """Upsert the root page structure for leafs."""
 
 
 class ParentTrunkLeafNotionManager(
-        Generic[ParentType, TrunkType, LeafType, LeafExtraInfoType], NotionManager[ParentType, TrunkType], abc.ABC):
+        Generic[ParentT, TrunkT, LeafT, LeafExtraInfoT], NotionManager[ParentT, TrunkT], abc.ABC):
     """A manager for an entity structure consisting of a parent (a root or trunk) and a trunk with various leafs."""
 
     @abc.abstractmethod
-    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: LeafType, extra_info: LeafExtraInfoType) -> LeafType:
+    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: LeafT, extra_info: LeafExtraInfoT) -> LeafT:
         """Upsert a leaf on Notion-side."""
 
     @abc.abstractmethod
     def save_leaf(
-            self, trunk_ref_id: EntityId, leaf: LeafType, extra_info: Optional[LeafExtraInfoType] = None) -> LeafType:
+            self, trunk_ref_id: EntityId, leaf: LeafT, extra_info: Optional[LeafExtraInfoT] = None) -> LeafT:
         """Upsert a leaf on Notion-side."""
 
     @abc.abstractmethod
-    def load_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> LeafType:
+    def load_leaf(self, trunk_ref_id: EntityId, leaf_ref_id: EntityId) -> LeafT:
         """Load a Notion-side leaf."""
 
     @abc.abstractmethod
-    def load_all_leaves(self, trunk_ref_id: EntityId) -> Iterable[LeafType]:
+    def load_all_leaves(self, trunk_ref_id: EntityId) -> Iterable[LeafT]:
         """Load all Notion-side leafs."""
 
     @abc.abstractmethod
@@ -74,21 +74,21 @@ class ParentTrunkLeafNotionManager(
 
 
 class ParentTrunkBranchLeafNotionManager(
-        Generic[ParentType, TrunkType, BranchType, LeafType, LeafExtraInfoType],
-        NotionManager[ParentType, TrunkType],
+        Generic[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
+        NotionManager[ParentT, TrunkT],
         abc.ABC):
     """A manager for an entity structure consisting of a parent, a trunk with many branches and leaves."""
 
     @abc.abstractmethod
-    def upsert_branch(self, trunk_ref_id: EntityId, branch: BranchType) -> BranchType:
+    def upsert_branch(self, trunk_ref_id: EntityId, branch: BranchT) -> BranchT:
         """Upsert a branch on Notion-side."""
 
     @abc.abstractmethod
-    def save_branch(self, trunk_ref_id: EntityId, branch: BranchType) -> BranchType:
+    def save_branch(self, trunk_ref_id: EntityId, branch: BranchT) -> BranchT:
         """Load a branch on Notion-side."""
 
     @abc.abstractmethod
-    def load_branch(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> BranchType:
+    def load_branch(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> BranchT:
         """Load a branch on Notion-side."""
 
     @abc.abstractmethod
@@ -97,24 +97,24 @@ class ParentTrunkBranchLeafNotionManager(
 
     @abc.abstractmethod
     def upsert_leaf(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf: LeafType,
-            extra_info: LeafExtraInfoType) -> LeafType:
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf: LeafT,
+            extra_info: LeafExtraInfoT) -> LeafT:
         """Upsert a branch leaf on Notion-side."""
 
     @abc.abstractmethod
     def save_leaf(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf: LeafType,
-            extra_info: Optional[LeafExtraInfoType] = None) -> LeafType:
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf: LeafT,
+            extra_info: Optional[LeafExtraInfoT] = None) -> LeafT:
         """Save an already existing branch leaf on Notion-side."""
 
     @abc.abstractmethod
     def load_leaf(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId) -> LeafType:
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, leaf_ref_id: EntityId) -> LeafT:
         """Load a particular branch leaf."""
 
     @abc.abstractmethod
     def load_all_leaves(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[LeafType]:
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[LeafT]:
         """Load all branch leaves."""
 
     @abc.abstractmethod
@@ -140,27 +140,27 @@ class ParentTrunkBranchLeafNotionManager(
 
 
 class ParentTrunkBranchLeafAndTagNotionManager(
-        Generic[ParentType, TrunkType, BranchType, LeafType, BranchTagType, LeafExtraInfoType],
-        ParentTrunkBranchLeafNotionManager[ParentType, TrunkType, BranchType, LeafType, LeafExtraInfoType],
+        Generic[ParentT, TrunkT, BranchT, LeafT, BranchTagT, LeafExtraInfoT],
+        ParentTrunkBranchLeafNotionManager[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
         abc.ABC):
     """A manager for an entity structure consisting of a parent, a trunk with many branches and leaves and tags."""
 
     @abc.abstractmethod
     def upsert_branch_tag(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagType) -> BranchTagType:
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagT) -> BranchTagT:
         """Upsert a branch tag on Notion-side."""
 
     @abc.abstractmethod
     def save_branch_tag(
-            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagType) -> BranchTagType:
+            self, trunk_ref_id: EntityId, branch_ref_id: EntityId, branch_tag: BranchTagT) -> BranchTagT:
         """Update the Notion-side branch tag with new data."""
 
     @abc.abstractmethod
-    def load_branch_tag(self, trunk_ref_id: EntityId, branch_ref_id: EntityId, ref_id: EntityId) -> BranchTagType:
+    def load_branch_tag(self, trunk_ref_id: EntityId, branch_ref_id: EntityId, ref_id: EntityId) -> BranchTagT:
         """Retrieve all the Notion-side branch tags."""
 
     @abc.abstractmethod
-    def load_all_branch_tags(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[BranchTagType]:
+    def load_all_branch_tags(self, trunk_ref_id: EntityId, branch_ref_id: EntityId) -> Iterable[BranchTagT]:
         """Retrieve all the Notion-side branch tags."""
 
     @abc.abstractmethod

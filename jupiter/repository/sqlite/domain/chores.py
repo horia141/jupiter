@@ -54,11 +54,13 @@ class SqliteChoreCollectionRepository(ChoreCollectionRepository):
 
     def create(self, entity: ChoreCollection) -> ChoreCollection:
         """Create a chore collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(
                 insert(self._chore_collection_table).values(
-                    ref_id=
-                    entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -171,10 +173,13 @@ class SqliteChoreRepository(ChoreRepository):
 
     def create(self, entity: Chore) -> Chore:
         """Create a chore."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._chore_table)\
                 .values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -212,7 +217,6 @@ class SqliteChoreRepository(ChoreRepository):
             update(self._chore_table)
             .where(self._chore_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

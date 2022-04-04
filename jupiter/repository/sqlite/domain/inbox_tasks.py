@@ -48,9 +48,12 @@ class SqliteInboxTaskCollectionRepository(InboxTaskCollectionRepository):
 
     def create(self, entity: InboxTaskCollection) -> InboxTaskCollection:
         """Create the inbox task collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._inbox_task_collection_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
@@ -163,10 +166,13 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
 
     def create(self, entity: InboxTask) -> InboxTask:
         """Create an inbox task."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._inbox_task_table) \
                 .values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),
@@ -205,7 +211,6 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             update(self._inbox_task_table)
             .where(self._inbox_task_table.c.ref_id == entity.ref_id.as_int())
             .values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),

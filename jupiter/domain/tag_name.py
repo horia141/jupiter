@@ -10,7 +10,7 @@ from jupiter.framework.value import Value
 _TAG_RE: Final[Pattern[str]] = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9]*-?)*$")
 
 
-_TagNameType = TypeVar('_TagNameType', bound='TagName')
+_TagNameT = TypeVar('_TagNameT', bound='TagName')
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class TagName(Value):
     _the_tag: str
 
     @classmethod
-    def from_raw(cls: Type[_TagNameType], tag_raw: Optional[str]) -> _TagNameType:
+    def from_raw(cls: Type[_TagNameT], tag_raw: Optional[str]) -> _TagNameT:
         """Validate and clean an tag."""
         if not tag_raw:
             raise InputValidationError("Expected tag to be non-null")

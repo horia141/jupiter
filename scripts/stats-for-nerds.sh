@@ -21,3 +21,5 @@ cloc \
   jupiter/
 
 libyear -r requirements.txt
+
+libyear -r requirements-dev.txt

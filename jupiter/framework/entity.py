@@ -13,7 +13,7 @@ from jupiter.framework.event import Event, EventKind, EventSource
 FIRST_VERSION = 0
 
 
-_EntityType = TypeVar('_EntityType', bound='Entity')
+_EntityT = TypeVar('_EntityT', bound='Entity')
 
 
 @dataclass(frozen=True)
@@ -65,8 +65,8 @@ class Entity:
     events: List[Event] = dataclasses.field(compare=False, hash=False)
 
     def _new_version(
-            self: _EntityType, new_event: Event,
-            **kwargs: Union[None, bool, str, int, float, object]) -> _EntityType:
+            self: _EntityT, new_event: Event,
+            **kwargs: Union[None, bool, str, int, float, object]) -> _EntityT:
         # To hell with your types!
         # We only want to create a new version if there's any actual change in the root. This means we both
         # create a new object, and we increment it's version, and emit a new event. Otherwise we just return
@@ -83,7 +83,7 @@ class Entity:
                 new_events = self.events.copy()
                 new_events.append(new_event)
                 return cast(
-                    _EntityType,
+                    _EntityT,
                     dataclasses.replace(
                         self,
                         version=new_event.entity_version,
@@ -92,11 +92,11 @@ class Entity:
                         **kwargs))
         return self
 
-    def assign_ref_id(self: _EntityType, ref_id: EntityId) -> _EntityType:
+    def assign_ref_id(self: _EntityT, ref_id: EntityId) -> _EntityT:
         """Assign a ref id to the root."""
         return dataclasses.replace(self, ref_id=ref_id)
 
-    def mark_archived(self: _EntityType, source: EventSource, archived_time: Timestamp) -> _EntityType:
+    def mark_archived(self: _EntityT, source: EventSource, archived_time: Timestamp) -> _EntityT:
         """Archive the root."""
         return self._new_version(
             archived=True,
@@ -104,8 +104,8 @@ class Entity:
             new_event=Entity.Archived.make_event_from_frame_args(source, self.version, archived_time))
 
     def change_archived(
-            self: _EntityType, archived: bool, source: EventSource,
-            archived_time: Timestamp) -> _EntityType:
+            self: _EntityT, archived: bool, source: EventSource,
+            archived_time: Timestamp) -> _EntityT:
         """Change the archival status."""
         if self.archived == archived:
             return self

@@ -46,9 +46,12 @@ class SqliteProjectCollectionRepository(ProjectCollectionRepository):
 
     def create(self, entity: ProjectCollection) -> ProjectCollection:
         """Create a project collection."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         result = self._connection.execute(
             insert(self._project_collection_table).values(
-                ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                **ref_id_kw,
                 version=entity.version,
                 archived=entity.archived,
                 created_time=entity.created_time.to_db(),
@@ -128,10 +131,13 @@ class SqliteProjectRepository(ProjectRepository):
 
     def create(self, entity: Project) -> Project:
         """Create a project."""
+        ref_id_kw = {}
+        if entity.ref_id != BAD_REF_ID:
+            ref_id_kw["ref_id"] = entity.ref_id.as_int()
         try:
             result = self._connection.execute(
                 insert(self._project_table).values(
-                    ref_id=entity.ref_id.as_int() if entity.ref_id != BAD_REF_ID else None,
+                    **ref_id_kw,
                     version=entity.version,
                     archived=entity.archived,
                     created_time=entity.created_time.to_db(),

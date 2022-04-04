@@ -52,13 +52,13 @@ from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.event import EventSource
-from jupiter.framework.use_case import UseCaseArgsBase, MutationNoContextUseCase
+from jupiter.framework.use_case import UseCaseArgsBase, MutationEmptyContextUseCase, EmptyContext
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
 
 
-class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
+class InitUseCase(MutationEmptyContextUseCase['InitUseCase.Args', None]):
     """UseCase for initialising the workspace."""
 
     @dataclass(frozen=True)
@@ -119,7 +119,7 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
         self._push_integration_group_notion_manager = push_integration_group_notion_manager
         self._slack_task_notion_manager = slack_task_notion_manager
 
-    def _execute(self, context: None, args: Args) -> None:
+    def _execute(self, context: EmptyContext, args: Args) -> None:
         """Execute the command's action."""
         LOGGER.info("Creating workspace")
         with self._storage_engine.get_unit_of_work() as uow:

@@ -11,7 +11,7 @@ from jupiter.framework.value import Value
 _ENTITY_KEY_RE: Final[Pattern[str]] = re.compile(r"^[a-z0-9]([a-z0-9]*-?)*$")
 
 
-_EntityKeyType = TypeVar('_EntityKeyType', bound='EntityKey')
+_EntityKeyT = TypeVar('_EntityKeyT', bound='EntityKey')
 
 
 @dataclass(frozen=True)
@@ -22,7 +22,7 @@ class EntityKey(Value, abc.ABC):
     _the_key: str
 
     @classmethod
-    def from_raw(cls: Type[_EntityKeyType], entity_key_raw: Optional[str]) -> _EntityKeyType:
+    def from_raw(cls: Type[_EntityKeyT], entity_key_raw: Optional[str]) -> _EntityKeyT:
         """Validate and clean a entity key."""
         if not entity_key_raw:
             raise InputValidationError("Expected entity key key to be non-null")

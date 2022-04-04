@@ -41,9 +41,9 @@ class NotionCollectionItemNotFoundError(Exception):
     """Error raised when a particular collection item cannot be found."""
 
 
-ItemType = TypeVar("ItemType", bound=NotionLeafEntity[typing.Any, typing.Any, typing.Any])
-CopyRowToNotionRowType = Callable[[NotionClient, ItemType, CollectionRowBlock], CollectionRowBlock]
-CopyNotionRowToRowType = Callable[[CollectionRowBlock], ItemType]
+ItemT = TypeVar("ItemT", bound=NotionLeafEntity[typing.Any, typing.Any, typing.Any])
+CopyRowToNotionRowT = Callable[[NotionClient, ItemT, CollectionRowBlock], CollectionRowBlock]
+CopyNotionRowToRowT = Callable[[CollectionRowBlock], ItemT]
 
 
 class NotionCollectionsManager:
@@ -546,8 +546,8 @@ class NotionCollectionsManager:
                     in uow.notion_collection_field_tag_link_repository.find_all_for_collection(collection_key, field)]
 
     def upsert_collection_item(
-            self, collection_key: NotionLockKey, key: NotionLockKey, new_row: ItemType,
-            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> NotionCollectionItemLinkExtra[ItemType]:
+            self, collection_key: NotionLockKey, key: NotionLockKey, new_row: ItemT,
+            copy_row_to_notion_row: CopyRowToNotionRowT[ItemT]) -> NotionCollectionItemLinkExtra[ItemT]:
         """Create a Notion entity."""
         if new_row.ref_id is None:
             raise Exception("Can only create over an entity which has a ref_id")
@@ -617,8 +617,8 @@ class NotionCollectionsManager:
         return new_item_link
 
     def save_collection_item(
-            self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemType,
-            copy_row_to_notion_row: CopyRowToNotionRowType[ItemType]) -> NotionCollectionItemLinkExtra[ItemType]:
+            self, key: NotionLockKey, collection_key: NotionLockKey, row: ItemT,
+            copy_row_to_notion_row: CopyRowToNotionRowT[ItemT]) -> NotionCollectionItemLinkExtra[ItemT]:
         """Update the Notion-side entity with new data."""
         if row.ref_id is None or row.ref_id == BAD_REF_ID:
             raise Exception("Can only save over an entity which has a ref_id")
@@ -652,8 +652,8 @@ class NotionCollectionsManager:
 
     def load_all_collection_items(
             self, collection_key: NotionLockKey,
-            copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> \
-            Iterable[NotionCollectionItemLinkExtra[ItemType]]:
+            copy_notion_row_to_row: CopyNotionRowToRowT[ItemT]) -> \
+            Iterable[NotionCollectionItemLinkExtra[ItemT]]:
         """Retrieve all the Notion-side entitys."""
         with self._storage_engine.get_unit_of_work() as uow:
             collection_link = uow.notion_collection_link_repository.load(collection_key)
@@ -681,7 +681,7 @@ class NotionCollectionsManager:
 
     def load_collection_item(
             self, key: NotionLockKey, collection_key: NotionLockKey,
-            copy_notion_row_to_row: CopyNotionRowToRowType[ItemType]) -> NotionCollectionItemLinkExtra[ItemType]:
+            copy_notion_row_to_row: CopyNotionRowToRowT[ItemT]) -> NotionCollectionItemLinkExtra[ItemT]:
         """Retrieve the Notion-side entity associated with a particular entity."""
         with self._storage_engine.get_unit_of_work() as uow:
             collection_link = uow.notion_collection_link_repository.load(collection_key)
