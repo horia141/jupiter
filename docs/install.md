@@ -57,7 +57,7 @@ Alternatively, you can use the scripts locally, like so:
 ```bash
 $ cd jupiter
 $ poetry shell
-$ poetry install
+$ ./scripts/setup-for-dev.sh
 ```
 
 Now, instead of running the Docker image, you can directly run the scripts, like so:
