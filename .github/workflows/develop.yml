@@ -42,8 +42,10 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Prepare for CI
-        run: ./scripts/setup-for-ci.sh
+        run:
+          poetry env use python
+          ./scripts/setup-for-ci.sh
       - name: Check scripts
         run: |
-          source .venv/bin/activate
+          poetry env use python
           ./scripts/check.sh
