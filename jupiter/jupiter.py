@@ -57,6 +57,11 @@ from jupiter.command.project_create import ProjectCreate
 from jupiter.command.project_show import ProjectShow
 from jupiter.command.project_update import ProjectUpdate
 from jupiter.command.report import Report
+from jupiter.command.slack_task_archive import SlackTaskArchive
+from jupiter.command.slack_task_change_generation_project import SlackTaskChangeGenerationProject
+from jupiter.command.slack_task_remove import SlackTaskRemove
+from jupiter.command.slack_task_show import SlackTaskShow
+from jupiter.command.slack_task_update import SlackTaskUpdate
 from jupiter.command.smart_list_archive import SmartListArchive
 from jupiter.command.smart_list_create import SmartListCreate
 from jupiter.command.smart_list_item_archive import SmartListItemArchive
@@ -92,9 +97,11 @@ from jupiter.remote.notion.infra.client_builder import \
     MissingNotionConnectionError, OldTokenForNotionConnectionError, NotionClientBuilder
 from jupiter.remote.notion.infra.collections_manager import NotionCollectionsManager
 from jupiter.remote.notion.infra.pages_manager import NotionPagesManager
-from jupiter.remote.notion.metrics_manager import NotionMetricManager
-from jupiter.remote.notion.persons_manager import NotionPersonManager
+from jupiter.remote.notion.metrics_manager import NotionMetricsManager
+from jupiter.remote.notion.persons_manager import NotionPersonsManager
 from jupiter.remote.notion.projects_manager import NotionProjectsManager
+from jupiter.remote.notion.push_integration.push_integration_groups_manager import NotionPushIntegrationGroupsManager
+from jupiter.remote.notion.push_integration.slack_tasks import NotionSlackTasksManager
 from jupiter.remote.notion.smart_lists_manager import NotionSmartListsManager
 from jupiter.remote.notion.vacations_manager import NotionVacationsManager
 from jupiter.remote.notion.workspaces_manager import NotionWorkspacesManager
@@ -153,6 +160,11 @@ from jupiter.use_cases.persons.update import PersonUpdateUseCase
 from jupiter.use_cases.projects.create import ProjectCreateUseCase
 from jupiter.use_cases.projects.find import ProjectFindUseCase
 from jupiter.use_cases.projects.update import ProjectUpdateUseCase
+from jupiter.use_cases.push_integrations.slack.archive import SlackTaskArchiveUseCase
+from jupiter.use_cases.push_integrations.slack.change_generation_project import SlackTaskChangeGenerationProjectUseCase
+from jupiter.use_cases.push_integrations.slack.find import SlackTaskFindUseCase
+from jupiter.use_cases.push_integrations.slack.remove import SlackTaskRemoveUseCase
+from jupiter.use_cases.push_integrations.slack.update import SlackTaskUpdateUseCase
 from jupiter.use_cases.remote.notion.update_token import NotionConnectionUpdateTokenUseCase
 from jupiter.use_cases.report import ReportUseCase
 from jupiter.use_cases.smart_lists.archive import SmartListArchiveUseCase
@@ -219,11 +231,13 @@ def main() -> None:
     notion_chores_manager = NotionChoresManager(global_properties, time_provider, notion_collections_manager)
     notion_habits_manager = NotionHabitsManager(global_properties, time_provider, notion_collections_manager)
     notion_big_plans_manager = NotionBigPlansManager(global_properties, time_provider, notion_collections_manager)
-    notion_smart_list_manager = NotionSmartListsManager(
+    notion_smart_lists_manager = NotionSmartListsManager(
         global_properties, time_provider, notion_pages_manager, notion_collections_manager)
-    notion_metric_manager = NotionMetricManager(
+    notion_metrics_manager = NotionMetricsManager(
         global_properties, time_provider, notion_pages_manager, notion_collections_manager)
-    notion_person_manager = NotionPersonManager(global_properties, time_provider, notion_collections_manager)
+    notion_persons_manager = NotionPersonsManager(global_properties, time_provider, notion_collections_manager)
+    notion_push_integration_group_manager = NotionPushIntegrationGroupsManager(notion_pages_manager)
+    notion_slack_tasks_manager = NotionSlackTasksManager(global_properties, notion_collections_manager)
 
     invocation_recorder = PersistentMutationUseCaseInvocationRecorder(usecase_storage_engine)
 
@@ -240,9 +254,11 @@ def main() -> None:
                 notion_habits_manager,
                 notion_chores_manager,
                 notion_big_plans_manager,
-                notion_smart_list_manager,
-                notion_metric_manager,
-                notion_person_manager)),
+                notion_smart_lists_manager,
+                notion_metrics_manager,
+                notion_persons_manager,
+                notion_push_integration_group_manager,
+                notion_slack_tasks_manager)),
         Sync(
             SyncUseCase(
                 global_properties,
@@ -256,9 +272,11 @@ def main() -> None:
                 notion_habits_manager,
                 notion_chores_manager,
                 notion_big_plans_manager,
-                notion_smart_list_manager,
-                notion_metric_manager,
-                notion_person_manager)),
+                notion_smart_lists_manager,
+                notion_metrics_manager,
+                notion_persons_manager,
+                notion_push_integration_group_manager,
+                notion_slack_tasks_manager)),
         Gen(
             global_properties,
             time_provider,
@@ -285,9 +303,10 @@ def main() -> None:
                 notion_habits_manager,
                 notion_chores_manager,
                 notion_big_plans_manager,
-                notion_smart_list_manager,
-                notion_metric_manager,
-                notion_person_manager)),
+                notion_smart_lists_manager,
+                notion_metrics_manager,
+                notion_persons_manager,
+                notion_slack_tasks_manager)),
         # CRUD Commands.
         WorkspaceUpdate(
             WorkspaceUpdateUseCase(
@@ -547,19 +566,19 @@ def main() -> None:
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListArchive(
             SmartListArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListUpdate(
             SmartListUpdateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListShow(
             SmartListFindUseCase(domain_storage_engine)),
         SmartListsRemove(
@@ -567,75 +586,75 @@ def main() -> None:
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListTagCreate(
             SmartListTagCreateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListTagArchive(
             SmartListTagArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListTagUpdate(
             SmartListTagUpdateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListTagRemove(
             SmartListTagRemoveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListItemCreate(
             SmartListItemCreateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListItemArchive(
             SmartListItemArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListItemUpdate(
             SmartListItemUpdateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         SmartListItemRemove(
             SmartListItemRemoveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_smart_list_manager)),
+                notion_smart_lists_manager)),
         MetricChangeCollectionProject(
             MetricChangeCollectionProjectUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricCreate(
             MetricCreateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricArchive(
             MetricArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricUpdate(
             MetricUpdateUseCase(
                 global_properties,
@@ -643,7 +662,7 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricShow(
             global_properties,
             MetricFindUseCase(domain_storage_engine)),
@@ -653,51 +672,51 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricEntryCreate(
             MetricEntryCreateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricEntryArchive(
             MetricEntryArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricEntryUpdate(
             MetricEntryUpdateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         MetricEntryRemove(
             MetricEntryRemoveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_metric_manager)),
+                notion_metrics_manager)),
         PersonChangeCatchUpProject(
             PersonChangeCatchUpProjectUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_person_manager)),
+                notion_persons_manager)),
         PersonCreate(
             PersonCreateUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
-                notion_person_manager)),
+                notion_persons_manager)),
         PersonArchive(
             PersonArchiveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_person_manager)),
+                notion_persons_manager)),
         PersonUpdate(
             PersonUpdateUseCase(
                 global_properties,
@@ -705,16 +724,48 @@ def main() -> None:
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_person_manager)),
+                notion_persons_manager)),
         PersonRemove(
             PersonRemoveUseCase(
                 time_provider,
                 invocation_recorder,
                 domain_storage_engine,
                 notion_inbox_tasks_manager,
-                notion_person_manager)),
+                notion_persons_manager)),
         PersonShow(
             PersonFindUseCase(domain_storage_engine)),
+        SlackTaskArchive(
+            SlackTaskArchiveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_slack_tasks_manager)),
+        SlackTaskRemove(
+            SlackTaskRemoveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_slack_tasks_manager)),
+        SlackTaskUpdate(
+            global_properties,
+            SlackTaskUpdateUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_slack_tasks_manager)),
+        SlackTaskChangeGenerationProject(
+            SlackTaskChangeGenerationProjectUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_slack_tasks_manager)),
+        SlackTaskShow(
+            global_properties,
+            SlackTaskFindUseCase(domain_storage_engine)),
         # Remote connection commands
         NotionConnectionUpdateToken(
             NotionConnectionUpdateTokenUseCase(

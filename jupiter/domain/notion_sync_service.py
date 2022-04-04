@@ -1,7 +1,7 @@
 """Generic syncers between local and Notion."""
 import logging
 from dataclasses import dataclass
-from typing import TypeVar, Final, Generic, Any, Optional, Iterable, List, Type, Dict, cast
+from typing import TypeVar, Final, Generic, Any, Optional, Iterable, List, Type, Dict, cast, Union
 
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.sync_prefer import SyncPrefer
@@ -21,7 +21,7 @@ TrunkType = TypeVar("TrunkType", bound=TrunkEntity)
 BranchType = TypeVar("BranchType", bound=BranchEntity)
 LeafType = TypeVar("LeafType", bound=LeafEntity)
 BranchTagType = TypeVar("BranchTagType", bound=BranchTagEntity)
-NotionParentType = TypeVar("NotionParentType", bound=NotionRootEntity[Any])
+NotionParentType = TypeVar("NotionParentType", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
 NotionTrunkType = TypeVar("NotionTrunkType", bound=NotionTrunkEntity[Any])
 NotionBranchType = TypeVar("NotionBranchType", bound=NotionBranchEntity[Any])
 NotionLeafType = TypeVar("NotionLeafType", bound=NotionLeafEntity[Any, Any, Any])

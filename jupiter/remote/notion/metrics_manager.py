@@ -28,7 +28,7 @@ from jupiter.utils.time_provider import TimeProvider
 LOGGER = logging.getLogger(__name__)
 
 
-class NotionMetricManager(MetricNotionManager):
+class NotionMetricsManager(MetricNotionManager):
     """The centralised point for interacting with Notion metrics."""
 
     _KEY: ClassVar[str] = "metrics"

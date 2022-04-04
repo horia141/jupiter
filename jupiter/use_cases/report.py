@@ -49,6 +49,7 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
         filter_chore_ref_ids: Optional[Iterable[EntityId]]
         filter_metric_keys: Optional[Iterable[MetricKey]]
         filter_person_ref_ids: Optional[Iterable[EntityId]]
+        filter_slack_task_ref_ids: Optional[Iterable[EntityId]]
         period: RecurringTaskPeriod
         breakdown_period: Optional[RecurringTaskPeriod]
 
@@ -215,7 +216,10 @@ class ReportUseCase(AppReadonlyUseCase['ReportUseCase.Args', 'ReportUseCase.Resu
                 or (it.source is InboxTaskSource.METRIC and
                     (not (args.filter_metric_keys is not None) or it.metric_ref_id in metrics_by_ref_id))
                 or ((it.source is InboxTaskSource.PERSON_CATCH_UP or it.source is InboxTaskSource.PERSON_BIRTHDAY) and
-                    (not (args.filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))]
+                    (not (args.filter_person_ref_ids is not None) or it.person_ref_id in persons_by_ref_id))
+                or (it.source is InboxTaskSource.SLACK_TASK and
+                    (not (args.filter_slack_task_ref_ids is not None) or
+                     (it.slack_task_ref_id is not None and it.slack_task_ref_id in args.filter_slack_task_ref_ids)))]
 
             all_habits = \
                 uow.habit_repository.find_all_with_filters(

@@ -29,6 +29,13 @@ from jupiter.domain.projects.project_collection import ProjectCollection
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.projects.service.project_label_update_service import ProjectLabelUpdateService
+from jupiter.domain.push_integrations.group.infra.push_integration_group_notion_manager import \
+    PushIntegrationGroupNotionManager
+from jupiter.domain.push_integrations.group.notion_push_integration_group import NotionPushIntegrationGroup
+from jupiter.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.domain.push_integrations.slack.infra.slack_task_notion_manager import SlackTaskNotionManager
+from jupiter.domain.push_integrations.slack.notion_slack_task_collection import NotionSlackTaskCollection
+from jupiter.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.domain.remote.notion.connection import NotionConnection
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
@@ -76,6 +83,8 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
     _smart_list_notion_manager: Final[SmartListNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
     _person_notion_manager: Final[PersonNotionManager]
+    _push_integration_group_notion_manager: Final[PushIntegrationGroupNotionManager]
+    _slack_task_notion_manager: Final[SlackTaskNotionManager]
 
     def __init__(
             self,
@@ -90,7 +99,9 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
             big_plan_notion_manager: BigPlanNotionManager,
             smart_list_notion_manager: SmartListNotionManager,
             metric_notion_manager: MetricNotionManager,
-            person_notion_manager: PersonNotionManager) -> None:
+            person_notion_manager: PersonNotionManager,
+            push_integration_group_notion_manager: PushIntegrationGroupNotionManager,
+            slack_task_notion_manager: SlackTaskNotionManager) -> None:
         """Constructor."""
         super().__init__()
         self._time_provider = time_provider
@@ -105,6 +116,8 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
         self._metric_notion_manager = metric_notion_manager
         self._smart_list_notion_manager = smart_list_notion_manager
         self._person_notion_manager = person_notion_manager
+        self._push_integration_group_notion_manager = push_integration_group_notion_manager
+        self._slack_task_notion_manager = slack_task_notion_manager
 
     def _execute(self, context: None, args: Args) -> None:
         """Execute the command's action."""
@@ -193,6 +206,21 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
                     created_time=self._time_provider.get_current_time())
             new_person_collection = uow.person_collection_repository.create(new_person_collection)
 
+            new_push_integration_group = \
+                PushIntegrationGroup.new_push_integration_group(
+                    workspace_ref_id=new_workspace.ref_id,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
+            new_push_integration_group = uow.push_integration_group_repository.create(new_push_integration_group)
+
+            new_slack_task_collection = \
+                SlackTaskCollection.new_slack_task_collection(
+                    push_integration_group_ref_id=new_push_integration_group.ref_id,
+                    generation_project_ref_id=new_default_project.ref_id,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time())
+            new_slack_task_collection = uow.slack_task_collection_repository.create(new_slack_task_collection)
+
         LOGGER.info("Applied local changes")
 
         new_notion_workspace = NotionWorkspace.new_notion_entity(new_workspace)
@@ -235,6 +263,16 @@ class InitUseCase(MutationNoContextUseCase['InitUseCase.Args', None]):
         LOGGER.info("Creating the persons structure")
         new_notion_person_collection = NotionPersonCollection.new_notion_entity(new_person_collection)
         self._person_notion_manager.upsert_trunk(new_notion_workspace, new_notion_person_collection)
+
+        LOGGER.info("Creating the push integration group structure")
+        new_notion_push_integration_group = NotionPushIntegrationGroup.new_notion_entity(new_push_integration_group)
+        self._push_integration_group_notion_manager.upsert_push_integration_group(
+            new_notion_workspace, new_notion_push_integration_group)
+
+        LOGGER.info("Creating the Slack task structure")
+        new_notion_slack_task_collection = NotionSlackTaskCollection.new_notion_entity(new_slack_task_collection)
+        self._slack_task_notion_manager.upsert_trunk(
+            new_notion_push_integration_group, new_notion_slack_task_collection)
 
         ProjectLabelUpdateService(
             self._storage_engine,

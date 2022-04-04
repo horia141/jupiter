@@ -58,6 +58,8 @@ class Gen(command.Command):
                             help="Allow only these metrics")
         parser.add_argument("--person", dest="person_ref_ids", default=[], action="append",
                             help="Allow only these persons")
+        parser.add_argument("--slack-task-id", dest="slack_task_ref_ids", default=[], action="append",
+                            help="Allow only these Slack tasks")
         parser.add_argument("--period", default=[RecurringTaskPeriod.DAILY.value], action="append",
                             choices=RecurringTaskPeriod.all_values(),
                             help="The period for which the upsert should happen. Defaults to all")
@@ -76,6 +78,8 @@ class Gen(command.Command):
         metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] if len(args.metric_keys) > 0 else None
         person_ref_ids = \
             [EntityId.from_raw(rid) for rid in args.person_ref_ids] if len(args.person_ref_ids) > 0 else None
+        slack_task_ref_ids = \
+            [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids] if len(args.slack_task_ref_ids) > 0 else None
         period_filter = \
             frozenset(RecurringTaskPeriod.from_raw(p) for p in args.period) if len(args.period) > 0 else None
         sync_even_if_not_modified: bool = args.sync_even_if_not_modified
@@ -87,5 +91,6 @@ class Gen(command.Command):
             filter_chore_ref_ids=chore_ref_ids,
             filter_metric_keys=metric_keys,
             filter_person_ref_ids=person_ref_ids,
+            filter_slack_task_ref_ids=slack_task_ref_ids,
             filter_period=period_filter,
             sync_even_if_not_modified=sync_even_if_not_modified))

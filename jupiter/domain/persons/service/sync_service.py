@@ -9,7 +9,7 @@ from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 
 
-class PersonSyncServiceNew(
+class PersonSyncService(
     TrunkLeafNotionSyncService[
         PersonCollection,
         Person,

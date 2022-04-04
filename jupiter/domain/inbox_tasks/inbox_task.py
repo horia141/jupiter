@@ -1,4 +1,5 @@
 """An inbox task."""
+import textwrap
 from dataclasses import dataclass
 from typing import Optional, Type
 
@@ -13,6 +14,9 @@ from jupiter.domain.eisen import Eisen
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.domain.push_integrations.push_generation_extra_info import PushGenerationExtraInfo
+from jupiter.domain.push_integrations.slack.slack_channel_name import SlackChannelName
+from jupiter.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
@@ -62,6 +66,10 @@ class InboxTask(LeafEntity):
         """Generated for person birthday event."""
 
     @dataclass(frozen=True)
+    class GeneratedForSlackTask(Entity.Created):
+        """Generated for a slack task event."""
+
+    @dataclass(frozen=True)
     class ChangeProject(Entity.Updated):
         """Changed the project event."""
 
@@ -98,6 +106,10 @@ class InboxTask(LeafEntity):
         """Updated link to a person birthday task event."""
 
     @dataclass(frozen=True)
+    class UpdatedLinkToSlackTask(Entity.Updated):
+        """Updated link to a Slack task event."""
+
+    @dataclass(frozen=True)
     class Updated(Entity.Updated):
         """Updated event."""
 
@@ -113,12 +125,14 @@ class InboxTask(LeafEntity):
     chore_ref_id: Optional[EntityId]
     metric_ref_id: Optional[EntityId]
     person_ref_id: Optional[EntityId]
+    slack_task_ref_id: Optional[EntityId]
     name: InboxTaskName
     status: InboxTaskStatus
     eisen: Eisen
     difficulty: Optional[Difficulty]
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
+    notes: Optional[str]
     recurring_timeline: Optional[str]
     recurring_repeat_index: Optional[int]
     recurring_gen_right_now: Optional[Timestamp]  # Time for which this inbox task was generated
@@ -151,12 +165,14 @@ class InboxTask(LeafEntity):
             chore_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
+            slack_task_ref_id=None,
             name=name,
             status=status,
             eisen=eisen if eisen else Eisen.REGULAR,
             difficulty=difficulty,
             actionable_date=actionable_date or (big_plan.actionable_date if big_plan else None),
             due_date=due_date or (big_plan.due_date if big_plan else None),
+            notes=None,
             recurring_timeline=None,
             recurring_repeat_index=None,
             recurring_gen_right_now=None,
@@ -189,12 +205,14 @@ class InboxTask(LeafEntity):
             chore_ref_id=None,
             metric_ref_id=None,
             person_ref_id=None,
+            slack_task_ref_id=None,
             name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
+            notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=recurring_task_repeat_index,
             recurring_gen_right_now=recurring_task_gen_right_now,
@@ -226,12 +244,14 @@ class InboxTask(LeafEntity):
             chore_ref_id=chore_ref_id,
             metric_ref_id=None,
             person_ref_id=None,
+            slack_task_ref_id=None,
             name=name,
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
+            notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
@@ -264,12 +284,14 @@ class InboxTask(LeafEntity):
             chore_ref_id=None,
             metric_ref_id=metric_ref_id,
             person_ref_id=None,
+            slack_task_ref_id=None,
             name=InboxTask._build_name_for_collection_task(name),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
+            notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
@@ -302,12 +324,14 @@ class InboxTask(LeafEntity):
             chore_ref_id=None,
             metric_ref_id=None,
             person_ref_id=person_ref_id,
+            slack_task_ref_id=None,
             name=InboxTask._build_name_for_catch_up_task(name),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
             difficulty=difficulty,
             actionable_date=actionable_date,
             due_date=due_date,
+            notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
@@ -339,15 +363,57 @@ class InboxTask(LeafEntity):
             chore_ref_id=None,
             metric_ref_id=None,
             person_ref_id=person_ref_id,
+            slack_task_ref_id=None,
             name=InboxTask._build_name_for_birthday_task(name),
             status=InboxTaskStatus.RECURRING,
             eisen=Eisen.IMPORTANT,
             difficulty=Difficulty.EASY,
             actionable_date=due_date.subtract_days(preparation_days_cnt),
             due_date=due_date,
+            notes=None,
             recurring_timeline=recurring_task_timeline,
             recurring_repeat_index=None,
             recurring_gen_right_now=recurring_task_gen_right_now,
+            accepted_time=created_time,
+            working_time=None,
+            completed_time=None)
+        return inbox_task
+
+    @staticmethod
+    def new_inbox_task_for_slack_task(
+            inbox_task_collection_ref_id: EntityId, project_ref_id: EntityId, slack_task_ref_id: EntityId,
+            user: SlackUserName, channel: Optional[SlackChannelName], message: str,
+            generation_extra_info: PushGenerationExtraInfo, source: EventSource,
+            created_time: Timestamp) -> 'InboxTask':
+        """Create an inbox task."""
+        inbox_task = InboxTask(
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[
+                InboxTask.GeneratedForSlackTask.make_event_from_frame_args(source, FIRST_VERSION, created_time)],
+            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            source=InboxTaskSource.SLACK_TASK,
+            project_ref_id=project_ref_id,
+            big_plan_ref_id=None,
+            habit_ref_id=None,
+            chore_ref_id=None,
+            metric_ref_id=None,
+            person_ref_id=None,
+            slack_task_ref_id=slack_task_ref_id,
+            name=InboxTask._build_name_for_slack_task(user, channel, generation_extra_info),
+            status=generation_extra_info.status or InboxTaskStatus.ACCEPTED,
+            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            difficulty=generation_extra_info.difficulty,
+            actionable_date=generation_extra_info.actionable_date,
+            due_date=generation_extra_info.due_date,
+            notes=InboxTask._build_notes_for_slack_task(user, channel, message),
+            recurring_timeline=None,
+            recurring_repeat_index=None,
+            recurring_gen_right_now=None,
             accepted_time=created_time,
             working_time=None,
             completed_time=None)
@@ -490,6 +556,25 @@ class InboxTask(LeafEntity):
             recurring_timeline=recurring_timeline,
             new_event=
             InboxTask.UpdatedLinkToPersonBirthday.make_event_from_frame_args(source, self.version, modification_time))
+
+    def update_link_to_slack_task(
+            self, project_ref_id: EntityId, user: SlackUserName, channel: Optional[SlackChannelName],
+            generation_extra_info: PushGenerationExtraInfo, message: str, source: EventSource,
+            modification_time: Timestamp) -> 'InboxTask':
+        """Update all the info associated with a person."""
+        if self.source is not InboxTaskSource.SLACK_TASK:
+            raise Exception(
+                f"Cannot update a task which is not a Slack one '{self.name}'")
+        return self._new_version(
+            project_ref_id=project_ref_id,
+            name=self._build_name_for_slack_task(user, channel, generation_extra_info),
+            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            difficulty=generation_extra_info.difficulty,
+            actionable_date=generation_extra_info.actionable_date,
+            due_date=generation_extra_info.due_date,
+            notes=InboxTask._build_notes_for_slack_task(user, channel, message),
+            new_event=
+            InboxTask.UpdatedLinkToSlackTask.make_event_from_frame_args(source, self.version, modification_time))
 
     def update(
             self, name: UpdateAction[InboxTaskName], status: UpdateAction[InboxTaskStatus],
@@ -650,6 +735,25 @@ class InboxTask(LeafEntity):
     @staticmethod
     def _build_name_for_birthday_task(name: InboxTaskName) -> InboxTaskName:
         return InboxTaskName.from_raw(f"Wish happy birthday to {name}")
+
+    @staticmethod
+    def _build_name_for_slack_task(
+            user: SlackUserName, channel: Optional[SlackChannelName],
+            generation_extra_info: PushGenerationExtraInfo) -> InboxTaskName:
+        if generation_extra_info.name is not None:
+            return generation_extra_info.name
+        if channel is not None:
+            return InboxTaskName(f"Respond to {user} on {channel}")
+        return InboxTaskName(f"Respond to {user}'s DM")
+
+    @staticmethod
+    def _build_notes_for_slack_task(user: SlackUserName, channel: Optional[SlackChannelName], message: str) -> str:
+        message = textwrap.dedent(f"""
+            **user**: {user}
+            **channel**: {str(channel) if channel else "DM"}
+            **message**: {message}
+            """).strip()
+        return message
 
     @staticmethod
     def _check_actionable_and_due_dates(actionable_date: Optional[ADate], due_date: Optional[ADate]) -> None:

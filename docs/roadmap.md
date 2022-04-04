@@ -9,8 +9,6 @@ New features:
 * Support megaplans
 * Define visual identity
 * Translate app and docs in one other language
-* Integration with Google Calendar
-* Email and Slack as sources for inbox tasks
 * Integrate with YouTube, Spotify, Apple Music, Amazon, etc for smart lists support, playlists creation, etc
 
 Public infrastructure:

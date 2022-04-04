@@ -42,6 +42,13 @@ from jupiter.domain.projects.infra.project_collection_repository import ProjectC
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_collection import ProjectCollection
+from jupiter.domain.push_integrations.group.infra.push_integration_group_repository import \
+    PushIntegrationGroupRepository
+from jupiter.domain.push_integrations.group.push_integration_group import PushIntegrationGroup
+from jupiter.domain.push_integrations.slack.infra.slack_task_collection_repository import SlackTaskCollectionRepository
+from jupiter.domain.push_integrations.slack.infra.slack_task_repository import SlackTaskRepository
+from jupiter.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.domain.remote.notion.connection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
@@ -67,6 +74,10 @@ from jupiter.repository.sqlite.domain.metrics import SqliteMetricRepository, Sql
     SqliteMetricCollectionRepository
 from jupiter.repository.sqlite.domain.persons import SqlitePersonCollectionRepository, SqlitePersonRepository
 from jupiter.repository.sqlite.domain.projects import SqliteProjectRepository, SqliteProjectCollectionRepository
+from jupiter.repository.sqlite.domain.push_integration.push_integration_groups import \
+    SqlitePushIntegrationGroupRepository
+from jupiter.repository.sqlite.domain.push_integration.slack_tasks import SqliteSlackTaskCollectionRepository, \
+    SqliteSlackTaskRepository
 from jupiter.repository.sqlite.domain.remote.notion.connections import SqliteNotionConnectionRepository
 from jupiter.repository.sqlite.domain.smart_lists import SqliteSmartListRepository, SqliteSmartListTagRepository, \
     SqliteSmartListItemRepository, SqliteSmartListCollectionRepository
@@ -99,6 +110,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _metric_entry_repository: Final[SqliteMetricEntryRepository]
     _person_collection_repository: Final[SqlitePersonCollectionRepository]
     _person_repository: Final[SqlitePersonRepository]
+    _push_integration_group_repository: Final[SqlitePushIntegrationGroupRepository]
+    _slack_task_collection_repository: Final[SqliteSlackTaskCollectionRepository]
+    _slack_task_repository: Final[SqliteSlackTaskRepository]
     _notion_connection_repository: Final[SqliteNotionConnectionRepository]
 
     def __init__(
@@ -125,6 +139,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             metric_entry_repository: SqliteMetricEntryRepository,
             person_collection_repository: SqlitePersonCollectionRepository,
             person_repository: SqlitePersonRepository,
+            push_integration_group_repository: SqlitePushIntegrationGroupRepository,
+            slack_task_collection_repository: SqliteSlackTaskCollectionRepository,
+            slack_task_repository: SqliteSlackTaskRepository,
             notion_connection_repository: SqliteNotionConnectionRepository) -> None:
         """Constructor."""
         self._workspace_repository = workspace_repository
@@ -149,6 +166,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._metric_entry_repository = metric_entry_repository
         self._person_collection_repository = person_collection_repository
         self._person_repository = person_repository
+        self._push_integration_group_repository = push_integration_group_repository
+        self._slack_task_collection_repository = slack_task_collection_repository
+        self._slack_task_repository = slack_task_repository
         self._notion_connection_repository = notion_connection_repository
 
     def __enter__(self) -> 'SqliteDomainUnitOfWork':
@@ -271,6 +291,21 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         return self._person_repository
 
     @property
+    def push_integration_group_repository(self) -> PushIntegrationGroupRepository:
+        """The push integration group repository."""
+        return self._push_integration_group_repository
+
+    @property
+    def slack_task_collection_repository(self) -> SlackTaskCollectionRepository:
+        """The Slack task collection repository."""
+        return self._slack_task_collection_repository
+
+    @property
+    def slack_task_repository(self) -> SlackTaskRepository:
+        """The Slack task repository."""
+        return self._slack_task_repository
+
+    @property
     def notion_connection_repository(self) -> NotionConnectionRepository:
         """The Notion connection repository."""
         return self._notion_connection_repository
@@ -295,6 +330,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             return typing.cast(TrunkEntityRepository[TrunkType], self._smart_list_collection_repository)
         elif trunk_type == PersonCollection:
             return typing.cast(TrunkEntityRepository[TrunkType], self._person_collection_repository)
+        elif trunk_type == PushIntegrationGroup:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._push_integration_group_repository)
+        elif trunk_type == SlackTaskCollection:
+            return typing.cast(TrunkEntityRepository[TrunkType], self._slack_task_collection_repository)
         else:
             raise Exception(f"Unknown trunk repository type {trunk_type}")
 
@@ -330,6 +369,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             return typing.cast(LeafEntityRepository[LeafType], self._smart_list_tag_reposiotry)
         elif leaf_type == Person:
             return typing.cast(LeafEntityRepository[LeafType], self._person_repository)
+        elif leaf_type == SlackTask:
+            return typing.cast(LeafEntityRepository[LeafType], self._slack_task_repository)
         else:
             raise Exception(f"Unknown leaf repository type {leaf_type}")
 
@@ -390,6 +431,9 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             metric_entry_repository = SqliteMetricEntryRepository(connection, self._metadata)
             person_collection_repository = SqlitePersonCollectionRepository(connection, self._metadata)
             person_repository = SqlitePersonRepository(connection, self._metadata)
+            push_integration_group_repository = SqlitePushIntegrationGroupRepository(connection, self._metadata)
+            slack_task_collection_repository = SqliteSlackTaskCollectionRepository(connection, self._metadata)
+            slack_task_repository = SqliteSlackTaskRepository(connection, self._metadata)
             notion_connection_repository = SqliteNotionConnectionRepository(connection, self._metadata)
 
             yield SqliteDomainUnitOfWork(
@@ -415,4 +459,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 metric_entry_repository=metric_entry_repository,
                 person_collection_repository=person_collection_repository,
                 person_repository=person_repository,
+                push_integration_group_repository=push_integration_group_repository,
+                slack_task_collection_repository=slack_task_collection_repository,
+                slack_task_repository=slack_task_repository,
                 notion_connection_repository=notion_connection_repository)

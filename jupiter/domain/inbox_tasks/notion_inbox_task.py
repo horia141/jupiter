@@ -51,11 +51,13 @@ class NotionInboxTask(NotionLeafEntity[InboxTask, 'NotionInboxTask.DirectInfo', 
     chore_ref_id: Optional[str]
     metric_ref_id: Optional[str]
     person_ref_id: Optional[str]
+    slack_task_ref_id: Optional[str]
     status: Optional[str]
     eisen: Optional[str]
     difficulty: Optional[str]
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
+    notes: Optional[str]
     from_script: bool
     recurring_timeline: Optional[str]
     recurring_repeat_index: Optional[int]
@@ -82,11 +84,13 @@ class NotionInboxTask(NotionLeafEntity[InboxTask, 'NotionInboxTask.DirectInfo', 
             chore_ref_id=str(entity.chore_ref_id) if entity.chore_ref_id else None,
             metric_ref_id=str(entity.metric_ref_id) if entity.metric_ref_id else None,
             person_ref_id=str(entity.person_ref_id) if entity.person_ref_id else None,
+            slack_task_ref_id=str(entity.slack_task_ref_id) if entity.slack_task_ref_id else None,
             status=entity.status.for_notion(),
             eisen=entity.eisen.for_notion(),
             difficulty=entity.difficulty.for_notion() if entity.difficulty else None,
             actionable_date=entity.actionable_date,
             due_date=entity.due_date,
+            notes=entity.notes,
             from_script=entity.source.is_from_script,
             recurring_timeline=entity.recurring_timeline,
             recurring_repeat_index=entity.recurring_repeat_index,
@@ -119,6 +123,7 @@ class NotionInboxTask(NotionLeafEntity[InboxTask, 'NotionInboxTask.DirectInfo', 
         inbox_task_chore_ref_id = EntityId.from_raw(self.chore_ref_id) if self.chore_ref_id else None
         inbox_task_metric_ref_id = EntityId.from_raw(self.metric_ref_id) if self.metric_ref_id else None
         inbox_task_person_ref_id = EntityId.from_raw(self.person_ref_id) if self.person_ref_id else None
+        inbox_task_slack_task_ref_id = EntityId.from_raw(self.slack_task_ref_id) if self.slack_task_ref_id else None
         inbox_task_status = InboxTaskStatus.from_raw(self.status) if self.status else InboxTaskStatus.NOT_STARTED
         inbox_task_eisen = Eisen.from_raw(self.eisen)  if self.eisen else Eisen.REGULAR
         inbox_task_difficulty = Difficulty.from_raw(self.difficulty) if self.difficulty else None
@@ -137,6 +142,8 @@ class NotionInboxTask(NotionLeafEntity[InboxTask, 'NotionInboxTask.DirectInfo', 
             raise InputValidationError("Trying to create an inbox task for a metric from Notion")
         elif inbox_task_person_ref_id is not None:
             raise InputValidationError("Trying to create an inbox task for a person from Notion")
+        elif inbox_task_slack_task_ref_id is not None:
+            raise InputValidationError("Trying to create an inbox task for a Sack task from Notion")
 
         return InboxTask.new_inbox_task(
             inbox_task_collection_ref_id=parent_ref_id,

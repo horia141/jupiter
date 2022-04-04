@@ -1,5 +1,4 @@
 """The centralised point for interacting with Notion workspaces."""
-import logging
 from typing import ClassVar, Final
 
 from jupiter.domain.workspaces.infra.workspace_notion_manager import WorkspaceNotionManager, \
@@ -8,8 +7,6 @@ from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.pages_manager import NotionPagesManager, NotionPageNotFoundError
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionWorkspacesManager(WorkspaceNotionManager):

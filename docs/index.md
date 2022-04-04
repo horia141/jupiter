@@ -17,6 +17,10 @@ While Notion acts as the main user interface, a CLI app takes care of large scal
 as backup, recurring tasks generation, Notion environment cleanup, etc. It also mirrors the
 functionality available through Notion, for the console heads among us.
 
+A host of other tools can integrate into the various work-flows via [Zapier](https://zapier.com)
+and [IFTTT](https://ifttt.com). Currently there's support for Slack, GMail for work, email,
+Google Calendar, etc.
+
 Here's a picture from the "inbox" view:
 
 ![Inbox image](assets/concepts-inbox.png)

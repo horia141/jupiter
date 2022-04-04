@@ -25,7 +25,8 @@ class Report(command.Command):
         InboxTaskSource.BIG_PLAN,
         InboxTaskSource.METRIC,
         InboxTaskSource.PERSON_CATCH_UP,
-        InboxTaskSource.PERSON_BIRTHDAY
+        InboxTaskSource.PERSON_BIRTHDAY,
+        InboxTaskSource.SLACK_TASK
     ]
 
     _global_properties: Final[GlobalProperties]
@@ -68,6 +69,8 @@ class Report(command.Command):
                             help="The key of the metric")
         parser.add_argument("--person-id", dest="person_ref_ids", default=[], action="append",
                             help="Allow only tasks from these persons")
+        parser.add_argument("--slack-task-id", dest="slack_task_ref_ids", default=[], action="append",
+                            help="Allow only these Slack tasks")
         parser.add_argument("--cover", dest="covers", default=["inbox-tasks", "big-plans"],
                             choices=["inbox-tasks", "big-plans"],
                             help="Show reporting info about certain parts")
@@ -98,6 +101,8 @@ class Report(command.Command):
             if len(args.big_plan_ref_ids) > 0 else None
         metric_keys = [MetricKey.from_raw(mk) for mk in args.metric_keys] if len(args.metric_keys) > 0 else None
         person_ref_ids = [EntityId.from_raw(bp) for bp in args.person_ref_ids] if len(args.person_ref_ids) > 0 else None
+        slack_task_ref_ids = \
+            [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids] if len(args.slack_task_ref_ids) > 0 else None
         covers = args.covers
         breakdowns = args.breakdowns if len(args.breakdowns) > 0 else ["global", "habits"]
         breakdown_period_raw = RecurringTaskPeriod.from_raw(args.breakdown_period) if args.breakdown_period else None
@@ -122,6 +127,7 @@ class Report(command.Command):
                 filter_chore_ref_ids=chore_ref_ids,
                 filter_metric_keys=metric_keys,
                 filter_person_ref_ids=person_ref_ids,
+                filter_slack_task_ref_ids=slack_task_ref_ids,
                 period=period,
                 breakdown_period=breakdown_period))
 

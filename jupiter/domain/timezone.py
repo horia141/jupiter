@@ -39,3 +39,6 @@ class Timezone(Value):
     def __str__(self) -> str:
         """Transform this to a string version."""
         return self._the_timezone
+
+
+UTC = Timezone.from_raw("UTC")

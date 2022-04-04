@@ -33,7 +33,7 @@ class EntityName(Value):
 
         if not _ENTITY_NAME_RE.match(entity_name):
             raise InputValidationError(
-                f"Expected entity id '{entity_name_raw}' to match '{_ENTITY_NAME_RE.pattern}")
+                f"Expected entity name '{entity_name_raw}' to match '{_ENTITY_NAME_RE.pattern}")
 
         return cls(entity_name)
 

@@ -23,7 +23,7 @@ from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
 
-class NotionPersonManager(PersonNotionManager):
+class NotionPersonsManager(PersonNotionManager):
     """The centralised point for interacting with the Notion persons database."""
 
     _KEY: ClassVar[str] = "persons"

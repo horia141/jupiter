@@ -1,13 +1,13 @@
 """Framework-level types of Notion managers."""
 import abc
-from typing import TypeVar, Any, Generic, Iterable, Optional
+from typing import TypeVar, Any, Generic, Iterable, Optional, Union
 
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.notion import NotionRootEntity, NotionTrunkEntity, NotionLeafEntity, NotionBranchEntity, \
     NotionBranchTagEntity
 
-ParentType = TypeVar("ParentType", bound=NotionRootEntity[Any])
+ParentType = TypeVar("ParentType", bound=Union[NotionRootEntity[Any], NotionTrunkEntity[Any]])
 TrunkType = TypeVar("TrunkType", bound=NotionTrunkEntity[Any])
 BranchType = TypeVar("BranchType", bound=NotionBranchEntity[Any])
 LeafType = TypeVar("LeafType", bound=NotionLeafEntity[Any, Any, Any])

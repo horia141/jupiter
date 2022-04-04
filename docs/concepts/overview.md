@@ -32,6 +32,8 @@ As a quick reference, here is the list of the more important concepts:
   weight, days gone to the gym, or marathons ran!
 * _Person_: a family member, friend, acquaintance, etc you wish to keep in touch with, or
   otherwise know about in a more formal way.
+* _Push Integrations_: lightweight integrations with external tools such as Slack, GMail,
+  Outlook, etc. Done in a one-way fashion via these tools pushing work into Jupiter.
 
 The rest of the document will cover each of these in greater detail.
 

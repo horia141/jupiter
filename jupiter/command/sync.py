@@ -60,6 +60,8 @@ class Sync(command.Command):
                             help="Sync only these metric entries")
         parser.add_argument("--person-id", dest="person_ref_ids", default=[], action="append",
                             help="Sync only these persons")
+        parser.add_argument("--slack-task-id", dest="slack_task_ref_ids", default=[], action="append",
+                            help="Sync only these Slack tasks")
         parser.add_argument("--prefer", dest="sync_prefer", choices=SyncPrefer.all_values(),
                             default=SyncPrefer.NOTION.value, help="Which source to prefer")
         parser.add_argument("--drop-all-notion", dest="drop_all_notion", action="store_true", default=False,
@@ -93,6 +95,8 @@ class Sync(command.Command):
                 if len(args.metric_entry_ref_ids) > 0 else None
         person_ref_ids = \
             [EntityId.from_raw(sli) for sli in args.person_ref_ids] if len(args.person_ref_ids) > 0 else None
+        slack_task_ref_ids = \
+            [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids] if len(args.slack_task_ref_ids) > 0 else None
         sync_prefer = SyncPrefer.from_raw(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
@@ -111,4 +115,5 @@ class Sync(command.Command):
             filter_metric_keys=metric_keys,
             filter_metric_entry_ref_ids=metric_entry_ref_ids,
             filter_person_ref_ids=person_ref_ids,
+            filter_slack_task_ref_ids=slack_task_ref_ids,
             sync_prefer=sync_prefer))

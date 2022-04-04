@@ -57,7 +57,7 @@ class Person(LeafEntity):
             catch_up_params: UpdateAction[Optional[RecurringTaskGenParams]],
             birthday: UpdateAction[Optional[PersonBirthday]], source: EventSource,
             modification_time: Timestamp) -> 'Person':
-        """Change the name of the person."""
+        """Update info about the of the person."""
         return self._new_version(
             name=name.or_else(self.name),
             relationship=relationship.or_else(self.relationship),

@@ -22,6 +22,9 @@ nav:
           - 'The Jupiter CLI': 'concepts/jupiter-cli.md'
           - 'Integrations':
                 - 'Notion': 'concepts/notion-connection.md'
+          - 'Push Integrations':
+                - 'Overview': 'concepts/push-integrations.md'
+                - 'Slack Tasks': 'concepts/slack-tasks.md'
           - 'Local Storage': 'concepts/local-storage.md'
           - 'Workspace': 'concepts/workspaces.md'
           - 'Vacations': 'concepts/vacations.md'
@@ -43,6 +46,7 @@ nav:
           - 'Fix Data Inconsistencies': 'how-tos/fix-data-inconsistencies.md'
           - 'Recreate A Missing Notion Entity': 'how-tos/recreate-a-missing-notion-entity.md'
           - 'Sync From Local To Notion': 'how-tos/sync-from-local-to-notion.md'
+          - 'Use Slack As A Source Of Inbox Tasks': 'how-tos/use-slack-as-a-source-for-inbox-tasks.md'
     - Roadmap: 'roadmap.md'
     - Releases:
           - 'Version 0.10.1': 'releases/version-0.10.1.md'

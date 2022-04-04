@@ -25,9 +25,6 @@ You can see an example PRM database:
 
 You can:
 
-* View the whole PRM database via `prm-show`.
-* Update any number of properties via `prm-update`. This cannot be done from Notion
-
 ## Persons
 
 A person has a name, and it must be unique. Add some clarification next to it to resolve
@@ -64,3 +61,4 @@ You can:
 * Remove a person via `person-archive`, or by clicking the archive checkbox in Notion.
 * Change any number of person values via `person-update`, or by editing the row in Notion.
 * Show the persons database via `person-show`, or by looking in Notion.
+

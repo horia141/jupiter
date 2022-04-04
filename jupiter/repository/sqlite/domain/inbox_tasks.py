@@ -144,12 +144,14 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             Column('chore_ref_id', Integer, ForeignKey('chore.ref_id'), nullable=True),
             Column('metric_ref_id', Integer, ForeignKey('metric.ref_id'), nullable=True),
             Column('person_ref_id', Integer, ForeignKey('person.ref_id'), nullable=True),
+            Column('slack_task_ref_id', Integer, ForeignKey('slack_task.ref_id'), nullable=True),
             Column('name', Unicode(), nullable=False),
             Column('status', String(16), nullable=False),
             Column('eisen', String(20), nullable=False),
             Column('difficulty', String(10), nullable=True),
             Column('actionable_date', DateTime, nullable=True),
             Column('due_date', DateTime, nullable=True),
+            Column('notes', Unicode(), nullable=True),
             Column('recurring_timeline', String, nullable=True),
             Column('recurring_repeat_index', Integer, nullable=True),
             Column('recurring_gen_right_now', DateTime, nullable=True),
@@ -178,12 +180,14 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                     chore_ref_id=entity.chore_ref_id.as_int() if entity.chore_ref_id else None,
                     metric_ref_id=entity.metric_ref_id.as_int() if entity.metric_ref_id else None,
                     person_ref_id=entity.person_ref_id.as_int() if entity.person_ref_id else None,
+                    slack_task_ref_id=entity.slack_task_ref_id.as_int() if entity.slack_task_ref_id else None,
                     name=str(entity.name),
                     status=str(entity.status),
                     eisen=str(entity.eisen),
                     difficulty=str(entity.difficulty) if entity.difficulty else None,
                     actionable_date=entity.actionable_date.to_db() if entity.actionable_date else None,
                     due_date=entity.due_date.to_db() if entity.due_date else None,
+                    notes=entity.notes,
                     recurring_timeline=entity.recurring_timeline,
                     recurring_repeat_index=entity.recurring_repeat_index,
                     recurring_gen_right_now=
@@ -215,12 +219,14 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 chore_ref_id=entity.chore_ref_id.as_int() if entity.chore_ref_id else None,
                 metric_ref_id=entity.metric_ref_id.as_int() if entity.metric_ref_id else None,
                 person_ref_id=entity.person_ref_id.as_int() if entity.person_ref_id else None,
+                slack_task_ref_id=entity.slack_task_ref_id.as_int() if entity.slack_task_ref_id else None,
                 name=str(entity.name),
                 status=str(entity.status),
                 eisen=str(entity.eisen),
                 difficulty=str(entity.difficulty) if entity.difficulty else None,
                 actionable_date=entity.actionable_date.to_db() if entity.actionable_date else None,
                 due_date=entity.due_date.to_db() if entity.due_date else None,
+                notes=entity.notes,
                 recurring_timeline=entity.recurring_timeline,
                 recurring_repeat_index=entity.recurring_repeat_index,
                 recurring_gen_right_now=
@@ -264,7 +270,8 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             filter_habit_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_chore_ref_ids: Optional[Iterable[EntityId]] = None,
             filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
-            filter_person_ref_ids: Optional[Iterable[EntityId]] = None) -> List[InboxTask]:
+            filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
+            filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None) -> List[InboxTask]:
         """Find all the inbox task."""
         query_stmt = \
             select(self._inbox_task_table) \
@@ -298,6 +305,9 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
         if filter_person_ref_ids:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.person_ref_id.in_(fi.as_int() for fi in filter_person_ref_ids))
+        if filter_slack_task_ref_ids:
+            query_stmt = query_stmt.where(
+                self._inbox_task_table.c.slack_task_ref_id.in_(fi.as_int() for fi in filter_slack_task_ref_ids))
         results = self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
@@ -331,12 +341,14 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             chore_ref_id=EntityId.from_raw(str(row["chore_ref_id"])) if row["chore_ref_id"] else None,
             metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])) if row["metric_ref_id"] else None,
             person_ref_id=EntityId.from_raw(str(row["person_ref_id"])) if row["person_ref_id"] else None,
+            slack_task_ref_id=EntityId.from_raw(str(row["slack_task_ref_id"])) if row["slack_task_ref_id"] else None,
             name=InboxTaskName.from_raw(row["name"]),
             status=InboxTaskStatus.from_raw(row["status"]),
             eisen=Eisen.from_raw(row["eisen"]),
             difficulty=Difficulty.from_raw(row["difficulty"]) if row["difficulty"] else None,
             actionable_date=ADate.from_db(row["actionable_date"]) if row["actionable_date"] else None,
             due_date=ADate.from_db(row["due_date"]) if row["due_date"] else None,
+            notes=row["notes"],
             recurring_timeline=row["recurring_timeline"],
             recurring_repeat_index=row["recurring_repeat_index"],
             recurring_gen_right_now=

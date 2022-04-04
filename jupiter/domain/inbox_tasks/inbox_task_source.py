@@ -16,6 +16,7 @@ class InboxTaskSource(enum.Enum):
     METRIC = "metric"
     PERSON_CATCH_UP = "person-catch-up"
     PERSON_BIRTHDAY = "person-birthday"
+    SLACK_TASK = "slack-task"
 
     @property
     def is_from_script(self) -> bool:
@@ -29,7 +30,7 @@ class InboxTaskSource(enum.Enum):
     @property
     def allow_user_changes(self) -> bool:
         """Allow user changes for an inbox task."""
-        return self in (InboxTaskSource.USER, InboxTaskSource.BIG_PLAN)
+        return self in (InboxTaskSource.USER, InboxTaskSource.BIG_PLAN, InboxTaskSource.SLACK_TASK)
 
     @staticmethod
     def from_raw(inbox_task_source_raw: Optional[str]) -> 'InboxTaskSource':

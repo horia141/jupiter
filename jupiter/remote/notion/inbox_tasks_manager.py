@@ -106,6 +106,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         "Person Birthday": {
             "name": InboxTaskSource.PERSON_BIRTHDAY.for_notion(),
             "color": "orange"
+        },
+        "Slack": {
+            "name": InboxTaskSource.SLACK_TASK.for_notion(),
+            "color": "green"
         }
     }
 
@@ -231,6 +235,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": "Person Id",
             "type": "text"
         },
+        "slack-task-ref-id": {
+            "name": "Slack Task Id",
+            "type": "text"
+        },
         "actionable-date": {
             "name": "Actionable Date",
             "type": "date"
@@ -306,6 +314,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         NotionFieldProps(name="chore-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="metric-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="person-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
+        NotionFieldProps(name="slack-task-ref-id", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="period", show=NotionFieldShow.HIDE_IF_EMPTY),
         NotionFieldProps(name="fromscript", show=NotionFieldShow.HIDE),
         NotionFieldProps(name="timeline", show=NotionFieldShow.HIDE),
@@ -397,6 +406,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "person-ref-id",
+            "visible": False
+        }, {
+            "property": "slack-task-ref-id",
             "visible": False
         }, {
             "property": "actionable-date",
@@ -508,6 +520,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "property": "person-ref-id",
             "visible": False
         }, {
+            "property": "slack-task-ref-id",
+            "visible": False
+        }, {
             "property": "actionable-date",
             "visible": False
         }, {
@@ -608,6 +623,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "visible": False
         }, {
             "property": "person-ref-id",
+            "visible": False
+        }, {
+            "property": "slack-task-ref-id",
             "visible": False
         }, {
             "property": "actionable-date",
@@ -1269,6 +1287,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 "property": "person-ref-id",
                 "visible": False
             }, {
+                "property": "slack-task-ref-id",
+                "visible": False
+            }, {
                 "property": "actionable-date",
                 "visible": False
             }, {
@@ -1345,6 +1366,10 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             }, {
                 "width": 100,
                 "property": "person-ref-id",
+                "visible": True
+            }, {
+                "width": 100,
+                "property": "slack-task-ref-id",
                 "visible": True
             }, {
                 "width": 100,
@@ -1595,6 +1620,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             notion_row.chore_id = row.chore_ref_id
             notion_row.metric_id = row.metric_ref_id
             notion_row.person_id = row.person_ref_id
+            notion_row.slack_task_id = row.slack_task_ref_id
             notion_row.status = row.status
             notion_row.eisenhower = row.eisen
             notion_row.difficulty = row.difficulty
@@ -1610,6 +1636,9 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 if row.recurring_gen_right_now else None
             notion_row.last_edited_time = row.last_edited_time.to_notion(self._global_properties.timezone)
             notion_row.ref_id = str(row.ref_id) if row.ref_id else None
+
+        if row.notes:
+            client.attach_text_notes_to_block(notion_row, row.notes)
 
         return notion_row
 
@@ -1628,6 +1657,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             chore_ref_id=inbox_task_notion_row.chore_id,
             metric_ref_id=inbox_task_notion_row.metric_id,
             person_ref_id=inbox_task_notion_row.person_id,
+            slack_task_ref_id=inbox_task_notion_row.slack_task_id,
             status=inbox_task_notion_row.status,
             eisen=inbox_task_notion_row.eisenhower,
             difficulty=inbox_task_notion_row.difficulty,
@@ -1635,6 +1665,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             if inbox_task_notion_row.actionable_date else None,
             due_date=ADate.from_notion(self._global_properties.timezone, inbox_task_notion_row.due_date)
             if inbox_task_notion_row.due_date else None,
+            notes=NotionClient.read_text_notes_from_block(inbox_task_notion_row),
             from_script=inbox_task_notion_row.from_script,
             recurring_timeline=inbox_task_notion_row.recurring_timeline,
             recurring_repeat_index=inbox_task_notion_row.recurring_repeat_index,

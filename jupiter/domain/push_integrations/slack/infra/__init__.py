@@ -1,0 +1,1 @@
+"""Slack tasks infra classes."""

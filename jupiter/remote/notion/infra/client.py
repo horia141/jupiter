@@ -2,9 +2,9 @@
 import enum
 import logging
 from dataclasses import dataclass
-from typing import Final, Optional, Iterable, List
+from typing import Final, Optional, Iterable, List, cast
 
-from notion.block import PageBlock, CollectionViewPageBlock, Block, CollectionViewBlock
+from notion.block import PageBlock, CollectionViewPageBlock, Block, CollectionViewBlock, TextBlock
 from notion.client import NotionClient as BaseNotionClient, Transaction
 from notion.collection import CollectionView, Collection, QueryResult, CollectionRowBlock
 from notion.space import Space
@@ -244,3 +244,26 @@ class NotionClient:
         }])
 
         return view
+
+    @staticmethod
+    def attach_text_notes_to_block(notion_row: Block, notes: str) -> None:
+        """Attach text notes to a block as the first child and remove everything else."""
+        while len(notion_row.children) > 0 and not isinstance(notion_row.children[0], TextBlock):
+            del notion_row.children[0]
+
+        if len(notion_row.children) == 0:
+            new_block = notion_row.children.add_new(TextBlock)
+        else:
+            new_block = notion_row.children[0]
+
+        new_block.title = notes
+
+    @staticmethod
+    def read_text_notes_from_block(notion_row: Block) -> Optional[str]:
+        """Read text notes of a block as the first text child."""
+        if len(notion_row.children) == 0:
+            return None
+        if not isinstance(notion_row.children[0], TextBlock):
+            return None
+
+        return cast(str, notion_row.children[0].title)

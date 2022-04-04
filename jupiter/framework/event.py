@@ -30,6 +30,7 @@ class EventSource(enum.Enum):
     """The source of the modification which this event records."""
     CLI = "cli"
     NOTION = "notion"
+    SLACK = "slack"
 
     def to_db(self) -> str:
         """A database appropriate form of this enum."""

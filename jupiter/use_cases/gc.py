@@ -1,7 +1,7 @@
 """The command for doing a garbage collection run."""
 import logging
 from dataclasses import dataclass
-from typing import Final, Iterable
+from typing import Final, Iterable, List, cast
 
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager, NotionBigPlanNotFoundError
@@ -14,6 +14,7 @@ from jupiter.domain.habits.habit import Habit
 from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager, NotionHabitNotFoundError
 from jupiter.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager, \
     NotionInboxTaskNotFoundError
 from jupiter.domain.inbox_tasks.service.archive_service import InboxTaskArchiveService
@@ -34,6 +35,11 @@ from jupiter.domain.projects.infra.project_notion_manager import NotionProjectNo
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_collection import ProjectCollection
 from jupiter.domain.projects.service.project_label_update_service import ProjectLabelUpdateService
+from jupiter.domain.push_integrations.slack.infra.slack_task_notion_manager import SlackTaskNotionManager, \
+    NotionSlackTaskNotFoundError
+from jupiter.domain.push_integrations.slack.service.archive_service import SlackTaskArchiveService
+from jupiter.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.domain.push_integrations.slack.slack_task_collection import SlackTaskCollection
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import SmartListNotionManager, \
     NotionSmartListNotFoundError, NotionSmartListItemNotFoundError
 from jupiter.domain.smart_lists.smart_list import SmartList
@@ -44,6 +50,7 @@ from jupiter.domain.sync_target import SyncTarget
 from jupiter.domain.vacations.infra.vacation_notion_manager import VacationNotionManager, NotionVacationNotFoundError
 from jupiter.domain.vacations.vacation import Vacation
 from jupiter.domain.vacations.vacation_collection import VacationCollection
+from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import UseCaseArgsBase, MutationUseCaseInvocationRecorder
 from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
@@ -72,6 +79,7 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
     _smart_list_notion_manager: Final[SmartListNotionManager]
     _metric_notion_manager: Final[MetricNotionManager]
     _person_notion_manager: Final[PersonNotionManager]
+    _slack_task_notion_manager: Final[SlackTaskNotionManager]
 
     def __init__(
             self,
@@ -86,7 +94,8 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             big_plan_notion_manager: BigPlanNotionManager,
             smart_list_notion_manager: SmartListNotionManager,
             metric_notion_manager: MetricNotionManager,
-            person_notion_manager: PersonNotionManager) -> None:
+            person_notion_manager: PersonNotionManager,
+            slack_task_notion_manager: SlackTaskNotionManager) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._vacation_notion_manager = vacation_notion_manager
@@ -98,6 +107,7 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
         self._smart_list_notion_manager = smart_list_notion_manager
         self._metric_notion_manager = metric_notion_manager
         self._person_notion_manager = person_notion_manager
+        self._slack_task_notion_manager = slack_task_notion_manager
 
     def _execute(self, context: AppUseCaseContext, args: Args) -> None:
         """Execute the command's action."""
@@ -359,6 +369,36 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                             filter_ref_ids=allowed_person_ref_ids)
                 self._do_drop_all_archived_persons(person_collection, persons)
 
+        if SyncTarget.SLACK_TASKS in args.sync_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                push_integration_group = uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
+                slack_task_collection = \
+                    uow.slack_task_collection_repository.load_by_parent(push_integration_group.ref_id)
+                if args.do_archival:
+                    LOGGER.info("Archiving all Slack tasks whose inbox tasks are done or archived")
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        slack_tasks = uow.slack_task_repository.find_all(
+                            parent_ref_id=slack_task_collection.ref_id, allow_archived=False)
+                        inbox_tasks = \
+                            uow.inbox_task_repository.find_all_with_filters(
+                                parent_ref_id=inbox_task_collection.ref_id,
+                                allow_archived=True,
+                                filter_sources=[InboxTaskSource.SLACK_TASK],
+                                filter_slack_task_ref_ids=[st.ref_id for st in slack_tasks])
+                    self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(slack_tasks, inbox_tasks)
+                if args.do_notion_cleanup:
+                    LOGGER.info("Garbage collecting Slack tasks which were archived")
+                    allowed_slack_task_ref_ids = \
+                        self._slack_task_notion_manager.load_all_saved_ref_ids(slack_task_collection.ref_id)
+
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        slack_tasks = \
+                            uow.slack_task_repository.find_all(
+                                parent_ref_id=slack_task_collection.ref_id,
+                                allow_archived=True,
+                                filter_ref_ids=allowed_slack_task_ref_ids)
+                    self._do_drop_all_archived_slack_tasks(slack_task_collection, slack_tasks)
+
     def _archive_done_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> None:
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
@@ -380,6 +420,18 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
             if not big_plan.status.is_completed:
                 continue
             big_plan_archive_service.do_it(big_plan)
+
+    def _archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
+            self, slack_tasks: List[SlackTask], inbox_tasks: List[InboxTask]) -> None:
+        slack_tasks_by_ref_id = {st.ref_id: st for st in slack_tasks}
+        slack_task_arhive_service = SlackTaskArchiveService(
+            source=EventSource.CLI, time_provider=self._time_provider, storage_engine=self._storage_engine,
+            inbox_task_notion_manager=self._inbox_task_notion_manager,
+            slack_task_notion_manager=self._slack_task_notion_manager)
+        for inbox_task in inbox_tasks:
+            if not (inbox_task.status.is_completed or inbox_task.archived):
+                continue
+            slack_task_arhive_service.do_it(slack_tasks_by_ref_id[cast(EntityId, inbox_task.slack_task_ref_id)])
 
     def _do_anti_entropy_for_vacations(
             self, vacation_collection: VacationCollection, all_vacations: Iterable[Vacation]) -> Iterable[Vacation]:
@@ -705,3 +757,15 @@ class GCUseCase(AppMutationUseCase['GCUseCase.Args', None]):
                 LOGGER.info("Applied Notion changes")
             except NotionPersonNotFoundError:
                 LOGGER.info("Skipping the removal on Notion side because person was not found")
+
+    def _do_drop_all_archived_slack_tasks(
+            self, slack_task_collection: SlackTaskCollection, slack_tasks: Iterable[SlackTask]) -> None:
+        for slack_task in slack_tasks:
+            if not slack_task.archived:
+                continue
+            LOGGER.info(f"Removed an archived slack task '{slack_task.simple_name}' on Notion side")
+            try:
+                self._slack_task_notion_manager.remove_leaf(slack_task_collection.ref_id, slack_task.ref_id)
+                LOGGER.info("Applied Notion changes")
+            except NotionSlackTaskNotFoundError:
+                LOGGER.info("Skipping the removal on Notion side because slack_task was not found")

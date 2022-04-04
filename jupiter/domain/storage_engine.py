@@ -19,6 +19,10 @@ from jupiter.domain.persons.infra.person_collection_repository import PersonColl
 from jupiter.domain.persons.infra.person_repository import PersonRepository
 from jupiter.domain.projects.infra.project_collection_repository import ProjectCollectionRepository
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
+from jupiter.domain.push_integrations.group.infra.push_integration_group_repository import \
+    PushIntegrationGroupRepository
+from jupiter.domain.push_integrations.slack.infra.slack_task_collection_repository import SlackTaskCollectionRepository
+from jupiter.domain.push_integrations.slack.infra.slack_task_repository import SlackTaskRepository
 from jupiter.domain.remote.notion.connection_repository import NotionConnectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_collection_repository import SmartListCollectionRepository
 from jupiter.domain.smart_lists.infra.smart_list_item_repository import SmartListItemRepository
@@ -153,6 +157,21 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def notion_connection_repository(self) -> NotionConnectionRepository:
         """The Notion connection repository."""
+
+    @property
+    @abc.abstractmethod
+    def push_integration_group_repository(self) -> PushIntegrationGroupRepository:
+        """The push integration group repository."""
+
+    @property
+    @abc.abstractmethod
+    def slack_task_collection_repository(self) -> SlackTaskCollectionRepository:
+        """The Slack task collection group repository."""
+
+    @property
+    @abc.abstractmethod
+    def slack_task_repository(self) -> SlackTaskRepository:
+        """The Slack task repository."""
 
     @abc.abstractmethod
     def get_trunk_repository_for(self, trunk_type: Type[TrunkType]) -> TrunkEntityRepository[TrunkType]:

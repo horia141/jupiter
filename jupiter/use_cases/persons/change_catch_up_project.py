@@ -6,6 +6,7 @@ from typing import Final, Optional, cast
 from jupiter.domain.adate import ADate
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import InboxTaskNotionManager
+from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
 from jupiter.domain.persons.infra.person_notion_manager import PersonNotionManager
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.storage_engine import DomainStorageEngine
@@ -51,9 +52,12 @@ class PersonChangeCatchUpProjectUseCase(AppMutationUseCase['PersonChangeCatchUpP
             old_catch_up_project_ref_id = person_collection.catch_up_project_ref_id
 
             if args.catch_up_project_key is not None:
-                project = uow.project_repository.load_by_key(project_collection.ref_id, args.catch_up_project_key)
-                catch_up_project_ref_id = project.ref_id
+                catch_up_project = \
+                    uow.project_repository.load_by_key(project_collection.ref_id, args.catch_up_project_key)
+                catch_up_project_ref_id = catch_up_project.ref_id
             else:
+                catch_up_project = \
+                    uow.project_repository.load_by_id(workspace.default_project_ref_id)
                 catch_up_project_ref_id = workspace.default_project_ref_id
 
             person_collection =\
@@ -106,3 +110,25 @@ class PersonChangeCatchUpProjectUseCase(AppMutationUseCase['PersonChangeCatchUpP
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time())
                     uow.inbox_task_repository.save(inbox_task)
+
+            for inbox_task in all_catch_up_inbox_tasks:
+                direct_info = \
+                    NotionInboxTask.DirectInfo(
+                        all_projects_map={catch_up_project.ref_id: catch_up_project}, all_big_plans_map={})
+                notion_inbox_task = \
+                    self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+                notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
+                self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                LOGGER.info("Applied Notion changes")
+
+            for inbox_task in all_birthday_inbox_tasks:
+                direct_info = \
+                    NotionInboxTask.DirectInfo(
+                        all_projects_map={catch_up_project.ref_id: catch_up_project}, all_big_plans_map={})
+                notion_inbox_task = \
+                    self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id)
+                notion_inbox_task = notion_inbox_task.join_with_entity(inbox_task, direct_info)
+                self._inbox_task_notion_manager.save_leaf(inbox_task.inbox_task_collection_ref_id, notion_inbox_task)
+                LOGGER.info("Applied Notion changes")

@@ -20,6 +20,7 @@ from jupiter.domain.persons.person import Person
 from jupiter.domain.persons.person_birthday import PersonBirthday
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
@@ -51,6 +52,7 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
         filter_chore_ref_ids: Optional[Iterable[EntityId]]
         filter_metric_keys: Optional[Iterable[MetricKey]]
         filter_person_ref_ids: Optional[Iterable[EntityId]]
+        filter_slack_task_ref_ids: Optional[Iterable[EntityId]]
         filter_period: Optional[Iterable[RecurringTaskPeriod]]
         sync_even_if_not_modified: bool
 
@@ -265,6 +267,32 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
                     birthday=person.birthday,
                     all_inbox_tasks_by_person_ref_id_and_timeline=
                     all_birthday_inbox_tasks_by_person_ref_id_and_timeline,
+                    sync_even_if_not_modified=args.sync_even_if_not_modified)
+
+        if SyncTarget.SLACK_TASKS in args.gen_targets:
+            with self._storage_engine.get_unit_of_work() as uow:
+                push_integration_group = uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
+                slack_collection = uow.slack_task_collection_repository.load_by_parent(push_integration_group.ref_id)
+
+                all_slack_tasks = \
+                    uow.slack_task_repository\
+                        .find_all(parent_ref_id=slack_collection.ref_id, filter_ref_ids=args.filter_slack_task_ref_ids)
+                all_slack_inbox_tasks = \
+                    uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        filter_sources=[InboxTaskSource.SLACK_TASK],
+                        allow_archived=True,
+                        filter_slack_task_ref_ids=[st.ref_id for st in all_slack_tasks])
+
+            all_inbox_tasks_by_slack_task_ref_id = {it.slack_task_ref_id: it for it in all_slack_inbox_tasks}
+            for slack_task in all_slack_tasks:
+                project = all_projects_by_ref_id[slack_collection.generation_project_ref_id]
+                self._generate_slack_inbox_task_for_slack_task(
+                    slack_task=slack_task,
+                    inbox_task_collection=inbox_task_collection,
+                    project=project,
+                    all_inbox_tasks_by_slack_task_ref_id=
+                    typing.cast(Dict[EntityId, InboxTask], all_inbox_tasks_by_slack_task_ref_id),
                     sync_even_if_not_modified=args.sync_even_if_not_modified)
 
     def _generate_inbox_tasks_for_habit(
@@ -704,6 +732,71 @@ class GenUseCase(AppMutationUseCase['GenUseCase.Args', None]):
                     due_date=schedule.due_time,
                     source=EventSource.CLI,
                     created_time=self._time_provider.get_current_time())
+
+                inbox_task = uow.inbox_task_repository.create(inbox_task)
+                LOGGER.info("Applied local changes")
+
+            if inbox_task.archived:
+                return
+
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(inbox_task_collection.ref_id, notion_inbox_task, None)
+            LOGGER.info("Applied Notion changes")
+
+    def _generate_slack_inbox_task_for_slack_task(
+            self, slack_task: SlackTask, inbox_task_collection: InboxTaskCollection, project: Project,
+            all_inbox_tasks_by_slack_task_ref_id: Dict[EntityId, InboxTask],
+            sync_even_if_not_modified: bool) -> None:
+        LOGGER.info(f"Upserting Slack inbox task for '{slack_task.ref_id}'")
+
+        found_task = all_inbox_tasks_by_slack_task_ref_id.get(slack_task.ref_id, None)
+
+        if found_task:
+            LOGGER.info(f"Found a task '{found_task.name}'")
+
+            if not sync_even_if_not_modified and found_task.last_modified_time >= slack_task.last_modified_time:
+                LOGGER.info(f"Skipping update of '{found_task.name}' because it was not modified")
+                return
+
+            found_task = \
+                found_task.update_link_to_slack_task(
+                    project_ref_id=project.ref_id,
+                    user=slack_task.user,
+                    channel=slack_task.channel,
+                    generation_extra_info=slack_task.generation_extra_info,
+                    message=slack_task.message,
+                    source=EventSource.SLACK,  # We consider this update as coming from Slack!
+                    modification_time=self._time_provider.get_current_time())
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.inbox_task_repository.save(found_task)
+
+            if found_task.archived:
+                return
+
+            direct_info = NotionInboxTask.DirectInfo(all_projects_map={project.ref_id: project}, all_big_plans_map={})
+            notion_inbox_task = NotionInboxTask.new_notion_entity(found_task, direct_info)
+            self._inbox_task_notion_manager.upsert_leaf(
+                found_task.inbox_task_collection_ref_id, notion_inbox_task, None)
+            LOGGER.info("Applied Notion changes")
+        else:
+            with self._storage_engine.get_unit_of_work() as uow:
+                slack_task = \
+                    slack_task.mark_as_used_for_generation(
+                        source=EventSource.CLI, modification_time=self._time_provider.get_current_time())
+                uow.slack_task_repository.save(slack_task)
+                inbox_task = \
+                    InboxTask.new_inbox_task_for_slack_task(
+                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                        project_ref_id=project.ref_id,
+                        slack_task_ref_id=slack_task.ref_id,
+                        user=slack_task.user,
+                        channel=slack_task.channel,
+                        generation_extra_info=slack_task.generation_extra_info,
+                        message=slack_task.message,
+                        source=EventSource.SLACK,  # We consider this generation as coming from Slack
+                        created_time=self._time_provider.get_current_time())
 
                 inbox_task = uow.inbox_task_repository.create(inbox_task)
                 LOGGER.info("Applied local changes")
