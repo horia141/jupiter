@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv
-          key: local-venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          key: env-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Prepare for CI
         run: |
           poetry env use python
