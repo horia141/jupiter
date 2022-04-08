@@ -2,4 +2,4 @@
 
 set -ex
 
-poetry run mypy --config=./scripts/lint/mypy jupiter
+poetry run mypy --config=./scripts/lint/mypy jupiter tests

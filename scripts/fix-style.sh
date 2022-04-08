@@ -2,4 +2,4 @@
 
 set -ex
 
-poetry run black jupiter
+poetry run black jupiter tests

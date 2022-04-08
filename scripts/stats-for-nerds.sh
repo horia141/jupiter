@@ -17,7 +17,8 @@ cloc \
   pyproject.toml \
   scripts/ \
   migrations/ \
-  jupiter/
+  jupiter/ \
+  tests/ \
 
 REQS_FILE=$(mktemp)
 

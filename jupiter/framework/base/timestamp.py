@@ -92,6 +92,10 @@ class Timestamp(Value):
         """Transform a timestamp to a DB representation."""
         return cast(datetime.datetime, self._the_ts)
 
+    def as_datetime(self) -> pendulum.DateTime:
+        """The raw datetime of the timestamp."""
+        return self._the_ts
+
     def as_date(self) -> pendulum.Date:
         """The raw date of the timestamp."""
         return self._the_ts.date()
