@@ -10,6 +10,7 @@ from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
+from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_name import ProjectName
@@ -264,7 +265,7 @@ class NotionInboxTask(
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time,
             )
-        elif entity.allow_user_changes:
+        elif entity.source == InboxTaskSource.BIG_PLAN:
             new_entity = new_entity.release_from_big_plan(
                 EventSource.NOTION, modification_time=self.last_edited_time
             )

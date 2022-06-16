@@ -127,7 +127,7 @@ class PersonCreate(command.Command):
             RecurringTaskDueAtDay.from_raw(
                 catch_up_period, args.catch_up_actionable_from_day
             )
-            if args.actionable_from_day and catch_up_period
+            if args.catch_up_actionable_from_day and catch_up_period
             else None
         )
         catch_up_actionable_from_month = (

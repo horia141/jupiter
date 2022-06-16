@@ -42,6 +42,7 @@ class SlackTask(LeafEntity):
     @staticmethod
     def new_slack_task(
         slack_task_collection_ref_id: EntityId,
+        archived: bool,
         user: SlackUserName,
         channel: Optional[SlackChannelName],
         message: str,
@@ -53,9 +54,9 @@ class SlackTask(LeafEntity):
         slack_task = SlackTask(
             ref_id=BAD_REF_ID,
             version=FIRST_VERSION,
-            archived=False,
+            archived=archived,
             created_time=created_time,
-            archived_time=None,
+            archived_time=created_time if archived else None,
             last_modified_time=created_time,
             events=[
                 SlackTask.Created.make_event_from_frame_args(

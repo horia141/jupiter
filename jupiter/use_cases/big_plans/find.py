@@ -4,6 +4,7 @@ from typing import Iterable, Optional, List
 
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
@@ -28,6 +29,7 @@ class BigPlanFindUseCase(
         """A single big plan result."""
 
         big_plan: BigPlan
+        project: Project
         inbox_tasks: Iterable[InboxTask]
 
     @dataclass(frozen=True)
@@ -42,15 +44,21 @@ class BigPlanFindUseCase(
         filter_project_ref_ids: Optional[List[EntityId]] = None
 
         with self._storage_engine.get_unit_of_work() as uow:
+            project_collection = uow.project_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
             if args.filter_project_keys:
-                project_collection = uow.project_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
                 projects = uow.project_repository.find_all_with_filters(
                     parent_ref_id=project_collection.ref_id,
                     filter_keys=args.filter_project_keys,
                 )
                 filter_project_ref_ids = [p.ref_id for p in projects]
+            else:
+                projects = uow.project_repository.find_all(
+                    parent_ref_id=project_collection.ref_id
+                )
+                filter_project_ref_ids = None
+            project_by_ref_id = {p.ref_id: p for p in projects}
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id
@@ -75,6 +83,7 @@ class BigPlanFindUseCase(
             big_plans=[
                 BigPlanFindUseCase.ResultEntry(
                     big_plan=bp,
+                    project=project_by_ref_id[bp.project_ref_id],
                     inbox_tasks=[
                         it for it in inbox_tasks if it.big_plan_ref_id == bp.ref_id
                     ],

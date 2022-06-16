@@ -34,7 +34,7 @@ LOGGER = logging.getLogger(__name__)
 class HabitCreateUseCase(AppMutationUseCase["HabitCreateUseCase.Args", None]):
     """The command for creating a habit."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class Args(UseCaseArgsBase):
         """Args."""
 

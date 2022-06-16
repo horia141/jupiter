@@ -20,7 +20,7 @@ class HabitChangeProject(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "big-plan-change-project"
+        return "habit-change-project"
 
     @staticmethod
     def description() -> str:

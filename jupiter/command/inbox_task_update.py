@@ -106,7 +106,7 @@ class InboxTaskUpdate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = EntityId.from_raw(args.entity_id)
+        ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
             name = UpdateAction.change_to(InboxTaskName.from_raw(args.name))
         else:

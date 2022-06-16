@@ -7,5 +7,5 @@ DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspac
 DOCS_UPDATE_EXPIRED_TOKEN_URL=${DOCS_URL}/en/stable/how-tos/workspaces/update-an-expired-token/
 DOCS_FIX_DATA_INCONSISTENCIES_URL=${DOCS_URL}/en/stable/how-tos/fix-data-inconsistencies/
 SQLITE_DB_URL=sqlite+pysqlite:///jupiter.sqlite
-ALEMBIC_INI_PATH=/jupiter/migrations/alembic.ini
-ALEMBIC_MIGRATIONS_PATH=/jupiter/migrations
+ALEMBIC_INI_PATH=./migrations/alembic.ini
+ALEMBIC_MIGRATIONS_PATH=./migrations

@@ -7,4 +7,8 @@ __pycache__/
 .gitignore
 .github
 docs
+buildinfo
+venv
 .coverage
+.integration-test-cache
+secrets.info

@@ -36,6 +36,13 @@ class BigPlanShow(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
             "--id",
             type=str,
             dest="ref_ids",
@@ -53,6 +60,7 @@ class BigPlanShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
+        show_archived = args.show_archived
         ref_ids = (
             [EntityId.from_raw(rid) for rid in args.ref_ids]
             if len(args.ref_ids) > 0
@@ -65,7 +73,7 @@ class BigPlanShow(command.Command):
         )
         result = self._command.execute(
             BigPlanFindUseCase.Args(
-                allow_archived=False,
+                allow_archived=show_archived,
                 filter_ref_ids=ref_ids,
                 filter_project_keys=project_keys,
             )
@@ -73,19 +81,21 @@ class BigPlanShow(command.Command):
 
         for big_plan_entry in result.big_plans:
             big_plan = big_plan_entry.big_plan
+            project = big_plan_entry.project
             inbox_tasks = big_plan_entry.inbox_tasks
             print(
                 f"id={big_plan.ref_id} {big_plan.name}"
-                + f" status={big_plan.status.value}"
-                + f' archived="{big_plan.archived}"'
-                + f" actionable_date={ADate.to_user_str(self._global_properties.timezone, big_plan.actionable_date)}"
-                + f' due_date="{ADate.to_user_str(self._global_properties.timezone, big_plan.due_date)}"'
+                + f" status={big_plan.status.for_notion()}"
+                + f" archived={big_plan.archived}"
+                + f" actionable-date={ADate.to_user_str(self._global_properties.timezone, big_plan.actionable_date)}"
+                + f" due-date={ADate.to_user_str(self._global_properties.timezone, big_plan.due_date)}"
+                + f" project={project.name}"
             )
             print("  Tasks:")
             for inbox_task in inbox_tasks:
                 print(
                     f"   - id={inbox_task.ref_id} {inbox_task.name}"
                     + f" status={inbox_task.status.value}"
-                    + f' archived="{inbox_task.archived}"'
-                    + f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"'
+                    + f" archived={inbox_task.archived}"
+                    + f" due_date={ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"
                 )

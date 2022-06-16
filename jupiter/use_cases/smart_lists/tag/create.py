@@ -24,7 +24,7 @@ class SmartListTagCreateUseCase(
 ):
     """The command for creating a smart list tag."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class Args(UseCaseArgsBase):
         """Args."""
 

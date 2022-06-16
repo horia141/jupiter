@@ -13,3 +13,7 @@ class MutationUseCaseInvocationRecordRepository(Repository, abc.ABC):
         self, invocation_record: MutationUseCaseInvocationRecord[UseCaseArgs]
     ) -> None:
         """Create a new invocation record."""
+
+    @abc.abstractmethod
+    def clear_all(self) -> None:
+        """Clear all invocation record entries."""

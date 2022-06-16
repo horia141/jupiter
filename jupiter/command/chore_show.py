@@ -39,6 +39,13 @@ class ChoreShow(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
             "--id",
             type=str,
             dest="ref_ids",
@@ -57,6 +64,7 @@ class ChoreShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
+        show_archived = args.show_archived
         ref_ids = (
             [EntityId.from_raw(rid) for rid in args.ref_ids]
             if len(args.ref_ids) > 0
@@ -69,7 +77,7 @@ class ChoreShow(command.Command):
         )
         response = self._command.execute(
             ChoreFindUseCase.Args(
-                show_archived=False,
+                show_archived=show_archived,
                 filter_ref_ids=ref_ids,
                 filter_project_keys=project_keys,
             )
@@ -77,18 +85,20 @@ class ChoreShow(command.Command):
 
         for chore_entry in response.chores:
             chore = chore_entry.chore
+            project = chore_entry.project
             inbox_tasks = chore_entry.inbox_tasks
             difficulty_str = (
-                chore.gen_params.difficulty.value
+                chore.gen_params.difficulty.for_notion()
                 if chore.gen_params.difficulty
                 else "none"
             )
             print(
-                f"id={chore.ref_id} {chore.name}"
-                + f'\n    eisen="{chore.gen_params.eisen.value}"'
+                f"id={chore.ref_id} {chore.name} period={chore.gen_params.period.for_notion()}"
+                + f"\n    eisen={chore.gen_params.eisen.for_notion()}"
                 + f" difficulty={difficulty_str}"
                 + f' skip_rule={chore.skip_rule or "none"}'
                 + f" suspended={chore.suspended}"
+                + f" archived={chore.archived}"
                 + (
                     f" start_at_date={chore.start_at_date}"
                     if chore.start_at_date
@@ -98,6 +108,7 @@ class ChoreShow(command.Command):
                 + f'\n    due_at_time={chore.gen_params.due_at_time or "none"}'
                 + f' due_at_day={chore.gen_params.due_at_day or "none"}'
                 + f' due_at_month={chore.gen_params.due_at_month or "none"}'
+                + f" project={project.name}"
             )
             print("  Tasks:")
 
@@ -105,6 +116,6 @@ class ChoreShow(command.Command):
                 print(
                     f"   - id={inbox_task.ref_id} {inbox_task.name}"
                     + f" status={inbox_task.status.value}"
-                    + f' archived="{inbox_task.archived}"'
+                    + f" archived={inbox_task.archived}"
                     + f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"'
                 )

@@ -79,19 +79,7 @@ class NotionVacationsManager(VacationNotionManager):
             "sort": [
                 {"property": "start-date", "direction": "ascending"},
                 {"property": "end-date", "direction": "ascending"},
-            ],
-            "filter": {
-                "operator": "and",
-                "filters": [
-                    {
-                        "property": "archived",
-                        "filter": {
-                            "operator": "checkbox_is_not",
-                            "value": {"type": "exact", "value": True},
-                        },
-                    }
-                ],
-            },
+            ]
         },
     }
 

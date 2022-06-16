@@ -28,7 +28,7 @@ class SmartListItemUpdateUseCase(
 ):
     """The command for updating a smart list item."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class Args(UseCaseArgsBase):
         """Args."""
 

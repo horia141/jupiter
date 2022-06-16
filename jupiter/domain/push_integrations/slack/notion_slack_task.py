@@ -55,6 +55,7 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
         )
         return SlackTask.new_slack_task(
             slack_task_collection_ref_id=parent_ref_id,
+            archived=self.archived,
             user=user,
             channel=channel,
             message=message,
@@ -80,6 +81,12 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
             generation_extra_info=UpdateAction.change_to(generation_extra_info),
             source=EventSource.NOTION,
             modification_time=self.last_edited_time,
+        )
+
+        new_entity = new_entity.change_archived(
+            archived=self.archived,
+            source=EventSource.NOTION,
+            archived_time=self.last_edited_time,
         )
         return NotionLeafApplyToEntityResult(new_entity, False)
 

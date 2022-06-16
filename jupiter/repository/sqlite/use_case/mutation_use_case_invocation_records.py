@@ -8,6 +8,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     String,
+    delete,
     Integer,
     ForeignKey,
     JSON,
@@ -61,4 +62,10 @@ class SqliteMutationUseCaseInvocationRecordRepository(
                 result=invocation_record.result.to_db(),
                 error_str=invocation_record.error_str,
             )
+        )
+
+    def clear_all(self) -> None:
+        """Clear all entries in the invocation record."""
+        self._connection.execute(
+            delete(self._mutation_use_case_invocation_record_table)
         )

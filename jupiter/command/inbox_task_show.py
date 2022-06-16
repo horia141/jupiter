@@ -40,6 +40,13 @@ class InboxTaskShow(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
             "--id",
             type=str,
             dest="ref_ids",
@@ -66,6 +73,7 @@ class InboxTaskShow(command.Command):
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
         # Parse arguments
+        show_archived = args.show_archived
         ref_ids = (
             [EntityId.from_raw(rid) for rid in args.ref_ids]
             if len(args.ref_ids) > 0
@@ -83,6 +91,7 @@ class InboxTaskShow(command.Command):
         )
         response = self._command.execute(
             InboxTaskFindUseCase.Args(
+                allow_archived=show_archived,
                 filter_ref_ids=ref_ids,
                 filter_project_keys=project_keys,
                 filter_sources=sources,
@@ -91,19 +100,21 @@ class InboxTaskShow(command.Command):
 
         for inbox_task_entry in response.inbox_tasks:
             inbox_task = inbox_task_entry.inbox_task
+            project = inbox_task_entry.project
             habit = inbox_task_entry.habit
             chore = inbox_task_entry.chore
             big_plan = inbox_task_entry.big_plan
             print(
                 f"id={inbox_task.ref_id} {inbox_task.name}"
                 + f" source={inbox_task.source.for_notion()}"
-                + f" status={inbox_task.status.value}"
-                + f' archived="{inbox_task.archived}"'
+                + f" status={inbox_task.status.for_notion()}"
+                + f" archived={inbox_task.archived}"
                 + (f' habit="{habit.name}"' if habit else "")
                 + (f' habit="{chore.name}"' if chore else "")
-                + (f' big_plan="{big_plan.name}"' if big_plan else "")
-                + f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"'
-                + f'\n    created_time="{inbox_task.created_time}"'
+                + (f" big-plan={big_plan.name}" if big_plan else "")
+                + f" due-date={ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"
+                + f"\n    created-time={inbox_task.created_time}"
                 + f" eisen={inbox_task.eisen.for_notion()}"
                 + f' difficulty={inbox_task.difficulty.for_notion() if inbox_task.difficulty else ""}'
+                + f" project={project.name}"
             )

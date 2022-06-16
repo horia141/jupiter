@@ -204,7 +204,6 @@ class SqliteMetricRepository(MetricRepository):
             Column("the_key", String(64), nullable=False, index=True, unique=True),
             Column("name", Unicode(), nullable=False),
             Column("icon", String(1), nullable=True),
-            Column("collection_project_ref_id", Integer, nullable=True),
             Column("collection_period", String, nullable=True),
             Column("collection_eisen", String, nullable=True),
             Column("collection_difficulty", String, nullable=True),
@@ -441,8 +440,7 @@ class SqliteMetricRepository(MetricRepository):
                 if row["collection_due_at_month"] is not None
                 else None,
             )
-            if row["collection_project_ref_id"] is not None
-            and row["collection_period"] is not None
+            if row["collection_period"] is not None
             else None,
             metric_unit=MetricUnit.from_raw(row["metric_unit"])
             if row["metric_unit"]

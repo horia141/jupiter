@@ -153,11 +153,42 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
         """Execute the command's action."""
         workspace = context.workspace
 
+        with self._storage_engine.get_unit_of_work() as uow:
+            vacation_collection = uow.vacation_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            project_collection = uow.project_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            habit_collection = uow.habit_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            chore_collection = uow.chore_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            big_plan_collection = uow.big_plan_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            metric_collection = uow.metric_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            person_collection = uow.person_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            push_integration_group = (
+                uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
+            )
+            slack_task_collection = uow.slack_task_collection_repository.load_by_parent(
+                push_integration_group.ref_id
+            )
+
         if SyncTarget.VACATIONS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                vacation_collection = uow.vacation_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for vacations")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -182,10 +213,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
 
         if SyncTarget.PROJECTS in args.sync_targets:
             need_to_modifiy_something = False
-            with self._storage_engine.get_unit_of_work() as uow:
-                project_collection = uow.project_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for projects")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -220,12 +247,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                 ).sync(workspace, projects)
 
         if SyncTarget.INBOX_TASKS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                inbox_task_collection = (
-                    uow.inbox_task_collection_repository.load_by_parent(
-                        workspace.ref_id
-                    )
-                )
             if args.do_archival:
                 LOGGER.info("Archiving all done inbox tasks")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -256,10 +277,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                 self._do_drop_all_archived_inbox_tasks(inbox_tasks)
 
         if SyncTarget.HABITS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                habit_collection = uow.habit_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for habits")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -281,10 +298,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                 self._do_drop_all_archived_habits(habits)
 
         if SyncTarget.CHORES in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                chore_collection = uow.chore_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for chores")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -306,10 +319,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                 self._do_drop_all_archived_chores(chores)
 
         if SyncTarget.BIG_PLANS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                big_plan_collection = uow.big_plan_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
             if args.do_archival:
                 LOGGER.info("Archiving all done big plans")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -342,13 +351,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
             ).sync(big_plan_collection)
 
         if SyncTarget.SMART_LISTS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                smart_list_collection = (
-                    uow.smart_list_collection_repository.load_by_parent(
-                        workspace.ref_id
-                    )
-                )
-
             smart_lists: Iterable[SmartList] = []
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for smart lists")
@@ -397,11 +399,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                     )
 
         if SyncTarget.METRICS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                metric_collection = uow.metric_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
-
             metrics: Iterable[Metric] = []
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for metrics")
@@ -442,10 +439,6 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                     self._do_drop_all_archived_metric_entries(metric, metric_entries)
 
         if SyncTarget.PERSONS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                person_collection = uow.person_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
             if args.do_anti_entropy:
                 LOGGER.info("Performing anti-entropy adjustments for persons")
                 with self._storage_engine.get_unit_of_work() as uow:
@@ -470,52 +463,41 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                 self._do_drop_all_archived_persons(person_collection, persons)
 
         if SyncTarget.SLACK_TASKS in args.sync_targets:
-            with self._storage_engine.get_unit_of_work() as uow:
-                push_integration_group = (
-                    uow.push_integration_group_repository.load_by_parent(
-                        workspace.ref_id
+            if args.do_archival:
+                LOGGER.info(
+                    "Archiving all Slack tasks whose inbox tasks are done or archived"
+                )
+                with self._storage_engine.get_unit_of_work() as uow:
+                    slack_tasks = uow.slack_task_repository.find_all(
+                        parent_ref_id=slack_task_collection.ref_id,
+                        allow_archived=False,
+                    )
+                    inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        filter_sources=[InboxTaskSource.SLACK_TASK],
+                        filter_slack_task_ref_ids=[st.ref_id for st in slack_tasks],
+                    )
+                self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
+                    slack_tasks, inbox_tasks
+                )
+            if args.do_notion_cleanup:
+                LOGGER.info("Garbage collecting Slack tasks which were archived")
+                allowed_slack_task_ref_ids = (
+                    self._slack_task_notion_manager.load_all_saved_ref_ids(
+                        slack_task_collection.ref_id
                     )
                 )
-                slack_task_collection = (
-                    uow.slack_task_collection_repository.load_by_parent(
-                        push_integration_group.ref_id
-                    )
-                )
-                if args.do_archival:
-                    LOGGER.info(
-                        "Archiving all Slack tasks whose inbox tasks are done or archived"
-                    )
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        slack_tasks = uow.slack_task_repository.find_all(
-                            parent_ref_id=slack_task_collection.ref_id,
-                            allow_archived=False,
-                        )
-                        inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
-                            parent_ref_id=inbox_task_collection.ref_id,
-                            allow_archived=True,
-                            filter_sources=[InboxTaskSource.SLACK_TASK],
-                            filter_slack_task_ref_ids=[st.ref_id for st in slack_tasks],
-                        )
-                    self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
-                        slack_tasks, inbox_tasks
-                    )
-                if args.do_notion_cleanup:
-                    LOGGER.info("Garbage collecting Slack tasks which were archived")
-                    allowed_slack_task_ref_ids = (
-                        self._slack_task_notion_manager.load_all_saved_ref_ids(
-                            slack_task_collection.ref_id
-                        )
-                    )
 
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        slack_tasks = uow.slack_task_repository.find_all(
-                            parent_ref_id=slack_task_collection.ref_id,
-                            allow_archived=True,
-                            filter_ref_ids=allowed_slack_task_ref_ids,
-                        )
-                    self._do_drop_all_archived_slack_tasks(
-                        slack_task_collection, slack_tasks
+                with self._storage_engine.get_unit_of_work() as uow:
+                    slack_tasks = uow.slack_task_repository.find_all(
+                        parent_ref_id=slack_task_collection.ref_id,
+                        allow_archived=True,
+                        filter_ref_ids=allowed_slack_task_ref_ids,
                     )
+                self._do_drop_all_archived_slack_tasks(
+                    slack_task_collection, slack_tasks
+                )
 
     def _archive_done_inbox_tasks(self, inbox_tasks: Iterable[InboxTask]) -> None:
         inbox_task_archive_service = InboxTaskArchiveService(

@@ -38,9 +38,10 @@ class MetricRemoveService:
     def execute(self, metric_collection: MetricCollection, metric: Metric) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
-            for metric_entry in uow.metric_entry_repository.find_all(
+            all_metric_entries = uow.metric_entry_repository.find_all(
                 metric.ref_id, allow_archived=True
-            ):
+            )
+            for metric_entry in all_metric_entries:
                 uow.metric_entry_repository.remove(metric_entry.ref_id)
 
             uow.metric_repository.remove(metric.ref_id)
@@ -62,8 +63,10 @@ class MetricRemoveService:
         for inbox_task in all_inbox_tasks:
             inbox_task_remove_service.do_it(inbox_task)
 
-        # This needs to take into account notion entries too.
         try:
+            self._metric_notion_manager.drop_all_leaves(
+                metric_collection.ref_id, metric.ref_id
+            )
             self._metric_notion_manager.remove_branch(
                 metric_collection.ref_id, metric.ref_id
             )

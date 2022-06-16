@@ -26,11 +26,8 @@ class GlobalProperties:
 
 def build_global_properties(timezone: Optional[Timezone] = None) -> GlobalProperties:
     """Build the global properties from the environment."""
-    config_path = Path(
-        os.path.realpath(
-            Path(os.path.realpath(__file__)).parent / ".." / ".." / "Config"
-        )
-    )
+    package_root_path = Path(os.path.realpath(__file__)).parent.parent.parent
+    config_path = package_root_path / "Config"
 
     if not config_path.exists():
         raise Exception("Critical error - missing Config file")
@@ -47,8 +44,13 @@ def build_global_properties(timezone: Optional[Timezone] = None) -> GlobalProper
         str, os.getenv("DOCS_FIX_DATA_INCONSISTENCIES_URL")
     )
     sqlite_db_url = cast(str, os.getenv("SQLITE_DB_URL"))
-    alembic_ini_path = cast(str, os.getenv("ALEMBIC_INI_PATH"))
-    alembic_migrations_path = cast(str, os.getenv("ALEMBIC_MIGRATIONS_PATH"))
+    alembic_ini_path = Path(cast(str, os.getenv("ALEMBIC_INI_PATH")))
+    alembic_migrations_path = Path(cast(str, os.getenv("ALEMBIC_MIGRATIONS_PATH")))
+
+    if not alembic_ini_path.is_absolute():
+        alembic_ini_path = package_root_path / alembic_ini_path
+    if not alembic_migrations_path.is_absolute():
+        alembic_migrations_path = package_root_path / alembic_migrations_path
 
     return GlobalProperties(
         description=description,
@@ -58,6 +60,6 @@ def build_global_properties(timezone: Optional[Timezone] = None) -> GlobalProper
         docs_update_expired_token_url=docs_update_expired_token_url,
         docs_fix_data_inconsistencies_url=docs_fix_data_inconsistencies_url,
         sqlite_db_url=sqlite_db_url,
-        alembic_ini_path=Path(alembic_ini_path),
-        alembic_migrations_path=Path(alembic_migrations_path),
+        alembic_ini_path=alembic_ini_path,
+        alembic_migrations_path=alembic_migrations_path,
     )

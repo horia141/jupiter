@@ -2,4 +2,4 @@
 
 set -ex
 
-poetry run python -m unittest discover
+poetry run pytest tests/unit

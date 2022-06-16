@@ -8,7 +8,7 @@ REQS_FILE=$(mktemp)
 
 poetry export -f requirements.txt --output "${REQS_FILE}" --without-hashes
 sed -i -e 's/; .*//g' "${REQS_FILE}"
-LIVE_LIBYEARS=$(libyear -r "${REQS_FILE}" | grep "system is" | awk -F 'system is | libyears' '{print $2}')
+LIVE_LIBYEARS=$(poetry run libyear -r "${REQS_FILE}" | grep "system is" | awk -F 'system is | libyears' '{print $2}')
 
 if [ "${LIVE_LIBYEARS}" = 'up-to-date!' ]
 then
@@ -26,7 +26,7 @@ poetry export -f requirements.txt --output "${DEV_REQS_FILE}" --without-hashes -
 sed -i -e 's/; .*//g' "${DEV_REQS_FILE}"
 grep -Fvxf "${REQS_FILE}" "${DEV_REQS_FILE}"  > "${JUSTDEV_REQS_FILE}"
 
-DEV_LIBYEARS=$(libyear -r "${JUSTDEV_REQS_FILE}" | grep "system is" | awk -F 'system is | libyears' '{print $2}')
+DEV_LIBYEARS=$(poetry run libyear -r "${JUSTDEV_REQS_FILE}" | grep "system is" | awk -F 'system is | libyears' '{print $2}')
 
 if [ "${DEV_LIBYEARS}" = 'up-to-date!' ]
 then

@@ -17,7 +17,7 @@ In order to do this, you'll need to:
 1. Go over to [notion.so](https://www.notion.so/) - the website. You should be seeing your space and anything you've
    setup there manually.
 1. Open your browser's inspector. Refresh the page and wait for things to calm down.
-1. Find the `/getPublicPageData` API call on the _Network_ tab.
+1. Find the `/getPublicSpaceData` API call on the _Network_ tab.
 1. The response for this will be a JSON object with a `spaceId` property. That's your space's id. Write it down
    somewhere.
 1. In the headers field there will be a `cookie` set with the value `token`. That's your token for accessing the API.

@@ -106,7 +106,17 @@ class SmartListShow(command.Command):
             }
             print(
                 f"  - {smart_list.key}: {smart_list.icon if smart_list.icon else ''}{smart_list.name}"
+                + f" archived={smart_list.archived}"
             )
+
+            print("    Tags: ", end="")
+
+            for smart_list_tag in smart_list_tags_set.values():
+                print(
+                    f" <id={smart_list_tag.ref_id} #{smart_list_tag.tag_name}>", end=""
+                )
+
+            print("")
 
             for smart_list_item in smart_list_entry.smart_list_items:
                 print(

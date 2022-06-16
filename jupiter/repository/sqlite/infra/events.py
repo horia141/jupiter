@@ -11,12 +11,12 @@ from sqlalchemy import (
     String,
     JSON,
     delete,
+    insert,
 )
-from sqlalchemy.dialects.sqlite import insert as sqliteInsert
 from sqlalchemy.engine import Connection
 
-from jupiter.framework.entity import Entity
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.entity import Entity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +46,8 @@ def upsert_events(
     """Upsert all the events for a given entity in an events table."""
     for event_idx, event in enumerate(aggreggate_root.events):
         connection.execute(
-            sqliteInsert(event_table)
+            insert(event_table)
+            .prefix_with("OR IGNORE")
             .values(
                 owner_ref_id=aggreggate_root.ref_id.as_int(),
                 timestamp=event.timestamp.to_db(),
@@ -57,9 +58,9 @@ def upsert_events(
                 kind=event.kind.to_db(),
                 data=event.to_serializable_dict(),
             )
-            .on_conflict_do_nothing(
-                index_elements=["owner_ref_id", "timestamp", "session_index", "name"]
-            )
+            # .on_conflict_do_nothing(
+            #    index_elements=["owner_ref_id", "timestamp", "session_index", "name"]
+            # )
         )
 
 

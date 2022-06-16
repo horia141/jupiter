@@ -48,7 +48,7 @@ class SlackTaskArchiveService:
             return
 
         with self._storage_engine.get_unit_of_work() as uow:
-            slack_task.mark_archived(
+            slack_task = slack_task.mark_archived(
                 self._source, self._time_provider.get_current_time()
             )
             uow.slack_task_repository.save(slack_task)
@@ -80,7 +80,9 @@ class SlackTaskArchiveService:
             )
         except NotionSlackTaskNotFoundError:
             # If we can't find this locally it means it's already gone
-            LOGGER.info("Skipping archival on Notion side because habit was not found")
+            LOGGER.info(
+                "Skipping archival on Notion side because Slack task was not found"
+            )
 
         for inbox_task in inbox_tasks_to_archive:
             try:

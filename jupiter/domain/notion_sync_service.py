@@ -445,7 +445,7 @@ class TrunkBranchLeafNotionSyncService(
 
             if notion_leaf.ref_id is None:
                 # If the branch entry doesn't exist locally, we create it.
-                new_leaf = notion_leaf.new_entity(branch.ref_id, None)
+                new_leaf = notion_leaf.new_entity(branch.ref_id, inverse_info)
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_leaf = uow.get_leaf_repository_for(self._leaf_type).create(
@@ -877,7 +877,7 @@ class TrunkBranchLeafAndTagNotionSyncService(
 
             if notion_leaf.ref_id is None:
                 # If the branch entry doesn't exist locally, we create it.
-                new_leaf = notion_leaf.new_entity(branch.ref_id, None)
+                new_leaf = notion_leaf.new_entity(branch.ref_id, inverse_info)
 
                 with self._storage_engine.get_unit_of_work() as uow:
                     new_leaf = uow.get_leaf_repository_for(self._leaf_type).create(
@@ -888,7 +888,7 @@ class TrunkBranchLeafAndTagNotionSyncService(
                     trunk.ref_id, branch.ref_id, new_leaf.ref_id, notion_leaf.notion_id
                 )
 
-                notion_leaf = notion_leaf.join_with_entity(new_leaf, None)
+                notion_leaf = notion_leaf.join_with_entity(new_leaf, direct_info)
                 self._notion_manager.save_leaf(trunk.ref_id, branch.ref_id, notion_leaf)
 
                 all_leaves_set[new_leaf.ref_id] = new_leaf

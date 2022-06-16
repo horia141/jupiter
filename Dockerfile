@@ -1,4 +1,4 @@
-FROM python:3.8.5-slim
+FROM python:3.8.5
 LABEL maintainer='horia141@gmail.com'
 
 RUN apt-get update && \
@@ -20,7 +20,7 @@ COPY migrations migrations
 COPY jupiter jupiter
 COPY jupiter/jupiter.py jupiter.py
 COPY jupiter/migrator.py migrator.py
-COPY Config Config
+COPY Config.docker Config
 
 # ENTRYPOINT ["python", "-m", "cProfile", "-s", "time", "jupiter/jupiter.py"]
 WORKDIR /data

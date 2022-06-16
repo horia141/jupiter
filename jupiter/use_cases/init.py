@@ -383,8 +383,10 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
         new_notion_push_integration_group = (
             NotionPushIntegrationGroup.new_notion_entity(new_push_integration_group)
         )
-        self._push_integration_group_notion_manager.upsert_push_integration_group(
-            new_notion_workspace, new_notion_push_integration_group
+        new_notion_push_integration_group = (
+            self._push_integration_group_notion_manager.upsert_push_integration_group(
+                new_notion_workspace, new_notion_push_integration_group
+            )
         )
 
         LOGGER.info("Creating the Slack task structure")

@@ -138,9 +138,9 @@ class SlackTaskUpdate(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
-        ref_id = EntityId.from_raw(args.entity_id)
+        ref_id = EntityId.from_raw(args.ref_id)
         if args.user:
-            user = UpdateAction.change_to(SlackUserName.from_raw(args.name))
+            user = UpdateAction.change_to(SlackUserName.from_raw(args.user))
         else:
             user = UpdateAction.do_nothing()
         channel: UpdateAction[Optional[SlackChannelName]]

@@ -94,8 +94,10 @@ class MetricArchiveUseCase(AppMutationUseCase["MetricArchiveUseCase.Args", None]
         for inbox_task in all_inbox_tasks:
             inbox_task_archive_service.do_it(inbox_task)
 
-        # TODO(horia141): process Notion side entries too
         try:
+            self._metric_notion_manager.drop_all_leaves(
+                metric_collection.ref_id, metric.ref_id
+            )
             self._metric_notion_manager.remove_branch(
                 metric_collection.ref_id, metric.ref_id
             )

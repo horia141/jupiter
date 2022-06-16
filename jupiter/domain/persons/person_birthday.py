@@ -8,7 +8,7 @@ from jupiter.framework.value import Value
 from jupiter.framework.errors import InputValidationError
 
 
-@dataclass()
+@dataclass(frozen=True)
 class PersonBirthday(Value):
     """The birthday of a person."""
 

@@ -5,8 +5,8 @@ from typing import Final
 
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import (
     SmartListNotionManager,
-    NotionSmartListNotFoundError,
 )
+from jupiter.domain.smart_lists.service.remove_service import SmartListRemoveService
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.use_case import (
@@ -54,25 +54,7 @@ class SmartListRemoveUseCase(AppMutationUseCase["SmartListRemoveUseCase.Args", N
                 smart_list_collection.ref_id, args.key
             )
 
-            for smart_list_tag in uow.smart_list_tag_repository.find_all(
-                smart_list.ref_id, allow_archived=True
-            ):
-                uow.smart_list_tag_repository.remove(smart_list_tag.ref_id)
-
-            for smart_list_entry in uow.smart_list_item_repository.find_all(
-                smart_list.ref_id, allow_archived=True
-            ):
-                uow.smart_list_item_repository.remove(smart_list_entry.ref_id)
-
-            uow.smart_list_repository.remove(smart_list.ref_id)
-            LOGGER.info("Applied local changes")
-
-        try:
-            self._smart_list_notion_manager.remove_branch(
-                smart_list_collection.ref_id, smart_list.ref_id
-            )
-            LOGGER.info("Applied remote changes")
-        except NotionSmartListNotFoundError:
-            LOGGER.warning(
-                "Skipping archival on Notion side because smart_list was not found"
-            )
+        smart_list_remove_service = SmartListRemoveService(
+            self._storage_engine, self._smart_list_notion_manager
+        )
+        smart_list_remove_service.execute(smart_list_collection, smart_list)

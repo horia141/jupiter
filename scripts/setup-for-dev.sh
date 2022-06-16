@@ -1,12 +1,14 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # Prepare environment
 
+# Assume brew, python 3.8+, poetry, gem, and docker are already present
+# Will modify globals nonetheless.
+
 brew install shellcheck
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
-# shellcheck disable=SC1090 # poetry is special here
-~/.poetry/bin/poetry install --no-interaction --no-ansi
+brew install cloc
+poetry install --no-interaction --no-ansi
 sudo gem install mdl
 docker pull hadolint/hadolint:latest-debian

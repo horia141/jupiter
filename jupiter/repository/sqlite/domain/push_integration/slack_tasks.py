@@ -164,7 +164,7 @@ class SqliteSlackTaskCollectionRepository(SlackTaskCollectionRepository):
         result = self._connection.execute(query_stmt).first()
         if result is None:
             raise SlackTaskCollectionNotFoundError(
-                f"SlackTask collection for workspace {parent_ref_id} does not exist"
+                f"SlackTask collection for push integration group {parent_ref_id} does not exist"
             )
         return self._row_to_entity(result)
 

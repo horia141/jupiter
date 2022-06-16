@@ -35,7 +35,7 @@ class WorkspaceChangeDefaultProject(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
-            "--default-project-key",
+            "--default-project",
             dest="default_project_key",
             required=True,
             help="The key of the default project",

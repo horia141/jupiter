@@ -172,7 +172,7 @@ class HabitUpdate(command.Command):
             "--skip-rule", dest="skip_rule", help="The skip rule for the task"
         )
         skip_rule.add_argument(
-            "--clear-skip_rule",
+            "--clear-skip-rule",
             dest="clear_skip_rule",
             default=False,
             action="store_const",

@@ -24,3 +24,17 @@ class Command(abc.ABC):
     @abc.abstractmethod
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
+
+    @property
+    def should_appear_in_global_help(self) -> bool:
+        """Should the command appear in the global help info or not."""
+        return True
+
+
+class TestHelperCommand(Command, abc.ABC):
+    """Base class for commands used in tests."""
+
+    @property
+    def should_appear_in_global_help(self) -> bool:
+        """Should the command appear in the global help info or not."""
+        return False

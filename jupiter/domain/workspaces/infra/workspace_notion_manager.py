@@ -23,3 +23,7 @@ class WorkspaceNotionManager(abc.ABC):
     @abc.abstractmethod
     def load_workspace(self, ref_id: EntityId) -> NotionWorkspace:
         """Retrieve the workspace from Notion side."""
+
+    @abc.abstractmethod
+    def remove_workspace(self, ref_id: EntityId) -> None:
+        """Remove the workspace from Notion side."""

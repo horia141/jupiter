@@ -63,3 +63,10 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         return NotionWorkspace(
             name=workspace_page.name, notion_id=workspace_page.notion_id, ref_id=ref_id
         )
+
+    def remove_workspace(self, ref_id: EntityId) -> None:
+        """Remove the workspace from Notion side."""
+        try:
+            self._pages_manager.remove_page(NotionLockKey(f"{self._KEY}:{ref_id}"))
+        except NotionPageNotFoundError as err:
+            raise NotionWorkspaceNotFoundError("Cannot find Notion workspace") from err

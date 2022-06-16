@@ -35,7 +35,7 @@ LOGGER = logging.getLogger(__name__)
 class ChoreCreateUseCase(AppMutationUseCase["ChoreCreateUseCase.Args", None]):
     """The command for creating a chore."""
 
-    @dataclass()
+    @dataclass(frozen=True)
     class Args(UseCaseArgsBase):
         """Args."""
 

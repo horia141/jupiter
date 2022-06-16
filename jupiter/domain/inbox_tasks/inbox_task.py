@@ -20,9 +20,9 @@ from jupiter.domain.push_integrations.push_generation_extra_info import (
 from jupiter.domain.push_integrations.slack.slack_channel_name import SlackChannelName
 from jupiter.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
-from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
 from jupiter.framework.errors import InputValidationError
 from jupiter.framework.event import EventSource
 from jupiter.framework.update_action import UpdateAction

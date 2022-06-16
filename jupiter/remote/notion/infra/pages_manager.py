@@ -149,3 +149,16 @@ class NotionPagesManager:
             ) from err
 
         return notion_page_link.with_extra(page_block.title, page_block.icon)
+
+    def remove_page(self, key: NotionLockKey) -> None:
+        """Remove a page with a given key."""
+        notion_client = self._client_builder.get_notion_client()
+
+        try:
+            with self._storage_engine.get_unit_of_work() as uow:
+                notion_page_link = uow.notion_page_link_repository.load(key)
+            notion_client.remove_regular_page(notion_page_link.notion_id)
+        except (NotionPageLinkNotFoundError, NotionPageBlockNotFound) as err:
+            raise NotionPageNotFoundError(
+                f"The Notion page identified by {key} does not exist"
+            ) from err

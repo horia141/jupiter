@@ -29,6 +29,13 @@ class PersonShow(Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
             "--id",
             type=str,
             dest="ref_ids",
@@ -39,6 +46,7 @@ class PersonShow(Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
+        show_archived = args.show_archived
         ref_ids = (
             [EntityId.from_raw(rid) for rid in args.ref_ids]
             if len(args.ref_ids) > 0
@@ -46,18 +54,24 @@ class PersonShow(Command):
         )
 
         response = self._command.execute(
-            PersonFindUseCase.Args(allow_archived=False, filter_person_ref_ids=ref_ids)
+            PersonFindUseCase.Args(
+                allow_archived=show_archived, filter_person_ref_ids=ref_ids
+            )
         )
 
         print(f"The catch up project is {response.catch_up_project.name}")
 
         print("Persons:")
         for person in response.persons:
-            print(f" - {person.name} ({person.relationship.for_notion()})", end="")
+            print(
+                f" - id={person.ref_id} {person.name} ({person.relationship.for_notion()})",
+                end="",
+            )
             print(
                 f" Catch up {person.catch_up_params.period.for_notion()}"
                 if person.catch_up_params
                 else "",
                 end="",
             )
-            print(f" Birthday is {person.birthday}" if person.birthday else "")
+            print(f" Birthday is {person.birthday}" if person.birthday else "", end="")
+            print(f" archived={person.archived}")

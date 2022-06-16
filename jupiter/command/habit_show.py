@@ -39,6 +39,13 @@ class HabitShow(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
             "--id",
             type=str,
             dest="ref_ids",
@@ -57,6 +64,7 @@ class HabitShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
+        show_archived = args.show_archived
         ref_ids = (
             [EntityId.from_raw(rid) for rid in args.ref_ids]
             if len(args.ref_ids) > 0
@@ -69,7 +77,7 @@ class HabitShow(command.Command):
         )
         response = self._command.execute(
             HabitFindUseCase.Args(
-                show_archived=False,
+                show_archived=show_archived,
                 filter_ref_ids=ref_ids,
                 filter_project_keys=project_keys,
             )
@@ -77,17 +85,19 @@ class HabitShow(command.Command):
 
         for habit_entry in response.habits:
             habit = habit_entry.habit
+            project = habit_entry.project
             inbox_tasks = habit_entry.inbox_tasks
             difficulty_str = (
-                habit.gen_params.difficulty.value
+                habit.gen_params.difficulty.for_notion()
                 if habit.gen_params.difficulty
                 else "none"
             )
             print(
-                f"id={habit.ref_id} {habit.name}"
-                + f'\n    eisen="{habit.gen_params.eisen.value}"'
+                f"id={habit.ref_id} {habit.name} period={habit.gen_params.period.for_notion()}"
+                + f"\n    eisen={habit.gen_params.eisen.for_notion()}"
                 + f" difficulty={difficulty_str}"
                 + f' skip_rule={habit.skip_rule or "none"}'
+                + f" archived={habit.archived}"
                 + (
                     f" repeats={habit.repeats_in_period_count}"
                     if habit.repeats_in_period_count
@@ -97,6 +107,7 @@ class HabitShow(command.Command):
                 + f'\n    due_at_time={habit.gen_params.due_at_time or "none"}'
                 + f' due_at_day={habit.gen_params.due_at_day or "none"}'
                 + f' due_at_month={habit.gen_params.due_at_month or "none"}'
+                + f" project={project.name}"
             )
             print("  Tasks:")
 

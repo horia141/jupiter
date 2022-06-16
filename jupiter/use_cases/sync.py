@@ -61,6 +61,9 @@ from jupiter.domain.push_integrations.group.infra.push_integration_group_notion_
 from jupiter.domain.push_integrations.group.notion_push_integration_group import (
     NotionPushIntegrationGroup,
 )
+from jupiter.domain.push_integrations.group.push_integration_group import (
+    PushIntegrationGroup,
+)
 from jupiter.domain.push_integrations.slack.infra.slack_task_notion_manager import (
     SlackTaskNotionManager,
 )
@@ -518,7 +521,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         if SyncTarget.SLACK_TASKS in sync_targets:
             LOGGER.info("Syncing the Slack tasks")
             all_slack_tasks_by_ref_id, project = self._sync_slack_tasks(
-                args, projects_by_ref_id, slack_task_collection, workspace
+                args, projects_by_ref_id, slack_task_collection, push_integration_group
             )
             self._sync_slack_tasks_inbox_tasks(
                 all_slack_tasks_by_ref_id,
@@ -601,14 +604,14 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         args: Args,
         projects_by_ref_id: Dict[EntityId, Project],
         slack_task_collection: SlackTaskCollection,
-        workspace: Workspace,
+        push_integration_group: PushIntegrationGroup,
     ) -> Tuple[Dict[EntityId, SlackTask], Project]:
         project = projects_by_ref_id[slack_task_collection.generation_project_ref_id]
         slack_task_sync_service = SlackTaskSyncService(
             self._storage_engine, self._slack_task_notion_manager
         )
         all_slack_tasks = slack_task_sync_service.sync(
-            parent_ref_id=workspace.ref_id,
+            parent_ref_id=push_integration_group.ref_id,
             upsert_info=None,
             direct_info=None,
             inverse_info=NotionSlackTask.InverseInfo(

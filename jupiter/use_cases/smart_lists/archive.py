@@ -78,6 +78,12 @@ class SmartListArchiveUseCase(AppMutationUseCase["SmartListArchiveUseCase.Args",
             LOGGER.info("Applied local changes")
 
         try:
+            self._smart_list_notion_manager.drop_all_leaves(
+                smart_list_collection.ref_id, smart_list.ref_id
+            )
+            self._smart_list_notion_manager.drop_all_branch_tags(
+                smart_list_collection.ref_id, smart_list.ref_id
+            )
             self._smart_list_notion_manager.remove_branch(
                 smart_list_collection.ref_id, smart_list.ref_id
             )

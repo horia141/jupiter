@@ -5,3 +5,7 @@ __pycache__/
 .mypy_cache
 venv
 site
+.coverage
+.integration-test-cache
+buildinfo/current
+secrets.info

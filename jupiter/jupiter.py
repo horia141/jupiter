@@ -1,8 +1,10 @@
 """The CLI entry-point for Jupiter."""
 import argparse
 import logging
+import sys
 
 import coloredlogs
+import coverage
 
 from jupiter.command.big_plan_archive import BigPlanArchive
 from jupiter.command.big_plan_change_project import BigPlanChangeProject
@@ -82,6 +84,8 @@ from jupiter.command.smart_list_tag_remove import SmartListTagRemove
 from jupiter.command.smart_list_tag_update import SmartListTagUpdate
 from jupiter.command.smart_list_update import SmartListUpdate
 from jupiter.command.sync import Sync
+from jupiter.command.test_helper_clear_all import TestHelperClearAll
+from jupiter.command.test_helper_nuke import TestHelperNuke
 from jupiter.command.vacation_archive import VacationArchive
 from jupiter.command.vacation_create import VacationCreate
 from jupiter.command.vacation_remove import VacationRemove
@@ -123,6 +127,7 @@ from jupiter.remote.notion.push_integration.slack_tasks import NotionSlackTasksM
 from jupiter.remote.notion.smart_lists_manager import NotionSmartListsManager
 from jupiter.remote.notion.vacations_manager import NotionVacationsManager
 from jupiter.remote.notion.workspaces_manager import NotionWorkspacesManager
+from jupiter.repository.sqlite.connection import SqliteConnection
 from jupiter.repository.sqlite.domain.storage_engine import SqliteDomainStorageEngine
 from jupiter.repository.sqlite.remote.notion.storage_engine import (
     SqliteNotionStorageEngine,
@@ -213,6 +218,8 @@ from jupiter.use_cases.smart_lists.tag.remove import SmartListTagRemoveUseCase
 from jupiter.use_cases.smart_lists.tag.update import SmartListTagUpdateUseCase
 from jupiter.use_cases.smart_lists.update import SmartListUpdateUseCase
 from jupiter.use_cases.sync import SyncUseCase
+from jupiter.use_cases.test_helper.clear_all import ClearAllUseCase
+from jupiter.use_cases.test_helper.nuke import NukeUseCase
 from jupiter.use_cases.vacations.archive import VacationArchiveUseCase
 from jupiter.use_cases.vacations.create import VacationCreateUseCase
 from jupiter.use_cases.vacations.find import VacationFindUseCase
@@ -235,29 +242,17 @@ def main() -> None:
 
     global_properties = build_global_properties(timezone)
 
-    domain_storage_engine = SqliteDomainStorageEngine(
-        SqliteDomainStorageEngine.Config(
+    sqlite_connection = SqliteConnection(
+        SqliteConnection.Config(
             global_properties.sqlite_db_url,
             global_properties.alembic_ini_path,
             global_properties.alembic_migrations_path,
         )
     )
 
-    notion_storage_engine = SqliteNotionStorageEngine(
-        SqliteNotionStorageEngine.Config(
-            global_properties.sqlite_db_url,
-            global_properties.alembic_ini_path,
-            global_properties.alembic_migrations_path,
-        )
-    )
-
-    usecase_storage_engine = SqliteUseCaseStorageEngine(
-        SqliteUseCaseStorageEngine.Config(
-            global_properties.sqlite_db_url,
-            global_properties.alembic_ini_path,
-            global_properties.alembic_migrations_path,
-        )
-    )
+    domain_storage_engine = SqliteDomainStorageEngine(sqlite_connection)
+    notion_storage_engine = SqliteNotionStorageEngine(sqlite_connection)
+    usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
     notion_client_builder = NotionClientBuilder(domain_storage_engine)
     notion_pages_manager = NotionPagesManager(
@@ -956,6 +951,34 @@ def main() -> None:
                 time_provider, invocation_recorder, domain_storage_engine
             )
         ),
+        # Test Helper Commands
+        TestHelperClearAll(
+            ClearAllUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                usecase_storage_engine,
+                notion_workspace_manager,
+                notion_vacation_manager,
+                notion_projects_manager,
+                notion_inbox_tasks_manager,
+                notion_habits_manager,
+                notion_chores_manager,
+                notion_big_plans_manager,
+                notion_smart_lists_manager,
+                notion_metrics_manager,
+                notion_persons_manager,
+                notion_push_integration_group_manager,
+                notion_slack_tasks_manager,
+            )
+        ),
+        TestHelperNuke(
+            NukeUseCase(
+                sqlite_connection,
+                domain_storage_engine,
+                notion_workspace_manager,
+            )
+        ),
     }
 
     parser = argparse.ArgumentParser(description=global_properties.description)
@@ -983,14 +1006,22 @@ def main() -> None:
         help="Show the version of the application",
     )
 
-    subparsers = parser.add_subparsers(dest="subparser_name", help="Sub-command help")
+    subparsers = parser.add_subparsers(
+        dest="subparser_name", help="Sub-command help", metavar="{command}"
+    )
 
     for command in commands:
-        command_parser = subparsers.add_parser(
-            command.name(),
-            help=command.description(),
-            description=command.description(),
-        )
+        if command.should_appear_in_global_help:
+            command_parser = subparsers.add_parser(
+                command.name(),
+                help=command.description(),
+                description=command.description(),
+            )
+        else:
+            command_parser = subparsers.add_parser(
+                command.name(),
+                description=command.description(),
+            )
         command.build_parser(command_parser)
 
     args = parser.parse_args()
@@ -1009,9 +1040,7 @@ def main() -> None:
         for handler in logging.root.handlers:
             handler.addFilter(CommandsAndControllersLoggerFilter())
 
-    domain_storage_engine.prepare()
-    # not technically needed --> notion_storage_engine.prepare()
-    # not technically needed -> usecase_storage_engine.prepare()
+    sqlite_connection.prepare()
 
     try:
         for command in commands:
@@ -1022,9 +1051,11 @@ def main() -> None:
     except InputValidationError as err:
         print("Looks like there's something wrong with the command's arguments:")
         print(f"  {err}")
+        sys.exit(1)
     except WorkspaceAlreadyExistsError:
         print("A workspace already seems to exist here!")
         print("Please try another location if you want a new one.")
+        sys.exit(2)
     except (
         WorkspaceNotFoundError,
         NotionWorkspaceNotFoundError,
@@ -1036,6 +1067,7 @@ def main() -> None:
         print(
             f"For more information checkout: {global_properties.docs_init_workspace_url}"
         )
+        sys.exit(3)
     except OldTokenForNotionConnectionError:
         print(
             f"The Notion connection's token has expired, please refresh it with '{NotionConnectionUpdateToken.name()}'"
@@ -1043,6 +1075,7 @@ def main() -> None:
         print(
             f"For more information checkout: {global_properties.docs_update_expired_token_url}"
         )
+        sys.exit(3)
     except EntityNotFoundError as err:
         print(
             f"For more information checkout: {global_properties.docs_fix_data_inconsistencies_url}"
@@ -1063,13 +1096,14 @@ class CommandsAndControllersLoggerFilter(logging.Filter):
 def _get_timezone() -> Timezone:
     global_properties = build_global_properties()
 
-    storage_engine = SqliteDomainStorageEngine(
-        SqliteDomainStorageEngine.Config(
+    sqlite_connection = SqliteConnection(
+        SqliteConnection.Config(
             global_properties.sqlite_db_url,
             global_properties.alembic_ini_path,
             global_properties.alembic_migrations_path,
         )
     )
+    storage_engine = SqliteDomainStorageEngine(sqlite_connection)
 
     with storage_engine.get_unit_of_work() as uow:
         workspace = uow.workspace_repository.load_optional()
@@ -1094,6 +1128,8 @@ def _map_log_level_to_log_class(log_level: str) -> int:
     else:
         raise InputValidationError(f"Invalid log level '{log_level}'")
 
+
+coverage.process_startup()  # type: ignore
 
 if __name__ == "__main__":
     main()

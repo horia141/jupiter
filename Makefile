@@ -4,8 +4,8 @@ fast-lint:
 test:
 	./scripts/run-tests.sh
 
-coverage:
-	./scripts/run-coverage.sh
+itest:
+	./scripts/run-integration-tests.sh
 
 check:
 	./scripts/check.sh
@@ -28,4 +28,4 @@ docker-push:
 stats-for-nerds:
 	./scripts/stats-for-nerds.sh
 
-.PHONY: fast-lint test coverage check fix-style docs migration-test docker-build docker-push stats-for-nerds
+.PHONY: fast-lint test itest coverage check fix-style docs migration-test docker-build docker-push stats-for-nerds

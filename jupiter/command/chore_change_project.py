@@ -20,7 +20,7 @@ class ChoreChangeProject(command.Command):
     @staticmethod
     def name() -> str:
         """The name of the command."""
-        return "big-plan-change-project"
+        return "chore-change-project"
 
     @staticmethod
     def description() -> str:

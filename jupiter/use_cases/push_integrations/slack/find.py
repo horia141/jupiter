@@ -27,7 +27,7 @@ class SlackTaskFindUseCase(
         """A single slack task result."""
 
         slack_task: SlackTask
-        inbox_task: InboxTask
+        inbox_task: Optional[InboxTask]
 
     @dataclass(frozen=True)
     class Result(UseCaseResultBase):
@@ -59,7 +59,7 @@ class SlackTaskFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=True,
                 filter_sources=[InboxTaskSource.SLACK_TASK],
-                filter_slack_task_ref_ids=(bp.ref_id for bp in slack_tasks),
+                filter_slack_task_ref_ids=(st.ref_id for st in slack_tasks),
             )
             inbox_tasks_by_slack_task_ref_id = {
                 cast(EntityId, it.slack_task_ref_id): it for it in inbox_tasks
@@ -69,7 +69,7 @@ class SlackTaskFindUseCase(
             slack_tasks=[
                 SlackTaskFindUseCase.ResultEntry(
                     slack_task=st,
-                    inbox_task=inbox_tasks_by_slack_task_ref_id[st.ref_id],
+                    inbox_task=inbox_tasks_by_slack_task_ref_id.get(st.ref_id, None),
                 )
                 for st in slack_tasks
             ]

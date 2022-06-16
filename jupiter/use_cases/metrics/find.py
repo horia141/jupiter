@@ -91,6 +91,7 @@ class MetricFindUseCase(
             )
             all_inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
                 parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=args.allow_archived,
                 filter_sources=[InboxTaskSource.METRIC],
                 filter_metric_ref_ids=[m.ref_id for m in metrics],
             )

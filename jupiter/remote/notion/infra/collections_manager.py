@@ -702,7 +702,11 @@ class NotionCollectionsManager:
     ) -> None:
         """Hard remove all the Notion-side entities."""
         with self._storage_engine.get_unit_of_work() as uow:
-            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            collection_link = uow.notion_collection_link_repository.load_optional(
+                collection_key
+            )
+            if collection_link is None:
+                return
             field_tag_links = (
                 uow.notion_collection_field_tag_link_repository.find_all_for_collection(
                     collection_key, field
@@ -1005,7 +1009,11 @@ class NotionCollectionsManager:
     def drop_all_collection_items(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""
         with self._storage_engine.get_unit_of_work() as uow:
-            collection_link = uow.notion_collection_link_repository.load(collection_key)
+            collection_link = uow.notion_collection_link_repository.load_optional(
+                collection_key
+            )
+            if collection_link is None:
+                return
             item_links = (
                 uow.notion_collection_item_link_repository.find_all_for_collection(
                     collection_key

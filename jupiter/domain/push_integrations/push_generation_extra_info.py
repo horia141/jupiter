@@ -77,7 +77,10 @@ class PushGenerationExtraInfo(Value):
         )
 
         try:
-            message_as_options = shlex.split(raw_message_data)
+            # Browsers are sometimes happy to replace a "--" with a "—" (unicode "long-dash"
+            # like https://www.compart.com/en/unicode/U+2015) or "'" with "’" which we must undo!
+            rare_message_data = raw_message_data.replace("—", "--").replace("’", "'")
+            message_as_options = shlex.split(rare_message_data)
 
             args = parser.parse_args(args=message_as_options)
 
@@ -98,11 +101,11 @@ class PushGenerationExtraInfo(Value):
             )
         except ValueError as err:
             raise InputValidationError(
-                "Contents of extra info message is invalid"
+                f"Contents of extra info message `{raw_message_data}` is invalid"
             ) from err
         except SystemExit as err:
             raise InputValidationError(
-                "Contents of extra info message is invalid"
+                f"Contents of extra info message `{raw_message_data}`is invalid"
             ) from err
 
     def to_db(self) -> str:

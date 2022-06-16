@@ -57,7 +57,7 @@ class NotionBigPlan(
             due_date=entity.due_date,
             project_ref_id=str(entity.project_ref_id),
             project_name=format_name_for_option(
-                extra_info.all_projects_map[entity.parent_ref_id].name
+                extra_info.all_projects_map[entity.project_ref_id].name
             ),
         )
 

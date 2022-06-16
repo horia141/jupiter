@@ -70,18 +70,6 @@ class NotionMetricsManager(MetricNotionManager):
             "filter_operator": "and",
             "aggregations": [{"aggregator": "count"}],
             "sort": [{"property": "collection-time", "direction": "ascending"}],
-            "filter": {
-                "operator": "and",
-                "filters": [
-                    {
-                        "property": "archived",
-                        "filter": {
-                            "operator": "checkbox_is_not",
-                            "value": {"type": "exact", "value": True},
-                        },
-                    }
-                ],
-            },
         },
         "format": {
             "table_properties": [

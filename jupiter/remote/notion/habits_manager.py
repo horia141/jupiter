@@ -301,7 +301,7 @@ class NotionHabitsManager(HabitNotionManager):
         },
     }
 
-    _DATABASE_VIEW_SCHEMA: JSONDictType = {
+    _DATABASE_VIEW_SCHEMA: ClassVar[JSONDictType] = {
         "name": "Database",
         "type": "table",
         "format": {

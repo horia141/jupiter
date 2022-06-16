@@ -89,7 +89,7 @@ class MetricChangeCollectionProjectUseCase(
             LOGGER.info("Moving all inbox tasks too")
             with self._storage_engine.get_unit_of_work() as inbox_task_uow:
                 inbox_task_collection = (
-                    uow.inbox_task_collection_repository.load_by_parent(
+                    inbox_task_uow.inbox_task_collection_repository.load_by_parent(
                         workspace.ref_id
                     )
                 )
@@ -113,4 +113,4 @@ class MetricChangeCollectionProjectUseCase(
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    uow.inbox_task_repository.save(inbox_task)
+                    inbox_task_uow.inbox_task_repository.save(inbox_task)

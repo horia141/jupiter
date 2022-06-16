@@ -113,6 +113,17 @@ class NotionClient:
             raise Exception(f"A block with id={page_id} is not a page")
         return the_block
 
+    def remove_regular_page(self, page_id: NotionId) -> None:
+        """Remove a page from a space, with a given id."""
+        the_block: Optional[Block] = self._client.get_block(str(page_id))
+        if the_block is None:
+            raise NotionPageBlockNotFound(
+                f"A page block with id={page_id} could not be found"
+            )
+        if not isinstance(the_block, PageBlock):
+            raise Exception(f"A block with id={page_id} is not a page")
+        the_block.remove()
+
     # 2.For collections.
 
     @staticmethod

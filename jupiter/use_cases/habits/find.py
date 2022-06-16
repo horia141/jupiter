@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional, List
 
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
+from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.habits.habit import Habit
 from jupiter.framework.base.entity_id import EntityId
@@ -28,6 +29,7 @@ class HabitFindUseCase(
         """A single entry in the load all habits response."""
 
         habit: Habit
+        project: Project
         inbox_tasks: Iterable[InboxTask]
 
     @dataclass(frozen=True)
@@ -41,16 +43,22 @@ class HabitFindUseCase(
         workspace = context.workspace
 
         with self._storage_engine.get_unit_of_work() as uow:
-            filter_project_ref_ids: Optional[List[EntityId]] = None
+            project_collection = uow.project_collection_repository.load_by_parent(
+                workspace.ref_id
+            )
+            filter_project_ref_ids: Optional[List[EntityId]]
             if args.filter_project_keys:
-                project_collection = uow.project_collection_repository.load_by_parent(
-                    workspace.ref_id
-                )
                 projects = uow.project_repository.find_all_with_filters(
                     parent_ref_id=project_collection.ref_id,
                     filter_keys=args.filter_project_keys,
                 )
                 filter_project_ref_ids = [p.ref_id for p in projects]
+            else:
+                projects = uow.project_repository.find_all(
+                    parent_ref_id=project_collection.ref_id
+                )
+                filter_project_ref_ids = None
+            project_by_ref_id = {p.ref_id: p for p in projects}
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id
@@ -76,6 +84,7 @@ class HabitFindUseCase(
             habits=[
                 HabitFindUseCase.ResultEntry(
                     habit=rt,
+                    project=project_by_ref_id[rt.project_ref_id],
                     inbox_tasks=[
                         it for it in inbox_tasks if it.habit_ref_id == rt.ref_id
                     ],

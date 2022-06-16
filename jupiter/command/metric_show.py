@@ -38,6 +38,13 @@ class MetricShow(command.Command):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
         parser.add_argument(
+            "--show-archived",
+            dest="show_archived",
+            default=False,
+            action="store_true",
+            help="Whether to show archived vacations or not",
+        )
+        parser.add_argument(
             "--metric",
             dest="metric_keys",
             required=False,
@@ -48,13 +55,16 @@ class MetricShow(command.Command):
 
     def run(self, args: Namespace) -> None:
         """Callback to execute when the command is invoked."""
+        show_archived = args.show_archived
         metric_keys = (
             [MetricKey.from_raw(mk) for mk in args.metric_keys]
             if len(args.metric_keys) > 0
             else None
         )
         response = self._command.execute(
-            MetricFindUseCase.Args(allow_archived=False, filter_keys=metric_keys)
+            MetricFindUseCase.Args(
+                allow_archived=show_archived, filter_keys=metric_keys
+            )
         )
 
         print(f"The collection project is {response.collection_project.name}")
@@ -68,11 +78,7 @@ class MetricShow(command.Command):
                 f" - {metric.key}: {metric.icon if metric.icon else ''}{metric.name}"
                 + (
                     f" @{metric.collection_params.period.for_notion()}"
-                    + (
-                        f" eisen={metric.collection_params.eisen.value}"
-                        if metric.collection_params.eisen
-                        else ""
-                    )
+                    + (f" eisen={metric.collection_params.eisen.for_notion()}")
                 )
                 + (
                     f" difficulty={metric.collection_params.difficulty.for_notion()}"
@@ -107,6 +113,7 @@ class MetricShow(command.Command):
                 if metric.collection_params
                 else ""
                 + (f" #{metric.metric_unit.for_notion()}" if metric.metric_unit else "")
+                + f" archived={metric.archived}"
             )
 
             for metric_entry in sorted(
@@ -118,6 +125,8 @@ class MetricShow(command.Command):
                         f" {ADate.to_user_str(self._global_properties.timezone, metric_entry.collection_time)}"
                     )
                     + f" val={metric_entry.value}"
+                    + f" notes={metric_entry.notes}"
+                    + f" archived={metric_entry.archived}"
                 )
 
             if metric_response_entry.metric_collection_inbox_tasks:
@@ -127,5 +136,8 @@ class MetricShow(command.Command):
                     key=lambda it: cast(ADate, it.due_date),
                 ):
                     print(
-                        f"      -id={inbox_task.ref_id} {inbox_task.name} {inbox_task.status.for_notion()}"
+                        f"      -id={inbox_task.ref_id}"
+                        + f" {inbox_task.name}"
+                        + f" {inbox_task.status.for_notion()}"
+                        + f" archived={inbox_task.archived}"
                     )

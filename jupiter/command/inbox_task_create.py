@@ -86,11 +86,11 @@ class InboxTaskCreate(command.Command):
         big_plan_ref_id = (
             EntityId.from_raw(args.big_plan_ref_id) if args.big_plan_ref_id else None
         )
-        eisen = Eisen.from_raw(args.eise) if args.eise else None
+        eisen = Eisen.from_raw(args.eisen) if args.eisen else None
         difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
         actionable_date = (
             ADate.from_raw(self._global_properties.timezone, args.actionable_date)
-            if args.due_date
+            if args.actionable_date
             else None
         )
         due_date = (
