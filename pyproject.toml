@@ -12,7 +12,7 @@ repository = "https://github.com/horia141/jupiter"
 documentation = "https://jupiter-goals.readthedocs.io/"
 
 [tool.poetry.dependencies]
-python = "3.8"
+python = "^3.8"
 notion = { git = "https://github.com/horia141/notion-py", branch = "dont-update-views" }
 pendulum = "2.0.5"
 python-dotenv = "0.20.0"
