@@ -16,6 +16,8 @@ COPY poetry.lock ./
 RUN poetry config virtualenvs.create false \
   && poetry install --no-dev --no-interaction --no-ansi
 
+COPY LICENSE LICENSE
+COPY README.md README.md
 COPY migrations migrations
 COPY jupiter jupiter
 COPY jupiter/jupiter.py jupiter.py

@@ -9,6 +9,5 @@ __pycache__/
 docs
 buildinfo
 venv
-.coverage
-.integration-test-cache
+.build-cache/
 secrets.info

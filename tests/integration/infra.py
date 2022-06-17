@@ -71,7 +71,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
         print(notion_user)
         print(notion_pass)
 
-        cls._cache_path = cls._root_path / ".integration-test-cache"
+        cls._cache_path = cls._root_path / ".build-cache" / "itest"
 
         webdriver_cache_path = cls._cache_path / "webdrivers"
 

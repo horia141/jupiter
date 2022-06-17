@@ -25,7 +25,10 @@ docker-build:
 docker-push:
 	./scripts/docker-push.sh
 
+standalone-binary-build:
+	./scripts/standalone-binary-build.sh
+
 stats-for-nerds:
 	./scripts/stats-for-nerds.sh
 
-.PHONY: fast-lint test itest coverage check fix-style docs migration-test docker-build docker-push stats-for-nerds
+.PHONY: fast-lint test itest coverage check fix-style docs migration-test docker-build docker-push standalone-binary-build stats-for-nerds

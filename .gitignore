@@ -6,6 +6,6 @@ __pycache__/
 venv
 site
 .coverage
-.integration-test-cache
+.build-cache/
 buildinfo/current
 secrets.info

@@ -9,6 +9,7 @@ set -ex
 
 brew install shellcheck
 brew install cloc
+brew install create-dmg
 poetry install --no-interaction --no-ansi
 sudo gem install mdl
 docker pull hadolint/hadolint:latest-debian

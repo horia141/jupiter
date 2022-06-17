@@ -1,9 +1,9 @@
 [run]
 parallel=True
 branch=True
-data_file=.integration-test-cache/coverage/coverage
+data_file=.build-cache/itest/coverage/coverage
 [paths]
 source =
     jupiter/
 [html]
-directory=.integration-test-cache/coverage-html/
+directory=.build-cache/itest/coverage-html/

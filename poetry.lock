@@ -16,6 +16,14 @@ SQLAlchemy = ">=1.3.0"
 tz = ["python-dateutil"]
 
 [[package]]
+name = "altgraph"
+version = "0.17.2"
+description = "Python graph (network) package"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "astroid"
 version = "2.11.6"
 description = "An abstract syntax tree for Python with inference support."
@@ -307,6 +315,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "future"
+version = "0.18.2"
+description = "Clean single-source support for Python 3 and 2"
+category = "dev"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "ghp-import"
 version = "2.1.0"
 description = "Copy your docs directly to the gh-pages branch."
@@ -483,6 +499,17 @@ python-dateutil = ">=2.7.0"
 requests = ">=2.0.0"
 
 [[package]]
+name = "macholib"
+version = "1.16"
+description = "Mach-O header analysis and editing"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+altgraph = ">=0.15"
+
+[[package]]
 name = "mako"
 version = "1.2.0"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
@@ -648,6 +675,17 @@ optional = false
 python-versions = ">=2.6"
 
 [[package]]
+name = "pefile"
+version = "2022.5.30"
+description = "Python PE parsing module"
+category = "dev"
+optional = false
+python-versions = ">=3.6.0"
+
+[package.dependencies]
+future = "*"
+
+[[package]]
 name = "pendulum"
 version = "2.0.5"
 description = "Python datetimes made easy"
@@ -754,6 +792,33 @@ description = "Pygments is a syntax highlighting package written in Python."
 category = "dev"
 optional = false
 python-versions = ">=3.6"
+
+[[package]]
+name = "pyinstaller"
+version = "5.1"
+description = "PyInstaller bundles a Python application and all its dependencies into a single package."
+category = "dev"
+optional = false
+python-versions = "<3.11,>=3.7"
+
+[package.dependencies]
+altgraph = "*"
+macholib = {version = ">=1.8", markers = "sys_platform == \"darwin\""}
+pefile = {version = ">=2017.8.1", markers = "sys_platform == \"win32\""}
+pyinstaller-hooks-contrib = ">=2021.4"
+pywin32-ctypes = {version = ">=0.2.0", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+encryption = ["tinyaes (>=1.0.0)"]
+hook_testing = ["pytest (>=2.7.3)", "execnet (>=1.5.0)", "psutil"]
+
+[[package]]
+name = "pyinstaller-hooks-contrib"
+version = "2022.7"
+description = "Community maintained hooks for PyInstaller"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
 
 [[package]]
 name = "pylint"
@@ -914,6 +979,14 @@ description = "The Olson timezone database for Python."
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[[package]]
+name = "pywin32-ctypes"
+version = "0.2.0"
+description = ""
+category = "dev"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pyyaml"
@@ -1268,13 +1341,17 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 
 [metadata]
 lock-version = "1.1"
-python-versions = "3.8.5"
-content-hash = "c76998d28f25ac02155ffe2709ae812d67a5ad3e8fab45da7bc1bcf8599a62e3"
+python-versions = ">=3.8, <3.11"
+content-hash = "c0bcfc8b05ae2dd33640563c5c02abe3a7fe3b604ee4339ca070bdc1fc862986"
 
 [metadata.files]
 alembic = [
     {file = "alembic-1.7.7-py3-none-any.whl", hash = "sha256:29be0856ec7591c39f4e1cb10f198045d890e6e2274cf8da80cb5e721a09642b"},
     {file = "alembic-1.7.7.tar.gz", hash = "sha256:4961248173ead7ce8a21efb3de378f13b8398e6630fab0eb258dc74a8af24c58"},
+]
+altgraph = [
+    {file = "altgraph-0.17.2-py2.py3-none-any.whl", hash = "sha256:743628f2ac6a7c26f5d9223c91ed8ecbba535f506f4b6f558885a8a56a105857"},
+    {file = "altgraph-0.17.2.tar.gz", hash = "sha256:ebf2269361b47d97b3b88e696439f6e4cbc607c17c51feb1754f90fb79839158"},
 ]
 astroid = [
     {file = "astroid-2.11.6-py3-none-any.whl", hash = "sha256:ba33a82a9a9c06a5ceed98180c5aab16e29c285b828d94696bf32d6015ea82a9"},
@@ -1512,6 +1589,9 @@ executing = [
     {file = "executing-0.8.3-py2.py3-none-any.whl", hash = "sha256:d1eef132db1b83649a3905ca6dd8897f71ac6f8cac79a7e58a1a09cf137546c9"},
     {file = "executing-0.8.3.tar.gz", hash = "sha256:c6554e21c6b060590a6d3be4b82fb78f8f0194d809de5ea7df1c093763311501"},
 ]
+future = [
+    {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
+]
 ghp-import = [
     {file = "ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
     {file = "ghp_import-2.1.0-py3-none-any.whl", hash = "sha256:8337dd7b50877f163d4c0289bc1f1c7f127550241988d568c1db512c4324a619"},
@@ -1660,6 +1740,10 @@ libyear = [
     {file = "libyear-0.2.1-py3-none-any.whl", hash = "sha256:49cc81e8ab916d58018dc0eeeb700b8a5da3de6db8738633fae9aeec8bc5bdb2"},
     {file = "libyear-0.2.1.tar.gz", hash = "sha256:6c002beef2f6e5eb82117de5a4af9bb5fbef6d151e47356f14aed807a83648b1"},
 ]
+macholib = [
+    {file = "macholib-1.16-py2.py3-none-any.whl", hash = "sha256:5a0742b587e6e57bfade1ab90651d4877185bf66fd4a176a488116de36878229"},
+    {file = "macholib-1.16.tar.gz", hash = "sha256:001bf281279b986a66d7821790d734e61150d52f40c080899df8fefae056e9f7"},
+]
 mako = [
     {file = "Mako-1.2.0-py3-none-any.whl", hash = "sha256:23aab11fdbbb0f1051b93793a58323ff937e98e34aece1c4219675122e57e4ba"},
     {file = "Mako-1.2.0.tar.gz", hash = "sha256:9a7c7e922b87db3686210cf49d5d767033a41d4010b284e747682c92bddd8b39"},
@@ -1768,6 +1852,9 @@ pbr = [
     {file = "pbr-5.9.0-py2.py3-none-any.whl", hash = "sha256:e547125940bcc052856ded43be8e101f63828c2d94239ffbe2b327ba3d5ccf0a"},
     {file = "pbr-5.9.0.tar.gz", hash = "sha256:e8dca2f4b43560edef58813969f52a56cef023146cbb8931626db80e6c1c4308"},
 ]
+pefile = [
+    {file = "pefile-2022.5.30.tar.gz", hash = "sha256:a5488a3dd1fd021ce33f969780b88fe0f7eebb76eb20996d7318f307612a045b"},
+]
 pendulum = [
     {file = "pendulum-2.0.5-cp34-cp34m-manylinux1_x86_64.whl", hash = "sha256:c460f4d8dc41ec3c4377ac1807678cd72fe5e973cc2943c104ffdeaac32dacb7"},
     {file = "pendulum-2.0.5-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:57801754e05f30e8a7e4d24734c9fad82c6c3ec489151555f0fc66bb32ba6d6d"},
@@ -1848,6 +1935,23 @@ pygments = [
     {file = "Pygments-2.12.0-py3-none-any.whl", hash = "sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519"},
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
+pyinstaller = [
+    {file = "pyinstaller-5.1-py3-none-macosx_10_13_universal2.whl", hash = "sha256:3c9bc373b4a4bf6d81b306b9918e290a3de582d7b50a0f6f4e837970a4db0c54"},
+    {file = "pyinstaller-5.1-py3-none-manylinux2014_aarch64.whl", hash = "sha256:ac003d49bbd62f6712b5631487049cee4f0a07445dd31c6d05e5724e33689fca"},
+    {file = "pyinstaller-5.1-py3-none-manylinux2014_i686.whl", hash = "sha256:f786cb013ebfd3fb23ddb46285902663e31256220b12b368f8c36e859a77ebc9"},
+    {file = "pyinstaller-5.1-py3-none-manylinux2014_ppc64le.whl", hash = "sha256:d8bfe5c32b4b5aaa91a5c1c7912fe3e5d13e7671f3468ee7742ec71ca192a975"},
+    {file = "pyinstaller-5.1-py3-none-manylinux2014_s390x.whl", hash = "sha256:c421b46ebf81ad4498de480640ce1a47ac15dfd3938dfc2e1c0846cb5cdb0c59"},
+    {file = "pyinstaller-5.1-py3-none-manylinux2014_x86_64.whl", hash = "sha256:588f2840c27a8a7e1b1fa361f107a1060c5096b36d3c94c243b23687ee41609d"},
+    {file = "pyinstaller-5.1-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:d3852c1f8fe6ca2f5c7942c845dc6d1f6140aa7860fe3500eac3ac88875d1dd4"},
+    {file = "pyinstaller-5.1-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:29b3f17d75ff58b12db7b0116df1b3382c8345aefd500a177987eaf0599dec03"},
+    {file = "pyinstaller-5.1-py3-none-win32.whl", hash = "sha256:a90ee3181c88aed0893bf537a50ad547655f5d555a5b731215a5fe1946d2f3db"},
+    {file = "pyinstaller-5.1-py3-none-win_amd64.whl", hash = "sha256:996e296d1dfe27c3e89efc26dbcc247f49c0801a9b5e22e2b39f5b983cf5c2f5"},
+    {file = "pyinstaller-5.1.tar.gz", hash = "sha256:9596c70c860cbce19537354db95b180351959b4cd14a70db6ab1d1432668c313"},
+]
+pyinstaller-hooks-contrib = [
+    {file = "pyinstaller-hooks-contrib-2022.7.tar.gz", hash = "sha256:6675634279cfe9e475580fb310c3d557037baefb065e6cb5a69a124361b926fd"},
+    {file = "pyinstaller_hooks_contrib-2022.7-py2.py3-none-any.whl", hash = "sha256:5fdb97dcae177955db7ab27840cba97b89dc0c7f4fd9142bba0f9b8d8df85c48"},
+]
 pylint = [
     {file = "pylint-2.13.4-py3-none-any.whl", hash = "sha256:8672cf7441b81410f5de7defdf56e2d559c956fd0579652f2e0a0a35bea2d546"},
     {file = "pylint-2.13.4.tar.gz", hash = "sha256:7cc6d0c4f61dff440f9ed8b657f4ecd615dcfe35345953eb7b1dc74afe901d7a"},
@@ -1899,6 +2003,10 @@ pytz-deprecation-shim = [
 pytzdata = [
     {file = "pytzdata-2020.1-py2.py3-none-any.whl", hash = "sha256:e1e14750bcf95016381e4d472bad004eef710f2d6417240904070b3d6654485f"},
     {file = "pytzdata-2020.1.tar.gz", hash = "sha256:3efa13b335a00a8de1d345ae41ec78dd11c9f8807f522d39850f2dd828681540"},
+]
+pywin32-ctypes = [
+    {file = "pywin32-ctypes-0.2.0.tar.gz", hash = "sha256:24ffc3b341d457d48e8922352130cf2644024a4ff09762a2261fd34c36ee5942"},
+    {file = "pywin32_ctypes-0.2.0-py2.py3-none-any.whl", hash = "sha256:9dc2d991b3479cc2df15930958b674a48a227d5361d413827a4cfd0b5876fc98"},
 ]
 pyyaml = [
     {file = "PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d4db7c7aef085872ef65a8fd7d6d09a14ae91f691dec3e87ee5ee0539d516f53"},
