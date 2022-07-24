@@ -1,10 +1,7 @@
 """The centralised point for interacting with Notion vacations."""
 import logging
-from typing import Final, ClassVar, Iterable, Optional
+from typing import Final, ClassVar, Iterable
 
-from notion.collection import CollectionRowBlock
-
-from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.infra.vacation_notion_manager import (
     VacationNotionManager,
     NotionVacationNotFoundError,
@@ -14,11 +11,9 @@ from jupiter.domain.vacations.notion_vacation_collection import NotionVacationCo
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import (
-    NotionClient,
     NotionCollectionSchemaProperties,
     NotionFieldProps,
     NotionFieldShow,
@@ -113,14 +108,15 @@ class NotionVacationsManager(VacationNotionManager):
         )
 
     def upsert_leaf(
-        self, trunk_ref_id: EntityId, leaf: NotionVacation, extra_info: None
+        self, trunk_ref_id: EntityId, leaf: NotionVacation
     ) -> NotionVacation:
         """Create a vacation."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=self._copy_row_to_notion_row,
+            new_leaf=leaf,
         )
         return link.item_info
 
@@ -128,15 +124,15 @@ class NotionVacationsManager(VacationNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionVacation,
-        extra_info: Optional[None] = None,
     ) -> NotionVacation:
         """Update a Notion-side vacation with new data."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                 row=leaf,
-                copy_row_to_notion_row=self._copy_row_to_notion_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -150,9 +146,11 @@ class NotionVacationsManager(VacationNotionManager):
         """Load a Notion-side vacation."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionVacation,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -165,8 +163,10 @@ class NotionVacationsManager(VacationNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionVacation,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
         ]
 
@@ -209,54 +209,4 @@ class NotionVacationsManager(VacationNotionManager):
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id,
-        )
-
-    def _copy_row_to_notion_row(
-        self, client: NotionClient, row: NotionVacation, notion_row: CollectionRowBlock
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        with client.with_transaction():
-            notion_row.title = row.name
-            notion_row.archived = row.archived
-            notion_row.start_date = (
-                row.start_date.to_notion(self._global_properties.timezone)
-                if row.start_date
-                else None
-            )
-            notion_row.end_date = (
-                row.end_date.to_notion(self._global_properties.timezone)
-                if row.end_date
-                else None
-            )
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
-
-        return notion_row
-
-    def _copy_notion_row_to_row(
-        self, vacation_notion_row: CollectionRowBlock
-    ) -> NotionVacation:
-        """Transform the live system data to something suitable for basic storage."""
-        return NotionVacation(
-            notion_id=NotionId.from_raw(vacation_notion_row.id),
-            name=vacation_notion_row.title,
-            archived=vacation_notion_row.archived or False,
-            start_date=ADate.from_notion(
-                self._global_properties.timezone, vacation_notion_row.start_date
-            )
-            if vacation_notion_row.start_date
-            else None,
-            end_date=ADate.from_notion(
-                self._global_properties.timezone, vacation_notion_row.end_date
-            )
-            if vacation_notion_row.end_date
-            else None,
-            last_edited_time=Timestamp.from_notion(
-                vacation_notion_row.last_edited_time
-            ),
-            ref_id=EntityId.from_raw(vacation_notion_row.ref_id)
-            if vacation_notion_row.ref_id
-            else None,
         )

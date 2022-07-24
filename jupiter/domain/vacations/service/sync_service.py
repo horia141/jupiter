@@ -18,7 +18,6 @@ class VacationSyncService(
         NotionVacation,
         None,
         None,
-        None,
     ]
 ):
     """The service class for syncing the vacations database between local and Notion."""

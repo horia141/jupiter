@@ -26,7 +26,7 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
 
         timezone: Timezone
 
-    user: str
+    name: str
     channel: Optional[str]
     message: str
     generation_extra_info: Optional[str]
@@ -39,7 +39,7 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
             ref_id=entity.ref_id,
             last_edited_time=entity.last_modified_time,
             archived=entity.archived,
-            user=str(entity.user),
+            name=str(entity.user),
             channel=str(entity.channel) if entity.channel else None,
             message=entity.message,
             generation_extra_info=entity.generation_extra_info.to_raw_message_data(),
@@ -47,7 +47,7 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
 
     def new_entity(self, parent_ref_id: EntityId, extra_info: InverseInfo) -> SlackTask:
         """Create a new Slack task from this."""
-        user = SlackUserName.from_raw(self.user)
+        user = SlackUserName.from_raw(self.name)
         channel = SlackChannelName.from_raw(self.channel) if self.channel else None
         message = self.message
         generation_extra_info = PushGenerationExtraInfo.from_raw_message_data(
@@ -68,7 +68,7 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
         self, entity: SlackTask, extra_info: InverseInfo
     ) -> NotionLeafApplyToEntityResult[SlackTask]:
         """Apply to an already existing Slack task."""
-        user = SlackUserName.from_raw(self.user)
+        user = SlackUserName.from_raw(self.name)
         channel = SlackChannelName.from_raw(self.channel) if self.channel else None
         message = self.message
         generation_extra_info = PushGenerationExtraInfo.from_raw_message_data(
@@ -94,6 +94,6 @@ class NotionSlackTask(NotionLeafEntity[SlackTask, None, "NotionSlackTask.Inverse
     def nice_name(self) -> str:
         """A nice name for the Notion-side entity."""
         if self.channel:
-            return f"Slack message from {self.user} on {self.channel}"
+            return f"Slack message from {self.name} on {self.channel}"
         else:
-            return f"Direct message from {self.user}"
+            return f"Direct message from {self.name}"

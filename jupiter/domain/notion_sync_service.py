@@ -55,7 +55,6 @@ NotionTrunkT = TypeVar("NotionTrunkT", bound=NotionTrunkEntity[Any])
 NotionBranchT = TypeVar("NotionBranchT", bound=NotionBranchEntity[Any])
 NotionLeafT = TypeVar("NotionLeafT", bound=NotionLeafEntity[Any, Any, Any])
 NotionBranchTagT = TypeVar("NotionBranchTagT", bound=NotionBranchTagEntity[Any])
-NotionLeafUpsertExtraInfoT = TypeVar("NotionLeafUpsertExtraInfoT")
 NotionLeafDirectExtraInfoT = TypeVar("NotionLeafDirectExtraInfoT")
 NotionLeafInverseExtraInfoT = TypeVar("NotionLeafInverseExtraInfoT")
 
@@ -79,7 +78,6 @@ class TrunkLeafNotionSyncService(
         NotionParentT,
         NotionTrunkT,
         NotionLeafT,
-        NotionLeafUpsertExtraInfoT,
         NotionLeafDirectExtraInfoT,
         NotionLeafInverseExtraInfoT,
     ]
@@ -91,7 +89,9 @@ class TrunkLeafNotionSyncService(
     _notion_leaf_type: Type[NotionLeafT]
     _storage_engine: Final[DomainStorageEngine]
     _notion_manager: ParentTrunkLeafNotionManager[
-        NotionParentT, NotionTrunkT, NotionLeafT, NotionLeafUpsertExtraInfoT
+        NotionParentT,
+        NotionTrunkT,
+        NotionLeafT,
     ]
 
     def __init__(
@@ -101,7 +101,9 @@ class TrunkLeafNotionSyncService(
         notion_leaf_type: Type[NotionLeafT],
         storage_engine: DomainStorageEngine,
         notion_manager: ParentTrunkLeafNotionManager[
-            NotionParentT, NotionTrunkT, NotionLeafT, NotionLeafUpsertExtraInfoT
+            NotionParentT,
+            NotionTrunkT,
+            NotionLeafT,
         ],
     ) -> None:
         """Constructor."""
@@ -114,7 +116,6 @@ class TrunkLeafNotionSyncService(
     def sync(
         self,
         parent_ref_id: EntityId,
-        upsert_info: NotionLeafUpsertExtraInfoT,
         direct_info: NotionLeafDirectExtraInfoT,
         inverse_info: NotionLeafInverseExtraInfoT,
         drop_all_notion_side: bool,
@@ -283,7 +284,7 @@ class TrunkLeafNotionSyncService(
                     cast(Any, leaf), cast(Any, direct_info)
                 ),
             )
-            self._notion_manager.upsert_leaf(trunk.ref_id, notion_leaf, upsert_info)
+            self._notion_manager.upsert_leaf(trunk.ref_id, notion_leaf)
             all_notion_leaves_set[leaf.ref_id] = notion_leaf
             created_remotely.append(leaf)
             LOGGER.info(f"Created new leaf on Notion side {notion_leaf.nice_name}")
@@ -307,7 +308,6 @@ class TrunkBranchLeafNotionSyncService(
         NotionTrunkT,
         NotionBranchT,
         NotionLeafT,
-        NotionLeafUpsertExtraInfoT,
         NotionLeafDirectExtraInfoT,
         NotionLeafInverseExtraInfoT,
     ]
@@ -325,7 +325,6 @@ class TrunkBranchLeafNotionSyncService(
         NotionTrunkT,
         NotionBranchT,
         NotionLeafT,
-        NotionLeafUpsertExtraInfoT,
     ]
 
     def __init__(
@@ -341,7 +340,6 @@ class TrunkBranchLeafNotionSyncService(
             NotionTrunkT,
             NotionBranchT,
             NotionLeafT,
-            NotionLeafUpsertExtraInfoT,
         ],
     ) -> None:
         """Constructor."""
@@ -358,7 +356,6 @@ class TrunkBranchLeafNotionSyncService(
         right_now: Timestamp,
         parent_ref_id: EntityId,
         branch: BranchT,
-        upsert_info: NotionLeafUpsertExtraInfoT,
         direct_info: NotionLeafDirectExtraInfoT,
         inverse_info: NotionLeafInverseExtraInfoT,
         drop_all_notion_side: bool,
@@ -562,7 +559,9 @@ class TrunkBranchLeafNotionSyncService(
                 ),
             )
             self._notion_manager.upsert_leaf(
-                trunk.ref_id, branch.ref_id, notion_leaf, upsert_info
+                trunk.ref_id,
+                branch.ref_id,
+                notion_leaf,
             )
             all_notion_leaves_set[leaf.ref_id] = notion_leaf
             created_remotely.append(leaf)
@@ -603,7 +602,6 @@ class TrunkBranchLeafAndTagNotionSyncService(
         NotionBranchT,
         NotionLeafT,
         NotionBranchTagT,
-        NotionLeafUpsertExtraInfoT,
     ]
 ):
     """The service class for syncing a trunk branch leaf structure between local and Notion."""
@@ -622,7 +620,6 @@ class TrunkBranchLeafAndTagNotionSyncService(
         NotionBranchT,
         NotionLeafT,
         NotionBranchTagT,
-        NotionLeafUpsertExtraInfoT,
     ]
 
     def __init__(
@@ -641,7 +638,6 @@ class TrunkBranchLeafAndTagNotionSyncService(
             NotionBranchT,
             NotionLeafT,
             NotionBranchTagT,
-            NotionLeafUpsertExtraInfoT,
         ],
     ) -> None:
         """Constructor."""
@@ -660,7 +656,6 @@ class TrunkBranchLeafAndTagNotionSyncService(
         right_now: Timestamp,
         parent_ref_id: EntityId,
         branch: BranchT,
-        upsert_info: NotionLeafUpsertExtraInfoT,
         drop_all_notion_side: bool,
         sync_even_if_not_modified: bool,
         filter_ref_ids: Optional[Iterable[EntityId]],
@@ -994,7 +989,9 @@ class TrunkBranchLeafAndTagNotionSyncService(
                 ),
             )
             self._notion_manager.upsert_leaf(
-                trunk.ref_id, branch.ref_id, notion_leaf, upsert_info
+                trunk.ref_id,
+                branch.ref_id,
+                notion_leaf,
             )
             all_notion_leaves_set[leaf.ref_id] = notion_leaf
             created_remotely.append(leaf)

@@ -17,7 +17,6 @@ TrunkT = TypeVar("TrunkT", bound=NotionTrunkEntity[Any])
 BranchT = TypeVar("BranchT", bound=NotionBranchEntity[Any])
 LeafT = TypeVar("LeafT", bound=NotionLeafEntity[Any, Any, Any])
 BranchTagT = TypeVar("BranchTagT", bound=NotionBranchTagEntity[Any])
-LeafExtraInfoT = TypeVar("LeafExtraInfoT")
 
 
 class NotionBranchEntityNotFoundError(Exception):
@@ -37,25 +36,18 @@ class NotionManager(Generic[ParentT, TrunkT], abc.ABC):
 
 
 class ParentTrunkLeafNotionManager(
-    Generic[ParentT, TrunkT, LeafT, LeafExtraInfoT],
+    Generic[ParentT, TrunkT, LeafT],
     NotionManager[ParentT, TrunkT],
     abc.ABC,
 ):
     """A manager for an entity structure consisting of a parent (a root or trunk) and a trunk with various leafs."""
 
     @abc.abstractmethod
-    def upsert_leaf(
-        self, trunk_ref_id: EntityId, leaf: LeafT, extra_info: LeafExtraInfoT
-    ) -> LeafT:
+    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: LeafT) -> LeafT:
         """Upsert a leaf on Notion-side."""
 
     @abc.abstractmethod
-    def save_leaf(
-        self,
-        trunk_ref_id: EntityId,
-        leaf: LeafT,
-        extra_info: Optional[LeafExtraInfoT] = None,
-    ) -> LeafT:
+    def save_leaf(self, trunk_ref_id: EntityId, leaf: LeafT) -> LeafT:
         """Upsert a leaf on Notion-side."""
 
     @abc.abstractmethod
@@ -90,7 +82,7 @@ class ParentTrunkLeafNotionManager(
 
 
 class ParentTrunkBranchLeafNotionManager(
-    Generic[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
+    Generic[ParentT, TrunkT, BranchT, LeafT],
     NotionManager[ParentT, TrunkT],
     abc.ABC,
 ):
@@ -118,7 +110,6 @@ class ParentTrunkBranchLeafNotionManager(
         trunk_ref_id: EntityId,
         branch_ref_id: EntityId,
         leaf: LeafT,
-        extra_info: LeafExtraInfoT,
     ) -> LeafT:
         """Upsert a branch leaf on Notion-side."""
 
@@ -128,7 +119,6 @@ class ParentTrunkBranchLeafNotionManager(
         trunk_ref_id: EntityId,
         branch_ref_id: EntityId,
         leaf: LeafT,
-        extra_info: Optional[LeafExtraInfoT] = None,
     ) -> LeafT:
         """Save an already existing branch leaf on Notion-side."""
 
@@ -178,8 +168,8 @@ class ParentTrunkBranchLeafNotionManager(
 
 
 class ParentTrunkBranchLeafAndTagNotionManager(
-    Generic[ParentT, TrunkT, BranchT, LeafT, BranchTagT, LeafExtraInfoT],
-    ParentTrunkBranchLeafNotionManager[ParentT, TrunkT, BranchT, LeafT, LeafExtraInfoT],
+    Generic[ParentT, TrunkT, BranchT, LeafT, BranchTagT],
+    ParentTrunkBranchLeafNotionManager[ParentT, TrunkT, BranchT, LeafT],
     abc.ABC,
 ):
     """A manager for an entity structure consisting of a parent, a trunk with many branches and leaves and tags."""

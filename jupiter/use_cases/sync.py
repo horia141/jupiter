@@ -374,7 +374,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 all_projects,
                 args,
                 big_plan_collection,
-                notion_inbox_task_collection,
                 workspace,
             )
         else:
@@ -388,9 +387,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         big_plans_by_ref_id = {bp.ref_id: bp for bp in all_big_plans}
 
         if SyncTarget.HABITS in sync_targets:
-            all_habits = self._sync_habits(
-                all_projects, args, notion_inbox_task_collection, workspace
-            )
+            all_habits = self._sync_habits(all_projects, args, workspace)
         else:
             with self._storage_engine.get_unit_of_work() as uow:
                 all_habits = uow.habit_repository.find_all_with_filters(
@@ -402,9 +399,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         habits_by_ref_id = {rt.ref_id: rt for rt in all_habits}
 
         if SyncTarget.CHORES in sync_targets:
-            all_chores = self._sync_chores(
-                all_projects, args, notion_inbox_task_collection, workspace
-            )
+            all_chores = self._sync_chores(all_projects, args, workspace)
         else:
             with self._storage_engine.get_unit_of_work() as uow:
                 all_chores = uow.chore_repository.find_all_with_filters(
@@ -482,7 +477,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                     right_now=self._time_provider.get_current_time(),
                     parent_ref_id=workspace.ref_id,
                     branch=metric,
-                    upsert_info=None,
                     direct_info=None,
                     inverse_info=None,
                     drop_all_notion_side=args.drop_all_notion,
@@ -595,7 +589,8 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                     inbox_task, direct_info
                 )
                 self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                    inbox_task.inbox_task_collection_ref_id,
+                    notion_inbox_task,
                 )
                 LOGGER.info("Applied Notion changes")
 
@@ -612,7 +607,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         all_slack_tasks = slack_task_sync_service.sync(
             parent_ref_id=push_integration_group.ref_id,
-            upsert_info=None,
             direct_info=None,
             inverse_info=NotionSlackTask.InverseInfo(
                 timezone=self._global_properties.timezone
@@ -702,7 +696,8 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                     inbox_task, direct_info
                 )
                 self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                    inbox_task.inbox_task_collection_ref_id,
+                    notion_inbox_task,
                 )
                 LOGGER.info("Applied Notion changes")
 
@@ -783,7 +778,8 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                     inbox_task, direct_info
                 )
                 self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                    inbox_task.inbox_task_collection_ref_id,
+                    notion_inbox_task,
                 )
                 LOGGER.info("Applied Notion changes")
 
@@ -801,7 +797,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         persons = person_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=None,
             direct_info=None,
             inverse_info=None,
             drop_all_notion_side=args.drop_all_notion,
@@ -886,7 +881,8 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.save_leaf(
-                inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                inbox_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -911,7 +907,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 right_now=self._time_provider.get_current_time(),
                 parent_ref_id=workspace.ref_id,
                 branch=smart_list,
-                upsert_info=None,
                 drop_all_notion_side=args.drop_all_notion,
                 sync_even_if_not_modified=args.sync_even_if_not_modified,
                 filter_ref_ids=args.filter_smart_list_item_ref_ids,
@@ -1053,7 +1048,8 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.save_leaf(
-                inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                inbox_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -1127,7 +1123,8 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.save_leaf(
-                inbox_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                inbox_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -1151,7 +1148,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         default_project = all_projects_map[workspace.default_project_ref_id]
         all_inbox_tasks = inbox_task_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=None,
             direct_info=NotionInboxTask.DirectInfo(
                 all_projects_map=all_projects_map, all_big_plans_map=all_big_plans_map
             ),
@@ -1173,7 +1169,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         self,
         all_projects: Iterable[Project],
         args: Args,
-        notion_inbox_task_collection: NotionInboxTaskCollection,
         workspace: Workspace,
     ) -> Iterable[Chore]:
         LOGGER.info("Syncing chores")
@@ -1185,7 +1180,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         all_chores = chore_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=notion_inbox_task_collection,
             direct_info=NotionChore.DirectInfo(all_projects_map=all_projects_map),
             inverse_info=NotionChore.InverseInfo(
                 default_project=default_project,
@@ -1203,7 +1197,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         self,
         all_projects: Iterable[Project],
         args: Args,
-        notion_inbox_task_collection: NotionInboxTaskCollection,
         workspace: Workspace,
     ) -> Iterable[Habit]:
         LOGGER.info("Syncing habits")
@@ -1215,7 +1208,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         all_habits = habit_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=notion_inbox_task_collection,
             direct_info=NotionHabit.DirectInfo(all_projects_map=all_projects_map),
             inverse_info=NotionHabit.InverseInfo(
                 default_project=default_project,
@@ -1234,7 +1226,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         all_projects: Iterable[Project],
         args: Args,
         big_plan_collection: BigPlanCollection,
-        notion_inbox_task_collection: NotionInboxTaskCollection,
         workspace: Workspace,
     ) -> Iterable[BigPlan]:
         LOGGER.info("Syncing big plans")
@@ -1246,7 +1237,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         all_big_plans = big_plan_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=notion_inbox_task_collection,
             direct_info=NotionBigPlan.DirectInfo(all_projects_map=all_projects_map),
             inverse_info=NotionBigPlan.InverseInfo(
                 default_project=default_project,
@@ -1281,7 +1271,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         project_sync_result = project_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=None,
             direct_info=None,
             inverse_info=None,
             drop_all_notion_side=args.drop_all_notion,
@@ -1304,7 +1293,6 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         )
         vacation_sync_service.sync(
             parent_ref_id=workspace.ref_id,
-            upsert_info=None,
             direct_info=None,
             inverse_info=None,
             drop_all_notion_side=args.drop_all_notion,

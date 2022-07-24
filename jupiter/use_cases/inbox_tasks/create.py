@@ -110,6 +110,7 @@ class InboxTaskCreateUseCase(AppMutationUseCase["InboxTaskCreateUseCase.Args", N
         )
         notion_inbox_task = NotionInboxTask.new_notion_entity(inbox_task, direct_info)
         self._inbox_task_notion_manager.upsert_leaf(
-            inbox_task_collection.ref_id, notion_inbox_task, None
+            inbox_task_collection.ref_id,
+            notion_inbox_task,
         )
         LOGGER.info("Applied Notion changes")

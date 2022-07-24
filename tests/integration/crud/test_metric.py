@@ -303,7 +303,7 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
 
         assert re.search(r"2022-05-21", metric_out)
         assert re.search(r"notes=A decent day", metric_out)
-        assert re.search(r"val=83.5", metric_out)
+        assert re.search(r"val=83.2", metric_out)
 
     def test_remove_metric_entry(self) -> None:
         """Remove of a metric entry."""

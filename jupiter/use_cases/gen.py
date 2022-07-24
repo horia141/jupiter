@@ -487,7 +487,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                     found_task, direct_info
                 )
                 self._inbox_task_notion_manager.upsert_leaf(
-                    found_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                    found_task.inbox_task_collection_ref_id,
+                    notion_inbox_task,
                 )
                 LOGGER.info("Applied Notion changes")
             else:
@@ -521,7 +522,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                     inbox_task, direct_info
                 )
                 self._inbox_task_notion_manager.upsert_leaf(
-                    inbox_task_collection.ref_id, notion_inbox_task, None
+                    inbox_task_collection.ref_id,
+                    notion_inbox_task,
                 )
                 LOGGER.info("Applied Notion changes")
 
@@ -631,7 +633,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 found_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                found_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
         else:
@@ -664,7 +667,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                inbox_task_collection.ref_id, notion_inbox_task, None
+                inbox_task_collection.ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -741,7 +745,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 found_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                found_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
         else:
@@ -774,7 +779,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                inbox_task_collection.ref_id, notion_inbox_task, None
+                inbox_task_collection.ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -851,7 +857,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 found_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                found_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
         else:
@@ -884,7 +891,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                inbox_task_collection.ref_id, notion_inbox_task, None
+                inbox_task_collection.ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -957,7 +965,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 found_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                found_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
         else:
@@ -988,7 +997,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                inbox_task_collection.ref_id, notion_inbox_task, None
+                inbox_task_collection.ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
 
@@ -1039,7 +1049,8 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 found_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                found_task.inbox_task_collection_ref_id, notion_inbox_task, None
+                found_task.inbox_task_collection_ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")
         else:
@@ -1074,6 +1085,7 @@ class GenUseCase(AppMutationUseCase["GenUseCase.Args", None]):
                 inbox_task, direct_info
             )
             self._inbox_task_notion_manager.upsert_leaf(
-                inbox_task_collection.ref_id, notion_inbox_task, None
+                inbox_task_collection.ref_id,
+                notion_inbox_task,
             )
             LOGGER.info("Applied Notion changes")

@@ -4,9 +4,6 @@ from typing import Iterable
 
 from jupiter.domain.habits.notion_habit import NotionHabit
 from jupiter.domain.habits.notion_habit_collection import NotionHabitCollection
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
@@ -21,9 +18,7 @@ class NotionHabitNotFoundError(NotionLeafEntityNotFoundError):
 
 
 class HabitNotionManager(
-    ParentTrunkLeafNotionManager[
-        NotionWorkspace, NotionHabitCollection, NotionHabit, NotionInboxTaskCollection
-    ]
+    ParentTrunkLeafNotionManager[NotionWorkspace, NotionHabitCollection, NotionHabit]
 ):
     """A manager of Notion-side habits."""
 

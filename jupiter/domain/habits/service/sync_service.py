@@ -4,9 +4,6 @@ from jupiter.domain.habits.habit_collection import HabitCollection
 from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager
 from jupiter.domain.habits.notion_habit import NotionHabit
 from jupiter.domain.habits.notion_habit_collection import NotionHabitCollection
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.notion_sync_service import TrunkLeafNotionSyncService
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
@@ -19,7 +16,6 @@ class HabitSyncService(
         NotionWorkspace,
         NotionHabitCollection,
         NotionHabit,
-        NotionInboxTaskCollection,
         NotionHabit.DirectInfo,
         NotionHabit.InverseInfo,
     ]

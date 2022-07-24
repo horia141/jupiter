@@ -73,9 +73,6 @@ class BigPlanCreateUseCase(AppMutationUseCase["BigPlanCreateUseCase.Args", None]
                 )
                 project_ref_id = workspace.default_project_ref_id
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
             big_plan_collection = uow.big_plan_collection_repository.load_by_parent(
                 workspace.ref_id
             )
@@ -93,16 +90,13 @@ class BigPlanCreateUseCase(AppMutationUseCase["BigPlanCreateUseCase.Args", None]
             )
             big_plan = uow.big_plan_repository.create(big_plan)
 
-        notion_inbox_tasks_collection = self._inbox_task_notion_manager.load_trunk(
-            inbox_task_collection.ref_id
-        )
-
         direct_info = NotionBigPlan.DirectInfo(
             all_projects_map={project.ref_id: project}
         )
         notion_big_plan = NotionBigPlan.new_notion_entity(big_plan, direct_info)
         self._big_plan_notion_manager.upsert_leaf(
-            big_plan_collection.ref_id, notion_big_plan, notion_inbox_tasks_collection
+            big_plan_collection.ref_id,
+            notion_big_plan,
         )
 
         InboxTaskBigPlanRefOptionsUpdateService(

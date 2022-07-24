@@ -1,9 +1,6 @@
 """The centralised point for interacting with Notion smart lists."""
 import typing
-from typing import ClassVar, Final, List
-
-from notion.client import NotionClient
-from notion.collection import CollectionRowBlock
+from typing import ClassVar, Final
 
 from jupiter.domain.smart_lists.infra.smart_list_notion_manager import (
     SmartListNotionManager,
@@ -20,7 +17,6 @@ from jupiter.domain.smart_lists.notion_smart_list_tag import NotionSmartListTag
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import (
@@ -185,8 +181,8 @@ class NotionSmartListsManager(SmartListNotionManager):
         self._pages_manager.upsert_page(
             key=NotionLockKey(f"{self._KEY}:{trunk.ref_id}"),
             name=self._PAGE_NAME,
-            icon=self._PAGE_ICON,
             parent_page_notion_id=parent.notion_id,
+            icon=self._PAGE_ICON,
         )
 
     def upsert_branch(
@@ -400,14 +396,14 @@ class NotionSmartListsManager(SmartListNotionManager):
         trunk_ref_id: EntityId,
         branch_ref_id: EntityId,
         leaf: NotionSmartListItem,
-        extra_info: None,
     ) -> NotionSmartListItem:
         """Upsert a smart list item on Notion-side."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=self._copy_row_to_notion_row,
+            new_leaf=leaf,
         )
         return link.item_info
 
@@ -416,17 +412,17 @@ class NotionSmartListsManager(SmartListNotionManager):
         trunk_ref_id: EntityId,
         branch_ref_id: EntityId,
         leaf: NotionSmartListItem,
-        extra_info: typing.Optional[None] = None,
     ) -> NotionSmartListItem:
         """Update the Notion-side smart list with new data."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(
                     f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"
                 ),
                 row=leaf,
-                copy_row_to_notion_row=self._copy_row_to_notion_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -440,11 +436,13 @@ class NotionSmartListsManager(SmartListNotionManager):
         """Retrieve a particular smart list item."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionSmartListItem,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(
                     f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"
                 ),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -459,10 +457,12 @@ class NotionSmartListsManager(SmartListNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionSmartListItem,
                 collection_key=NotionLockKey(
                     f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"
                 ),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
         ]
 
@@ -517,47 +517,4 @@ class NotionSmartListsManager(SmartListNotionManager):
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}:{branch_ref_id}"),
             ref_id=leaf_ref_id,
             notion_id=notion_id,
-        )
-
-    def _copy_row_to_notion_row(
-        self,
-        client: NotionClient,
-        row: NotionSmartListItem,
-        notion_row: CollectionRowBlock,
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        with client.with_transaction():
-            notion_row.title = row.name
-            notion_row.is_done = row.is_done
-            notion_row.tags = row.tags
-            notion_row.url = row.url
-            notion_row.archived = row.archived
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
-
-        return notion_row
-
-    def _copy_notion_row_to_row(
-        self, notion_row: CollectionRowBlock
-    ) -> NotionSmartListItem:
-        """Copy the fields of the local row to the actual Notion structure."""
-        # pylint: disable=no-self-use
-        tags: List[str] = []
-        if len(notion_row.tags) == 0:
-            tags = []
-        elif len(notion_row.tags) == 1 and notion_row.tags[0] == "":
-            tags = []
-        else:
-            tags = notion_row.tags
-        return NotionSmartListItem(
-            name=notion_row.title,
-            is_done=notion_row.is_done,
-            tags=tags,
-            url=notion_row.url,
-            archived=notion_row.archived,
-            last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
-            ref_id=EntityId.from_raw(notion_row.ref_id) if notion_row.ref_id else None,
-            notion_id=NotionId.from_raw(notion_row.id),
         )

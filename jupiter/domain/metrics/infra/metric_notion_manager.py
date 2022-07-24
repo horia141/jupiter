@@ -20,7 +20,7 @@ class NotionMetricEntryNotFoundError(NotionLeafEntityNotFoundError):
 
 class MetricNotionManager(
     ParentTrunkBranchLeafNotionManager[
-        NotionWorkspace, NotionMetricCollection, NotionMetric, NotionMetricEntry, None
+        NotionWorkspace, NotionMetricCollection, NotionMetric, NotionMetricEntry
     ]
 ):
     """A manager of Notion-side metrics."""

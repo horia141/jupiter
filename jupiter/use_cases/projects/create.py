@@ -85,7 +85,8 @@ class ProjectCreateUseCase(AppMutationUseCase["ProjectCreateUseCase.Args", None]
 
         new_notion_project = NotionProject.new_notion_entity(new_project, None)
         self._project_notion_manager.upsert_leaf(
-            project_collection.ref_id, new_notion_project, None
+            project_collection.ref_id,
+            new_notion_project,
         )
         LOGGER.info("Applied Notion changes")
 

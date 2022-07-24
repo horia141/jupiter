@@ -18,7 +18,6 @@ class ProjectSyncServiceNew(
         NotionProject,
         None,
         None,
-        None,
     ]
 ):
     """The service class for syncing the projects database between local and Notion."""

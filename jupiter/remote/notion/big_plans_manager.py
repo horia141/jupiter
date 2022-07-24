@@ -5,9 +5,6 @@ import logging
 import uuid
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
-from notion.collection import CollectionRowBlock
-
-from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import (
     BigPlanNotionManager,
@@ -15,20 +12,13 @@ from jupiter.domain.big_plans.infra.big_plan_notion_manager import (
 )
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
-from jupiter.domain.entity_name import EntityName
-from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey, format_name_for_option
 from jupiter.remote.notion.infra.client import (
-    NotionClient,
     NotionCollectionSchemaProperties,
     NotionFieldProps,
     NotionFieldShow,
@@ -456,16 +446,14 @@ class NotionBigPlansManager(BigPlanNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionBigPlan,
-        extra_info: NotionInboxTaskCollection,
     ) -> NotionBigPlan:
         """Upsert a big plan."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(
-                c, r, nr, extra_info
-            ),
+            new_leaf=leaf,
         )
         return link.item_info
 
@@ -473,17 +461,15 @@ class NotionBigPlansManager(BigPlanNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionBigPlan,
-        extra_info: Optional[NotionInboxTaskCollection] = None,
     ) -> NotionBigPlan:
         """Update the Notion-side big plan with new data."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                 row=leaf,
-                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(
-                    c, r, nr, extra_info
-                ),
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -495,9 +481,11 @@ class NotionBigPlansManager(BigPlanNotionManager):
         """Retrieve the Notion-side big plan associated with a particular entity."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionBigPlan,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -510,8 +498,10 @@ class NotionBigPlansManager(BigPlanNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionBigPlan,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
         ]
 
@@ -557,131 +547,6 @@ class NotionBigPlansManager(BigPlanNotionManager):
             ref_id=ref_id,
             notion_id=notion_id,
         )
-
-    def _copy_row_to_notion_row(
-        self,
-        client: NotionClient,
-        row: NotionBigPlan,
-        notion_row: CollectionRowBlock,
-        inbox_collection_link: Optional[NotionInboxTaskCollection],
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        with client.with_transaction():
-            notion_row.title = row.name
-            notion_row.archived = row.archived
-            notion_row.status = row.status
-            notion_row.actionable_date = (
-                row.actionable_date.to_notion(self._global_properties.timezone)
-                if row.actionable_date
-                else None
-            )
-            notion_row.due_date = (
-                row.due_date.to_notion(self._global_properties.timezone)
-                if row.due_date
-                else None
-            )
-            notion_row.project_id = row.project_ref_id
-            notion_row.project = row.project_name
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
-
-        # Create structure for the big plan.
-
-        if inbox_collection_link:
-            LOGGER.info(f"Creating views structure for plan {notion_row}")
-
-            client.attach_view_block_as_child_of_block(
-                notion_row,
-                0,
-                inbox_collection_link.notion_id,
-                self._get_view_schema_for_big_plan_desc(
-                    format_name_for_option(EntityName(row.name))
-                ),
-            )
-
-        return notion_row
-
-    def _copy_notion_row_to_row(
-        self, big_plan_notion_row: CollectionRowBlock
-    ) -> NotionBigPlan:
-        """Transform the live system data to something suitable for basic storage."""
-        # pylint: disable=no-self-use
-        return NotionBigPlan(
-            notion_id=NotionId.from_raw(big_plan_notion_row.id),
-            name=big_plan_notion_row.title,
-            archived=big_plan_notion_row.archived,
-            status=big_plan_notion_row.status,
-            actionable_date=ADate.from_notion(
-                self._global_properties.timezone, big_plan_notion_row.actionable_date
-            )
-            if big_plan_notion_row.actionable_date
-            else None,
-            due_date=ADate.from_notion(
-                self._global_properties.timezone, big_plan_notion_row.due_date
-            )
-            if big_plan_notion_row.due_date
-            else None,
-            project_ref_id=big_plan_notion_row.project_id,
-            project_name=big_plan_notion_row.project,
-            last_edited_time=Timestamp.from_notion(
-                big_plan_notion_row.last_edited_time
-            ),
-            ref_id=EntityId.from_raw(big_plan_notion_row.ref_id)
-            if big_plan_notion_row.ref_id
-            else None,
-        )
-
-    @staticmethod
-    def _get_view_schema_for_big_plan_desc(big_plan_name: str) -> JSONDictType:
-        """Get the view schema for a big plan details view."""
-        return {
-            "name": "Inbox Tasks",
-            "query2": {
-                "filter_operator": "and",
-                "sort": [
-                    {"property": "status", "direction": "ascending"},
-                    {"property": "due-date", "direction": "ascending"},
-                ],
-                "filter": {
-                    "operator": "and",
-                    "filters": [
-                        {
-                            "property": "bigplan2",
-                            "filter": {
-                                "operator": "enum_is",
-                                "value": {"type": "exact", "value": big_plan_name},
-                            },
-                        },
-                        {
-                            "property": "source",
-                            "filter": {
-                                "operator": "enum_is",
-                                "value": {
-                                    "type": "exact",
-                                    "value": InboxTaskSource.BIG_PLAN.for_notion(),
-                                },
-                            },
-                        },
-                    ],
-                },
-            },
-            "format": {
-                "table_properties": [
-                    {"width": 300, "property": "title", "visible": True},
-                    {"width": 100, "property": "status", "visible": True},
-                    {"width": 100, "property": "bigplan2", "visible": False},
-                    {"width": 100, "property": "actionable-date", "visible": True},
-                    {"width": 100, "property": "due-date", "visible": True},
-                    {"width": 100, "property": "eisen", "visible": True},
-                    {"width": 100, "property": "difficulty", "visible": True},
-                    {"width": 100, "property": "fromscript", "visible": False},
-                    {"width": 100, "property": "period", "visible": False},
-                    {"width": 100, "property": "timeline", "visible": False},
-                ]
-            },
-        }
 
     @staticmethod
     def _get_stable_color(option_id: str) -> str:

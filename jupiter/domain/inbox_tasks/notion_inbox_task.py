@@ -65,7 +65,6 @@ class NotionInboxTask(
     actionable_date: Optional[ADate]
     due_date: Optional[ADate]
     notes: Optional[str]
-    from_script: bool
     recurring_timeline: Optional[str]
     recurring_repeat_index: Optional[int]
     recurring_period: Optional[str]
@@ -108,7 +107,6 @@ class NotionInboxTask(
             actionable_date=entity.actionable_date,
             due_date=entity.due_date,
             notes=entity.notes,
-            from_script=entity.source.is_from_script,
             recurring_timeline=entity.recurring_timeline,
             recurring_repeat_index=entity.recurring_repeat_index,
             recurring_period=entity.recurring_period.for_notion()

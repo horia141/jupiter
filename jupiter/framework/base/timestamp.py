@@ -76,18 +76,6 @@ class Timestamp(Value):
         """Parse a timestamp from a DB representation."""
         return Timestamp(pendulum.instance(timestamp_raw).in_timezone(UTC))
 
-    @staticmethod
-    def from_notion(timestamp_raw: datetime.datetime) -> "Timestamp":
-        """Parse a timestamp from a Notion representation."""
-        return Timestamp(pendulum.instance(timestamp_raw).in_timezone(UTC))
-
-    def to_notion(self, timezone: Timezone) -> datetime.datetime:
-        """Transform a timestamp to a Notion representation."""
-        return cast(
-            datetime.datetime,
-            self._the_ts.in_timezone(pendulum.timezone(str(timezone))),
-        )
-
     def to_db(self) -> datetime.datetime:
         """Transform a timestamp to a DB representation."""
         return cast(datetime.datetime, self._the_ts)

@@ -7,6 +7,7 @@ from jupiter.domain.workspaces.infra.workspace_notion_manager import (
 )
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.base.notion_id import NotionId
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.pages_manager import (
     NotionPagesManager,
@@ -31,6 +32,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
         workspace_page = self._pages_manager.upsert_page(
             NotionLockKey(f"{self._KEY}:{workspace.ref_id}"),
             workspace.name,
+            NotionId.from_raw("FAKE-FAKE-FAKE"),
             self._PAGE_ICON,
         )
 
@@ -46,6 +48,7 @@ class NotionWorkspacesManager(WorkspaceNotionManager):
             self._pages_manager.save_page(
                 NotionLockKey(f"{self._KEY}:{notion_workspace.ref_id}"),
                 notion_workspace.name,
+                NotionId.from_raw("FAKE-FAKE-FAKE"),
                 self._PAGE_ICON,
             )
         except NotionPageNotFoundError as err:

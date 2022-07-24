@@ -4,28 +4,35 @@ import hashlib
 import logging
 import typing
 from copy import deepcopy
-from typing import Callable, TypeVar, Final, Dict, Iterable, cast, List, Tuple
+from typing import TypeVar, Final, Dict, Iterable, cast, List, Tuple
 
-from notion.collection import CollectionRowBlock
-
+from jupiter.domain.adate import ADate
+from jupiter.domain.timezone import Timezone
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
-from jupiter.framework.base.notion_id import NotionId
+from jupiter.framework.base.notion_id import NotionId, BAD_NOTION_ID
+from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.framework.notion import NotionLeafEntity
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import (
-    NotionClient,
     NotionCollectionSchemaProperties,
     NotionCollectionBlockNotFound,
-    NotionCollectionRowNotFound,
 )
 from jupiter.remote.notion.infra.client_builder import NotionClientBuilder
+from jupiter.remote.notion.infra.client_v2 import (
+    NotionCollectionItem,
+    NotionBlock,
+    NotionEntityNotFoundException,
+)
 from jupiter.remote.notion.infra.collection_field_tag_link import (
     NotionCollectionFieldTagLink,
     NotionCollectionFieldTagLinkExtra,
 )
 from jupiter.remote.notion.infra.collection_field_tag_link_repository import (
     NotionCollectionFieldTagLinkNotFoundError,
+)
+from jupiter.remote.notion.infra.collection_item_block_link import (
+    NotionCollectionItemBlockLink,
 )
 from jupiter.remote.notion.infra.collection_item_link import (
     NotionCollectionItemLink,
@@ -60,10 +67,6 @@ class NotionCollectionItemNotFoundError(Exception):
 
 
 ItemT = TypeVar("ItemT", bound=NotionLeafEntity[typing.Any, typing.Any, typing.Any])
-CopyRowToNotionRowT = Callable[
-    [NotionClient, ItemT, CollectionRowBlock], CollectionRowBlock
-]
-CopyNotionRowToRowT = Callable[[CollectionRowBlock], ItemT]
 
 
 class NotionCollectionsManager:
@@ -754,15 +757,18 @@ class NotionCollectionsManager:
 
     def upsert_collection_item(
         self,
+        timezone: Timezone,
+        schema: JSONDictType,
         collection_key: NotionLockKey,
         key: NotionLockKey,
-        new_row: ItemT,
-        copy_row_to_notion_row: CopyRowToNotionRowT[ItemT],
+        new_leaf: ItemT,
+        no_properties_fields: typing.Optional[Iterable[str]] = None,
+        content_block: typing.Optional[NotionBlock] = None,
     ) -> NotionCollectionItemLinkExtra[ItemT]:
         """Create a Notion entity."""
-        if new_row.ref_id is None:
+        if new_leaf.ref_id is None:
             raise Exception("Can only create over an entity which has a ref_id")
-        if new_row.ref_id == BAD_REF_ID:
+        if new_leaf.ref_id == BAD_REF_ID:
             raise Exception("Can only create over an entity which has a ref_id")
 
         with self._storage_engine.get_unit_of_work() as uow:
@@ -771,51 +777,131 @@ class NotionCollectionsManager:
             item_link = uow.notion_collection_item_link_repository.load_optional(
                 item_key
             )
+            block_links = (
+                uow.notion_collection_item_block_link_repository.find_all_for_item(
+                    item_key
+                )
+            )
 
-        client = self._client_builder.get_notion_client()
-        collection = client.get_collection(
-            collection_link.page_notion_id,
-            collection_link.collection_notion_id,
-            collection_link.view_notion_ids.values(),
-        )
+        client = self._client_builder.get_notion_client_v2()
 
         was_found = False
-        if item_link:
-            notion_row = client.get_collection_row(collection, item_link.notion_id)
-            if notion_row.alive:
+        if item_link is not None:
+            collection_item = client.get_collection_item(item_link.notion_id)
+            if not collection_item.archived:
                 was_found = True
                 LOGGER.info(
-                    f"Entity already exists on Notion side with id={notion_row.id}"
+                    f"Entity already exists on Notion side with id={collection_item.notion_id}"
                 )
 
-        if not was_found:
-            notion_row = client.create_collection_row(collection)
-            LOGGER.info(f"Created new row on Notion side with id={notion_row.id}")
+        # This logic is so annoying!
+        if item_link and was_found:
+            if len(block_links) == 1:
+                if content_block is None:
+                    client.remove_content_block(block_links[0].notion_id)
+                    new_content_block = None
+                else:
+                    if content_block.__class__.__name__ != block_links[0].the_type:
+                        client.remove_content_block(block_links[0].notion_id)
+                        new_content_block = client.create_content_block(
+                            item_link.notion_id, content_block
+                        )
+                    else:
+                        new_content_block = client.update_content_block(
+                            content_block.assign_notion_id(block_links[0].notion_id)
+                        )
+            elif content_block is not None:
+                new_content_block = client.create_content_block(
+                    item_link.notion_id, content_block
+                )
+            else:
+                new_content_block = None
 
-        new_row = dataclasses.replace(new_row, notion_id=notion_row.id)
-
-        if item_link:
-            new_item_link = item_link.with_new_item(
-                notion_row.id, self._time_provider.get_current_time()
+            collection_item = self._transform_leaf_into_collection_item(
+                timezone=timezone,
+                schema=schema,
+                notion_id=item_link.notion_id,
+                database_notion_id=collection_link.page_notion_id,
+                created_time=item_link.created_time,
+                item=new_leaf,
+                content_block=new_content_block,
+                no_properties_fields=no_properties_fields,
             )
-            with self._storage_engine.get_unit_of_work() as uow:
-                uow.notion_collection_item_link_repository.save(new_item_link)
+            collection_item = client.update_collection_item(collection_item)
         else:
-            new_item_link = NotionCollectionItemLink.new_notion_collection_item_link(
-                key=item_key,
-                collection_key=collection_key,
-                ref_id=typing.cast(EntityId, new_row.ref_id),
-                notion_id=notion_row.id,
-                creation_time=self._time_provider.get_current_time(),
+            collection_item = self._transform_leaf_into_collection_item(
+                timezone=timezone,
+                schema=schema,
+                notion_id=BAD_NOTION_ID,
+                database_notion_id=collection_link.page_notion_id,
+                created_time=self._time_provider.get_current_time(),
+                item=new_leaf,
+                content_block=content_block,
+                no_properties_fields=no_properties_fields,
             )
-            with self._storage_engine.get_unit_of_work() as uow:
+            collection_item = client.create_collection_item(collection_item)
+
+        new_leaf = dataclasses.replace(new_leaf, notion_id=collection_item.notion_id)
+
+        with self._storage_engine.get_unit_of_work() as uow:
+            if item_link:
+                new_item_link = item_link.with_new_item(
+                    collection_item.notion_id, self._time_provider.get_current_time()
+                )
+                uow.notion_collection_item_link_repository.save(new_item_link)
+
+                if len(block_links) == 1:
+                    if collection_item.content_block is None:
+                        uow.notion_collection_item_block_link_repository.remove(
+                            item_key, 0
+                        )
+                    else:
+                        updated_content_block_link = block_links[0].with_new_item(
+                            collection_item.content_block.notion_id,
+                            collection_item.content_block.__class__.__name__,
+                            self._time_provider.get_current_time(),
+                        )
+                        uow.notion_collection_item_block_link_repository.save(
+                            updated_content_block_link
+                        )
+                elif collection_item.content_block is not None:
+                    new_content_block_link = NotionCollectionItemBlockLink.new(
+                        the_type=collection_item.content_block.__class__.__name__,
+                        position=0,
+                        item_key=item_key,
+                        collection_key=collection_key,
+                        notion_id=collection_item.content_block.notion_id,
+                        creation_time=self._time_provider.get_current_time(),
+                    )
+                    uow.notion_collection_item_block_link_repository.create(
+                        new_content_block_link
+                    )
+            else:
+                new_item_link = (
+                    NotionCollectionItemLink.new_notion_collection_item_link(
+                        key=item_key,
+                        collection_key=collection_key,
+                        ref_id=typing.cast(EntityId, new_leaf.ref_id),
+                        notion_id=collection_item.notion_id,
+                        creation_time=self._time_provider.get_current_time(),
+                    )
+                )
                 uow.notion_collection_item_link_repository.create(new_item_link)
-        LOGGER.info("Saved local locks")
 
-        copy_row_to_notion_row(client, new_row, notion_row)
-        LOGGER.info(f"Created new entity with id {notion_row.id}")
+                if collection_item.content_block is not None:
+                    new_content_block_link = NotionCollectionItemBlockLink.new(
+                        the_type=collection_item.content_block.__class__.__name__,
+                        position=0,
+                        item_key=item_key,
+                        collection_key=collection_key,
+                        notion_id=collection_item.content_block.notion_id,
+                        creation_time=self._time_provider.get_current_time(),
+                    )
+                    uow.notion_collection_item_block_link_repository.create(
+                        new_content_block_link
+                    )
 
-        return new_item_link.with_extra(new_row)
+        return new_item_link.with_extra(new_leaf)
 
     def quick_link_local_and_notion_entries_for_collection_item(
         self,
@@ -856,53 +942,115 @@ class NotionCollectionsManager:
 
     def save_collection_item(
         self,
+        timezone: Timezone,
+        schema: JSONDictType,
         key: NotionLockKey,
         collection_key: NotionLockKey,
         row: ItemT,
-        copy_row_to_notion_row: CopyRowToNotionRowT[ItemT],
+        no_properties_fields: typing.Optional[Iterable[str]] = None,
+        content_block: typing.Optional[NotionBlock] = None,
     ) -> NotionCollectionItemLinkExtra[ItemT]:
         """Update the Notion-side entity with new data."""
         if row.ref_id is None or row.ref_id == BAD_REF_ID:
             raise Exception("Can only save over an entity which has a ref_id")
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            collection_link = uow.notion_collection_link_repository.load(collection_key)
-            item_key = self._build_compound_key(collection_key, key)
-            try:
-                item_link = uow.notion_collection_item_link_repository.load(item_key)
-            except NotionCollectionItemLinkNotFoundError as err:
-                raise NotionCollectionFieldTagNotFoundError(
-                    f"Collection field tag with key {key} could not be found"
-                ) from err
-
-        client = self._client_builder.get_notion_client()
-        collection = client.get_collection(
-            collection_link.page_notion_id,
-            collection_link.collection_notion_id,
-            collection_link.view_notion_ids.values(),
-        )
-
         try:
-            notion_row = client.get_collection_row(collection, item_link.notion_id)
-        except NotionCollectionRowNotFound as err:
-            raise NotionCollectionItemNotFoundError(
-                f"Collection item with key {key} could not be found"
-            ) from err
+            with self._storage_engine.get_unit_of_work() as uow:
+                collection_link = uow.notion_collection_link_repository.load(
+                    collection_key
+                )
+                item_key = self._build_compound_key(collection_key, key)
+                item_link = uow.notion_collection_item_link_repository.load(item_key)
+                block_links = (
+                    uow.notion_collection_item_block_link_repository.find_all_for_item(
+                        item_key
+                    )
+                )
 
-        copy_row_to_notion_row(client, row, notion_row)
+            client = self._client_builder.get_notion_client_v2()
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            new_item_link = item_link.mark_update(
-                self._time_provider.get_current_time()
+            collection_item = self._transform_leaf_into_collection_item(
+                timezone=timezone,
+                schema=schema,
+                notion_id=item_link.notion_id,
+                database_notion_id=collection_link.page_notion_id,
+                created_time=item_link.created_time,
+                item=row,
+                no_properties_fields=no_properties_fields,
             )
-            uow.notion_collection_item_link_repository.save(new_item_link)
 
-        return new_item_link.with_extra(row)
+            client.update_collection_item(collection_item)
+
+            if len(block_links) == 1:
+                if content_block is None:
+                    client.remove_content_block(block_links[0].notion_id)
+                    new_content_block = None
+                else:
+                    if content_block.__class__.__name__ != block_links[0].the_type:
+                        client.remove_content_block(block_links[0].notion_id)
+                        new_content_block = client.create_content_block(
+                            item_link.notion_id, content_block
+                        )
+                    else:
+                        new_content_block = client.update_content_block(
+                            content_block.assign_notion_id(block_links[0].notion_id)
+                        )
+            elif content_block is not None:
+                new_content_block = client.create_content_block(
+                    item_link.notion_id, content_block
+                )
+            else:
+                new_content_block = None
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                new_item_link = item_link.mark_update(
+                    self._time_provider.get_current_time()
+                )
+                uow.notion_collection_item_link_repository.save(new_item_link)
+
+                if len(block_links) == 1:
+                    if new_content_block is None:
+                        uow.notion_collection_item_block_link_repository.remove(
+                            item_key, 0
+                        )
+                    else:
+                        updated_content_block_link = block_links[0].with_new_item(
+                            new_content_block.notion_id,
+                            new_content_block.__class__.__name__,
+                            self._time_provider.get_current_time(),
+                        )
+                        uow.notion_collection_item_block_link_repository.save(
+                            updated_content_block_link
+                        )
+                elif new_content_block is not None:
+                    new_content_block_link = NotionCollectionItemBlockLink.new(
+                        the_type=new_content_block.__class__.__name__,
+                        position=0,
+                        item_key=item_key,
+                        collection_key=collection_key,
+                        notion_id=new_content_block.notion_id,
+                        creation_time=self._time_provider.get_current_time(),
+                    )
+                    uow.notion_collection_item_block_link_repository.create(
+                        new_content_block_link
+                    )
+
+            return new_item_link.with_extra(row)
+        except (
+            NotionCollectionItemLinkNotFoundError,
+            NotionEntityNotFoundException,
+        ) as err:
+            raise NotionCollectionFieldTagNotFoundError(
+                f"Collection field tag with key {key} could not be found"
+            ) from err
 
     def load_all_collection_items(
         self,
+        timezone: Timezone,
+        schema: JSONDictType,
+        ctor: typing.Type[ItemT],
         collection_key: NotionLockKey,
-        copy_notion_row_to_row: CopyNotionRowToRowT[ItemT],
+        no_properties_fields: typing.Optional[Iterable[str]] = None,
     ) -> Iterable[NotionCollectionItemLinkExtra[ItemT]]:
         """Retrieve all the Notion-side entitys."""
         with self._storage_engine.get_unit_of_work() as uow:
@@ -912,16 +1060,16 @@ class NotionCollectionsManager:
                     collection_key
                 )
             )
-        client = self._client_builder.get_notion_client()
-        collection = client.get_collection(
-            collection_link.page_notion_id,
-            collection_link.collection_notion_id,
-            collection_link.view_notion_ids.values(),
+        client = self._client_builder.get_notion_client_v2()
+        collection_items_gen = list(
+            client.find_all_collection_items(collection_link.page_notion_id)
         )
-        all_notion_rows = client.get_collection_all_rows(
-            collection, collection_link.view_notion_ids["database_view_id"]
-        )
-        all_rows = [copy_notion_row_to_row(nr) for nr in all_notion_rows]
+        leaves = [
+            self._transform_collection_item_into_leaf(
+                timezone, schema, ctor, ci, no_properties_fields
+            )
+            for ci in collection_items_gen
+        ]
         all_item_links_by_notion_id = {il.notion_id: il for il in item_links}
 
         return [
@@ -938,73 +1086,65 @@ class NotionCollectionsManager:
                     creation_time=self._time_provider.get_current_time(),
                 ).with_extra(r)
             )
-            for r in all_rows
+            for r in leaves
         ]
 
     def load_collection_item(
         self,
+        timezone: Timezone,
+        schema: JSONDictType,
+        ctor: typing.Type[ItemT],
         key: NotionLockKey,
         collection_key: NotionLockKey,
-        copy_notion_row_to_row: CopyNotionRowToRowT[ItemT],
+        no_properties_fields: typing.Optional[Iterable[str]] = None,
     ) -> NotionCollectionItemLinkExtra[ItemT]:
         """Retrieve the Notion-side entity associated with a particular entity."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            collection_link = uow.notion_collection_link_repository.load(collection_key)
-            item_key = self._build_compound_key(collection_key, key)
-            try:
-                item_link = uow.notion_collection_item_link_repository.load(item_key)
-            except NotionCollectionItemLinkNotFoundError as err:
-                raise NotionCollectionItemNotFoundError(
-                    f"Collection field tag with key {key} could not be found"
-                ) from err
-
-        client = self._client_builder.get_notion_client()
-        collection = client.get_collection(
-            collection_link.page_notion_id,
-            collection_link.collection_notion_id,
-            collection_link.view_notion_ids.values(),
-        )
-
         try:
-            notion_row = client.get_collection_row(collection, item_link.notion_id)
-        except NotionCollectionRowNotFound as err:
+            item_key = self._build_compound_key(collection_key, key)
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                item_link = uow.notion_collection_item_link_repository.load(item_key)
+
+            client = self._client_builder.get_notion_client_v2()
+            collection_item = client.get_collection_item(item_link.notion_id)
+
+            leaf = self._transform_collection_item_into_leaf(
+                timezone, schema, ctor, collection_item, no_properties_fields
+            )
+
+            return item_link.with_extra(leaf)
+        except (
+            NotionCollectionItemLinkNotFoundError,
+            NotionEntityNotFoundException,
+        ) as err:
             raise NotionCollectionItemNotFoundError(
                 f"Collection item with key {key} could not be found"
             ) from err
-
-        return item_link.with_extra(copy_notion_row_to_row(notion_row))
 
     def remove_collection_item(
         self, key: NotionLockKey, collection_key: NotionLockKey
     ) -> None:
         """Hard remove the Notion entity associated with a local entity."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            collection_link = uow.notion_collection_link_repository.load(collection_key)
-            item_key = self._build_compound_key(collection_key, key)
-            try:
-                item_link = uow.notion_collection_item_link_repository.load(item_key)
-            except NotionCollectionItemLinkNotFoundError as err:
-                raise NotionCollectionItemNotFoundError(
-                    f"Collection field tag with key {key} could not be found"
-                ) from err
-
-        client = self._client_builder.get_notion_client()
-        collection = client.get_collection(
-            collection_link.page_notion_id,
-            collection_link.collection_notion_id,
-            collection_link.view_notion_ids.values(),
-        )
-
         try:
-            notion_row = client.get_collection_row(collection, item_link.notion_id)
-            notion_row.remove()
-        except NotionCollectionRowNotFound as err:
+            with self._storage_engine.get_unit_of_work() as uow:
+                item_key = self._build_compound_key(collection_key, key)
+                item_link = uow.notion_collection_item_link_repository.load(item_key)
+
+            client = self._client_builder.get_notion_client_v2()
+            client.remove_collection_item(item_link.notion_id)
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.notion_collection_item_link_repository.remove(item_key)
+                uow.notion_collection_item_block_link_repository.remove_all_for_item(
+                    item_key
+                )
+        except (
+            NotionCollectionItemLinkNotFoundError,
+            NotionEntityNotFoundException,
+        ) as err:
             raise NotionCollectionItemNotFoundError(
                 f"Collection item with key {key} could not be found"
             ) from err
-
-        with self._storage_engine.get_unit_of_work() as uow:
-            uow.notion_collection_item_link_repository.remove(item_key)
 
     def drop_all_collection_items(self, collection_key: NotionLockKey) -> None:
         """Hard remove all the Notion-side entities."""
@@ -1020,19 +1160,11 @@ class NotionCollectionsManager:
                 )
             )
 
-        client = self._client_builder.get_notion_client()
-        collection = client.get_collection(
-            collection_link.page_notion_id,
-            collection_link.collection_notion_id,
-            collection_link.view_notion_ids.values(),
-        )
-
-        all_notion_rows = client.get_collection_all_rows(
-            collection, collection_link.view_notion_ids["database_view_id"]
-        )
-
-        for notion_row in all_notion_rows:
-            notion_row.remove()
+        client = self._client_builder.get_notion_client_v2()
+        for collection_item in client.find_all_collection_items(
+            collection_link.page_notion_id
+        ):
+            client.remove_collection_item(collection_item.notion_id)
 
         with self._storage_engine.get_unit_of_work() as uow:
             for item_link in item_links:
@@ -1061,6 +1193,231 @@ class NotionCollectionsManager:
                     collection_key
                 )
             ]
+
+    def _transform_leaf_into_collection_item(
+        self,
+        timezone: Timezone,
+        schema: JSONDictType,
+        notion_id: NotionId,
+        database_notion_id: NotionId,
+        created_time: Timestamp,
+        item: ItemT,
+        content_block: typing.Optional[NotionBlock] = None,
+        no_properties_fields: typing.Optional[typing.Iterable[str]] = None,
+    ) -> NotionCollectionItem:
+        # This method transforms a regular Leaf into a properties dictionary
+        # than can then be used to feed into Notion.
+        # Big assumption is that `item` is flat!
+
+        properties: JSONDictType = {}
+        schema_alt_ids: typing.Any = {s["alt-id"]: v for v, s in schema.items() if "alt-id" in s}  # type: ignore
+
+        for field in dataclasses.fields(item):
+            field_name = field.name
+            field_value = item.__dict__[field_name]
+
+            if field_name in ("notion_id", "last_edited_time"):
+                continue
+            if no_properties_fields is not None and field_name in no_properties_fields:
+                continue
+            if field_name == "name":
+                field_name_notion = "title"
+            else:
+                field_name_notion = field_name.replace("_", "-")
+            if (
+                field_name_notion not in schema
+                and field_name_notion not in schema_alt_ids
+            ):
+                raise RuntimeError(
+                    f"Could not map item field {field_name} to any one in the schema"
+                )
+            if field_name_notion in schema:
+                field_desc: typing.Any = schema[field_name_notion]  # type: ignore
+            else:
+                field_desc: typing.Any = schema[schema_alt_ids[field_name_notion]]  # type: ignore
+            if field_desc["type"] == "title":
+                if not isinstance(field_value, str):
+                    raise RuntimeError(f"Trying to map {field_name} to title")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "title",
+                    "title": [
+                        {
+                            "annotations": {
+                                "bold": False,
+                                "code": False,
+                                "color": "default",
+                                "italic": False,
+                                "strikethrough": False,
+                                "underline": False,
+                            },
+                            "href": None,
+                            "plain_text": field_value,
+                            "text": {"content": field_value, "link": None},
+                            "type": "text",
+                        }
+                    ],
+                }
+            elif field_desc["type"] == "select":
+                if field_value is not None and not isinstance(field_value, str):
+                    raise RuntimeError(f"Trying to map {field_name} to select")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "select",
+                    "select": {"name": field_value} if field_value else None,
+                }
+            elif field_desc["type"] == "multi_select":
+                if not isinstance(field_value, list):
+                    raise RuntimeError(f"Trying to map {field_name} to multi select")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "multi_select",
+                    "multi_select": [{"name": fv} for fv in field_value],
+                }
+            elif field_desc["type"] == "text":
+                if field_value is not None and not isinstance(
+                    field_value, (str, EntityId)
+                ):
+                    raise RuntimeError(f"Trying to map {field_name} to text")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "rich_text",
+                    "rich_text": [
+                        {
+                            "annotations": {
+                                "bold": False,
+                                "code": False,
+                                "color": "default",
+                                "italic": False,
+                                "strikethrough": False,
+                                "underline": False,
+                            },
+                            "href": None,
+                            "plain_text": str(field_value),
+                            "text": {"content": str(field_value), "link": None},
+                            "type": "text",
+                        }
+                    ]
+                    if field_value
+                    else [],
+                }
+            elif field_desc["type"] == "date":
+                if field_value is not None and not isinstance(field_value, ADate):
+                    raise RuntimeError(f"Trying to map {field_name} to date")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "date",
+                    "date": {
+                        "end": None,
+                        "start": ADate.to_user_str(timezone, field_value)
+                        if field_value
+                        else None,
+                        "time_zone": str(timezone)
+                        if field_value and field_value.has_time
+                        else None,
+                    }
+                    if field_value
+                    else None,
+                }
+            elif field_desc["type"] == "checkbox":
+                if not isinstance(field_value, bool):
+                    raise RuntimeError(f"Trying to map {field_name} to boolean")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "checkbox",
+                    "checkbox": field_value,
+                }
+            elif field_desc["type"] == "number":
+                if field_value is not None and not isinstance(
+                    field_value, (int, float)
+                ):
+                    raise RuntimeError(f"Trying to map {field_name} to number")
+                properties[field_desc["name"]] = {
+                    "id": field_name_notion,
+                    "type": "number",
+                    "number": field_value,
+                }
+            else:
+                raise RuntimeError(f"Unknown field type {field_desc['type']}")
+
+        return NotionCollectionItem(
+            notion_id=notion_id,
+            database_notion_id=database_notion_id,
+            archived=False,
+            properties=properties,
+            content_block=content_block,
+            created_time=created_time,
+            last_edited_time=self._time_provider.get_current_time(),
+        )
+
+    @staticmethod
+    def _transform_collection_item_into_leaf(
+        timezone: Timezone,
+        schema: JSONDictType,
+        ctor: typing.Type[ItemT],
+        collection_item: NotionCollectionItem,
+        no_properties_fields: typing.Optional[Iterable[str]] = None,
+    ) -> ItemT:
+        # This method transforms a properties dictionary into a leaf.
+        # Assumes that the leaf is flat, or has well-known primitive types.
+        fields: typing.Any = {
+            "notion_id": collection_item.notion_id,
+            "last_edited_time": collection_item.last_edited_time,
+        }  # type: ignore
+
+        if no_properties_fields:
+            for field_name in no_properties_fields:
+                fields[field_name] = None
+
+        for field_value_any in collection_item.properties.values():
+            field_value: typing.Any = field_value_any  # type: ignore
+            field_id = field_value["id"]
+            if field_id not in schema:
+                raise RuntimeError(f"Unrecognized field {field_id}")
+            if field_id == "last-edited-time":
+                continue
+            if "alt-name" in typing.cast(JSONDictType, schema[field_id]):
+                field_name = cast(str, cast(typing.Any, schema)[field_id]["alt-name"])  # type: ignore
+            elif field_id == "title":
+                field_name = "name"
+            else:
+                field_name = field_id.replace("-", "_")
+            if field_value["type"] == "title":
+                fields[field_name] = (
+                    field_value["title"][0]["plain_text"]
+                    if len(field_value["title"]) > 0
+                    else None
+                )
+            elif field_value["type"] == "select":
+                fields[field_name] = (
+                    field_value["select"]["name"] if field_value["select"] else None
+                )
+            elif field_value["type"] == "multi_select":
+                fields[field_name] = [fi["name"] for fi in field_value["multi_select"]]
+            elif field_value["type"] == "rich_text":
+                value = (
+                    field_value["rich_text"][0]["plain_text"]
+                    if len(field_value["rich_text"]) > 0
+                    else None
+                )
+                if field_id == "ref-id" and value is not None:
+                    fields[field_name] = EntityId.from_raw(value)
+                else:
+                    fields[field_name] = value
+            elif field_value["type"] == "date":
+                fields[field_name] = (
+                    ADate.from_raw(timezone, field_value["date"]["start"])
+                    if field_value["date"] and field_value["date"]["start"]
+                    else None
+                )
+            elif field_value["type"] == "checkbox":
+                fields[field_name] = field_value["checkbox"]
+            elif field_value["type"] == "number":
+                fields[field_name] = field_value["number"]
+            else:
+                raise RuntimeError(f"Unknown field type {field_value}")
+
+        return ctor(**fields)
 
     @staticmethod
     def _merge_notion_schemas(

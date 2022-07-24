@@ -87,9 +87,6 @@ class HabitCreateUseCase(AppMutationUseCase["HabitCreateUseCase.Args", None]):
                 )
                 project_ref_id = workspace.default_project_ref_id
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
             habit_collection = uow.habit_collection_repository.load_by_parent(
                 workspace.ref_id
             )
@@ -118,13 +115,10 @@ class HabitCreateUseCase(AppMutationUseCase["HabitCreateUseCase.Args", None]):
             habit = uow.habit_repository.create(habit)
             LOGGER.info("Applied local changes")
 
-        notion_inbox_task_collection = self._inbox_task_notion_manager.load_trunk(
-            inbox_task_collection.ref_id
-        )
-
         direct_info = NotionHabit.DirectInfo(all_projects_map={project.ref_id: project})
         notion_habit = NotionHabit.new_notion_entity(habit, direct_info)
         self._habit_notion_manager.upsert_leaf(
-            habit_collection.ref_id, notion_habit, notion_inbox_task_collection
+            habit_collection.ref_id,
+            notion_habit,
         )
         LOGGER.info("Applied Notion changes")

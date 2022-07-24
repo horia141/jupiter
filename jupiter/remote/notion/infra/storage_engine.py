@@ -6,6 +6,9 @@ from typing import Iterator
 from jupiter.remote.notion.infra.collection_field_tag_link_repository import (
     NotionCollectionFieldTagLinkRepository,
 )
+from jupiter.remote.notion.infra.collection_item_block_link_repository import (
+    NotionCollectionItemBlockLinkRepository,
+)
 from jupiter.remote.notion.infra.collection_item_link_repository import (
     NotionCollectionItemLinkRepository,
 )
@@ -41,6 +44,13 @@ class NotionUnitOfWork(abc.ABC):
         self,
     ) -> NotionCollectionItemLinkRepository:
         """The Notion collection item link repository."""
+
+    @property
+    @abc.abstractmethod
+    def notion_collection_item_block_link_repository(
+        self,
+    ) -> NotionCollectionItemBlockLinkRepository:
+        """The Notion collection item block link repository."""
 
 
 class NotionStorageEngine(abc.ABC):

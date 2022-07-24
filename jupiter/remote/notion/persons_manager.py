@@ -1,8 +1,6 @@
 """The centralised point for interacting with the Notion persons database."""
 import uuid
-from typing import Iterable, ClassVar, cast, Dict, Final, Optional
-
-from notion.collection import CollectionRowBlock
+from typing import Iterable, ClassVar, cast, Dict, Final
 
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -17,13 +15,11 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import (
     NotionFieldProps,
     NotionFieldShow,
-    NotionClient,
 )
 from jupiter.remote.notion.infra.collections_manager import (
     NotionCollectionsManager,
@@ -287,15 +283,14 @@ class NotionPersonsManager(PersonNotionManager):
             view_schemas=[("database_view_id", self._DATABASE_VIEW_SCHEMA)],
         )
 
-    def upsert_leaf(
-        self, trunk_ref_id: EntityId, leaf: NotionPerson, extra_info: None
-    ) -> NotionPerson:
+    def upsert_leaf(self, trunk_ref_id: EntityId, leaf: NotionPerson) -> NotionPerson:
         """Upsert a person on Notion-side."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=self._copy_row_to_notion_row,
+            new_leaf=leaf,
         )
         return link.item_info
 
@@ -303,15 +298,15 @@ class NotionPersonsManager(PersonNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionPerson,
-        extra_info: Optional[None] = None,
     ) -> NotionPerson:
         """Save an already existing person on Notion-side."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                 row=leaf,
-                copy_row_to_notion_row=self._copy_row_to_notion_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -323,9 +318,11 @@ class NotionPersonsManager(PersonNotionManager):
         """Retrieve a person from Notion-side."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionPerson,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -338,8 +335,10 @@ class NotionPersonsManager(PersonNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionPerson,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
         ]
 
@@ -382,51 +381,4 @@ class NotionPersonsManager(PersonNotionManager):
         """Load ids of all persons we know about from Notion side."""
         return self._collections_manager.load_all_collection_items_saved_notion_ids(
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}")
-        )
-
-    def _copy_row_to_notion_row(
-        self, client: NotionClient, row: NotionPerson, notion_row: CollectionRowBlock
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        with client.with_transaction():
-            notion_row.title = row.name
-            notion_row.relationship = row.relationship
-            notion_row.birthday = row.birthday
-            notion_row.catch_up_period = row.catch_up_period
-            notion_row.catch_up_eisenhower = row.catch_up_eisen
-            notion_row.catch_up_difficulty = row.catch_up_difficulty
-            notion_row.catch_up_actionable_from_day = row.catch_up_actionable_from_day
-            notion_row.catch_up_actionable_from_month = (
-                row.catch_up_actionable_from_month
-            )
-            notion_row.catch_up_due_at_time = row.catch_up_due_at_time
-            notion_row.catch_up_due_at_day = row.catch_up_due_at_day
-            notion_row.catch_up_due_at_month = row.catch_up_due_at_month
-            notion_row.archived = row.archived
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-            notion_row.ref_id = str(row.ref_id)
-
-        return notion_row
-
-    def _copy_notion_row_to_row(self, notion_row: CollectionRowBlock) -> NotionPerson:
-        """Transform the live system data to something suitable for basic storage."""
-        # pylint: disable=no-self-use
-        return NotionPerson(
-            notion_id=NotionId.from_raw(notion_row.id),
-            name=notion_row.title,
-            archived=notion_row.archived,
-            relationship=notion_row.relationship,
-            birthday=notion_row.birthday,
-            catch_up_period=notion_row.catch_up_period,
-            catch_up_eisen=notion_row.catch_up_eisenhower,
-            catch_up_difficulty=notion_row.catch_up_difficulty,
-            catch_up_actionable_from_day=notion_row.catch_up_actionable_from_day,
-            catch_up_actionable_from_month=notion_row.catch_up_actionable_from_month,
-            catch_up_due_at_time=notion_row.catch_up_due_at_time,
-            catch_up_due_at_day=notion_row.catch_up_due_at_day,
-            catch_up_due_at_month=notion_row.catch_up_due_at_month,
-            last_edited_time=Timestamp.from_notion(notion_row.last_edited_time),
-            ref_id=EntityId.from_raw(notion_row.ref_id) if notion_row.ref_id else None,
         )

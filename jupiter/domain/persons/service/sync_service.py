@@ -18,7 +18,6 @@ class PersonSyncService(
         NotionPerson,
         None,
         None,
-        None,
     ]
 ):
     """The service class for syncing the persons between local and Notion."""

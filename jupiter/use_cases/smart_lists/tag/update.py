@@ -106,5 +106,4 @@ class SmartListTagUpdateUseCase(
                 smart_list_collection.ref_id,
                 smart_list_item.smart_list_ref_id,
                 notion_smart_list_item,
-                None,
             )

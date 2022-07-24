@@ -73,7 +73,7 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
         self.go_to_notion("My Work", "Habits")
 
         notion_row = self.get_notion_row_in_database(
-            "Hit the gym", ["Period", "Eisen", "Difficulty", "Project"]
+            "Really hit the gym", ["Period", "Eisen", "Difficulty", "Project"]
         )
 
         assert re.search(r"Really hit the gym", notion_row.title)
@@ -84,7 +84,7 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
 
         habit_out = self.jupiter("habit-show")
 
-        assert re.search(r"Hit the gym", habit_out)
+        assert re.search(r"Really hit the gym", habit_out)
         assert re.search(r"period=Weekly", habit_out)
         assert re.search(r"eisen=Regular", habit_out)
         assert re.search(r"difficulty=Hard", habit_out)

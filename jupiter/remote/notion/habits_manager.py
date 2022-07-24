@@ -5,8 +5,6 @@ import logging
 import uuid
 from typing import Optional, ClassVar, Final, cast, Dict, Iterable
 
-from notion.collection import CollectionRowBlock
-
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.habits.infra.habit_notion_manager import (
@@ -15,22 +13,16 @@ from jupiter.domain.habits.infra.habit_notion_manager import (
 )
 from jupiter.domain.habits.notion_habit import NotionHabit
 from jupiter.domain.habits.notion_habit_collection import NotionHabitCollection
-from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey, format_name_for_option
 from jupiter.remote.notion.infra.client import (
     NotionFieldProps,
     NotionFieldShow,
-    NotionClient,
 )
 from jupiter.remote.notion.infra.collections_manager import (
     NotionCollectionsManager,
@@ -159,7 +151,12 @@ class NotionHabitsManager(HabitNotionManager):
             "type": "number",
         },
         "skip-rule": {"name": "Skip Rule", "type": "text"},
-        "repeats-in-period": {"name": "Repeats In Period", "type": "number"},
+        "repeats-in-period": {
+            "name": "Repeats In Period",
+            "type": "number",
+            "alt-id": "repeats-in-period-count",
+            "alt-name": "repeats_in_period_count",
+        },
         "suspended": {
             "name": "Suspended",
             "type": "checkbox",
@@ -411,16 +408,14 @@ class NotionHabitsManager(HabitNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionHabit,
-        extra_info: NotionInboxTaskCollection,
     ) -> NotionHabit:
         """Upsert a habit."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(
-                c, r, nr, extra_info
-            ),
+            new_leaf=leaf,
         )
         return link.item_info
 
@@ -428,17 +423,15 @@ class NotionHabitsManager(HabitNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionHabit,
-        extra_info: Optional[NotionInboxTaskCollection] = None,
     ) -> NotionHabit:
         """Update the Notion-side habit with new data."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                 row=leaf,
-                copy_row_to_notion_row=lambda c, r, nr: self._copy_row_to_notion_row(
-                    c, r, nr, extra_info
-                ),
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -450,9 +443,11 @@ class NotionHabitsManager(HabitNotionManager):
         """Retrieve the Notion-side habit associated with a particular entity."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionHabit,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -465,8 +460,10 @@ class NotionHabitsManager(HabitNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionHabit,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
         ]
 
@@ -512,130 +509,6 @@ class NotionHabitsManager(HabitNotionManager):
             ref_id=ref_id,
             notion_id=notion_id,
         )
-
-    def _copy_row_to_notion_row(
-        self,
-        client: NotionClient,
-        row: NotionHabit,
-        notion_row: CollectionRowBlock,
-        inbox_collection_link: Optional[NotionInboxTaskCollection],
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        if row.ref_id is None:
-            raise Exception(
-                f"Habit row '{row.name}' which is synced must have a ref id"
-            )
-
-        with client.with_transaction():
-            notion_row.title = row.name
-            notion_row.archived = row.archived
-            notion_row.period = row.period
-            notion_row.project_id = row.project_ref_id
-            notion_row.project = row.project_name
-            notion_row.eisenhower = row.eisen
-            notion_row.difficulty = row.difficulty
-            notion_row.actionable_from_day = row.actionable_from_day
-            notion_row.actionable_from_month = row.actionable_from_month
-            notion_row.due_at_time = row.due_at_time
-            notion_row.due_at_day = row.due_at_day
-            notion_row.due_at_month = row.due_at_month
-            notion_row.skip_rule = row.skip_rule
-            notion_row.repeats_in_period = row.repeats_in_period_count
-            notion_row.suspended = row.suspended
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
-
-        if inbox_collection_link:
-            LOGGER.info(f"Creating views structure for habit {notion_row}")
-
-            client.attach_view_block_as_child_of_block(
-                notion_row,
-                0,
-                inbox_collection_link.notion_id,
-                self._get_view_schema_for_habits_desc(row.ref_id),
-            )
-
-        return notion_row
-
-    def _copy_notion_row_to_row(
-        self, habit_notion_row: CollectionRowBlock
-    ) -> NotionHabit:
-        """Transform the live system data to something suitable for basic storage."""
-        # pylint: disable=no-self-use
-        return NotionHabit(
-            notion_id=NotionId.from_raw(habit_notion_row.id),
-            name=habit_notion_row.title,
-            archived=habit_notion_row.archived,
-            project_ref_id=habit_notion_row.project_id,
-            project_name=habit_notion_row.project,
-            period=habit_notion_row.period,
-            eisen=habit_notion_row.eisenhower,
-            difficulty=habit_notion_row.difficulty,
-            actionable_from_day=habit_notion_row.actionable_from_day,
-            actionable_from_month=habit_notion_row.actionable_from_month,
-            due_at_time=habit_notion_row.due_at_time,
-            due_at_day=habit_notion_row.due_at_day,
-            due_at_month=habit_notion_row.due_at_month,
-            skip_rule=habit_notion_row.skip_rule,
-            repeats_in_period_count=habit_notion_row.repeats_in_period,
-            suspended=habit_notion_row.suspended,
-            last_edited_time=Timestamp.from_notion(habit_notion_row.last_edited_time),
-            ref_id=EntityId.from_raw(habit_notion_row.ref_id)
-            if habit_notion_row.ref_id
-            else None,
-        )
-
-    @staticmethod
-    def _get_view_schema_for_habits_desc(habit_ref_id: EntityId) -> JSONDictType:
-        """Get the view schema for a habit details view."""
-        return {
-            "name": "Inbox Tasks",
-            "query2": {
-                "filter_operator": "and",
-                "sort": [
-                    {"property": "status", "direction": "ascending"},
-                    {"property": "due-date", "direction": "ascending"},
-                ],
-                "filter": {
-                    "operator": "and",
-                    "filters": [
-                        {
-                            "property": "habit-ref-id",
-                            "filter": {
-                                "operator": "string_is",
-                                "value": {"type": "exact", "value": str(habit_ref_id)},
-                            },
-                        },
-                        {
-                            "property": "source",
-                            "filter": {
-                                "operator": "enum_is",
-                                "value": {
-                                    "type": "exact",
-                                    "value": InboxTaskSource.HABIT.for_notion(),
-                                },
-                            },
-                        },
-                    ],
-                },
-            },
-            "format": {
-                "table_properties": [
-                    {"width": 300, "property": "title", "visible": True},
-                    {"width": 100, "property": "status", "visible": True},
-                    {"width": 100, "property": "bigplan2", "visible": False},
-                    {"width": 100, "property": "actionable-date", "visible": True},
-                    {"width": 100, "property": "due-date", "visible": True},
-                    {"width": 100, "property": "eisen", "visible": True},
-                    {"width": 100, "property": "difficulty", "visible": True},
-                    {"width": 100, "property": "fromscript", "visible": False},
-                    {"width": 100, "property": "period", "visible": False},
-                    {"width": 100, "property": "timeline", "visible": False},
-                ]
-            },
-        }
 
     @staticmethod
     def _get_stable_color(option_id: str) -> str:

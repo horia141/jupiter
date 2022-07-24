@@ -22,7 +22,6 @@ class MetricSyncService(
         NotionMetricEntry,
         None,
         None,
-        None,
     ]
 ):
     """The service class for syncing the metrics database between local and Notion."""

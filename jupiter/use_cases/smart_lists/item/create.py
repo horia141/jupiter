@@ -106,5 +106,4 @@ class SmartListItemCreateUseCase(
             smart_list_collection.ref_id,
             smart_list.ref_id,
             notion_smart_list_item,
-            None,
         )

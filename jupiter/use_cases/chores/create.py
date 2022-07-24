@@ -90,9 +90,6 @@ class ChoreCreateUseCase(AppMutationUseCase["ChoreCreateUseCase.Args", None]):
                 )
                 project_ref_id = workspace.default_project_ref_id
 
-            inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
             chore_collection = uow.chore_collection_repository.load_by_parent(
                 workspace.ref_id
             )
@@ -123,13 +120,10 @@ class ChoreCreateUseCase(AppMutationUseCase["ChoreCreateUseCase.Args", None]):
             chore = uow.chore_repository.create(chore)
             LOGGER.info("Applied local changes")
 
-        notion_inbox_task_collection = self._inbox_task_notion_manager.load_trunk(
-            inbox_task_collection.ref_id
-        )
-
         direct_info = NotionChore.DirectInfo(all_projects_map={project.ref_id: project})
         notion_chore = NotionChore.new_notion_entity(chore, direct_info)
         self._chore_notion_manager.upsert_leaf(
-            chore_collection.ref_id, notion_chore, notion_inbox_task_collection
+            chore_collection.ref_id,
+            notion_chore,
         )
         LOGGER.info("Applied Notion changes")

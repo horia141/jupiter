@@ -28,7 +28,6 @@ class SmartListSyncServiceNew(
         NotionSmartList,
         NotionSmartListItem,
         NotionSmartListTag,
-        None,
     ]
 ):
     """The service class for syncing smart lists."""

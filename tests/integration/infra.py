@@ -30,6 +30,7 @@ class ExtractedNotionRow:
 
     title: str
     attributes: Dict[str, str]
+    page_content: str
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
     _tmp_file: ClassVar[Optional[Path]]
     _space_id: ClassVar[Optional[str]]
     _token_v2: ClassVar[Optional[str]]
+    _notion_api_token: ClassVar[Optional[str]]
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -68,8 +70,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
 
         notion_user = os.getenv("NOTION_USER")
         notion_pass = os.getenv("NOTION_PASS")
-        print(notion_user)
-        print(notion_pass)
+        notion_api_token = os.getenv("NOTION_API_TOKEN")
 
         cls._cache_path = cls._root_path / ".build-cache" / "itest"
 
@@ -150,6 +151,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
         cls._tmp_file = cls._cache_path / "jupiter.sqlite"
         cls._space_id = space_id
         cls._token_v2 = token_v2
+        cls._notion_api_token = notion_api_token
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -187,7 +189,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 env=new_env,
             )
 
-            return result.stdout.decode("utf-8").replace("\n", " ")
+            return result.stdout.decode("utf-8").replace("\n", " ").replace("’", "'")
         except subprocess.CalledProcessError as err:
             raise AssertionError(
                 f"Invoking {' '.join(command)} failed. Stdout: {err.stdout} Stderr: {err.stderr}"
@@ -350,6 +352,9 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
         title_edit.send_keys(title)
         title_edit.send_keys(Keys.ESCAPE)  # Get out of the edit flow!
 
+        # Eventual consistency is a PITA
+        time.sleep(1)
+
     @classmethod
     def get_notion_row_in_database(
         cls, title: str, fields: List[str]
@@ -416,6 +421,11 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
             field_value = " ".join(fv.strip() for fv in field_values[1:])
             attributes[field_name] = field_value
 
+        page_content_box = cls.driver().find_element(
+            By.XPATH, "//div[@class = 'notion-page-content']"
+        )
+        page_content = page_content_box.text
+
         title_edit = cls.driver().find_element(
             By.XPATH,
             "//div[@class='notion-selectable notion-page-block']/div[@contenteditable='true']",
@@ -423,7 +433,9 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
         title = title_edit.text
         title_edit.send_keys(Keys.ESCAPE)  # Get out of the edit flow!
 
-        return ExtractedNotionRow(title=title, attributes=attributes)
+        return ExtractedNotionRow(
+            title=title, attributes=attributes, page_content=page_content
+        )
 
     @classmethod
     def check_notion_row_exists(cls, title: str) -> bool:
@@ -472,6 +484,13 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
             raise Exception("No token")
         return self._token_v2
 
+    @property
+    def notion_api_token(self) -> str:
+        """The Notion API access token."""
+        if self._notion_api_token is None:
+            raise Exception("No API token")
+        return self._notion_api_token
+
 
 class JupiterIntegrationTestCase(JupiterBasicIntegrationTestCase):
     """A base class for Jupiter integration test cases which all work in a single workspace."""
@@ -491,6 +510,8 @@ class JupiterIntegrationTestCase(JupiterBasicIntegrationTestCase):
                 self.space_id,
                 "--notion-token",
                 self.token_v2,
+                "--notion-api-token",
+                self.notion_api_token,
                 "--project-key",
                 "work",
                 "--project-name",

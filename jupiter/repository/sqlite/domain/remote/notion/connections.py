@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.engine import Connection, Result
 from sqlalchemy.exc import IntegrityError
 
+from jupiter.domain.remote.notion.api_token import NotionApiToken
 from jupiter.domain.remote.notion.connection_repository import (
     NotionConnectionRepository,
     NotionConnectionAlreadyExistsError,
@@ -59,6 +60,7 @@ class SqliteNotionConnectionRepository(NotionConnectionRepository):
             ),
             Column("space_id", String, nullable=False),
             Column("token", String, nullable=False),
+            Column("api_token", String, nullable=False),
             keep_existing=True,
         )
         self._notion_connection_event_table = build_event_table(
@@ -84,6 +86,7 @@ class SqliteNotionConnectionRepository(NotionConnectionRepository):
                     workspace_ref_id=entity.workspace_ref_id.as_int(),
                     space_id=str(entity.space_id),
                     token=str(entity.token),
+                    api_token=str(entity.api_token),
                 )
             )
         except IntegrityError as err:
@@ -110,6 +113,7 @@ class SqliteNotionConnectionRepository(NotionConnectionRepository):
                 workspace_ref_id=entity.workspace_ref_id.as_int(),
                 space_id=str(entity.space_id),
                 token=str(entity.token),
+                api_token=str(entity.api_token),
             )
         )
         if result.rowcount == 0:
@@ -146,4 +150,5 @@ class SqliteNotionConnectionRepository(NotionConnectionRepository):
             workspace_ref_id=EntityId.from_raw(str(row["workspace_ref_id"])),
             space_id=NotionSpaceId.from_raw(row["space_id"]),
             token=NotionToken.from_raw(row["token"]),
+            api_token=NotionApiToken.from_raw(row["api_token"]),
         )

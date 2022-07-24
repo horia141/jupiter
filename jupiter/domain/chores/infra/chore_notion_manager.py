@@ -4,9 +4,6 @@ from typing import Iterable
 
 from jupiter.domain.chores.notion_chore import NotionChore
 from jupiter.domain.chores.notion_chore_collection import NotionChoreCollection
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
@@ -21,9 +18,7 @@ class NotionChoreNotFoundError(NotionLeafEntityNotFoundError):
 
 
 class ChoreNotionManager(
-    ParentTrunkLeafNotionManager[
-        NotionWorkspace, NotionChoreCollection, NotionChore, NotionInboxTaskCollection
-    ]
+    ParentTrunkLeafNotionManager[NotionWorkspace, NotionChoreCollection, NotionChore]
 ):
     """A manager of Notion-side chores."""
 

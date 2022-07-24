@@ -10,6 +10,9 @@ from sqlalchemy.future import Engine
 from jupiter.remote.notion.infra.collection_field_tag_link_repository import (
     NotionCollectionFieldTagLinkRepository,
 )
+from jupiter.remote.notion.infra.collection_item_block_link_repository import (
+    NotionCollectionItemBlockLinkRepository,
+)
 from jupiter.remote.notion.infra.collection_item_link_repository import (
     NotionCollectionItemLinkRepository,
 )
@@ -24,6 +27,9 @@ from jupiter.remote.notion.infra.storage_engine import (
 from jupiter.repository.sqlite.connection import SqliteConnection
 from jupiter.repository.sqlite.remote.notion.collection_field_tag_links import (
     SqliteNotionCollectionFieldTagLinkRepository,
+)
+from jupiter.repository.sqlite.remote.notion.collection_item_block_links import (
+    SqliteNotionCollectionItemBlockLinkRepository,
 )
 from jupiter.repository.sqlite.remote.notion.collection_item_links import (
     SqliteNotionCollectionItemLinkRepository,
@@ -47,6 +53,9 @@ class SqliteNotionUnitOfWork(NotionUnitOfWork):
     _notion_collection_item_link_repository: Final[
         SqliteNotionCollectionItemLinkRepository
     ]
+    _notion_collection_item_block_link_repository: Final[
+        SqliteNotionCollectionItemBlockLinkRepository
+    ]
 
     def __init__(
         self,
@@ -54,6 +63,7 @@ class SqliteNotionUnitOfWork(NotionUnitOfWork):
         notion_collection_link_repository: SqliteNotionCollectionLinkRepository,
         notion_collection_field_tag_link_repository: SqliteNotionCollectionFieldTagLinkRepository,
         notion_collection_item_link_repository: SqliteNotionCollectionItemLinkRepository,
+        notion_collection_item_block_link_repository: SqliteNotionCollectionItemBlockLinkRepository,
     ) -> None:
         """Constructor."""
         self._notion_page_link_repository = notion_page_link_repository
@@ -63,6 +73,9 @@ class SqliteNotionUnitOfWork(NotionUnitOfWork):
         )
         self._notion_collection_item_link_repository = (
             notion_collection_item_link_repository
+        )
+        self._notion_collection_item_block_link_repository = (
+            notion_collection_item_block_link_repository
         )
 
     def __enter__(self) -> "SqliteNotionUnitOfWork":
@@ -98,8 +111,15 @@ class SqliteNotionUnitOfWork(NotionUnitOfWork):
     def notion_collection_item_link_repository(
         self,
     ) -> NotionCollectionItemLinkRepository:
-        """The Notion collection field tag link repository."""
+        """The Notion collection item link repository."""
         return self._notion_collection_item_link_repository
+
+    @property
+    def notion_collection_item_block_link_repository(
+        self,
+    ) -> NotionCollectionItemBlockLinkRepository:
+        """The Notion collection item block link repository."""
+        return self._notion_collection_item_block_link_repository
 
 
 class SqliteNotionStorageEngine(NotionStorageEngine):
@@ -129,9 +149,16 @@ class SqliteNotionStorageEngine(NotionStorageEngine):
             notion_collection_item_link_repository = (
                 SqliteNotionCollectionItemLinkRepository(connection, self._metadata)
             )
+            notion_collection_item_blick_link_repository = (
+                SqliteNotionCollectionItemBlockLinkRepository(
+                    connection, self._metadata
+                )
+            )
+
             yield SqliteNotionUnitOfWork(
                 notion_page_link_repository=notion_page_link_repository,
                 notion_collection_link_repository=notion_collection_link_repository,
                 notion_collection_field_tag_link_repository=notion_collection_field_tag_link_repository,
                 notion_collection_item_link_repository=notion_collection_item_link_repository,
+                notion_collection_item_block_link_repository=notion_collection_item_blick_link_repository,
             )

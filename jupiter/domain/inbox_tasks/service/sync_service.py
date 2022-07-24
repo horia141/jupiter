@@ -20,7 +20,6 @@ class InboxTaskSyncService(
         NotionWorkspace,
         NotionInboxTaskCollection,
         NotionInboxTask,
-        None,
         NotionInboxTask.DirectInfo,
         NotionInboxTask.InverseInfo,
     ]

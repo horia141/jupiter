@@ -146,7 +146,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
-        notion_row = self.get_notion_row_in_database(
+        notion_row = self.get_notion_row(
             "Prepare for the summer meetup",
             ["Status", "Source", "Eisenhower", "Difficulty", "Project"],
         )
@@ -157,3 +157,9 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
         assert notion_row.attributes["Eisenhower"] == "Regular"
         assert notion_row.attributes["Difficulty"] == "Hard"
         assert notion_row.attributes["Project"] == "Work"
+        assert re.search(r"[*][*]user[*][*]: John Doe", notion_row.page_content)
+        assert re.search(r"[*][*]channel[*][*]: all-company", notion_row.page_content)
+        assert re.search(
+            r"[*][*]message[*][*]: Everybody let’s prepare for our summer meetup",
+            notion_row.page_content,
+        )

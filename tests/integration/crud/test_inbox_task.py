@@ -207,7 +207,7 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
                 "Difficulty",
                 "Due Date",
                 "Project",
-                "Big Plan",
+                BetterMatch("Big Plan", "Get a cat"),
             ],
         )
 
@@ -255,7 +255,14 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
 
         notion_row = self.get_notion_row(
             "Take kitty to the vet",
-            ["Status", "Source", "Eisenhower", "Difficulty", "Due Date", "Project"],
+            [
+                "Status",
+                "Source",
+                "Eisenhower",
+                "Difficulty",
+                "Due Date",
+                BetterMatch("Project", "Personal"),
+            ],
         )
 
         assert re.search(r"Take kitty to the vet", notion_row.title)

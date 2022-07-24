@@ -18,7 +18,9 @@ class NotionSlackTaskNotFoundError(NotionLeafEntityNotFoundError):
 
 class SlackTaskNotionManager(
     ParentTrunkLeafNotionManager[
-        NotionPushIntegrationGroup, NotionSlackTaskCollection, NotionSlackTask, None
+        NotionPushIntegrationGroup,
+        NotionSlackTaskCollection,
+        NotionSlackTask,
     ]
 ):
     """A manager of Notion-side slack tasks."""

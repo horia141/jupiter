@@ -1,6 +1,7 @@
 """The Notion connection."""
 from dataclasses import dataclass
 
+from jupiter.domain.remote.notion.api_token import NotionApiToken
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.framework.entity import Entity, FIRST_VERSION, StubEntity
@@ -21,15 +22,21 @@ class NotionConnection(StubEntity):
     class UpdateToken(Entity.Updated):
         """Updated access token."""
 
+    @dataclass(frozen=True)
+    class UpdateApiToken(Entity.Updated):
+        """Update API secret token."""
+
     workspace_ref_id: EntityId
     space_id: NotionSpaceId
     token: NotionToken
+    api_token: NotionApiToken
 
     @staticmethod
     def new_notion_connection(
         workspace_ref_id: EntityId,
         space_id: NotionSpaceId,
         token: NotionToken,
+        api_token: NotionApiToken,
         source: EventSource,
         created_time: Timestamp,
     ) -> "NotionConnection":
@@ -49,6 +56,7 @@ class NotionConnection(StubEntity):
             workspace_ref_id=workspace_ref_id,
             space_id=space_id,
             token=token,
+            api_token=api_token,
         )
         return notion_connection
 
@@ -59,6 +67,20 @@ class NotionConnection(StubEntity):
         return self._new_version(
             token=token,
             new_event=NotionConnection.UpdateToken.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
+
+    def update_api_token(
+        self,
+        api_token: NotionApiToken,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "NotionConnection":
+        """Update the API access token for the Notion connection."""
+        return self._new_version(
+            api_token=api_token,
+            new_event=NotionConnection.UpdateApiToken.make_event_from_frame_args(
                 source, self.version, modification_time
             ),
         )

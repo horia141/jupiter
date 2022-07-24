@@ -53,6 +53,7 @@ from jupiter.domain.push_integrations.slack.notion_slack_task_collection import 
 from jupiter.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
+from jupiter.domain.remote.notion.api_token import NotionApiToken
 from jupiter.domain.remote.notion.connection import NotionConnection
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
@@ -96,6 +97,7 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
         timezone: Timezone
         notion_space_id: NotionSpaceId
         notion_token: NotionToken
+        notion_api_token: NotionApiToken
         first_project_key: ProjectKey
         first_project_name: ProjectName
 
@@ -166,6 +168,7 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
                 workspace_ref_id=new_workspace.ref_id,
                 space_id=args.notion_space_id,
                 token=args.notion_token,
+                api_token=args.notion_api_token,
                 source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time(),
             )
@@ -320,7 +323,8 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
             new_default_project, None
         )
         self._project_notion_manager.upsert_leaf(
-            new_project_collection.ref_id, new_notion_default_project, None
+            new_project_collection.ref_id,
+            new_notion_default_project,
         )
 
         LOGGER.info("Creating inbox tasks structure")

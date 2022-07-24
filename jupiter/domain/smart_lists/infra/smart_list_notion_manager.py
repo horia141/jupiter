@@ -32,7 +32,6 @@ class SmartListNotionManager(
         NotionSmartList,
         NotionSmartListItem,
         NotionSmartListTag,
-        None,
     ]
 ):
     """A manager of Notion-side smart lists."""

@@ -14,7 +14,7 @@ class NotionVacationNotFoundError(NotionLeafEntityNotFoundError):
 
 class VacationNotionManager(
     ParentTrunkLeafNotionManager[
-        NotionWorkspace, NotionVacationCollection, NotionVacation, None
+        NotionWorkspace, NotionVacationCollection, NotionVacation
     ]
 ):
     """A manager of Notion-side vacations."""

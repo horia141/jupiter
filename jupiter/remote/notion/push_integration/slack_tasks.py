@@ -2,8 +2,6 @@
 import logging
 from typing import Final, ClassVar, Optional, Iterable
 
-from notion.collection import CollectionRowBlock
-
 from jupiter.domain.push_integrations.group.notion_push_integration_group import (
     NotionPushIntegrationGroup,
 )
@@ -17,11 +15,9 @@ from jupiter.domain.push_integrations.slack.notion_slack_task_collection import 
 )
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey
 from jupiter.remote.notion.infra.client import (
-    NotionClient,
     NotionCollectionSchemaProperties,
     NotionFieldProps,
     NotionFieldShow,
@@ -46,7 +42,12 @@ class NotionSlackTasksManager(SlackTaskNotionManager):
         "title": {"name": "User", "type": "title"},
         "channel": {"name": "Channel", "type": "text"},
         "message": {"name": "Message", "type": "text"},
-        "extra-info": {"name": "Extra Info", "type": "text"},
+        "extra-info": {
+            "name": "Extra Info",
+            "type": "text",
+            "alt-id": "generation-extra-info",
+            "alt-name": "generation_extra_info",
+        },
         "archived": {"name": "Archived", "type": "checkbox"},
         "ref-id": {"name": "Ref Id", "type": "text"},
         "last-edited-time": {"name": "Last Edited Time", "type": "last_edited_time"},
@@ -107,14 +108,17 @@ class NotionSlackTasksManager(SlackTaskNotionManager):
         )
 
     def upsert_leaf(
-        self, trunk_ref_id: EntityId, leaf: NotionSlackTask, extra_info: None
+        self,
+        trunk_ref_id: EntityId,
+        leaf: NotionSlackTask,
     ) -> NotionSlackTask:
         """Upsert a slack task."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=self._copy_row_to_notion_row,
+            new_leaf=leaf,
         )
         return link.item_info
 
@@ -122,15 +126,15 @@ class NotionSlackTasksManager(SlackTaskNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionSlackTask,
-        extra_info: Optional[None] = None,
     ) -> NotionSlackTask:
         """Update the Notion-side slack task with new data."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                 row=leaf,
-                copy_row_to_notion_row=self._copy_row_to_notion_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -144,9 +148,11 @@ class NotionSlackTasksManager(SlackTaskNotionManager):
         """Retrieve the Notion-side slack task associated with a particular entity."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionSlackTask,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -159,8 +165,10 @@ class NotionSlackTasksManager(SlackTaskNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionSlackTask,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
             )
         ]
 
@@ -205,41 +213,4 @@ class NotionSlackTasksManager(SlackTaskNotionManager):
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id,
-        )
-
-    def _copy_row_to_notion_row(
-        self, client: NotionClient, row: NotionSlackTask, notion_row: CollectionRowBlock
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        with client.with_transaction():
-            notion_row.title = row.user
-            notion_row.channel = row.channel
-            notion_row.message = row.message
-            notion_row.extra_info = row.generation_extra_info
-            notion_row.archived = row.archived
-            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-
-        return notion_row
-
-    def _copy_notion_row_to_row(
-        self, slack_task_notion_row: CollectionRowBlock
-    ) -> NotionSlackTask:
-        """Transform the live system data to something suitable for basic storage."""
-        # pylint: disable=no-self-use
-        return NotionSlackTask(
-            notion_id=NotionId.from_raw(slack_task_notion_row.id),
-            user=slack_task_notion_row.title,
-            channel=slack_task_notion_row.channel,
-            message=slack_task_notion_row.message,
-            generation_extra_info=slack_task_notion_row.extra_info,
-            archived=slack_task_notion_row.archived,
-            last_edited_time=Timestamp.from_notion(
-                slack_task_notion_row.last_edited_time
-            ),
-            ref_id=EntityId.from_raw(slack_task_notion_row.ref_id)
-            if slack_task_notion_row.ref_id
-            else None,
         )

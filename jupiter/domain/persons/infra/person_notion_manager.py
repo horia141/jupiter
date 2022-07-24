@@ -13,8 +13,6 @@ class NotionPersonNotFoundError(NotionLeafEntityNotFoundError):
 
 
 class PersonNotionManager(
-    ParentTrunkLeafNotionManager[
-        NotionWorkspace, NotionPersonCollection, NotionPerson, None
-    ]
+    ParentTrunkLeafNotionManager[NotionWorkspace, NotionPersonCollection, NotionPerson]
 ):
     """A manager of Notion-side persons."""

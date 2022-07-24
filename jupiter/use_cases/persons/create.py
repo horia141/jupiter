@@ -95,5 +95,6 @@ class PersonCreateUseCase(AppMutationUseCase["PersonCreateUseCase.Args", None]):
 
         notion_person = NotionPerson.new_notion_entity(person, None)
         self._person_notion_manager.upsert_leaf(
-            person_collection.ref_id, notion_person, None
+            person_collection.ref_id,
+            notion_person,
         )

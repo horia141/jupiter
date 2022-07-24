@@ -64,5 +64,6 @@ class VacationCreateUseCase(AppMutationUseCase["VacationCreateUseCase.Args", Non
 
         notion_vacation = NotionVacation.new_notion_entity(vacation, None)
         self._vacation_notion_manager.upsert_leaf(
-            vacation_collection.ref_id, notion_vacation, None
+            vacation_collection.ref_id,
+            notion_vacation,
         )

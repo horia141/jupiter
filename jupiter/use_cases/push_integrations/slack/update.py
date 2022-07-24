@@ -51,7 +51,7 @@ class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", N
         generation_eisen: UpdateAction[Optional[Eisen]]
         generation_difficulty: UpdateAction[Optional[Difficulty]]
         generation_actionable_date: UpdateAction[Optional[ADate]]
-        generation_due_datee: UpdateAction[Optional[ADate]]
+        generation_due_date: UpdateAction[Optional[ADate]]
 
     _inbox_task_notion_manager: Final[InboxTaskNotionManager]
     _slack_task_notion_manager: Final[SlackTaskNotionManager]
@@ -82,7 +82,7 @@ class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", N
                 or args.generation_eisen.should_change
                 or args.generation_difficulty.should_change
                 or args.generation_actionable_date.should_change
-                or args.generation_due_datee.should_change
+                or args.generation_due_date.should_change
             ):
                 generation_extra_info = UpdateAction.change_to(
                     PushGenerationExtraInfo(
@@ -102,7 +102,7 @@ class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", N
                         actionable_date=args.generation_actionable_date.or_else(
                             slack_task.generation_extra_info.actionable_date
                         ),
-                        due_date=args.generation_due_datee.or_else(
+                        due_date=args.generation_due_date.or_else(
                             slack_task.generation_extra_info.due_date
                         ),
                     )

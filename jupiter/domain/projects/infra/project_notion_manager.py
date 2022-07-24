@@ -14,7 +14,7 @@ class NotionProjectNotFoundError(NotionLeafEntityNotFoundError):
 
 class ProjectNotionManager(
     ParentTrunkLeafNotionManager[
-        NotionWorkspace, NotionProjectCollection, NotionProject, None
+        NotionWorkspace, NotionProjectCollection, NotionProject
     ]
 ):
     """A manager of Notion-side projects."""

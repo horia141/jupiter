@@ -72,5 +72,7 @@ class MetricEntryCreateUseCase(
             metric_entry = uow.metric_entry_repository.create(metric_entry)
         notion_metric_entry = NotionMetricEntry.new_notion_entity(metric_entry, None)
         self._notion_manager.upsert_leaf(
-            metric_collection.ref_id, metric.ref_id, notion_metric_entry, None
+            metric_collection.ref_id,
+            metric.ref_id,
+            notion_metric_entry,
         )

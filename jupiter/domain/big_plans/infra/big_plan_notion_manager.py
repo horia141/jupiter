@@ -4,9 +4,6 @@ from typing import Iterable
 
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
@@ -25,7 +22,6 @@ class BigPlanNotionManager(
         NotionWorkspace,
         NotionBigPlanCollection,
         NotionBigPlan,
-        NotionInboxTaskCollection,
     ]
 ):
     """A manager of Notion-side big plans."""

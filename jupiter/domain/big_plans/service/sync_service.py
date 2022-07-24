@@ -4,9 +4,6 @@ from jupiter.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.domain.big_plans.infra.big_plan_notion_manager import BigPlanNotionManager
 from jupiter.domain.big_plans.notion_big_plan import NotionBigPlan
 from jupiter.domain.big_plans.notion_big_plan_collection import NotionBigPlanCollection
-from jupiter.domain.inbox_tasks.notion_inbox_task_collection import (
-    NotionInboxTaskCollection,
-)
 from jupiter.domain.notion_sync_service import TrunkLeafNotionSyncService
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
@@ -19,7 +16,6 @@ class BigPlanSyncService(
         NotionWorkspace,
         NotionBigPlanCollection,
         NotionBigPlan,
-        NotionInboxTaskCollection,
         NotionBigPlan.DirectInfo,
         NotionBigPlan.InverseInfo,
     ]

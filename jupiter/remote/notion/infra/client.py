@@ -2,28 +2,23 @@
 import enum
 import logging
 from dataclasses import dataclass
-from typing import Final, Optional, Iterable, List, cast
+from typing import Final, Optional, Iterable, List
 
 from notion.block import (
     PageBlock,
     CollectionViewPageBlock,
     Block,
-    CollectionViewBlock,
-    TextBlock,
 )
-from notion.client import NotionClient as BaseNotionClient, Transaction
+from notion.client import NotionClient as BaseNotionClient
 from notion.collection import (
     CollectionView,
     Collection,
-    QueryResult,
-    CollectionRowBlock,
 )
-from notion.space import Space
 
-from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.domain.remote.notion.space_id import NotionSpaceId
-from jupiter.framework.json import JSONDictType
+from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.framework.base.notion_id import NotionId
+from jupiter.framework.json import JSONDictType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,10 +29,6 @@ class NotionPageBlockNotFound(Exception):
 
 class NotionCollectionBlockNotFound(Exception):
     """Error raised when a Notion collection is not found."""
-
-
-class NotionCollectionRowNotFound(Exception):
-    """Error raised when a Notion collection row is not found."""
 
 
 @dataclass(frozen=True)
@@ -73,34 +64,14 @@ class NotionClient:
 
     # _config: Final[NotionClientConfig]
     _client: Final[BaseNotionClient]
-    _space: Final[Space]
 
     def __init__(self, config: NotionClientConfig):
         """Constructor."""
         self._client = BaseNotionClient(token_v2=str(config.token))
-        self._space = self._client.get_space(space_id=str(config.space_id))
-
-    def with_transaction(self) -> Transaction:
-        """Start a transaction context manager."""
-        return self._client.as_atomic_transaction()
 
     # Page structures.
 
     # 1.For big pages.
-
-    def create_regular_page(
-        self, name: str, icon: Optional[str], parent_page: Optional[PageBlock] = None
-    ) -> PageBlock:
-        """Create a page in a space."""
-        if parent_page is not None:
-            new_page = parent_page.children.add_new(PageBlock)
-            new_page.icon = icon
-            new_page.title = name
-            return new_page
-        else:
-            new_page = self._space.add_page(name)
-            new_page.icon = icon
-            return new_page
 
     def get_regular_page(self, page_id: NotionId) -> PageBlock:
         """Find a page from a space, with a given id."""
@@ -112,17 +83,6 @@ class NotionClient:
         if not isinstance(the_block, PageBlock):
             raise Exception(f"A block with id={page_id} is not a page")
         return the_block
-
-    def remove_regular_page(self, page_id: NotionId) -> None:
-        """Remove a page from a space, with a given id."""
-        the_block: Optional[Block] = self._client.get_block(str(page_id))
-        if the_block is None:
-            raise NotionPageBlockNotFound(
-                f"A page block with id={page_id} could not be found"
-            )
-        if not isinstance(the_block, PageBlock):
-            raise Exception(f"A block with id={page_id} is not a page")
-        the_block.remove()
 
     # 2.For collections.
 
@@ -165,7 +125,7 @@ class NotionClient:
             view.set("collection_id", collection.id)
             LOGGER.info(f"Created the view {view_id} for collection {schema['name']}")
 
-        view.title = schema["name"]
+        view.name = schema["name"]
         self._client.submit_transaction(
             [
                 {
@@ -216,40 +176,6 @@ class NotionClient:
             _ = self._client.get_collection_view(str(view_id), collection=collection)
         return collection
 
-    @staticmethod
-    def create_collection_row(collection: Collection) -> CollectionRowBlock:
-        """Create a new empty row in a collection."""
-        collection_row = collection.add_row(update_views=False)
-        return collection_row
-
-    def get_collection_row(
-        self, collection: Collection, row_id: NotionId
-    ) -> CollectionRowBlock:
-        """Retrieve a particular row from a collection."""
-        collection_row = self._client.get_block(str(row_id))
-        if collection_row is None:
-            raise NotionCollectionRowNotFound(
-                f"Collection row with id={row_id} could not be found"
-            )
-        if not isinstance(collection_row, CollectionRowBlock):
-            raise Exception(f"Collection row with id={row_id} is not a collection row")
-        if collection_row.parent.id != str(collection.id):
-            raise Exception(
-                f"Collection row with id={row_id} does not belong to collection {collection.id}"
-            )
-        return collection_row
-
-    def get_collection_all_rows(
-        self, collection: Collection, view_id: NotionId
-    ) -> QueryResult:
-        """Return all rows for a particular collection."""
-        LOGGER.info(f"Querying the collection {collection.name} via view {view_id}")
-        return (
-            self._client.get_collection_view(str(view_id), collection=collection)
-            .build_query()
-            .execute()
-        )
-
     def assign_collection_schema_properties(
         self,
         collection: Collection,
@@ -289,68 +215,3 @@ class NotionClient:
                 }
             ]
         )
-
-    # Block operations.
-
-    def attach_view_block_as_child_of_block(
-        self,
-        notion_row: Block,
-        child_index: int,
-        collection_id: NotionId,
-        schema: JSONDictType,
-    ) -> CollectionView:
-        """Attach a view block for a particular collection as the child_index'th one of the particular block."""
-        if len(notion_row.children) > child_index:
-            if isinstance(notion_row.children[child_index], CollectionViewBlock):
-                view_block = notion_row.children[child_index]
-                view = view_block.views[0]
-            else:
-                view_block = notion_row.children.add_new(CollectionViewBlock)
-                notion_row.children[-1] = notion_row.children[child_index]
-                notion_row.children[child_index] = view_block
-                view = view_block.views.add_new(view_type="table")
-        else:
-            view_block = notion_row.children.add_new(CollectionViewBlock)
-            view_block.set("collection_id", str(collection_id))
-            view = view_block.views.add_new(view_type="table")
-
-        view_block.set("collection_id", str(collection_id))
-
-        self._client.submit_transaction(
-            [
-                {
-                    "id": view.id,
-                    "table": "collection_view",
-                    "path": [],
-                    "command": "update",
-                    "args": schema,
-                }
-            ]
-        )
-
-        return view
-
-    @staticmethod
-    def attach_text_notes_to_block(notion_row: Block, notes: str) -> None:
-        """Attach text notes to a block as the first child and remove everything else."""
-        while len(notion_row.children) > 0 and not isinstance(
-            notion_row.children[0], TextBlock
-        ):
-            del notion_row.children[0]
-
-        if len(notion_row.children) == 0:
-            new_block = notion_row.children.add_new(TextBlock)
-        else:
-            new_block = notion_row.children[0]
-
-        new_block.title = notes
-
-    @staticmethod
-    def read_text_notes_from_block(notion_row: Block) -> Optional[str]:
-        """Read text notes of a block as the first text child."""
-        if len(notion_row.children) == 0:
-            return None
-        if not isinstance(notion_row.children[0], TextBlock):
-            return None
-
-        return cast(str, notion_row.children[0].title)

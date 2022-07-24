@@ -54,8 +54,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         assert notion_slack_task_row.title == r"Johnny Doe"
         assert notion_slack_task_row.attributes["Channel"] == "all-company-news"
         assert (
-            notion_slack_task_row.attributes["Message"]
-            == "Cancel bookings for the summer meetup"
+            notion_slack_task_row.attributes["Message"] == "Summer meetup is cancelled"
         )
         assert re.search(
             '--name="Cancel bookings for the summer meetup"',
@@ -75,9 +74,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
 
         assert re.search(r"from=Johnny Doe", slack_task_out)
         assert re.search(r"in-channel=all-company-news", slack_task_out)
-        assert re.search(
-            r"message=Cancel bookings for the summer meetup", slack_task_out
-        )
+        assert re.search(r"message=Summer meetup is cancelled", slack_task_out)
         assert re.search(r"name=Cancel bookings for the summer meetup", slack_task_out)
         assert re.search(r"eisen=Important", slack_task_out)
         assert re.search(r"difficulty=Hard", slack_task_out)
@@ -97,6 +94,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         assert notion_row.attributes["Difficulty"] == "Hard"
         assert re.search("May 23, 2022", notion_row.attributes["Due Date"])
         assert notion_row.attributes["Project"] == "Work"
+        assert re.search(r"Summer meetup is cancelled", notion_row.page_content)
 
         inbox_task_out = self.jupiter("inbox-task-show")
 
@@ -131,7 +129,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
 
         self.go_to_notion("My Work", "Push Integrations", "Slack")
 
-        assert not self.check_notion_row_exists("Johnny Doe")
+        assert not self.check_notion_row_exists("John Doe")
 
         slack_task_out = self.jupiter("slack-task-show", "--show-archived")
 

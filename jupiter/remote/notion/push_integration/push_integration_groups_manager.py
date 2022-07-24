@@ -34,8 +34,8 @@ class NotionPushIntegrationGroupsManager(PushIntegrationGroupNotionManager):
         push_integration_group_page = self._pages_manager.upsert_page(
             key=NotionLockKey(f"{self._KEY}:{push_integration_group.ref_id}"),
             name=self._NAME,
-            icon=self._PAGE_ICON,
             parent_page_notion_id=workspace.notion_id,
+            icon=self._PAGE_ICON,
         )
 
         return NotionPushIntegrationGroup(

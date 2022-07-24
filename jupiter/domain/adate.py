@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from functools import total_ordering
 from typing import Optional, cast
 
-from notion.collection import NotionDate
 import pendulum
 from pendulum.tz import UTC
 
@@ -71,25 +70,19 @@ class ADate(Value):
     @staticmethod
     def from_db(timestamp_raw: datetime.datetime) -> "ADate":
         """Parse a timestamp from a DB representation."""
-        return ADate(None, pendulum.instance(timestamp_raw).in_timezone(UTC))
-
-    @staticmethod
-    def from_notion(timezone: Timezone, adate_raw: NotionDate) -> "ADate":
-        """Parse a date from a Notion representation."""
-        adate_raw = pendulum.parse(
-            str(adate_raw.start), exact=True, tz=pendulum.timezone(str(timezone))
-        )
-        if isinstance(adate_raw, pendulum.DateTime):
-            return ADate(None, adate_raw.in_timezone(UTC))
+        if (
+            timestamp_raw.hour == 0
+            and timestamp_raw.minute == 0
+            and timestamp_raw.second == 0
+        ):
+            return ADate(
+                pendulum.Date(
+                    timestamp_raw.year, timestamp_raw.month, timestamp_raw.day
+                ),
+                None,
+            )
         else:
-            return ADate(adate_raw, None)
-
-    def to_notion(self, timezone: Timezone) -> NotionDate:
-        """Transform a date to a Notion representation."""
-        if self._the_datetime is not None:
-            return NotionDate(self._the_datetime, timezone=str(timezone))
-        else:
-            return NotionDate(self._surely_the_date)
+            return ADate(None, pendulum.instance(timestamp_raw).in_timezone(UTC))
 
     def to_db(self) -> datetime.datetime:
         """Transform a timestamp to a DB representation."""
@@ -146,6 +139,11 @@ class ADate(Value):
             return ADate.from_date_and_time(self._the_datetime.add(days=1))
         else:
             return ADate.from_date(self._surely_the_date.add(days=1))
+
+    @property
+    def has_time(self) -> bool:
+        """Whether the date also contains a time element too."""
+        return self._the_datetime is not None
 
     @property
     def year(self) -> int:

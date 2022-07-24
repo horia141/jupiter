@@ -151,7 +151,7 @@ class SlackTaskUpdate(command.Command):
         else:
             channel = UpdateAction.do_nothing()
         if args.message:
-            message = UpdateAction.change_to(args.name)
+            message = UpdateAction.change_to(args.message)
         else:
             message = UpdateAction.do_nothing()
         name: UpdateAction[Optional[InboxTaskName]]
@@ -207,6 +207,6 @@ class SlackTaskUpdate(command.Command):
                 generation_eisen=eisen,
                 generation_difficulty=difficulty,
                 generation_actionable_date=actionable_date,
-                generation_due_datee=due_date,
+                generation_due_date=due_date,
             )
         )

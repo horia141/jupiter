@@ -5,9 +5,6 @@ import logging
 import uuid
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
-from notion.collection import CollectionRowBlock
-
-from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -25,15 +22,14 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.remote.notion.field_label import NotionFieldLabel
 from jupiter.domain.workspaces.notion_workspace import NotionWorkspace
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.base.notion_id import NotionId
-from jupiter.framework.base.timestamp import Timestamp
+from jupiter.framework.base.notion_id import NotionId, BAD_NOTION_ID
 from jupiter.framework.json import JSONDictType
 from jupiter.remote.notion.common import NotionLockKey, format_name_for_option
 from jupiter.remote.notion.infra.client import (
-    NotionClient,
     NotionFieldProps,
     NotionFieldShow,
 )
+from jupiter.remote.notion.infra.client_v2 import NotionTextBlock
 from jupiter.remote.notion.infra.collections_manager import (
     NotionCollectionsManager,
     NotionCollectionNotFoundError,
@@ -173,6 +169,8 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "name": "Big Plan",
             "type": "select",
             "options": [{"color": "gray", "id": str(uuid.uuid4()), "value": "None"}],
+            "alt-id": "big-plan-name",
+            "alt-name": "big_plan_name",
         },
         "habit-ref-id": {"name": "Habit Id", "type": "text"},
         "chore-ref-id": {"name": "Chore Id", "type": "text"},
@@ -205,9 +203,18 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 for v in _DIFFICULTY.values()
             ],
         },
-        "fromscript": {"name": "From Script", "type": "checkbox"},
-        "timeline": {"name": "Recurring Timeline", "type": "text"},
-        "repeat-index": {"name": "Recurring Repeat Index", "type": "number"},
+        "timeline": {
+            "name": "Recurring Timeline",
+            "type": "text",
+            "alt-id": "recurring-timeline",
+            "alt-name": "recurring_timeline",
+        },
+        "repeat-index": {
+            "name": "Recurring Repeat Index",
+            "type": "number",
+            "alt-id": "recurring-repeat-index",
+            "alt-name": "recurring_repeat_index",
+        },
         "period": {
             "name": "Recurring Period",
             "type": "select",
@@ -219,10 +226,14 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 }
                 for v in _RECURRING_TASK_PERIOD.values()
             ],
+            "alt-id": "recurring-period",
+            "alt-name": "recurring_period",
         },
         "recurring-task-gen-right-now": {
             "name": "Recurring Gen Right Now",
             "type": "date",
+            "alt-id": "recurring-gen-right-now",
+            "alt-name": "recurring_gen_right_now",
         },
         "last-edited-time": {"name": "Last Edited Time", "type": "last_edited_time"},
     }
@@ -1124,14 +1135,19 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         LOGGER.info("Updated the projects view for the associated inbox")
 
     def upsert_leaf(
-        self, trunk_ref_id: EntityId, leaf: NotionInboxTask, extra_info: None
+        self, trunk_ref_id: EntityId, leaf: NotionInboxTask
     ) -> NotionInboxTask:
         """Upsert a inbox task."""
         link = self._collections_manager.upsert_collection_item(
+            timezone=self._global_properties.timezone,
+            schema=self._SCHEMA,
             key=NotionLockKey(f"{leaf.ref_id}"),
             collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-            new_row=leaf,
-            copy_row_to_notion_row=self._copy_row_to_notion_row,
+            new_leaf=leaf,
+            no_properties_fields=["notes"],
+            content_block=NotionTextBlock(notion_id=BAD_NOTION_ID, text=leaf.notes)
+            if leaf.notes
+            else None,
         )
         return link.item_info
 
@@ -1139,15 +1155,19 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         self,
         trunk_ref_id: EntityId,
         leaf: NotionInboxTask,
-        extra_info: Optional[None] = None,
     ) -> NotionInboxTask:
         """Update the Notion-side inbox task with new data."""
         try:
             link = self._collections_manager.save_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
                 key=NotionLockKey(f"{leaf.ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
                 row=leaf,
-                copy_row_to_notion_row=self._copy_row_to_notion_row,
+                no_properties_fields=["notes"],
+                content_block=NotionTextBlock(notion_id=BAD_NOTION_ID, text=leaf.notes)
+                if leaf.notes
+                else None,
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -1160,8 +1180,11 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         return [
             l.item_info
             for l in self._collections_manager.load_all_collection_items(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionInboxTask,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
+                no_properties_fields=["notes"],
             )
         ]
 
@@ -1171,9 +1194,12 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
         """Retrieve the Notion-side inbox task associated with a particular entity."""
         try:
             link = self._collections_manager.load_collection_item(
+                timezone=self._global_properties.timezone,
+                schema=self._SCHEMA,
+                ctor=NotionInboxTask,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                copy_notion_row_to_row=self._copy_notion_row_to_row,
+                no_properties_fields=["notes"],
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -1222,106 +1248,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             key=NotionLockKey(f"{ref_id}"),
             ref_id=ref_id,
             notion_id=notion_id,
-        )
-
-    def _copy_row_to_notion_row(
-        self, client: NotionClient, row: NotionInboxTask, notion_row: CollectionRowBlock
-    ) -> CollectionRowBlock:
-        """Copy the fields of the local row to the actual Notion structure."""
-        with client.with_transaction():
-            notion_row.title = row.name
-            notion_row.source = row.source
-            notion_row.archived = row.archived
-            notion_row.project_id = row.project_ref_id
-            notion_row.project = row.project_name
-            notion_row.big_plan_id = row.big_plan_ref_id
-            if row.big_plan_name:
-                notion_row.big_plan = row.big_plan_name
-            notion_row.habit_id = row.habit_ref_id
-            notion_row.chore_id = row.chore_ref_id
-            notion_row.metric_id = row.metric_ref_id
-            notion_row.person_id = row.person_ref_id
-            notion_row.slack_task_id = row.slack_task_ref_id
-            notion_row.status = row.status
-            notion_row.eisenhower = row.eisen
-            notion_row.difficulty = row.difficulty
-            notion_row.actionable_date = (
-                row.actionable_date.to_notion(self._global_properties.timezone)
-                if row.actionable_date
-                else None
-            )
-            notion_row.due_date = (
-                row.due_date.to_notion(self._global_properties.timezone)
-                if row.due_date
-                else None
-            )
-            notion_row.from_script = row.from_script
-            notion_row.recurring_timeline = row.recurring_timeline
-            notion_row.recurring_repeat_index = row.recurring_repeat_index
-            notion_row.recurring_period = row.recurring_period
-            notion_row.recurring_gen_right_now = (
-                row.recurring_gen_right_now.to_notion(self._global_properties.timezone)
-                if row.recurring_gen_right_now
-                else None
-            )
-            notion_row.last_edited_time = row.last_edited_time.to_notion(
-                self._global_properties.timezone
-            )
-            notion_row.ref_id = str(row.ref_id) if row.ref_id else None
-
-        if row.notes:
-            client.attach_text_notes_to_block(notion_row, row.notes)
-
-        return notion_row
-
-    def _copy_notion_row_to_row(
-        self, inbox_task_notion_row: CollectionRowBlock
-    ) -> NotionInboxTask:
-        """Transform the live system data to something suitable for basic storage."""
-        return NotionInboxTask(
-            notion_id=NotionId.from_raw(inbox_task_notion_row.id),
-            source=inbox_task_notion_row.source,
-            name=inbox_task_notion_row.title,
-            archived=inbox_task_notion_row.archived,
-            project_ref_id=inbox_task_notion_row.project_id,
-            project_name=inbox_task_notion_row.project,
-            big_plan_ref_id=inbox_task_notion_row.big_plan_id,
-            big_plan_name=inbox_task_notion_row.big_plan,
-            habit_ref_id=inbox_task_notion_row.habit_id,
-            chore_ref_id=inbox_task_notion_row.chore_id,
-            metric_ref_id=inbox_task_notion_row.metric_id,
-            person_ref_id=inbox_task_notion_row.person_id,
-            slack_task_ref_id=inbox_task_notion_row.slack_task_id,
-            status=inbox_task_notion_row.status,
-            eisen=inbox_task_notion_row.eisenhower,
-            difficulty=inbox_task_notion_row.difficulty,
-            actionable_date=ADate.from_notion(
-                self._global_properties.timezone, inbox_task_notion_row.actionable_date
-            )
-            if inbox_task_notion_row.actionable_date
-            else None,
-            due_date=ADate.from_notion(
-                self._global_properties.timezone, inbox_task_notion_row.due_date
-            )
-            if inbox_task_notion_row.due_date
-            else None,
-            notes=NotionClient.read_text_notes_from_block(inbox_task_notion_row),
-            from_script=inbox_task_notion_row.from_script,
-            recurring_timeline=inbox_task_notion_row.recurring_timeline,
-            recurring_repeat_index=inbox_task_notion_row.recurring_repeat_index,
-            recurring_period=inbox_task_notion_row.recurring_period,
-            recurring_gen_right_now=ADate.from_notion(
-                self._global_properties.timezone,
-                inbox_task_notion_row.recurring_gen_right_now,
-            )
-            if inbox_task_notion_row.recurring_gen_right_now
-            else None,
-            last_edited_time=Timestamp.from_notion(
-                inbox_task_notion_row.last_edited_time
-            ),
-            ref_id=EntityId.from_raw(inbox_task_notion_row.ref_id)
-            if inbox_task_notion_row.ref_id
-            else None,
         )
 
     @staticmethod

@@ -25,7 +25,7 @@ class NotionInboxTaskNotFoundError(NotionLeafEntityNotFoundError):
 
 class InboxTaskNotionManager(
     ParentTrunkLeafNotionManager[
-        NotionWorkspace, NotionInboxTaskCollection, NotionInboxTask, None
+        NotionWorkspace, NotionInboxTaskCollection, NotionInboxTask
     ]
 ):
     """A manager of Notion-side inbox tasks."""

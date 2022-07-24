@@ -52,6 +52,9 @@ from jupiter.command.metric_entry_update import MetricEntryUpdate
 from jupiter.command.metric_remove import MetricRemove
 from jupiter.command.metric_show import MetricShow
 from jupiter.command.metric_update import MetricUpdate
+from jupiter.command.notion_connection_update_api_token import (
+    NotionConnectionUpdateApiToken,
+)
 from jupiter.command.notion_connection_update_token import NotionConnectionUpdateToken
 from jupiter.command.person_archive import PersonArchive
 from jupiter.command.person_change_catch_up_project import PersonChangeCatchUpProject
@@ -200,6 +203,9 @@ from jupiter.use_cases.push_integrations.slack.change_generation_project import 
 from jupiter.use_cases.push_integrations.slack.find import SlackTaskFindUseCase
 from jupiter.use_cases.push_integrations.slack.remove import SlackTaskRemoveUseCase
 from jupiter.use_cases.push_integrations.slack.update import SlackTaskUpdateUseCase
+from jupiter.use_cases.remote.notion.update_api_token import (
+    NotionConnectionUpdateApiTokenUseCase,
+)
 from jupiter.use_cases.remote.notion.update_token import (
     NotionConnectionUpdateTokenUseCase,
 )
@@ -948,6 +954,11 @@ def main() -> None:
         # Remote connection commands
         NotionConnectionUpdateToken(
             NotionConnectionUpdateTokenUseCase(
+                time_provider, invocation_recorder, domain_storage_engine
+            )
+        ),
+        NotionConnectionUpdateApiToken(
+            NotionConnectionUpdateApiTokenUseCase(
                 time_provider, invocation_recorder, domain_storage_engine
             )
         ),
