@@ -1,6 +1,7 @@
 """The core integration tests infrastructure where all the magic happens."""
 import json
 import os
+import pdb
 import re
 import subprocess
 import sys
@@ -388,6 +389,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 "//div[contains(@style, 'font-size: 12px;') and contains(., 'Open')]",
             )
             open_button.click()
+
+        time.sleep(1) # Animation be animating in the latest Notion
 
         attributes: Dict[str, str] = {}
 
