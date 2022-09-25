@@ -3,7 +3,6 @@ import re
 
 from tests.integration.infra import (
     JupiterIntegrationTestCase,
-    extract_id_from_show_out,
     BetterMatch,
 )
 
@@ -43,19 +42,20 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show")
 
         assert re.search(r"Take kitty to the vet", inbox_task_out)
-        assert re.search(r"status=Accepted", inbox_task_out)
-        assert re.search(r"source=User", inbox_task_out)
-        assert re.search(r"eisen=Important", inbox_task_out)
-        assert re.search(r"difficulty=Hard", inbox_task_out)
-        assert re.search(r"due-date=2022-05-20", inbox_task_out)
-        assert re.search(r"project=Work", inbox_task_out)
+        assert re.search(r"🔧", inbox_task_out)
+        assert re.search(r"User", inbox_task_out)
+        assert re.search(r"Important", inbox_task_out)
+        assert re.search(r"Hard", inbox_task_out)
+        assert re.search(r"Due at 2022-05-20", inbox_task_out)
+        assert re.search(r"In Project Work", inbox_task_out)
 
     def test_create_inbox_task_for_big_plan(self) -> None:
         """Creation of a inbox task."""
-        self.jupiter("big-plan-create", "--name", "Get a cat")
-        big_plan_show = self.jupiter("big-plan-show")
-        big_plan_id = extract_id_from_show_out(big_plan_show, "Get a cat")
-        self.jupiter(
+        big_plan_id = self.jupiter_create(
+            "big-plan-create", "--name", "Get a cat", hint="Get a cat"
+        )
+
+        self.jupiter_create(
             "inbox-task-create",
             "--name",
             "Take kitty to the vet",
@@ -96,17 +96,17 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show")
 
         assert re.search(r"Take kitty to the vet", inbox_task_out)
-        assert re.search(r"status=Accepted", inbox_task_out)
-        assert re.search(r"source=Big Plan", inbox_task_out)
-        assert re.search(r"eisen=Important", inbox_task_out)
-        assert re.search(r"difficulty=Hard", inbox_task_out)
-        assert re.search(r"due-date=2022-05-20", inbox_task_out)
-        assert re.search(r"project=Work", inbox_task_out)
-        assert re.search(r"big-plan=Get a cat", inbox_task_out)
+        assert re.search(r"🔧", inbox_task_out)
+        assert re.search(r"Big Plan", inbox_task_out)
+        assert re.search(r"Important", inbox_task_out)
+        assert re.search(r"Hard", inbox_task_out)
+        assert re.search(r"Due at 2022-05-20", inbox_task_out)
+        assert re.search(r"In Project( )+Work", inbox_task_out)
+        assert re.search(r"From @Get a cat", inbox_task_out)
 
     def test_update_inbox_task(self) -> None:
         """Updating a inbox task."""
-        self.jupiter(
+        inbox_task_id = self.jupiter_create(
             "inbox-task-create",
             "--name",
             "Take kitty to the vet",
@@ -116,11 +116,7 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
             "hard",
             "--due-date",
             "2022-05-20",
-        )
-
-        inbox_task_out = self.jupiter("inbox-task-show")
-        inbox_task_id = extract_id_from_show_out(
-            inbox_task_out, "Take kitty to the vet"
+            hint="Take kitty to the vet",
         )
 
         self.jupiter(
@@ -157,20 +153,19 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show")
 
         assert re.search(r"Take the kitty to the vet", inbox_task_out)
-        assert re.search(r"status=In Progress", inbox_task_out)
-        assert re.search(r"source=User", inbox_task_out)
-        assert re.search(r"eisen=Regular", inbox_task_out)
-        assert re.search(r"difficulty=Medium", inbox_task_out)
-        assert re.search(r"due-date=2022-05-21", inbox_task_out)
-        assert re.search(r"project=Work", inbox_task_out)
+        assert re.search(r"🚧", inbox_task_out)
+        assert re.search(r"User", inbox_task_out)
+        assert re.search(r"Regular", inbox_task_out)
+        assert re.search(r"Medium", inbox_task_out)
+        assert re.search(r"Due at 2022-05-21", inbox_task_out)
+        assert re.search(r"In Project Work", inbox_task_out)
 
     def test_associate_with_big_plan(self) -> None:
         """Associating a task with a big plan."""
-        self.jupiter("big-plan-create", "--name", "Get a cat")
-        big_plan_show = self.jupiter("big-plan-show")
-        big_plan_id = extract_id_from_show_out(big_plan_show, "Get a cat")
-
-        self.jupiter(
+        big_plan_id = self.jupiter_create(
+            "big-plan-create", "--name", "Get a cat", hint="Get a cat"
+        )
+        inbox_task_id = self.jupiter_create(
             "inbox-task-create",
             "--name",
             "Take kitty to the vet",
@@ -180,13 +175,8 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
             "hard",
             "--due-date",
             "2022-05-20",
+            hint="Take kitty to the vet",
         )
-        inbox_task_out = self.jupiter("inbox-task-show")
-        inbox_task_id = extract_id_from_show_out(
-            inbox_task_out, "Take kitty to the vet"
-        )
-
-        assert not re.search(r"big-plan", inbox_task_out)
 
         self.jupiter(
             "inbox-task-associate-with-big-plan",
@@ -223,17 +213,17 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show")
 
         assert re.search(r"Take kitty to the vet", inbox_task_out)
-        assert re.search(r"status=Accepted", inbox_task_out)
-        assert re.search(r"source=Big Plan", inbox_task_out)
-        assert re.search(r"eisen=Important", inbox_task_out)
-        assert re.search(r"difficulty=Hard", inbox_task_out)
-        assert re.search(r"due-date=2022-05-20", inbox_task_out)
-        assert re.search(r"big-plan=Get a cat", inbox_task_out)
-        assert re.search(r"project=Work", inbox_task_out)
+        assert re.search(r"🔧", inbox_task_out)
+        assert re.search(r"Big Plan", inbox_task_out)
+        assert re.search(r"Important", inbox_task_out)
+        assert re.search(r"Hard", inbox_task_out)
+        assert re.search(r"Due at 2022-05-20", inbox_task_out)
+        assert re.search(r"From @Get a cat", inbox_task_out)
+        assert re.search(r"In Project( )+Work", inbox_task_out)
 
     def test_change_project(self) -> None:
         """Change the project of an inbox task."""
-        self.jupiter(
+        inbox_task_id = self.jupiter_create(
             "inbox-task-create",
             "--name",
             "Take kitty to the vet",
@@ -243,10 +233,7 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
             "hard",
             "--due-date",
             "2022-05-20",
-        )
-        inbox_task_out = self.jupiter("inbox-task-show")
-        inbox_task_id = extract_id_from_show_out(
-            inbox_task_out, "Take kitty to the vet"
+            hint="Take kitty to the vet",
         )
 
         self.jupiter(
@@ -276,16 +263,16 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show")
 
         assert re.search(r"Take kitty to the vet", inbox_task_out)
-        assert re.search(r"status=Accepted", inbox_task_out)
-        assert re.search(r"source=User", inbox_task_out)
-        assert re.search(r"eisen=Important", inbox_task_out)
-        assert re.search(r"difficulty=Hard", inbox_task_out)
-        assert re.search(r"due-date=2022-05-20", inbox_task_out)
-        assert re.search(r"project=Personal", inbox_task_out)
+        assert re.search(r"🔧", inbox_task_out)
+        assert re.search(r"User", inbox_task_out)
+        assert re.search(r"Important", inbox_task_out)
+        assert re.search(r"Hard", inbox_task_out)
+        assert re.search(r"Due at 2022-05-20", inbox_task_out)
+        assert re.search(r"In Project Personal", inbox_task_out)
 
     def test_archive_inbox_task(self) -> None:
         """Archiving a inbox task."""
-        self.jupiter(
+        inbox_task_id = self.jupiter_create(
             "inbox-task-create",
             "--name",
             "Take kitty to the vet",
@@ -295,11 +282,7 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
             "hard",
             "--due-date",
             "2022-05-20",
-        )
-
-        inbox_task_out = self.jupiter("inbox-task-show")
-        inbox_task_id = extract_id_from_show_out(
-            inbox_task_out, "Take kitty to the vet"
+            hint="Take kitty to the vet",
         )
 
         self.jupiter("inbox-task-archive", "--id", inbox_task_id)
@@ -311,11 +294,10 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show", "--show-archived")
 
         assert re.search(r"Take kitty to the vet", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
 
     def test_remove_inbox_task(self) -> None:
         """Archiving a inbox task."""
-        self.jupiter(
+        inbox_task_id = self.jupiter_create(
             "inbox-task-create",
             "--name",
             "Take kitty to the vet",
@@ -325,11 +307,7 @@ class InboxTaskIntegrationTestCase(JupiterIntegrationTestCase):
             "hard",
             "--due-date",
             "2022-05-20",
-        )
-
-        inbox_task_out = self.jupiter("inbox-task-show")
-        inbox_task_id = extract_id_from_show_out(
-            inbox_task_out, "Take kitty to the vet"
+            hint="Take kitty to the vet",
         )
 
         self.jupiter("inbox-task-remove", "--id", inbox_task_id)

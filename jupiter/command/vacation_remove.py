@@ -1,13 +1,11 @@
 """UseCase for hard remove vacations."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.vacations.remove import VacationRemoveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.vacations.remove import VacationRemoveUseCase
 
 
 class VacationRemove(command.Command):
@@ -33,17 +31,17 @@ class VacationRemove(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument(
             "--id",
-            type=str,
-            dest="ref_ids",
-            default=[],
-            action="append",
+            dest="ref_id",
             required=True,
-            help="Show only tasks selected by this id",
+            help="Remove this vacation",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
-        # Parse arguments
-        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
-        for ref_id in ref_ids:
-            self._command.execute(VacationRemoveUseCase.Args(ref_id=ref_id))
+        ref_id = EntityId.from_raw(args.ref_id)
+
+        self._command.execute(
+            progress_reporter, VacationRemoveUseCase.Args(ref_id=ref_id)
+        )

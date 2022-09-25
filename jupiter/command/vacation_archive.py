@@ -1,14 +1,12 @@
 """UseCase for removing a vacation."""
 
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.vacations.archive import VacationArchiveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.vacations.archive import VacationArchiveUseCase
 
 
 class VacationArchive(command.Command):
@@ -40,7 +38,12 @@ class VacationArchive(command.Command):
             help="The id of the vacations to remove",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(VacationArchiveUseCase.Args(ref_id=ref_id))
+
+        self._command.execute(
+            progress_reporter, VacationArchiveUseCase.Args(ref_id=ref_id)
+        )

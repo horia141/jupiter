@@ -2,25 +2,33 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
 from jupiter.command import command
+from jupiter.command.rendering import (
+    entity_id_to_rich_text,
+    actionable_date_to_rich_text,
+    due_date_to_rich_text,
+    project_to_rich_text,
+    big_plan_status_to_rich_text,
+    inbox_task_summary_to_rich_text,
+    RichConsoleProgressReporter,
+)
 from jupiter.domain.adate import ADate
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.big_plans.find import BigPlanFindUseCase
-from jupiter.utils.global_properties import GlobalProperties
 
 
-class BigPlanShow(command.Command):
+class BigPlanShow(command.ReadonlyCommand):
     """UseCase class for showing the big plans."""
 
-    _global_properties: Final[GlobalProperties]
     _command: Final[BigPlanFindUseCase]
 
-    def __init__(
-        self, global_properties: GlobalProperties, the_command: BigPlanFindUseCase
-    ) -> None:
+    def __init__(self, the_command: BigPlanFindUseCase) -> None:
         """Constructor."""
-        self._global_properties = global_properties
         self._command = the_command
 
     @staticmethod
@@ -57,8 +65,18 @@ class BigPlanShow(command.Command):
             action="append",
             help="Allow only tasks from this project",
         )
+        parser.add_argument(
+            "--show-inbox-tasks",
+            dest="show_inbox_tasks",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Show inbox tasks",
+        )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         ref_ids = (
@@ -71,31 +89,81 @@ class BigPlanShow(command.Command):
             if len(args.project_keys) > 0
             else None
         )
+        show_inbox_tasks = args.show_inbox_tasks
+
         result = self._command.execute(
+            progress_reporter,
             BigPlanFindUseCase.Args(
                 allow_archived=show_archived,
                 filter_ref_ids=ref_ids,
                 filter_project_keys=project_keys,
-            )
+            ),
         )
 
-        for big_plan_entry in result.big_plans:
+        sorted_big_plans = sorted(
+            result.big_plans,
+            key=lambda bpe: (
+                bpe.big_plan.archived,
+                bpe.big_plan.status,
+                bpe.big_plan.actionable_date
+                if bpe.big_plan.actionable_date
+                else ADate.from_str("2100-01-01"),
+            ),
+        )
+
+        rich_tree = Tree("🌍 Big Plans", guide_style="bold bright_blue")
+
+        for big_plan_entry in sorted_big_plans:
             big_plan = big_plan_entry.big_plan
             project = big_plan_entry.project
             inbox_tasks = big_plan_entry.inbox_tasks
-            print(
-                f"id={big_plan.ref_id} {big_plan.name}"
-                + f" status={big_plan.status.for_notion()}"
-                + f" archived={big_plan.archived}"
-                + f" actionable-date={ADate.to_user_str(self._global_properties.timezone, big_plan.actionable_date)}"
-                + f" due-date={ADate.to_user_str(self._global_properties.timezone, big_plan.due_date)}"
-                + f" project={project.name}"
+
+            big_plan_text = big_plan_status_to_rich_text(
+                big_plan.status, big_plan.archived
             )
-            print("  Tasks:")
-            for inbox_task in inbox_tasks:
-                print(
-                    f"   - id={inbox_task.ref_id} {inbox_task.name}"
-                    + f" status={inbox_task.status.value}"
-                    + f" archived={inbox_task.archived}"
-                    + f" due_date={ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"
+            big_plan_text.append(" ")
+            big_plan_text.append(entity_id_to_rich_text(big_plan.ref_id))
+            big_plan_text.append(f" {big_plan.name}")
+
+            big_plan_info_text = Text("")
+            if big_plan.actionable_date is not None:
+                big_plan_info_text.append(
+                    actionable_date_to_rich_text(big_plan.actionable_date)
                 )
+
+            if big_plan.due_date is not None:
+                big_plan_info_text.append(" ")
+                big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
+
+            big_plan_info_text.append(" ")
+            big_plan_info_text.append(project_to_rich_text(project.name))
+
+            if big_plan.archived:
+                big_plan_text.stylize("gray62")
+                big_plan_info_text.stylize("gray62")
+
+            big_plan_tree = rich_tree.add(
+                big_plan_text, guide_style="gray62" if big_plan.archived else "blue"
+            )
+            big_plan_tree.add(big_plan_info_text)
+
+            if not show_inbox_tasks:
+                continue
+            if len(inbox_tasks) == 0:
+                continue
+
+            sorted_inbox_tasks = sorted(
+                inbox_tasks,
+                key=lambda it: (
+                    it.archived,
+                    it.status,
+                    it.due_date if it.due_date else ADate.from_str("2100-01-01"),
+                ),
+            )
+
+            for inbox_task in sorted_inbox_tasks:
+                inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
+                big_plan_tree.add(inbox_task_text)
+
+        console = Console()
+        console.print(rich_tree)

@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
@@ -81,7 +82,9 @@ class BigPlanUpdate(command.Command):
             help="Clear the due date of the big plan",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
@@ -110,6 +113,8 @@ class BigPlanUpdate(command.Command):
             )
         else:
             due_date = UpdateAction.do_nothing()
+
         self._command.execute(
-            BigPlanUpdateUseCase.Args(ref_id, name, status, actionable_date, due_date)
+            progress_reporter,
+            BigPlanUpdateUseCase.Args(ref_id, name, status, actionable_date, due_date),
         )

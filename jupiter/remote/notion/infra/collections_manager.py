@@ -112,27 +112,22 @@ class NotionCollectionsManager:
 
         if collection_link:
             page = client.get_collection_page_by_id(collection_link.page_notion_id)
-            LOGGER.info(f"Found the already existing page as {page.id}")
             collection = client.get_collection(
                 collection_link.page_notion_id,
                 collection_link.collection_notion_id,
                 collection_link.view_notion_ids.values(),
             )
-            LOGGER.info(f"Found the already existing collection {collection.id}")
         else:
             page = client.create_collection_page(
                 parent_page=client.get_regular_page(parent_page_notion_id)
             )
-            LOGGER.info(f"Created the page as {page.id}")
             collection = client.create_collection(page, schema)
-            LOGGER.info(f"Created the collection as {collection}")
 
         # Change the schema.
 
         old_schema = collection.get("schema")
         final_schema = self._merge_notion_schemas(old_schema, schema)
         collection.set("schema", final_schema)
-        LOGGER.info("Applied the most current schema to the collection")
 
         # Attach the views.
         view_ids = collection_link.view_notion_ids if collection_link else {}
@@ -145,9 +140,6 @@ class NotionCollectionsManager:
                 view_schema,
             )
             view_ids[view_name] = the_view.id
-            LOGGER.info(
-                f"Attached view '{view_name}' to collection id='{collection.id}'"
-            )
 
         # Tie everything up.
 
@@ -162,12 +154,10 @@ class NotionCollectionsManager:
         page.icon = icon
         collection.name = name
         collection.set("icon", icon)
-        LOGGER.info("Changed the name")
 
         # Arrange the fields.
 
         client.assign_collection_schema_properties(collection, schema_properties)
-        LOGGER.info("Changed the field order")
 
         # Save local locks.
         if collection_link:
@@ -188,7 +178,6 @@ class NotionCollectionsManager:
             )
             with self._storage_engine.get_unit_of_work() as uow:
                 uow.notion_collection_link_repository.create(new_notion_collection_link)
-        LOGGER.info("Saved lock structure")
 
         return new_notion_collection_link.with_extra(name, icon)
 
@@ -226,7 +215,6 @@ class NotionCollectionsManager:
         old_schema = collection.get("schema")
         final_schema = self._merge_notion_schemas(old_schema, new_schema)
         collection.set("schema", final_schema)
-        LOGGER.info("Applied the most current schema to the collection")
 
         with self._storage_engine.get_unit_of_work() as uow:
             new_collection_link = collection_link.mark_update(
@@ -273,7 +261,6 @@ class NotionCollectionsManager:
             old_schema, new_schema, newly_added_field
         )
         collection.set("schema", final_schema)
-        LOGGER.info("Applied the most current schema to the collection")
 
         with self._storage_engine.get_unit_of_work() as uow:
             new_collection_link = collection_link.mark_update(
@@ -350,9 +337,6 @@ class NotionCollectionsManager:
                 cast(str, view_schema["type"]),
                 view_schema,
             )
-            LOGGER.info(
-                f"Attached view '{view_name}' to collection id='{collection.id}'"
-            )
         except (
             NotionCollectionLinkNotFoundError,
             NotionCollectionBlockNotFound,
@@ -407,9 +391,6 @@ class NotionCollectionsManager:
                     option["value"] = tag
                     option["color"] = self._get_stable_color(tag_key)
                     tag_id = field_tag_link.notion_id
-                    LOGGER.info(
-                        f'Found tag "{tag}" ({field_tag_link.notion_id}) for field "{field}"'
-                    )
                     break
             else:
                 LOGGER.info(f'Could not find "{tag}" ({field_tag_link.notion_id})')
@@ -423,7 +404,6 @@ class NotionCollectionsManager:
                     "color": self._get_stable_color(tag_key),
                 }
             )
-            LOGGER.info("Added new item for collection schema")
 
         collection.set("schema", schema)
 
@@ -448,7 +428,6 @@ class NotionCollectionsManager:
                 uow.notion_collection_field_tag_link_repository.create(
                     new_field_tag_link
                 )
-        LOGGER.info("Saved lock structure")
 
         return new_field_tag_link.with_extra(tag)
 
@@ -469,7 +448,7 @@ class NotionCollectionsManager:
             )
 
             if field_tag_link is not None:
-                LOGGER.warning(
+                LOGGER.info(
                     f"Entity already exists on Notion side for entity with id={ref_id}"
                 )
                 new_field_tag_link = field_tag_link.with_new_tag(
@@ -651,13 +630,18 @@ class NotionCollectionsManager:
     ) -> None:
         """Hard remove the Notion entity associated with a local entity."""
         with self._storage_engine.get_unit_of_work() as uow:
-            collection_link = uow.notion_collection_link_repository.load(collection_key)
-            tag_key = self._build_compound_key(collection_key, key)
             try:
+                collection_link = uow.notion_collection_link_repository.load(
+                    collection_key
+                )
+                tag_key = self._build_compound_key(collection_key, key)
                 field_tag_link = uow.notion_collection_field_tag_link_repository.load(
                     tag_key
                 )
-            except NotionCollectionFieldTagNotFoundError as err:
+            except (
+                NotionCollectionLinkNotFoundError,
+                NotionCollectionFieldTagLinkNotFoundError,
+            ) as err:
                 raise NotionCollectionFieldTagNotFoundError(
                     f"Collection field tag with key {key} could not be found"
                 ) from err
@@ -922,7 +906,7 @@ class NotionCollectionsManager:
                 new_item_link = item_link.with_new_item(
                     notion_id, self._time_provider.get_current_time()
                 )
-                LOGGER.warning(
+                LOGGER.info(
                     f"Entity already exists on Notion side for entity with id={ref_id}"
                 )
                 uow.notion_collection_item_link_repository.save(new_item_link)
@@ -1050,7 +1034,7 @@ class NotionCollectionsManager:
         schema: JSONDictType,
         ctor: typing.Type[ItemT],
         collection_key: NotionLockKey,
-        no_properties_fields: typing.Optional[Iterable[str]] = None,
+        no_properties_fields: typing.Optional[Dict[str, typing.Any]] = None,
     ) -> Iterable[NotionCollectionItemLinkExtra[ItemT]]:
         """Retrieve all the Notion-side entitys."""
         with self._storage_engine.get_unit_of_work() as uow:
@@ -1096,7 +1080,7 @@ class NotionCollectionsManager:
         ctor: typing.Type[ItemT],
         key: NotionLockKey,
         collection_key: NotionLockKey,
-        no_properties_fields: typing.Optional[Iterable[str]] = None,
+        no_properties_fields: typing.Optional[Dict[str, typing.Any]] = None,
     ) -> NotionCollectionItemLinkExtra[ItemT]:
         """Retrieve the Notion-side entity associated with a particular entity."""
         try:
@@ -1236,7 +1220,7 @@ class NotionCollectionsManager:
             else:
                 field_desc: typing.Any = schema[schema_alt_ids[field_name_notion]]  # type: ignore
             if field_desc["type"] == "title":
-                if not isinstance(field_value, str):
+                if field_value is not None and not isinstance(field_value, str):
                     raise RuntimeError(f"Trying to map {field_name} to title")
                 properties[field_desc["name"]] = {
                     "id": field_name_notion,
@@ -1252,8 +1236,15 @@ class NotionCollectionsManager:
                                 "underline": False,
                             },
                             "href": None,
-                            "plain_text": field_value,
-                            "text": {"content": field_value, "link": None},
+                            "plain_text": field_value
+                            if field_value is not None
+                            else "",
+                            "text": {
+                                "content": field_value
+                                if field_value is not None
+                                else "",
+                                "link": None,
+                            },
                             "type": "text",
                         }
                     ],
@@ -1356,7 +1347,7 @@ class NotionCollectionsManager:
         schema: JSONDictType,
         ctor: typing.Type[ItemT],
         collection_item: NotionCollectionItem,
-        no_properties_fields: typing.Optional[Iterable[str]] = None,
+        no_properties_fields: typing.Optional[Dict[str, typing.Any]] = None,
     ) -> ItemT:
         # This method transforms a properties dictionary into a leaf.
         # Assumes that the leaf is flat, or has well-known primitive types.
@@ -1366,8 +1357,8 @@ class NotionCollectionsManager:
         }  # type: ignore
 
         if no_properties_fields:
-            for field_name in no_properties_fields:
-                fields[field_name] = None
+            for field_name, field_default_value in no_properties_fields.items():
+                fields[field_name] = field_default_value
 
         for field_value_any in collection_item.properties.values():
             field_value: typing.Any = field_value_any  # type: ignore

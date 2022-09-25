@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -136,7 +137,9 @@ class SlackTaskUpdate(command.Command):
             help="Clear the due date of the slack task",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.user:
@@ -196,7 +199,9 @@ class SlackTaskUpdate(command.Command):
             )
         else:
             due_date = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             SlackTaskUpdateUseCase.Args(
                 ref_id=ref_id,
                 user=user,
@@ -208,5 +213,5 @@ class SlackTaskUpdate(command.Command):
                 generation_difficulty=difficulty,
                 generation_actionable_date=actionable_date,
                 generation_due_date=due_date,
-            )
+            ),
         )

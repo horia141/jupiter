@@ -12,8 +12,12 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -44,35 +48,55 @@ class MetricEntryCreateUseCase(
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._notion_manager = notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
-            metric = uow.metric_repository.load_by_key(
-                metric_collection.ref_id, args.metric_key
-            )
-            collection_time = (
-                args.collection_time
-                if args.collection_time
-                else ADate.from_timestamp(self._time_provider.get_current_time())
-            )
-            metric_entry = MetricEntry.new_metric_entry(
-                archived=False,
-                metric_ref_id=metric.ref_id,
-                collection_time=collection_time,
-                value=args.value,
-                notes=args.notes,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            metric_entry = uow.metric_entry_repository.create(metric_entry)
-        notion_metric_entry = NotionMetricEntry.new_notion_entity(metric_entry, None)
-        self._notion_manager.upsert_leaf(
-            metric_collection.ref_id,
-            metric.ref_id,
-            notion_metric_entry,
+        simple_name = (
+            f"Entry for {ADate.to_user_date_str(args.collection_time)} value={args.value}"
+            + (f"notes={args.notes}" if args.notes else "")
         )
+
+        with progress_reporter.start_creating_entity(
+            "metric entry", simple_name
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                metric_collection = uow.metric_collection_repository.load_by_parent(
+                    workspace.ref_id
+                )
+                metric = uow.metric_repository.load_by_key(
+                    metric_collection.ref_id, args.metric_key
+                )
+                collection_time = (
+                    args.collection_time
+                    if args.collection_time
+                    else ADate.from_timestamp(self._time_provider.get_current_time())
+                )
+                metric_entry = MetricEntry.new_metric_entry(
+                    archived=False,
+                    metric_ref_id=metric.ref_id,
+                    collection_time=collection_time,
+                    value=args.value,
+                    notes=args.notes,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
+                )
+                metric_entry = uow.metric_entry_repository.create(metric_entry)
+                entity_reporter.mark_known_entity_id(
+                    metric_entry.ref_id
+                ).mark_local_change()
+
+            notion_metric_entry = NotionMetricEntry.new_notion_entity(
+                metric_entry, None
+            )
+            self._notion_manager.upsert_leaf(
+                metric_collection.ref_id,
+                metric.ref_id,
+                notion_metric_entry,
+            )
+            entity_reporter.mark_remote_change()

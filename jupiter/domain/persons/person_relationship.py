@@ -1,12 +1,13 @@
 """The relationship the user has with a person."""
 import enum
-from functools import lru_cache
-from typing import Optional, Iterable
+from functools import lru_cache, total_ordering
+from typing import Optional, Iterable, List, cast
 
 from jupiter.framework.errors import InputValidationError
 
 
 @enum.unique
+@total_ordering
 class PersonRelationship(enum.Enum):
     """The relationship the user has with a person."""
 
@@ -44,4 +45,15 @@ class PersonRelationship(enum.Enum):
     @lru_cache(maxsize=1)
     def all_values() -> Iterable[str]:
         """The possible values for sync targets."""
-        return frozenset(st.value for st in PersonRelationship)
+        return list(st.value for st in PersonRelationship)
+
+    def __lt__(self, other: object) -> bool:
+        """Compare this with another."""
+        if not isinstance(other, PersonRelationship):
+            raise Exception(
+                f"Cannot compare an entity id with {other.__class__.__name__}"
+            )
+
+        all_values = cast(List[str], self.all_values())
+
+        return all_values.index(self.value) < all_values.index(other.value)

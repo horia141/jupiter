@@ -1,13 +1,11 @@
 """UseCase for hard removing chores."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.chores.remove import ChoreRemoveUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreRemove(command.Command):
@@ -39,8 +37,11 @@ class ChoreRemove(command.Command):
             help="Show only tasks selected by this id",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(ChoreRemoveUseCase.Args(ref_id))
+
+        self._command.execute(progress_reporter, ChoreRemoveUseCase.Args(ref_id))

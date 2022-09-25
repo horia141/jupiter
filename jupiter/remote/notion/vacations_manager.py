@@ -1,5 +1,4 @@
 """The centralised point for interacting with Notion vacations."""
-import logging
 from typing import Final, ClassVar, Iterable
 
 from jupiter.domain.vacations.infra.vacation_notion_manager import (
@@ -24,8 +23,6 @@ from jupiter.remote.notion.infra.collections_manager import (
 )
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionVacationsManager(VacationNotionManager):

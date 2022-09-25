@@ -31,6 +31,7 @@ class VacationSyncService(
         super().__init__(
             VacationCollection,
             Vacation,
+            "vacation",
             NotionVacation,
             storage_engine,
             vacation_notion_manager,

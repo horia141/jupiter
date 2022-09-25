@@ -20,10 +20,13 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "End Date": pendulum.date(2022, 6, 20),
             },
         )
+
         self.jupiter("sync", "--target", "vacations")
+
         vacations_out = self.jupiter("vacation-show")
+
         assert re.search(
-            r"Summer Trip start=2022-06-10 .*end=2022-06-20", vacations_out
+            r"Summer Trip Start at 2022-06-10 End at 2022-06-20", vacations_out
         )
 
     @unittest.skip("Skipping because project removal cannot happen")
@@ -34,8 +37,11 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
             "Personal",
             {"Key": "personal"},
         )
+
         self.jupiter("sync", "--target", "projects")
+
         projects_out = self.jupiter("project-show")
+
         assert re.search(r"Personal", projects_out)
 
     def test_inbox_task_sync(self) -> None:
@@ -50,10 +56,13 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Difficulty": NotionSelect("Medium"),
             },
         )
+
         self.jupiter("sync", "--target", "inbox-tasks")
+
         inbox_tasks_out = self.jupiter("inbox-task-show")
+
         assert re.search(
-            r"Plan summer trip.*source=User.*status=Accepted.*eisen=Urgent.*difficulty=Medium",
+            r"🔧.*Plan summer trip.*User.*Urgent.*Medium",
             inbox_tasks_out,
         )
 
@@ -68,10 +77,13 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Difficulty": NotionSelect("Hard"),
             },
         )
+
         self.jupiter("sync", "--target", "habits")
+
         habit_out = self.jupiter("habit-show")
+
         assert re.search(
-            r"Go for a morning run.*period=Daily.*eisen=Regular.*difficulty=Hard",
+            r"Go for a morning run.*Daily.*Regular.*Hard",
             habit_out,
         )
 
@@ -86,10 +98,13 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Difficulty": NotionSelect("Easy"),
             },
         )
+
         self.jupiter("sync", "--target", "chores")
+
         chore_out = self.jupiter("chore-show")
+
         assert re.search(
-            r"Water houseplants.*period=Weekly.*eisen=Regular.*difficulty=Easy",
+            r"Water houseplants.*Weekly.*Regular.*Easy",
             chore_out,
         )
 
@@ -104,16 +119,19 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Due Date": pendulum.date(2022, 10, 27),
             },
         )
+
         self.jupiter("sync", "--target", "big-plans")
+
         big_plan_out = self.jupiter("big-plan-show")
+
         assert re.search(
-            r"Buy a new car.*status=Accepted.*actionable-date=2022-10-01.*due-date=2022-10-27",
+            r"🔧.*Buy a new car.*From 2022-10-01.*Due at 2022-10-27",
             big_plan_out,
         )
 
     def test_smart_list_sync(self) -> None:
         """Synchronisation of smart lists."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create",
             "--smart-list",
             "movies",
@@ -128,15 +146,17 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
             "Star Wars",
             {"Tags": [NotionSelect("SF"), NotionSelect("Adventure")]},
         )
-        self.jupiter("sync", "--target", "smart-lists")
-        metric_out = self.jupiter("smart-list-show")
 
-        assert re.search(r"movies.*🎬Movies", metric_out)
-        assert re.search(r"Star Wars.*#SF.*#Adventure", metric_out)
+        self.jupiter("sync", "--target", "smart-lists")
+
+        smart_list_out = self.jupiter("smart-list-show")
+
+        assert re.search(r"movies.*🎬.*Movies", smart_list_out)
+        assert re.search(r"Star Wars.*#SF.*#Adventure", smart_list_out)
 
     def test_metric_sync(self) -> None:
         """Synchronisation of metrics."""
-        self.jupiter(
+        self.jupiter_create(
             "metric-create",
             "--metric",
             "weight",
@@ -153,12 +173,14 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
             "",
             {"Collection Time": pendulum.date(2022, 10, 1), "Value": 80.2},
         )
+
         self.jupiter("sync", "--target", "metrics")
+
         metric_out = self.jupiter("metric-show")
 
-        assert re.search(r"weight.*Weight.*@Weekly", metric_out)
+        assert re.search(r"weight.*Weight.*Weekly", metric_out)
         assert re.search(r"2022-10-01", metric_out)
-        assert re.search(r"val=80.2", metric_out)
+        assert re.search(r"value=80.2", metric_out)
 
     def test_person_sync(self) -> None:
         """Synchronisation of persons."""
@@ -171,9 +193,12 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Catch Up Period": NotionSelect("Monthly"),
             },
         )
+
         self.jupiter("sync", "--target", "persons")
+
         person_out = self.jupiter("person-show")
-        assert re.search(r"Mike.*Friend.*Catch up Monthly.*17 Apr", person_out)
+
+        assert re.search(r"Mike.*Friend.*Monthly.*Birthday on 17 Apr", person_out)
 
     def test_push_integration_slack_sync(self) -> None:
         """Synchronisation of a Slack based task via a push integration."""
@@ -188,9 +213,10 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
         )
 
         self.jupiter("sync", "--target", "slack-tasks")
+
         slack_task_out = self.jupiter("slack-task-show")
+
         assert re.search(r"name=Prepare for the summer meetup", slack_task_out)
-        assert re.search(r"from=John Doe", slack_task_out)
-        assert re.search(r"in-channel=all-company", slack_task_out)
-        assert re.search(r"difficulty=Hard", slack_task_out)
-        assert re.search(r"channel=all-company", slack_task_out)
+        assert re.search(r"@John Doe", slack_task_out)
+        assert re.search(r"in #all-company", slack_task_out)
+        assert re.search(r"Hard", slack_task_out)

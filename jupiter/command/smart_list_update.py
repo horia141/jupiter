@@ -1,16 +1,14 @@
 """UseCase for updating a smart list."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.smart_lists.update import SmartListUpdateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SmartListUpdate(command.Command):
@@ -56,7 +54,9 @@ class SmartListUpdate(command.Command):
             help="Clear the icon and use the default one",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         if args.name:
@@ -70,6 +70,8 @@ class SmartListUpdate(command.Command):
             icon = UpdateAction.change_to(EntityIcon.from_raw(args.icon))
         else:
             icon = UpdateAction.do_nothing()
+
         self._command.execute(
-            SmartListUpdateUseCase.Args(key=smart_list_key, name=name, icon=icon)
+            progress_reporter,
+            SmartListUpdateUseCase.Args(key=smart_list_key, name=name, icon=icon),
         )

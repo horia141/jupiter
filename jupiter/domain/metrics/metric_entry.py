@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jupiter.domain.adate import ADate
+from jupiter.domain.entity_name import EntityName
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
 from jupiter.framework.entity import Entity, FIRST_VERSION, LeafEntity
@@ -79,3 +80,11 @@ class MetricEntry(LeafEntity):
     def parent_ref_id(self) -> EntityId:
         """The parent."""
         return self.metric_ref_id
+
+    @property
+    def simple_name(self) -> EntityName:
+        """A simple name for the metric entry."""
+        return EntityName(
+            f"Entry for {ADate.to_user_date_str(self.collection_time)} value={self.value}"
+            + (f"notes={self.notes}" if self.notes else "")
+        )

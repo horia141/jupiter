@@ -14,8 +14,12 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -44,7 +48,12 @@ class SmartListTagUpdateUseCase(
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._smart_list_notion_manager = smart_list_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -54,14 +63,6 @@ class SmartListTagUpdateUseCase(
             )
 
             smart_list_tag = uow.smart_list_tag_repository.load_by_id(args.ref_id)
-
-            smart_list_tag = smart_list_tag.update(
-                tag_name=args.tag_name,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-
-            uow.smart_list_tag_repository.save(smart_list_tag)
 
             smart_list_tags = {
                 t.tag_name: t
@@ -77,33 +78,56 @@ class SmartListTagUpdateUseCase(
                 )
             )
 
-        notion_smart_list_tag = self._smart_list_notion_manager.load_branch_tag(
-            smart_list_collection.ref_id,
-            smart_list_tag.smart_list_ref_id,
-            smart_list_tag.ref_id,
-        )
-        notion_smart_list_tag = notion_smart_list_tag.join_with_entity(smart_list_tag)
-        self._smart_list_notion_manager.save_branch_tag(
-            smart_list_collection.ref_id,
-            smart_list_tag.smart_list_ref_id,
-            notion_smart_list_tag,
-        )
+        with progress_reporter.start_updating_entity(
+            "smart list tag", smart_list_tag.ref_id, str(smart_list_tag.tag_name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                smart_list_tag = smart_list_tag.update(
+                    tag_name=args.tag_name,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(smart_list_tag.tag_name))
+
+                uow.smart_list_tag_repository.save(smart_list_tag)
+                entity_reporter.mark_local_change()
+
+            notion_smart_list_tag = self._smart_list_notion_manager.load_branch_tag(
+                smart_list_collection.ref_id,
+                smart_list_tag.smart_list_ref_id,
+                smart_list_tag.ref_id,
+            )
+            notion_smart_list_tag = notion_smart_list_tag.join_with_entity(
+                smart_list_tag
+            )
+            self._smart_list_notion_manager.save_branch_tag(
+                smart_list_collection.ref_id,
+                smart_list_tag.smart_list_ref_id,
+                notion_smart_list_tag,
+            )
+            entity_reporter.mark_remote_change()
+
+            smart_list_tags[args.tag_name.value] = smart_list_tag
 
         extra_info = NotionSmartListItem.DirectInfo(
             {t.ref_id: t for t in smart_list_tags.values()}
         )
 
         for smart_list_item in smart_list_items_with_tag:
-            notion_smart_list_item = self._smart_list_notion_manager.load_leaf(
-                smart_list_collection.ref_id,
-                smart_list_item.smart_list_ref_id,
-                smart_list_item.ref_id,
-            )
-            notion_smart_list_item = notion_smart_list_item.join_with_entity(
-                smart_list_item, extra_info
-            )
-            self._smart_list_notion_manager.save_leaf(
-                smart_list_collection.ref_id,
-                smart_list_item.smart_list_ref_id,
-                notion_smart_list_item,
-            )
+            with progress_reporter.start_updating_entity(
+                "smart list item", smart_list_item.ref_id, str(smart_list_item.name)
+            ) as entity_reporter:
+                notion_smart_list_item = self._smart_list_notion_manager.load_leaf(
+                    smart_list_collection.ref_id,
+                    smart_list_item.smart_list_ref_id,
+                    smart_list_item.ref_id,
+                )
+                notion_smart_list_item = notion_smart_list_item.join_with_entity(
+                    smart_list_item, extra_info
+                )
+                self._smart_list_notion_manager.save_leaf(
+                    smart_list_collection.ref_id,
+                    smart_list_item.smart_list_ref_id,
+                    notion_smart_list_item,
+                )
+                entity_reporter.mark_remote_change()

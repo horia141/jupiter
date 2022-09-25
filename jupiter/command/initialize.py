@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.remote.notion.api_token import NotionApiToken
@@ -51,7 +52,7 @@ class Initialize(command.Command):
             help="The Notion access token to use",
         )
         parser.add_argument(
-            "--notion-api_token",
+            "--notion-api-token",
             dest="notion_api_token",
             required=True,
             help="The Notion API access token to use",
@@ -69,7 +70,9 @@ class Initialize(command.Command):
             help="The name of the first project",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         name = WorkspaceName.from_raw(args.name)
         timezone = Timezone.from_raw(args.timezone)
@@ -80,6 +83,7 @@ class Initialize(command.Command):
         first_project_name = ProjectName.from_raw(args.first_project_name)
 
         self._command.execute(
+            progress_reporter,
             InitUseCase.Args(
                 name=name,
                 timezone=timezone,
@@ -88,5 +92,5 @@ class Initialize(command.Command):
                 notion_api_token=notion_api_token,
                 first_project_key=first_project_key,
                 first_project_name=first_project_name,
-            )
+            ),
         )

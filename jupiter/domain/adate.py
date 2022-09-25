@@ -112,6 +112,17 @@ class ADate(Value):
         else:
             return cast(str, adate._surely_the_date.to_date_string())
 
+    @staticmethod
+    def to_user_date_str(adate: Optional["ADate"]) -> str:
+        """Transform a date to something meaningful to a user as a date."""
+        # pylint: disable=protected-access
+        if not adate:
+            return ""
+        if adate._the_datetime is not None:
+            return cast(str, adate._the_datetime.to_date_string())
+        else:
+            return cast(str, adate._surely_the_date.to_date_string())
+
     def subtract_days(self, days_cnt: int) -> "ADate":
         """Subtract these number of days from this date."""
         if self._the_datetime is not None:

@@ -1,7 +1,6 @@
 """The centralised point for interacting with Notion habits."""
 import copy
 import hashlib
-import logging
 import uuid
 from typing import Optional, ClassVar, Final, cast, Dict, Iterable
 
@@ -30,8 +29,6 @@ from jupiter.remote.notion.infra.collections_manager import (
 )
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionHabitsManager(HabitNotionManager):
@@ -383,7 +380,6 @@ class NotionHabitsManager(HabitNotionManager):
             new_schema,
             "project-name",
         )
-        LOGGER.info("Updated the schema for the associated habit")
 
         new_view: JSONDictType = copy.deepcopy(
             NotionHabitsManager._DATABASE_BY_PROJECT_VIEW_SCHEMA
@@ -402,7 +398,6 @@ class NotionHabitsManager(HabitNotionManager):
             "database_by_project_view_id",
             new_view,
         )
-        LOGGER.info("Updated the projects view for the associated habits")
 
     def upsert_leaf(
         self,

@@ -1,12 +1,13 @@
 """A period for a particular task."""
 import enum
-from functools import lru_cache
-from typing import Iterable, Optional
+from functools import lru_cache, total_ordering
+from typing import Iterable, Optional, cast, List
 
 from jupiter.framework.errors import InputValidationError
 
 
 @enum.unique
+@total_ordering
 class RecurringTaskPeriod(enum.Enum):
     """A period for a particular task."""
 
@@ -40,10 +41,19 @@ class RecurringTaskPeriod(enum.Enum):
     @lru_cache(maxsize=1)
     def all_values() -> Iterable[str]:
         """The possible values for difficulties."""
-        return (
-            RecurringTaskPeriod.DAILY.value,
-            RecurringTaskPeriod.WEEKLY.value,
-            RecurringTaskPeriod.MONTHLY.value,
-            RecurringTaskPeriod.QUARTERLY.value,
-            RecurringTaskPeriod.YEARLY.value,
-        )
+        return list(p.value for p in RecurringTaskPeriod)
+
+    def __lt__(self, other: object) -> bool:
+        """Compare this with another."""
+        if not isinstance(other, RecurringTaskPeriod):
+            raise Exception(
+                f"Cannot compare an entity id with {other.__class__.__name__}"
+            )
+
+        all_values = cast(List[str], self.all_values())
+
+        return all_values.index(self.value) < all_values.index(other.value)
+
+    def __str__(self) -> str:
+        """String form."""
+        return str(self.value)

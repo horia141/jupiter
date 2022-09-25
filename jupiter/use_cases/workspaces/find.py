@@ -3,7 +3,11 @@ from dataclasses import dataclass
 
 from jupiter.domain.projects.project import Project
 from jupiter.domain.workspaces.workspace import Workspace
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
@@ -23,7 +27,12 @@ class WorkspaceFindUseCase(
         workspace: Workspace
         default_project: Project
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> "Result":
         """Execute the command's action."""
         workspace = context.workspace
         with self._storage_engine.get_unit_of_work() as uow:

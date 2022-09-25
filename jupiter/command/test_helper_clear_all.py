@@ -1,15 +1,14 @@
 """Test helper command for clearing all branch and leaf entities."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.use_cases.test_helper.clear_all import ClearAllUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class TestHelperClearAll(command.TestHelperCommand):
@@ -51,16 +50,28 @@ class TestHelperClearAll(command.TestHelperCommand):
             required=False,
             help="The project key to use as a general default",
         )
+        parser.add_argument(
+            "--notion-token",
+            dest="notion_token",
+            required=True,
+            help="The Notion access token to use",
+        )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         workspace_name = WorkspaceName.from_raw(args.workspace_name)
         workspace_timezone = Timezone.from_raw(args.workspace_timezone)
         default_project_key = ProjectKey.from_raw(args.default_project_key)
+        notion_token = NotionToken.from_raw(args.notion_token)
+
         self._command.execute(
+            progress_reporter,
             ClearAllUseCase.Args(
                 workspace_name=workspace_name,
                 workspace_timezone=workspace_timezone,
                 default_project_key=default_project_key,
-            )
+                notion_token=notion_token,
+            ),
         )

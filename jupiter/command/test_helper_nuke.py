@@ -1,12 +1,10 @@
 """Test helper command for completely destroying a workspace."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.use_cases.test_helper.nuke import NukeUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class TestHelperNuke(command.TestHelperCommand):
@@ -31,6 +29,8 @@ class TestHelperNuke(command.TestHelperCommand):
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
-        self._command.execute(NukeUseCase.Args())
+        self._command.execute(progress_reporter, NukeUseCase.Args())

@@ -1,7 +1,7 @@
 """Integration tests for vacations."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class VacationIntegrationTestCase(JupiterIntegrationTestCase):
@@ -32,12 +32,12 @@ class VacationIntegrationTestCase(JupiterIntegrationTestCase):
         vacation_out = self.jupiter("vacation-show")
 
         assert re.search(r"Summer Trip", vacation_out)
-        assert re.search(r"start=2022-07-10", vacation_out)
-        assert re.search(r"end=2022-07-20", vacation_out)
+        assert re.search(r"Start at 2022-07-10", vacation_out)
+        assert re.search(r"End at 2022-07-20", vacation_out)
 
     def test_update_vacation(self) -> None:
         """Updating a vacation."""
-        self.jupiter(
+        vacation_id = self.jupiter_create(
             "vacation-create",
             "--name",
             "Summer Trip",
@@ -45,10 +45,8 @@ class VacationIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-07-10",
             "--end-date",
             "2022-07-20",
+            hint="Summer Trip",
         )
-
-        vacation_out = self.jupiter("vacation-show")
-        vacation_id = extract_id_from_show_out(vacation_out, "Summer Trip")
 
         self.jupiter(
             "vacation-update",
@@ -75,12 +73,12 @@ class VacationIntegrationTestCase(JupiterIntegrationTestCase):
         vacation_out = self.jupiter("vacation-show")
 
         assert re.search(r"Big Summer Trip", vacation_out)
-        assert re.search(r"start=2022-07-10", vacation_out)
-        assert re.search(r"end=2022-07-24", vacation_out)
+        assert re.search(r"Start at 2022-07-10", vacation_out)
+        assert re.search(r"End at 2022-07-24", vacation_out)
 
     def test_archive_vacation(self) -> None:
         """Archiving a vacation."""
-        self.jupiter(
+        vacation_id = self.jupiter_create(
             "vacation-create",
             "--name",
             "Summer Trip",
@@ -88,10 +86,8 @@ class VacationIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-07-10",
             "--end-date",
             "2022-07-20",
+            hint="Summer Trip",
         )
-
-        vacation_out = self.jupiter("vacation-show")
-        vacation_id = extract_id_from_show_out(vacation_out, "Summer Trip")
 
         self.jupiter("vacation-archive", "--id", vacation_id)
 
@@ -102,11 +98,10 @@ class VacationIntegrationTestCase(JupiterIntegrationTestCase):
         vacation_out = self.jupiter("vacation-show", "--show-archived")
 
         assert re.search(r"Summer Trip", vacation_out)
-        assert re.search(r"archived=True", vacation_out)
 
     def test_remove_vacation(self) -> None:
         """Archiving a vacation."""
-        self.jupiter(
+        vacation_id = self.jupiter_create(
             "vacation-create",
             "--name",
             "Summer Trip",
@@ -114,10 +109,8 @@ class VacationIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-07-10",
             "--end-date",
             "2022-07-20",
+            hint="Summer Trip",
         )
-
-        vacation_out = self.jupiter("vacation-show")
-        vacation_id = extract_id_from_show_out(vacation_out, "Summer Trip")
 
         self.jupiter("vacation-remove", "--id", vacation_id)
 

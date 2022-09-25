@@ -1,14 +1,12 @@
 """UseCase for archiving a person."""
 
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.persons.archive import PersonArchiveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.persons.archive import PersonArchiveUseCase
 
 
 class PersonArchive(command.Command):
@@ -36,7 +34,12 @@ class PersonArchive(command.Command):
             "--id", dest="ref_id", required=True, help="The id of the person"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(PersonArchiveUseCase.Args(ref_id=ref_id))
+
+        self._command.execute(
+            progress_reporter, PersonArchiveUseCase.Args(ref_id=ref_id)
+        )

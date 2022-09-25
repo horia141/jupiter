@@ -259,7 +259,6 @@ class NotionInboxTask(
             new_entity = new_entity.associate_with_big_plan(
                 project_ref_id=big_plan.project_ref_id,
                 big_plan_ref_id=big_plan.ref_id,
-                _big_plan_name=big_plan.name,
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time,
             )

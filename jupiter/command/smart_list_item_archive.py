@@ -1,13 +1,11 @@
 """UseCase for archiving a smart list item."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.smart_lists.item.archive import SmartListItemArchiveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.smart_lists.item.archive import SmartListItemArchiveUseCase
 
 
 class SmartListItemArchive(command.Command):
@@ -38,7 +36,12 @@ class SmartListItemArchive(command.Command):
             help="The id of the smart list item to archive",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(SmartListItemArchiveUseCase.Args(ref_id=ref_id))
+
+        self._command.execute(
+            progress_reporter, SmartListItemArchiveUseCase.Args(ref_id=ref_id)
+        )

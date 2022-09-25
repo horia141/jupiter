@@ -10,8 +10,12 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -37,22 +41,35 @@ class HabitSuspendUseCase(AppMutationUseCase["HabitSuspendUseCase.Args", None]):
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._habit_notion_manager = habit_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            habit = uow.habit_repository.load_by_id(args.ref_id)
-            project = uow.project_repository.load_by_id(habit.project_ref_id)
-            habit = habit.suspend(
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-            uow.habit_repository.save(habit)
+        with progress_reporter.start_updating_entity(
+            "habit", args.ref_id
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                habit = uow.habit_repository.load_by_id(args.ref_id)
+                entity_reporter.mark_known_name(str(habit.name))
+                project = uow.project_repository.load_by_id(habit.project_ref_id)
+                habit = habit.suspend(
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                uow.habit_repository.save(habit)
+                entity_reporter.mark_local_change()
 
-        direct_info = NotionHabit.DirectInfo(all_projects_map={project.ref_id: project})
-        notion_habit = self._habit_notion_manager.load_leaf(
-            habit.habit_collection_ref_id, habit.ref_id
-        )
-        notion_habit = notion_habit.join_with_entity(habit, direct_info)
-        self._habit_notion_manager.save_leaf(
-            habit.habit_collection_ref_id, notion_habit
-        )
+            direct_info = NotionHabit.DirectInfo(
+                all_projects_map={project.ref_id: project}
+            )
+            notion_habit = self._habit_notion_manager.load_leaf(
+                habit.habit_collection_ref_id, habit.ref_id
+            )
+            notion_habit = notion_habit.join_with_entity(habit, direct_info)
+            self._habit_notion_manager.save_leaf(
+                habit.habit_collection_ref_id, notion_habit
+            )
+            entity_reporter.mark_remote_change()

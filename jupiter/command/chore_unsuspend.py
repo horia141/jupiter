@@ -1,13 +1,11 @@
 """UseCase for unsuspending of a chore."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.chores.unsuspend import ChoreUnsuspendUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreUnsuspend(command.Command):
@@ -39,7 +37,9 @@ class ChoreUnsuspend(command.Command):
             help="The id of the chore to modify",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(ChoreUnsuspendUseCase.Args(ref_id))
+        self._command.execute(progress_reporter, ChoreUnsuspendUseCase.Args(ref_id))

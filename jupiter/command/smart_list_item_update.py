@@ -1,17 +1,15 @@
 """UseCase for updating a smart list item."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.smart_lists.item.update import SmartListItemUpdateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SmartListItemUpdate(command.Command):
@@ -74,7 +72,9 @@ class SmartListItemUpdate(command.Command):
             help="Clear the url",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
@@ -100,8 +100,10 @@ class SmartListItemUpdate(command.Command):
             url = UpdateAction.change_to(URL.from_raw(args.url))
         else:
             url = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             SmartListItemUpdateUseCase.Args(
                 ref_id=ref_id, name=name, tags=tags, is_done=is_done, url=url
-            )
+            ),
         )

@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.inbox_tasks.change_project import InboxTaskChangeProjectUseCase
@@ -51,7 +52,9 @@ class InboxTaskChangeProject(command.Command):
             help="Clear the project and use the default one",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
@@ -59,6 +62,8 @@ class InboxTaskChangeProject(command.Command):
             project_key = None
         else:
             project_key = ProjectKey.from_raw(args.project_key)
+
         self._command.execute(
-            InboxTaskChangeProjectUseCase.Args(ref_id=ref_id, project_key=project_key)
+            progress_reporter,
+            InboxTaskChangeProjectUseCase.Args(ref_id=ref_id, project_key=project_key),
         )

@@ -1,7 +1,7 @@
 """Integration tests for persons."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class PersonIntegrationTestCase(JupiterIntegrationTestCase):
@@ -9,7 +9,7 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_create_person(self) -> None:
         """Creation of a person."""
-        self.jupiter(
+        self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -35,13 +35,13 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
         person_out = self.jupiter("person-show")
 
         assert re.search(r"Mike", person_out)
-        assert re.search(r"[(]Friend[)]", person_out)
-        assert re.search(r"Catch up Weekly", person_out)
-        assert re.search(r"Birthday is 20 Apr", person_out)
+        assert re.search(r"Friend", person_out)
+        assert re.search(r"Weekly", person_out)
+        assert re.search(r"Birthday on 20 Apr", person_out)
 
     def test_update_person(self) -> None:
         """Updating a person."""
-        self.jupiter(
+        person_id = self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -51,10 +51,8 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
             "weekly",
             "--birthday",
             "20 Apr",
+            hint="Mike",
         )
-
-        person_out = self.jupiter("person-show")
-        person_id = extract_id_from_show_out(person_out, "Mike")
 
         self.jupiter(
             "person-update",
@@ -80,13 +78,13 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
         person_out = self.jupiter("person-show")
 
         assert re.search(r"Mike Jones", person_out)
-        assert re.search(r"[(]Friend[)]", person_out)
-        assert re.search(r"Catch up Weekly", person_out)
-        assert re.search(r"Birthday is 21 Apr", person_out)
+        assert re.search(r"Friend", person_out)
+        assert re.search(r"Weekly", person_out)
+        assert re.search(r"Birthday on 21 Apr", person_out)
 
     def test_archive_person(self) -> None:
         """Archiving a person."""
-        self.jupiter(
+        person_id = self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -96,14 +94,12 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
             "weekly",
             "--birthday",
             "20 Apr",
+            hint="Mike",
         )
 
         self.jupiter(
             "gen", "--period", "weekly", "--period", "yearly", "--target", "persons"
         )
-
-        person_out = self.jupiter("person-show")
-        person_id = extract_id_from_show_out(person_out, "Mike")
 
         self.jupiter("person-archive", "--id", person_id)
 
@@ -114,7 +110,6 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
         person_out = self.jupiter("person-show", "--show-archived")
 
         assert re.search(r"Mike", person_out)
-        assert re.search(r"archived=True", person_out)
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
@@ -124,13 +119,11 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show", "--show-archived")
 
         assert re.search(r"Catch up with Mike", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
         assert re.search(r"Wish happy birthday to Mike", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
 
     def test_remove_person(self) -> None:
         """Archiving a person."""
-        self.jupiter(
+        person_id = self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -140,14 +133,12 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
             "weekly",
             "--birthday",
             "20 Apr",
+            hint="Mike",
         )
 
         self.jupiter(
             "gen", "--period", "weekly", "--period", "yearly", "--target", "persons"
         )
-
-        person_out = self.jupiter("person-show")
-        person_id = extract_id_from_show_out(person_out, "Mike")
 
         self.jupiter("person-remove", "--id", person_id)
 
@@ -176,7 +167,7 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
         person_out = self.jupiter("person-show")
         assert re.search(r"The catch up project is Personal", person_out)
 
-        self.jupiter(
+        self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -187,7 +178,7 @@ class PersonIntegrationTestCase(JupiterIntegrationTestCase):
         )
         self.jupiter("gen", "--period", "weekly", "--target", "persons")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         notion_row = self.get_notion_row(
             "Catch up with Mike",

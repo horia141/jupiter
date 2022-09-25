@@ -12,8 +12,12 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -42,30 +46,41 @@ class VacationUpdateUseCase(AppMutationUseCase["VacationUpdateUseCase.Args", Non
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._vacation_notion_manager = notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            vacation_collection = uow.vacation_collection_repository.load_by_parent(
-                workspace.ref_id
+        with progress_reporter.start_updating_entity(
+            "vacation", args.ref_id
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                vacation_collection = uow.vacation_collection_repository.load_by_parent(
+                    workspace.ref_id
+                )
+                vacation = uow.vacation_repository.load_by_id(args.ref_id)
+
+                vacation = vacation.update(
+                    name=args.name,
+                    start_date=args.start_date,
+                    end_date=args.end_date,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(vacation.name))
+
+                uow.vacation_repository.save(vacation)
+                entity_reporter.mark_local_change()
+
+            notion_vacation = self._vacation_notion_manager.load_leaf(
+                vacation_collection.ref_id, args.ref_id
             )
-            vacation = uow.vacation_repository.load_by_id(args.ref_id)
-
-            vacation = vacation.update(
-                name=args.name,
-                start_date=args.start_date,
-                end_date=args.end_date,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
+            notion_vacation = notion_vacation.join_with_entity(vacation, None)
+            self._vacation_notion_manager.save_leaf(
+                vacation_collection.ref_id, notion_vacation
             )
-
-            uow.vacation_repository.save(vacation)
-
-        notion_vacation = self._vacation_notion_manager.load_leaf(
-            vacation_collection.ref_id, args.ref_id
-        )
-        notion_vacation = notion_vacation.join_with_entity(vacation, None)
-        self._vacation_notion_manager.save_leaf(
-            vacation_collection.ref_id, notion_vacation
-        )
+            entity_reporter.mark_remote_change()

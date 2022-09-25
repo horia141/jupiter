@@ -35,7 +35,9 @@ class MetricSyncService(
         super().__init__(
             MetricCollection,
             Metric,
+            "metric",
             MetricEntry,
+            "metric entry",
             NotionMetric,
             NotionMetricEntry,
             storage_engine,

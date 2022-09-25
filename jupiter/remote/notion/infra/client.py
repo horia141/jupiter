@@ -1,6 +1,5 @@
 """A client for tailored interactions with Notion."""
 import enum
-import logging
 from dataclasses import dataclass
 from typing import Final, Optional, Iterable, List
 
@@ -19,8 +18,6 @@ from jupiter.domain.remote.notion.space_id import NotionSpaceId
 from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.framework.base.notion_id import NotionId
 from jupiter.framework.json import JSONDictType
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionPageBlockNotFound(Exception):
@@ -114,7 +111,6 @@ class NotionClient:
         """Attach a view to a collection."""
         if view_id:
             view = self._client.get_collection_view(str(view_id), collection=collection)
-            LOGGER.info(f"Found the collection {schema['name']} with view {view_id}")
         else:
             view = self._client.get_collection_view(
                 self._client.create_record(
@@ -123,9 +119,8 @@ class NotionClient:
                 collection=collection,
             )
             view.set("collection_id", collection.id)
-            LOGGER.info(f"Created the view {view_id} for collection {schema['name']}")
 
-        view.name = schema["name"]
+        view.notes = schema["name"]
         self._client.submit_transaction(
             [
                 {

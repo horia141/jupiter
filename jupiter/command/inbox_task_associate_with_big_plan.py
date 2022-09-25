@@ -1,16 +1,14 @@
 """UseCase for associating an inbox task with a big plan."""
 
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.inbox_tasks.associate_with_big_plan import (
     InboxTaskAssociateWithBigPlanUseCase,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskAssociateWithBigPlan(command.Command):
@@ -57,15 +55,19 @@ class InboxTaskAssociateWithBigPlan(command.Command):
             help="Clear the big plan",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.clear_big_plan:
             big_plan_ref_id = None
         else:
             big_plan_ref_id = EntityId.from_raw(args.big_plan_ref_id)
+
         self._command.execute(
+            progress_reporter,
             InboxTaskAssociateWithBigPlanUseCase.Args(
                 ref_id=ref_id, big_plan_ref_id=big_plan_ref_id
-            )
+            ),
         )

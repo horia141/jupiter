@@ -8,6 +8,7 @@ from jupiter.domain.vacations.infra.vacation_notion_manager import (
     NotionVacationNotFoundError,
 )
 from jupiter.domain.storage_engine import DomainStorageEngine
+from jupiter.framework.use_case import ProgressReporter, MarkProgressStatus
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,17 +28,22 @@ class VacationRemoveService:
         self._storage_engine = storage_engine
         self._vacation_notion_manager = vacation_notion_manager
 
-    def do_it(self, vacation: Vacation) -> None:
+    def do_it(self, progress_reporter: ProgressReporter, vacation: Vacation) -> None:
         """Execute the service's action."""
-        with self._storage_engine.get_unit_of_work() as uow:
-            uow.vacation_repository.remove(vacation.ref_id)
-        LOGGER.info("Applied local changes")
-        # Apply Notion changes
-        try:
-            self._vacation_notion_manager.remove_leaf(
-                vacation.vacation_collection_ref_id, vacation.ref_id
-            )
-        except NotionVacationNotFoundError:
-            LOGGER.info(
-                "Skipping archiving of Notion vacation because it could not be found"
-            )
+        with progress_reporter.start_removing_entity(
+            "vacation", vacation.ref_id, str(vacation.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.vacation_repository.remove(vacation.ref_id)
+                entity_reporter.mark_local_change()
+
+            try:
+                self._vacation_notion_manager.remove_leaf(
+                    vacation.vacation_collection_ref_id, vacation.ref_id
+                )
+                entity_reporter.mark_remote_change()
+            except NotionVacationNotFoundError:
+                LOGGER.info(
+                    "Skipping archiving of Notion vacation because it could not be found"
+                )
+                entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)

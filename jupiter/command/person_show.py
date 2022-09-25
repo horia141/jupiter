@@ -2,12 +2,25 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
-from jupiter.command.command import Command
-from jupiter.use_cases.persons.find import PersonFindUseCase
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
+from jupiter.command.command import ReadonlyCommand
+from jupiter.command.rendering import (
+    entity_id_to_rich_text,
+    entity_name_to_rich_text,
+    person_relationship_to_rich_text,
+    period_to_rich_text,
+    person_birthday_to_rich_text,
+    RichConsoleProgressReporter,
+)
+from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.use_cases.persons.find import PersonFindUseCase
 
 
-class PersonShow(Command):
+class PersonShow(ReadonlyCommand):
     """UseCase for showing the persons."""
 
     _command: Final[PersonFindUseCase]
@@ -44,7 +57,9 @@ class PersonShow(Command):
             help="The id of the persons to show",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         ref_ids = (
@@ -53,25 +68,52 @@ class PersonShow(Command):
             else None
         )
 
-        response = self._command.execute(
+        result = self._command.execute(
+            progress_reporter,
             PersonFindUseCase.Args(
                 allow_archived=show_archived, filter_person_ref_ids=ref_ids
-            )
+            ),
         )
 
-        print(f"The catch up project is {response.catch_up_project.name}")
+        sorted_persons = sorted(
+            result.persons,
+            key=lambda p: (
+                p.archived,
+                p.relationship,
+                p.catch_up_params.period
+                if p.catch_up_params
+                else RecurringTaskPeriod.YEARLY,
+            ),
+        )
 
-        print("Persons:")
-        for person in response.persons:
-            print(
-                f" - id={person.ref_id} {person.name} ({person.relationship.for_notion()})",
-                end="",
-            )
-            print(
-                f" Catch up {person.catch_up_params.period.for_notion()}"
-                if person.catch_up_params
-                else "",
-                end="",
-            )
-            print(f" Birthday is {person.birthday}" if person.birthday else "", end="")
-            print(f" archived={person.archived}")
+        rich_tree = Tree("👨 Persons", guide_style="bold bright_blue")
+
+        catch_up_project_text = Text(
+            f"The catch up project is {result.catch_up_project.name}"
+        )
+        rich_tree.add(catch_up_project_text)
+
+        for person in sorted_persons:
+            person_text = entity_id_to_rich_text(person.ref_id)
+
+            person_text.append(" ")
+            person_text.append(entity_name_to_rich_text(person.name))
+
+            person_text.append(" ")
+            person_text.append(person_relationship_to_rich_text(person.relationship))
+
+            if person.catch_up_params:
+                person_text.append(" ")
+                person_text.append(period_to_rich_text(person.catch_up_params.period))
+
+            if person.birthday:
+                person_text.append(" ")
+                person_text.append(person_birthday_to_rich_text(person.birthday))
+
+            if person.archived:
+                person_text.stylize("gray62")
+
+            rich_tree.add(person_text)
+
+        console = Console()
+        console.print(rich_tree)

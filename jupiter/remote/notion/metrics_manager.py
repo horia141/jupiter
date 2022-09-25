@@ -1,5 +1,4 @@
 """The centralised point for interacting with Notion metrics."""
-import logging
 import typing
 from typing import ClassVar, Final
 
@@ -30,8 +29,6 @@ from jupiter.remote.notion.infra.pages_manager import NotionPagesManager
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
-LOGGER = logging.getLogger(__name__)
-
 
 class NotionMetricsManager(MetricNotionManager):
     """The centralised point for interacting with Notion metrics."""
@@ -43,7 +40,12 @@ class NotionMetricsManager(MetricNotionManager):
     _SCHEMA: ClassVar[JSONDictType] = {
         "collection-time": {"name": "Collection Time", "type": "date"},
         "value": {"name": "Value", "type": "number"},
-        "title": {"name": "Notes", "type": "title"},
+        "title": {
+            "name": "Notes",
+            "type": "title",
+            "alt-id": "notes",
+            "alt-name": "notes",
+        },
         "ref-id": {"name": "Ref Id", "type": "text"},
         "archived": {"name": "Archived", "type": "checkbox"},
         "last-edited-time": {"name": "Last Edited Time", "type": "last_edited_time"},

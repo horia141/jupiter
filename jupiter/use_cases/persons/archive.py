@@ -18,8 +18,13 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     UseCaseArgsBase,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
+    MarkProgressStatus,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -50,7 +55,12 @@ class PersonArchiveUseCase(AppMutationUseCase["PersonArchiveUseCase.Args", None]
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._person_notion_manager = person_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -59,11 +69,6 @@ class PersonArchiveUseCase(AppMutationUseCase["PersonArchiveUseCase.Args", None]
                 workspace.ref_id
             )
             person = uow.person_repository.load_by_id(args.ref_id)
-
-            person = person.mark_archived(
-                EventSource.CLI, self._time_provider.get_current_time()
-            )
-            uow.person_repository.save(person)
 
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id
@@ -83,14 +88,27 @@ class PersonArchiveUseCase(AppMutationUseCase["PersonArchiveUseCase.Args", None]
             storage_engine=self._storage_engine,
             inbox_task_notion_manager=self._inbox_task_notion_manager,
         )
-        for inbox_task in all_inbox_tasks:
-            inbox_task_archive_service.do_it(inbox_task)
 
-        try:
-            self._person_notion_manager.remove_leaf(
-                person_collection.ref_id, person.ref_id
-            )
-        except NotionPersonNotFoundError:
-            LOGGER.warning(
-                "Skipping archival on Notion side because person was not found"
-            )
+        for inbox_task in all_inbox_tasks:
+            inbox_task_archive_service.do_it(progress_reporter, inbox_task)
+
+        with progress_reporter.start_archiving_entity(
+            "person", person.ref_id, str(person.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                person = person.mark_archived(
+                    EventSource.CLI, self._time_provider.get_current_time()
+                )
+                uow.person_repository.save(person)
+                entity_reporter.mark_local_change()
+
+            try:
+                self._person_notion_manager.remove_leaf(
+                    person_collection.ref_id, person.ref_id
+                )
+                entity_reporter.mark_remote_change()
+            except NotionPersonNotFoundError:
+                LOGGER.info(
+                    "Skipping archival on Notion side because person was not found"
+                )
+                entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)

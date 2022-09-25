@@ -12,6 +12,7 @@ from jupiter.domain.habits.infra.habit_notion_manager import (
 )
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.framework.use_case import ProgressReporter, MarkProgressStatus
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,15 +35,13 @@ class HabitRemoveService:
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._habit_notion_manager = habit_notion_manager
 
-    def remove(self, ref_id: EntityId) -> None:
-        """Hard remove an habit."""
+    def remove(self, progress_reporter: ProgressReporter, ref_id: EntityId) -> None:
+        """Hard remove a habit."""
         with self._storage_engine.get_unit_of_work() as uow:
-            habit = uow.habit_repository.remove(ref_id)
-
+            habit = uow.habit_repository.load_by_id(ref_id, allow_archived=True)
             habit_collection = uow.habit_collection_repository.load_by_id(
                 habit.habit_collection_ref_id
             )
-
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 habit_collection.workspace_ref_id
             )
@@ -51,24 +50,42 @@ class HabitRemoveService:
                 allow_archived=True,
                 filter_habit_ref_ids=[habit.ref_id],
             )
-            for inbox_task in inbox_tasks_to_archive:
-                uow.inbox_task_repository.remove(inbox_task.ref_id)
-
-        try:
-            self._habit_notion_manager.remove_leaf(
-                habit.habit_collection_ref_id, habit.ref_id
-            )
-        except NotionHabitNotFoundError:
-            # If we can't find this locally it means it's already gone
-            LOGGER.info("Skipping removal on Notion side because habit was not found")
 
         for inbox_task in inbox_tasks_to_archive:
+            with progress_reporter.start_removing_entity(
+                "inbox task", inbox_task.ref_id, str(inbox_task.name)
+            ) as entity_reporter:
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.inbox_task_repository.remove(inbox_task.ref_id)
+                    entity_reporter.mark_local_change()
+
+                try:
+                    self._inbox_task_notion_manager.remove_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    entity_reporter.mark_remote_change()
+                except NotionInboxTaskNotFoundError:
+                    # If we can't find this locally it means it's already gone
+                    LOGGER.info(
+                        "Skipping removal on Notion side because inbox task was not found"
+                    )
+                    entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)
+
+        with progress_reporter.start_removing_entity(
+            "habit", ref_id, str(habit.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                uow.habit_repository.remove(ref_id)
+                entity_reporter.mark_local_change()
+
             try:
-                self._inbox_task_notion_manager.remove_leaf(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                self._habit_notion_manager.remove_leaf(
+                    habit.habit_collection_ref_id, habit.ref_id
                 )
-            except NotionInboxTaskNotFoundError:
+                entity_reporter.mark_remote_change()
+            except NotionHabitNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info(
-                    "Skipping removal on Notion side because inbox task was not found"
+                    "Skipping removal on Notion side because habit was not found"
                 )
+                entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)

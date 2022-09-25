@@ -1,5 +1,4 @@
 """The command for updating a habit."""
-import logging
 from dataclasses import dataclass
 from typing import Optional, Final, cast
 
@@ -27,12 +26,15 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
+    MarkProgressStatus,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitUpdateUseCase(AppMutationUseCase["HabitUpdateUseCase.Args", None]):
@@ -74,78 +76,90 @@ class HabitUpdateUseCase(AppMutationUseCase["HabitUpdateUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._habit_notion_manager = habit_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            habit = uow.habit_repository.load_by_id(args.ref_id)
-            project = uow.project_repository.load_by_id(habit.project_ref_id)
+        with progress_reporter.start_updating_entity(
+            "chore", args.ref_id
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                habit = uow.habit_repository.load_by_id(args.ref_id)
+                entity_reporter.mark_known_name(str(habit.name))
 
-            need_to_change_inbox_tasks = (
-                args.name.should_change
-                or args.period.should_change
-                or args.eisen.should_change
-                or args.difficulty.should_change
-                or args.actionable_from_day.should_change
-                or args.actionable_from_month.should_change
-                or args.due_at_time.should_change
-                or args.due_at_day.should_change
-                or args.due_at_month.should_change
-                or args.repeats_in_period_count.should_change
-            )
+                project = uow.project_repository.load_by_id(habit.project_ref_id)
 
-            if (
-                args.period.should_change
-                or args.eisen.should_change
-                or args.difficulty.should_change
-                or args.actionable_from_day.should_change
-                or args.actionable_from_month.should_change
-                or args.due_at_time.should_change
-                or args.due_at_day.should_change
-                or args.due_at_month.should_change
-            ):
-                need_to_change_inbox_tasks = True
-                habit_gen_params = UpdateAction.change_to(
-                    RecurringTaskGenParams(
-                        args.period.or_else(habit.gen_params.period),
-                        args.eisen.or_else(habit.gen_params.eisen),
-                        args.difficulty.or_else(habit.gen_params.difficulty),
-                        args.actionable_from_day.or_else(
-                            habit.gen_params.actionable_from_day
-                        ),
-                        args.actionable_from_month.or_else(
-                            habit.gen_params.actionable_from_month
-                        ),
-                        args.due_at_time.or_else(habit.gen_params.due_at_time),
-                        args.due_at_day.or_else(habit.gen_params.due_at_day),
-                        args.due_at_month.or_else(habit.gen_params.due_at_month),
-                    )
+                need_to_change_inbox_tasks = (
+                    args.name.should_change
+                    or args.period.should_change
+                    or args.eisen.should_change
+                    or args.difficulty.should_change
+                    or args.actionable_from_day.should_change
+                    or args.actionable_from_month.should_change
+                    or args.due_at_time.should_change
+                    or args.due_at_day.should_change
+                    or args.due_at_month.should_change
+                    or args.repeats_in_period_count.should_change
                 )
-            else:
-                habit_gen_params = UpdateAction.do_nothing()
 
-            habit = habit.update(
-                name=args.name,
-                gen_params=habit_gen_params,
-                skip_rule=args.skip_rule,
-                repeats_in_period_count=args.repeats_in_period_count,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
+                if (
+                    args.period.should_change
+                    or args.eisen.should_change
+                    or args.difficulty.should_change
+                    or args.actionable_from_day.should_change
+                    or args.actionable_from_month.should_change
+                    or args.due_at_time.should_change
+                    or args.due_at_day.should_change
+                    or args.due_at_month.should_change
+                ):
+                    need_to_change_inbox_tasks = True
+                    habit_gen_params = UpdateAction.change_to(
+                        RecurringTaskGenParams(
+                            args.period.or_else(habit.gen_params.period),
+                            args.eisen.or_else(habit.gen_params.eisen),
+                            args.difficulty.or_else(habit.gen_params.difficulty),
+                            args.actionable_from_day.or_else(
+                                habit.gen_params.actionable_from_day
+                            ),
+                            args.actionable_from_month.or_else(
+                                habit.gen_params.actionable_from_month
+                            ),
+                            args.due_at_time.or_else(habit.gen_params.due_at_time),
+                            args.due_at_day.or_else(habit.gen_params.due_at_day),
+                            args.due_at_month.or_else(habit.gen_params.due_at_month),
+                        )
+                    )
+                else:
+                    habit_gen_params = UpdateAction.do_nothing()
+
+                habit = habit.update(
+                    name=args.name,
+                    gen_params=habit_gen_params,
+                    skip_rule=args.skip_rule,
+                    repeats_in_period_count=args.repeats_in_period_count,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+
+                uow.habit_repository.save(habit)
+                entity_reporter.mark_local_change()
+
+            habit_direct_info = NotionHabit.DirectInfo(
+                all_projects_map={project.ref_id: project}
             )
-
-            uow.habit_repository.save(habit)
-
-        habit_direct_info = NotionHabit.DirectInfo(
-            all_projects_map={project.ref_id: project}
-        )
-        notion_habit = self._habit_notion_manager.load_leaf(
-            habit.habit_collection_ref_id, habit.ref_id
-        )
-        notion_habit = notion_habit.join_with_entity(habit, habit_direct_info)
-        self._habit_notion_manager.save_leaf(
-            habit.habit_collection_ref_id, notion_habit
-        )
+            notion_habit = self._habit_notion_manager.load_leaf(
+                habit.habit_collection_ref_id, habit.ref_id
+            )
+            notion_habit = notion_habit.join_with_entity(habit, habit_direct_info)
+            self._habit_notion_manager.save_leaf(
+                habit.habit_collection_ref_id, notion_habit
+            )
+            entity_reporter.mark_remote_change()
 
         if need_to_change_inbox_tasks:
             with self._storage_engine.get_unit_of_work() as uow:
@@ -161,48 +175,56 @@ class HabitUpdateUseCase(AppMutationUseCase["HabitUpdateUseCase.Args", None]):
                 )
 
             for inbox_task in all_inbox_tasks:
-                schedule = schedules.get_schedule(
-                    habit.gen_params.period,
-                    habit.name,
-                    cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    self._global_properties.timezone,
-                    habit.skip_rule,
-                    habit.gen_params.actionable_from_day,
-                    habit.gen_params.actionable_from_month,
-                    habit.gen_params.due_at_time,
-                    habit.gen_params.due_at_day,
-                    habit.gen_params.due_at_month,
-                )
+                with progress_reporter.start_updating_entity(
+                    "inbox task", inbox_task.ref_id, str(inbox_task.name)
+                ) as entity_reporter:
+                    schedule = schedules.get_schedule(
+                        habit.gen_params.period,
+                        habit.name,
+                        cast(Timestamp, inbox_task.recurring_gen_right_now),
+                        self._global_properties.timezone,
+                        habit.skip_rule,
+                        habit.gen_params.actionable_from_day,
+                        habit.gen_params.actionable_from_month,
+                        habit.gen_params.due_at_time,
+                        habit.gen_params.due_at_day,
+                        habit.gen_params.due_at_month,
+                    )
 
-                inbox_task = inbox_task.update_link_to_habit(
-                    project_ref_id=project.ref_id,
-                    name=schedule.full_name,
-                    timeline=schedule.timeline,
-                    repeat_index=inbox_task.recurring_repeat_index,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
-                    eisen=habit.gen_params.eisen,
-                    difficulty=habit.gen_params.difficulty,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
+                    inbox_task = inbox_task.update_link_to_habit(
+                        project_ref_id=project.ref_id,
+                        name=schedule.full_name,
+                        timeline=schedule.timeline,
+                        repeat_index=inbox_task.recurring_repeat_index,
+                        actionable_date=schedule.actionable_date,
+                        due_date=schedule.due_time,
+                        eisen=habit.gen_params.eisen,
+                        difficulty=habit.gen_params.difficulty,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    entity_reporter.mark_known_name(str(inbox_task.name))
 
-                with self._storage_engine.get_unit_of_work() as uow:
-                    uow.inbox_task_repository.save(inbox_task)
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        uow.inbox_task_repository.save(inbox_task)
+                        entity_reporter.mark_local_change()
 
-                if inbox_task.archived:
-                    continue
+                    if inbox_task.archived:
+                        entity_reporter.mark_remote_change(
+                            MarkProgressStatus.NOT_NEEDED
+                        )
+                        continue
 
-                inbox_task_direct_info = NotionInboxTask.DirectInfo(
-                    all_projects_map={project.ref_id: project}, all_big_plans_map={}
-                )
-                notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
-                )
-                notion_inbox_task = notion_inbox_task.join_with_entity(
-                    inbox_task, inbox_task_direct_info
-                )
-                self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task
-                )
-                LOGGER.info("Applied Notion changes")
+                    inbox_task_direct_info = NotionInboxTask.DirectInfo(
+                        all_projects_map={project.ref_id: project}, all_big_plans_map={}
+                    )
+                    notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    notion_inbox_task = notion_inbox_task.join_with_entity(
+                        inbox_task, inbox_task_direct_info
+                    )
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task
+                    )
+                    entity_reporter.mark_remote_change()

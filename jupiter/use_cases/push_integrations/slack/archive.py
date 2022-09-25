@@ -17,8 +17,12 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     UseCaseArgsBase,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -47,7 +51,12 @@ class SlackTaskArchiveUseCase(AppMutationUseCase["SlackTaskArchiveUseCase.Args",
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._slack_task_notion_manager = slack_task_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             slack_task = uow.slack_task_repository.load_by_id(ref_id=args.ref_id)
@@ -60,4 +69,4 @@ class SlackTaskArchiveUseCase(AppMutationUseCase["SlackTaskArchiveUseCase.Args",
             self._slack_task_notion_manager,
         )
 
-        slack_task_archive_service.do_it(slack_task)
+        slack_task_archive_service.do_it(progress_reporter, slack_task)

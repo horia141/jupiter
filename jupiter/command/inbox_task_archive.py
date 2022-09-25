@@ -1,14 +1,11 @@
 """UseCase for archiving an inbox task."""
-
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.inbox_tasks.archive import InboxTaskArchiveUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskArchive(command.Command):
@@ -40,7 +37,10 @@ class InboxTaskArchive(command.Command):
             help="The if of the big plan",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(InboxTaskArchiveUseCase.Args(ref_id))
+
+        self._command.execute(progress_reporter, InboxTaskArchiveUseCase.Args(ref_id))

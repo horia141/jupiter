@@ -1,19 +1,38 @@
 """UseCase for showing the chores."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
 from jupiter.command import command
+from jupiter.command.rendering import (
+    entity_id_to_rich_text,
+    period_to_rich_text,
+    eisen_to_rich_text,
+    difficulty_to_rich_text,
+    skip_rule_to_rich_text,
+    start_date_to_rich_text,
+    end_date_to_rich_text,
+    project_to_rich_text,
+    due_at_time_to_rich_text,
+    due_at_day_to_rich_text,
+    due_at_month_to_rich_text,
+    inbox_task_summary_to_rich_text,
+    actionable_from_day_to_rich_text,
+    actionable_from_month_to_rich_text,
+    RichConsoleProgressReporter,
+)
 from jupiter.domain.adate import ADate
+from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.chores.find import ChoreFindUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
-LOGGER = logging.getLogger(__name__)
 
-
-class ChoreShow(command.Command):
+class ChoreShow(command.ReadonlyCommand):
     """UseCase class for showing the chores."""
 
     _global_properties: Final[GlobalProperties]
@@ -61,8 +80,18 @@ class ChoreShow(command.Command):
             action="append",
             help="Allow only tasks from this project",
         )
+        parser.add_argument(
+            "--show-inbox-tasks",
+            dest="show_inbox_tasks",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Show inbox tasks",
+        )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         ref_ids = (
@@ -75,47 +104,130 @@ class ChoreShow(command.Command):
             if len(args.project_keys) > 0
             else None
         )
-        response = self._command.execute(
+        show_inbox_tasks = args.show_inbox_tasks
+
+        result = self._command.execute(
+            progress_reporter,
             ChoreFindUseCase.Args(
                 show_archived=show_archived,
                 filter_ref_ids=ref_ids,
                 filter_project_keys=project_keys,
-            )
+            ),
         )
 
-        for chore_entry in response.chores:
+        rich_tree = Tree("♻️  Chores", guide_style="bold bright_blue")
+
+        sorted_chores = sorted(
+            result.chores,
+            key=lambda ce: (
+                ce.chore.archived,
+                ce.chore.suspended,
+                ce.chore.gen_params.period,
+                ce.chore.gen_params.eisen,
+                ce.chore.gen_params.difficulty or Difficulty.EASY,
+            ),
+        )
+
+        for chore_entry in sorted_chores:
             chore = chore_entry.chore
             project = chore_entry.project
             inbox_tasks = chore_entry.inbox_tasks
-            difficulty_str = (
-                chore.gen_params.difficulty.for_notion()
-                if chore.gen_params.difficulty
-                else "none"
-            )
-            print(
-                f"id={chore.ref_id} {chore.name} period={chore.gen_params.period.for_notion()}"
-                + f"\n    eisen={chore.gen_params.eisen.for_notion()}"
-                + f" difficulty={difficulty_str}"
-                + f' skip_rule={chore.skip_rule or "none"}'
-                + f" suspended={chore.suspended}"
-                + f" archived={chore.archived}"
-                + (
-                    f" start_at_date={chore.start_at_date}"
-                    if chore.start_at_date
-                    else ""
-                )
-                + (f" end_at_date={chore.end_at_date}" if chore.end_at_date else "")
-                + f'\n    due_at_time={chore.gen_params.due_at_time or "none"}'
-                + f' due_at_day={chore.gen_params.due_at_day or "none"}'
-                + f' due_at_month={chore.gen_params.due_at_month or "none"}'
-                + f" project={project.name}"
-            )
-            print("  Tasks:")
 
-            for inbox_task in inbox_tasks:
-                print(
-                    f"   - id={inbox_task.ref_id} {inbox_task.name}"
-                    + f" status={inbox_task.status.value}"
-                    + f" archived={inbox_task.archived}"
-                    + f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"'
+            chore_text = Text("")
+            chore_text.append(entity_id_to_rich_text(chore.ref_id))
+            chore_text.append(f" {chore.name}")
+
+            chore_info_text = Text("")
+            chore_info_text.append(period_to_rich_text(chore.gen_params.period))
+            chore_info_text.append(" ")
+            chore_info_text.append(eisen_to_rich_text(chore.gen_params.eisen))
+
+            if chore.gen_params.difficulty:
+                chore_info_text.append(" ")
+                chore_info_text.append(
+                    difficulty_to_rich_text(chore.gen_params.difficulty)
                 )
+
+            if chore.skip_rule and str(chore.skip_rule) != "none":
+                chore_info_text.append(" ")
+                chore_info_text.append(skip_rule_to_rich_text(chore.skip_rule))
+
+            if chore.gen_params.actionable_from_day:
+                chore_info_text.append(" ")
+                chore_info_text.append(
+                    actionable_from_day_to_rich_text(
+                        chore.gen_params.actionable_from_day
+                    )
+                )
+
+            if chore.gen_params.actionable_from_month:
+                chore_info_text.append(" ")
+                chore_info_text.append(
+                    actionable_from_month_to_rich_text(
+                        chore.gen_params.actionable_from_month
+                    )
+                )
+
+            if chore.gen_params.due_at_time:
+                chore_info_text.append(" ")
+                chore_info_text.append(
+                    due_at_time_to_rich_text(chore.gen_params.due_at_time)
+                )
+
+            if chore.gen_params.due_at_day:
+                chore_info_text.append(" ")
+                chore_info_text.append(
+                    due_at_day_to_rich_text(chore.gen_params.due_at_day)
+                )
+
+            if chore.gen_params.due_at_month:
+                chore_info_text.append(" ")
+                chore_info_text.append(
+                    due_at_month_to_rich_text(chore.gen_params.due_at_month)
+                )
+
+            if chore.start_at_date:
+                chore_info_text.append(" ")
+                chore_info_text.append(start_date_to_rich_text(chore.start_at_date))
+
+            if chore.end_at_date:
+                chore_info_text.append(" ")
+                chore_info_text.append(end_date_to_rich_text(chore.end_at_date))
+
+            chore_info_text.append(" ")
+            chore_info_text.append(project_to_rich_text(project.name))
+
+            if chore.suspended:
+                chore_text.stylize("yellow")
+                chore_info_text.append(" #suspended")
+                chore_info_text.stylize("yellow")
+
+            if chore.archived:
+                chore_text.stylize("gray62")
+                chore_info_text.stylize("gray62")
+
+            chore_tree = rich_tree.add(
+                chore_text, guide_style="gray62" if chore.archived else "blue"
+            )
+            chore_tree.add(chore_info_text)
+
+            if not show_inbox_tasks:
+                continue
+            if len(inbox_tasks) == 0:
+                continue
+
+            sorted_inbox_tasks = sorted(
+                inbox_tasks,
+                key=lambda it: (
+                    it.archived,
+                    it.status,
+                    it.due_date if it.due_date else ADate.from_str("2100-01-01"),
+                ),
+            )
+
+            for inbox_task in sorted_inbox_tasks:
+                inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
+                chore_tree.add(inbox_task_text)
+
+        console = Console()
+        console.print(rich_tree)

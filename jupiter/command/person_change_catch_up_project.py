@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command.command import Command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.persons.change_catch_up_project import (
     PersonChangeCatchUpProjectUseCase,
@@ -47,7 +48,9 @@ class PersonChangeCatchUpProject(Command):
             help="Clear the catch up project",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         catch_up_project_key: Optional[ProjectKey]
         if args.clear_catch_up_project_key:
@@ -56,7 +59,8 @@ class PersonChangeCatchUpProject(Command):
             catch_up_project_key = ProjectKey.from_raw(args.catch_up_project_key)
 
         self._command.execute(
+            progress_reporter,
             PersonChangeCatchUpProjectUseCase.Args(
                 catch_up_project_key=catch_up_project_key
-            )
+            ),
         )

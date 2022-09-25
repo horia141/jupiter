@@ -31,6 +31,7 @@ class PersonSyncService(
         super().__init__(
             PersonCollection,
             Person,
+            "person",
             NotionPerson,
             storage_engine,
             person_notion_manager,

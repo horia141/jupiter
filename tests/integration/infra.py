@@ -1,7 +1,6 @@
 """The core integration tests infrastructure where all the magic happens."""
 import json
 import os
-import pdb
 import re
 import subprocess
 import sys
@@ -67,7 +66,9 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
         """Set things up for the test suite."""
         cls._root_path = Path(os.path.realpath(__file__)).parent.parent.parent
         config_path = cls._root_path / "tests" / "integration" / "Config.test"
+        secrets_path = cls._root_path / "secrets.info"
         dotenv.load_dotenv(dotenv_path=config_path, verbose=True)
+        dotenv.load_dotenv(dotenv_path=secrets_path, verbose=True, override=True)
 
         notion_user = os.getenv("NOTION_USER")
         notion_pass = os.getenv("NOTION_PASS")
@@ -114,28 +115,25 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 + " and @role[contains(., 'button')] and contains(., 'Continue with password')]",
             )
             pass_button.click()
-            cls._driver.find_element(
-                By.XPATH, "/html/body//span[contains(., 'Have a question?')]"
-            )
 
             settings_button = cls._driver.find_element(
                 By.XPATH,
                 "/html/body//div[@class[contains(.,'notion-focusable')]"
-                + " and @role[contains(., 'button')] and contains(., 'Settings & Members')]",
+                + " and @role[contains(., 'button')] and contains(., 'Settings & members')]",
             )
             settings_button.click()
             security_button = cls._driver.find_element(
                 By.XPATH,
                 "/html/body//div[@class[contains(.,'notion-focusable')]"
-                + " and @role[contains(., 'button')] and contains(., 'Security')]",
+                + " and @role[contains(., 'button')] and contains(., 'Identity & provisioning')]",
             )
             security_button.click()
 
             time.sleep(1)
-            space_id_text = cls._driver.find_element(
+            space_id_text = cls._driver.find_elements(
                 By.XPATH,
                 "/html/body//a[@class[contains(., 'notion-link')] and not(@href)]",
-            )
+            )[-1]
 
             space_id = space_id_text.text
             token_v2 = cls._driver.get_cookie("token_v2")["value"]
@@ -197,6 +195,17 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
             ) from err
 
     @classmethod
+    def jupiter_create(
+        cls,
+        *command: str,
+        hint: Optional[str] = None,
+        sqlite_db_path: Optional[Path] = None,
+    ) -> str:
+        """Run a jupiter entity creation command and return the new id."""
+        output = cls.jupiter(*command, sqlite_db_path=sqlite_db_path)
+        return extract_id_from_show_out(output, hint)
+
+    @classmethod
     def go_to_notion(
         cls, root_page: str, *subpages: str, board_view: Optional[str] = None
     ) -> None:
@@ -217,15 +226,15 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
             sub_page_button.click()
 
         if board_view is not None:
-            all_board_button = cls.driver().find_element(
-                By.XPATH,
-                "//*[local-name()='svg' and (@class='collectionBoard' "
-                + "or @class='collectionTimeline' or @class='collectionTable')]",
-            )
-            all_board_button.click()
+            # all_board_button = cls.driver().find_element(
+            #     By.XPATH,
+            #     "//*[local-name()='svg' and (@class='collectionBoard' "
+            #     + "or @class='collectionTimeline' or @class='collectionTable')]",
+            # )
+            # all_board_button.click()
             board_button = cls.driver().find_element(
                 By.XPATH,
-                f"//div[@class='notion-focusable']//div[contains(., '{board_view}')]",
+                f"//div[@class='notion-focusable']//span[contains(., '{board_view}')]",
             )
             board_button.click()
             time.sleep(
@@ -240,6 +249,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
             str,
             Union[bool, float, str, NotionSelect, List[NotionSelect], pendulum.Date],
         ],
+        strict_check: bool = False,
     ) -> None:
         """Add a Notion row to the currently visible board."""
         add_row_button = cls.driver().find_element(
@@ -272,7 +282,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 field_big_container = cls.driver().find_element(
                     By.XPATH,
                     "//div[@style='display: flex; flex-direction: column;' and "
-                    + f"contains(., '{field_name}')]//*[local-name()='svg' and @class='checkboxSquare']",
+                    + f"contains(., '{field_name}') and not(contains(., '{field_name} Id'))]"
+                    + "//*[local-name()='svg' and @class='checkboxSquare']",
                 )
                 if field_value is True:
                     field_big_container.click()
@@ -280,7 +291,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 field_big_container = cls.driver().find_element(
                     By.XPATH,
                     "//div[@style='display: flex; flex-direction: column;' and "
-                    + f"contains(., '{field_name}')]//div[@class='notion-focusable' and contains(., 'Empty')]",
+                    + f"contains(., '{field_name}') and not(contains(., '{field_name} Id'))]"
+                    + "//div[@class='notion-focusable' and contains(., 'Empty')]",
                 )
                 cls.driver().execute_script("arguments[0].click()", field_big_container)
                 text_input = cls.driver().find_element(By.XPATH, "//input")
@@ -290,7 +302,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 field_big_container = cls.driver().find_element(
                     By.XPATH,
                     f"//div[@style='display: flex; flex-direction: column;' and "
-                    f"contains(., '{field_name}')]//div[@class='notion-focusable' and contains(., 'Empty')]",
+                    f"contains(., '{field_name}') and not(contains(., '{field_name} Id'))]"
+                    + "//div[@class='notion-focusable' and contains(., 'Empty')]",
                 )
                 cls.driver().execute_script("arguments[0].click()", field_big_container)
                 text_input = cls.driver().find_element(
@@ -304,7 +317,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 field_big_container = cls.driver().find_element(
                     By.XPATH,
                     "//div[@style='display: flex; flex-direction: column;' and "
-                    + f"contains(., '{field_name}')]//div[@class='notion-focusable' and contains(., 'Empty')]",
+                    + f"contains(., '{field_name}') and not(contains(., '{field_name} Id'))]"
+                    + "//div[@class='notion-focusable' and contains(., 'Empty')]",
                 )
                 cls.driver().execute_script("arguments[0].click()", field_big_container)
                 select_input = cls.driver().find_element(
@@ -316,7 +330,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 field_big_container = cls.driver().find_element(
                     By.XPATH,
                     "//div[@style='display: flex; flex-direction: column;' and "
-                    + f"contains(., '{field_name}')]//div[@class='notion-focusable' and contains(., 'Empty')]",
+                    + f"contains(., '{field_name}') and not(contains(., '{field_name} Id'))]"
+                    + "//div[@class='notion-focusable' and contains(., 'Empty')]",
                 )
                 cls.driver().execute_script("arguments[0].click()", field_big_container)
 
@@ -331,7 +346,8 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
                 field_big_container = cls.driver().find_element(
                     By.XPATH,
                     "//div[@style='display: flex; flex-direction: column;' and "
-                    + f"contains(., '{field_name}')]//div[@class='notion-focusable' and contains(., 'Empty')]",
+                    + f"contains(., '{field_name}') and not(contains(., '{field_name} Id'))]"
+                    + "//div[@class='notion-focusable' and contains(., 'Empty')]",
                 )
                 cls.driver().execute_script("arguments[0].click()", field_big_container)
                 date_input = cls.driver().find_element(
@@ -354,7 +370,13 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
         title_edit.send_keys(Keys.ESCAPE)  # Get out of the edit flow!
 
         # Eventual consistency is a PITA
-        time.sleep(1)
+        if strict_check:
+            cls.driver().find_element(
+                By.XPATH,
+                f"//div[@data-block-id and contains(@class, 'notion-collection-item') and contains(., '{title}')]",
+            )
+        else:
+            time.sleep(1)
 
     @classmethod
     def get_notion_row_in_database(
@@ -390,7 +412,7 @@ class JupiterBasicIntegrationTestCase(unittest.TestCase):
             )
             open_button.click()
 
-        time.sleep(1) # Animation be animating in the latest Notion
+        time.sleep(1)  # Animation be animating in the latest Notion
 
         attributes: Dict[str, str] = {}
 
@@ -532,12 +554,17 @@ class JupiterIntegrationTestCase(JupiterBasicIntegrationTestCase):
                 "Europe/Bucharest",
                 "--default-project",
                 "work",
+                "--notion-token",
+                self.token_v2,
             )
 
 
-def extract_id_from_show_out(out_str: str, match_hint: str) -> str:
+def extract_id_from_show_out(out_str: str, match_hint: Optional[str]) -> str:
     """Extract an entity id from show output."""
-    pattern = re.compile(r"id=(\d+) " + match_hint)
+    if match_hint:
+        pattern = re.compile(r"#(\d+) " + match_hint)
+    else:
+        pattern = re.compile(r"#(\d+)")
     match = pattern.search(out_str)
     if not match:
         raise AssertionError(f"Output from show command is wrong:\n{out_str}")

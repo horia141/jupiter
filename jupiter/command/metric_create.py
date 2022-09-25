@@ -3,6 +3,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_icon import EntityIcon
@@ -110,7 +111,9 @@ class MetricCreate(command.Command):
             help="The unit for the values of the metric",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
         name = MetricName.from_raw(args.name)
@@ -164,7 +167,9 @@ class MetricCreate(command.Command):
         metric_unit = (
             MetricUnit.from_raw(args.metric_unit) if args.metric_unit else None
         )
+
         self._command.execute(
+            progress_reporter,
             MetricCreateUseCase.Args(
                 key=metric_key,
                 name=name,
@@ -178,5 +183,5 @@ class MetricCreate(command.Command):
                 collection_due_at_day=collection_due_at_day,
                 collection_due_at_month=collection_due_at_month,
                 metric_unit=metric_unit,
-            )
+            ),
         )

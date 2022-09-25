@@ -1,9 +1,9 @@
 """UseCase for syncing the local and Notion-side data."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
@@ -11,8 +11,6 @@ from jupiter.domain.sync_prefer import SyncPrefer
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.sync import SyncUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Sync(command.Command):
@@ -150,7 +148,9 @@ class Sync(command.Command):
             help="Drop all Notion-side archived",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         sync_targets = (
             [SyncTarget.from_raw(st) for st in args.sync_targets]
@@ -220,7 +220,9 @@ class Sync(command.Command):
         sync_prefer = SyncPrefer.from_raw(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
+
         self._command.execute(
+            progress_reporter,
             SyncUseCase.Args(
                 sync_targets=sync_targets,
                 drop_all_notion=drop_all_notion,
@@ -238,5 +240,5 @@ class Sync(command.Command):
                 filter_person_ref_ids=person_ref_ids,
                 filter_slack_task_ref_ids=slack_task_ref_ids,
                 sync_prefer=sync_prefer,
-            )
+            ),
         )

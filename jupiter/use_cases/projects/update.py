@@ -1,5 +1,4 @@
 """The command for updating a project."""
-import logging
 from dataclasses import dataclass
 from typing import Final
 
@@ -21,11 +20,13 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ProjectUpdateUseCase(AppMutationUseCase["ProjectUpdateUseCase.Args", None]):
@@ -63,41 +64,52 @@ class ProjectUpdateUseCase(AppMutationUseCase["ProjectUpdateUseCase.Args", None]
         self._chore_notion_manager = chore_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
-            project = uow.project_repository.load_by_key(
-                project_collection.ref_id, args.key
-            )
-            project = project.update(
-                name=args.name,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-            uow.project_repository.save(project)
-        LOGGER.info("Applied local changes")
+        with progress_reporter.start_updating_entity("project") as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                project_collection = uow.project_collection_repository.load_by_parent(
+                    workspace.ref_id
+                )
+                project = uow.project_repository.load_by_key(
+                    project_collection.ref_id, args.key
+                )
+                entity_reporter.mark_known_entity_id(project.ref_id)
 
-        notion_project = self._project_notion_manager.load_leaf(
-            project_collection.ref_id, project.ref_id
-        )
-        notion_project = notion_project.join_with_entity(project, None)
-        self._project_notion_manager.save_leaf(
-            project_collection.ref_id, notion_project
-        )
-        LOGGER.info("Applied Notion changes")
+                project = project.update(
+                    name=args.name,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(project.name))
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            projects = uow.project_repository.find_all(project_collection.ref_id)
+                uow.project_repository.save(project)
+                entity_reporter.mark_local_change()
 
-        ProjectLabelUpdateService(
-            self._storage_engine,
-            self._inbox_task_notion_manager,
-            self._habit_notion_manager,
-            self._chore_notion_manager,
-            self._big_plan_notion_manager,
-        ).sync(workspace, projects)
+            notion_project = self._project_notion_manager.load_leaf(
+                project_collection.ref_id, project.ref_id
+            )
+            notion_project = notion_project.join_with_entity(project, None)
+            self._project_notion_manager.save_leaf(
+                project_collection.ref_id, notion_project
+            )
+            entity_reporter.mark_remote_change()
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                projects = uow.project_repository.find_all(project_collection.ref_id)
+
+            ProjectLabelUpdateService(
+                self._storage_engine,
+                self._inbox_task_notion_manager,
+                self._habit_notion_manager,
+                self._chore_notion_manager,
+                self._big_plan_notion_manager,
+            ).sync(workspace, projects)
+            entity_reporter.mark_other_progress("labels")

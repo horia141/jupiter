@@ -1,13 +1,13 @@
 """UseCase for adding a chore."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
+from jupiter.domain.chores.chore_name import ChoreName
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.chores.chore_name import ChoreName
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -16,8 +16,6 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.use_cases.chores.create import ChoreCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreCreate(command.Command):
@@ -128,7 +126,9 @@ class ChoreCreate(command.Command):
             "--skip-rule", dest="skip_rule", help="The skip rule for the task"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         project_key = (
             ProjectKey.from_raw(args.project_key) if args.project_key else None
@@ -175,7 +175,9 @@ class ChoreCreate(command.Command):
             if args.end_at_date
             else None
         )
+
         self._command.execute(
+            progress_reporter,
             ChoreCreateUseCase.Args(
                 project_key=project_key,
                 name=name,
@@ -191,5 +193,5 @@ class ChoreCreate(command.Command):
                 skip_rule=skip_rule,
                 start_at_date=start_at_date,
                 end_at_date=end_at_date,
-            )
+            ),
         )

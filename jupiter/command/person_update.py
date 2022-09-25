@@ -1,9 +1,9 @@
 """UseCase for updating a person."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.persons.person_birthday import PersonBirthday
@@ -15,8 +15,6 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.persons.update import PersonUpdateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PersonUpdate(command.Command):
@@ -199,7 +197,9 @@ class PersonUpdate(command.Command):
             help="Clear the birthday",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
@@ -296,6 +296,7 @@ class PersonUpdate(command.Command):
             birthday = UpdateAction.do_nothing()
 
         self._command.execute(
+            progress_reporter,
             PersonUpdateUseCase.Args(
                 ref_id=ref_id,
                 name=name,
@@ -309,5 +310,5 @@ class PersonUpdate(command.Command):
                 catch_up_due_at_day=catch_up_due_at_day,
                 catch_up_due_at_month=catch_up_due_at_month,
                 birthday=birthday,
-            )
+            ),
         )

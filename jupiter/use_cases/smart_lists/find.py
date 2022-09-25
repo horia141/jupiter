@@ -8,7 +8,11 @@ from jupiter.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
@@ -41,7 +45,10 @@ class SmartListFindUseCase(
         smart_lists: Iterable["SmartListFindUseCase.ResponseEntry"]
 
     def _execute(
-        self, context: AppUseCaseContext, args: Args
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
     ) -> "SmartListFindUseCase.Result":
         """Execute the command's action."""
         workspace = context.workspace

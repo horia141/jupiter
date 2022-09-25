@@ -1,16 +1,14 @@
 """UseCase for creating a smart list item."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.domain.url import URL
 from jupiter.use_cases.smart_lists.item.create import SmartListItemCreateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SmartListItemCreate(command.Command):
@@ -60,19 +58,23 @@ class SmartListItemCreate(command.Command):
         )
         parser.add_argument("--url", dest="url", help="An url for the smart list item")
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         name = SmartListItemName.from_raw(args.name)
         is_done = args.is_done
         tag_names = [SmartListTagName.from_raw(t) for t in args.tag_names]
         url = URL.from_raw(args.url) if args.url else None
+
         self._command.execute(
+            progress_reporter,
             SmartListItemCreateUseCase.Args(
                 smart_list_key=smart_list_key,
                 name=name,
                 is_done=is_done,
                 tag_names=tag_names,
                 url=url,
-            )
+            ),
         )

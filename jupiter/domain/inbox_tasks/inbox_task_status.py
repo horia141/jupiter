@@ -1,12 +1,13 @@
 """The status of an inbox task."""
 import enum
-from functools import lru_cache
-from typing import Optional, Iterable
+from functools import lru_cache, total_ordering
+from typing import Optional, Iterable, cast, List
 
 from jupiter.framework.errors import InputValidationError
 
 
 @enum.unique
+@total_ordering
 class InboxTaskStatus(enum.Enum):
     """The status of an inbox task."""
 
@@ -72,8 +73,19 @@ class InboxTaskStatus(enum.Enum):
     @staticmethod
     @lru_cache(maxsize=1)
     def all_values() -> Iterable[str]:
-        """The possible values for difficulties."""
-        return frozenset(st.value for st in InboxTaskStatus)
+        """The possible values for inbox tasks."""
+        return list(st.value for st in InboxTaskStatus)
+
+    def __lt__(self, other: object) -> bool:
+        """Compare this with another."""
+        if not isinstance(other, InboxTaskStatus):
+            raise Exception(
+                f"Cannot compare an entity id with {other.__class__.__name__}"
+            )
+
+        all_values = cast(List[str], self.all_values())
+
+        return all_values.index(self.value) < all_values.index(other.value)
 
     def __str__(self) -> str:
         """String form."""

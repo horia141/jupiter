@@ -1,13 +1,13 @@
 """UseCase for updating a chore."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
+from jupiter.domain.chores.chore_name import ChoreName
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
-from jupiter.domain.chores.chore_name import ChoreName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -17,8 +17,6 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.chores.update import ChoreUpdateUseCase
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreUpdate(command.Command):
@@ -207,7 +205,9 @@ class ChoreUpdate(command.Command):
             help="Clear the skip rule of the chore",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
@@ -324,7 +324,9 @@ class ChoreUpdate(command.Command):
             )
         else:
             skip_rule = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             ChoreUpdateUseCase.Args(
                 ref_id=ref_id,
                 name=name,
@@ -340,5 +342,5 @@ class ChoreUpdate(command.Command):
                 skip_rule=skip_rule,
                 start_at_date=start_at_date,
                 end_at_date=end_at_date,
-            )
+            ),
         )

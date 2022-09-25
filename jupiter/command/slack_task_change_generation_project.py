@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command.command import Command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.push_integrations.slack.change_generation_project import (
     SlackTaskChangeGenerationProjectUseCase,
@@ -47,7 +48,9 @@ class SlackTaskChangeGenerationProject(Command):
             help="Clear the generation project",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         generation_project_key: Optional[ProjectKey]
         if args.clear_generation_project_key:
@@ -56,7 +59,8 @@ class SlackTaskChangeGenerationProject(Command):
             generation_project_key = ProjectKey.from_raw(args.generation_project_key)
 
         self._command.execute(
+            progress_reporter,
             SlackTaskChangeGenerationProjectUseCase.Args(
                 generation_project_key=generation_project_key
-            )
+            ),
         )

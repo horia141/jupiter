@@ -23,7 +23,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         self.jupiter("gen", "--target", "slack-tasks")
 
         slack_task_out = self.jupiter("slack-task-show")
-        slack_task_id = extract_id_from_show_out(slack_task_out, "from=John Doe")
+        slack_task_id = extract_id_from_show_out(slack_task_out, "@John Doe")
 
         self.jupiter(
             "slack-task-update",
@@ -72,13 +72,13 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
 
         slack_task_out = self.jupiter("slack-task-show")
 
-        assert re.search(r"from=Johnny Doe", slack_task_out)
-        assert re.search(r"in-channel=all-company-news", slack_task_out)
-        assert re.search(r"message=Summer meetup is cancelled", slack_task_out)
+        assert re.search(r"@Johnny Doe", slack_task_out)
+        assert re.search(r"in #all-company-news", slack_task_out)
+        assert re.search(r"said 💬 Summer meetup is cancelled", slack_task_out)
         assert re.search(r"name=Cancel bookings for the summer meetup", slack_task_out)
-        assert re.search(r"eisen=Important", slack_task_out)
-        assert re.search(r"difficulty=Hard", slack_task_out)
-        assert re.search(r"due-date=2022-05-23", slack_task_out)
+        assert re.search(r"Important", slack_task_out)
+        assert re.search(r"Hard", slack_task_out)
+        assert re.search(r"Due at( )+2022-05-23", slack_task_out)
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
@@ -99,12 +99,12 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show")
 
         assert re.search(r"Cancel bookings for the summer meetup", inbox_task_out)
-        assert re.search(r"status=Accepted", inbox_task_out)
-        assert re.search(r"source=Slack Task", inbox_task_out)
-        assert re.search(r"eisen=Important", inbox_task_out)
-        assert re.search(r"difficulty=Hard", inbox_task_out)
-        assert re.search(r"due-date=2022-05-23", inbox_task_out)
-        assert re.search(r"project=Work", inbox_task_out)
+        assert re.search(r"🔧", inbox_task_out)
+        assert re.search(r"Slack Task", inbox_task_out)
+        assert re.search(r"Important", inbox_task_out)
+        assert re.search(r"Hard", inbox_task_out)
+        assert re.search(r"Due At 2022-05-23", inbox_task_out)
+        assert re.search(r"In Project Work", inbox_task_out)
 
     def test_archive_slack_task(self) -> None:
         """Archiving of Slack tasks."""
@@ -123,7 +123,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         self.jupiter("gen", "--target", "slack-tasks")
 
         slack_task_out = self.jupiter("slack-task-show")
-        slack_task_id = extract_id_from_show_out(slack_task_out, "from=John Doe")
+        slack_task_id = extract_id_from_show_out(slack_task_out, "@John Doe")
 
         self.jupiter("slack-task-archive", "--id", slack_task_id)
 
@@ -164,7 +164,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         self.jupiter("gen", "--target", "slack-tasks")
 
         slack_task_out = self.jupiter("slack-task-show")
-        slack_task_id = extract_id_from_show_out(slack_task_out, "from=John Doe")
+        slack_task_id = extract_id_from_show_out(slack_task_out, "@John Doe")
 
         self.jupiter("slack-task-remove", "--id", slack_task_id)
 

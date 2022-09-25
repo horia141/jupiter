@@ -1,5 +1,4 @@
 """Common toolin for SQLite repositories."""
-import logging
 
 from sqlalchemy import (
     Table,
@@ -17,8 +16,6 @@ from sqlalchemy.engine import Connection
 
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.entity import Entity
-
-LOGGER = logging.getLogger(__name__)
 
 
 def build_event_table(entity_table: Table, metadata: MetaData) -> Table:

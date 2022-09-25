@@ -3,8 +3,7 @@ import argparse
 import logging
 import sys
 
-import coloredlogs
-import coverage
+from rich.logging import RichHandler
 
 from jupiter.command.big_plan_archive import BigPlanArchive
 from jupiter.command.big_plan_change_project import BigPlanChangeProject
@@ -65,6 +64,7 @@ from jupiter.command.person_update import PersonUpdate
 from jupiter.command.project_create import ProjectCreate
 from jupiter.command.project_show import ProjectShow
 from jupiter.command.project_update import ProjectUpdate
+from jupiter.command.rendering import RichConsoleProgressReporter, standard_console
 from jupiter.command.report import Report
 from jupiter.command.slack_task_archive import SlackTaskArchive
 from jupiter.command.slack_task_change_generation_project import (
@@ -238,6 +238,9 @@ from jupiter.use_cases.workspaces.find import WorkspaceFindUseCase
 from jupiter.use_cases.workspaces.update import WorkspaceUpdateUseCase
 from jupiter.utils.global_properties import build_global_properties
 from jupiter.utils.time_provider import TimeProvider
+
+
+# import coverage
 
 
 def main() -> None:
@@ -691,7 +694,7 @@ def main() -> None:
                 notion_big_plans_manager,
             ),
         ),
-        BigPlanShow(global_properties, BigPlanFindUseCase(domain_storage_engine)),
+        BigPlanShow(BigPlanFindUseCase(domain_storage_engine)),
         SmartListCreate(
             SmartListCreateUseCase(
                 time_provider,
@@ -1035,17 +1038,22 @@ def main() -> None:
             )
         command.build_parser(command_parser)
 
-    args = parser.parse_args()
-
-    coloredlogs.install(
-        level=_map_log_level_to_log_class(args.min_log_level),
-        fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    args = parser.parse_args(sys.argv[1:])
 
     if args.just_show_version:
         print(f"{global_properties.description} {global_properties.version}")
         return
+
+    logging.basicConfig(
+        level=_map_log_level_to_log_class(args.min_log_level),
+        format="%(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[
+            RichHandler(
+                rich_tracebacks=True, markup=True, log_time_format="%Y-%m-%d %H:%M:%S"
+            )
+        ],
+    )
 
     if not args.verbose_logging:
         for handler in logging.root.handlers:
@@ -1057,7 +1065,14 @@ def main() -> None:
         for command in commands:
             if args.subparser_name != command.name():
                 continue
-            command.run(args)
+            with standard_console() as (console, console_status):
+                progress_reporter = RichConsoleProgressReporter.new_reporter(
+                    console, console_status
+                )
+                progress_reporter.print_prologue(command.name(), sys.argv[1:])
+                command.run(progress_reporter, args)
+                if command.should_print_prologue_and_epilogue:
+                    progress_reporter.print_epilogue()
             break
     except InputValidationError as err:
         print("Looks like there's something wrong with the command's arguments:")
@@ -1140,7 +1155,7 @@ def _map_log_level_to_log_class(log_level: str) -> int:
         raise InputValidationError(f"Invalid log level '{log_level}'")
 
 
-coverage.process_startup()  # type: ignore
+# coverage.process_startup()  # type: ignore
 
 if __name__ == "__main__":
     main()

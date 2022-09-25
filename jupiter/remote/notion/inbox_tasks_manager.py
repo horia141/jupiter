@@ -1,7 +1,6 @@
 """The centralised point for interacting with Notion inbox tasks."""
 import copy
 import hashlib
-import logging
 import uuid
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
@@ -11,7 +10,6 @@ from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import (
     InboxTaskNotionManager,
-    NotionInboxTaskCollectionNotFoundError,
     NotionInboxTaskNotFoundError,
 )
 from jupiter.domain.inbox_tasks.notion_inbox_task import NotionInboxTask
@@ -32,13 +30,10 @@ from jupiter.remote.notion.infra.client import (
 from jupiter.remote.notion.infra.client_v2 import NotionTextBlock
 from jupiter.remote.notion.infra.collections_manager import (
     NotionCollectionsManager,
-    NotionCollectionNotFoundError,
     NotionCollectionItemNotFoundError,
 )
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionInboxTasksManager(InboxTaskNotionManager):
@@ -1051,20 +1046,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             ],
         )
 
-    def load_trunk(self, ref_id: EntityId) -> NotionInboxTaskCollection:
-        """Get the Notion collection for this inbox task collection."""
-        try:
-            return NotionInboxTaskCollection(
-                ref_id=ref_id,
-                notion_id=self._collections_manager.load_collection(
-                    NotionLockKey(f"{self._KEY}:{ref_id}")
-                ).collection_notion_id,
-            )
-        except NotionCollectionNotFoundError as err:
-            raise NotionInboxTaskCollectionNotFoundError(
-                f"Notion inbox task collection with id {ref_id} was not found"
-            ) from err
-
     def upsert_inbox_tasks_big_plan_field_options(
         self, ref_id: EntityId, big_plans_labels: Iterable[NotionFieldLabel]
     ) -> None:
@@ -1088,7 +1069,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             new_schema,
             "bigplan2",
         )
-        LOGGER.info("Updated the schema for the associated inbox")
 
     def upsert_inbox_tasks_project_field_options(
         self, ref_id: EntityId, project_labels: Iterable[NotionFieldLabel]
@@ -1113,7 +1093,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             new_schema,
             "project-name",
         )
-        LOGGER.info("Updated the schema for the associated inbox")
 
         new_view: JSONDictType = copy.deepcopy(
             NotionInboxTasksManager._KANBAN_BY_PROJECT_SUBGROUPS_VIEW_SCHEMA
@@ -1132,7 +1111,6 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
             "kanban_by_project_subgroup_view_id",
             new_view,
         )
-        LOGGER.info("Updated the projects view for the associated inbox")
 
     def upsert_leaf(
         self, trunk_ref_id: EntityId, leaf: NotionInboxTask
@@ -1184,7 +1162,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 schema=self._SCHEMA,
                 ctor=NotionInboxTask,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                no_properties_fields=["notes"],
+                no_properties_fields={"notes": None},
             )
         ]
 
@@ -1199,7 +1177,7 @@ class NotionInboxTasksManager(InboxTaskNotionManager):
                 ctor=NotionInboxTask,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
-                no_properties_fields=["notes"],
+                no_properties_fields={"notes": None},
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:

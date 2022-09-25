@@ -35,6 +35,7 @@ class InboxTaskSyncService(
         super().__init__(
             InboxTaskCollection,
             InboxTask,
+            "inbox task",
             NotionInboxTask,
             storage_engine,
             inbox_task_notion_manager,

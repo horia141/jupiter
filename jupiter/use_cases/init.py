@@ -1,5 +1,4 @@
 """UseCase for initialising the workspace."""
-import logging
 from dataclasses import dataclass
 from typing import Final
 
@@ -80,10 +79,9 @@ from jupiter.framework.use_case import (
     UseCaseArgsBase,
     MutationEmptyContextUseCase,
     EmptyContext,
+    ProgressReporter,
 )
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
@@ -152,261 +150,341 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
         )
         self._slack_task_notion_manager = slack_task_notion_manager
 
-    def _execute(self, context: EmptyContext, args: Args) -> None:
+    def _execute(
+        self, progress_reporter: ProgressReporter, context: EmptyContext, args: Args
+    ) -> None:
         """Execute the command's action."""
-        LOGGER.info("Creating workspace")
-        with self._storage_engine.get_unit_of_work() as uow:
-            new_workspace = Workspace.new_workspace(
-                name=args.name,
-                timezone=args.timezone,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_workspace = uow.workspace_repository.create(new_workspace)
+        with progress_reporter.section("Creating Local"):
+            with progress_reporter.start_creating_entity(
+                "workspace", str(args.name)
+            ) as entity_reporter:
+                with self._storage_engine.get_unit_of_work() as uow:
+                    new_workspace = Workspace.new_workspace(
+                        name=args.name,
+                        timezone=args.timezone,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_workspace = uow.workspace_repository.create(new_workspace)
+                    entity_reporter.mark_known_entity_id(
+                        new_workspace.ref_id
+                    ).mark_local_change()
 
-            new_notion_connection = NotionConnection.new_notion_connection(
-                workspace_ref_id=new_workspace.ref_id,
-                space_id=args.notion_space_id,
-                token=args.notion_token,
-                api_token=args.notion_api_token,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_notion_connection = uow.notion_connection_repository.create(
-                new_notion_connection
-            )
+                    new_notion_connection = NotionConnection.new_notion_connection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        space_id=args.notion_space_id,
+                        token=args.notion_token,
+                        api_token=args.notion_api_token,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_notion_connection = uow.notion_connection_repository.create(
+                        new_notion_connection
+                    )
+                    entity_reporter.mark_other_progress("notion connection")
 
-            new_vacation_collection = VacationCollection.new_vacation_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_vacation_collection = uow.vacation_collection_repository.create(
-                new_vacation_collection
-            )
+                    new_vacation_collection = (
+                        VacationCollection.new_vacation_collection(
+                            workspace_ref_id=new_workspace.ref_id,
+                            source=EventSource.CLI,
+                            created_time=self._time_provider.get_current_time(),
+                        )
+                    )
+                    new_vacation_collection = uow.vacation_collection_repository.create(
+                        new_vacation_collection
+                    )
+                    entity_reporter.mark_other_progress("vacations collection")
 
-            new_project_collection = ProjectCollection.new_project_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_project_collection = uow.project_collection_repository.create(
-                new_project_collection
-            )
+                    new_project_collection = ProjectCollection.new_project_collection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_project_collection = uow.project_collection_repository.create(
+                        new_project_collection
+                    )
+                    entity_reporter.mark_other_progress("projects collection")
 
-            new_default_project = Project.new_project(
-                project_collection_ref_id=new_project_collection.ref_id,
-                key=args.first_project_key,
-                name=args.first_project_name,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_default_project = uow.project_repository.create(new_default_project)
+                    new_default_project = Project.new_project(
+                        project_collection_ref_id=new_project_collection.ref_id,
+                        key=args.first_project_key,
+                        name=args.first_project_name,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_default_project = uow.project_repository.create(
+                        new_default_project
+                    )
 
-            LOGGER.info("Created first project")
-            new_workspace = new_workspace.change_default_project(
-                default_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-            uow.workspace_repository.save(new_workspace)
+                    new_workspace = new_workspace.change_default_project(
+                        default_project_ref_id=new_default_project.ref_id,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    uow.workspace_repository.save(new_workspace)
+                    entity_reporter.mark_other_progress("change default")
 
-            new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_inbox_task_collection = uow.inbox_task_collection_repository.create(
-                new_inbox_task_collection
-            )
+                    new_inbox_task_collection = (
+                        InboxTaskCollection.new_inbox_task_collection(
+                            workspace_ref_id=new_workspace.ref_id,
+                            source=EventSource.CLI,
+                            created_time=self._time_provider.get_current_time(),
+                        )
+                    )
+                    new_inbox_task_collection = (
+                        uow.inbox_task_collection_repository.create(
+                            new_inbox_task_collection
+                        )
+                    )
+                    entity_reporter.mark_other_progress("inbox tasks collection")
 
-            new_habit_collection = HabitCollection.new_habit_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_habit_collection = uow.habit_collection_repository.create(
-                new_habit_collection
-            )
+                    new_habit_collection = HabitCollection.new_habit_collection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_habit_collection = uow.habit_collection_repository.create(
+                        new_habit_collection
+                    )
+                    entity_reporter.mark_other_progress("habits collection")
 
-            new_chore_collection = ChoreCollection.new_chore_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_chore_collection = uow.chore_collection_repository.create(
-                new_chore_collection
-            )
+                    new_chore_collection = ChoreCollection.new_chore_collection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_chore_collection = uow.chore_collection_repository.create(
+                        new_chore_collection
+                    )
+                    entity_reporter.mark_other_progress("chores collection")
 
-            new_big_plan_collection = BigPlanCollection.new_big_plan_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_big_plan_collection = uow.big_plan_collection_repository.create(
-                new_big_plan_collection
-            )
+                    new_big_plan_collection = BigPlanCollection.new_big_plan_collection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_big_plan_collection = uow.big_plan_collection_repository.create(
+                        new_big_plan_collection
+                    )
+                    entity_reporter.mark_other_progress("big plans collection")
 
-            new_smart_list_collection = SmartListCollection.new_smart_list_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_smart_list_collection = uow.smart_list_collection_repository.create(
-                new_smart_list_collection
-            )
+                    new_smart_list_collection = (
+                        SmartListCollection.new_smart_list_collection(
+                            workspace_ref_id=new_workspace.ref_id,
+                            source=EventSource.CLI,
+                            created_time=self._time_provider.get_current_time(),
+                        )
+                    )
+                    new_smart_list_collection = (
+                        uow.smart_list_collection_repository.create(
+                            new_smart_list_collection
+                        )
+                    )
+                    entity_reporter.mark_other_progress("smart lists collection")
 
-            new_metric_collection = MetricCollection.new_metric_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                collection_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_metric_collection = uow.metric_collection_repository.create(
-                new_metric_collection
-            )
+                    new_metric_collection = MetricCollection.new_metric_collection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        collection_project_ref_id=new_default_project.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_metric_collection = uow.metric_collection_repository.create(
+                        new_metric_collection
+                    )
+                    entity_reporter.mark_other_progress("metrics collection")
 
-            new_person_collection = PersonCollection.new_person_collection(
-                workspace_ref_id=new_workspace.ref_id,
-                catch_up_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_person_collection = uow.person_collection_repository.create(
-                new_person_collection
-            )
+                    new_person_collection = PersonCollection.new_person_collection(
+                        workspace_ref_id=new_workspace.ref_id,
+                        catch_up_project_ref_id=new_default_project.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_person_collection = uow.person_collection_repository.create(
+                        new_person_collection
+                    )
+                    entity_reporter.mark_other_progress("persons collection")
 
-            new_push_integration_group = (
-                PushIntegrationGroup.new_push_integration_group(
-                    workspace_ref_id=new_workspace.ref_id,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
+                    new_push_integration_group = (
+                        PushIntegrationGroup.new_push_integration_group(
+                            workspace_ref_id=new_workspace.ref_id,
+                            source=EventSource.CLI,
+                            created_time=self._time_provider.get_current_time(),
+                        )
+                    )
+                    new_push_integration_group = (
+                        uow.push_integration_group_repository.create(
+                            new_push_integration_group
+                        )
+                    )
+                    entity_reporter.mark_other_progress("push integrations group")
+
+                    new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
+                        push_integration_group_ref_id=new_push_integration_group.ref_id,
+                        generation_project_ref_id=new_default_project.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_slack_task_collection = (
+                        uow.slack_task_collection_repository.create(
+                            new_slack_task_collection
+                        )
+                    )
+                    entity_reporter.mark_other_progress("Slack task collection")
+
+        with progress_reporter.section("Creating Notion structure"):
+            with progress_reporter.start_work_related_to_entity(
+                "workspace", new_workspace.ref_id, str(new_workspace.name)
+            ) as entity_reporter:
+                new_notion_workspace = NotionWorkspace.new_notion_entity(new_workspace)
+                new_notion_workspace = self._workspace_notion_manager.upsert_workspace(
+                    new_notion_workspace
                 )
-            )
-            new_push_integration_group = uow.push_integration_group_repository.create(
-                new_push_integration_group
-            )
+                entity_reporter.mark_other_progress("structure")
 
-            new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
-                push_integration_group_ref_id=new_push_integration_group.ref_id,
-                generation_project_ref_id=new_default_project.ref_id,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_slack_task_collection = uow.slack_task_collection_repository.create(
-                new_slack_task_collection
-            )
+            with progress_reporter.start_work_related_to_entity(
+                "vacation structure", new_vacation_collection.ref_id, "Vacations"
+            ) as entity_reporter:
+                new_notion_vacation_collection = (
+                    NotionVacationCollection.new_notion_entity(new_vacation_collection)
+                )
+                self._vacation_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_vacation_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Applied local changes")
+            with progress_reporter.start_work_related_to_entity(
+                "projects structure", new_project_collection.ref_id, "Projects"
+            ) as entity_reporter:
+                new_notion_project_collection = (
+                    NotionProjectCollection.new_notion_entity(new_project_collection)
+                )
+                self._project_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_project_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        new_notion_workspace = NotionWorkspace.new_notion_entity(new_workspace)
-        new_notion_workspace = self._workspace_notion_manager.upsert_workspace(
-            new_notion_workspace
-        )
+                new_notion_default_project = NotionProject.new_notion_entity(
+                    new_default_project, None
+                )
+                self._project_notion_manager.upsert_leaf(
+                    new_project_collection.ref_id,
+                    new_notion_default_project,
+                )
+                entity_reporter.mark_other_progress("default project")
 
-        LOGGER.info("Creating vacations structure")
-        new_notion_vacation_collection = NotionVacationCollection.new_notion_entity(
-            new_vacation_collection
-        )
-        self._vacation_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_vacation_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "inbox tasks structure", new_inbox_task_collection.ref_id, "Inbox Tasks"
+            ) as entity_reporter:
+                new_notion_inbox_task_collection = (
+                    NotionInboxTaskCollection.new_notion_entity(
+                        new_inbox_task_collection
+                    )
+                )
+                self._inbox_task_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_inbox_task_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating projects structure")
-        new_notion_project_collection = NotionProjectCollection.new_notion_entity(
-            new_project_collection
-        )
-        self._project_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_project_collection
-        )
-        new_notion_default_project = NotionProject.new_notion_entity(
-            new_default_project, None
-        )
-        self._project_notion_manager.upsert_leaf(
-            new_project_collection.ref_id,
-            new_notion_default_project,
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "habits structure", new_habit_collection.ref_id, "Habits"
+            ) as entity_reporter:
+                new_notion_habit_collection = NotionHabitCollection.new_notion_entity(
+                    new_habit_collection
+                )
+                self._habit_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_habit_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating inbox tasks structure")
-        new_notion_inbox_task_collection = NotionInboxTaskCollection.new_notion_entity(
-            new_inbox_task_collection
-        )
-        self._inbox_task_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_inbox_task_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "chores structure", new_chore_collection.ref_id, "Chores"
+            ) as entity_reporter:
+                new_notion_chore_collection = NotionChoreCollection.new_notion_entity(
+                    new_chore_collection
+                )
+                self._chore_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_chore_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating habits structure")
-        new_notion_habit_collection = NotionHabitCollection.new_notion_entity(
-            new_habit_collection
-        )
-        self._habit_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_habit_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "big plans structure", new_big_plan_collection.ref_id, "Big Plans"
+            ) as entity_reporter:
+                new_notion_big_plan_collection = (
+                    NotionBigPlanCollection.new_notion_entity(new_big_plan_collection)
+                )
+                self._big_plan_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_big_plan_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating chores structure")
-        new_notion_chore_collection = NotionChoreCollection.new_notion_entity(
-            new_chore_collection
-        )
-        self._chore_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_chore_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "smart lists structure", new_smart_list_collection.ref_id, "Smart Lists"
+            ) as entity_reporter:
+                new_notion_smart_list_collection = (
+                    NotionSmartListCollection.new_notion_entity(
+                        new_smart_list_collection
+                    )
+                )
+                self._smart_list_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_smart_list_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating big plans structure")
-        new_notion_big_plan_collection = NotionBigPlanCollection.new_notion_entity(
-            new_big_plan_collection
-        )
-        self._big_plan_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_big_plan_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "metrics structure", new_metric_collection.ref_id, "Metrics"
+            ) as entity_reporter:
+                new_notion_metric_collection = NotionMetricCollection.new_notion_entity(
+                    new_metric_collection
+                )
+                self._metric_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_metric_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating lists structure")
-        new_notion_smart_list_collection = NotionSmartListCollection.new_notion_entity(
-            new_smart_list_collection
-        )
-        self._smart_list_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_smart_list_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "persons structure", new_person_collection.ref_id, "Persons"
+            ) as entity_reporter:
+                new_notion_person_collection = NotionPersonCollection.new_notion_entity(
+                    new_person_collection
+                )
+                self._person_notion_manager.upsert_trunk(
+                    new_notion_workspace, new_notion_person_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating metrics structure")
-        new_notion_metric_collection = NotionMetricCollection.new_notion_entity(
-            new_metric_collection
-        )
-        self._metric_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_metric_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "push integrations structure",
+                new_push_integration_group.ref_id,
+                "Push Integrations",
+            ) as entity_reporter:
+                new_notion_push_integration_group = (
+                    NotionPushIntegrationGroup.new_notion_entity(
+                        new_push_integration_group
+                    )
+                )
+                new_notion_push_integration_group = self._push_integration_group_notion_manager.upsert_push_integration_group(
+                    new_notion_workspace, new_notion_push_integration_group
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating the persons structure")
-        new_notion_person_collection = NotionPersonCollection.new_notion_entity(
-            new_person_collection
-        )
-        self._person_notion_manager.upsert_trunk(
-            new_notion_workspace, new_notion_person_collection
-        )
+            with progress_reporter.start_work_related_to_entity(
+                "slack tasks structure", new_slack_task_collection.ref_id, "Slack Tasks"
+            ) as entity_reporter:
+                new_notion_slack_task_collection = (
+                    NotionSlackTaskCollection.new_notion_entity(
+                        new_slack_task_collection
+                    )
+                )
+                self._slack_task_notion_manager.upsert_trunk(
+                    new_notion_push_integration_group, new_notion_slack_task_collection
+                )
+                entity_reporter.mark_other_progress("structure")
 
-        LOGGER.info("Creating the push integration group structure")
-        new_notion_push_integration_group = (
-            NotionPushIntegrationGroup.new_notion_entity(new_push_integration_group)
-        )
-        new_notion_push_integration_group = (
-            self._push_integration_group_notion_manager.upsert_push_integration_group(
-                new_notion_workspace, new_notion_push_integration_group
-            )
-        )
-
-        LOGGER.info("Creating the Slack task structure")
-        new_notion_slack_task_collection = NotionSlackTaskCollection.new_notion_entity(
-            new_slack_task_collection
-        )
-        self._slack_task_notion_manager.upsert_trunk(
-            new_notion_push_integration_group, new_notion_slack_task_collection
-        )
-
-        ProjectLabelUpdateService(
-            self._storage_engine,
-            self._inbox_task_notion_manager,
-            self._habit_notion_manager,
-            self._chore_notion_manager,
-            self._big_plan_notion_manager,
-        ).sync(new_workspace, [new_default_project])
-
-        LOGGER.info("Applied Notion changes")
+            ProjectLabelUpdateService(
+                self._storage_engine,
+                self._inbox_task_notion_manager,
+                self._habit_notion_manager,
+                self._chore_notion_manager,
+                self._big_plan_notion_manager,
+            ).sync(new_workspace, [new_default_project])

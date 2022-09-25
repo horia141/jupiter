@@ -1,9 +1,9 @@
 """UseCase for adding a habit."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.habits.habit_name import HabitName
@@ -15,8 +15,6 @@ from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.use_cases.habits.create import HabitCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitCreate(command.Command):
@@ -121,7 +119,9 @@ class HabitCreate(command.Command):
             help="How many times should the task repeat in the period",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         project_key = (
             ProjectKey.from_raw(args.project_key) if args.project_key else None
@@ -159,7 +159,9 @@ class HabitCreate(command.Command):
             RecurringTaskSkipRule.from_raw(args.skip_rule) if args.skip_rule else None
         )
         repeats_in_period_count = args.repeats_in_period_count
+
         self._command.execute(
+            progress_reporter,
             HabitCreateUseCase.Args(
                 project_key=project_key,
                 name=name,
@@ -173,5 +175,5 @@ class HabitCreate(command.Command):
                 due_at_month=due_at_month,
                 skip_rule=skip_rule,
                 repeats_in_period_count=repeats_in_period_count,
-            )
+            ),
         )

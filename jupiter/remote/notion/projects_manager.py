@@ -1,5 +1,4 @@
 """The centralised point for interacting with Notion projects."""
-import logging
 from typing import Final, ClassVar, Iterable
 
 from jupiter.domain.projects.infra.project_notion_manager import (
@@ -24,8 +23,6 @@ from jupiter.remote.notion.infra.collections_manager import (
 )
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionProjectsManager(ProjectNotionManager):
@@ -136,6 +133,7 @@ class NotionProjectsManager(ProjectNotionManager):
                 ctor=NotionProject,
                 key=NotionLockKey(f"{leaf_ref_id}"),
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                no_properties_fields={"archived": False},
             )
             return link.item_info
         except NotionCollectionItemNotFoundError as err:
@@ -152,6 +150,7 @@ class NotionProjectsManager(ProjectNotionManager):
                 schema=self._SCHEMA,
                 ctor=NotionProject,
                 collection_key=NotionLockKey(f"{self._KEY}:{trunk_ref_id}"),
+                no_properties_fields={"archived": False},
             )
         ]
 

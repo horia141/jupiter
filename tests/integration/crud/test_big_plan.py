@@ -1,7 +1,7 @@
 """Integration tests for big plans."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
@@ -19,7 +19,7 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-05-20",
         )
 
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
 
         notion_row = self.get_notion_row_in_database(
             "Get a cat",
@@ -35,14 +35,14 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
         big_plan_out = self.jupiter("big-plan-show")
 
         assert re.search(r"Get a cat", big_plan_out)
-        assert re.search(r"status=Accepted", big_plan_out)
-        assert re.search(r"actionable-date=2022-05-01", big_plan_out)
-        assert re.search(r"due-date=2022-05-20", big_plan_out)
-        assert re.search(r"project=Work", big_plan_out)
+        assert re.search(r"🔧", big_plan_out)
+        assert re.search(r"From 2022-05-01", big_plan_out)
+        assert re.search(r"Due at 2022-05-20", big_plan_out)
+        assert re.search(r"In Project Work", big_plan_out)
 
     def test_update_big_plan(self) -> None:
         """Updating a big plan."""
-        self.jupiter(
+        big_plan_id = self.jupiter_create(
             "big-plan-create",
             "--name",
             "Get a cat",
@@ -50,10 +50,8 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-05-01",
             "--due-date",
             "2022-05-20",
+            hint="Get a cat",
         )
-
-        big_plan_out = self.jupiter("big-plan-show")
-        big_plan_id = extract_id_from_show_out(big_plan_out, "Get a cat")
 
         self.jupiter(
             "big-plan-update",
@@ -69,7 +67,7 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-05-21",
         )
 
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
 
         notion_row = self.get_notion_row_in_database(
             "Get the cat",
@@ -85,14 +83,14 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
         big_plan_out = self.jupiter("big-plan-show")
 
         assert re.search(r"Get the cat", big_plan_out)
-        assert re.search(r"status=In Progress", big_plan_out)
-        assert re.search(r"actionable-date=2022-05-02", big_plan_out)
-        assert re.search(r"due-date=2022-05-21", big_plan_out)
-        assert re.search(r"project=Work", big_plan_out)
+        assert re.search(r"🚧", big_plan_out)
+        assert re.search(r"From 2022-05-02", big_plan_out)
+        assert re.search(r"Due at 2022-05-21", big_plan_out)
+        assert re.search(r"In Project Work", big_plan_out)
 
     def test_change_project(self) -> None:
         """Change the project of an big plan."""
-        self.jupiter(
+        big_plan_id = self.jupiter_create(
             "big-plan-create",
             "--name",
             "Get a cat",
@@ -100,15 +98,14 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-05-01",
             "--due-date",
             "2022-05-20",
+            hint="Get a cat",
         )
-        big_plan_out = self.jupiter("big-plan-show")
-        big_plan_id = extract_id_from_show_out(big_plan_out, "Get a cat")
 
         self.jupiter(
             "big-plan-change-project", "--id", big_plan_id, "--project", "personal"
         )
 
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
 
         notion_row = self.get_notion_row_in_database(
             "Get a cat",
@@ -124,14 +121,14 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
         big_plan_out = self.jupiter("big-plan-show")
 
         assert re.search(r"Get a cat", big_plan_out)
-        assert re.search(r"status=Accepted", big_plan_out)
-        assert re.search(r"actionable-date=2022-05-01", big_plan_out)
-        assert re.search(r"due-date=2022-05-20", big_plan_out)
-        assert re.search(r"project=Personal", big_plan_out)
+        assert re.search(r"🔧", big_plan_out)
+        assert re.search(r"From 2022-05-01", big_plan_out)
+        assert re.search(r"Due at 2022-05-20", big_plan_out)
+        assert re.search(r"In Project Personal", big_plan_out)
 
     def test_archive_big_plan(self) -> None:
         """Archiving a big plan."""
-        self.jupiter(
+        big_plan_id = self.jupiter_create(
             "big-plan-create",
             "--name",
             "Get a cat",
@@ -139,10 +136,8 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-05-01",
             "--due-date",
             "2022-05-20",
+            hint="Get a cat",
         )
-
-        big_plan_out = self.jupiter("big-plan-show")
-        big_plan_id = extract_id_from_show_out(big_plan_out, "Get a cat")
 
         self.jupiter(
             "inbox-task-create",
@@ -160,14 +155,13 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
 
         self.jupiter("big-plan-archive", "--id", big_plan_id)
 
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
 
         assert not self.check_notion_row_exists("Get a cat")
 
         big_plan_out = self.jupiter("big-plan-show", "--show-archived")
 
         assert re.search(r"Get a cat", big_plan_out)
-        assert re.search(r"archived=True", big_plan_out)
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
@@ -176,11 +170,10 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show", "--show-archived")
 
         assert re.search(r"Take kitty to the vet", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
 
     def test_remove_big_plan(self) -> None:
         """Archiving a big plan."""
-        self.jupiter(
+        big_plan_id = self.jupiter_create(
             "big-plan-create",
             "--name",
             "Get a cat",
@@ -188,10 +181,8 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
             "2022-05-01",
             "--due-date",
             "2022-05-20",
+            hint="Get a cat",
         )
-
-        big_plan_out = self.jupiter("big-plan-show")
-        big_plan_id = extract_id_from_show_out(big_plan_out, "Get a cat")
 
         self.jupiter(
             "inbox-task-create",
@@ -209,7 +200,7 @@ class BigPlanIntegrationTestCase(JupiterIntegrationTestCase):
 
         self.jupiter("big-plan-remove", "--id", big_plan_id)
 
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
 
         assert not self.check_notion_row_exists("Get a cat")
 

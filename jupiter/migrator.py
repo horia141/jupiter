@@ -1,19 +1,23 @@
 """A temporary migrator."""
 import logging
 
-import coloredlogs
+from rich.logging import RichHandler
 
 LOGGER = logging.getLogger(__name__)
 
 
 def main() -> None:
     """Application main function."""
-    coloredlogs.install(
-        level=logging.INFO,
-        fmt="%(asctime)s %(name)-12s %(levelname)-6s %(message)s",
+    logging.basicConfig(
+        level="info",
+        format="%(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[
+            RichHandler(
+                rich_tracebacks=True, markup=True, log_time_format="%Y-%m-%d %H:%M:%S"
+            )
+        ],
     )
-
     # time_provider = TimeProvider()
 
     # global_properties = build_global_properties()

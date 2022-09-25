@@ -1,13 +1,11 @@
 """UseCase for hard removing habits."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.habits.remove import HabitRemoveUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitRemove(command.Command):
@@ -39,8 +37,11 @@ class HabitRemove(command.Command):
             help="Show only tasks selected by this id",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(HabitRemoveUseCase.Args(ref_id))
+
+        self._command.execute(progress_reporter, HabitRemoveUseCase.Args(ref_id))

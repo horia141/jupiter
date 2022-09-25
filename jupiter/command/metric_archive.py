@@ -3,8 +3,9 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.metrics.archive import MetricArchiveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.metrics.metric_key import MetricKey
+from jupiter.use_cases.metrics.archive import MetricArchiveUseCase
 
 
 class MetricArchive(command.Command):
@@ -32,7 +33,12 @@ class MetricArchive(command.Command):
             "--metric", dest="metric_key", required=True, help="The key of the metric"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
-        self._command.execute(MetricArchiveUseCase.Args(key=metric_key))
+
+        self._command.execute(
+            progress_reporter, MetricArchiveUseCase.Args(key=metric_key)
+        )

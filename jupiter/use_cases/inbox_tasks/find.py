@@ -11,8 +11,13 @@ from jupiter.domain.metrics.metric import Metric
 from jupiter.domain.persons.person import Person
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
@@ -41,6 +46,7 @@ class InboxTaskFindUseCase(
         big_plan: Optional[BigPlan]
         metric: Optional[Metric]
         person: Optional[Person]
+        slack_task: Optional[SlackTask]
 
     @dataclass(frozen=True)
     class Result(UseCaseResultBase):
@@ -48,7 +54,12 @@ class InboxTaskFindUseCase(
 
         inbox_tasks: Iterable["InboxTaskFindUseCase.ResultEntry"]
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> "Result":
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -87,6 +98,12 @@ class InboxTaskFindUseCase(
             )
             person_collection = uow.person_collection_repository.load_by_parent(
                 workspace.ref_id
+            )
+            push_integrations_group = (
+                uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
+            )
+            slack_task_collection = uow.slack_task_collection_repository.load_by_parent(
+                push_integrations_group.ref_id
             )
 
             inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
@@ -148,6 +165,17 @@ class InboxTaskFindUseCase(
             )
             persons_by_ref_id = {p.ref_id: p for p in persons}
 
+            slack_tasks = uow.slack_task_repository.find_all(
+                parent_ref_id=slack_task_collection.ref_id,
+                allow_archived=True,
+                filter_ref_ids=(
+                    it.slack_task_ref_id
+                    for it in inbox_tasks
+                    if it.slack_task_ref_id is not None
+                ),
+            )
+            slack_tasks_by_ref_id = {p.ref_id: p for p in slack_tasks}
+
         return InboxTaskFindUseCase.Result(
             inbox_tasks=[
                 InboxTaskFindUseCase.ResultEntry(
@@ -167,6 +195,9 @@ class InboxTaskFindUseCase(
                     else None,
                     person=persons_by_ref_id[it.person_ref_id]
                     if it.person_ref_id is not None
+                    else None,
+                    slack_task=slack_tasks_by_ref_id[it.slack_task_ref_id]
+                    if it.slack_task_ref_id is not None
                     else None,
                 )
                 for it in inbox_tasks

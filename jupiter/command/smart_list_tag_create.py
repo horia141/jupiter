@@ -1,14 +1,12 @@
 """UseCase for creating a smart list tag."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.smart_lists.tag.create import SmartListTagCreateUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.smart_lists.tag.create import SmartListTagCreateUseCase
 
 
 class SmartListTagCreate(command.Command):
@@ -42,12 +40,16 @@ class SmartListTagCreate(command.Command):
             "--name", dest="name", required=True, help="The name of the smart list"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         tag_name = SmartListTagName.from_raw(args.name)
+
         self._command.execute(
+            progress_reporter,
             SmartListTagCreateUseCase.Args(
                 smart_list_key=smart_list_key, tag_name=tag_name
-            )
+            ),
         )

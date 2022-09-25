@@ -3,6 +3,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.entity_icon import EntityIcon
@@ -172,7 +173,9 @@ class MetricUpdate(command.Command):
             help="Clear the collection due month",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
         if args.name is not None:
@@ -265,7 +268,9 @@ class MetricUpdate(command.Command):
             )
         else:
             collection_due_at_month = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             MetricUpdateUseCase.Args(
                 key=metric_key,
                 name=name,
@@ -278,5 +283,5 @@ class MetricUpdate(command.Command):
                 collection_due_at_time=collection_due_at_time,
                 collection_due_at_day=collection_due_at_day,
                 collection_due_at_month=collection_due_at_month,
-            )
+            ),
         )

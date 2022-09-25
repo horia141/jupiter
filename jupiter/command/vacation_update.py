@@ -3,6 +3,7 @@ from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.framework.base.entity_id import EntityId
@@ -56,7 +57,9 @@ class VacationUpdate(command.Command):
             "--end-date", dest="end_date", required=False, help="The vacation end date"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name is not None:
@@ -75,8 +78,10 @@ class VacationUpdate(command.Command):
             )
         else:
             end_date = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             VacationUpdateUseCase.Args(
                 ref_id=ref_id, name=name, start_date=start_date, end_date=end_date
-            )
+            ),
         )

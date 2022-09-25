@@ -11,8 +11,12 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -43,30 +47,49 @@ class MetricEntryUpdateUseCase(
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._notion_manager = notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_parent(
-                workspace.ref_id
+        with progress_reporter.start_updating_entity(
+            "metric entry", args.ref_id
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                metric_collection = uow.metric_collection_repository.load_by_parent(
+                    workspace.ref_id
+                )
+                metric_entry = uow.metric_entry_repository.load_by_id(args.ref_id)
+                entity_reporter.mark_known_name(str(metric_entry.simple_name))
+
+                metric_entry = metric_entry.update(
+                    collection_time=args.collection_time,
+                    value=args.value,
+                    notes=args.notes,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+
+                uow.metric_entry_repository.save(metric_entry)
+                entity_reporter.mark_known_name(
+                    str(metric_entry.simple_name)
+                ).mark_local_change()
+
+            notion_metric_entry = self._notion_manager.load_leaf(
+                metric_collection.ref_id,
+                metric_entry.metric_ref_id,
+                metric_entry.ref_id,
             )
-            metric_entry = uow.metric_entry_repository.load_by_id(args.ref_id)
-
-            metric_entry = metric_entry.update(
-                collection_time=args.collection_time,
-                value=args.value,
-                notes=args.notes,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
+            notion_metric_entry = notion_metric_entry.join_with_entity(
+                metric_entry, None
             )
-
-            uow.metric_entry_repository.save(metric_entry)
-
-        notion_metric_entry = self._notion_manager.load_leaf(
-            metric_collection.ref_id, metric_entry.metric_ref_id, metric_entry.ref_id
-        )
-        notion_metric_entry = notion_metric_entry.join_with_entity(metric_entry, None)
-        self._notion_manager.save_leaf(
-            metric_collection.ref_id, metric_entry.metric_ref_id, notion_metric_entry
-        )
+            self._notion_manager.save_leaf(
+                metric_collection.ref_id,
+                metric_entry.metric_ref_id,
+                notion_metric_entry,
+            )
+            entity_reporter.mark_remote_change()

@@ -1,15 +1,13 @@
 """UseCase for updating the workspace."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.timezone import Timezone
 from jupiter.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.workspaces.update import WorkspaceUpdateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceUpdate(command.Command):
@@ -38,7 +36,9 @@ class WorkspaceUpdate(command.Command):
             "--timezone", required=False, help="The timezone you're currently in"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         if args.name is not None:
             name = UpdateAction.change_to(WorkspaceName.from_raw(args.name))
@@ -48,4 +48,8 @@ class WorkspaceUpdate(command.Command):
             timezone = UpdateAction.change_to(Timezone.from_raw(args.timezone))
         else:
             timezone = UpdateAction.do_nothing()
-        self._command.execute(WorkspaceUpdateUseCase.Args(name=name, timezone=timezone))
+
+        self._command.execute(
+            progress_reporter,
+            WorkspaceUpdateUseCase.Args(name=name, timezone=timezone),
+        )

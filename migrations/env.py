@@ -1,16 +1,18 @@
-import coloredlogs
+import logging
+
+from rich.logging import RichHandler
 from sqlalchemy import create_engine
 
 from alembic import context
 
 from jupiter.utils.global_properties import build_global_properties
 
-
-coloredlogs.install(
-    level='info',
-    fmt='%(asctime)s %(name)-12s %(levelname)-6s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
-
+logging.basicConfig(
+        level="info",
+        format="%(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[RichHandler(rich_tracebacks=True, markup=True, log_time_format="%Y-%m-%d %H:%M:%S")]
+    )
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

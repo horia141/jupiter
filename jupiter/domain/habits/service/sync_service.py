@@ -29,5 +29,10 @@ class HabitSyncService(
     ) -> None:
         """Constructor."""
         super().__init__(
-            HabitCollection, Habit, NotionHabit, storage_engine, habit_notion_manager
+            HabitCollection,
+            Habit,
+            "habit",
+            NotionHabit,
+            storage_engine,
+            habit_notion_manager,
         )

@@ -11,7 +11,9 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_create_project(self) -> None:
         """Creation of a project."""
-        self.jupiter("project-create", "--project", "startup", "--name", "Startup")
+        self.jupiter_create(
+            "project-create", "--project", "startup", "--name", "Startup"
+        )
 
         self.go_to_notion("My Work", "Projects")
 
@@ -27,7 +29,9 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_update_project(self) -> None:
         """Updating a project."""
-        self.jupiter("project-create", "--project", "startup", "--name", "Startup")
+        self.jupiter_create(
+            "project-create", "--project", "startup", "--name", "Startup"
+        )
 
         self.jupiter("project-update", "--project", "startup", "--name", "The Startup")
 

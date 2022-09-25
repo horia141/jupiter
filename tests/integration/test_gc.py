@@ -43,7 +43,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_inbox_task_done_gc(self) -> None:
         """Garbage collection of done inbox tasks."""
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Database")
+        self.go_to_notion("My Work", "Inbox Tasks")
         self.add_notion_row(
             "Plan summer trip",
             {
@@ -51,6 +51,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Source": NotionSelect("User"),
                 "Eisenhower": NotionSelect("Urgent"),
                 "Difficulty": NotionSelect("Medium"),
+                "Project": NotionSelect("Work"),
             },
         )
         self.jupiter("sync", "--target", "inbox-tasks")
@@ -59,7 +60,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_inbox_task_archived_gc(self) -> None:
         """Garbage collection of archived inbox tasks."""
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Database")
+        self.go_to_notion("My Work", "Inbox Tasks")
         self.add_notion_row(
             "Plan summer trip",
             {
@@ -67,6 +68,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Source": NotionSelect("User"),
                 "Eisenhower": NotionSelect("Urgent"),
                 "Difficulty": NotionSelect("Medium"),
+                "Project": NotionSelect("Work"),
                 "Archived": True,
             },
         )
@@ -76,7 +78,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_habit_archived_gc(self) -> None:
         """Garbage collection of archived habits."""
-        self.go_to_notion("My Work", "Habits", board_view="Database")
+        self.go_to_notion("My Work", "Habits")
         self.add_notion_row(
             "Go for a morning run",
             {
@@ -84,6 +86,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Eisenhower": NotionSelect("Regular"),
                 "Difficulty": NotionSelect("Hard"),
                 "Archived": True,
+                "Project": NotionSelect("Work"),
             },
         )
         self.jupiter("sync", "--target", "habits")
@@ -92,7 +95,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_chore_archived_gc(self) -> None:
         """Garbage collection of archived chores."""
-        self.go_to_notion("My Work", "Chores", board_view="Database")
+        self.go_to_notion("My Work", "Chores")
         self.add_notion_row(
             "Water houseplants",
             {
@@ -100,6 +103,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Eisenhower": NotionSelect("Regular"),
                 "Difficulty": NotionSelect("Easy"),
                 "Archived": True,
+                "Project": NotionSelect("Work"),
             },
         )
         self.jupiter("sync", "--target", "chores")
@@ -108,13 +112,14 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_big_plan_done_gc(self) -> None:
         """Garbage collection of done big plans."""
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
         self.add_notion_row(
             "Buy a new car",
             {
                 "Status": NotionSelect("Done"),
                 "Actionable Date": pendulum.date(2022, 10, 1),
                 "Due Date": pendulum.date(2022, 10, 27),
+                "Project": NotionSelect("Work"),
             },
         )
         self.jupiter("sync", "--target", "big-plans")
@@ -123,7 +128,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_big_plan_archived_gc(self) -> None:
         """Garbage collection of archived big plans."""
-        self.go_to_notion("My Work", "Big Plans", board_view="Database")
+        self.go_to_notion("My Work", "Big Plans")
         self.add_notion_row(
             "Buy a new car",
             {
@@ -131,7 +136,9 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
                 "Actionable Date": pendulum.date(2022, 10, 1),
                 "Due Date": pendulum.date(2022, 10, 27),
                 "Archived": True,
+                "Project": NotionSelect("Work"),
             },
+            strict_check=False,
         )
         self.jupiter("sync", "--target", "big-plans")
         self.jupiter("gc", "--target", "big-plans")
@@ -139,7 +146,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_smart_list_archived_gc(self) -> None:
         """Garbage collection of archived smart lists."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create",
             "--smart-list",
             "movies",
@@ -162,7 +169,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_metric_archived_gc(self) -> None:
         """Garbage collection of archived metrics."""
-        self.jupiter(
+        self.jupiter_create(
             "metric-create",
             "--metric",
             "weight",
@@ -230,7 +237,7 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
 
         assert not self.check_notion_row_exists("John Doe")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Database")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         assert not self.check_notion_row_exists("Prepare for the summer meetup")
 

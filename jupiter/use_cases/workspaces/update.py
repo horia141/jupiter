@@ -13,8 +13,12 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -41,22 +45,33 @@ class WorkspaceUpdateUseCase(AppMutationUseCase["WorkspaceUpdateUseCase.Args", N
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._workspace_notion_manager = workspace_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            workspace = workspace.update(
-                name=args.name,
-                timezone=args.timezone,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
+        with progress_reporter.start_updating_entity(
+            "workspace", workspace.ref_id, str(workspace.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                workspace = workspace.update(
+                    name=args.name,
+                    timezone=args.timezone,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(workspace.name))
+
+                uow.workspace_repository.save(workspace)
+                entity_reporter.mark_local_change()
+
+            notion_workspace = self._workspace_notion_manager.load_workspace(
+                workspace.ref_id
             )
-
-            uow.workspace_repository.save(workspace)
-
-        notion_workspace = self._workspace_notion_manager.load_workspace(
-            workspace.ref_id
-        )
-        notion_workspace = notion_workspace.join_with_entity(workspace)
-        self._workspace_notion_manager.save_workspace(notion_workspace)
+            notion_workspace = notion_workspace.join_with_entity(workspace)
+            self._workspace_notion_manager.save_workspace(notion_workspace)
+            entity_reporter.mark_remote_change()

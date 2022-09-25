@@ -1,13 +1,11 @@
 """UseCase for hard removing a smart list."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.smart_lists.remove import SmartListRemoveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.smart_lists.remove import SmartListRemoveUseCase
 
 
 class SmartListsRemove(command.Command):
@@ -33,15 +31,17 @@ class SmartListsRemove(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument(
             "--smart-list",
-            dest="smart_list_keys",
+            dest="smart_list_key",
             required=True,
-            default=[],
-            action="append",
-            help="The key of the smart list to archive",
+            help="The key of the smart list to remove",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
-        smart_list_keys = [SmartListKey.from_raw(srk) for srk in args.smart_list_keys]
-        for key in smart_list_keys:
-            self._command.execute(SmartListRemoveUseCase.Args(key=key))
+        smart_list_key = SmartListKey.from_raw(args.smart_list_key)
+
+        self._command.execute(
+            progress_reporter, SmartListRemoveUseCase.Args(key=smart_list_key)
+        )

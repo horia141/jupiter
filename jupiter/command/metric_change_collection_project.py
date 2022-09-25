@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final, Optional
 
 from jupiter.command.command import Command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.metrics.change_collection_project import (
     MetricChangeCollectionProjectUseCase,
@@ -47,7 +48,9 @@ class MetricChangeCollectionProject(Command):
             help="Clear the collection project",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         collection_project_key: Optional[ProjectKey]
         if args.clear_collection_project_key:
@@ -56,7 +59,8 @@ class MetricChangeCollectionProject(Command):
             collection_project_key = ProjectKey.from_raw(args.collection_project_key)
 
         self._command.execute(
+            progress_reporter,
             MetricChangeCollectionProjectUseCase.Args(
                 collection_project_key=collection_project_key
-            )
+            ),
         )

@@ -12,8 +12,13 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
+    MarkProgressStatus,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -43,23 +48,38 @@ class SmartListItemRemoveUseCase(
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._smart_list_notion_manager = smart_list_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
-            smart_list_item = uow.smart_list_item_repository.remove(args.ref_id)
+        with progress_reporter.start_removing_entity(
+            "smart list item", args.ref_id
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                smart_list_collection = (
+                    uow.smart_list_collection_repository.load_by_parent(
+                        workspace.ref_id
+                    )
+                )
+                smart_list_item = uow.smart_list_item_repository.remove(args.ref_id)
+                entity_reporter.mark_known_name(
+                    str(smart_list_item.name)
+                ).mark_local_change()
 
-        try:
-            self._smart_list_notion_manager.remove_leaf(
-                smart_list_collection.ref_id,
-                smart_list_item.smart_list_ref_id,
-                smart_list_item.ref_id,
-            )
-        except NotionSmartListItemNotFoundError:
-            LOGGER.info(
-                "Skipping archival on Notion side because smart list was not found"
-            )
+            try:
+                self._smart_list_notion_manager.remove_leaf(
+                    smart_list_collection.ref_id,
+                    smart_list_item.smart_list_ref_id,
+                    smart_list_item.ref_id,
+                )
+                entity_reporter.mark_remote_change()
+            except NotionSmartListItemNotFoundError:
+                LOGGER.info(
+                    "Skipping archival on Notion side because smart list was not found"
+                )
+                entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)

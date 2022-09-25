@@ -1,15 +1,12 @@
 """UseCase for creating a metric entry."""
-
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.use_cases.metrics.entry.create import MetricEntryCreateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MetricEntryCreate(command.Command):
@@ -57,7 +54,9 @@ class MetricEntryCreate(command.Command):
             help="A note for the metric",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         metric_key = MetricKey.from_raw(args.metric_key)
         collection_time = (
@@ -65,11 +64,13 @@ class MetricEntryCreate(command.Command):
         )
         value = args.value
         notes = args.notes
+
         self._command.execute(
+            progress_reporter,
             MetricEntryCreateUseCase.Args(
                 metric_key=metric_key,
                 collection_time=collection_time,
                 value=value,
                 notes=notes,
-            )
+            ),
         )

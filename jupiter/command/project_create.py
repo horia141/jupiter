@@ -1,14 +1,12 @@
 """UseCase for creating projects."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.projects.project_name import ProjectName
 from jupiter.use_cases.projects.create import ProjectCreateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ProjectCreate(command.Command):
@@ -42,10 +40,14 @@ class ProjectCreate(command.Command):
             "--name", dest="name", required=True, help="The name of the project"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         project_key = ProjectKey.from_raw(args.project_key)
         project_name = ProjectName.from_raw(args.name)
+
         self._command.execute(
-            ProjectCreateUseCase.Args(key=project_key, name=project_name)
+            progress_reporter,
+            ProjectCreateUseCase.Args(key=project_key, name=project_name),
         )

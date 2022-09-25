@@ -43,3 +43,8 @@ class NotionSmartList(NotionBranchEntity[SmartList]):
             if (name != entity.name or icon != entity.icon)
             else entity.last_modified_time,
         )
+
+    @property
+    def nice_name(self) -> str:
+        """A nice name for the Notion-side entity."""
+        return self.name

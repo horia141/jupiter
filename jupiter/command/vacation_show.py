@@ -1,18 +1,25 @@
 """UseCase for showing the vacations."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
 from jupiter.command import command
-from jupiter.domain.adate import ADate
-from jupiter.use_cases.vacations.find import VacationFindUseCase
+from jupiter.command.rendering import (
+    entity_id_to_rich_text,
+    start_date_to_rich_text,
+    end_date_to_rich_text,
+    entity_name_to_rich_text,
+    RichConsoleProgressReporter,
+)
 from jupiter.framework.base.entity_id import EntityId
+from jupiter.use_cases.vacations.find import VacationFindUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
-LOGGER = logging.getLogger(__name__)
 
-
-class VacationsShow(command.Command):
+class VacationsShow(command.ReadonlyCommand):
     """UseCase class for showing the vacations."""
 
     _global_properties: Final[GlobalProperties]
@@ -54,20 +61,42 @@ class VacationsShow(command.Command):
             help="Show only tasks selected by this id",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
-        response = self._command.execute(
+
+        result = self._command.execute(
+            progress_reporter,
             VacationFindUseCase.Args(
                 allow_archived=show_archived,
                 filter_ref_ids=ref_ids if len(ref_ids) > 0 else None,
-            )
+            ),
         )
-        for vacation in response.vacations:
-            print(
-                f"id={vacation.ref_id} {vacation.name} "
-                + f"start={ADate.to_user_str(self._global_properties.timezone, vacation.start_date)} "
-                + f"end={ADate.to_user_str(self._global_properties.timezone, vacation.end_date)} "
-                + f'{"archived=" + str(vacation.archived) if show_archived else ""}'
-            )
+
+        sorted_vacations = sorted(
+            result.vacations,
+            key=lambda v: (v.archived, v.start_date, v.end_date),
+        )
+
+        rich_tree = Tree("🌴 Vacations", guide_style="bold bright_blue")
+
+        for vacation in sorted_vacations:
+            vacation_text = Text("")
+            vacation_text.append(entity_id_to_rich_text(vacation.ref_id))
+            vacation_text.append(" ")
+            vacation_text.append(entity_name_to_rich_text(vacation.name))
+            vacation_text.append(" ")
+            vacation_text.append(start_date_to_rich_text(vacation.start_date))
+            vacation_text.append(" ")
+            vacation_text.append(end_date_to_rich_text(vacation.end_date))
+
+            if vacation.archived:
+                vacation_text.stylize("gray62")
+
+            rich_tree.add(vacation_text)
+
+        console = Console()
+        console.print(rich_tree)

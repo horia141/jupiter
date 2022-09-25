@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.push_integrations.slack.remove import SlackTaskRemoveUseCase
 
@@ -33,11 +34,14 @@ class SlackTaskRemove(command.Command):
             type=str,
             dest="ref_id",
             required=True,
-            help="Show only tasks selected by this id",
+            help="Remove this Slack task",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         # Parse arguments
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(SlackTaskRemoveUseCase.Args(ref_id))
+
+        self._command.execute(progress_reporter, SlackTaskRemoveUseCase.Args(ref_id))

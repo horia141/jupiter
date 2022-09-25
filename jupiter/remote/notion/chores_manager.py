@@ -1,7 +1,6 @@
 """The centralised point for interacting with Notion chores."""
 import copy
 import hashlib
-import logging
 import uuid
 from typing import Optional, ClassVar, Final, cast, Dict, Iterable
 
@@ -30,8 +29,6 @@ from jupiter.remote.notion.infra.collections_manager import (
 )
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionChoresManager(ChoreNotionManager):
@@ -391,7 +388,6 @@ class NotionChoresManager(ChoreNotionManager):
             new_schema,
             "project-name",
         )
-        LOGGER.info("Updated the schema for the associated chore")
 
         new_view: JSONDictType = copy.deepcopy(
             NotionChoresManager._DATABASE_BY_PROJECT_VIEW_SCHEMA
@@ -410,7 +406,6 @@ class NotionChoresManager(ChoreNotionManager):
             "database_by_project_view_id",
             new_view,
         )
-        LOGGER.info("Updated the projects view for the associated chores")
 
     def upsert_leaf(
         self,

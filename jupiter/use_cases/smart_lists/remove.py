@@ -1,5 +1,4 @@
 """The command for hard removing a smart list."""
-import logging
 from dataclasses import dataclass
 from typing import Final
 
@@ -12,11 +11,13 @@ from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SmartListRemoveUseCase(AppMutationUseCase["SmartListRemoveUseCase.Args", None]):
@@ -41,7 +42,12 @@ class SmartListRemoveUseCase(AppMutationUseCase["SmartListRemoveUseCase.Args", N
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._smart_list_notion_manager = smart_list_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -57,4 +63,6 @@ class SmartListRemoveUseCase(AppMutationUseCase["SmartListRemoveUseCase.Args", N
         smart_list_remove_service = SmartListRemoveService(
             self._storage_engine, self._smart_list_notion_manager
         )
-        smart_list_remove_service.execute(smart_list_collection, smart_list)
+        smart_list_remove_service.execute(
+            progress_reporter, smart_list_collection, smart_list
+        )

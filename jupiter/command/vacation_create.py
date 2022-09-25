@@ -1,16 +1,13 @@
 """UseCase for adding a vacation."""
-
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
 from jupiter.domain.vacations.vacation_name import VacationName
 from jupiter.use_cases.vacations.create import VacationCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class VacationCreate(command.Command):
@@ -51,14 +48,17 @@ class VacationCreate(command.Command):
             "--end-date", dest="end_date", required=True, help="The vacation end date"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         name = VacationName.from_raw(args.name)
         start_date = ADate.from_raw(self._global_properties.timezone, args.start_date)
         end_date = ADate.from_raw(self._global_properties.timezone, args.end_date)
 
         self._command.execute(
+            progress_reporter,
             VacationCreateUseCase.Args(
                 name=name, start_date=start_date, end_date=end_date
-            )
+            ),
         )

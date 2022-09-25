@@ -9,10 +9,12 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_habit_generation(self) -> None:
         """Generation of habits."""
-        self.jupiter("habit-create", "--name", "Hit the gym", "--period", "weekly")
+        self.jupiter_create(
+            "habit-create", "--name", "Hit the gym", "--period", "weekly"
+        )
         self.jupiter("gen", "--period", "weekly")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         notion_row = self.get_notion_row(
             "Hit the gym", ["Status", "Source", "Eisenhower", "Difficulty", "Project"]
@@ -27,10 +29,12 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_chore_generation(self) -> None:
         """Generation of habits."""
-        self.jupiter("chore-create", "--name", "Clean the house", "--period", "weekly")
+        self.jupiter_create(
+            "chore-create", "--name", "Clean the house", "--period", "weekly"
+        )
         self.jupiter("gen", "--period", "weekly")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         notion_row = self.get_notion_row(
             "Clean the house",
@@ -46,7 +50,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_metric_generation(self) -> None:
         """Generation of metrics."""
-        self.jupiter(
+        self.jupiter_create(
             "metric-create",
             "--metric",
             "weight",
@@ -59,7 +63,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
         )
         self.jupiter("gen", "--period", "weekly")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         notion_row = self.get_notion_row(
             "Collect value for metric Weight",
@@ -77,7 +81,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_person_catch_up_generation(self) -> None:
         """Generation of person catch up tasks."""
-        self.jupiter(
+        self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -88,7 +92,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
         )
         self.jupiter("gen", "--period", "weekly")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         notion_row = self.get_notion_row(
             "Catch up with Mike",
@@ -104,7 +108,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_person_birthday_generation(self) -> None:
         """Generation of person catch up tasks."""
-        self.jupiter(
+        self.jupiter_create(
             "person-create",
             "--name",
             "Mike",
@@ -115,7 +119,7 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
         )
         self.jupiter("gen")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
 
         notion_row = self.get_notion_row(
             "Wish happy birthday to Mike",

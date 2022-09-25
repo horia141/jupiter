@@ -39,6 +39,7 @@ class SlackTaskSyncService(
         super().__init__(
             SlackTaskCollection,
             SlackTask,
+            "slack task",
             NotionSlackTask,
             storage_engine,
             slack_task_notion_manager,

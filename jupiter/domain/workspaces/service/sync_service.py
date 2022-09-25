@@ -1,5 +1,4 @@
 """The service class for syncing the Workspace."""
-import logging
 from typing import Final
 
 from jupiter.domain.storage_engine import DomainStorageEngine
@@ -9,8 +8,7 @@ from jupiter.domain.workspaces.infra.workspace_notion_manager import (
 )
 from jupiter.domain.workspaces.workspace import Workspace
 from jupiter.framework.base.timestamp import Timestamp
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.framework.use_case import ProgressReporter
 
 
 class WorkspaceSyncService:
@@ -28,25 +26,34 @@ class WorkspaceSyncService:
         self._storage_engine = storage_engine
         self._workspace_notion_manager = workspace_notion_manager
 
-    def sync(self, right_now: Timestamp, sync_prefer: SyncPrefer) -> Workspace:
+    def sync(
+        self,
+        progress_reporter: ProgressReporter,
+        right_now: Timestamp,
+        sync_prefer: SyncPrefer,
+    ) -> Workspace:
         """Execute the service's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             workspace = uow.workspace_repository.load()
-        notion_workspace = self._workspace_notion_manager.load_workspace(
-            workspace.ref_id
-        )
 
-        if sync_prefer == SyncPrefer.NOTION:
-            workspace = notion_workspace.apply_to_entity(workspace, right_now)
+        with progress_reporter.start_updating_entity(
+            "workspace", workspace.ref_id, str(workspace.name)
+        ) as entity_reporter:
+            notion_workspace = self._workspace_notion_manager.load_workspace(
+                workspace.ref_id
+            )
 
-            with self._storage_engine.get_unit_of_work() as uow:
-                uow.workspace_repository.save(workspace)
-            LOGGER.info("Changed workspace from Notion")
-        elif sync_prefer == SyncPrefer.LOCAL:
-            notion_workspace = notion_workspace.join_with_entity(workspace)
-            self._workspace_notion_manager.save_workspace(notion_workspace)
-            LOGGER.info("Applied changes on Notion side")
-        else:
-            raise Exception(f"Invalid preference {sync_prefer}")
+            if sync_prefer == SyncPrefer.NOTION:
+                workspace = notion_workspace.apply_to_entity(workspace, right_now)
+
+                with self._storage_engine.get_unit_of_work() as uow:
+                    uow.workspace_repository.save(workspace)
+                entity_reporter.mark_known_name(str(workspace.name)).mark_local_change()
+            elif sync_prefer == SyncPrefer.LOCAL:
+                notion_workspace = notion_workspace.join_with_entity(workspace)
+                self._workspace_notion_manager.save_workspace(notion_workspace)
+                entity_reporter.mark_remote_change()
+            else:
+                raise Exception(f"Invalid preference {sync_prefer}")
 
         return workspace

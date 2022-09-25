@@ -1,5 +1,4 @@
 """Create a person."""
-import logging
 from dataclasses import dataclass
 from typing import Final, Optional
 
@@ -21,11 +20,13 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PersonCreateUseCase(AppMutationUseCase["PersonCreateUseCase.Args", None]):
@@ -60,41 +61,53 @@ class PersonCreateUseCase(AppMutationUseCase["PersonCreateUseCase.Args", None]):
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._person_notion_manager = person_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            person_collection = uow.person_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
-
-            catch_up_params = None
-            if args.catch_up_period is not None:
-                catch_up_params = RecurringTaskGenParams(
-                    period=args.catch_up_period,
-                    eisen=args.catch_up_eisen if args.catch_up_eisen else Eisen.REGULAR,
-                    difficulty=args.catch_up_difficulty,
-                    actionable_from_day=args.catch_up_actionable_from_day,
-                    actionable_from_month=args.catch_up_actionable_from_month,
-                    due_at_time=args.catch_up_due_at_time,
-                    due_at_day=args.catch_up_due_at_day,
-                    due_at_month=args.catch_up_due_at_month,
+        with progress_reporter.start_creating_entity(
+            "person", str(args.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                person_collection = uow.person_collection_repository.load_by_parent(
+                    workspace.ref_id
                 )
 
-            person = Person.new_person(
-                person_collection_ref_id=person_collection.ref_id,
-                name=args.name,
-                relationship=args.relationship,
-                catch_up_params=catch_up_params,
-                birthday=args.birthday,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            person = uow.person_repository.create(person)
+                catch_up_params = None
+                if args.catch_up_period is not None:
+                    catch_up_params = RecurringTaskGenParams(
+                        period=args.catch_up_period,
+                        eisen=args.catch_up_eisen
+                        if args.catch_up_eisen
+                        else Eisen.REGULAR,
+                        difficulty=args.catch_up_difficulty,
+                        actionable_from_day=args.catch_up_actionable_from_day,
+                        actionable_from_month=args.catch_up_actionable_from_month,
+                        due_at_time=args.catch_up_due_at_time,
+                        due_at_day=args.catch_up_due_at_day,
+                        due_at_month=args.catch_up_due_at_month,
+                    )
 
-        notion_person = NotionPerson.new_notion_entity(person, None)
-        self._person_notion_manager.upsert_leaf(
-            person_collection.ref_id,
-            notion_person,
-        )
+                person = Person.new_person(
+                    person_collection_ref_id=person_collection.ref_id,
+                    name=args.name,
+                    relationship=args.relationship,
+                    catch_up_params=catch_up_params,
+                    birthday=args.birthday,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
+                )
+                person = uow.person_repository.create(person)
+                entity_reporter.mark_known_entity_id(person.ref_id).mark_local_change()
+
+            notion_person = NotionPerson.new_notion_entity(person, None)
+            self._person_notion_manager.upsert_leaf(
+                person_collection.ref_id,
+                notion_person,
+            )
+            entity_reporter.mark_remote_change()

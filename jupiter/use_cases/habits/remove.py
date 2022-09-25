@@ -1,23 +1,24 @@
 """The command for removing a habit."""
-import logging
 from dataclasses import dataclass
 from typing import Final
 
+from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager
+from jupiter.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import (
     InboxTaskNotionManager,
 )
-from jupiter.domain.habits.infra.habit_notion_manager import HabitNotionManager
-from jupiter.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitRemoveUseCase(AppMutationUseCase["HabitRemoveUseCase.Args", None]):
@@ -45,10 +46,15 @@ class HabitRemoveUseCase(AppMutationUseCase["HabitRemoveUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._habit_notion_manager = habit_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         HabitRemoveService(
             self._storage_engine,
             self._inbox_task_notion_manager,
             self._habit_notion_manager,
-        ).remove(args.ref_id)
+        ).remove(progress_reporter, args.ref_id)

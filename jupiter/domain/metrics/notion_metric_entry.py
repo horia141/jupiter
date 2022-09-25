@@ -17,7 +17,7 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
 
     collection_time: ADate
     value: float
-    name: Optional[str]
+    notes: Optional[str]
 
     @staticmethod
     def new_notion_entity(entity: MetricEntry, extra_info: None) -> "NotionMetricEntry":
@@ -29,7 +29,7 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
             archived=entity.archived,
             collection_time=entity.collection_time,
             value=entity.value,
-            name=entity.notes,
+            notes=entity.notes,
         )
 
     def new_entity(self, parent_ref_id: EntityId, extra_info: None) -> MetricEntry:
@@ -39,7 +39,7 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
             metric_ref_id=parent_ref_id,
             collection_time=self.collection_time,
             value=self.value,
-            notes=self.name,
+            notes=self.notes,
             source=EventSource.NOTION,
             created_time=self.last_edited_time,
         )
@@ -52,7 +52,7 @@ class NotionMetricEntry(NotionLeafEntity[MetricEntry, None, None]):
             entity.update(
                 collection_time=UpdateAction.change_to(self.collection_time),
                 value=UpdateAction.change_to(self.value),
-                notes=UpdateAction.change_to(self.name),
+                notes=UpdateAction.change_to(self.notes),
                 source=EventSource.NOTION,
                 modification_time=self.last_edited_time,
             ).change_archived(

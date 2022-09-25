@@ -1,13 +1,11 @@
 """UseCase for removing a chore."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.chores.archive import ChoreArchiveUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreArchive(command.Command):
@@ -39,7 +37,10 @@ class ChoreArchive(command.Command):
             help="The id of the vacations to modify",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(ChoreArchiveUseCase.Args(ref_id))
+
+        self._command.execute(progress_reporter, ChoreArchiveUseCase.Args(ref_id))

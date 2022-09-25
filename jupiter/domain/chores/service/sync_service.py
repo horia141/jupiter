@@ -29,5 +29,10 @@ class ChoreSyncService(
     ) -> None:
         """Constructor."""
         super().__init__(
-            ChoreCollection, Chore, NotionChore, storage_engine, chore_notion_manager
+            ChoreCollection,
+            Chore,
+            "chore",
+            NotionChore,
+            storage_engine,
+            chore_notion_manager,
         )

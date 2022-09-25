@@ -1,15 +1,13 @@
 """Usecase for updating the Notion connection token."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.remote.notion.token import NotionToken
 from jupiter.use_cases.remote.notion.update_token import (
     NotionConnectionUpdateTokenUseCase,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionConnectionUpdateToken(command.Command):
@@ -37,7 +35,12 @@ class NotionConnectionUpdateToken(command.Command):
             "--token", dest="notion_token", required=False, help="The Notion token"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         token = NotionToken.from_raw(args.notion_token)
-        self._command.execute(NotionConnectionUpdateTokenUseCase.Args(token=token))
+
+        self._command.execute(
+            progress_reporter, NotionConnectionUpdateTokenUseCase.Args(token=token)
+        )

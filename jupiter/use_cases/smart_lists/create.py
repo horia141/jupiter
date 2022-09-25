@@ -18,8 +18,12 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -47,44 +51,68 @@ class SmartListCreateUseCase(AppMutationUseCase["SmartListCreateUseCase.Args", N
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._smart_list_notion_manager = smart_list_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = uow.smart_list_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
+        with progress_reporter.start_creating_entity(
+            "smart list", str(args.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                smart_list_collection = (
+                    uow.smart_list_collection_repository.load_by_parent(
+                        workspace.ref_id
+                    )
+                )
 
-            smart_list = SmartList.new_smart_list(
-                smart_list_collection_ref_id=smart_list_collection.ref_id,
-                key=args.key,
-                name=args.name,
-                icon=args.icon,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
+                smart_list = SmartList.new_smart_list(
+                    smart_list_collection_ref_id=smart_list_collection.ref_id,
+                    key=args.key,
+                    name=args.name,
+                    icon=args.icon,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
+                )
 
-            smart_list = uow.smart_list_repository.create(smart_list)
-            smart_list_default_tag = SmartListTag.new_smart_list_tag(
-                smart_list_ref_id=smart_list.ref_id,
-                tag_name=SmartListTagName("Default"),
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
+                smart_list = uow.smart_list_repository.create(smart_list)
+                entity_reporter.mark_known_entity_id(
+                    smart_list.ref_id
+                ).mark_local_change()
+
+            notion_smart_list = NotionSmartList.new_notion_entity(smart_list)
+            self._smart_list_notion_manager.upsert_branch(
+                smart_list_collection.ref_id, notion_smart_list
             )
-            smart_list_default_tag = uow.smart_list_tag_repository.create(
+            entity_reporter.mark_remote_change()
+
+        with progress_reporter.start_creating_entity(
+            "smart list tag", "Default"
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                smart_list_default_tag = SmartListTag.new_smart_list_tag(
+                    smart_list_ref_id=smart_list.ref_id,
+                    tag_name=SmartListTagName("Default"),
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
+                )
+                smart_list_default_tag = uow.smart_list_tag_repository.create(
+                    smart_list_default_tag
+                )
+                entity_reporter.mark_known_entity_id(
+                    smart_list_default_tag.ref_id
+                ).mark_local_change()
+
+            notion_smart_list_default_tag = NotionSmartListTag.new_notion_entity(
                 smart_list_default_tag
             )
-
-        notion_smart_list = NotionSmartList.new_notion_entity(smart_list)
-        self._smart_list_notion_manager.upsert_branch(
-            smart_list_collection.ref_id, notion_smart_list
-        )
-        notion_smart_list_default_tag = NotionSmartListTag.new_notion_entity(
-            smart_list_default_tag
-        )
-        self._smart_list_notion_manager.upsert_branch_tag(
-            smart_list_collection.ref_id,
-            smart_list.ref_id,
-            notion_smart_list_default_tag,
-        )
+            self._smart_list_notion_manager.upsert_branch_tag(
+                smart_list_collection.ref_id,
+                smart_list.ref_id,
+                notion_smart_list_default_tag,
+            )
+            entity_reporter.mark_remote_change()

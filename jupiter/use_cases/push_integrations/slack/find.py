@@ -6,7 +6,11 @@ from jupiter.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
@@ -35,7 +39,12 @@ class SlackTaskFindUseCase(
 
         slack_tasks: Iterable["SlackTaskFindUseCase.ResultEntry"]
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> "Result":
         """Execute the command's action."""
         workspace = context.workspace
 

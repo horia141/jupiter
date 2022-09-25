@@ -1,13 +1,11 @@
 """UseCase for archiving done tasks."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.sync_target import SyncTarget
 from jupiter.use_cases.gc import GCUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class GC(command.Command):
@@ -64,7 +62,9 @@ class GC(command.Command):
             help="Skip the Notion cleanup phase",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         gc_targets = (
             [SyncTarget.from_raw(st) for st in args.sync_targets]
@@ -74,11 +74,13 @@ class GC(command.Command):
         do_archival = args.do_archival
         do_anti_entropy = args.do_anti_entropy
         do_notion_cleanup = args.do_notion_cleanup
+
         self._command.execute(
+            progress_reporter,
             GCUseCase.Args(
                 sync_targets=gc_targets,
                 do_archival=do_archival,
                 do_anti_entropy=do_anti_entropy,
                 do_notion_cleanup=do_notion_cleanup,
-            )
+            ),
         )

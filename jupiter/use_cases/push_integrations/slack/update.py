@@ -1,5 +1,4 @@
 """The command for updating a slack task."""
-import logging
 from dataclasses import dataclass
 from typing import Final, Optional
 
@@ -28,11 +27,13 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", None]):
@@ -69,7 +70,12 @@ class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", N
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._slack_task_notion_manager = slack_task_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -110,17 +116,6 @@ class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", N
             else:
                 generation_extra_info = UpdateAction.do_nothing()
 
-            slack_task = slack_task.update(
-                user=args.user,
-                channel=args.channel,
-                message=args.message,
-                generation_extra_info=generation_extra_info,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-
-            uow.slack_task_repository.save(slack_task)
-
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id
             )
@@ -131,41 +126,66 @@ class SlackTaskUpdateUseCase(AppMutationUseCase["SlackTaskUpdateUseCase.Args", N
                 filter_slack_task_ref_ids=[slack_task.ref_id],
             )[0]
 
-            generated_inbox_task = generated_inbox_task.update_link_to_slack_task(
-                project_ref_id=generated_inbox_task.project_ref_id,
-                user=slack_task.user,
-                channel=slack_task.channel,
-                generation_extra_info=slack_task.generation_extra_info,
-                message=slack_task.message,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-
-            uow.inbox_task_repository.save(generated_inbox_task)
-
             project = uow.project_repository.load_by_id(
                 generated_inbox_task.project_ref_id
             )
 
-        notion_slack_task = self._slack_task_notion_manager.load_leaf(
-            slack_task.slack_task_collection_ref_id, slack_task.ref_id
-        )
-        notion_slack_task = notion_slack_task.join_with_entity(slack_task, None)
-        self._slack_task_notion_manager.save_leaf(
-            slack_task.slack_task_collection_ref_id, notion_slack_task
-        )
+        with progress_reporter.start_updating_entity(
+            "inbox task", generated_inbox_task.ref_id, str(generated_inbox_task.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                generated_inbox_task = generated_inbox_task.update_link_to_slack_task(
+                    project_ref_id=generated_inbox_task.project_ref_id,
+                    user=slack_task.user,
+                    channel=slack_task.channel,
+                    generation_extra_info=slack_task.generation_extra_info,
+                    message=slack_task.message,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(generated_inbox_task.name))
 
-        inbox_task_direct_info = NotionInboxTask.DirectInfo(
-            all_projects_map={project.ref_id: project}, all_big_plans_map={}
-        )
-        notion_generated_inbox_task = self._inbox_task_notion_manager.load_leaf(
-            generated_inbox_task.inbox_task_collection_ref_id,
-            generated_inbox_task.ref_id,
-        )
-        notion_generated_inbox_task = notion_generated_inbox_task.join_with_entity(
-            generated_inbox_task, inbox_task_direct_info
-        )
-        self._inbox_task_notion_manager.save_leaf(
-            generated_inbox_task.inbox_task_collection_ref_id,
-            notion_generated_inbox_task,
-        )
+                uow.inbox_task_repository.save(generated_inbox_task)
+                entity_reporter.mark_local_change()
+
+            inbox_task_direct_info = NotionInboxTask.DirectInfo(
+                all_projects_map={project.ref_id: project}, all_big_plans_map={}
+            )
+            notion_generated_inbox_task = self._inbox_task_notion_manager.load_leaf(
+                generated_inbox_task.inbox_task_collection_ref_id,
+                generated_inbox_task.ref_id,
+            )
+            notion_generated_inbox_task = notion_generated_inbox_task.join_with_entity(
+                generated_inbox_task, inbox_task_direct_info
+            )
+            self._inbox_task_notion_manager.save_leaf(
+                generated_inbox_task.inbox_task_collection_ref_id,
+                notion_generated_inbox_task,
+            )
+            entity_reporter.mark_remote_change()
+
+        with progress_reporter.start_updating_entity(
+            "slack task", slack_task.ref_id, str(slack_task.simple_name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                slack_task = slack_task.update(
+                    user=args.user,
+                    channel=args.channel,
+                    message=args.message,
+                    generation_extra_info=generation_extra_info,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(slack_task.simple_name))
+
+                uow.slack_task_repository.save(slack_task)
+                entity_reporter.mark_local_change()
+
+            notion_slack_task = self._slack_task_notion_manager.load_leaf(
+                slack_task.slack_task_collection_ref_id, slack_task.ref_id
+            )
+            notion_slack_task = notion_slack_task.join_with_entity(slack_task, None)
+            self._slack_task_notion_manager.save_leaf(
+                slack_task.slack_task_collection_ref_id, notion_slack_task
+            )
+            entity_reporter.mark_remote_change()

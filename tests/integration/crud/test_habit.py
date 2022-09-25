@@ -1,7 +1,7 @@
 """Integration tests for habits."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class HabitIntegrationTestCase(JupiterIntegrationTestCase):
@@ -36,14 +36,14 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
         habit_out = self.jupiter("habit-show")
 
         assert re.search(r"Hit the gym", habit_out)
-        assert re.search(r"period=Weekly", habit_out)
-        assert re.search(r"eisen=Important", habit_out)
-        assert re.search(r"difficulty=Medium", habit_out)
-        assert re.search(r"project=Work", habit_out)
+        assert re.search(r"Weekly", habit_out)
+        assert re.search(r"Important", habit_out)
+        assert re.search(r"Medium", habit_out)
+        assert re.search(r"In Project Work", habit_out)
 
     def test_update_habit(self) -> None:
         """Updating a habit."""
-        self.jupiter(
+        habit_id = self.jupiter_create(
             "habit-create",
             "--name",
             "Hit the gym",
@@ -53,10 +53,8 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Hit the gym",
         )
-
-        habit_out = self.jupiter("habit-show")
-        habit_id = extract_id_from_show_out(habit_out, "Hit the gym")
 
         self.jupiter(
             "habit-update",
@@ -85,14 +83,14 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
         habit_out = self.jupiter("habit-show")
 
         assert re.search(r"Really hit the gym", habit_out)
-        assert re.search(r"period=Weekly", habit_out)
-        assert re.search(r"eisen=Regular", habit_out)
-        assert re.search(r"difficulty=Hard", habit_out)
-        assert re.search(r"project=Work", habit_out)
+        assert re.search(r"Weekly", habit_out)
+        assert re.search(r"Regular", habit_out)
+        assert re.search(r"Hard", habit_out)
+        assert re.search(r"In Project Work", habit_out)
 
     def test_habit_suspend(self) -> None:
         """Suspending a habit."""
-        self.jupiter(
+        habit_id = self.jupiter_create(
             "habit-create",
             "--name",
             "Hit the gym",
@@ -102,19 +100,17 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Hit the gym",
         )
-
-        habit_out = self.jupiter("habit-show")
-        habit_id = extract_id_from_show_out(habit_out, "Hit the gym")
 
         self.jupiter("habit-suspend", "--id", habit_id)
 
         habit_out = self.jupiter("habit-show")
-        assert re.search("suspended=True", habit_out)
+        assert re.search("#suspended", habit_out)
 
         self.jupiter("gen", "--period", "weekly", "--target", "habits")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
         assert not self.check_notion_row_exists("Hit the gym")
 
         inbox_task_out = self.jupiter("inbox-task-show")
@@ -122,7 +118,7 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_habit_unsuspend(self) -> None:
         """Unsuspending a habit."""
-        self.jupiter(
+        habit_id = self.jupiter_create(
             "habit-create",
             "--name",
             "Hit the gym",
@@ -132,24 +128,22 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Hit the gym",
         )
-
-        habit_out = self.jupiter("habit-show")
-        habit_id = extract_id_from_show_out(habit_out, "Hit the gym")
 
         self.jupiter("habit-suspend", "--id", habit_id)
 
         habit_out = self.jupiter("habit-show")
-        assert re.search("suspended=True", habit_out)
+        assert re.search("#suspended", habit_out)
 
         self.jupiter("habit-unsuspend", "--id", habit_id)
 
         habit_out = self.jupiter("habit-show")
-        assert re.search("suspended=False", habit_out)
+        assert not re.search("#suspended", habit_out)
 
     def test_habit_change_project(self) -> None:
         """Changing the catch up project for habits tasks."""
-        self.jupiter(
+        habit_id = self.jupiter_create(
             "habit-create",
             "--name",
             "Hit the gym",
@@ -159,10 +153,8 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Hit the gym",
         )
-
-        habit_out = self.jupiter("habit-show")
-        habit_id = extract_id_from_show_out(habit_out, "Hit the gym")
 
         self.jupiter("habit-change-project", "--id", habit_id, "--project", "personal")
 
@@ -176,11 +168,11 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
 
         habit_out = self.jupiter("habit-show")
 
-        assert re.search(r"project=Personal", habit_out)
+        assert re.search(r"In Project Personal", habit_out)
 
     def test_archive_habit(self) -> None:
         """Archiving a habit."""
-        self.jupiter(
+        habit_id = self.jupiter_create(
             "habit-create",
             "--name",
             "Hit the gym",
@@ -190,12 +182,10 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Hit the gym",
         )
 
         self.jupiter("gen", "--period", "weekly", "--target", "habits")
-
-        habit_out = self.jupiter("habit-show")
-        habit_id = extract_id_from_show_out(habit_out, "Hit the gym")
 
         self.jupiter("habit-archive", "--id", habit_id)
 
@@ -206,7 +196,6 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
         habit_out = self.jupiter("habit-show", "--show-archived")
 
         assert re.search(r"Hit the gym", habit_out)
-        assert re.search(r"archived=True", habit_out)
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
@@ -215,11 +204,10 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show", "--show-archived")
 
         assert re.search(r"Hit the gym", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
 
     def test_remove_habit(self) -> None:
         """Archiving a habit."""
-        self.jupiter(
+        habit_id = self.jupiter_create(
             "habit-create",
             "--name",
             "Hit the gym",
@@ -229,12 +217,10 @@ class HabitIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Hit the gym",
         )
 
         self.jupiter("gen", "--period", "weekly", "--target", "chores")
-
-        habit_out = self.jupiter("habit-show")
-        habit_id = extract_id_from_show_out(habit_out, "Hit the gym")
 
         self.jupiter("habit-remove", "--id", habit_id)
 

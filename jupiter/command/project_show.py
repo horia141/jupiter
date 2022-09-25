@@ -1,16 +1,22 @@
 """UseCase for showing the projects."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
 from jupiter.command import command
+from jupiter.command.rendering import (
+    entity_key_to_rich_text,
+    entity_name_to_rich_text,
+    RichConsoleProgressReporter,
+)
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.projects.find import ProjectFindUseCase
 
-LOGGER = logging.getLogger(__name__)
 
-
-class ProjectShow(command.Command):
+class ProjectShow(command.ReadonlyCommand):
     """UseCase class for showing the projects."""
 
     _command: Final[ProjectFindUseCase]
@@ -46,7 +52,9 @@ class ProjectShow(command.Command):
             help="The project key to show",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         project_keys = (
@@ -54,11 +62,31 @@ class ProjectShow(command.Command):
             if len(args.project_keys) > 0
             else None
         )
-        response = self._command.execute(
+
+        result = self._command.execute(
+            progress_reporter,
             ProjectFindUseCase.Args(
                 allow_archived=show_archived, filter_keys=project_keys
-            )
+            ),
         )
 
-        for project in response.projects:
-            print(f"{project.key}: {project.name}")
+        sorted_projects = sorted(
+            result.projects,
+            key=lambda pe: (pe.archived, pe.created_time),
+        )
+
+        rich_tree = Tree("💡 Projects", guide_style="bold bright_blue")
+
+        for project in sorted_projects:
+            project_text = Text("")
+            project_text.append(entity_key_to_rich_text(project.key))
+            project_text.append(" ")
+            project_text.append(entity_name_to_rich_text(project.name))
+
+            if project.archived:
+                project_text.stylize("gray62")
+
+            rich_tree.add(project_text)
+
+        console = Console()
+        console.print(rich_tree)

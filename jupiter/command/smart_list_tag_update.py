@@ -1,15 +1,13 @@
 """UseCase for updating a smart list tag."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.smart_lists.tag.update import SmartListTagUpdateUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
-from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.framework.update_action import UpdateAction
+from jupiter.use_cases.smart_lists.tag.update import SmartListTagUpdateUseCase
 
 
 class SmartListTagUpdate(command.Command):
@@ -40,13 +38,17 @@ class SmartListTagUpdate(command.Command):
             "--name", dest="tag_name", required=False, help="The name of the smart list"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.tag_name:
             tag_name = UpdateAction.change_to(SmartListTagName.from_raw(args.tag_name))
         else:
             tag_name = UpdateAction.do_nothing()
+
         self._command.execute(
-            SmartListTagUpdateUseCase.Args(ref_id=ref_id, tag_name=tag_name)
+            progress_reporter,
+            SmartListTagUpdateUseCase.Args(ref_id=ref_id, tag_name=tag_name),
         )

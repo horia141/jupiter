@@ -31,6 +31,7 @@ class ProjectSyncServiceNew(
         super().__init__(
             ProjectCollection,
             Project,
+            "project",
             NotionProject,
             storage_engine,
             project_notion_manager,

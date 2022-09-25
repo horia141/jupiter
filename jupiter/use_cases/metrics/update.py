@@ -1,5 +1,4 @@
 """The command for updating a metric's properties."""
-import logging
 import typing
 from dataclasses import dataclass
 from typing import Final, Optional
@@ -29,12 +28,15 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
+    MarkProgressStatus,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MetricUpdateUseCase(AppMutationUseCase["MetricUpdateUseCase.Args", None]):
@@ -77,7 +79,12 @@ class MetricUpdateUseCase(AppMutationUseCase["MetricUpdateUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._metric_notion_manager = metric_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -178,16 +185,6 @@ class MetricUpdateUseCase(AppMutationUseCase["MetricUpdateUseCase.Args", None]):
             else:
                 collection_params = UpdateAction.do_nothing()
 
-            metric = metric.update(
-                name=args.name,
-                icon=args.icon,
-                collection_params=collection_params,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-
-            uow.metric_repository.save(metric)
-
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id
             )
@@ -199,11 +196,30 @@ class MetricUpdateUseCase(AppMutationUseCase["MetricUpdateUseCase.Args", None]):
                 filter_metric_ref_ids=[metric.ref_id],
             )
 
-        notion_metric = self._metric_notion_manager.load_branch(
-            metric_collection.ref_id, metric.ref_id
-        )
-        notion_metric = notion_metric.join_with_entity(metric)
-        self._metric_notion_manager.save_branch(metric_collection.ref_id, notion_metric)
+        with progress_reporter.start_updating_entity(
+            "metric", metric.ref_id, str(metric.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                metric = metric.update(
+                    name=args.name,
+                    icon=args.icon,
+                    collection_params=collection_params,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                entity_reporter.mark_known_name(str(metric.name))
+
+                uow.metric_repository.save(metric)
+                entity_reporter.mark_local_change()
+
+            notion_metric = self._metric_notion_manager.load_branch(
+                metric_collection.ref_id, metric.ref_id
+            )
+            notion_metric = notion_metric.join_with_entity(metric)
+            self._metric_notion_manager.save_branch(
+                metric_collection.ref_id, notion_metric
+            )
+            entity_reporter.mark_remote_change()
 
         # Change the inbox tasks
         if metric.collection_params is None:
@@ -215,7 +231,7 @@ class MetricUpdateUseCase(AppMutationUseCase["MetricUpdateUseCase.Args", None]):
                 inbox_task_notion_manager=self._inbox_task_notion_manager,
             )
             for inbox_task in metric_collection_tasks:
-                inbox_task_archive_service.do_it(inbox_task)
+                inbox_task_archive_service.do_it(progress_reporter, inbox_task)
         else:
             # Situation 2: we need to update the existing metrics.
             with self._storage_engine.get_unit_of_work() as uow:
@@ -224,47 +240,55 @@ class MetricUpdateUseCase(AppMutationUseCase["MetricUpdateUseCase.Args", None]):
                 )
 
             for inbox_task in metric_collection_tasks:
-                schedule = schedules.get_schedule(
-                    metric.collection_params.period,
-                    metric.name,
-                    typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    self._global_properties.timezone,
-                    None,
-                    metric.collection_params.actionable_from_day,
-                    metric.collection_params.actionable_from_month,
-                    metric.collection_params.due_at_time,
-                    metric.collection_params.due_at_day,
-                    metric.collection_params.due_at_month,
-                )
+                with progress_reporter.start_updating_entity(
+                    "inbox task", inbox_task.ref_id, str(inbox_task.name)
+                ) as entity_reporter:
+                    schedule = schedules.get_schedule(
+                        metric.collection_params.period,
+                        metric.name,
+                        typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
+                        self._global_properties.timezone,
+                        None,
+                        metric.collection_params.actionable_from_day,
+                        metric.collection_params.actionable_from_month,
+                        metric.collection_params.due_at_time,
+                        metric.collection_params.due_at_day,
+                        metric.collection_params.due_at_month,
+                    )
 
-                inbox_task = inbox_task.update_link_to_metric(
-                    project_ref_id=project.ref_id,
-                    name=schedule.full_name,
-                    recurring_timeline=schedule.timeline,
-                    eisen=metric.collection_params.eisen,
-                    difficulty=metric.collection_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
+                    inbox_task = inbox_task.update_link_to_metric(
+                        project_ref_id=project.ref_id,
+                        name=schedule.full_name,
+                        recurring_timeline=schedule.timeline,
+                        eisen=metric.collection_params.eisen,
+                        difficulty=metric.collection_params.difficulty,
+                        actionable_date=schedule.actionable_date,
+                        due_time=schedule.due_time,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    entity_reporter.mark_known_name(str(inbox_task.name))
 
-                with self._storage_engine.get_unit_of_work() as uow:
-                    uow.inbox_task_repository.save(inbox_task)
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        uow.inbox_task_repository.save(inbox_task)
+                        entity_reporter.mark_local_change()
 
-                if inbox_task.archived:
-                    continue
+                    if inbox_task.archived:
+                        entity_reporter.mark_remote_change(
+                            MarkProgressStatus.NOT_NEEDED
+                        )
+                        continue
 
-                direct_info = NotionInboxTask.DirectInfo(
-                    all_projects_map={project.ref_id: project}, all_big_plans_map={}
-                )
-                notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
-                )
-                notion_inbox_task = notion_inbox_task.join_with_entity(
-                    inbox_task, direct_info
-                )
-                self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task
-                )
-                LOGGER.info("Applied Notion changes")
+                    direct_info = NotionInboxTask.DirectInfo(
+                        all_projects_map={project.ref_id: project}, all_big_plans_map={}
+                    )
+                    notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    notion_inbox_task = notion_inbox_task.join_with_entity(
+                        inbox_task, direct_info
+                    )
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task
+                    )
+                    entity_reporter.mark_remote_change()

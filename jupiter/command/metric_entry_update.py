@@ -1,16 +1,14 @@
 """UseCase for updating a metric entry's properties."""
 
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
-from jupiter.use_cases.metrics.entry.update import MetricEntryUpdateUseCase
-from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.framework.update_action import UpdateAction
+from jupiter.use_cases.metrics.entry.update import MetricEntryUpdateUseCase
 
 
 class MetricEntryUpdate(command.Command):
@@ -66,7 +64,9 @@ class MetricEntryUpdate(command.Command):
             help="Clear the notes",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         collection_time = (
@@ -86,8 +86,13 @@ class MetricEntryUpdate(command.Command):
             notes = UpdateAction.change_to(args.notes)
         else:
             notes = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             MetricEntryUpdateUseCase.Args(
-                ref_id=ref_id, collection_time=collection_time, value=value, notes=notes
-            )
+                ref_id=ref_id,
+                collection_time=collection_time,
+                value=value,
+                notes=notes,
+            ),
         )

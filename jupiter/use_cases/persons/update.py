@@ -1,5 +1,4 @@
 """Update a person."""
-import logging
 import typing
 from dataclasses import dataclass
 from typing import Final, Optional
@@ -30,12 +29,15 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
+    MarkProgressStatus,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PersonUpdateUseCase(AppMutationUseCase["PersonUpdateUseCase.Args", None]):
@@ -77,7 +79,12 @@ class PersonUpdateUseCase(AppMutationUseCase["PersonUpdateUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._person_notion_manager = person_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -172,27 +179,6 @@ class PersonUpdateUseCase(AppMutationUseCase["PersonUpdateUseCase.Args", None]):
             else:
                 catch_up_params = UpdateAction.do_nothing()
 
-            person = person.update(
-                name=args.name,
-                relationship=args.relationship,
-                birthday=args.birthday,
-                catch_up_params=catch_up_params,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-
-            uow.person_repository.save(person)
-
-        notion_person = self._person_notion_manager.load_leaf(
-            person_collection.ref_id, person.ref_id
-        )
-        notion_person = notion_person.join_with_entity(person, None)
-        self._person_notion_manager.save_leaf(person_collection.ref_id, notion_person)
-
-        # TODO(horia141): also create tasks here!
-        # TODO(horia141): what if we change other person properties not just catch up params?
-        # Change the catch up inbox tasks
-        with self._storage_engine.get_unit_of_work() as uow:
             project = uow.project_repository.load_by_id(
                 person_collection.catch_up_project_ref_id
             )
@@ -212,6 +198,9 @@ class PersonUpdateUseCase(AppMutationUseCase["PersonUpdateUseCase.Args", None]):
                 filter_person_ref_ids=[person.ref_id],
             )
 
+        # TODO(horia141): also create tasks here!
+        # TODO(horia141): what if we change other person properties not just catch up params?
+        # Change the catch up inbox tasks
         if person.catch_up_params is None:
             # Situation 1: we need to get rid of any existing catch ups persons because there's no collection catch ups.
             inbox_task_archive_service = InboxTaskArchiveService(
@@ -221,51 +210,63 @@ class PersonUpdateUseCase(AppMutationUseCase["PersonUpdateUseCase.Args", None]):
                 inbox_task_notion_manager=self._inbox_task_notion_manager,
             )
             for inbox_task in person_catch_up_tasks:
-                inbox_task_archive_service.do_it(inbox_task)
+                inbox_task_archive_service.do_it(progress_reporter, inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_catch_up_tasks:
-                schedule = schedules.get_schedule(
-                    person.catch_up_params.period,
-                    person.name,
-                    typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    self._global_properties.timezone,
-                    None,
-                    person.catch_up_params.actionable_from_day,
-                    person.catch_up_params.actionable_from_month,
-                    person.catch_up_params.due_at_time,
-                    person.catch_up_params.due_at_day,
-                    person.catch_up_params.due_at_month,
-                )
+                with progress_reporter.start_updating_entity(
+                    "inbox task", inbox_task.ref_id, str(inbox_task.name)
+                ) as entity_reporter:
+                    schedule = schedules.get_schedule(
+                        person.catch_up_params.period,
+                        person.name,
+                        typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
+                        self._global_properties.timezone,
+                        None,
+                        person.catch_up_params.actionable_from_day,
+                        person.catch_up_params.actionable_from_month,
+                        person.catch_up_params.due_at_time,
+                        person.catch_up_params.due_at_day,
+                        person.catch_up_params.due_at_month,
+                    )
 
-                inbox_task = inbox_task.update_link_to_person_catch_up(
-                    project_ref_id=project.ref_id,
-                    name=schedule.full_name,
-                    recurring_timeline=schedule.timeline,
-                    eisen=person.catch_up_params.eisen,
-                    difficulty=person.catch_up_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_time=schedule.due_time,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                # Situation 2a: we're handling the same project.
-                with self._storage_engine.get_unit_of_work() as uow:
-                    uow.inbox_task_repository.save(inbox_task)
+                    inbox_task = inbox_task.update_link_to_person_catch_up(
+                        project_ref_id=project.ref_id,
+                        name=schedule.full_name,
+                        recurring_timeline=schedule.timeline,
+                        eisen=person.catch_up_params.eisen,
+                        difficulty=person.catch_up_params.difficulty,
+                        actionable_date=schedule.actionable_date,
+                        due_time=schedule.due_time,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    entity_reporter.mark_known_name(str(inbox_task.name))
 
-                direct_info = NotionInboxTask.DirectInfo(
-                    all_projects_map={project.ref_id: project}, all_big_plans_map={}
-                )
-                notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
-                )
-                notion_inbox_task = notion_inbox_task.join_with_entity(
-                    inbox_task, direct_info
-                )
-                self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task
-                )
-                LOGGER.info("Applied Notion changes")
+                    # Situation 2a: we're handling the same project.
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        uow.inbox_task_repository.save(inbox_task)
+                        entity_reporter.mark_local_change()
+
+                    if inbox_task.archived:
+                        entity_reporter.mark_remote_change(
+                            MarkProgressStatus.NOT_NEEDED
+                        )
+                        continue
+
+                    direct_info = NotionInboxTask.DirectInfo(
+                        all_projects_map={project.ref_id: project}, all_big_plans_map={}
+                    )
+                    notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    notion_inbox_task = notion_inbox_task.join_with_entity(
+                        inbox_task, direct_info
+                    )
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task
+                    )
+                    entity_reporter.mark_remote_change()
 
         # Change the birthday inbox tasks
         if person.birthday is None:
@@ -277,50 +278,88 @@ class PersonUpdateUseCase(AppMutationUseCase["PersonUpdateUseCase.Args", None]):
                 inbox_task_notion_manager=self._inbox_task_notion_manager,
             )
             for inbox_task in person_birthday_tasks:
-                inbox_task_archive_service.do_it(inbox_task)
+                inbox_task_archive_service.do_it(progress_reporter, inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
             for inbox_task in person_birthday_tasks:
-                schedule = schedules.get_schedule(
-                    RecurringTaskPeriod.YEARLY,
-                    person.name,
-                    typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
-                    self._global_properties.timezone,
-                    None,
-                    None,
-                    None,
-                    None,
-                    RecurringTaskDueAtDay.from_raw(
-                        RecurringTaskPeriod.MONTHLY, person.birthday.day
-                    ),
-                    RecurringTaskDueAtMonth.from_raw(
-                        RecurringTaskPeriod.YEARLY, person.birthday.month
-                    ),
-                )
+                with progress_reporter.start_updating_entity(
+                    "inbox task", inbox_task.ref_id, str(inbox_task.name)
+                ) as entity_reporter:
+                    schedule = schedules.get_schedule(
+                        RecurringTaskPeriod.YEARLY,
+                        person.name,
+                        typing.cast(Timestamp, inbox_task.recurring_gen_right_now),
+                        self._global_properties.timezone,
+                        None,
+                        None,
+                        None,
+                        None,
+                        RecurringTaskDueAtDay.from_raw(
+                            RecurringTaskPeriod.MONTHLY, person.birthday.day
+                        ),
+                        RecurringTaskDueAtMonth.from_raw(
+                            RecurringTaskPeriod.YEARLY, person.birthday.month
+                        ),
+                    )
 
-                inbox_task = inbox_task.update_link_to_person_birthday(
-                    project_ref_id=project.ref_id,
-                    name=schedule.full_name,
-                    recurring_timeline=schedule.timeline,
-                    preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                    due_time=schedule.due_time,
+                    inbox_task = inbox_task.update_link_to_person_birthday(
+                        project_ref_id=project.ref_id,
+                        name=schedule.full_name,
+                        recurring_timeline=schedule.timeline,
+                        preparation_days_cnt=person.preparation_days_cnt_for_birthday,
+                        due_time=schedule.due_time,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    entity_reporter.mark_known_name(str(inbox_task.name))
+
+                    # Situation 2a: we're handling the same project.
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        uow.inbox_task_repository.save(inbox_task)
+                        entity_reporter.mark_local_change()
+
+                    if inbox_task.archived:
+                        entity_reporter.mark_remote_change(
+                            MarkProgressStatus.NOT_NEEDED
+                        )
+                        continue
+
+                    direct_info = NotionInboxTask.DirectInfo(
+                        all_projects_map={project.ref_id: project}, all_big_plans_map={}
+                    )
+                    notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    notion_inbox_task = notion_inbox_task.join_with_entity(
+                        inbox_task, direct_info
+                    )
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id, notion_inbox_task
+                    )
+                    entity_reporter.mark_remote_change()
+
+        with progress_reporter.start_updating_entity(
+            "person", person.ref_id, str(person.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                person = person.update(
+                    name=args.name,
+                    relationship=args.relationship,
+                    birthday=args.birthday,
+                    catch_up_params=catch_up_params,
                     source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time(),
                 )
-                # Situation 2a: we're handling the same project.
-                with self._storage_engine.get_unit_of_work() as uow:
-                    uow.inbox_task_repository.save(inbox_task)
+                entity_reporter.mark_known_name(str(person.name))
 
-                direct_info = NotionInboxTask.DirectInfo(
-                    all_projects_map={project.ref_id: project}, all_big_plans_map={}
-                )
-                notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
-                )
-                notion_inbox_task = notion_inbox_task.join_with_entity(
-                    inbox_task, direct_info
-                )
-                self._inbox_task_notion_manager.save_leaf(
-                    inbox_task.inbox_task_collection_ref_id, notion_inbox_task
-                )
-                LOGGER.info("Applied Notion changes")
+                uow.person_repository.save(person)
+                entity_reporter.mark_local_change()
+
+            notion_person = self._person_notion_manager.load_leaf(
+                person_collection.ref_id, person.ref_id
+            )
+            notion_person = notion_person.join_with_entity(person, None)
+            self._person_notion_manager.save_leaf(
+                person_collection.ref_id, notion_person
+            )
+            entity_reporter.mark_remote_change()

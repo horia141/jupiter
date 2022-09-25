@@ -3,7 +3,7 @@ import abc
 import enum
 import logging
 from dataclasses import dataclass, fields
-from typing import TypeVar, Generic, Final, Optional, Union
+from typing import TypeVar, Generic, Final, Optional, Union, ContextManager
 
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
 from jupiter.framework.base.timestamp import Timestamp
@@ -13,6 +13,15 @@ from jupiter.framework.update_action import UpdateAction
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
+
+
+class UseCaseContextBase(abc.ABC):
+    """The base class for use case contexts."""
+
+    @property
+    @abc.abstractmethod
+    def owner_ref_id(self) -> EntityId:
+        """The owner entity root id."""
 
 
 @dataclass(frozen=True)
@@ -34,15 +43,6 @@ class UseCaseIOBase:
                     field_value, field.name
                 )
         return serialized_form
-
-
-class UseCaseContextBase(abc.ABC):
-    """The base class for use case contexts."""
-
-    @property
-    @abc.abstractmethod
-    def owner_ref_id(self) -> EntityId:
-        """The owner entity root id."""
 
 
 @dataclass(frozen=True)
@@ -126,11 +126,106 @@ class MutationUseCaseInvocationRecorder(abc.ABC):
         """Record the invocation of the use case."""
 
 
+@enum.unique
+class MarkProgressStatus(enum.Enum):
+    """The status of a big plan."""
+
+    PROGRESS = "progress"
+    OK = "ok"
+    FAILED = "failed"
+    NOT_NEEDED = "not-needed"
+
+
+class EntityProgressReporter(abc.ABC):
+    """A reporter for the updates to a particular entity."""
+
+    @abc.abstractmethod
+    def mark_not_needed(self) -> "EntityProgressReporter":
+        """Mark the fact that a particular modification isn't needed."""
+
+    @abc.abstractmethod
+    def mark_known_entity_id(self, entity_id: EntityId) -> "EntityProgressReporter":
+        """Mark the fact that we now know the entity id for the entity being processed."""
+
+    @abc.abstractmethod
+    def mark_known_name(self, name: str) -> "EntityProgressReporter":
+        """Mark the fact that we now know the entity name for the entity being processed."""
+
+    @abc.abstractmethod
+    def mark_local_change(self) -> "EntityProgressReporter":
+        """Mark the fact that the local change has succeeded."""
+
+    @abc.abstractmethod
+    def mark_remote_change(
+        self, success: MarkProgressStatus = MarkProgressStatus.OK
+    ) -> "EntityProgressReporter":
+        """Mark the fact that the remote change has completed."""
+
+    @abc.abstractmethod
+    def mark_other_progress(
+        self, progress: str, success: MarkProgressStatus = MarkProgressStatus.OK
+    ) -> "EntityProgressReporter":
+        """Mark some other type of progress."""
+
+
+class ProgressReporter(abc.ABC):
+    """A reporter to the user in real-time on modifications to entities."""
+
+    @abc.abstractmethod
+    def with_subentity(self) -> "ProgressReporter":
+        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
+
+    @abc.abstractmethod
+    def section(self, title: str) -> ContextManager[None]:
+        """Start a section or subsection."""
+
+    @abc.abstractmethod
+    def start_creating_entity(
+        self, entity_type: str, entity_name: str
+    ) -> ContextManager[EntityProgressReporter]:
+        """Report that a particular entity is being created."""
+
+    @abc.abstractmethod
+    def start_updating_entity(
+        self,
+        entity_type: str,
+        entity_id: Optional[EntityId] = None,
+        entity_name: Optional[str] = None,
+    ) -> ContextManager[EntityProgressReporter]:
+        """Report that a particular entity is being updated."""
+
+    @abc.abstractmethod
+    def start_archiving_entity(
+        self,
+        entity_type: str,
+        entity_id: Optional[EntityId] = None,
+        entity_name: Optional[str] = None,
+    ) -> ContextManager[EntityProgressReporter]:
+        """Report that a particular entity is being archived."""
+
+    @abc.abstractmethod
+    def start_removing_entity(
+        self,
+        entity_type: str,
+        entity_id: Optional[EntityId] = None,
+        entity_name: Optional[str] = None,
+    ) -> ContextManager[EntityProgressReporter]:
+        """Report that a particular entity is being removed."""
+
+    @abc.abstractmethod
+    def start_work_related_to_entity(
+        self, entity_type: str, entity_id: EntityId, entity_name: str
+    ) -> ContextManager[EntityProgressReporter]:
+        """Report that a particular entity is being affected."""
+
+
 class UseCase(Generic[UseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):
     """A generic use case."""
 
     @abc.abstractmethod
-    def execute(self, args: UseCaseArgs) -> UseCaseResult:
+    def execute(
+        self, progress_reporter: ProgressReporter, args: UseCaseArgs
+    ) -> UseCaseResult:
         """Execute the command's action."""
 
     @abc.abstractmethod
@@ -138,7 +233,12 @@ class UseCase(Generic[UseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):
         """Construct the context for the use case."""
 
     @abc.abstractmethod
-    def _execute(self, context: UseCaseContext, args: UseCaseArgs) -> UseCaseResult:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: UseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
         """Execute the command's action."""
 
 
@@ -163,12 +263,14 @@ class MutationEmptyContextUseCase(
         """Construct the context for the use case."""
         return EmptyContext()
 
-    def execute(self, args: UseCaseArgs) -> UseCaseResult:
+    def execute(
+        self, progress_reporter: ProgressReporter, args: UseCaseArgs
+    ) -> UseCaseResult:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking no-context mutation command {self.__class__.__name__} with args {args}"
         )
-        return self._execute(EmptyContext(), args)
+        return self._execute(progress_reporter, EmptyContext(), args)
 
 
 class MutationUseCase(
@@ -190,22 +292,17 @@ class MutationUseCase(
         self._time_provider = time_provider
         self._invocation_recorder = invocation_recorder
 
-    def execute(self, args: UseCaseArgs) -> UseCaseResult:
+    def execute(
+        self, progress_reporter: ProgressReporter, args: UseCaseArgs
+    ) -> UseCaseResult:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking mutation command {self.__class__.__name__} with args {args}"
         )
         context = self._build_context()
+
         try:
-            result = self._execute(context, args)
-            invocation_record = MutationUseCaseInvocationRecord.build_success(
-                context.owner_ref_id if context is not None else BAD_REF_ID,
-                self._time_provider.get_current_time(),
-                self.__class__.__name__,
-                args,
-            )
-            self._invocation_recorder.record(invocation_record)
-            return result
+            result = self._execute(progress_reporter, context, args)
         except InputValidationError:
             raise
         except Exception as err:
@@ -219,6 +316,15 @@ class MutationUseCase(
             self._invocation_recorder.record(invocation_record)
             raise
 
+        invocation_record = MutationUseCaseInvocationRecord.build_success(
+            context.owner_ref_id if context is not None else BAD_REF_ID,
+            self._time_provider.get_current_time(),
+            self.__class__.__name__,
+            args,
+        )
+        self._invocation_recorder.record(invocation_record)
+        return result
+
 
 class ReadonlyUseCase(
     Generic[UseCaseContext, UseCaseArgs, UseCaseResult],
@@ -227,10 +333,12 @@ class ReadonlyUseCase(
 ):
     """A command which only does reads."""
 
-    def execute(self, args: UseCaseArgs) -> UseCaseResult:
+    def execute(
+        self, progress_reporter: ProgressReporter, args: UseCaseArgs
+    ) -> UseCaseResult:
         """Execute the command's action."""
         LOGGER.info(
             f"Invoking readonly command {self.__class__.__name__} with args {args}"
         )
         context = self._build_context()
-        return self._execute(context, args)
+        return self._execute(progress_reporter, context, args)

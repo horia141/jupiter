@@ -1,5 +1,4 @@
 """The command for creating a habit."""
-import logging
 from dataclasses import dataclass
 from typing import Optional, Final
 
@@ -24,11 +23,13 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitCreateUseCase(AppMutationUseCase["HabitCreateUseCase.Args", None]):
@@ -67,58 +68,68 @@ class HabitCreateUseCase(AppMutationUseCase["HabitCreateUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._habit_notion_manager = habit_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = uow.project_collection_repository.load_by_parent(
-                workspace.ref_id
-            )
-
-            if args.project_key is not None:
-                project = uow.project_repository.load_by_key(
-                    project_collection.ref_id, args.project_key
+        with progress_reporter.start_creating_entity(
+            "habit", str(args.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                project_collection = uow.project_collection_repository.load_by_parent(
+                    workspace.ref_id
                 )
-                project_ref_id = project.ref_id
-            else:
-                project = uow.project_repository.load_by_id(
-                    workspace.default_project_ref_id
+
+                if args.project_key is not None:
+                    project = uow.project_repository.load_by_key(
+                        project_collection.ref_id, args.project_key
+                    )
+                    project_ref_id = project.ref_id
+                else:
+                    project = uow.project_repository.load_by_id(
+                        workspace.default_project_ref_id
+                    )
+                    project_ref_id = workspace.default_project_ref_id
+
+                habit_collection = uow.habit_collection_repository.load_by_parent(
+                    workspace.ref_id
                 )
-                project_ref_id = workspace.default_project_ref_id
 
-            habit_collection = uow.habit_collection_repository.load_by_parent(
-                workspace.ref_id
+                habit = Habit.new_habit(
+                    habit_collection_ref_id=habit_collection.ref_id,
+                    archived=False,
+                    project_ref_id=project_ref_id,
+                    name=args.name,
+                    gen_params=RecurringTaskGenParams(
+                        period=args.period,
+                        eisen=args.eisen if args.eisen else Eisen.REGULAR,
+                        difficulty=args.difficulty,
+                        actionable_from_day=args.actionable_from_day,
+                        actionable_from_month=args.actionable_from_month,
+                        due_at_time=args.due_at_time,
+                        due_at_day=args.due_at_day,
+                        due_at_month=args.due_at_month,
+                    ),
+                    skip_rule=args.skip_rule,
+                    suspended=False,
+                    repeats_in_period_count=args.repeats_in_period_count,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
+                )
+                habit = uow.habit_repository.create(habit)
+                entity_reporter.mark_known_entity_id(habit.ref_id).mark_local_change()
+
+            direct_info = NotionHabit.DirectInfo(
+                all_projects_map={project.ref_id: project}
             )
-
-            habit = Habit.new_habit(
-                habit_collection_ref_id=habit_collection.ref_id,
-                archived=False,
-                project_ref_id=project_ref_id,
-                name=args.name,
-                gen_params=RecurringTaskGenParams(
-                    period=args.period,
-                    eisen=args.eisen if args.eisen else Eisen.REGULAR,
-                    difficulty=args.difficulty,
-                    actionable_from_day=args.actionable_from_day,
-                    actionable_from_month=args.actionable_from_month,
-                    due_at_time=args.due_at_time,
-                    due_at_day=args.due_at_day,
-                    due_at_month=args.due_at_month,
-                ),
-                skip_rule=args.skip_rule,
-                suspended=False,
-                repeats_in_period_count=args.repeats_in_period_count,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
+            notion_habit = NotionHabit.new_notion_entity(habit, direct_info)
+            self._habit_notion_manager.upsert_leaf(
+                habit_collection.ref_id,
+                notion_habit,
             )
-            habit = uow.habit_repository.create(habit)
-            LOGGER.info("Applied local changes")
-
-        direct_info = NotionHabit.DirectInfo(all_projects_map={project.ref_id: project})
-        notion_habit = NotionHabit.new_notion_entity(habit, direct_info)
-        self._habit_notion_manager.upsert_leaf(
-            habit_collection.ref_id,
-            notion_habit,
-        )
-        LOGGER.info("Applied Notion changes")
+            entity_reporter.mark_remote_change()

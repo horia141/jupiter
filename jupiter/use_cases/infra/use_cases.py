@@ -9,10 +9,10 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import (
     UseCaseArgs,
     UseCaseResult,
-    MutationUseCase,
     MutationUseCaseInvocationRecorder,
     ReadonlyUseCase,
     UseCaseContextBase,
+    MutationUseCase,
 )
 from jupiter.utils.time_provider import TimeProvider
 

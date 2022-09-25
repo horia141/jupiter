@@ -23,8 +23,12 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 
@@ -61,48 +65,60 @@ class MetricCreateUseCase(AppMutationUseCase["MetricCreateUseCase.Args", None]):
         super().__init__(time_provider, invocation_recorder, storage_engine)
         self._metric_notion_manager = metric_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        collection_params = None
-        with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = uow.metric_collection_repository.load_by_parent(
-                workspace.ref_id
+        with progress_reporter.start_creating_entity(
+            "metric", str(args.name)
+        ) as entity_reporter:
+            collection_params = None
+            with self._storage_engine.get_unit_of_work() as uow:
+                metric_collection = uow.metric_collection_repository.load_by_parent(
+                    workspace.ref_id
+                )
+
+                if args.collection_period is not None:
+                    collection_params = RecurringTaskGenParams(
+                        period=args.collection_period,
+                        eisen=args.collection_eisen
+                        if args.collection_eisen
+                        else Eisen.REGULAR,
+                        difficulty=args.collection_difficulty,
+                        actionable_from_day=args.collection_actionable_from_day,
+                        actionable_from_month=args.collection_actionable_from_month,
+                        due_at_time=args.collection_due_at_time,
+                        due_at_day=args.collection_due_at_day,
+                        due_at_month=args.collection_due_at_month,
+                    )
+
+                try:
+                    metric = Metric.new_metric(
+                        metric_collection_ref_id=metric_collection.ref_id,
+                        key=args.key,
+                        name=args.name,
+                        icon=args.icon,
+                        collection_params=collection_params,
+                        metric_unit=args.metric_unit,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    metric = uow.metric_repository.create(metric)
+                    entity_reporter.mark_known_entity_id(
+                        metric.ref_id
+                    ).mark_local_change()
+                except MetricAlreadyExistsError as err:
+                    raise InputValidationError(
+                        f"Metric with key {metric.key} already exists"
+                    ) from err
+
+            notion_metric = NotionMetric.new_notion_entity(metric)
+            self._metric_notion_manager.upsert_branch(
+                metric_collection.ref_id, notion_metric
             )
-
-            if args.collection_period is not None:
-                collection_params = RecurringTaskGenParams(
-                    period=args.collection_period,
-                    eisen=args.collection_eisen
-                    if args.collection_eisen
-                    else Eisen.REGULAR,
-                    difficulty=args.collection_difficulty,
-                    actionable_from_day=args.collection_actionable_from_day,
-                    actionable_from_month=args.collection_actionable_from_month,
-                    due_at_time=args.collection_due_at_time,
-                    due_at_day=args.collection_due_at_day,
-                    due_at_month=args.collection_due_at_month,
-                )
-
-            try:
-                metric = Metric.new_metric(
-                    metric_collection_ref_id=metric_collection.ref_id,
-                    key=args.key,
-                    name=args.name,
-                    icon=args.icon,
-                    collection_params=collection_params,
-                    metric_unit=args.metric_unit,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-                metric = uow.metric_repository.create(metric)
-            except MetricAlreadyExistsError as err:
-                raise InputValidationError(
-                    f"Metric with key {metric.key} already exists"
-                ) from err
-
-        notion_metric = NotionMetric.new_notion_entity(metric)
-        self._metric_notion_manager.upsert_branch(
-            metric_collection.ref_id, notion_metric
-        )
+            entity_reporter.mark_remote_change()

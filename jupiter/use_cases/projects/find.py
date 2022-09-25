@@ -4,7 +4,11 @@ from typing import Optional, List
 
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_key import ProjectKey
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 
 
@@ -26,9 +30,15 @@ class ProjectFindUseCase(
 
         projects: List[Project]
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> "Result":
         """Execute the command's action."""
         workspace = context.workspace
+
         with self._storage_engine.get_unit_of_work() as uow:
             project_collection = uow.project_collection_repository.load_by_parent(
                 workspace.ref_id
@@ -38,4 +48,5 @@ class ProjectFindUseCase(
                 allow_archived=args.allow_archived,
                 filter_keys=args.filter_keys,
             )
+
         return self.Result(projects=list(projects))

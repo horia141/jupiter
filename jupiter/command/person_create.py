@@ -1,9 +1,9 @@
 """UseCase for adding a person."""
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.persons.person_birthday import PersonBirthday
@@ -14,8 +14,6 @@ from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.use_cases.persons.create import PersonCreateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PersonCreate(command.Command):
@@ -106,7 +104,9 @@ class PersonCreate(command.Command):
             "--birthday", dest="birthday", required=False, help="The person's birthday"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         name = PersonName.from_raw(args.name)
         relationship = PersonRelationship.from_raw(args.relationship)
@@ -157,6 +157,7 @@ class PersonCreate(command.Command):
         birthday = PersonBirthday.from_raw(args.birthday) if args.birthday else None
 
         self._command.execute(
+            progress_reporter,
             PersonCreateUseCase.Args(
                 name=name,
                 relationship=relationship,
@@ -169,5 +170,5 @@ class PersonCreate(command.Command):
                 catch_up_due_at_day=catch_up_due_at_day,
                 catch_up_due_at_month=catch_up_due_at_month,
                 birthday=birthday,
-            )
+            ),
         )

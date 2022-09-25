@@ -1,6 +1,5 @@
 """The command for finding metrics."""
 import itertools
-import logging
 import typing
 from collections import defaultdict
 from dataclasses import dataclass
@@ -13,10 +12,12 @@ from jupiter.domain.metrics.metric_entry import MetricEntry
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project import Project
 from jupiter.framework.base.entity_id import EntityId
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MetricFindUseCase(
@@ -46,7 +47,12 @@ class MetricFindUseCase(
         collection_project: Project
         metrics: List["MetricFindUseCase.ResponseEntry"]
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> "Result":
         """Execute the command's action."""
         workspace = context.workspace
 

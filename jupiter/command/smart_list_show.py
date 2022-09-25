@@ -1,17 +1,24 @@
 """UseCase for showing a smart list."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
 from jupiter.command import command
-from jupiter.use_cases.smart_lists.find import SmartListFindUseCase
+from jupiter.command.rendering import (
+    entity_key_to_rich_text,
+    entity_id_to_rich_text,
+    entity_name_to_rich_text,
+    RichConsoleProgressReporter,
+)
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_tag_name import SmartListTagName
+from jupiter.use_cases.smart_lists.find import SmartListFindUseCase
 
-LOGGER = logging.getLogger(__name__)
 
-
-class SmartListShow(command.Command):
+class SmartListShow(command.ReadonlyCommand):
     """UseCase for showing the smart list."""
 
     _command: Final[SmartListFindUseCase]
@@ -70,7 +77,9 @@ class SmartListShow(command.Command):
             help="Allow only smart list items with this tag",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         keys = (
@@ -88,46 +97,89 @@ class SmartListShow(command.Command):
             if len(args.filter_tag_names) > 0
             else None
         )
-        response = self._command.execute(
+
+        result = self._command.execute(
+            progress_reporter,
             SmartListFindUseCase.Args(
                 allow_archived=show_archived,
                 filter_keys=keys,
                 filter_is_done=filter_is_done,
                 filter_tag_names=filter_tag_names,
-            )
+            ),
         )
 
-        print("Smart Lists:")
+        sorted_smart_lists = sorted(
+            result.smart_lists,
+            key=lambda sl: (sl.smart_list.archived, sl.smart_list.created_time),
+        )
 
-        for smart_list_entry in response.smart_lists:
+        rich_tree = Tree("🏛️  Smart Lists", guide_style="bold bright_blue")
+
+        for smart_list_entry in sorted_smart_lists:
             smart_list = smart_list_entry.smart_list
             smart_list_tags_set = {
                 t.ref_id: t for t in smart_list_entry.smart_list_tags
             }
-            print(
-                f"  - {smart_list.key}: {smart_list.icon if smart_list.icon else ''}{smart_list.name}"
-                + f" archived={smart_list.archived}"
-            )
 
-            print("    Tags: ", end="")
+            smart_list_text = Text("")
+            smart_list_text.append(entity_key_to_rich_text(smart_list.key))
+            if smart_list.icon:
+                smart_list_text.append(" ")
+                smart_list_text.append(str(smart_list.icon))
+            smart_list_text.append(" ")
+            smart_list_text.append(str(smart_list.name))
+
+            smart_list_info_text = Text("")
 
             for smart_list_tag in smart_list_tags_set.values():
-                print(
-                    f" <id={smart_list_tag.ref_id} #{smart_list_tag.tag_name}>", end=""
+                smart_list_info_text.append("<")
+                smart_list_info_text.append(
+                    entity_id_to_rich_text(smart_list_tag.ref_id)
                 )
+                smart_list_info_text.append(" ")
+                smart_list_info_text.append(str(smart_list_tag.tag_name))
+                smart_list_info_text.append("> ")
 
-            print("")
+            if smart_list.archived:
+                smart_list_text.stylize("gray62")
+                smart_list_info_text.stylize("gray62")
+
+            smart_list_tree = rich_tree.add(
+                smart_list_text, guide_style="gray62" if smart_list.archived else "blue"
+            )
+            smart_list_tree.add(smart_list_info_text)
 
             for smart_list_item in smart_list_entry.smart_list_items:
-                print(
-                    f"    - id={smart_list_item.ref_id} {smart_list_item.name}"
-                    + (" [x] " if smart_list_item.is_done else " [ ] ")
-                    + (
-                        " ".join(
-                            f"#{smart_list_tags_set[t].tag_name}"
-                            for t in smart_list_item.tags_ref_id
-                        )
-                    )
-                    + (f" url={smart_list_item.url}" if smart_list_item.url else "")
-                    + f'{"archived=" + str(smart_list_item.archived) if show_archived else ""}'
+                smart_list_item_text = Text("")
+                smart_list_item_text.append(
+                    entity_id_to_rich_text(smart_list_item.ref_id)
                 )
+                smart_list_item_text.append(" ")
+                smart_list_item_text.append(
+                    entity_name_to_rich_text(smart_list_item.name)
+                )
+
+                if smart_list_item.is_done:
+                    smart_list_item_text.append(" ")
+                    smart_list_item_text.append("✅")
+                else:
+                    smart_list_item_text.append(" ")
+                    smart_list_item_text.append("🔲")
+
+                if len(smart_list_item.tags_ref_id) > 0:
+                    for tag_ref_id in smart_list_item.tags_ref_id:
+                        tag = smart_list_tags_set[tag_ref_id]
+                        smart_list_item_text.append(" #")
+                        smart_list_item_text.append(str(tag.tag_name))
+
+                if smart_list_item.url and str(smart_list_item.url) != "None":
+                    smart_list_item_text.append(" ")
+                    smart_list_item_text.append(str(smart_list_item.url))
+
+                if smart_list_item.archived:
+                    smart_list_info_text.stylize("gray62")
+
+                smart_list_tree.add(smart_list_item_text)
+
+        console = Console()
+        console.print(rich_tree)

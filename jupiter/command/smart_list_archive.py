@@ -1,13 +1,11 @@
 """UseCase for archiving a smart list."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.smart_lists.archive import SmartListArchiveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.smart_lists.archive import SmartListArchiveUseCase
 
 
 class SmartListArchive(command.Command):
@@ -38,7 +36,12 @@ class SmartListArchive(command.Command):
             help="The key of the smart list to archive",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
-        self._command.execute(SmartListArchiveUseCase.Args(key=smart_list_key))
+
+        self._command.execute(
+            progress_reporter, SmartListArchiveUseCase.Args(key=smart_list_key)
+        )

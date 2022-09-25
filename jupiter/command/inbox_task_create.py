@@ -1,9 +1,9 @@
 """UseCase for creating an inbox task."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.adate import ADate
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
@@ -12,8 +12,6 @@ from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.inbox_tasks.create import InboxTaskCreateUseCase
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class InboxTaskCreate(command.Command):
@@ -77,7 +75,9 @@ class InboxTaskCreate(command.Command):
             "--due-date", dest="due_date", help="The due date of the big plan"
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         project_key = (
             ProjectKey.from_raw(args.project_key) if args.project_key else None
@@ -98,7 +98,9 @@ class InboxTaskCreate(command.Command):
             if args.due_date
             else None
         )
+
         self._command.execute(
+            progress_reporter,
             InboxTaskCreateUseCase.Args(
                 project_key=project_key,
                 name=name,
@@ -107,5 +109,5 @@ class InboxTaskCreate(command.Command):
                 difficulty=difficulty,
                 actionable_date=actionable_date,
                 due_date=due_date,
-            )
+            ),
         )

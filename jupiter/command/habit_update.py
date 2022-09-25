@@ -1,9 +1,9 @@
 """UseCase for updating a habit."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final, Optional
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.habits.habit_name import HabitName
@@ -16,8 +16,6 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.update_action import UpdateAction
 from jupiter.use_cases.habits.update import HabitUpdateUseCase
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitUpdate(command.Command):
@@ -195,7 +193,9 @@ class HabitUpdate(command.Command):
             help="Clear the repeats in period parameter",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
         if args.name:
@@ -300,7 +300,9 @@ class HabitUpdate(command.Command):
             )
         else:
             repeats_in_period_count = UpdateAction.do_nothing()
+
         self._command.execute(
+            progress_reporter,
             HabitUpdateUseCase.Args(
                 ref_id=ref_id,
                 name=name,
@@ -314,5 +316,5 @@ class HabitUpdate(command.Command):
                 due_at_month=due_at_month,
                 skip_rule=skip_rule,
                 repeats_in_period_count=repeats_in_period_count,
-            )
+            ),
         )

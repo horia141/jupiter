@@ -1,7 +1,7 @@
 """Integration tests for metrics."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class MetricIntegrationTestCase(JupiterIntegrationTestCase):
@@ -25,10 +25,11 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
 
         metric_out = self.jupiter("metric-show")
 
-        assert re.search(r"weight:", metric_out)
+        assert re.search(r"weight", metric_out)
         assert re.search(r"Weight", metric_out)
-        assert re.search(r"@Weekly", metric_out)
-        assert re.search(r"eisen=Regular", metric_out)
+        assert re.search(r"(Weight)", metric_out)
+        assert re.search(r"Weekly", metric_out)
+        assert re.search(r"Regular", metric_out)
 
     def test_update_metric(self) -> None:
         """Update of a metric."""
@@ -62,11 +63,11 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
 
         metric_out = self.jupiter("metric-show")
 
-        assert re.search(r"weight:", metric_out)
+        assert re.search(r"weight", metric_out)
         assert re.search(r"Weight Big", metric_out)
-        assert re.search(r"@Monthly", metric_out)
-        assert re.search(r"eisen=Important", metric_out)
-        assert re.search(r"difficulty=Hard", metric_out)
+        assert re.search(r"Monthly", metric_out)
+        assert re.search(r"Important", metric_out)
+        assert re.search(r"Hard", metric_out)
 
     def test_archive_metric(self) -> None:
         """Archive of a metric."""
@@ -106,21 +107,21 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
 
         assert not self.check_notion_row_exists("Collect value for metric Weight")
 
-        metric_out = self.jupiter("metric-show", "--show-archived")
+        metric_out = self.jupiter(
+            "metric-show", "--show-archived", "--show-inbox-tasks"
+        )
 
-        assert re.search(r"weight:", metric_out)
+        assert re.search(r"weight", metric_out)
         assert re.search(r"Weight", metric_out)
-        assert re.search(r"@Weekly", metric_out)
-        assert re.search(r"eisen=Regular", metric_out)
-        assert re.search(r"archived=True", metric_out)
+        assert re.search(r"(Weight)", metric_out)
+        assert re.search(r"Weekly", metric_out)
+        assert re.search(r"Regular", metric_out)
 
         assert re.search(r"2022-05-21", metric_out)
+        assert re.search(r"value=83.2", metric_out)
         assert re.search(r"notes=A decent day", metric_out)
-        assert re.search(r"val=83.2", metric_out)
-        assert re.search(r"archived=True", metric_out)
 
         assert re.search(r"Collect value for metric Weight", metric_out)
-        assert re.search(r"archived=True", metric_out)
 
     def test_remove_metric(self) -> None:
         """Remove of a metric."""
@@ -160,9 +161,11 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
 
         assert not self.check_notion_row_exists("Collect value for metric Weight")
 
-        metric_out = self.jupiter("metric-show", "--show-archived")
+        metric_out = self.jupiter(
+            "metric-show", "--show-archived", "--show-inbox-tasks"
+        )
 
-        assert not re.search(r"weight:", metric_out)
+        assert not re.search(r"weight", metric_out)
         assert not re.search(r"Weight", metric_out)
 
         assert not re.search(r"2022-05-21", metric_out)
@@ -181,7 +184,7 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "weight",
         )
 
-        self.jupiter(
+        self.jupiter_create(
             "metric-entry-create",
             "--metric",
             "weight",
@@ -207,8 +210,8 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
         metric_out = self.jupiter("metric-show")
 
         assert re.search(r"2022-05-21", metric_out)
+        assert re.search(r"value=83.2", metric_out)
         assert re.search(r"notes=A decent day", metric_out)
-        assert re.search(r"val=83.2", metric_out)
 
     def test_update_metric_entry(self) -> None:
         """Update of a metric entry."""
@@ -222,7 +225,7 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "weight",
         )
 
-        self.jupiter(
+        metric_entry_id = self.jupiter_create(
             "metric-entry-create",
             "--metric",
             "weight",
@@ -232,10 +235,8 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "83.2",
             "--notes",
             "A decent day",
+            hint="Entry for 2022-05-21",
         )
-
-        metric_out = self.jupiter("metric-show")
-        metric_entry_id = extract_id_from_show_out(metric_out, "2022-05-21")
 
         self.jupiter(
             "metric-entry-update",
@@ -263,8 +264,8 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
         metric_out = self.jupiter("metric-show")
 
         assert re.search(r"2022-05-22", metric_out)
+        assert re.search(r"value=83.5", metric_out)
         assert re.search(r"notes=A better day", metric_out)
-        assert re.search(r"val=83.5", metric_out)
 
     def test_archive_metric_entry(self) -> None:
         """Archive of a metric entry."""
@@ -278,7 +279,7 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "weight",
         )
 
-        self.jupiter(
+        metric_entry_id = self.jupiter_create(
             "metric-entry-create",
             "--metric",
             "weight",
@@ -288,10 +289,8 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "83.2",
             "--notes",
             "A decent day",
+            hint="Entry for 2022-05-21",
         )
-
-        metric_out = self.jupiter("metric-show")
-        metric_entry_id = extract_id_from_show_out(metric_out, "2022-05-21")
 
         self.jupiter("metric-entry-archive", "--id", metric_entry_id)
 
@@ -302,8 +301,8 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
         metric_out = self.jupiter("metric-show", "--show-archived")
 
         assert re.search(r"2022-05-21", metric_out)
+        assert re.search(r"value=83.2", metric_out)
         assert re.search(r"notes=A decent day", metric_out)
-        assert re.search(r"val=83.2", metric_out)
 
     def test_remove_metric_entry(self) -> None:
         """Remove of a metric entry."""
@@ -317,7 +316,7 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "weight",
         )
 
-        self.jupiter(
+        metric_entry_id = self.jupiter_create(
             "metric-entry-create",
             "--metric",
             "weight",
@@ -327,10 +326,8 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
             "83.2",
             "--notes",
             "A decent day",
+            hint="Entry for 2022-05-21",
         )
-
-        metric_out = self.jupiter("metric-show")
-        metric_entry_id = extract_id_from_show_out(metric_out, "2022-05-21")
 
         self.jupiter("metric-entry-remove", "--id", metric_entry_id)
 
@@ -373,6 +370,6 @@ class MetricIntegrationTestCase(JupiterIntegrationTestCase):
 
         assert notion_row.attributes["Project"] == "Personal"
 
-        metric_out = self.jupiter("metric-show")
+        metric_out = self.jupiter("metric-show", "--show-inbox-tasks")
 
         assert re.search("The collection project is Personal", metric_out)

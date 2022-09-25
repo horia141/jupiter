@@ -13,6 +13,7 @@ from jupiter.domain.chores.infra.chore_notion_manager import (
 from jupiter.domain.chores.chore import Chore
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.event import EventSource
+from jupiter.framework.use_case import ProgressReporter, MarkProgressStatus
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -42,21 +43,15 @@ class ChoreArchiveService:
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._chore_notion_manager = chore_notion_manager
 
-    def do_it(self, chore: Chore) -> None:
+    def do_it(self, progress_reporter: ProgressReporter, chore: Chore) -> None:
         """Execute the service's action."""
         if chore.archived:
             return
 
         with self._storage_engine.get_unit_of_work() as uow:
-            chore = chore.mark_archived(
-                self._source, self._time_provider.get_current_time()
-            )
-            uow.chore_repository.save(chore)
-
             chore_collection = uow.chore_collection_repository.load_by_id(
                 chore.chore_collection_ref_id
             )
-
             inbox_task_collection = uow.inbox_task_collection_repository.load_by_parent(
                 chore_collection.workspace_ref_id
             )
@@ -65,27 +60,48 @@ class ChoreArchiveService:
                 allow_archived=False,
                 filter_chore_ref_ids=[chore.ref_id],
             )
-            for inbox_task in inbox_tasks_to_archive:
-                inbox_task = inbox_task.mark_archived(
-                    self._source, self._time_provider.get_current_time()
-                )
-                uow.inbox_task_repository.save(inbox_task)
-
-        try:
-            self._chore_notion_manager.remove_leaf(
-                chore.chore_collection_ref_id, chore.ref_id
-            )
-        except NotionChoreNotFoundError:
-            # If we can't find this locally it means it's already gone
-            LOGGER.info("Skipping archival on Notion side because chore was not found")
 
         for inbox_task in inbox_tasks_to_archive:
-            try:
-                self._inbox_task_notion_manager.remove_leaf(
-                    inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+            with progress_reporter.start_archiving_entity(
+                "inbox task", inbox_task.ref_id, str(inbox_task.name)
+            ) as entity_reporter:
+                with self._storage_engine.get_unit_of_work() as uow:
+                    inbox_task = inbox_task.mark_archived(
+                        self._source, self._time_provider.get_current_time()
+                    )
+                    uow.inbox_task_repository.save(inbox_task)
+                    entity_reporter.mark_local_change()
+
+                try:
+                    self._inbox_task_notion_manager.remove_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    entity_reporter.mark_remote_change()
+                except NotionInboxTaskNotFoundError:
+                    # If we can't find this locally it means it's already gone
+                    LOGGER.info(
+                        "Skipping archival on Notion side because inbox task was not found"
+                    )
+                    entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)
+
+        with progress_reporter.start_archiving_entity(
+            "chore", chore.ref_id, str(chore.name)
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                chore = chore.mark_archived(
+                    self._source, self._time_provider.get_current_time()
                 )
-            except NotionInboxTaskNotFoundError:
+                uow.chore_repository.save(chore)
+                entity_reporter.mark_local_change()
+
+            try:
+                self._chore_notion_manager.remove_leaf(
+                    chore.chore_collection_ref_id, chore.ref_id
+                )
+                entity_reporter.mark_remote_change()
+            except NotionChoreNotFoundError:
                 # If we can't find this locally it means it's already gone
                 LOGGER.info(
-                    "Skipping archival on Notion side because inbox task was not found"
+                    "Skipping archival on Notion side because chore was not found"
                 )
+                entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)

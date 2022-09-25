@@ -1,7 +1,7 @@
 """Integration tests for chores."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
@@ -9,7 +9,7 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_create_chore(self) -> None:
         """Creation of a chore."""
-        self.jupiter(
+        self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -36,14 +36,14 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
         chore_out = self.jupiter("chore-show")
 
         assert re.search(r"Clean the house", chore_out)
-        assert re.search(r"period=Weekly", chore_out)
-        assert re.search(r"eisen=Important", chore_out)
-        assert re.search(r"difficulty=Medium", chore_out)
-        assert re.search(r"project=Work", chore_out)
+        assert re.search(r"Weekly", chore_out)
+        assert re.search(r"Important", chore_out)
+        assert re.search(r"Medium", chore_out)
+        assert re.search(r"In Project Work", chore_out)
 
     def test_update_chore(self) -> None:
         """Updating a chore."""
-        self.jupiter(
+        chore_id = self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -53,10 +53,8 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Clean the house",
         )
-
-        chore_out = self.jupiter("chore-show")
-        chore_id = extract_id_from_show_out(chore_out, "Clean the house")
 
         self.jupiter(
             "chore-update",
@@ -85,14 +83,14 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
         chore_out = self.jupiter("chore-show")
 
         assert re.search(r"Really clean the house", chore_out)
-        assert re.search(r"period=Weekly", chore_out)
-        assert re.search(r"eisen=Regular", chore_out)
-        assert re.search(r"difficulty=Hard", chore_out)
-        assert re.search(r"project=Work", chore_out)
+        assert re.search(r"Weekly", chore_out)
+        assert re.search(r"Regular", chore_out)
+        assert re.search(r"Hard", chore_out)
+        assert re.search(r"In Project Work", chore_out)
 
     def test_chore_suspend(self) -> None:
         """Suspending a chore."""
-        self.jupiter(
+        chore_id = self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -102,19 +100,17 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Clean the house",
         )
-
-        chore_out = self.jupiter("chore-show")
-        chore_id = extract_id_from_show_out(chore_out, "Clean the house")
 
         self.jupiter("chore-suspend", "--id", chore_id)
 
         chore_out = self.jupiter("chore-show")
-        assert re.search("suspended=True", chore_out)
+        assert re.search("#suspended", chore_out)
 
         self.jupiter("gen", "--period", "weekly", "--target", "chores")
 
-        self.go_to_notion("My Work", "Inbox Tasks", board_view="Kanban By Eisen")
+        self.go_to_notion("My Work", "Inbox Tasks")
         assert not self.check_notion_row_exists("Clean the house")
 
         inbox_task_out = self.jupiter("inbox-task-show")
@@ -122,7 +118,7 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_chore_unsuspend(self) -> None:
         """Unsuspending a chore."""
-        self.jupiter(
+        chore_id = self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -132,24 +128,22 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Clean the house",
         )
-
-        chore_out = self.jupiter("chore-show")
-        chore_id = extract_id_from_show_out(chore_out, "Clean the house")
 
         self.jupiter("chore-suspend", "--id", chore_id)
 
         chore_out = self.jupiter("chore-show")
-        assert re.search("suspended=True", chore_out)
+        assert re.search("#suspended", chore_out)
 
         self.jupiter("chore-unsuspend", "--id", chore_id)
 
         chore_out = self.jupiter("chore-show")
-        assert re.search("suspended=False", chore_out)
+        assert not re.search("#suspended", chore_out)
 
     def test_chore_change_project(self) -> None:
         """Changing the catch up project for chores tasks."""
-        self.jupiter(
+        chore_id = self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -159,10 +153,8 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Clean the house",
         )
-
-        chore_out = self.jupiter("chore-show")
-        chore_id = extract_id_from_show_out(chore_out, "Clean the house")
 
         self.jupiter("chore-change-project", "--id", chore_id, "--project", "personal")
 
@@ -176,11 +168,11 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
 
         chore_out = self.jupiter("chore-show")
 
-        assert re.search(r"project=Personal", chore_out)
+        assert re.search(r"In Project Personal", chore_out)
 
     def test_archive_chore(self) -> None:
         """Archiving a chore."""
-        self.jupiter(
+        chore_id = self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -190,12 +182,10 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Clean the house",
         )
 
         self.jupiter("gen", "--period", "weekly", "--target", "chores")
-
-        chore_out = self.jupiter("chore-show")
-        chore_id = extract_id_from_show_out(chore_out, "Clean the house")
 
         self.jupiter("chore-archive", "--id", chore_id)
 
@@ -206,7 +196,6 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
         chore_out = self.jupiter("chore-show", "--show-archived")
 
         assert re.search(r"Clean the house", chore_out)
-        assert re.search(r"archived=True", chore_out)
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
@@ -215,11 +204,10 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show", "--show-archived")
 
         assert re.search(r"Clean the house", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
 
     def test_remove_chore(self) -> None:
         """Archiving a chore."""
-        self.jupiter(
+        chore_id = self.jupiter_create(
             "chore-create",
             "--name",
             "Clean the house",
@@ -229,12 +217,10 @@ class ChoreIntegrationTestCase(JupiterIntegrationTestCase):
             "important",
             "--difficulty",
             "medium",
+            hint="Clean the house",
         )
 
         self.jupiter("gen", "--period", "weekly", "--target", "chores")
-
-        chore_out = self.jupiter("chore-show")
-        chore_id = extract_id_from_show_out(chore_out, "Clean the house")
 
         self.jupiter("chore-remove", "--id", chore_id)
 

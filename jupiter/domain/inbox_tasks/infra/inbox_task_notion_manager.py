@@ -15,10 +15,6 @@ from jupiter.framework.notion_manager import (
 )
 
 
-class NotionInboxTaskCollectionNotFoundError(Exception):
-    """Exception raised when a Notion inbox task collection was not found."""
-
-
 class NotionInboxTaskNotFoundError(NotionLeafEntityNotFoundError):
     """Exception raised when a Notion inbox task was not found."""
 
@@ -29,10 +25,6 @@ class InboxTaskNotionManager(
     ]
 ):
     """A manager of Notion-side inbox tasks."""
-
-    @abc.abstractmethod
-    def load_trunk(self, ref_id: EntityId) -> NotionInboxTaskCollection:
-        """Retrieve the Notion-side inbox task collection."""
 
     @abc.abstractmethod
     def upsert_inbox_tasks_project_field_options(

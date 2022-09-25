@@ -14,7 +14,7 @@ COVERAGE_BUILDINFO="${BUILDINFO_ROOT}/coverage"
 TESTREPORT_BUILDINFO="${BUILDINFO_ROOT}/test"
 
 rm -f .build-cache/itest/coverage/coverage.*
-COLLECT_COVERAGE=TRUE poetry run pytest tests/unit tests/integration/crud/test_vacation.py --html-report="${TESTREPORT_BUILDINFO}" --title="Jupiter Tests"
+COLLECT_COVERAGE=TRUE poetry run pytest tests/unit tests/integration/crud/ --html-report="${TESTREPORT_BUILDINFO}" --title="Jupiter Tests"
 poetry run coverage combine --rcfile=scripts/coveragerc
 poetry run coverage html --rcfile=scripts/coveragerc
 rm -rf ${COVERAGE_BUILDINFO}

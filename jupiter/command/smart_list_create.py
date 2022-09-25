@@ -1,15 +1,13 @@
 """UseCase for creating a smart list."""
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.entity_icon import EntityIcon
 from jupiter.domain.smart_lists.smart_list_key import SmartListKey
 from jupiter.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.use_cases.smart_lists.create import SmartListCreateUseCase
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SmartListCreate(command.Command):
@@ -49,11 +47,15 @@ class SmartListCreate(command.Command):
             help="A unicode icon or :alias: for the smart list",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         smart_list_key = SmartListKey.from_raw(args.smart_list_key)
         name = SmartListName.from_raw(args.name)
         icon = EntityIcon.from_raw(args.icon) if args.icon else None
+
         self._command.execute(
-            SmartListCreateUseCase.Args(key=smart_list_key, name=name, icon=icon)
+            progress_reporter,
+            SmartListCreateUseCase.Args(key=smart_list_key, name=name, icon=icon),
         )

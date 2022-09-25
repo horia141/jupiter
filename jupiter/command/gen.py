@@ -1,10 +1,9 @@
 """UseCase for creating recurring tasks."""
-
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
@@ -14,8 +13,6 @@ from jupiter.framework.base.timestamp import Timestamp
 from jupiter.use_cases.gen import GenUseCase
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Gen(command.Command):
@@ -114,7 +111,9 @@ class Gen(command.Command):
             help="Synchronise even if modification times would say otherwise",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         right_now = (
             Timestamp.from_raw(self._global_properties.timezone, args.date)
@@ -162,7 +161,9 @@ class Gen(command.Command):
             else None
         )
         sync_even_if_not_modified: bool = args.sync_even_if_not_modified
+
         self._command.execute(
+            progress_reporter,
             GenUseCase.Args(
                 right_now=right_now,
                 gen_targets=gen_targets,
@@ -174,5 +175,5 @@ class Gen(command.Command):
                 filter_slack_task_ref_ids=slack_task_ref_ids,
                 filter_period=period_filter,
                 sync_even_if_not_modified=sync_even_if_not_modified,
-            )
+            ),
         )

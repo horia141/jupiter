@@ -120,6 +120,11 @@ class NotionBranchEntity(Generic[BranchEntityTypeT]):
         """Obtain the entity form of this, with a possible error."""
         raise NotImplementedError("Can't use a base NotionLeafEntity class.")
 
+    @property
+    def nice_name(self) -> str:
+        """A nice name for the Notion-side entity."""
+        raise NotImplementedError("Can't use a base NotionLeafEntity class.")
+
 
 LeafEntityT = TypeVar("LeafEntityT", bound=LeafEntity)
 NotionLeafEntityDirectInfoT = TypeVar("NotionLeafEntityDirectInfoT")

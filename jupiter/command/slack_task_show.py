@@ -2,14 +2,30 @@
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
+from rich.console import Console
+from rich.text import Text
+from rich.tree import Tree
+
 from jupiter.command import command
-from jupiter.domain.adate import ADate
+from jupiter.command.rendering import (
+    entity_id_to_rich_text,
+    inbox_task_summary_to_rich_text,
+    slack_user_name_to_rich_text,
+    slack_channel_name_to_rich_text,
+    entity_name_to_rich_text,
+    eisen_to_rich_text,
+    difficulty_to_rich_text,
+    actionable_date_to_rich_text,
+    due_date_to_rich_text,
+    slack_task_message_to_rich_text,
+    RichConsoleProgressReporter,
+)
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.push_integrations.slack.find import SlackTaskFindUseCase
 from jupiter.utils.global_properties import GlobalProperties
 
 
-class SlackTaskShow(command.Command):
+class SlackTaskShow(command.ReadonlyCommand):
     """UseCase class for showing the slack tasks."""
 
     _global_properties: Final[GlobalProperties]
@@ -49,8 +65,18 @@ class SlackTaskShow(command.Command):
             action="append",
             help="The id of the vacations to modify",
         )
+        parser.add_argument(
+            "--show-inbox-tasks",
+            dest="show_inbox_tasks",
+            default=False,
+            action="store_const",
+            const=True,
+            help="Show inbox tasks",
+        )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         show_archived = args.show_archived
         ref_ids = (
@@ -58,36 +84,84 @@ class SlackTaskShow(command.Command):
             if len(args.ref_ids) > 0
             else None
         )
+        show_inbox_tasks = args.show_inbox_tasks
 
         result = self._command.execute(
+            progress_reporter,
             SlackTaskFindUseCase.Args(
                 allow_archived=show_archived, filter_ref_ids=ref_ids
-            )
+            ),
         )
 
-        for slack_task_entry in result.slack_tasks:
+        sorted_slack_tasks = sorted(
+            result.slack_tasks,
+            key=lambda ste: (ste.slack_task.archived, ste.slack_task.created_time),
+        )
+
+        rich_tree = Tree("💬 Slack Tasks", guide_style="bold bright_blue")
+
+        for slack_task_entry in sorted_slack_tasks:
             slack_task = slack_task_entry.slack_task
             inbox_task = slack_task_entry.inbox_task
-            timezone = slack_task.generation_extra_info.timezone
             generation_extra_info = slack_task.generation_extra_info
-            print(
-                f"id={slack_task.ref_id} from={slack_task.user} "
-                + f'in-channel={str(slack_task.channel) if slack_task.channel else "DM"}'
-                + f" message={slack_task.message[0:100]}"
-                + f" archived={slack_task.archived}"
-                + f' {"Has task" if slack_task.has_generated_task else "No task yet"}'
-                + f" name={slack_task.generation_extra_info.name}"
-                + f" eisen={generation_extra_info.eisen.for_notion() if generation_extra_info.eisen else 'None'}"
-                + f" difficulty={generation_extra_info.difficulty.for_notion() if generation_extra_info.difficulty else 'None'}"
-                + f" status={generation_extra_info.status.for_notion() if generation_extra_info.status else 'None'}"
-                + f" actionable-date={ADate.to_user_str(timezone, slack_task.generation_extra_info.actionable_date)}"
-                + f" due-date={ADate.to_user_str(timezone, slack_task.generation_extra_info.due_date)}"
-            )
-            if inbox_task:
-                print("  Task:")
-                print(
-                    f"   - id={inbox_task.ref_id} {inbox_task.name}"
-                    + f" status={inbox_task.status.value}"
-                    + f" archived={inbox_task.archived}"
-                    + f' due_date="{ADate.to_user_str(self._global_properties.timezone, inbox_task.due_date)}"'
+
+            slack_task_text = Text("")
+            slack_task_text.append(entity_id_to_rich_text(slack_task.ref_id))
+            slack_task_text.append(" ")
+            slack_task_text.append(slack_user_name_to_rich_text(slack_task.user))
+            if slack_task.channel:
+                slack_task_text.append(" ")
+                slack_task_text.append(
+                    slack_channel_name_to_rich_text(slack_task.channel)
                 )
+            else:
+                slack_task_text.append(" as ").append("DM", style="italic green")
+            slack_task_text.append(slack_task_message_to_rich_text(slack_task.message))
+
+            slack_task_info_text = Text("")
+
+            if generation_extra_info.name:
+                slack_task_info_text.append("name=")
+                slack_task_info_text.append(
+                    entity_name_to_rich_text(generation_extra_info.name)
+                )
+            if generation_extra_info.eisen:
+                slack_task_info_text.append(" ")
+                slack_task_info_text.append(
+                    eisen_to_rich_text(generation_extra_info.eisen)
+                )
+            if generation_extra_info.difficulty:
+                slack_task_info_text.append(" ")
+                slack_task_info_text.append(
+                    difficulty_to_rich_text(generation_extra_info.difficulty)
+                )
+            if generation_extra_info.actionable_date:
+                slack_task_info_text.append(" ")
+                slack_task_info_text.append(
+                    actionable_date_to_rich_text(generation_extra_info.actionable_date)
+                )
+            if generation_extra_info.due_date:
+                slack_task_info_text.append(" ")
+                slack_task_info_text.append(
+                    due_date_to_rich_text(generation_extra_info.due_date)
+                )
+
+            slack_task_tree = rich_tree.add(
+                slack_task_text, guide_style="gray62" if slack_task.archived else "blue"
+            )
+            slack_task_tree.add(slack_task_info_text)
+
+            if slack_task.archived:
+                slack_task_text.stylize("gray62")
+                slack_task_info_text.stylize("gray62")
+
+            if not show_inbox_tasks:
+                continue
+            if inbox_task is None:
+                continue
+
+            inbox_task_text = inbox_task_summary_to_rich_text(inbox_task)
+            slack_task_tree.add(inbox_task_text)
+
+        console = Console()
+        console.print(rich_tree)

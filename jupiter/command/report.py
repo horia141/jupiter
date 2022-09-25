@@ -1,9 +1,23 @@
 """UseCase for generating reports of progress."""
 from argparse import ArgumentParser, Namespace
-from typing import Final
+from typing import Final, List
+
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
+from rich.tree import Tree
 
 from jupiter.command import command
+from jupiter.command.rendering import (
+    entity_name_to_rich_text,
+    inbox_task_status_to_rich_text,
+    period_to_rich_text,
+    RichConsoleProgressReporter,
+    entity_id_to_rich_text,
+)
+from jupiter.domain.adate import ADate
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.domain.metrics.metric_key import MetricKey
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
@@ -15,7 +29,7 @@ from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
 
 
-class Report(command.Command):
+class Report(command.ReadonlyCommand):
     """UseCase class for reporting progress."""
 
     _SOURCES_TO_REPORT = [
@@ -160,16 +174,10 @@ class Report(command.Command):
             const=True,
             help="Whether to show archived entities",
         )
-        parser.add_argument(
-            "--show-habits-details",
-            default=False,
-            dest="show_habits_details",
-            action="store_const",
-            const=True,
-            help="Whether to show habits details",
-        )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         right_now = (
             Timestamp.from_raw(self._global_properties.timezone, args.date)
@@ -227,7 +235,6 @@ class Report(command.Command):
         )
         period = RecurringTaskPeriod.from_raw(args.period)
         show_archived = args.show_archived
-        show_habits_details = args.show_habits_details
 
         breakdown_period = None
         if "periods" in breakdowns:
@@ -238,7 +245,8 @@ class Report(command.Command):
                     breakdown_period_raw, period
                 )
 
-        response = self._command.execute(
+        result = self._command.execute(
+            progress_reporter,
             ReportUseCase.Args(
                 right_now=right_now,
                 filter_project_keys=project_keys,
@@ -251,7 +259,7 @@ class Report(command.Command):
                 filter_slack_task_ref_ids=slack_task_ref_ids,
                 period=period,
                 breakdown_period=breakdown_period,
-            )
+            ),
         )
 
         sources_to_present = (
@@ -260,345 +268,346 @@ class Report(command.Command):
             else Report._SOURCES_TO_REPORT
         )
 
-        print(f"{period.for_notion()} as of {right_now}:")
+        right_now_str = ADate.to_user_date_str(ADate.from_timestamp(right_now))
+
+        rich_text = Text("🚀 ")
+        rich_text.append(period_to_rich_text(period))
+        rich_text.append(f" as of {right_now_str}:")
+
+        rich_tree = Tree(
+            rich_text,
+            guide_style="bold bright_blue",
+        )
 
         if "global" in breakdowns:
-            print("  Global:")
+            global_text = Text("🌍 Global:")
+
+            global_tree = rich_tree.add(global_text)
 
             if "inbox-tasks" in covers:
-                print("    Inbox Tasks:")
-                print(
-                    f"      Created: {response.global_inbox_tasks_summary.created.total_cnt}",
-                    end=" ",
+                inbox_task_table = self._build_inbox_tasks_summary_table(
+                    result.global_inbox_tasks_summary, sources_to_present
                 )
-                for source in sources_to_present:
-                    print(
-                        f"({response.global_inbox_tasks_summary.created.per_source_cnt[source]} "
-                        + f"from {source.for_notion()})",
-                        end=" ",
-                    )
-                print("")
-                print(
-                    f"      Accepted: {response.global_inbox_tasks_summary.accepted.total_cnt}",
-                    end=" ",
-                )
-                for source in sources_to_present:
-                    print(
-                        f"({response.global_inbox_tasks_summary.accepted.per_source_cnt[source]} "
-                        + f"from {source.for_notion()})",
-                        end=" ",
-                    )
-                print("")
-                print(
-                    f"      Working: {response.global_inbox_tasks_summary.working.total_cnt}",
-                    end=" ",
-                )
-                for source in sources_to_present:
-                    print(
-                        f"({response.global_inbox_tasks_summary.working.per_source_cnt[source]} "
-                        + f"from {source.for_notion()})",
-                        end=" ",
-                    )
-                print("")
-                print(
-                    f"      Not Done: {response.global_inbox_tasks_summary.not_done.total_cnt}",
-                    end=" ",
-                )
-                for source in sources_to_present:
-                    print(
-                        f"({response.global_inbox_tasks_summary.not_done.per_source_cnt[source]} "
-                        + f"from {source.for_notion()})",
-                        end=" ",
-                    )
-                print("")
-                print(
-                    f"      Done: {response.global_inbox_tasks_summary.done.total_cnt}",
-                    end=" ",
-                )
-                for source in sources_to_present:
-                    print(
-                        f"({response.global_inbox_tasks_summary.done.per_source_cnt[source]} "
-                        + f"from {source.for_notion()})",
-                        end=" ",
-                    )
-                print("")
+                global_tree.add(inbox_task_table)
 
             if "big-plans" in covers:
-                print("    Big Plans:")
-                print(f"      Created: {response.global_big_plans_summary.created_cnt}")
-                print(
-                    f"      Accepted: {response.global_big_plans_summary.accepted_cnt}"
+                big_plan_tree = self._build_big_plans_summary_tree(
+                    result.global_big_plans_summary
                 )
-                print(f"      Working: {response.global_big_plans_summary.working_cnt}")
-                print(
-                    f"      Not Done: {response.global_big_plans_summary.not_done_cnt}"
-                )
-                for (
-                    big_plan_name
-                ) in response.global_big_plans_summary.not_done_projects:
-                    print(f"      - {big_plan_name}")
-                print(f"      Done: {response.global_big_plans_summary.done_cnt}")
-                for big_plan_name in response.global_big_plans_summary.done_projects:
-                    print(f"      - {big_plan_name}")
+                global_tree.add(big_plan_tree)
 
         if "projects" in breakdowns:
-            print("  By Project:")
+            global_text = Text("💡 By Projects:")
 
-            for project_item in response.per_project_breakdown:
-                print(f"    {project_item.name}:")
+            global_tree = rich_tree.add(global_text)
+
+            for project_item in result.per_project_breakdown:
+                project_text = entity_name_to_rich_text(project_item.name)
+
+                project_tree = global_tree.add(project_text)
+
                 if "inbox-tasks" in covers:
-                    print("      Inbox Tasks:")
-                    print(
-                        f"        Created: {project_item.inbox_tasks_summary.created.total_cnt}",
-                        end=" ",
+                    inbox_task_table = self._build_inbox_tasks_summary_table(
+                        project_item.inbox_tasks_summary, sources_to_present
                     )
-                    for source in sources_to_present:
-                        print(
-                            f"({project_item.inbox_tasks_summary.created.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Accepted: {project_item.inbox_tasks_summary.accepted.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({project_item.inbox_tasks_summary.accepted.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Working: {project_item.inbox_tasks_summary.working.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({project_item.inbox_tasks_summary.working.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Not Done: {project_item.inbox_tasks_summary.not_done.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({project_item.inbox_tasks_summary.not_done.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Done: {project_item.inbox_tasks_summary.done.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({project_item.inbox_tasks_summary.done.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
+                    project_tree.add(inbox_task_table)
 
                 if "big-plans" in covers:
-                    print("      Big Plans:")
-                    print(
-                        f"        Created: {project_item.big_plans_summary.created_cnt}"
+                    big_plan_tree = self._build_big_plans_summary_tree(
+                        project_item.big_plans_summary
                     )
-                    print(
-                        f"        Accepted: {project_item.big_plans_summary.accepted_cnt}"
-                    )
-                    print(
-                        f"        Working: {project_item.big_plans_summary.working_cnt}"
-                    )
-                    print(
-                        f"        Not Done: {project_item.big_plans_summary.not_done_cnt}"
-                    )
-                    for (
-                        big_plan_name
-                    ) in project_item.big_plans_summary.not_done_projects:
-                        print(f"        - {big_plan_name}")
-                    print(f"        Done: {project_item.big_plans_summary.done_cnt}")
-                    for big_plan_name in project_item.big_plans_summary.done_projects:
-                        print(f"        - {big_plan_name}")
+                    global_tree.add(big_plan_tree)
 
         if "periods" in breakdowns:
-            print("  By Period:")
+            global_text = Text("⌛ By Periods:")
 
-            if not response.per_period_breakdown:
+            global_tree = rich_tree.add(global_text)
+
+            if not result.per_period_breakdown:
                 raise Exception(
                     "Did not find any per period breakdown even if it's asked for"
                 )
 
-            for period_item in response.per_period_breakdown:
-                print(f"    {period_item.name}:")
+            for period_item in result.per_period_breakdown:
+                period_text = entity_name_to_rich_text(period_item.name)
+
+                period_tree = global_tree.add(period_text)
+
                 if "inbox-tasks" in covers:
-                    print("      Inbox Tasks:")
-                    print(
-                        f"        Created: {period_item.inbox_tasks_summary.created.total_cnt}",
-                        end=" ",
+                    inbox_task_table = self._build_inbox_tasks_summary_table(
+                        period_item.inbox_tasks_summary, sources_to_present
                     )
-                    for source in sources_to_present:
-                        print(
-                            f"({period_item.inbox_tasks_summary.created.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Accepted: {period_item.inbox_tasks_summary.accepted.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({period_item.inbox_tasks_summary.accepted.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Working: {period_item.inbox_tasks_summary.working.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({period_item.inbox_tasks_summary.working.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Not Done: {period_item.inbox_tasks_summary.not_done.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({period_item.inbox_tasks_summary.not_done.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
-                    print(
-                        f"        Done: {period_item.inbox_tasks_summary.done.total_cnt}",
-                        end=" ",
-                    )
-                    for source in sources_to_present:
-                        print(
-                            f"({period_item.inbox_tasks_summary.done.per_source_cnt[source]} "
-                            + f"from {source.for_notion()})",
-                            end=" ",
-                        )
-                    print("")
+                    period_tree.add(inbox_task_table)
 
                 if "big-plans" in covers:
-                    print("      Big Plans:")
-                    print(
-                        f"        Created: {period_item.big_plans_summary.created_cnt}"
+                    big_plan_tree = self._build_big_plans_summary_tree(
+                        period_item.big_plans_summary
                     )
-                    print(
-                        f"        Accepted: {period_item.big_plans_summary.accepted_cnt}"
-                    )
-                    print(
-                        f"        Working: {period_item.big_plans_summary.working_cnt}"
-                    )
-                    print(
-                        f"        Not Done: {period_item.big_plans_summary.not_done_cnt}"
-                    )
-                    for (
-                        big_plan_name
-                    ) in period_item.big_plans_summary.not_done_projects:
-                        print(f"        - {big_plan_name}")
-                    print(f"        Done: {period_item.big_plans_summary.done_cnt}")
-                    for big_plan_name in period_item.big_plans_summary.done_projects:
-                        print(f"        - {big_plan_name}")
+                    global_tree.add(big_plan_tree)
 
         if "habits" in breakdowns:
-            print("  By Habit:")
+            global_text = Text("💪 By Habits:")
 
-            for print_period in RecurringTaskPeriod.all_values():
-                print(f"    {print_period}:")
+            global_tree = rich_tree.add(global_text)
 
+            for print_period in RecurringTaskPeriod:
                 try:
                     max_breakdown_streak_size = max(
                         len(b.summary.streak_plot)
-                        for b in response.per_habit_breakdown
-                        if b.period.value == print_period
+                        for b in result.per_habit_breakdown
+                        if b.period == print_period
                     )
                 except ValueError:
                     max_breakdown_streak_size = 1
 
-                for habit_item in sorted(
-                    response.per_habit_breakdown,
-                    key=lambda b: (
-                        -1 * len(b.summary.streak_plot),
-                        -1 * b.summary.done_ratio,
-                    ),
-                ):
+                period_text = Text("").append(period_to_rich_text(print_period))
+                period_table = Table(
+                    title=period_text, title_justify="left", title_style=""
+                )
+
+                period_table.add_column("Id")
+                period_table.add_column("Name", width=64, no_wrap=True)
+                period_table.add_column("Streak")
+                habit_created_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.NOT_STARTED
+                ).append(Text(" Created"))
+                period_table.add_column(habit_created_text, width=12, justify="right")
+
+                habit_accepted_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.ACCEPTED
+                ).append(Text(" Accepted"))
+                period_table.add_column(habit_accepted_text, width=12, justify="right")
+
+                habit_working_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.IN_PROGRESS
+                ).append(Text(" Working"))
+                period_table.add_column(habit_working_text, width=12, justify="right")
+
+                habit_not_done_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.NOT_DONE
+                ).append(Text(" Not Done"))
+                period_table.add_column(habit_not_done_text, width=12, justify="right")
+
+                habit_done_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.DONE
+                ).append(Text(" Done"))
+                period_table.add_column(habit_done_text, width=12, justify="right")
+
+                for habit_item in result.per_habit_breakdown:
                     if not show_archived and habit_item.archived:
                         continue
-                    if habit_item.period.value != print_period:
-                        continue
-                    if (
-                        habit_item.suspended
-                        and len(habit_item.summary.streak_plot) == 0
-                    ):
+                    if habit_item.period != print_period:
                         continue
 
-                    print(f"      {str(habit_item.name)[0:32]:<32} => ", end="")
-                    print(
+                    habit_id_text = Text("").append(
+                        entity_id_to_rich_text(habit_item.ref_id)
+                    )
+                    habit_name_text = Text("").append(
+                        entity_name_to_rich_text(habit_item.name)
+                    )
+                    habit_streak_text = Text(
                         f"{habit_item.summary.streak_plot.rjust(max_breakdown_streak_size, '_')}"
                     )
 
-                    if show_habits_details:
-                        print(f"        Created: {habit_item.summary.created_cnt}")
-                        print(f"        In Progress: {habit_item.summary.accepted_cnt}")
-                        print(f"        Working: {habit_item.summary.working_cnt}")
-                        print(
-                            f"        Not Done: {habit_item.summary.not_done_cnt}",
-                            end=" ",
-                        )
-                        print(f"({habit_item.summary.not_done_ratio * 100:.0f}%)")
-                        print(f"        Done: {habit_item.summary.done_cnt}", end=" ")
-                        print(f"({habit_item.summary.done_ratio * 100:.0f}%)")
-                        print(
-                            f"        Completed Ratio: {habit_item.summary.completed_ratio * 100:.0f}%"
-                        )
+                    created_cnt_text = Text(f"{habit_item.summary.created_cnt}")
+                    if habit_item.summary.created_cnt == 0:
+                        created_cnt_text.stylize("dim")
+                    accepted_cnt_text = Text(f"{habit_item.summary.accepted_cnt}")
+                    if habit_item.summary.accepted_cnt == 0:
+                        accepted_cnt_text.stylize("dim")
+                    working_cnt_text = Text(f"{habit_item.summary.working_cnt}")
+                    if habit_item.summary.working_cnt == 0:
+                        working_cnt_text.stylize("dim")
+                    not_done_cnt_text = Text(
+                        f"{habit_item.summary.not_done_cnt} ({habit_item.summary.not_done_ratio * 100:.0f}%)"
+                    )
+                    if habit_item.summary.not_done_cnt == 0:
+                        not_done_cnt_text.stylize("dim")
+                    done_cnt_text = Text(
+                        f"{habit_item.summary.done_cnt} ({habit_item.summary.done_ratio * 100:.0f}%)"
+                    )
+                    if habit_item.summary.done_cnt == 0:
+                        done_cnt_text.stylize("dim")
+
+                    period_table.add_row(
+                        habit_id_text,
+                        habit_name_text,
+                        habit_streak_text,
+                        created_cnt_text,
+                        accepted_cnt_text,
+                        working_cnt_text,
+                        not_done_cnt_text,
+                        done_cnt_text,
+                    )
+
+                global_tree.add(period_table)
 
         if "chores" in breakdowns:
-            print("  By Chore:")
+            global_text = Text("♻️ By Chores:")
 
-            for chore_item in response.per_chore_breakdown:
-                if not show_archived and chore_item.archived:
-                    continue
+            global_tree = rich_tree.add(global_text)
 
-                print(f"    {chore_item.name}:")
-                print(f"      Created: {chore_item.summary.created_cnt}")
-                print(f"      In Progress: {chore_item.summary.accepted_cnt}")
-                print(f"      Working: {chore_item.summary.working_cnt}")
-                print(f"      Not Done: {chore_item.summary.not_done_cnt}", end=" ")
-                print(f"({chore_item.summary.not_done_ratio * 100:.0f}%)")
-                print(f"      Done: {chore_item.summary.done_cnt}", end=" ")
-                print(f"({chore_item.summary.done_ratio * 100:.0f}%)")
+            for print_period in RecurringTaskPeriod:
+                period_text = Text("").append(period_to_rich_text(print_period))
+                period_table = Table(
+                    title=period_text, title_justify="left", title_style=""
+                )
+
+                period_table.add_column("Id")
+                period_table.add_column("Name", width=64, no_wrap=True)
+                chore_created_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.NOT_STARTED
+                ).append(Text(" Created"))
+                period_table.add_column(chore_created_text, width=12, justify="right")
+
+                chore_accepted_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.ACCEPTED
+                ).append(Text(" Accepted"))
+                period_table.add_column(chore_accepted_text, width=12, justify="right")
+
+                chore_working_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.IN_PROGRESS
+                ).append(Text(" Working"))
+                period_table.add_column(chore_working_text, width=12, justify="right")
+
+                chore_not_done_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.NOT_DONE
+                ).append(Text(" Not Done"))
+                period_table.add_column(chore_not_done_text, width=12, justify="right")
+
+                chore_done_text = inbox_task_status_to_rich_text(
+                    InboxTaskStatus.DONE
+                ).append(Text(" Done"))
+                period_table.add_column(chore_done_text, width=12, justify="right")
+
+                for chore_item in result.per_chore_breakdown:
+                    if not show_archived and chore_item.archived:
+                        continue
+                    if chore_item.period != print_period:
+                        continue
+
+                    chore_id_text = Text("").append(
+                        entity_id_to_rich_text(chore_item.ref_id)
+                    )
+                    chore_name_text = Text("").append(
+                        entity_name_to_rich_text(chore_item.name)
+                    )
+
+                    created_cnt_text = Text(f"{chore_item.summary.created_cnt}")
+                    if chore_item.summary.created_cnt == 0:
+                        created_cnt_text.stylize("dim")
+                    accepted_cnt_text = Text(f"{chore_item.summary.accepted_cnt}")
+                    if chore_item.summary.accepted_cnt == 0:
+                        accepted_cnt_text.stylize("dim")
+                    working_cnt_text = Text(f"{chore_item.summary.working_cnt}")
+                    if chore_item.summary.working_cnt == 0:
+                        working_cnt_text.stylize("dim")
+                    not_done_cnt_text = Text(
+                        f"{chore_item.summary.not_done_cnt} ({chore_item.summary.not_done_ratio * 100:.0f}%)"
+                    )
+                    if chore_item.summary.not_done_cnt == 0:
+                        not_done_cnt_text.stylize("dim")
+                    done_cnt_text = Text(
+                        f"{chore_item.summary.done_cnt} ({chore_item.summary.done_ratio * 100:.0f}%)"
+                    )
+                    if chore_item.summary.done_cnt == 0:
+                        done_cnt_text.stylize("dim")
+
+                    period_table.add_row(
+                        chore_id_text,
+                        chore_name_text,
+                        created_cnt_text,
+                        accepted_cnt_text,
+                        working_cnt_text,
+                        not_done_cnt_text,
+                        done_cnt_text,
+                    )
+
+                global_tree.add(period_table)
 
         if "big-plans" in breakdowns:
-            print("  By Big Plan:")
+            global_table = Table(
+                title="🌍 By Big Plan:", title_justify="left", title_style=""
+            )
 
-            for big_plan_item in response.per_big_plan_breakdown:
-                print(f"    {big_plan_item.name}:")
-                print(f"      Created: {big_plan_item.summary.created_cnt}")
-                print(f"      Accepted: {big_plan_item.summary.accepted_cnt}")
-                print(f"      Working: {big_plan_item.summary.working_cnt}")
-                print(f"      Not Done: {big_plan_item.summary.not_done_cnt}", end=" ")
-                print(f"({big_plan_item.summary.not_done_ratio * 100:.0f}%)")
-                print(f"      Done: {big_plan_item.summary.done_cnt}", end=" ")
-                print(f"({big_plan_item.summary.done_ratio * 100:.0f}%)")
-                print(
-                    f"      Completed Ratio: {big_plan_item.summary.completed_ratio * 100:.0f}%"
+            global_table.add_column("Id")
+            global_table.add_column("Name", width=64, no_wrap=True)
+            big_plan_created_text = inbox_task_status_to_rich_text(
+                InboxTaskStatus.NOT_STARTED
+            ).append(Text(" Created"))
+            global_table.add_column(big_plan_created_text, width=12, justify="right")
+
+            big_plan_accepted_text = inbox_task_status_to_rich_text(
+                InboxTaskStatus.ACCEPTED
+            ).append(Text(" Accepted"))
+            global_table.add_column(big_plan_accepted_text, width=12, justify="right")
+
+            big_plan_working_text = inbox_task_status_to_rich_text(
+                InboxTaskStatus.IN_PROGRESS
+            ).append(Text(" Working"))
+            global_table.add_column(big_plan_working_text, width=12, justify="right")
+
+            big_plan_not_done_text = inbox_task_status_to_rich_text(
+                InboxTaskStatus.NOT_DONE
+            ).append(Text(" Not Done"))
+            global_table.add_column(big_plan_not_done_text, width=12, justify="right")
+
+            big_plan_done_text = inbox_task_status_to_rich_text(
+                InboxTaskStatus.DONE
+            ).append(Text(" Done"))
+            global_table.add_column(big_plan_done_text, width=12, justify="right")
+
+            sorted_big_plans = sorted(
+                result.per_big_plan_breakdown,
+                key=lambda bpe: (
+                    bpe.actionable_date
+                    if bpe.actionable_date
+                    else ADate.from_str("2100-01-01"),
+                ),
+            )
+
+            for big_plan_item in sorted_big_plans:
+                big_plan_id_text = Text("").append(
+                    entity_id_to_rich_text(big_plan_item.ref_id)
                 )
+                big_plan_name_text = Text("").append(
+                    entity_name_to_rich_text(big_plan_item.name)
+                )
+
+                created_cnt_text = Text(f"{big_plan_item.summary.created_cnt}")
+                if big_plan_item.summary.created_cnt == 0:
+                    created_cnt_text.stylize("dim")
+                accepted_cnt_text = Text(f"{big_plan_item.summary.accepted_cnt}")
+                if big_plan_item.summary.accepted_cnt == 0:
+                    accepted_cnt_text.stylize("dim")
+                working_cnt_text = Text(f"{big_plan_item.summary.working_cnt}")
+                if big_plan_item.summary.working_cnt == 0:
+                    working_cnt_text.stylize("dim")
+                not_done_cnt_text = Text(
+                    f"{big_plan_item.summary.not_done_cnt} ({big_plan_item.summary.not_done_ratio * 100:.0f}%)"
+                )
+                if big_plan_item.summary.not_done_cnt == 0:
+                    not_done_cnt_text.stylize("dim")
+                done_cnt_text = Text(
+                    f"{big_plan_item.summary.done_cnt} ({big_plan_item.summary.done_ratio * 100:.0f}%)"
+                )
+                if big_plan_item.summary.done_cnt == 0:
+                    done_cnt_text.stylize("dim")
+
+                global_table.add_row(
+                    big_plan_id_text,
+                    big_plan_name_text,
+                    created_cnt_text,
+                    accepted_cnt_text,
+                    working_cnt_text,
+                    not_done_cnt_text,
+                    done_cnt_text,
+                )
+
+            rich_tree.add(global_table)
+
+        console = Console()
+        console.print(rich_tree)
 
     @staticmethod
     def _one_smaller_than_period(period: RecurringTaskPeriod) -> RecurringTaskPeriod:
@@ -626,3 +635,132 @@ class Report(command.Command):
                 f"Cannot breakdown {period.for_notion()} with {breakdown_period.for_notion()}"
             )
         return breakdown_period
+
+    @staticmethod
+    def _build_inbox_tasks_summary_table(
+        summary: ReportUseCase.InboxTasksSummary,
+        sources_to_present: List[InboxTaskSource],
+    ) -> Table:
+        inbox_tasks_table = Table(
+            title="📥 Inbox Tasks:", title_justify="left", title_style=""
+        )
+
+        inbox_tasks_table.add_column("State", width=16)
+        inbox_tasks_table.add_column("Total", width=8, justify="right")
+        for source in sources_to_present:
+            inbox_tasks_table.add_column(source.for_notion(), width=10, justify="right")
+
+        created_renderables = [
+            Text("📥 Created"),
+            Text(f"{summary.created.total_cnt}"),
+        ]
+        for source in sources_to_present:
+            created_renderables.append(
+                Text(f"{summary.created.per_source_cnt[source]}")
+            )
+        inbox_tasks_table.add_row(*created_renderables)
+
+        accepted_renderables = [
+            inbox_task_status_to_rich_text(InboxTaskStatus.ACCEPTED).append(
+                Text(" Accepted")
+            ),
+            Text(f"{summary.accepted.total_cnt}"),
+        ]
+        for source in sources_to_present:
+            accepted_renderables.append(
+                Text(f"{summary.accepted.per_source_cnt[source]}")
+            )
+        inbox_tasks_table.add_row(*accepted_renderables)
+
+        working_renderables = [
+            inbox_task_status_to_rich_text(InboxTaskStatus.IN_PROGRESS).append(
+                Text(" Working")
+            ),
+            Text(f"{summary.working.total_cnt}"),
+        ]
+        for source in sources_to_present:
+            working_renderables.append(
+                Text(f"{summary.working.per_source_cnt[source]}")
+            )
+        inbox_tasks_table.add_row(*working_renderables)
+
+        not_done_renderables = [
+            inbox_task_status_to_rich_text(InboxTaskStatus.NOT_DONE).append(
+                Text(" Not Done")
+            ),
+            Text(f"{summary.not_done.total_cnt}"),
+        ]
+        for source in sources_to_present:
+            not_done_renderables.append(
+                Text(f"{summary.not_done.per_source_cnt[source]}")
+            )
+        inbox_tasks_table.add_row(*not_done_renderables)
+
+        done_renderables = [
+            inbox_task_status_to_rich_text(InboxTaskStatus.DONE).append(Text(" Done")),
+            Text(f"{summary.done.total_cnt}"),
+        ]
+        for source in sources_to_present:
+            done_renderables.append(Text(f"{summary.done.per_source_cnt[source]}"))
+        inbox_tasks_table.add_row(*done_renderables)
+
+        return inbox_tasks_table
+
+    @staticmethod
+    def _build_big_plans_summary_tree(summary: ReportUseCase.WorkableSummary) -> Tree:
+        big_plan_text = Text("🌍 Big Plans:")
+        big_plan_tree = Tree(big_plan_text)
+
+        created_text = inbox_task_status_to_rich_text(
+            InboxTaskStatus.NOT_STARTED
+        ).append(Text(f" Created: {summary.created_cnt}"))
+        big_plan_tree.add(created_text)
+
+        accepted_text = inbox_task_status_to_rich_text(InboxTaskStatus.ACCEPTED).append(
+            Text(f" Accepted: {summary.accepted_cnt}")
+        )
+        big_plan_tree.add(accepted_text)
+
+        working_text = inbox_task_status_to_rich_text(
+            InboxTaskStatus.IN_PROGRESS
+        ).append(Text(f" Working: {summary.working_cnt}"))
+        big_plan_tree.add(working_text)
+
+        not_done_text = inbox_task_status_to_rich_text(InboxTaskStatus.NOT_DONE).append(
+            Text(f" Not Done: {summary.not_done_cnt}")
+        )
+        not_done_tree = big_plan_tree.add(not_done_text)
+
+        sorted_not_done_big_plans = sorted(
+            summary.not_done_big_plans,
+            key=lambda bp: bp.actionable_date
+            if bp.actionable_date
+            else ADate.from_str("2100-01-01"),
+        )
+
+        for big_plan in sorted_not_done_big_plans:
+            not_done_big_plan_text = Text("")
+            not_done_big_plan_text.append(entity_id_to_rich_text(big_plan.ref_id))
+            not_done_big_plan_text.append(" ")
+            not_done_big_plan_text.append(entity_name_to_rich_text(big_plan.name))
+            not_done_tree.add(not_done_big_plan_text)
+        done_text = inbox_task_status_to_rich_text(InboxTaskStatus.DONE).append(
+            Text(f" Done: {summary.done_cnt}")
+        )
+
+        sorted_done_big_plans = sorted(
+            summary.done_big_plans,
+            key=lambda bp: bp.actionable_date
+            if bp.actionable_date
+            else ADate.from_str("2100-01-01"),
+        )
+
+        done_tree = big_plan_tree.add(done_text)
+        for big_plan in sorted_done_big_plans:
+            done_big_plan_text = Text("")
+            done_big_plan_text.append(entity_id_to_rich_text(big_plan.ref_id))
+            done_big_plan_text.append(" ")
+            done_big_plan_text.append(entity_name_to_rich_text(big_plan.name))
+            done_tree.add(done_big_plan_text)
+
+        return big_plan_tree

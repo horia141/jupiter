@@ -25,6 +25,8 @@ class InitIntegrationTestCase(JupiterBasicIntegrationTestCase):
                 self.space_id,
                 "--notion-token",
                 self.token_v2,
+                "--notion-api-token",
+                self.notion_api_token,
                 "--project-key",
                 "work",
                 "--project-name",
@@ -48,7 +50,7 @@ class InitIntegrationTestCase(JupiterBasicIntegrationTestCase):
             )
 
             assert re.search(workspace_name, workspace_out)
-            assert re.search(r"timezone=Europe/Bucharest", workspace_out)
-            assert re.search(r'default project is "Work"', workspace_out)
+            assert re.search(r"Europe/Bucharest", workspace_out)
+            assert re.search(r"In Project Work", workspace_out)
         finally:
             self.jupiter("test-helper-nuke", sqlite_db_path=sqlite_db_path)

@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.use_cases.push_integrations.slack.archive import SlackTaskArchiveUseCase
 
@@ -36,7 +37,10 @@ class SlackTaskArchive(command.Command):
             help="The if of the slack task",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         ref_id = EntityId.from_raw(args.ref_id)
-        self._command.execute(SlackTaskArchiveUseCase.Args(ref_id))
+
+        self._command.execute(progress_reporter, SlackTaskArchiveUseCase.Args(ref_id))

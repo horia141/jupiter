@@ -1,5 +1,4 @@
 """Remove a person."""
-import logging
 from dataclasses import dataclass
 from typing import Final
 
@@ -13,11 +12,13 @@ from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.use_case import (
     UseCaseArgsBase,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class PersonRemoveUseCase(AppMutationUseCase["PersonRemoveUseCase.Args", None]):
@@ -45,7 +46,12 @@ class PersonRemoveUseCase(AppMutationUseCase["PersonRemoveUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._person_notion_manager = person_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -59,4 +65,4 @@ class PersonRemoveUseCase(AppMutationUseCase["PersonRemoveUseCase.Args", None]):
             self._storage_engine,
             self._person_notion_manager,
             self._inbox_task_notion_manager,
-        ).do_it(person_collection, person)
+        ).do_it(progress_reporter, person_collection, person)

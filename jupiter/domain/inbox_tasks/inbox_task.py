@@ -8,7 +8,6 @@ from pendulum import UTC
 
 from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
-from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
@@ -538,7 +537,6 @@ class InboxTask(LeafEntity):
         self,
         project_ref_id: EntityId,
         big_plan_ref_id: EntityId,
-        _big_plan_name: BigPlanName,
         source: EventSource,
         modification_time: Timestamp,
     ) -> "InboxTask":

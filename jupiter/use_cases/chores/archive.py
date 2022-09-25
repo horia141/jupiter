@@ -1,24 +1,25 @@
 """The command for archiving a chore."""
-import logging
 from dataclasses import dataclass
 from typing import Final
 
+from jupiter.domain.chores.infra.chore_notion_manager import ChoreNotionManager
+from jupiter.domain.chores.service.archive_service import ChoreArchiveService
 from jupiter.domain.inbox_tasks.infra.inbox_task_notion_manager import (
     InboxTaskNotionManager,
 )
-from jupiter.domain.chores.infra.chore_notion_manager import ChoreNotionManager
-from jupiter.domain.chores.service.archive_service import ChoreArchiveService
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     MutationUseCaseInvocationRecorder,
     UseCaseArgsBase,
+    ProgressReporter,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreArchiveUseCase(AppMutationUseCase["ChoreArchiveUseCase.Args", None]):
@@ -46,7 +47,12 @@ class ChoreArchiveUseCase(AppMutationUseCase["ChoreArchiveUseCase.Args", None]):
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._chore_notion_manager = chore_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         with self._storage_engine.get_unit_of_work() as uow:
             chore = uow.chore_repository.load_by_id(args.ref_id)
@@ -56,4 +62,4 @@ class ChoreArchiveUseCase(AppMutationUseCase["ChoreArchiveUseCase.Args", None]):
             self._storage_engine,
             self._inbox_task_notion_manager,
             self._chore_notion_manager,
-        ).do_it(chore)
+        ).do_it(progress_reporter, chore)

@@ -1,7 +1,6 @@
 """The centralised point for interacting with Notion big plans."""
 import copy
 import hashlib
-import logging
 import uuid
 from typing import Final, ClassVar, cast, Dict, Optional, Iterable
 
@@ -29,8 +28,6 @@ from jupiter.remote.notion.infra.collections_manager import (
 )
 from jupiter.utils.global_properties import GlobalProperties
 from jupiter.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionBigPlansManager(BigPlanNotionManager):
@@ -403,7 +400,6 @@ class NotionBigPlansManager(BigPlanNotionManager):
             new_schema,
             "project-name",
         )
-        LOGGER.info("Updated the schema for the associated big plans")
 
         timeline_new_view: JSONDictType = copy.deepcopy(
             NotionBigPlansManager._TIMELINE_BY_PROJECT_VIEW_SCHEMA
@@ -440,7 +436,6 @@ class NotionBigPlansManager(BigPlanNotionManager):
             "kanban_by_project_view_id",
             kanban_new_view,
         )
-        LOGGER.info("Updated the projects view for the associated big plan")
 
     def upsert_leaf(
         self,

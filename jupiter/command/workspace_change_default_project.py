@@ -1,16 +1,13 @@
 """UseCase for changing the default project the workspace."""
-
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Final
 
 from jupiter.command import command
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.domain.projects.project_key import ProjectKey
 from jupiter.use_cases.workspaces.change_default_project import (
     WorkspaceChangeDefaultProjectUseCase,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 class WorkspaceChangeDefaultProject(command.Command):
@@ -41,11 +38,15 @@ class WorkspaceChangeDefaultProject(command.Command):
             help="The key of the default project",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
         default_project_key = ProjectKey.from_raw(args.default_project_key)
+
         self._command.execute(
+            progress_reporter,
             WorkspaceChangeDefaultProjectUseCase.Args(
                 default_project_key=default_project_key
-            )
+            ),
         )

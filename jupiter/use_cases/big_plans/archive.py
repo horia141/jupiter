@@ -20,8 +20,13 @@ from jupiter.framework.event import EventSource
 from jupiter.framework.use_case import (
     UseCaseArgsBase,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
+    MarkProgressStatus,
 )
-from jupiter.use_cases.infra.use_cases import AppMutationUseCase, AppUseCaseContext
+from jupiter.use_cases.infra.use_cases import (
+    AppUseCaseContext,
+    AppMutationUseCase,
+)
 from jupiter.utils.time_provider import TimeProvider
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +57,12 @@ class BigPlanArchiveUseCase(AppMutationUseCase["BigPlanArchiveUseCase.Args", Non
         self._inbox_task_notion_manager = inbox_task_notion_manager
         self._big_plan_notion_manager = big_plan_notion_manager
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> None:
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
@@ -72,34 +82,35 @@ class BigPlanArchiveUseCase(AppMutationUseCase["BigPlanArchiveUseCase.Args", Non
             inbox_task_notion_manager=self._inbox_task_notion_manager,
         )
         for inbox_task in inbox_tasks_for_big_plan:
-            LOGGER.info(f"Archiving task {inbox_task.name} for plan")
-            inbox_task_archive_service.do_it(inbox_task)
-        LOGGER.info("Archived all tasks")
+            inbox_task_archive_service.do_it(progress_reporter, inbox_task)
 
-        with self._storage_engine.get_unit_of_work() as uow:
-            big_plan = uow.big_plan_repository.load_by_id(args.ref_id)
-            big_plan_collection = uow.big_plan_collection_repository.load_by_id(
-                big_plan.big_plan_collection_ref_id
-            )
-            big_plan = big_plan.mark_archived(
-                EventSource.CLI, self._time_provider.get_current_time()
-            )
-            uow.big_plan_repository.save(big_plan)
-        LOGGER.info("Applied local changes")
-        # Apply Notion changes
-        try:
-            self._big_plan_notion_manager.remove_leaf(
-                big_plan.big_plan_collection_ref_id, args.ref_id
-            )
-            LOGGER.info("Applied Notion changes")
-        except NotionBigPlanNotFoundError:
-            LOGGER.info(
-                "Skipping archiving of Notion inbox task because it could not be found"
-            )
+        with progress_reporter.start_archiving_entity(
+            "big plan", args.ref_id
+        ) as entity_reporter:
+            with self._storage_engine.get_unit_of_work() as uow:
+                big_plan = uow.big_plan_repository.load_by_id(args.ref_id)
+                entity_reporter.mark_known_name(str(big_plan.name))
+                big_plan_collection = uow.big_plan_collection_repository.load_by_id(
+                    big_plan.big_plan_collection_ref_id
+                )
+                big_plan = big_plan.mark_archived(
+                    EventSource.CLI, self._time_provider.get_current_time()
+                )
+                uow.big_plan_repository.save(big_plan)
+                entity_reporter.mark_local_change()
 
-        LOGGER.info("Archived the big plan")
+            try:
+                self._big_plan_notion_manager.remove_leaf(
+                    big_plan.big_plan_collection_ref_id, args.ref_id
+                )
+                entity_reporter.mark_remote_change()
+            except NotionBigPlanNotFoundError:
+                LOGGER.info(
+                    "Skipping removal on Notion side because big plan was not found"
+                )
+                entity_reporter.mark_remote_change(success=MarkProgressStatus.FAILED)
 
-        InboxTaskBigPlanRefOptionsUpdateService(
-            self._storage_engine, self._inbox_task_notion_manager
-        ).sync(big_plan_collection)
-        LOGGER.info("Updated the schema for the associated inbox")
+            InboxTaskBigPlanRefOptionsUpdateService(
+                self._storage_engine, self._inbox_task_notion_manager
+            ).sync(big_plan_collection)
+            entity_reporter.mark_other_progress("inbox-task-refs")

@@ -18,8 +18,8 @@ class WorkspaceIntegrationTestCase(JupiterIntegrationTestCase):
         workspace_out = self.jupiter("workspace-show")
 
         assert re.search("My Big Work", workspace_out)
-        assert re.search("timezone=Europe/London", workspace_out)
-        assert re.search('default project is "Work', workspace_out)
+        assert re.search("Europe/London", workspace_out)
+        assert re.search("In Project Work", workspace_out)
 
     def test_change_default_project(self) -> None:
         """Change the default project."""
@@ -40,8 +40,8 @@ class WorkspaceIntegrationTestCase(JupiterIntegrationTestCase):
 
         inbox_task_out = self.jupiter("inbox-task-show")
 
-        assert re.search(r"project=Personal", inbox_task_out)
+        assert re.search("In Project Personal", inbox_task_out)
 
         workspace_out = self.jupiter("workspace-show")
 
-        assert re.search('default project is "Personal', workspace_out)
+        assert re.search("In Project Personal", workspace_out)

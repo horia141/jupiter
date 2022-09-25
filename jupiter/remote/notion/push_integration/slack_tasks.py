@@ -1,5 +1,4 @@
 """The centralised point for interaction around all Slack tasks."""
-import logging
 from typing import Final, ClassVar, Optional, Iterable
 
 from jupiter.domain.push_integrations.group.notion_push_integration_group import (
@@ -27,8 +26,6 @@ from jupiter.remote.notion.infra.collections_manager import (
     NotionCollectionItemNotFoundError,
 )
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class NotionSlackTasksManager(SlackTaskNotionManager):

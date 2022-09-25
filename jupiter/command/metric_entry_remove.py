@@ -1,14 +1,11 @@
 """UseCase for hard removing a metric entry."""
-
-import logging
 from argparse import Namespace, ArgumentParser
 from typing import Final
 
 from jupiter.command import command
-from jupiter.use_cases.metrics.entry.remove import MetricEntryRemoveUseCase
+from jupiter.command.rendering import RichConsoleProgressReporter
 from jupiter.framework.base.entity_id import EntityId
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.use_cases.metrics.entry.remove import MetricEntryRemoveUseCase
 
 
 class MetricEntryRemove(command.Command):
@@ -34,15 +31,17 @@ class MetricEntryRemove(command.Command):
         """Construct a argparse parser for the command."""
         parser.add_argument(
             "--id",
-            dest="ref_ids",
+            dest="ref_id",
             required=True,
-            default=[],
-            action="append",
-            help="The ids of the metric entries",
+            help="The id of the metric entry",
         )
 
-    def run(self, args: Namespace) -> None:
+    def run(
+        self, progress_reporter: RichConsoleProgressReporter, args: Namespace
+    ) -> None:
         """Callback to execute when the command is invoked."""
-        ref_ids = [EntityId.from_raw(rid) for rid in args.ref_ids]
-        for ref_id in ref_ids:
-            self._the_command.execute(MetricEntryRemoveUseCase.Args(ref_id=ref_id))
+        ref_id = EntityId.from_raw(args.ref_id)
+
+        self._the_command.execute(
+            progress_reporter, MetricEntryRemoveUseCase.Args(ref_id=ref_id)
+        )

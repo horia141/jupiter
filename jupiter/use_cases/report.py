@@ -1,5 +1,4 @@
 """The command for reporting on progress."""
-import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
 from itertools import groupby
@@ -10,6 +9,7 @@ import pendulum
 from pendulum import UTC
 
 from jupiter.domain import schedules
+from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
@@ -28,11 +28,13 @@ from jupiter.domain.schedules import Schedule
 from jupiter.domain.storage_engine import DomainStorageEngine
 from jupiter.framework.base.entity_id import EntityId
 from jupiter.framework.base.timestamp import Timestamp
-from jupiter.framework.use_case import UseCaseArgsBase, UseCaseResultBase
+from jupiter.framework.use_case import (
+    UseCaseArgsBase,
+    UseCaseResultBase,
+    ProgressReporter,
+)
 from jupiter.use_cases.infra.use_cases import AppReadonlyUseCase, AppUseCaseContext
 from jupiter.utils.global_properties import GlobalProperties
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Result"]):
@@ -72,6 +74,14 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
         done: "ReportUseCase.NestedResult"
 
     @dataclass(frozen=True)
+    class WorkableBigPlan:
+        """The view of a big plan via a workable."""
+
+        ref_id: EntityId
+        name: BigPlanName
+        actionable_date: Optional[ADate]
+
+    @dataclass(frozen=True)
     class WorkableSummary:
         """The reporting summary."""
 
@@ -80,8 +90,8 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
         working_cnt: int
         not_done_cnt: int
         done_cnt: int
-        not_done_projects: List[BigPlanName]
-        done_projects: List[BigPlanName]
+        not_done_big_plans: List["ReportUseCase.WorkableBigPlan"]
+        done_big_plans: List["ReportUseCase.WorkableBigPlan"]
 
     @dataclass(frozen=True)
     class BigPlanSummary:
@@ -94,7 +104,6 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
         not_done_ratio: float
         done_cnt: int
         done_ratio: float
-        completed_ratio: float
 
     @dataclass(frozen=True)
     class RecurringTaskSummary:
@@ -107,7 +116,6 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
         not_done_ratio: float
         done_cnt: int
         done_ratio: float
-        completed_ratio: float
         streak_plot: str = field(hash=False, compare=False, repr=False, default="")
 
     @dataclass(frozen=True)
@@ -130,16 +138,19 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
     class PerBigPlanBreakdownItem:
         """The report for a particular big plan."""
 
+        ref_id: EntityId
         name: EntityName
+        actionable_date: Optional[ADate]
         summary: "ReportUseCase.BigPlanSummary"
 
     @dataclass(frozen=True)
     class PerHabitBreakdownItem:
         """The report for a particular habit."""
 
+        ref_id: EntityId
         name: EntityName
-        period: RecurringTaskPeriod
         archived: bool
+        period: RecurringTaskPeriod
         suspended: bool
         summary: "ReportUseCase.RecurringTaskSummary"
 
@@ -147,8 +158,10 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
     class PerChoreBreakdownItem:
         """The report for a particular chore."""
 
+        ref_id: EntityId
         name: EntityName
         archived: bool
+        period: RecurringTaskPeriod
         summary: "ReportUseCase.RecurringTaskSummary"
 
     @dataclass(frozen=True)
@@ -172,7 +185,12 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
         super().__init__(storage_engine)
         self._global_properties = global_properties
 
-    def _execute(self, context: AppUseCaseContext, args: Args) -> "Result":
+    def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppUseCaseContext,
+        args: Args,
+    ) -> "Result":
         """Execute the command."""
         workspace = context.workspace
         today = args.right_now.value.date()
@@ -433,73 +451,90 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
 
         # all_inbox_tasks.groupBy(it -> it.habit.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_habit_breakdown = [
-            ReportUseCase.PerHabitBreakdownItem(
-                name=all_habits_by_ref_id[k].name,
-                archived=all_habits_by_ref_id[k].archived,
-                suspended=all_habits_by_ref_id[k].suspended,
-                period=all_habits_by_ref_id[k].gen_params.period,
-                summary=self._run_report_for_inbox_for_recurring_tasks(
-                    schedule, [vx[1] for vx in v]
-                ),
-            )
-            for (k, v) in groupby(
-                sorted(
-                    [
-                        (it.habit_ref_id, it)
-                        for it in all_inbox_tasks
-                        if it.habit_ref_id
-                    ],
+            hb
+            for hb in (
+                ReportUseCase.PerHabitBreakdownItem(
+                    ref_id=all_habits_by_ref_id[k].ref_id,
+                    name=all_habits_by_ref_id[k].name,
+                    archived=all_habits_by_ref_id[k].archived,
+                    suspended=all_habits_by_ref_id[k].suspended,
+                    period=all_habits_by_ref_id[k].gen_params.period,
+                    summary=self._run_report_for_inbox_for_recurring_tasks(
+                        schedule, [vx[1] for vx in v]
+                    ),
+                )
+                for (k, v) in groupby(
+                    sorted(
+                        [
+                            (it.habit_ref_id, it)
+                            for it in all_inbox_tasks
+                            if it.habit_ref_id
+                        ],
+                        key=itemgetter(0),
+                    ),
                     key=itemgetter(0),
-                ),
-                key=itemgetter(0),
+                )
             )
+            if all_habits_by_ref_id[hb.ref_id].archived is False
         ]
 
         # Build per chore breakdown
 
         # all_inbox_tasks.groupBy(it -> it.chore.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_chore_breakdown = [
-            ReportUseCase.PerChoreBreakdownItem(
-                name=all_chores_by_ref_id[k].name,
-                archived=all_chores_by_ref_id[k].archived,
-                summary=self._run_report_for_inbox_for_recurring_tasks(
-                    schedule, [vx[1] for vx in v]
-                ),
-            )
-            for (k, v) in groupby(
-                sorted(
-                    [
-                        (it.chore_ref_id, it)
-                        for it in all_inbox_tasks
-                        if it.chore_ref_id
-                    ],
+            cb
+            for cb in (
+                ReportUseCase.PerChoreBreakdownItem(
+                    ref_id=all_chores_by_ref_id[k].ref_id,
+                    name=all_chores_by_ref_id[k].name,
+                    archived=all_chores_by_ref_id[k].archived,
+                    period=all_chores_by_ref_id[k].gen_params.period,
+                    summary=self._run_report_for_inbox_for_recurring_tasks(
+                        schedule, [vx[1] for vx in v]
+                    ),
+                )
+                for (k, v) in groupby(
+                    sorted(
+                        [
+                            (it.chore_ref_id, it)
+                            for it in all_inbox_tasks
+                            if it.chore_ref_id
+                        ],
+                        key=itemgetter(0),
+                    ),
                     key=itemgetter(0),
-                ),
-                key=itemgetter(0),
+                )
             )
+            if all_chores_by_ref_id[cb.ref_id].archived is False
         ]
 
         # Build per big plan breakdown
 
         # all_inbox_tasks.groupBy(it -> it.bigPlan.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
         per_big_plan_breakdown = [
-            ReportUseCase.PerBigPlanBreakdownItem(
-                k,
-                self._run_report_for_inbox_tasks_for_big_plan(
-                    schedule, (vx[1] for vx in v)
-                ),
-            )
-            for (k, v) in groupby(
-                sorted(
-                    [
-                        (big_plans_by_ref_id[it.big_plan_ref_id].name, it)
-                        for it in all_inbox_tasks
-                        if it.big_plan_ref_id
-                    ],
+            bb
+            for bb in (
+                ReportUseCase.PerBigPlanBreakdownItem(
+                    ref_id=big_plans_by_ref_id[k].ref_id,
+                    name=big_plans_by_ref_id[k].name,
+                    actionable_date=big_plans_by_ref_id[k].actionable_date,
+                    summary=self._run_report_for_inbox_tasks_for_big_plan(
+                        schedule, (vx[1] for vx in v)
+                    ),
+                )
+                for (k, v) in groupby(
+                    sorted(
+                        [
+                            (it.big_plan_ref_id, it)
+                            for it in all_inbox_tasks
+                            if it.big_plan_ref_id
+                        ],
+                        key=itemgetter(0),
+                    ),
                     key=itemgetter(0),
-                ),
-                key=itemgetter(0),
+                )
             )
+            if big_plans_by_ref_id[bb.ref_id].archived is False
         ]
 
         return ReportUseCase.Result(
@@ -533,7 +568,7 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
                 created_per_source_cnt[inbox_task.source] += 1
 
             if inbox_task.status.is_accepted and inbox_task.accepted_time is None:
-                LOGGER.error(inbox_task)
+                raise Exception(f"Invalid state for {inbox_task}")
 
             if inbox_task.status.is_completed and schedule.contains_timestamp(
                 cast(Timestamp, inbox_task.completed_time)
@@ -613,9 +648,6 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
             else 0.0,
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0,
-            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt)
-            if created_cnt > 0
-            else 0.0,
         )
 
     @staticmethod
@@ -707,9 +739,6 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
             else 0.0,
             done_cnt=done_cnt,
             done_ratio=done_cnt / float(created_cnt) if created_cnt > 0 else 0.0,
-            completed_ratio=(done_cnt + not_done_cnt) / float(created_cnt)
-            if created_cnt > 0
-            else 0.0,
             streak_plot="".join(streak_plot),
         )
 
@@ -734,10 +763,22 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
             ):
                 if big_plan.status == BigPlanStatus.DONE:
                     done_cnt += 1
-                    done_projects.append(big_plan.name)
+                    done_projects.append(
+                        ReportUseCase.WorkableBigPlan(
+                            ref_id=big_plan.ref_id,
+                            name=big_plan.name,
+                            actionable_date=big_plan.actionable_date,
+                        )
+                    )
                 else:
                     not_done_cnt += 1
-                    not_done_projects.append(big_plan.name)
+                    not_done_projects.append(
+                        ReportUseCase.WorkableBigPlan(
+                            ref_id=big_plan.ref_id,
+                            name=big_plan.name,
+                            actionable_date=big_plan.actionable_date,
+                        )
+                    )
             elif big_plan.status.is_working and schedule.contains_timestamp(
                 cast(Timestamp, big_plan.working_time)
             ):
@@ -753,6 +794,6 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
             working_cnt=working_cnt,
             done_cnt=done_cnt,
             not_done_cnt=not_done_cnt,
-            not_done_projects=not_done_projects,
-            done_projects=done_projects,
+            not_done_big_plans=not_done_projects,
+            done_big_plans=done_projects,
         )

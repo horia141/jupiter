@@ -31,6 +31,7 @@ class BigPlanSyncService(
         super().__init__(
             BigPlanCollection,
             BigPlan,
+            "big plan",
             NotionBigPlan,
             storage_engine,
             big_plan_notion_manager,

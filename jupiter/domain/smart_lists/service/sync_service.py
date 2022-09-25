@@ -41,8 +41,11 @@ class SmartListSyncServiceNew(
         super().__init__(
             SmartListCollection,
             SmartList,
+            "smart list",
             SmartListItem,
+            "smart list item",
             SmartListTag,
+            "smart list tag",
             NotionSmartList,
             NotionSmartListItem,
             NotionSmartListTag,

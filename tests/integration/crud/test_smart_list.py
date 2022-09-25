@@ -1,7 +1,7 @@
 """Integration tests for smart lists."""
 import re
 
-from tests.integration.infra import JupiterIntegrationTestCase, extract_id_from_show_out
+from tests.integration.infra import JupiterIntegrationTestCase
 
 
 class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
@@ -9,7 +9,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
     def test_create_smart_list(self) -> None:
         """Create a smart list."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
@@ -17,12 +17,12 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
         smart_list_out = self.jupiter("smart-list-show")
 
-        assert re.search(r"fantasy:", smart_list_out)
+        assert re.search(r"fantasy", smart_list_out)
         assert re.search(r"Fantasy Books", smart_list_out)
 
     def test_update_smart_list(self) -> None:
         """Updating a smart list."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
@@ -38,12 +38,12 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
         smart_list_out = self.jupiter("smart-list-show")
 
-        assert re.search(r"fantasy:", smart_list_out)
+        assert re.search(r"fantasy", smart_list_out)
         assert re.search(r"Best Fantasy Books", smart_list_out)
 
     def test_archive_smart_list(self) -> None:
         """Archiving a smart list."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
@@ -67,14 +67,12 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
         smart_list_out = self.jupiter("smart-list-show", "--show-archived")
 
-        assert re.search(r"fantasy:", smart_list_out)
-        assert re.search(r"archived=True", smart_list_out)
+        assert re.search(r"fantasy", smart_list_out)
         assert re.search(r"The Lord Of The Rings", smart_list_out)
-        assert re.search(r"archived=True", smart_list_out)
 
     def test_remove_smart_list(self) -> None:
         """Removing a smart list."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
@@ -98,16 +96,16 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
         smart_list_out = self.jupiter("smart-list-show", "--show-archived")
 
-        assert not re.search(r"fantasy:", smart_list_out)
+        assert not re.search(r"fantasy", smart_list_out)
         assert not re.search(r"The Lord Of The Rings", smart_list_out)
 
     def test_create_smart_list_item(self) -> None:
         """Creating a smart list item."""
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -139,7 +137,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
+        smart_list_item_id = self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -149,11 +147,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "series",
             "--tag",
             "highfantasy",
-        )
-
-        smart_list_out = self.jupiter("smart-list-show")
-        smart_list_item_id = extract_id_from_show_out(
-            smart_list_out, "The Lord Of The Rings"
+            hint="The Lord Of The Rings",
         )
 
         self.jupiter(
@@ -191,7 +185,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
+        smart_list_item_id = self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -201,11 +195,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "series",
             "--tag",
             "highfantasy",
-        )
-
-        smart_list_out = self.jupiter("smart-list-show")
-        smart_list_item_id = extract_id_from_show_out(
-            smart_list_out, "The Lord Of The Rings"
+            hint="The Lord Of The Rings",
         )
 
         self.jupiter("smart-list-item-archive", "--id", smart_list_item_id)
@@ -217,7 +207,6 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
         smart_list_out = self.jupiter("smart-list-show", "--show-archived")
 
         assert re.search(r"The Lord Of The Rings", smart_list_out)
-        assert re.search(r"archived=True", smart_list_out)
 
     def test_remove_smart_list_item(self) -> None:
         """Remocing a smart list item."""
@@ -225,7 +214,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
+        smart_list_item_id = self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -235,11 +224,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "series",
             "--tag",
             "highfantasy",
-        )
-
-        smart_list_out = self.jupiter("smart-list-show")
-        smart_list_item_id = extract_id_from_show_out(
-            smart_list_out, "The Lord Of The Rings"
+            hint="The Lord Of The Rings",
         )
 
         self.jupiter("smart-list-item-remove", "--id", smart_list_item_id)
@@ -258,7 +243,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-tag-create", "--smart-list", "fantasy", "--name", "highfantasy"
         )
 
@@ -266,7 +251,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
         smart_list_out = self.jupiter("smart-list-show")
 
-        assert re.search(r"#highfantasy", smart_list_out)
+        assert re.search(r"<#(\d)+ highfantasy>", smart_list_out)
 
     def test_update_smart_list_tag(self) -> None:
         """Updating a smart list tag."""
@@ -274,11 +259,16 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
-            "smart-list-tag-create", "--smart-list", "fantasy", "--name", "highfantasy"
+        smart_list_tag_id = self.jupiter_create(
+            "smart-list-tag-create",
+            "--smart-list",
+            "fantasy",
+            "--name",
+            "highfantasy",
+            hint="highfantasy",
         )
 
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -286,10 +276,8 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "The Lord Of The Rings",
             "--tag",
             "highfantasy",
+            hint="The Lord Of The Rings",
         )
-
-        smart_list_out = self.jupiter("smart-list-show")
-        smart_list_tag_id = extract_id_from_show_out(smart_list_out, "#highfantasy")
 
         self.jupiter(
             "smart-list-tag-update",
@@ -309,7 +297,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
         smart_list_out = self.jupiter("smart-list-show")
 
         assert re.search(r"The Lord Of The Rings", smart_list_out)
-        assert re.search(r"#thehighfantasy", smart_list_out)
+        assert re.search(r"<#(\d)+ thehighfantasy>", smart_list_out)
 
     def test_archive_smart_list_tag(self) -> None:
         """Archiving a smart list tag."""
@@ -317,11 +305,16 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
-            "smart-list-tag-create", "--smart-list", "fantasy", "--name", "highfantasy"
+        smart_list_tag_id = self.jupiter_create(
+            "smart-list-tag-create",
+            "--smart-list",
+            "fantasy",
+            "--name",
+            "highfantasy",
+            hint="highfantasy",
         )
 
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -330,9 +323,6 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "--tag",
             "highfantasy",
         )
-
-        smart_list_out = self.jupiter("smart-list-show")
-        smart_list_tag_id = extract_id_from_show_out(smart_list_out, "#highfantasy")
 
         self.jupiter("smart-list-tag-archive", "--id", smart_list_tag_id)
 
@@ -345,7 +335,7 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
 
         smart_list_out = self.jupiter("smart-list-show", "--show-archived")
 
-        assert re.search(r"#highfantasy", smart_list_out)
+        assert re.search(r"<#(\d)+ highfantasy>", smart_list_out)
 
     def test_remove_smart_list_tag(self) -> None:
         """Removing a smart list tag."""
@@ -353,11 +343,16 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "smart-list-create", "--smart-list", "fantasy", "--name", "Fantasy Books"
         )
 
-        self.jupiter(
-            "smart-list-tag-create", "--smart-list", "fantasy", "--name", "highfantasy"
+        smart_list_tag_id = self.jupiter_create(
+            "smart-list-tag-create",
+            "--smart-list",
+            "fantasy",
+            "--name",
+            "highfantasy",
+            hint="highfantasy",
         )
 
-        self.jupiter(
+        self.jupiter_create(
             "smart-list-item-create",
             "--smart-list",
             "fantasy",
@@ -366,9 +361,6 @@ class SmartListIntegrationTestCase(JupiterIntegrationTestCase):
             "--tag",
             "highfantasy",
         )
-
-        smart_list_out = self.jupiter("smart-list-show")
-        smart_list_tag_id = extract_id_from_show_out(smart_list_out, "#highfantasy")
 
         self.jupiter("smart-list-tag-remove", "--id", smart_list_tag_id)
 

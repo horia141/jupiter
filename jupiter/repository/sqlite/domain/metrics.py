@@ -1,5 +1,4 @@
 """SQLite based metrics repositories."""
-import logging
 from typing import Optional, Iterable, List, Final
 
 from sqlalchemy import (
@@ -57,8 +56,6 @@ from jupiter.repository.sqlite.infra.events import (
     upsert_events,
     remove_events,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SqliteMetricCollectionRepository(MetricCollectionRepository):

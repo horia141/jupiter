@@ -14,6 +14,7 @@ from jupiter.framework.use_case import (
     UseCaseArgsBase,
     MutationEmptyContextUseCase,
     EmptyContext,
+    ProgressReporter,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -42,16 +43,25 @@ class NukeUseCase(MutationEmptyContextUseCase["NukeUseCase.Args", None]):
         self._storage_engine = storage_engine
         self._workspace_notion_manager = workspace_notion_manager
 
-    def _execute(self, context: EmptyContext, args: Args) -> None:
+    def _execute(
+        self, progress_reporter: ProgressReporter, context: EmptyContext, args: Args
+    ) -> None:
         """Execute the command's action."""
         try:
-            with self._storage_engine.get_unit_of_work() as uow:
-                workspace = uow.workspace_repository.load()
-            self._workspace_notion_manager.remove_workspace(workspace.ref_id)
+            with progress_reporter.start_removing_entity(
+                "workspace"
+            ) as entity_reporter:
+                with self._storage_engine.get_unit_of_work() as uow:
+                    workspace = uow.workspace_repository.load()
+                    entity_reporter.mark_known_entity_id(
+                        workspace.ref_id
+                    ).mark_known_name(str(workspace.name))
+                self._workspace_notion_manager.remove_workspace(workspace.ref_id)
+                entity_reporter.mark_remote_change()
         except WorkspaceNotFoundError:
-            LOGGER.warning("Could not find workspace to remove")
+            LOGGER.info("Could not find workspace to remove")
         except NotionWorkspaceNotFoundError:
-            LOGGER.warning("Could not find Notion workspace to remove")
+            LOGGER.info("Could not find Notion workspace to remove")
 
         LOGGER.info("Daisy ... daisy ... daisy")
         self._connection.nuke()
