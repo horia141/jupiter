@@ -172,10 +172,6 @@ class ProgressReporter(abc.ABC):
     """A reporter to the user in real-time on modifications to entities."""
 
     @abc.abstractmethod
-    def with_subentity(self) -> "ProgressReporter":
-        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
-
-    @abc.abstractmethod
     def section(self, title: str) -> ContextManager[None]:
         """Start a section or subsection."""
 
@@ -217,6 +213,12 @@ class ProgressReporter(abc.ABC):
         self, entity_type: str, entity_id: EntityId, entity_name: str
     ) -> ContextManager[EntityProgressReporter]:
         """Report that a particular entity is being affected."""
+
+    @abc.abstractmethod
+    def start_complex_entity_work(
+        self, entity_type: str, entity_id: EntityId, entity_name: str
+    ) -> ContextManager["ProgressReporter"]:
+        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
 
 
 class UseCase(Generic[UseCaseContext, UseCaseArgs, UseCaseResult], abc.ABC):

@@ -84,3 +84,8 @@ class SmartList(BranchEntity):
     def parent_ref_id(self) -> EntityId:
         """The parent."""
         return self.smart_list_collection_ref_id
+
+    @property
+    def nice_name(self) -> str:
+        """The nice name for the smart list."""
+        return str(self.name)

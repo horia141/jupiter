@@ -394,220 +394,239 @@ class TrunkBranchLeafNotionSyncService(
                 self._trunk_type
             ).load_by_parent(parent_ref_id)
 
-        with progress_reporter.start_updating_entity(
-            self._branch_name, trunk.ref_id
-        ) as entity_reporter:
-            try:
-                notion_branch = self._notion_manager.load_branch(
-                    trunk.ref_id, branch.ref_id
-                )
-
-                if sync_prefer == SyncPrefer.LOCAL:
-                    updated_notion_branch = notion_branch.join_with_entity(branch)
-                    entity_reporter.mark_known_name(updated_notion_branch.nice_name)
-                    self._notion_manager.save_branch(
-                        trunk.ref_id, updated_notion_branch
+        with progress_reporter.start_complex_entity_work(
+            self._branch_name, trunk.ref_id, branch.nice_name
+        ) as subprogress_reporter:
+            with subprogress_reporter.start_updating_entity(
+                self._branch_name, trunk.ref_id
+            ) as entity_reporter:
+                try:
+                    notion_branch = self._notion_manager.load_branch(
+                        trunk.ref_id, branch.ref_id
                     )
-                    entity_reporter.mark_remote_change()
-                elif sync_prefer == SyncPrefer.NOTION:
-                    entity_reporter.mark_known_name(notion_branch.nice_name)
-                    branch = notion_branch.apply_to_entity(branch, right_now)
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        uow.get_branch_repository_for(self._branch_type).save(branch)
-                    entity_reporter.mark_local_change()
-                else:
-                    raise Exception(f"Invalid preference {sync_prefer}")
-            except NotionBranchEntityNotFoundError:
-                notion_branch = cast(
-                    NotionBranchT,
-                    self._notion_branch_type.new_notion_entity(cast(Any, branch)),
-                )
-                entity_reporter.mark_known_name(updated_notion_branch.nice_name)
-                self._notion_manager.upsert_branch(trunk.ref_id, notion_branch)
-                entity_reporter.mark_other_progress("created remote")
 
-        progress_reporter = progress_reporter.with_subentity()
-
-        # Now synchronize the list items here.
-        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
-
-        with self._storage_engine.get_unit_of_work() as uow:
-            all_leaves = uow.get_leaf_repository_for(self._leaf_type).find_all(
-                parent_ref_id=branch.ref_id,
-                allow_archived=True,
-                filter_ref_ids=filter_ref_ids_set,
-            )
-        all_leaves_set: Dict[EntityId, LeafT] = {sli.ref_id: sli for sli in all_leaves}
-
-        if not drop_all_notion_side:
-            all_notion_leaves = self._notion_manager.load_all_leaves(
-                trunk.ref_id, branch.ref_id
-            )
-            all_notion_branch_notion_ids = set(
-                self._notion_manager.load_all_saved_notion_ids(
-                    trunk.ref_id, branch.ref_id
-                )
-            )
-        else:
-            self._notion_manager.drop_all_leaves(trunk.ref_id, branch.ref_id)
-            all_notion_leaves = []
-            all_notion_branch_notion_ids = set()
-        all_notion_leaves_set = {}
-
-        created_locally = []
-        modified_locally = []
-        created_remotely = []
-        modified_remotely = []
-        removed_remotely = []
-
-        # Explore Notion and apply to local
-        for notion_leaf in all_notion_leaves:
-            if (
-                filter_ref_ids_set is not None
-                and notion_leaf.ref_id not in filter_ref_ids_set
-            ):
-                continue
-
-            if notion_leaf.ref_id is None:
-                with progress_reporter.start_creating_entity(
-                    self._leaf_name, notion_leaf.nice_name
-                ) as entity_reporter:
-                    # If the branch entry doesn't exist locally, we create it.
-                    new_leaf = notion_leaf.new_entity(branch.ref_id, inverse_info)
-
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        new_leaf = uow.get_leaf_repository_for(self._leaf_type).create(
-                            new_leaf
+                    if sync_prefer == SyncPrefer.LOCAL:
+                        updated_notion_branch = notion_branch.join_with_entity(branch)
+                        entity_reporter.mark_known_name(updated_notion_branch.nice_name)
+                        self._notion_manager.save_branch(
+                            trunk.ref_id, updated_notion_branch
                         )
-                        entity_reporter.mark_known_entity_id(
-                            new_leaf.ref_id
-                        ).mark_local_change()
+                        entity_reporter.mark_remote_change()
+                    elif sync_prefer == SyncPrefer.NOTION:
+                        entity_reporter.mark_known_name(notion_branch.nice_name)
 
-                    self._notion_manager.link_local_and_notion_leaves(
-                        trunk.ref_id,
-                        branch.ref_id,
-                        new_leaf.ref_id,
-                        notion_leaf.notion_id,
-                    )
-                    entity_reporter.mark_other_progress("linking")
+                        # Not 100% happy with the below! Equality comparison seems tricky.
+                        new_branch = notion_branch.apply_to_entity(branch, right_now)
 
-                    notion_leaf = notion_leaf.join_with_entity(new_leaf, None)
-                    self._notion_manager.save_leaf(
-                        trunk.ref_id, branch.ref_id, notion_leaf
-                    )
-                    entity_reporter.mark_remote_change()
-
-                    all_leaves_set[new_leaf.ref_id] = new_leaf
-                    all_notion_leaves_set[new_leaf.ref_id] = notion_leaf
-                    created_locally.append(new_leaf)
-            elif (
-                notion_leaf.ref_id in all_leaves_set
-                and notion_leaf.notion_id in all_notion_branch_notion_ids
-            ):
-                leaf = all_leaves_set[notion_leaf.ref_id]
-                all_notion_leaves_set[notion_leaf.ref_id] = notion_leaf
-
-                with progress_reporter.start_updating_entity(
-                    self._leaf_name, leaf.ref_id, notion_leaf.nice_name
-                ) as entity_reporter:
-                    if sync_prefer == SyncPrefer.NOTION:
-                        if (
-                            not sync_even_if_not_modified
-                            and notion_leaf.last_edited_time <= leaf.last_modified_time
-                        ):
+                        if sync_even_if_not_modified or new_branch != branch:
+                            with self._storage_engine.get_unit_of_work() as uow:
+                                branch = uow.get_branch_repository_for(
+                                    self._branch_type
+                                ).save(new_branch)
+                            entity_reporter.mark_local_change()
+                        else:
                             entity_reporter.mark_not_needed()
-                            continue
+                    else:
+                        raise Exception(f"Invalid preference {sync_prefer}")
+                except NotionBranchEntityNotFoundError:
+                    notion_branch = cast(
+                        NotionBranchT,
+                        self._notion_branch_type.new_notion_entity(cast(Any, branch)),
+                    )
+                    entity_reporter.mark_known_name(updated_notion_branch.nice_name)
+                    self._notion_manager.upsert_branch(trunk.ref_id, notion_branch)
+                    entity_reporter.mark_other_progress("created remote")
 
-                        updated_leaf = notion_leaf.apply_to_entity(leaf, inverse_info)
+            # Now synchronize the list items here.
+            filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_leaves = uow.get_leaf_repository_for(self._leaf_type).find_all(
+                    parent_ref_id=branch.ref_id,
+                    allow_archived=True,
+                    filter_ref_ids=filter_ref_ids_set,
+                )
+            all_leaves_set: Dict[EntityId, LeafT] = {
+                sli.ref_id: sli for sli in all_leaves
+            }
+
+            if not drop_all_notion_side:
+                all_notion_leaves = self._notion_manager.load_all_leaves(
+                    trunk.ref_id, branch.ref_id
+                )
+                all_notion_branch_notion_ids = set(
+                    self._notion_manager.load_all_saved_notion_ids(
+                        trunk.ref_id, branch.ref_id
+                    )
+                )
+            else:
+                self._notion_manager.drop_all_leaves(trunk.ref_id, branch.ref_id)
+                all_notion_leaves = []
+                all_notion_branch_notion_ids = set()
+            all_notion_leaves_set = {}
+
+            created_locally = []
+            modified_locally = []
+            created_remotely = []
+            modified_remotely = []
+            removed_remotely = []
+
+            # Explore Notion and apply to local
+            for notion_leaf in all_notion_leaves:
+                if (
+                    filter_ref_ids_set is not None
+                    and notion_leaf.ref_id not in filter_ref_ids_set
+                ):
+                    continue
+
+                if notion_leaf.ref_id is None:
+                    with subprogress_reporter.start_creating_entity(
+                        self._leaf_name, notion_leaf.nice_name
+                    ) as entity_reporter:
+                        # If the branch entry doesn't exist locally, we create it.
+                        new_leaf = notion_leaf.new_entity(branch.ref_id, inverse_info)
 
                         with self._storage_engine.get_unit_of_work() as uow:
-                            uow.get_leaf_repository_for(self._leaf_type).save(
-                                updated_leaf.entity
-                            )
-                            entity_reporter.mark_local_change()
+                            new_leaf = uow.get_leaf_repository_for(
+                                self._leaf_type
+                            ).create(new_leaf)
+                            entity_reporter.mark_known_entity_id(
+                                new_leaf.ref_id
+                            ).mark_local_change()
 
-                        if updated_leaf.should_modify_on_notion:
-                            updated_notion_leaf = notion_leaf.join_with_entity(
-                                updated_leaf, direct_info
+                        self._notion_manager.link_local_and_notion_leaves(
+                            trunk.ref_id,
+                            branch.ref_id,
+                            new_leaf.ref_id,
+                            notion_leaf.notion_id,
+                        )
+                        entity_reporter.mark_other_progress("linking")
+
+                        notion_leaf = notion_leaf.join_with_entity(new_leaf, None)
+                        self._notion_manager.save_leaf(
+                            trunk.ref_id, branch.ref_id, notion_leaf
+                        )
+                        entity_reporter.mark_remote_change()
+
+                        all_leaves_set[new_leaf.ref_id] = new_leaf
+                        all_notion_leaves_set[new_leaf.ref_id] = notion_leaf
+                        created_locally.append(new_leaf)
+                elif (
+                    notion_leaf.ref_id in all_leaves_set
+                    and notion_leaf.notion_id in all_notion_branch_notion_ids
+                ):
+                    leaf = all_leaves_set[notion_leaf.ref_id]
+                    all_notion_leaves_set[notion_leaf.ref_id] = notion_leaf
+
+                    with subprogress_reporter.start_updating_entity(
+                        self._leaf_name, leaf.ref_id, notion_leaf.nice_name
+                    ) as entity_reporter:
+                        if sync_prefer == SyncPrefer.NOTION:
+                            if (
+                                not sync_even_if_not_modified
+                                and notion_leaf.last_edited_time
+                                <= leaf.last_modified_time
+                            ):
+                                entity_reporter.mark_not_needed()
+                                continue
+
+                            updated_leaf = notion_leaf.apply_to_entity(
+                                leaf, inverse_info
                             )
+
+                            with self._storage_engine.get_unit_of_work() as uow:
+                                uow.get_leaf_repository_for(self._leaf_type).save(
+                                    updated_leaf.entity
+                                )
+                                entity_reporter.mark_local_change()
+
+                            if updated_leaf.should_modify_on_notion:
+                                updated_notion_leaf = notion_leaf.join_with_entity(
+                                    updated_leaf, direct_info
+                                )
+                                self._notion_manager.save_leaf(
+                                    trunk.ref_id, branch.ref_id, updated_notion_leaf
+                                )
+                                entity_reporter.mark_remote_change()
+
+                            all_leaves_set[notion_leaf.ref_id] = updated_leaf.entity
+                            modified_locally.append(updated_leaf.entity)
+                        elif sync_prefer == SyncPrefer.LOCAL:
+                            if (
+                                not sync_even_if_not_modified
+                                and leaf.last_modified_time
+                                <= notion_leaf.last_edited_time
+                            ):
+                                entity_reporter.mark_not_needed()
+                                continue
+
+                            updated_notion_leaf = notion_leaf.join_with_entity(
+                                leaf, direct_info
+                            )
+                            entity_reporter.mark_known_name(
+                                updated_notion_leaf.nice_name
+                            )
+
                             self._notion_manager.save_leaf(
                                 trunk.ref_id, branch.ref_id, updated_notion_leaf
                             )
                             entity_reporter.mark_remote_change()
 
-                        all_leaves_set[notion_leaf.ref_id] = updated_leaf.entity
-                        modified_locally.append(updated_leaf.entity)
-                    elif sync_prefer == SyncPrefer.LOCAL:
-                        if (
-                            not sync_even_if_not_modified
-                            and leaf.last_modified_time <= notion_leaf.last_edited_time
-                        ):
-                            entity_reporter.mark_not_needed()
-                            continue
+                            all_notion_leaves_set[
+                                notion_leaf.ref_id
+                            ] = updated_notion_leaf
+                            modified_remotely.append(leaf)
+                        else:
+                            raise Exception(f"Invalid preference {sync_prefer}")
+                else:
+                    # If we're here, one of two cases have happened:
+                    # 1. This is some random branch entry added by someone, where they completed themselves a ref_id.
+                    #    It's a bad setup, and we remove it.
+                    # 2. This is a branch entry added by the script, but which failed before local data could be saved.
+                    #    We'll have duplicates in these cases, and they need to be removed.
+                    with subprogress_reporter.start_updating_entity(
+                        self._leaf_name, notion_leaf.ref_id
+                    ) as entity_reporter:
+                        try:
+                            self._notion_manager.remove_leaf(
+                                trunk.ref_id, branch.ref_id, notion_leaf.ref_id
+                            )
+                            entity_reporter.mark_other_progress("remote remove")
+                            removed_remotely.append(notion_leaf.ref_id)
+                        except NotionLeafEntityNotFoundError:
+                            LOGGER.info(
+                                f"Skipped dangling leaf in Notion {notion_leaf.ref_id}"
+                            )
+                            entity_reporter.mark_other_progress(
+                                "remote remove", MarkProgressStatus.FAILED
+                            )
 
-                        updated_notion_leaf = notion_leaf.join_with_entity(
-                            leaf, direct_info
-                        )
-                        entity_reporter.mark_known_name(updated_notion_leaf.nice_name)
+            for leaf in all_leaves:
+                if leaf.ref_id in all_notion_leaves_set:
+                    # The branch entry already exists on Notion side, so it was handled by the above loop!
+                    continue
+                if leaf.archived:
+                    continue
 
-                        self._notion_manager.save_leaf(
-                            trunk.ref_id, branch.ref_id, updated_notion_leaf
-                        )
-                        entity_reporter.mark_remote_change()
-
-                        all_notion_leaves_set[notion_leaf.ref_id] = updated_notion_leaf
-                        modified_remotely.append(leaf)
-                    else:
-                        raise Exception(f"Invalid preference {sync_prefer}")
-            else:
-                # If we're here, one of two cases have happened:
-                # 1. This is some random branch entry added by someone, where they completed themselves a ref_id.
-                #    It's a bad setup, and we remove it.
-                # 2. This is a branch entry added by the script, but which failed before local data could be saved.
-                #    We'll have duplicates in these cases, and they need to be removed.
-                with progress_reporter.start_updating_entity(
-                    self._leaf_name, notion_leaf.ref_id
-                ) as entity_reporter:
-                    try:
-                        self._notion_manager.remove_leaf(
-                            trunk.ref_id, branch.ref_id, notion_leaf.ref_id
-                        )
-                        entity_reporter.mark_other_progress("remote remove")
-                        removed_remotely.append(notion_leaf.ref_id)
-                    except NotionLeafEntityNotFoundError:
-                        LOGGER.info(
-                            f"Skipped dangling leaf in Notion {notion_leaf.ref_id}"
-                        )
-                        entity_reporter.mark_other_progress(
-                            "remote remove", MarkProgressStatus.FAILED
-                        )
-
-        for leaf in all_leaves:
-            if leaf.ref_id in all_notion_leaves_set:
-                # The branch entry already exists on Notion side, so it was handled by the above loop!
-                continue
-            if leaf.archived:
-                continue
-
-            # If the branch entry does not exist on Notion side, we create it.
-            notion_leaf = cast(
-                NotionLeafT,
-                self._notion_leaf_type.new_notion_entity(
-                    cast(Any, leaf), cast(Any, direct_info)
-                ),
-            )
-
-            with progress_reporter.start_updating_entity(
-                self._leaf_name, leaf.ref_id, notion_leaf.nice_name
-            ) as entity_reporter:
-                self._notion_manager.upsert_leaf(
-                    trunk.ref_id,
-                    branch.ref_id,
-                    notion_leaf,
+                # If the branch entry does not exist on Notion side, we create it.
+                notion_leaf = cast(
+                    NotionLeafT,
+                    self._notion_leaf_type.new_notion_entity(
+                        cast(Any, leaf), cast(Any, direct_info)
+                    ),
                 )
-                entity_reporter.mark_other_progress("remote create")
-            all_notion_leaves_set[leaf.ref_id] = notion_leaf
-            created_remotely.append(leaf)
+
+                with subprogress_reporter.start_updating_entity(
+                    self._leaf_name, leaf.ref_id, notion_leaf.nice_name
+                ) as entity_reporter:
+                    self._notion_manager.upsert_leaf(
+                        trunk.ref_id,
+                        branch.ref_id,
+                        notion_leaf,
+                    )
+                    entity_reporter.mark_other_progress("remote create")
+                all_notion_leaves_set[leaf.ref_id] = notion_leaf
+                created_remotely.append(leaf)
 
         return SyncResult(
             all=all_leaves_set.values(),
@@ -719,372 +738,402 @@ class TrunkBranchLeafAndTagNotionSyncService(
                 self._trunk_type
             ).load_by_parent(parent_ref_id)
 
-        with progress_reporter.start_updating_entity(
-            self._branch_name, trunk.ref_id
-        ) as entity_reporter:
-            try:
-                notion_branch = self._notion_manager.load_branch(
-                    trunk.ref_id, branch.ref_id
-                )
-
-                if sync_prefer == SyncPrefer.LOCAL:
-                    updated_notion_branch = notion_branch.join_with_entity(branch)
-                    entity_reporter.mark_known_name(updated_notion_branch.nice_name)
-                    self._notion_manager.save_branch(
-                        trunk.ref_id, updated_notion_branch
+        with progress_reporter.start_complex_entity_work(
+            self._branch_name, trunk.ref_id, branch.nice_name
+        ) as subprogress_reporter:
+            with subprogress_reporter.start_updating_entity(
+                self._branch_name, trunk.ref_id
+            ) as entity_reporter:
+                try:
+                    notion_branch = self._notion_manager.load_branch(
+                        trunk.ref_id, branch.ref_id
                     )
-                    entity_reporter.mark_remote_change()
-                elif sync_prefer == SyncPrefer.NOTION:
-                    entity_reporter.mark_known_name(notion_branch.nice_name)
-                    branch = notion_branch.apply_to_entity(branch, right_now)
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        uow.get_branch_repository_for(self._branch_type).save(branch)
-                    entity_reporter.mark_local_change()
-                else:
-                    raise Exception(f"Invalid preference {sync_prefer}")
-            except NotionBranchEntityNotFoundError:
-                notion_branch = cast(
-                    NotionBranchT,
-                    self._notion_branch_type.new_notion_entity(cast(Any, branch)),
-                )
-                entity_reporter.mark_known_name(updated_notion_branch.nice_name)
-                self._notion_manager.upsert_branch(trunk.ref_id, notion_branch)
-                entity_reporter.mark_other_progress("created remote")
 
-        progress_reporter = progress_reporter.with_subentity()
-
-        # Sync the tags
-        with self._storage_engine.get_unit_of_work() as uow:
-            all_branch_tags = uow.get_leaf_repository_for(
-                self._branch_tag_type
-            ).find_all(parent_ref_id=branch.ref_id, allow_archived=True)
-        all_branch_tags_set = {slt.ref_id: slt for slt in all_branch_tags}
-        all_branch_tags_by_name = {slt.tag_name: slt for slt in all_branch_tags}
-
-        if not drop_all_notion_side:
-            all_notion_branch_tags = self._notion_manager.load_all_branch_tags(
-                trunk.ref_id, branch.ref_id
-            )
-            all_notion_branch_tags_notion_ids = set(
-                self._notion_manager.load_all_saved_branch_tags_notion_ids(
-                    trunk.ref_id, branch.ref_id
-                )
-            )
-        else:
-            self._notion_manager.drop_all_branch_tags(trunk.ref_id, branch.ref_id)
-            all_notion_branch_tags = []
-            all_notion_branch_tags_notion_ids = set()
-        notion_branch_tags_set = {}
-
-        for notion_branch_tag in all_notion_branch_tags:
-            if notion_branch_tag.ref_id is None:
-                with progress_reporter.start_creating_entity(
-                    self._branch_tag_name, notion_branch_tag.nice_name
-                ) as entity_reporter:
-                    # If the branch tag doesn't exist locally, we create it.
-                    new_branch_tag = notion_branch_tag.new_entity(branch.ref_id)
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        new_branch_tag = uow.get_leaf_repository_for(
-                            self._branch_tag_type
-                        ).create(new_branch_tag)
-                        entity_reporter.mark_known_entity_id(
-                            new_branch_tag.ref_id
-                        ).mark_local_change()
-
-                    self._notion_manager.link_local_and_notion_branch_tags(
-                        trunk.ref_id,
-                        branch.ref_id,
-                        new_branch_tag.ref_id,
-                        notion_branch_tag.notion_id,
-                    )
-                    entity_reporter.mark_other_progress("linking")
-
-                    notion_branch_tag = notion_branch_tag.join_with_entity(
-                        new_branch_tag
-                    )
-                    self._notion_manager.save_branch_tag(
-                        trunk.ref_id, branch.ref_id, notion_branch_tag
-                    )
-                    entity_reporter.mark_remote_change()
-
-                    notion_branch_tags_set[new_branch_tag.ref_id] = notion_branch_tag
-                    all_branch_tags.append(new_branch_tag)
-                    all_branch_tags_set[new_branch_tag.ref_id] = new_branch_tag
-                    all_branch_tags_by_name[new_branch_tag.tag_name] = new_branch_tag
-            elif (
-                notion_branch_tag.ref_id in all_branch_tags_set
-                and notion_branch_tag.notion_id in all_notion_branch_tags_notion_ids
-            ):
-                branch_tag = all_branch_tags_set[notion_branch_tag.ref_id]
-                notion_branch_tags_set[notion_branch_tag.ref_id] = notion_branch_tag
-
-                with progress_reporter.start_updating_entity(
-                    self._branch_tag_name,
-                    branch_tag.ref_id,
-                    notion_branch_tag.nice_name,
-                ) as entity_reporter:
-                    if sync_prefer == SyncPrefer.NOTION:
-                        updated_branch_tag = notion_branch_tag.apply_to_entity(
-                            branch_tag
-                        )
-
-                        if branch_tag.tag_name == updated_branch_tag.entity.tag_name:
-                            entity_reporter.mark_not_needed()
-                            continue
-
-                        with self._storage_engine.get_unit_of_work() as uow:
-                            uow.get_leaf_repository_for(self._branch_tag_type).save(
-                                updated_branch_tag.entity
-                            )
-                            entity_reporter.mark_local_change()
-
-                        all_branch_tags_set[
-                            notion_branch_tag.ref_id
-                        ] = updated_branch_tag.entity
-                        all_branch_tags_by_name[
-                            branch_tag.tag_name
-                        ] = updated_branch_tag.entity
-                    elif sync_prefer == SyncPrefer.LOCAL:
-                        updated_notion_branch_tag = notion_branch_tag.join_with_entity(
-                            branch_tag
-                        )
-                        entity_reporter.mark_known_name(str(branch_tag.tag_name))
-                        self._notion_manager.save_branch_tag(
-                            trunk.ref_id, branch.ref_id, updated_notion_branch_tag
+                    if sync_prefer == SyncPrefer.LOCAL:
+                        updated_notion_branch = notion_branch.join_with_entity(branch)
+                        entity_reporter.mark_known_name(updated_notion_branch.nice_name)
+                        self._notion_manager.save_branch(
+                            trunk.ref_id, updated_notion_branch
                         )
                         entity_reporter.mark_remote_change()
+                    elif sync_prefer == SyncPrefer.NOTION:
+                        entity_reporter.mark_known_name(notion_branch.nice_name)
+
+                        # Not 100% happy with the below! Equality comparison seems tricky.
+                        new_branch = notion_branch.apply_to_entity(branch, right_now)
+
+                        if sync_even_if_not_modified or new_branch != branch:
+                            with self._storage_engine.get_unit_of_work() as uow:
+                                branch = uow.get_branch_repository_for(
+                                    self._branch_type
+                                ).save(new_branch)
+                            entity_reporter.mark_local_change()
+                        else:
+                            entity_reporter.mark_not_needed()
                     else:
                         raise Exception(f"Invalid preference {sync_prefer}")
-            else:
-                # If we're here, one of two cases have happened:
-                # 1. This is some random branch tag added by someone, where they completed themselves a ref_id.
-                #    It's a bad setup, and we remove it.
-                # 2. This is a smart list item added by the script, but which failed before local data could be saved.
-                #    We'll have duplicates in these cases, and they need to be removed.
-                with progress_reporter.start_updating_entity(
-                    self._branch_tag_name, notion_branch_tag.ref_id
-                ) as entity_reporter:
-                    try:
-                        self._notion_manager.remove_branch_tag(
-                            trunk.ref_id, branch.ref_id, notion_branch_tag.ref_id
-                        )
-                        entity_reporter.mark_other_progress("remote remove")
-                    except NotionLeafEntityNotFoundError:
-                        LOGGER.info(
-                            f"Skipped dangling branch tag in Notion {notion_branch_tag.ref_id}"
-                        )
-                        entity_reporter.mark_other_progress(
-                            "remote remove", MarkProgressStatus.FAILED
-                        )
+                except NotionBranchEntityNotFoundError:
+                    notion_branch = cast(
+                        NotionBranchT,
+                        self._notion_branch_type.new_notion_entity(cast(Any, branch)),
+                    )
+                    entity_reporter.mark_known_name(updated_notion_branch.nice_name)
+                    self._notion_manager.upsert_branch(trunk.ref_id, notion_branch)
+                    entity_reporter.mark_other_progress("created remote")
 
-        for branch_tag in all_branch_tags:
-            if branch_tag.ref_id in notion_branch_tags_set:
-                # The smart list item already exists on Notion side, so it was handled by the above loop!
-                continue
-            if branch_tag.archived:
-                continue
+            # Sync the tags
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_branch_tags = uow.get_leaf_repository_for(
+                    self._branch_tag_type
+                ).find_all(parent_ref_id=branch.ref_id, allow_archived=True)
+            all_branch_tags_set = {slt.ref_id: slt for slt in all_branch_tags}
+            all_branch_tags_by_name = {slt.tag_name: slt for slt in all_branch_tags}
 
-            # If the smart list item does not exist on Notion side, we create it.
-            notion_branch_tag = cast(
-                NotionBranchTagT,
-                self._notion_branch_tag_type.new_notion_entity(cast(Any, branch_tag)),
-            )
-
-            with progress_reporter.start_updating_entity(
-                self._branch_tag_name, branch_tag.ref_id, str(branch_tag.tag_name)
-            ) as entity_reporter:
-                self._notion_manager.upsert_branch_tag(
-                    trunk.ref_id, branch.ref_id, notion_branch_tag
-                )
-                entity_reporter.mark_other_progress("remote create")
-
-        # Now synchronize the list items here.
-        filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
-
-        with self._storage_engine.get_unit_of_work() as uow:
-            all_leaves = uow.get_leaf_repository_for(self._leaf_type).find_all(
-                parent_ref_id=branch.ref_id,
-                allow_archived=True,
-                filter_ref_ids=filter_ref_ids_set,
-            )
-        all_leaves_set: Dict[EntityId, LeafT] = {sli.ref_id: sli for sli in all_leaves}
-
-        if not drop_all_notion_side:
-            all_notion_leaves = self._notion_manager.load_all_leaves(
-                trunk.ref_id, branch.ref_id
-            )
-            all_notion_branch_notion_ids = set(
-                self._notion_manager.load_all_saved_notion_ids(
+            if not drop_all_notion_side:
+                all_notion_branch_tags = self._notion_manager.load_all_branch_tags(
                     trunk.ref_id, branch.ref_id
                 )
-            )
-        else:
-            self._notion_manager.drop_all_leaves(trunk.ref_id, branch.ref_id)
-            all_notion_leaves = []
-            all_notion_branch_notion_ids = set()
-        all_notion_leaves_set = {}
+                all_notion_branch_tags_notion_ids = set(
+                    self._notion_manager.load_all_saved_branch_tags_notion_ids(
+                        trunk.ref_id, branch.ref_id
+                    )
+                )
+            else:
+                self._notion_manager.drop_all_branch_tags(trunk.ref_id, branch.ref_id)
+                all_notion_branch_tags = []
+                all_notion_branch_tags_notion_ids = set()
+            notion_branch_tags_set = {}
 
-        direct_info = _NotionBranchLeafAndTagDirectInfo(
-            tags_by_ref_id=all_branch_tags_set
-        )
-        inverse_info = _NotionBranchLeafAndTagInverseInfo(
-            tags_by_name=all_branch_tags_by_name
-        )
+            for notion_branch_tag in all_notion_branch_tags:
+                if notion_branch_tag.ref_id is None:
+                    with subprogress_reporter.start_creating_entity(
+                        self._branch_tag_name, notion_branch_tag.nice_name
+                    ) as entity_reporter:
+                        # If the branch tag doesn't exist locally, we create it.
+                        new_branch_tag = notion_branch_tag.new_entity(branch.ref_id)
+                        with self._storage_engine.get_unit_of_work() as uow:
+                            new_branch_tag = uow.get_leaf_repository_for(
+                                self._branch_tag_type
+                            ).create(new_branch_tag)
+                            entity_reporter.mark_known_entity_id(
+                                new_branch_tag.ref_id
+                            ).mark_local_change()
 
-        created_locally = []
-        modified_locally = []
-        created_remotely = []
-        modified_remotely = []
-        removed_remotely = []
-
-        # Explore Notion and apply to local
-        for notion_leaf in all_notion_leaves:
-            if (
-                filter_ref_ids_set is not None
-                and notion_leaf.ref_id not in filter_ref_ids_set
-            ):
-                continue
-
-            if notion_leaf.ref_id is None:
-                with progress_reporter.start_creating_entity(
-                    self._leaf_name, notion_leaf.nice_name
-                ) as entity_reporter:
-                    # If the branch entry doesn't exist locally, we create it.
-                    new_leaf = notion_leaf.new_entity(branch.ref_id, inverse_info)
-
-                    with self._storage_engine.get_unit_of_work() as uow:
-                        new_leaf = uow.get_leaf_repository_for(self._leaf_type).create(
-                            new_leaf
+                        self._notion_manager.link_local_and_notion_branch_tags(
+                            trunk.ref_id,
+                            branch.ref_id,
+                            new_branch_tag.ref_id,
+                            notion_branch_tag.notion_id,
                         )
-                        entity_reporter.mark_known_entity_id(
-                            new_leaf.ref_id
-                        ).mark_local_change()
+                        entity_reporter.mark_other_progress("linking")
 
-                    self._notion_manager.link_local_and_notion_leaves(
-                        trunk.ref_id,
-                        branch.ref_id,
-                        new_leaf.ref_id,
-                        notion_leaf.notion_id,
-                    )
-                    entity_reporter.mark_other_progress("linking")
+                        notion_branch_tag = notion_branch_tag.join_with_entity(
+                            new_branch_tag
+                        )
+                        self._notion_manager.save_branch_tag(
+                            trunk.ref_id, branch.ref_id, notion_branch_tag
+                        )
+                        entity_reporter.mark_remote_change()
 
-                    notion_leaf = notion_leaf.join_with_entity(new_leaf, direct_info)
-                    self._notion_manager.save_leaf(
-                        trunk.ref_id, branch.ref_id, notion_leaf
-                    )
-                    entity_reporter.mark_remote_change()
+                        notion_branch_tags_set[
+                            new_branch_tag.ref_id
+                        ] = notion_branch_tag
+                        all_branch_tags.append(new_branch_tag)
+                        all_branch_tags_set[new_branch_tag.ref_id] = new_branch_tag
+                        all_branch_tags_by_name[
+                            new_branch_tag.tag_name
+                        ] = new_branch_tag
+                elif (
+                    notion_branch_tag.ref_id in all_branch_tags_set
+                    and notion_branch_tag.notion_id in all_notion_branch_tags_notion_ids
+                ):
+                    branch_tag = all_branch_tags_set[notion_branch_tag.ref_id]
+                    notion_branch_tags_set[notion_branch_tag.ref_id] = notion_branch_tag
 
-                    all_leaves_set[new_leaf.ref_id] = new_leaf
-                    all_notion_leaves_set[new_leaf.ref_id] = notion_leaf
-                    created_locally.append(new_leaf)
-            elif (
-                notion_leaf.ref_id in all_leaves_set
-                and notion_leaf.notion_id in all_notion_branch_notion_ids
-            ):
-                leaf = all_leaves_set[notion_leaf.ref_id]
-                all_notion_leaves_set[notion_leaf.ref_id] = notion_leaf
+                    with subprogress_reporter.start_updating_entity(
+                        self._branch_tag_name,
+                        branch_tag.ref_id,
+                        notion_branch_tag.nice_name,
+                    ) as entity_reporter:
+                        if sync_prefer == SyncPrefer.NOTION:
+                            updated_branch_tag = notion_branch_tag.apply_to_entity(
+                                branch_tag
+                            )
 
-                with progress_reporter.start_updating_entity(
-                    self._leaf_name, leaf.ref_id, notion_leaf.nice_name
+                            if (
+                                branch_tag.tag_name
+                                == updated_branch_tag.entity.tag_name
+                            ):
+                                entity_reporter.mark_not_needed()
+                                continue
+
+                            with self._storage_engine.get_unit_of_work() as uow:
+                                uow.get_leaf_repository_for(self._branch_tag_type).save(
+                                    updated_branch_tag.entity
+                                )
+                                entity_reporter.mark_local_change()
+
+                            all_branch_tags_set[
+                                notion_branch_tag.ref_id
+                            ] = updated_branch_tag.entity
+                            all_branch_tags_by_name[
+                                branch_tag.tag_name
+                            ] = updated_branch_tag.entity
+                        elif sync_prefer == SyncPrefer.LOCAL:
+                            updated_notion_branch_tag = (
+                                notion_branch_tag.join_with_entity(branch_tag)
+                            )
+                            entity_reporter.mark_known_name(str(branch_tag.tag_name))
+                            self._notion_manager.save_branch_tag(
+                                trunk.ref_id, branch.ref_id, updated_notion_branch_tag
+                            )
+                            entity_reporter.mark_remote_change()
+                        else:
+                            raise Exception(f"Invalid preference {sync_prefer}")
+                else:
+                    # If we're here, one of two cases have happened:
+                    # 1. This is some random branch tag added by someone, where they completed themselves a ref_id.
+                    #    It's a bad setup, and we remove it.
+                    # 2. This is a smart list item added by the script, but which failed before local data could be saved.
+                    #    We'll have duplicates in these cases, and they need to be removed.
+                    with subprogress_reporter.start_updating_entity(
+                        self._branch_tag_name, notion_branch_tag.ref_id
+                    ) as entity_reporter:
+                        try:
+                            self._notion_manager.remove_branch_tag(
+                                trunk.ref_id, branch.ref_id, notion_branch_tag.ref_id
+                            )
+                            entity_reporter.mark_other_progress("remote remove")
+                        except NotionLeafEntityNotFoundError:
+                            LOGGER.info(
+                                f"Skipped dangling branch tag in Notion {notion_branch_tag.ref_id}"
+                            )
+                            entity_reporter.mark_other_progress(
+                                "remote remove", MarkProgressStatus.FAILED
+                            )
+
+            for branch_tag in all_branch_tags:
+                if branch_tag.ref_id in notion_branch_tags_set:
+                    # The smart list item already exists on Notion side, so it was handled by the above loop!
+                    continue
+                if branch_tag.archived:
+                    continue
+
+                # If the smart list item does not exist on Notion side, we create it.
+                notion_branch_tag = cast(
+                    NotionBranchTagT,
+                    self._notion_branch_tag_type.new_notion_entity(
+                        cast(Any, branch_tag)
+                    ),
+                )
+
+                with subprogress_reporter.start_updating_entity(
+                    self._branch_tag_name, branch_tag.ref_id, str(branch_tag.tag_name)
                 ) as entity_reporter:
-                    if sync_prefer == SyncPrefer.NOTION:
-                        if (
-                            not sync_even_if_not_modified
-                            and notion_leaf.last_edited_time <= leaf.last_modified_time
-                        ):
-                            entity_reporter.mark_not_needed()
-                            continue
+                    self._notion_manager.upsert_branch_tag(
+                        trunk.ref_id, branch.ref_id, notion_branch_tag
+                    )
+                    entity_reporter.mark_other_progress("remote create")
 
-                        updated_leaf = notion_leaf.apply_to_entity(leaf, inverse_info)
+            # Now synchronize the list items here.
+            filter_ref_ids_set = frozenset(filter_ref_ids) if filter_ref_ids else None
+
+            with self._storage_engine.get_unit_of_work() as uow:
+                all_leaves = uow.get_leaf_repository_for(self._leaf_type).find_all(
+                    parent_ref_id=branch.ref_id,
+                    allow_archived=True,
+                    filter_ref_ids=filter_ref_ids_set,
+                )
+            all_leaves_set: Dict[EntityId, LeafT] = {
+                sli.ref_id: sli for sli in all_leaves
+            }
+
+            if not drop_all_notion_side:
+                all_notion_leaves = self._notion_manager.load_all_leaves(
+                    trunk.ref_id, branch.ref_id
+                )
+                all_notion_branch_notion_ids = set(
+                    self._notion_manager.load_all_saved_notion_ids(
+                        trunk.ref_id, branch.ref_id
+                    )
+                )
+            else:
+                self._notion_manager.drop_all_leaves(trunk.ref_id, branch.ref_id)
+                all_notion_leaves = []
+                all_notion_branch_notion_ids = set()
+            all_notion_leaves_set = {}
+
+            direct_info = _NotionBranchLeafAndTagDirectInfo(
+                tags_by_ref_id=all_branch_tags_set
+            )
+            inverse_info = _NotionBranchLeafAndTagInverseInfo(
+                tags_by_name=all_branch_tags_by_name
+            )
+
+            created_locally = []
+            modified_locally = []
+            created_remotely = []
+            modified_remotely = []
+            removed_remotely = []
+
+            # Explore Notion and apply to local
+            for notion_leaf in all_notion_leaves:
+                if (
+                    filter_ref_ids_set is not None
+                    and notion_leaf.ref_id not in filter_ref_ids_set
+                ):
+                    continue
+
+                if notion_leaf.ref_id is None:
+                    with subprogress_reporter.start_creating_entity(
+                        self._leaf_name, notion_leaf.nice_name
+                    ) as entity_reporter:
+                        # If the branch entry doesn't exist locally, we create it.
+                        new_leaf = notion_leaf.new_entity(branch.ref_id, inverse_info)
 
                         with self._storage_engine.get_unit_of_work() as uow:
-                            uow.get_leaf_repository_for(self._leaf_type).save(
-                                updated_leaf.entity
-                            )
-                            entity_reporter.mark_local_change()
+                            new_leaf = uow.get_leaf_repository_for(
+                                self._leaf_type
+                            ).create(new_leaf)
+                            entity_reporter.mark_known_entity_id(
+                                new_leaf.ref_id
+                            ).mark_local_change()
 
-                        if updated_leaf.should_modify_on_notion:
-                            updated_notion_leaf = notion_leaf.join_with_entity(
-                                updated_leaf, direct_info
+                        self._notion_manager.link_local_and_notion_leaves(
+                            trunk.ref_id,
+                            branch.ref_id,
+                            new_leaf.ref_id,
+                            notion_leaf.notion_id,
+                        )
+                        entity_reporter.mark_other_progress("linking")
+
+                        notion_leaf = notion_leaf.join_with_entity(
+                            new_leaf, direct_info
+                        )
+                        self._notion_manager.save_leaf(
+                            trunk.ref_id, branch.ref_id, notion_leaf
+                        )
+                        entity_reporter.mark_remote_change()
+
+                        all_leaves_set[new_leaf.ref_id] = new_leaf
+                        all_notion_leaves_set[new_leaf.ref_id] = notion_leaf
+                        created_locally.append(new_leaf)
+                elif (
+                    notion_leaf.ref_id in all_leaves_set
+                    and notion_leaf.notion_id in all_notion_branch_notion_ids
+                ):
+                    leaf = all_leaves_set[notion_leaf.ref_id]
+                    all_notion_leaves_set[notion_leaf.ref_id] = notion_leaf
+
+                    with subprogress_reporter.start_updating_entity(
+                        self._leaf_name, leaf.ref_id, notion_leaf.nice_name
+                    ) as entity_reporter:
+                        if sync_prefer == SyncPrefer.NOTION:
+                            if (
+                                not sync_even_if_not_modified
+                                and notion_leaf.last_edited_time
+                                <= leaf.last_modified_time
+                            ):
+                                entity_reporter.mark_not_needed()
+                                continue
+
+                            updated_leaf = notion_leaf.apply_to_entity(
+                                leaf, inverse_info
                             )
+
+                            with self._storage_engine.get_unit_of_work() as uow:
+                                uow.get_leaf_repository_for(self._leaf_type).save(
+                                    updated_leaf.entity
+                                )
+                                entity_reporter.mark_local_change()
+
+                            if updated_leaf.should_modify_on_notion:
+                                updated_notion_leaf = notion_leaf.join_with_entity(
+                                    updated_leaf, direct_info
+                                )
+                                self._notion_manager.save_leaf(
+                                    trunk.ref_id, branch.ref_id, updated_notion_leaf
+                                )
+                                entity_reporter.mark_remote_change()
+
+                            all_leaves_set[notion_leaf.ref_id] = updated_leaf.entity
+                            modified_locally.append(updated_leaf.entity)
+                        elif sync_prefer == SyncPrefer.LOCAL:
+                            if (
+                                not sync_even_if_not_modified
+                                and leaf.last_modified_time
+                                <= notion_leaf.last_edited_time
+                            ):
+                                entity_reporter.mark_not_needed()
+                                continue
+
+                            updated_notion_leaf = notion_leaf.join_with_entity(
+                                leaf, direct_info
+                            )
+                            entity_reporter.mark_known_name(
+                                updated_notion_leaf.nice_name
+                            )
+
                             self._notion_manager.save_leaf(
                                 trunk.ref_id, branch.ref_id, updated_notion_leaf
                             )
                             entity_reporter.mark_remote_change()
 
-                        all_leaves_set[notion_leaf.ref_id] = updated_leaf.entity
-                        modified_locally.append(updated_leaf.entity)
-                    elif sync_prefer == SyncPrefer.LOCAL:
-                        if (
-                            not sync_even_if_not_modified
-                            and leaf.last_modified_time <= notion_leaf.last_edited_time
-                        ):
-                            entity_reporter.mark_not_needed()
-                            continue
+                            all_notion_leaves_set[
+                                notion_leaf.ref_id
+                            ] = updated_notion_leaf
+                            modified_remotely.append(leaf)
+                        else:
+                            raise Exception(f"Invalid preference {sync_prefer}")
+                else:
+                    # If we're here, one of two cases have happened:
+                    # 1. This is some random branch entry added by someone, where they completed themselves a ref_id.
+                    #    It's a bad setup, and we remove it.
+                    # 2. This is a branch entry added by the script, but which failed before local data could be saved.
+                    #    We'll have duplicates in these cases, and they need to be removed.
+                    with subprogress_reporter.start_updating_entity(
+                        self._leaf_name, notion_leaf.ref_id
+                    ) as entity_reporter:
+                        try:
+                            self._notion_manager.remove_leaf(
+                                trunk.ref_id, branch.ref_id, notion_leaf.ref_id
+                            )
+                            entity_reporter.mark_other_progress("remote remove")
+                            removed_remotely.append(notion_leaf.ref_id)
+                        except NotionLeafEntityNotFoundError:
+                            LOGGER.info(
+                                f"Skipped dangling leaf in Notion {notion_leaf.ref_id}"
+                            )
+                            entity_reporter.mark_other_progress(
+                                "remote remove", MarkProgressStatus.FAILED
+                            )
 
-                        updated_notion_leaf = notion_leaf.join_with_entity(
-                            leaf, direct_info
-                        )
-                        entity_reporter.mark_known_name(updated_notion_leaf.nice_name)
+            for leaf in all_leaves:
+                if leaf.ref_id in all_notion_leaves_set:
+                    # The branch entry already exists on Notion side, so it was handled by the above loop!
+                    continue
+                if leaf.archived:
+                    continue
 
-                        self._notion_manager.save_leaf(
-                            trunk.ref_id, branch.ref_id, updated_notion_leaf
-                        )
-                        entity_reporter.mark_remote_change()
-
-                        all_notion_leaves_set[notion_leaf.ref_id] = updated_notion_leaf
-                        modified_remotely.append(leaf)
-                    else:
-                        raise Exception(f"Invalid preference {sync_prefer}")
-            else:
-                # If we're here, one of two cases have happened:
-                # 1. This is some random branch entry added by someone, where they completed themselves a ref_id.
-                #    It's a bad setup, and we remove it.
-                # 2. This is a branch entry added by the script, but which failed before local data could be saved.
-                #    We'll have duplicates in these cases, and they need to be removed.
-                with progress_reporter.start_updating_entity(
-                    self._leaf_name, notion_leaf.ref_id
-                ) as entity_reporter:
-                    try:
-                        self._notion_manager.remove_leaf(
-                            trunk.ref_id, branch.ref_id, notion_leaf.ref_id
-                        )
-                        entity_reporter.mark_other_progress("remote remove")
-                        removed_remotely.append(notion_leaf.ref_id)
-                    except NotionLeafEntityNotFoundError:
-                        LOGGER.info(
-                            f"Skipped dangling leaf in Notion {notion_leaf.ref_id}"
-                        )
-                        entity_reporter.mark_other_progress(
-                            "remote remove", MarkProgressStatus.FAILED
-                        )
-
-        for leaf in all_leaves:
-            if leaf.ref_id in all_notion_leaves_set:
-                # The branch entry already exists on Notion side, so it was handled by the above loop!
-                continue
-            if leaf.archived:
-                continue
-
-            # If the branch entry does not exist on Notion side, we create it.
-            notion_leaf = cast(
-                NotionLeafT,
-                self._notion_leaf_type.new_notion_entity(
-                    cast(Any, leaf), cast(Any, direct_info)
-                ),
-            )
-
-            with progress_reporter.start_updating_entity(
-                self._leaf_name, leaf.ref_id, notion_leaf.nice_name
-            ) as entity_reporter:
-                self._notion_manager.upsert_leaf(
-                    trunk.ref_id,
-                    branch.ref_id,
-                    notion_leaf,
+                # If the branch entry does not exist on Notion side, we create it.
+                notion_leaf = cast(
+                    NotionLeafT,
+                    self._notion_leaf_type.new_notion_entity(
+                        cast(Any, leaf), cast(Any, direct_info)
+                    ),
                 )
-                entity_reporter.mark_other_progress("remote create")
-            all_notion_leaves_set[leaf.ref_id] = notion_leaf
-            created_remotely.append(leaf)
+
+                with subprogress_reporter.start_updating_entity(
+                    self._leaf_name, leaf.ref_id, notion_leaf.nice_name
+                ) as entity_reporter:
+                    self._notion_manager.upsert_leaf(
+                        trunk.ref_id,
+                        branch.ref_id,
+                        notion_leaf,
+                    )
+                    entity_reporter.mark_other_progress("remote create")
+                all_notion_leaves_set[leaf.ref_id] = notion_leaf
+                created_remotely.append(leaf)
 
         return SyncResult(
             all=all_leaves_set.values(),

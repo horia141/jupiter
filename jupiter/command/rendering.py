@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from typing import Final, Iterator, List, DefaultDict, Optional, Tuple
 
 from rich.console import Console
+from rich.control import Control
 from rich.panel import Panel
 from rich.status import Status
 from rich.text import Text
@@ -220,6 +221,7 @@ class RichConsoleProgressReporter(ProgressReporter):
     _archived_entities_stats: Final[DefaultDict[str, int]]
     _removed_entities_stats: Final[DefaultDict[str, int]]
     _print_indent: Final[int]
+    _is_needed: bool
 
     def __init__(
         self,
@@ -241,6 +243,7 @@ class RichConsoleProgressReporter(ProgressReporter):
         self._archived_entities_stats = archived_entities_stats
         self._removed_entities_stats = removed_entities_stats
         self._print_indent = print_indent
+        self._is_needed = False
 
     @staticmethod
     def new_reporter(console: Console, status: Status) -> "RichConsoleProgressReporter":
@@ -254,19 +257,6 @@ class RichConsoleProgressReporter(ProgressReporter):
             archived_entities_stats=defaultdict(lambda: 0),
             removed_entities_stats=defaultdict(lambda: 0),
             print_indent=0,
-        )
-
-    def with_subentity(self) -> ProgressReporter:
-        """Create a scoped reporter for subentities."""
-        return RichConsoleProgressReporter(
-            console=self._console,
-            status=self._status,
-            sections=[],
-            created_entities_stats=self._created_entities_stats,
-            updated_entities_stats=self._updated_entities_stats,
-            archived_entities_stats=self._archived_entities_stats,
-            removed_entities_stats=self._removed_entities_stats,
-            print_indent=self._print_indent + 1,
         )
 
     @contextmanager
@@ -306,6 +296,9 @@ class RichConsoleProgressReporter(ProgressReporter):
                 (entity_name, entity_progress_reporter.entity_id)
             )
             self._console.print(entity_progress_reporter.to_final_str_form())
+            self._is_needed = True
+        else:
+            self._console.control(Control.move_to_column(0))
 
         self._status.update("Working on it ...")
 
@@ -335,6 +328,9 @@ class RichConsoleProgressReporter(ProgressReporter):
         if entity_progress_reporter.is_needed:
             self._updated_entities_stats[entity_type] += 1
             self._console.print(entity_progress_reporter.to_final_str_form())
+            self._is_needed = True
+        else:
+            self._console.control(Control.move_to_column(0))
 
         self._status.update("Working on it ...")
 
@@ -364,6 +360,9 @@ class RichConsoleProgressReporter(ProgressReporter):
         if entity_progress_reporter.is_needed:
             self._archived_entities_stats[entity_type] += 1
             self._console.print(entity_progress_reporter.to_final_str_form())
+            self._is_needed = True
+        else:
+            self._console.control(Control.move_to_column(0))
 
         self._status.update("Working on it ...")
 
@@ -393,6 +392,9 @@ class RichConsoleProgressReporter(ProgressReporter):
         if entity_progress_reporter.is_needed:
             self._removed_entities_stats[entity_type] += 1
             self._console.print(entity_progress_reporter.to_final_str_form())
+            self._is_needed = True
+        else:
+            self._console.control(Control.move_to_column(0))
 
         self._status.update("Working on it ...")
 
@@ -418,6 +420,44 @@ class RichConsoleProgressReporter(ProgressReporter):
 
         if entity_progress_reporter.is_needed:
             self._console.print(entity_progress_reporter.to_final_str_form())
+            self._is_needed = True
+        else:
+            self._console.control(Control.move_to_column(0))
+
+        self._status.update("Working on it ...")
+
+    @contextmanager
+    def start_complex_entity_work(
+        self, entity_type: str, entity_id: EntityId, entity_name: str
+    ) -> Iterator[ProgressReporter]:
+        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
+        subprogress_reporter = RichConsoleProgressReporter(
+            console=self._console,
+            status=self._status,
+            sections=[],
+            created_entities_stats=self._created_entities_stats,
+            updated_entities_stats=self._updated_entities_stats,
+            archived_entities_stats=self._archived_entities_stats,
+            removed_entities_stats=self._removed_entities_stats,
+            print_indent=self._print_indent + 1,
+        )
+
+        header_text = Text(f"Working on {entity_type} ")
+        header_text.append(entity_id_to_rich_text(entity_id))
+        header_text.append(" ")
+        header_text.append(entity_name)
+
+        self._console.print(header_text)
+        time.sleep(0.01)  # Oh so ugly
+
+        yield subprogress_reporter
+
+        if subprogress_reporter.is_needed:
+            self._is_needed = True
+        else:
+            self._status.stop()
+            self._console.control(Control.move_to_column(0, -1))
+            self._status.start()
 
         self._status.update("Working on it ...")
 
@@ -475,6 +515,11 @@ class RichConsoleProgressReporter(ProgressReporter):
         results_panel = Panel(epilogue_tree)
 
         self._console.print(results_panel)
+
+    @property
+    def is_needed(self) -> bool:
+        """Whether this whole section is actually needed for rendering."""
+        return self._is_needed
 
 
 @contextmanager

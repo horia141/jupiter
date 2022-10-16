@@ -44,11 +44,16 @@ class WorkspaceSyncService:
             )
 
             if sync_prefer == SyncPrefer.NOTION:
-                workspace = notion_workspace.apply_to_entity(workspace, right_now)
+                new_workspace = notion_workspace.apply_to_entity(workspace, right_now)
 
-                with self._storage_engine.get_unit_of_work() as uow:
-                    uow.workspace_repository.save(workspace)
-                entity_reporter.mark_known_name(str(workspace.name)).mark_local_change()
+                if new_workspace != workspace:
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        workspace = uow.workspace_repository.save(new_workspace)
+                    entity_reporter.mark_known_name(
+                        str(workspace.name)
+                    ).mark_local_change()
+                else:
+                    entity_reporter.mark_not_needed()
             elif sync_prefer == SyncPrefer.LOCAL:
                 notion_workspace = notion_workspace.join_with_entity(workspace)
                 self._workspace_notion_manager.save_workspace(notion_workspace)

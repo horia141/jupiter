@@ -60,7 +60,7 @@ class Entity:
     version: int = dataclasses.field(compare=False, hash=False)
     archived: bool
     created_time: Timestamp
-    last_modified_time: Timestamp
+    last_modified_time: Timestamp = dataclasses.field(compare=False, hash=False)
     archived_time: Optional[Timestamp]
     events: List[Event] = dataclasses.field(compare=False, hash=False)
 
@@ -184,6 +184,11 @@ class BranchEntity(Entity):
     @property
     def parent_ref_id(self) -> EntityId:
         """The parent of this branch entity."""
+        raise NotImplementedError("""Needs to be implemented.""")
+
+    @property
+    def nice_name(self) -> str:
+        """The nice name for this entity."""
         raise NotImplementedError("""Needs to be implemented.""")
 
 
