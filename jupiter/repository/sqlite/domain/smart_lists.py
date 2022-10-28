@@ -309,13 +309,13 @@ class SqliteSmartListRepository(SmartListRepository):
         )
         if not allow_archived:
             query_stmt = query_stmt.where(self._smart_list_table.c.archived.is_(False))
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._smart_list_table.c.ref_id.in_(
                     fi.as_int() for fi in filter_ref_ids
                 )
             )
-        if filter_keys:
+        if filter_keys is not None:
             query_stmt = query_stmt.where(
                 self._smart_list_table.c.the_key.in_(str(k) for k in filter_keys)
             )
@@ -482,13 +482,13 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
             query_stmt = query_stmt.where(
                 self._smart_list_tag_table.c.archived.is_(False)
             )
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._smart_list_tag_table.c.ref_id.in_(
                     fi.as_int() for fi in filter_ref_ids
                 )
             )
-        if filter_tag_names:
+        if filter_tag_names is not None:
             query_stmt = query_stmt.where(
                 self._smart_list_tag_table.c.tag_name.in_(
                     str(fi) for fi in filter_tag_names
@@ -665,19 +665,19 @@ class SqliteSmartListItemRepository(SmartListItemRepository):
             query_stmt = query_stmt.where(
                 self._smart_list_item_table.c.archived.is_(False)
             )
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._smart_list_item_table.c.ref_id.in_(
                     fi.as_int() for fi in filter_ref_ids
                 )
             )
-        if filter_is_done:
+        if filter_is_done is not None:
             query_stmt = query_stmt.where(
                 self._smart_list_item_table.c.is_done.is_(filter_is_done)
             )
         results = self._connection.execute(query_stmt)
         all_entities = [self._row_to_entity(row) for row in results]
-        if filter_tag_ref_ids:
+        if filter_tag_ref_ids is not None:
             # Can't do this in SQL that simply
             tag_set = frozenset(filter_tag_ref_ids)
             all_entities = [

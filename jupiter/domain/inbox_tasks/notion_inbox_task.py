@@ -59,6 +59,7 @@ class NotionInboxTask(
     metric_ref_id: Optional[str]
     person_ref_id: Optional[str]
     slack_task_ref_id: Optional[str]
+    email_task_ref_id: Optional[str]
     status: Optional[str]
     eisen: Optional[str]
     difficulty: Optional[str]
@@ -100,6 +101,9 @@ class NotionInboxTask(
             person_ref_id=str(entity.person_ref_id) if entity.person_ref_id else None,
             slack_task_ref_id=str(entity.slack_task_ref_id)
             if entity.slack_task_ref_id
+            else None,
+            email_task_ref_id=str(entity.email_task_ref_id)
+            if entity.email_task_ref_id
             else None,
             status=entity.status.for_notion(),
             eisen=entity.eisen.for_notion(),
@@ -161,6 +165,11 @@ class NotionInboxTask(
             if self.slack_task_ref_id
             else None
         )
+        inbox_task_email_task_ref_id = (
+            EntityId.from_raw(self.email_task_ref_id)
+            if self.email_task_ref_id
+            else None
+        )
         inbox_task_status = (
             InboxTaskStatus.from_raw(self.status)
             if self.status
@@ -195,6 +204,10 @@ class NotionInboxTask(
                 "Trying to create an inbox task for a person from Notion"
             )
         elif inbox_task_slack_task_ref_id is not None:
+            raise InputValidationError(
+                "Trying to create an inbox task for a Sack task from Notion"
+            )
+        elif inbox_task_email_task_ref_id is not None:
             raise InputValidationError(
                 "Trying to create an inbox task for a Sack task from Notion"
             )

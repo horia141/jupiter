@@ -74,7 +74,7 @@ class SlackTaskUpdate(command.Command):
         )
         name = parser.add_mutually_exclusive_group()
         name.add_argument("--name", dest="name", help="The name of the generated task")
-        channel.add_argument(
+        name.add_argument(
             "--clear-name",
             dest="clear_name",
             default=False,

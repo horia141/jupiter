@@ -39,7 +39,9 @@ Tasks also have a _source_, which can be one of:
 * _Big Plan_: the task belongs to a [big plan](big-plans.md).
 * _Metric_: the task has been generated for a particular [metric](metrics.md).
 * _Person Catch Up_: the task has been generated as a catch up task for a [person](persons.md).
-* _Person Birthday_: the taks has been generated as a birthday task for a [person](persons.md).
+* _Person Birthday_: the task has been generated as a birthday task for a [person](persons.md).
+* _Slack_: the task has been generated from a [Slack message](slack-tasks.md).
+* _Email_: the task has been generated from an [email message](email-tasks.md).
 
 In the Inbox, you can see tasks in a sort of Kanban board, organised by status like
 this:
@@ -51,8 +53,8 @@ The state evolution diagram is:
 ![Task states](../assets/concepts-task-states.png)
 
 You can create a task via regular Notion mechanisms (pressing the various "New" buttons),
-or Jupiter can create one for you from the recurring tasks templates via
-`jupiter gen`. You can remove a task by simply removing the Notion record of it.
+or Jupiter can create one for you from habits, chores, persons, Slack messages, email
+messages, etc via `jupiter gen`. You can remove a task by simply removing the Notion record of it.
 
 Tasks have an optional _actionable date_. Sometimes, it does not make sense to work
 on a task before a certain date. Think paying a bill which will be provided in a week. If a task

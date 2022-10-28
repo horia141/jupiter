@@ -18,6 +18,12 @@ from jupiter.domain.persons.infra.person_notion_manager import PersonNotionManag
 from jupiter.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.domain.projects.infra.project_notion_manager import ProjectNotionManager
 from jupiter.domain.projects.project_key import ProjectKey
+from jupiter.domain.push_integrations.email.infra.email_task_notion_manager import (
+    EmailTaskNotionManager,
+)
+from jupiter.domain.push_integrations.email.service.remove_service import (
+    EmailTaskRemoveService,
+)
 from jupiter.domain.push_integrations.group.infra.push_integration_group_notion_manager import (
     PushIntegrationGroupNotionManager,
 )
@@ -80,6 +86,7 @@ class ClearAllUseCase(AppMutationUseCase["ClearAllUseCase.Args", None]):
     _person_notion_manager: Final[PersonNotionManager]
     _push_integration_group_notion_manager: Final[PushIntegrationGroupNotionManager]
     _slack_task_notion_manager: Final[SlackTaskNotionManager]
+    _email_task_notion_manager: Final[EmailTaskNotionManager]
 
     def __init__(
         self,
@@ -99,6 +106,7 @@ class ClearAllUseCase(AppMutationUseCase["ClearAllUseCase.Args", None]):
         person_notion_manager: PersonNotionManager,
         push_integration_group_notion_manager: PushIntegrationGroupNotionManager,
         slack_task_notion_manager: SlackTaskNotionManager,
+        email_task_notion_manager: EmailTaskNotionManager,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, storage_engine)
@@ -117,6 +125,7 @@ class ClearAllUseCase(AppMutationUseCase["ClearAllUseCase.Args", None]):
             push_integration_group_notion_manager
         )
         self._slack_task_notion_manager = slack_task_notion_manager
+        self._email_task_notion_manager = email_task_notion_manager
 
     def _execute(
         self,
@@ -159,6 +168,9 @@ class ClearAllUseCase(AppMutationUseCase["ClearAllUseCase.Args", None]):
                 uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
             )
             slack_task_collection = uow.slack_task_collection_repository.load_by_parent(
+                push_integration_group.ref_id
+            )
+            email_task_collection = uow.email_task_collection_repository.load_by_parent(
                 push_integration_group.ref_id
             )
 
@@ -330,6 +342,28 @@ class ClearAllUseCase(AppMutationUseCase["ClearAllUseCase.Args", None]):
             )
             for slack_task in all_slack_tasks:
                 slack_task_remove_service.do_it(progress_reporter, slack_task)
+
+        with progress_reporter.section("Clearing email tasks"):
+            with self._storage_engine.get_unit_of_work() as uow:
+
+                all_email_tasks = uow.email_task_repository.find_all(
+                    parent_ref_id=email_task_collection.ref_id, allow_archived=True
+                )
+                email_task_collection = email_task_collection.change_generation_project(
+                    generation_project_ref_id=default_project.ref_id,
+                    source=EventSource.CLI,
+                    modified_time=self._time_provider.get_current_time(),
+                )
+
+                uow.email_task_collection_repository.save(email_task_collection)
+
+            email_task_remove_service = EmailTaskRemoveService(
+                self._storage_engine,
+                self._inbox_task_notion_manager,
+                self._email_task_notion_manager,
+            )
+            for email_task in all_email_tasks:
+                email_task_remove_service.do_it(progress_reporter, email_task)
 
         with progress_reporter.section("Clearing inbox tasks"):
             with self._storage_engine.get_unit_of_work() as uow:

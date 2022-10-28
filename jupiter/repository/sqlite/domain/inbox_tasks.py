@@ -218,6 +218,12 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 ForeignKey("slack_task.ref_id"),
                 nullable=True,
             ),
+            Column(
+                "email_task_ref_id",
+                Integer,
+                ForeignKey("email_task.ref_id"),
+                nullable=True,
+            ),
             Column("name", Unicode(), nullable=False),
             Column("status", String(16), nullable=False),
             Column("eisen", String(20), nullable=False),
@@ -272,6 +278,9 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 else None,
                 slack_task_ref_id=entity.slack_task_ref_id.as_int()
                 if entity.slack_task_ref_id
+                else None,
+                email_task_ref_id=entity.email_task_ref_id.as_int()
+                if entity.email_task_ref_id
                 else None,
                 name=str(entity.name),
                 status=str(entity.status),
@@ -335,6 +344,9 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
                 else None,
                 slack_task_ref_id=entity.slack_task_ref_id.as_int()
                 if entity.slack_task_ref_id
+                else None,
+                email_task_ref_id=entity.email_task_ref_id.as_int()
+                if entity.email_task_ref_id
                 else None,
                 name=str(entity.name),
                 status=str(entity.status),
@@ -405,6 +417,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
         filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None,
     ) -> List[InboxTask]:
         """Find all the inbox task."""
         query_stmt = select(self._inbox_task_table).where(
@@ -413,62 +426,68 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
         )
         if not allow_archived:
             query_stmt = query_stmt.where(self._inbox_task_table.c.archived.is_(False))
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.ref_id.in_(
                     fi.as_int() for fi in filter_ref_ids
                 )
             )
-        if filter_sources:
+        if filter_sources is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.source.in_(str(s) for s in filter_sources)
             )
-        if filter_project_ref_ids:
+        if filter_project_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.project_ref_id.in_(
                     fi.as_int() for fi in filter_project_ref_ids
                 )
             )
-        if filter_big_plan_ref_ids:
+        if filter_big_plan_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.big_plan_ref_id.in_(
                     fi.as_int() for fi in filter_big_plan_ref_ids
                 )
             )
-        if filter_recurring_task_ref_ids:
+        if filter_recurring_task_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.recurring_task_ref_id.in_(
                     fi.as_int() for fi in filter_recurring_task_ref_ids
                 )
             )
-        if filter_habit_ref_ids:
+        if filter_habit_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.habit_ref_id.in_(
                     fi.as_int() for fi in filter_habit_ref_ids
                 )
             )
-        if filter_chore_ref_ids:
+        if filter_chore_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.chore_ref_id.in_(
                     fi.as_int() for fi in filter_chore_ref_ids
                 )
             )
-        if filter_metric_ref_ids:
+        if filter_metric_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.metric_ref_id.in_(
                     fi.as_int() for fi in filter_metric_ref_ids
                 )
             )
-        if filter_person_ref_ids:
+        if filter_person_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.person_ref_id.in_(
                     fi.as_int() for fi in filter_person_ref_ids
                 )
             )
-        if filter_slack_task_ref_ids:
+        if filter_slack_task_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._inbox_task_table.c.slack_task_ref_id.in_(
                     fi.as_int() for fi in filter_slack_task_ref_ids
+                )
+            )
+        if filter_email_task_ref_ids is not None:
+            query_stmt = query_stmt.where(
+                self._inbox_task_table.c.email_task_ref_id.in_(
+                    fi.as_int() for fi in filter_email_task_ref_ids
                 )
             )
         results = self._connection.execute(query_stmt)
@@ -524,6 +543,9 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             else None,
             slack_task_ref_id=EntityId.from_raw(str(row["slack_task_ref_id"]))
             if row["slack_task_ref_id"]
+            else None,
+            email_task_ref_id=EntityId.from_raw(str(row["email_task_ref_id"]))
+            if row["email_task_ref_id"]
             else None,
             name=InboxTaskName.from_raw(row["name"]),
             status=InboxTaskStatus.from_raw(row["status"]),

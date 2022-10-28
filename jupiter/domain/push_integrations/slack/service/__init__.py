@@ -1,1 +1,1 @@
-"""Common services for slack push integrations."""
+"""Common services for Slack push integrations."""

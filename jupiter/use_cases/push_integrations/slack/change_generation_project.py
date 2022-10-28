@@ -120,8 +120,8 @@ class SlackTaskChangeGenerationProjectUseCase(
                             project_ref_id=generation_project_ref_id,
                             user=slack_task.user,
                             channel=slack_task.channel,
-                            generation_extra_info=slack_task.generation_extra_info,
                             message=slack_task.message,
+                            generation_extra_info=slack_task.generation_extra_info,
                             source=EventSource.CLI,
                             modification_time=self._time_provider.get_current_time(),
                         )

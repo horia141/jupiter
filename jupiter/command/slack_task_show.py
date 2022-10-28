@@ -119,28 +119,34 @@ class SlackTaskShow(command.ReadonlyCommand):
             slack_task_text.append(slack_task_message_to_rich_text(slack_task.message))
 
             slack_task_info_text = Text("")
+            should_add_info_text = False
 
             if generation_extra_info.name:
+                should_add_info_text = True
                 slack_task_info_text.append("name=")
                 slack_task_info_text.append(
                     entity_name_to_rich_text(generation_extra_info.name)
                 )
             if generation_extra_info.eisen:
+                should_add_info_text = True
                 slack_task_info_text.append(" ")
                 slack_task_info_text.append(
                     eisen_to_rich_text(generation_extra_info.eisen)
                 )
             if generation_extra_info.difficulty:
+                should_add_info_text = True
                 slack_task_info_text.append(" ")
                 slack_task_info_text.append(
                     difficulty_to_rich_text(generation_extra_info.difficulty)
                 )
             if generation_extra_info.actionable_date:
+                should_add_info_text = True
                 slack_task_info_text.append(" ")
                 slack_task_info_text.append(
                     actionable_date_to_rich_text(generation_extra_info.actionable_date)
                 )
             if generation_extra_info.due_date:
+                should_add_info_text = True
                 slack_task_info_text.append(" ")
                 slack_task_info_text.append(
                     due_date_to_rich_text(generation_extra_info.due_date)
@@ -149,7 +155,8 @@ class SlackTaskShow(command.ReadonlyCommand):
             slack_task_tree = rich_tree.add(
                 slack_task_text, guide_style="gray62" if slack_task.archived else "blue"
             )
-            slack_task_tree.add(slack_task_info_text)
+            if should_add_info_text:
+                slack_task_tree.add(slack_task_info_text)
 
             if slack_task.archived:
                 slack_task_text.stylize("gray62")

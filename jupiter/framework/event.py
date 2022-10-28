@@ -33,6 +33,7 @@ class EventSource(enum.Enum):
     CLI = "cli"
     NOTION = "notion"
     SLACK = "slack"
+    EMAIL = "email"
 
     def to_db(self) -> str:
         """A database appropriate form of this enum."""

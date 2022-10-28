@@ -54,6 +54,20 @@ from jupiter.domain.projects.service.project_label_update_service import (
     ProjectLabelUpdateService,
 )
 from jupiter.domain.projects.service.sync_service import ProjectSyncServiceNew
+from jupiter.domain.push_integrations.email.email_task import EmailTask
+from jupiter.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.domain.push_integrations.email.infra.email_task_notion_manager import (
+    EmailTaskNotionManager,
+)
+from jupiter.domain.push_integrations.email.notion_email_task import NotionEmailTask
+from jupiter.domain.push_integrations.email.notion_email_task_collection import (
+    NotionEmailTaskCollection,
+)
+from jupiter.domain.push_integrations.email.service.sync_service import (
+    EmailTaskSyncService,
+)
 from jupiter.domain.push_integrations.group.infra.push_integration_group_notion_manager import (
     PushIntegrationGroupNotionManager,
 )
@@ -140,6 +154,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         filter_metric_entry_ref_ids: Optional[Iterable[EntityId]]
         filter_person_ref_ids: Optional[Iterable[EntityId]]
         filter_slack_task_ref_ids: Optional[Iterable[EntityId]]
+        filter_email_task_ref_ids: Optional[Iterable[EntityId]]
         sync_prefer: SyncPrefer
 
     _global_properties: Final[GlobalProperties]
@@ -155,6 +170,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
     _person_notion_manager: Final[PersonNotionManager]
     _push_integration_group_notion_manager: Final[PushIntegrationGroupNotionManager]
     _slack_task_notion_manager: Final[SlackTaskNotionManager]
+    _email_task_notion_manager: Final[EmailTaskNotionManager]
 
     def __init__(
         self,
@@ -174,6 +190,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         person_notion_manager: PersonNotionManager,
         push_integration_group_notion_manager: PushIntegrationGroupNotionManager,
         slack_task_notion_manager: SlackTaskNotionManager,
+        email_task_notion_manager: EmailTaskNotionManager,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, storage_engine)
@@ -192,6 +209,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
             push_integration_group_notion_manager
         )
         self._slack_task_notion_manager = slack_task_notion_manager
+        self._email_task_notion_manager = email_task_notion_manager
 
     def _execute(
         self,
@@ -245,6 +263,9 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
             )
             slack_task_collection = uow.slack_task_collection_repository.load_by_parent(
+                push_integration_group.ref_id
+            )
+            email_task_collection = uow.email_task_collection_repository.load_by_parent(
                 push_integration_group.ref_id
             )
 
@@ -377,6 +398,17 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                 ) as entity_reporter:
                     self._slack_task_notion_manager.upsert_trunk(
                         notion_push_integration_group, notion_slack_task_collection
+                    )
+                    entity_reporter.mark_other_progress("structure")
+
+                notion_email_task_collection = (
+                    NotionEmailTaskCollection.new_notion_entity(email_task_collection)
+                )
+                with progress_reporter.start_work_related_to_entity(
+                    "email tasks structure", email_task_collection.ref_id, "Email Tasks"
+                ) as entity_reporter:
+                    self._email_task_notion_manager.upsert_trunk(
+                        notion_push_integration_group, notion_email_task_collection
                     )
                     entity_reporter.mark_other_progress("structure")
 
@@ -622,6 +654,24 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                     project,
                 )
 
+        if SyncTarget.EMAIL_TASKS in sync_targets:
+            with progress_reporter.section("Syncing the email tasks"):
+                all_email_tasks_by_ref_id, project = self._sync_email_tasks(
+                    progress_reporter,
+                    args,
+                    projects_by_ref_id,
+                    email_task_collection,
+                    push_integration_group,
+                )
+                self._sync_email_tasks_inbox_tasks(
+                    progress_reporter,
+                    all_email_tasks_by_ref_id,
+                    args,
+                    inbox_task_archive_service,
+                    inbox_task_collection,
+                    project,
+                )
+
     def _sync_slack_tasks_inbox_tasks(
         self,
         progress_reporter: ProgressReporter,
@@ -665,9 +715,9 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
                         project_ref_id=project.ref_id,
                         user=slack_task.user,
                         channel=slack_task.channel,
-                        generation_extra_info=slack_task.generation_extra_info,
                         message=slack_task.message,
-                        source=EventSource.SLACK,  # Calling it modified via Slack
+                        generation_extra_info=slack_task.generation_extra_info,
+                        source=EventSource.SLACK,
                         modification_time=self._time_provider.get_current_time(),
                     )
                     entity_reporter.mark_known_name(str(inbox_task.name))
@@ -717,6 +767,104 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         ).all
         all_slack_tasks_by_ref_id = {st.ref_id: st for st in all_slack_tasks}
         return all_slack_tasks_by_ref_id, project
+
+    def _sync_email_tasks_inbox_tasks(
+        self,
+        progress_reporter: ProgressReporter,
+        all_email_tasks_by_ref_id: Dict[EntityId, EmailTask],
+        args: Args,
+        inbox_task_archive_service: InboxTaskArchiveService,
+        inbox_task_collection: InboxTaskCollection,
+        project: Project,
+    ) -> None:
+        with self._storage_engine.get_unit_of_work() as uow:
+            all_email_inbox_tasks = uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                filter_sources=[InboxTaskSource.EMAIL_TASK],
+                filter_email_task_ref_ids=all_email_tasks_by_ref_id.keys(),
+            )
+        for inbox_task in all_email_inbox_tasks:
+            if inbox_task.archived:
+                continue
+            email_task = all_email_tasks_by_ref_id[
+                cast(EntityId, inbox_task.email_task_ref_id)
+            ]
+            if (
+                args.filter_email_task_ref_ids is not None
+                and email_task.ref_id not in args.filter_email_task_ref_ids
+            ):
+                continue
+            with progress_reporter.start_updating_entity(
+                "inbox task", inbox_task.ref_id, str(inbox_task.name)
+            ) as entity_reporter:
+                if not email_task.last_modified_time.is_within_ten_minutes(
+                    self._time_provider.get_current_time()
+                ):
+                    entity_reporter.mark_not_needed()
+                    continue
+                if email_task.archived:
+                    if not inbox_task.archived:
+                        inbox_task_archive_service.do_it(progress_reporter, inbox_task)
+                else:
+                    inbox_task = inbox_task.update_link_to_email_task(
+                        project_ref_id=project.ref_id,
+                        from_address=email_task.from_address,
+                        from_name=email_task.from_name,
+                        to_address=email_task.to_address,
+                        subject=email_task.subject,
+                        body=email_task.body,
+                        generation_extra_info=email_task.generation_extra_info,
+                        source=EventSource.EMAIL,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    entity_reporter.mark_known_name(str(inbox_task.name))
+
+                    with self._storage_engine.get_unit_of_work() as uow:
+                        uow.inbox_task_repository.save(inbox_task)
+                        entity_reporter.mark_local_change()
+
+                    direct_info = NotionInboxTask.DirectInfo(
+                        all_projects_map={project.ref_id: project}, all_big_plans_map={}
+                    )
+                    notion_inbox_task = self._inbox_task_notion_manager.load_leaf(
+                        inbox_task.inbox_task_collection_ref_id, inbox_task.ref_id
+                    )
+                    notion_inbox_task = notion_inbox_task.join_with_entity(
+                        inbox_task, direct_info
+                    )
+                    self._inbox_task_notion_manager.save_leaf(
+                        inbox_task.inbox_task_collection_ref_id,
+                        notion_inbox_task,
+                    )
+                    entity_reporter.mark_remote_change()
+
+    def _sync_email_tasks(
+        self,
+        progress_reporter: ProgressReporter,
+        args: Args,
+        projects_by_ref_id: Dict[EntityId, Project],
+        email_task_collection: EmailTaskCollection,
+        push_integration_group: PushIntegrationGroup,
+    ) -> Tuple[Dict[EntityId, EmailTask], Project]:
+        project = projects_by_ref_id[email_task_collection.generation_project_ref_id]
+        email_task_sync_service = EmailTaskSyncService(
+            self._storage_engine, self._email_task_notion_manager
+        )
+        all_email_tasks = email_task_sync_service.sync(
+            progress_reporter=progress_reporter,
+            parent_ref_id=push_integration_group.ref_id,
+            direct_info=None,
+            inverse_info=NotionEmailTask.InverseInfo(
+                timezone=self._global_properties.timezone
+            ),
+            drop_all_notion_side=args.drop_all_notion,
+            sync_even_if_not_modified=args.sync_even_if_not_modified,
+            filter_ref_ids=args.filter_email_task_ref_ids,
+            sync_prefer=args.sync_prefer,
+        ).all
+        all_email_tasks_by_ref_id = {st.ref_id: st for st in all_email_tasks}
+        return all_email_tasks_by_ref_id, project
 
     def _sync_person_catch_up_inbox_tasks(
         self,
@@ -1391,7 +1539,7 @@ class SyncUseCase(AppMutationUseCase["SyncUseCase.Args", None]):
         filter_project_keys = (
             list(args.filter_project_keys) if args.filter_project_keys else None
         )
-        if filter_project_keys:
+        if filter_project_keys is not None:
             with self._storage_engine.get_unit_of_work() as uow:
                 filter_project_ref_ids = (
                     uow.project_repository.exchange_keys_for_ref_ids(

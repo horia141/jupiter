@@ -53,6 +53,7 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
         filter_metric_keys: Optional[Iterable[MetricKey]]
         filter_person_ref_ids: Optional[Iterable[EntityId]]
         filter_slack_task_ref_ids: Optional[Iterable[EntityId]]
+        filter_email_task_ref_ids: Optional[Iterable[EntityId]]
         period: RecurringTaskPeriod
         breakdown_period: Optional[RecurringTaskPeriod]
 
@@ -318,6 +319,16 @@ class ReportUseCase(AppReadonlyUseCase["ReportUseCase.Args", "ReportUseCase.Resu
                         or (
                             it.slack_task_ref_id is not None
                             and it.slack_task_ref_id in args.filter_slack_task_ref_ids
+                        )
+                    )
+                )
+                or (
+                    it.source is InboxTaskSource.EMAIL_TASK
+                    and (
+                        not (args.filter_email_task_ref_ids is not None)
+                        or (
+                            it.email_task_ref_id is not None
+                            and it.email_task_ref_id in args.filter_email_task_ref_ids
                         )
                     )
                 )

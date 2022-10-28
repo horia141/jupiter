@@ -364,11 +364,11 @@ class SqliteMetricRepository(MetricRepository):
         )
         if not allow_archived:
             query_stmt = query_stmt.where(self._metric_table.c.archived.is_(False))
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._metric_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids)
             )
-        if filter_keys:
+        if filter_keys is not None:
             query_stmt = query_stmt.where(
                 self._metric_table.c.the_key.in_(str(k) for k in filter_keys)
             )
@@ -557,7 +557,7 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             query_stmt = query_stmt.where(
                 self._metric_entry_table.c.archived.is_(False)
             )
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._metric_entry_table.c.ref_id.in_(
                     fi.as_int() for fi in filter_ref_ids

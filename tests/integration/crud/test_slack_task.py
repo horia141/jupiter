@@ -134,9 +134,8 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         slack_task_out = self.jupiter("slack-task-show", "--show-archived")
 
         assert re.search(
-            r"message=Everybody let's prepare for our summer meetup", slack_task_out
+            r"Everybody let's prepare for our summer meetup", slack_task_out
         )
-        assert re.search(r"archived=True", slack_task_out)
 
         self.go_to_notion("My Work", "Inbox Tasks")
 
@@ -145,7 +144,6 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         inbox_task_out = self.jupiter("inbox-task-show", "--show-archived")
 
         assert re.search(r"Prepare for the summer meetup", inbox_task_out)
-        assert re.search(r"archived=True", inbox_task_out)
 
     def test_remove_slack_task(self) -> None:
         """Removing of Slack tasks."""
@@ -175,7 +173,7 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
         slack_task_out = self.jupiter("slack-task-show", "--show-archived")
 
         assert not re.search(
-            r"message=Everybody let’s prepare for our summer meetup", slack_task_out
+            r"Everybody let’s prepare for our summer meetup", slack_task_out
         )
 
         self.go_to_notion("My Work", "Inbox Tasks")
@@ -217,4 +215,4 @@ class ProjectIntegrationTestCase(JupiterIntegrationTestCase):
 
         inbox_task_out = self.jupiter("inbox-task-show")
 
-        assert re.search(r"project=Personal", inbox_task_out)
+        assert re.search(r"project is Personal", inbox_task_out)

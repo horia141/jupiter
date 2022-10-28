@@ -41,6 +41,7 @@ class Report(command.ReadonlyCommand):
         InboxTaskSource.PERSON_CATCH_UP,
         InboxTaskSource.PERSON_BIRTHDAY,
         InboxTaskSource.SLACK_TASK,
+        InboxTaskSource.EMAIL_TASK,
     ]
 
     _global_properties: Final[GlobalProperties]
@@ -128,6 +129,13 @@ class Report(command.ReadonlyCommand):
             default=[],
             action="append",
             help="Allow only these Slack tasks",
+        )
+        parser.add_argument(
+            "--email-task-id",
+            dest="email_task_ref_ids",
+            default=[],
+            action="append",
+            help="Allow only these email tasks",
         )
         parser.add_argument(
             "--cover",
@@ -224,6 +232,11 @@ class Report(command.ReadonlyCommand):
             if len(args.slack_task_ref_ids) > 0
             else None
         )
+        email_task_ref_ids = (
+            [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
+            if len(args.email_task_ref_ids) > 0
+            else None
+        )
         covers = args.covers
         breakdowns = (
             args.breakdowns if len(args.breakdowns) > 0 else ["global", "habits"]
@@ -257,6 +270,7 @@ class Report(command.ReadonlyCommand):
                 filter_metric_keys=metric_keys,
                 filter_person_ref_ids=person_ref_ids,
                 filter_slack_task_ref_ids=slack_task_ref_ids,
+                filter_email_task_ref_ids=email_task_ref_ids,
                 period=period,
                 breakdown_period=breakdown_period,
             ),

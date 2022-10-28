@@ -16,7 +16,7 @@ _EntityNameT = TypeVar("_EntityNameT", bound="EntityName")
 @dataclass(frozen=True)
 @total_ordering
 class EntityName(Value):
-    """The name for a entity which acts as both name and unique identifier."""
+    """The name for an entity which acts as both name and unique identifier."""
 
     _the_name: str
 

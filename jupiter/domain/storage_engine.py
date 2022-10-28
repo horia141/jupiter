@@ -33,6 +33,12 @@ from jupiter.domain.projects.infra.project_collection_repository import (
     ProjectCollectionRepository,
 )
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
+from jupiter.domain.push_integrations.email.infra.email_task_collection_repository import (
+    EmailTaskCollectionRepository,
+)
+from jupiter.domain.push_integrations.email.infra.email_task_repository import (
+    EmailTaskRepository,
+)
 from jupiter.domain.push_integrations.group.infra.push_integration_group_repository import (
     PushIntegrationGroupRepository,
 )
@@ -199,12 +205,22 @@ class DomainUnitOfWork(abc.ABC):
     @property
     @abc.abstractmethod
     def slack_task_collection_repository(self) -> SlackTaskCollectionRepository:
-        """The Slack task collection group repository."""
+        """The Slack task collection repository."""
 
     @property
     @abc.abstractmethod
     def slack_task_repository(self) -> SlackTaskRepository:
         """The Slack task repository."""
+
+    @property
+    @abc.abstractmethod
+    def email_task_collection_repository(self) -> EmailTaskCollectionRepository:
+        """The email task collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def email_task_repository(self) -> EmailTaskRepository:
+        """The email task repository."""
 
     @abc.abstractmethod
     def get_trunk_repository_for(

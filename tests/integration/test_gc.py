@@ -258,3 +258,52 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
         self.jupiter("gc", "--target", "slack-tasks")
 
         assert not self.check_notion_row_exists("John Doe")
+
+    def test_push_integration_email_done_inbox_task_gc(self) -> None:
+        """Garbage collection of an email based task with a done corresponding inbox task."""
+        self.go_to_notion("My Work", "Push Integrations", "Email")
+        self.add_notion_row(
+            "Time for the summer meetup",
+            {
+                "To Address": "horia@example.com",
+                "Body": "--name='Prepare for the summer meetup' "
+                + "--difficulty=hard ---------- Forwarded message --------- "
+                + "From: John Doe <john@example.com> This is the body",
+            },
+        )
+
+        self.jupiter("sync", "--target", "email-tasks")
+        self.jupiter("gen", "--target", "email-tasks")
+
+        inbox_task_out = self.jupiter("inbox-task-show")
+        task_id = extract_id_from_show_out(
+            inbox_task_out, "Prepare for the summer meetup"
+        )
+
+        self.jupiter("inbox-task-update", "--id", task_id, "--status", "done")
+        self.jupiter("gc", "--target", "email-tasks")
+
+        assert not self.check_notion_row_exists("John Doe")
+
+        self.go_to_notion("My Work", "Inbox Tasks")
+
+        assert not self.check_notion_row_exists("Prepare for the summer meetup")
+
+    def test_push_integration_email_archived_gc(self) -> None:
+        """Garbage collection of an archived Email based task."""
+        self.go_to_notion("My Work", "Push Integrations", "Email")
+        self.add_notion_row(
+            "Time for the summer meetup",
+            {
+                "To Address": "horia@example.com",
+                "Body": "--name='Prepare for the summer meetup' "
+                + "--difficulty=hard ---------- Forwarded message ---------"
+                + " From: John Doe <john@example.com> This is the body",
+                "Archived": True,
+            },
+        )
+
+        self.jupiter("sync", "--target", "email-tasks")
+        self.jupiter("gc", "--target", "email-tasks")
+
+        assert not self.check_notion_row_exists("John Doe")

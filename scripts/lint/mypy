@@ -64,3 +64,6 @@ ignore_missing_imports = True
 
 [mypy-emoji.*]
 ignore_missing_imports = True
+
+[mypy-email_validator.*]
+ignore_missing_imports = True

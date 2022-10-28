@@ -58,6 +58,17 @@ from jupiter.domain.projects.project_collection import ProjectCollection
 from jupiter.domain.projects.service.project_label_update_service import (
     ProjectLabelUpdateService,
 )
+from jupiter.domain.push_integrations.email.email_task import EmailTask
+from jupiter.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.domain.push_integrations.email.infra.email_task_notion_manager import (
+    EmailTaskNotionManager,
+    NotionEmailTaskNotFoundError,
+)
+from jupiter.domain.push_integrations.email.service.archive_service import (
+    EmailTaskArchiveService,
+)
 from jupiter.domain.push_integrations.slack.infra.slack_task_notion_manager import (
     SlackTaskNotionManager,
     NotionSlackTaskNotFoundError,
@@ -125,6 +136,7 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
     _metric_notion_manager: Final[MetricNotionManager]
     _person_notion_manager: Final[PersonNotionManager]
     _slack_task_notion_manager: Final[SlackTaskNotionManager]
+    _email_task_notion_manager: Final[EmailTaskNotionManager]
 
     def __init__(
         self,
@@ -141,6 +153,7 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
         metric_notion_manager: MetricNotionManager,
         person_notion_manager: PersonNotionManager,
         slack_task_notion_manager: SlackTaskNotionManager,
+        email_task_notion_manager: EmailTaskNotionManager,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, storage_engine)
@@ -154,6 +167,7 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
         self._metric_notion_manager = metric_notion_manager
         self._person_notion_manager = person_notion_manager
         self._slack_task_notion_manager = slack_task_notion_manager
+        self._email_task_notion_manager = email_task_notion_manager
 
     def _execute(
         self,
@@ -196,6 +210,9 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                 uow.push_integration_group_repository.load_by_parent(workspace.ref_id)
             )
             slack_task_collection = uow.slack_task_collection_repository.load_by_parent(
+                push_integration_group.ref_id
+            )
+            email_task_collection = uow.email_task_collection_repository.load_by_parent(
                 push_integration_group.ref_id
             )
 
@@ -644,6 +661,50 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                             progress_reporter, slack_task_collection, slack_tasks
                         )
 
+        if SyncTarget.EMAIL_TASKS in args.sync_targets:
+            with progress_reporter.section("Email Tasks"):
+                if args.do_archival:
+                    with progress_reporter.section(
+                        "Archiving all email tasks whose inbox tasks are done or archived"
+                    ):
+                        with self._storage_engine.get_unit_of_work() as uow:
+                            email_tasks = uow.email_task_repository.find_all(
+                                parent_ref_id=email_task_collection.ref_id,
+                                allow_archived=False,
+                            )
+                            inbox_tasks = (
+                                uow.inbox_task_repository.find_all_with_filters(
+                                    parent_ref_id=inbox_task_collection.ref_id,
+                                    allow_archived=True,
+                                    filter_sources=[InboxTaskSource.EMAIL_TASK],
+                                    filter_email_task_ref_ids=[
+                                        et.ref_id for et in email_tasks
+                                    ],
+                                )
+                            )
+                        self._archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
+                            progress_reporter, email_tasks, inbox_tasks
+                        )
+                if args.do_notion_cleanup:
+                    with progress_reporter.section(
+                        "Garbage collecting email tasks which were archived"
+                    ):
+                        allowed_email_task_ref_ids = (
+                            self._email_task_notion_manager.load_all_saved_ref_ids(
+                                email_task_collection.ref_id
+                            )
+                        )
+
+                        with self._storage_engine.get_unit_of_work() as uow:
+                            email_tasks = uow.email_task_repository.find_all(
+                                parent_ref_id=email_task_collection.ref_id,
+                                allow_archived=True,
+                                filter_ref_ids=allowed_email_task_ref_ids,
+                            )
+                        self._do_drop_all_archived_email_tasks(
+                            progress_reporter, email_task_collection, email_tasks
+                        )
+
     def _archive_done_inbox_tasks(
         self, progress_reporter: ProgressReporter, inbox_tasks: Iterable[InboxTask]
     ) -> None:
@@ -697,6 +758,28 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
             slack_task_arhive_service.do_it(
                 progress_reporter,
                 slack_tasks_by_ref_id[cast(EntityId, inbox_task.slack_task_ref_id)],
+            )
+
+    def _archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
+        self,
+        progress_reporter: ProgressReporter,
+        email_tasks: List[EmailTask],
+        inbox_tasks: List[InboxTask],
+    ) -> None:
+        email_tasks_by_ref_id = {st.ref_id: st for st in email_tasks}
+        email_task_arhive_service = EmailTaskArchiveService(
+            source=EventSource.CLI,
+            time_provider=self._time_provider,
+            storage_engine=self._storage_engine,
+            inbox_task_notion_manager=self._inbox_task_notion_manager,
+            email_task_notion_manager=self._email_task_notion_manager,
+        )
+        for inbox_task in inbox_tasks:
+            if not (inbox_task.status.is_completed or inbox_task.archived):
+                continue
+            email_task_arhive_service.do_it(
+                progress_reporter,
+                email_tasks_by_ref_id[cast(EntityId, inbox_task.email_task_ref_id)],
             )
 
     def _do_anti_entropy_for_vacations(
@@ -1267,6 +1350,29 @@ class GCUseCase(AppMutationUseCase["GCUseCase.Args", None]):
                     entity_reporter.mark_remote_change()
                 except NotionSlackTaskNotFoundError:
                     LOGGER.info(
-                        "Skipping the removal on Notion side because slack_task was not found"
+                        "Skipping the removal on Notion side because slack task was not found"
+                    )
+                    entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)
+
+    def _do_drop_all_archived_email_tasks(
+        self,
+        progress_reporter: ProgressReporter,
+        email_task_collection: EmailTaskCollection,
+        email_tasks: Iterable[EmailTask],
+    ) -> None:
+        for email_task in email_tasks:
+            if not email_task.archived:
+                continue
+            with progress_reporter.start_removing_entity(
+                "email task", email_task.ref_id, str(email_task.simple_name)
+            ) as entity_reporter:
+                try:
+                    self._email_task_notion_manager.remove_leaf(
+                        email_task_collection.ref_id, email_task.ref_id
+                    )
+                    entity_reporter.mark_remote_change()
+                except NotionEmailTaskNotFoundError:
+                    LOGGER.info(
+                        "Skipping the removal on Notion side because email task was not found"
                     )
                     entity_reporter.mark_remote_change(MarkProgressStatus.FAILED)

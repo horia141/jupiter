@@ -249,7 +249,7 @@ class SqliteVacationRepository(VacationRepository):
         )
         if not allow_archived:
             query_stmt = query_stmt.where(self._vacation_table.c.archived.is_(False))
-        if filter_ref_ids:
+        if filter_ref_ids is not None:
             query_stmt = query_stmt.where(
                 self._vacation_table.c.ref_id.in_(fi.as_int() for fi in filter_ref_ids)
             )

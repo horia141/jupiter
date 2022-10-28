@@ -19,6 +19,13 @@ from jupiter.command.chore_show import ChoreShow
 from jupiter.command.chore_suspend import ChoreSuspend
 from jupiter.command.chore_unsuspend import ChoreUnsuspend
 from jupiter.command.chore_update import ChoreUpdate
+from jupiter.command.email_task_archive import EmailTaskArchive
+from jupiter.command.email_task_change_generation_project import (
+    EmailTaskChangeGenerationProject,
+)
+from jupiter.command.email_task_remove import EmailTaskRemove
+from jupiter.command.email_task_show import EmailTaskShow
+from jupiter.command.email_task_update import EmailTaskUpdate
 from jupiter.command.gc import GC
 from jupiter.command.gen import Gen
 from jupiter.command.habit_archive import HabitArchive
@@ -123,6 +130,7 @@ from jupiter.remote.notion.infra.pages_manager import NotionPagesManager
 from jupiter.remote.notion.metrics_manager import NotionMetricsManager
 from jupiter.remote.notion.persons_manager import NotionPersonsManager
 from jupiter.remote.notion.projects_manager import NotionProjectsManager
+from jupiter.remote.notion.push_integration.email_tasks import NotionEmailTasksManager
 from jupiter.remote.notion.push_integration.push_integration_groups_manager import (
     NotionPushIntegrationGroupsManager,
 )
@@ -196,6 +204,13 @@ from jupiter.use_cases.persons.update import PersonUpdateUseCase
 from jupiter.use_cases.projects.create import ProjectCreateUseCase
 from jupiter.use_cases.projects.find import ProjectFindUseCase
 from jupiter.use_cases.projects.update import ProjectUpdateUseCase
+from jupiter.use_cases.push_integrations.email.archive import EmailTaskArchiveUseCase
+from jupiter.use_cases.push_integrations.email.change_generation_project import (
+    EmailTaskChangeGenerationProjectUseCase,
+)
+from jupiter.use_cases.push_integrations.email.find import EmailTaskFindUseCase
+from jupiter.use_cases.push_integrations.email.remove import EmailTaskRemoveUseCase
+from jupiter.use_cases.push_integrations.email.update import EmailTaskUpdateUseCase
 from jupiter.use_cases.push_integrations.slack.archive import SlackTaskArchiveUseCase
 from jupiter.use_cases.push_integrations.slack.change_generation_project import (
     SlackTaskChangeGenerationProjectUseCase,
@@ -311,6 +326,9 @@ def main() -> None:
     notion_slack_tasks_manager = NotionSlackTasksManager(
         global_properties, notion_collections_manager
     )
+    notion_email_tasks_manager = NotionEmailTasksManager(
+        global_properties, notion_collections_manager
+    )
 
     invocation_recorder = PersistentMutationUseCaseInvocationRecorder(
         usecase_storage_engine
@@ -334,6 +352,7 @@ def main() -> None:
                 notion_persons_manager,
                 notion_push_integration_group_manager,
                 notion_slack_tasks_manager,
+                notion_email_tasks_manager,
             )
         ),
         Sync(
@@ -354,6 +373,7 @@ def main() -> None:
                 notion_persons_manager,
                 notion_push_integration_group_manager,
                 notion_slack_tasks_manager,
+                notion_email_tasks_manager,
             )
         ),
         Gen(
@@ -387,6 +407,7 @@ def main() -> None:
                 notion_metrics_manager,
                 notion_persons_manager,
                 notion_slack_tasks_manager,
+                notion_email_tasks_manager,
             )
         ),
         # CRUD Commands.
@@ -954,6 +975,44 @@ def main() -> None:
             )
         ),
         SlackTaskShow(global_properties, SlackTaskFindUseCase(domain_storage_engine)),
+        EmailTaskArchive(
+            EmailTaskArchiveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_email_tasks_manager,
+            )
+        ),
+        EmailTaskRemove(
+            EmailTaskRemoveUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_email_tasks_manager,
+            )
+        ),
+        EmailTaskUpdate(
+            global_properties,
+            EmailTaskUpdateUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_email_tasks_manager,
+            ),
+        ),
+        EmailTaskChangeGenerationProject(
+            EmailTaskChangeGenerationProjectUseCase(
+                time_provider,
+                invocation_recorder,
+                domain_storage_engine,
+                notion_inbox_tasks_manager,
+                notion_email_tasks_manager,
+            )
+        ),
+        EmailTaskShow(global_properties, EmailTaskFindUseCase(domain_storage_engine)),
         # Remote connection commands
         NotionConnectionUpdateToken(
             NotionConnectionUpdateTokenUseCase(
@@ -984,6 +1043,7 @@ def main() -> None:
                 notion_persons_manager,
                 notion_push_integration_group_manager,
                 notion_slack_tasks_manager,
+                notion_email_tasks_manager,
             )
         ),
         TestHelperNuke(

@@ -34,6 +34,15 @@ from jupiter.domain.projects.project_name import ProjectName
 from jupiter.domain.projects.service.project_label_update_service import (
     ProjectLabelUpdateService,
 )
+from jupiter.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.domain.push_integrations.email.infra.email_task_notion_manager import (
+    EmailTaskNotionManager,
+)
+from jupiter.domain.push_integrations.email.notion_email_task_collection import (
+    NotionEmailTaskCollection,
+)
 from jupiter.domain.push_integrations.group.infra.push_integration_group_notion_manager import (
     PushIntegrationGroupNotionManager,
 )
@@ -113,6 +122,7 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
     _person_notion_manager: Final[PersonNotionManager]
     _push_integration_group_notion_manager: Final[PushIntegrationGroupNotionManager]
     _slack_task_notion_manager: Final[SlackTaskNotionManager]
+    _email_task_notion_manager: Final[EmailTaskNotionManager]
 
     def __init__(
         self,
@@ -130,6 +140,7 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
         person_notion_manager: PersonNotionManager,
         push_integration_group_notion_manager: PushIntegrationGroupNotionManager,
         slack_task_notion_manager: SlackTaskNotionManager,
+        email_task_notion_manager: EmailTaskNotionManager,
     ) -> None:
         """Constructor."""
         super().__init__()
@@ -149,6 +160,7 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
             push_integration_group_notion_manager
         )
         self._slack_task_notion_manager = slack_task_notion_manager
+        self._email_task_notion_manager = email_task_notion_manager
 
     def _execute(
         self, progress_reporter: ProgressReporter, context: EmptyContext, args: Args
@@ -331,6 +343,19 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
                     )
                     entity_reporter.mark_other_progress("Slack task collection")
 
+                    new_email_task_collection = EmailTaskCollection.new_email_task_collection(
+                        push_integration_group_ref_id=new_push_integration_group.ref_id,
+                        generation_project_ref_id=new_default_project.ref_id,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    new_email_task_collection = (
+                        uow.email_task_collection_repository.create(
+                            new_email_task_collection
+                        )
+                    )
+                    entity_reporter.mark_other_progress("email task collection")
+
         with progress_reporter.section("Creating Notion structure"):
             with progress_reporter.start_work_related_to_entity(
                 "workspace", new_workspace.ref_id, str(new_workspace.name)
@@ -478,6 +503,19 @@ class InitUseCase(MutationEmptyContextUseCase["InitUseCase.Args", None]):
                 )
                 self._slack_task_notion_manager.upsert_trunk(
                     new_notion_push_integration_group, new_notion_slack_task_collection
+                )
+                entity_reporter.mark_other_progress("structure")
+
+            with progress_reporter.start_work_related_to_entity(
+                "email tasks structure", new_email_task_collection.ref_id, "Email Tasks"
+            ) as entity_reporter:
+                new_notion_email_task_collection = (
+                    NotionEmailTaskCollection.new_notion_entity(
+                        new_email_task_collection
+                    )
+                )
+                self._email_task_notion_manager.upsert_trunk(
+                    new_notion_push_integration_group, new_notion_email_task_collection
                 )
                 entity_reporter.mark_other_progress("structure")
 

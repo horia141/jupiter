@@ -51,6 +51,16 @@ from jupiter.domain.projects.infra.project_collection_repository import (
 from jupiter.domain.projects.infra.project_repository import ProjectRepository
 from jupiter.domain.projects.project import Project
 from jupiter.domain.projects.project_collection import ProjectCollection
+from jupiter.domain.push_integrations.email.email_task import EmailTask
+from jupiter.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.domain.push_integrations.email.infra.email_task_collection_repository import (
+    EmailTaskCollectionRepository,
+)
+from jupiter.domain.push_integrations.email.infra.email_task_repository import (
+    EmailTaskRepository,
+)
 from jupiter.domain.push_integrations.group.infra.push_integration_group_repository import (
     PushIntegrationGroupRepository,
 )
@@ -134,6 +144,10 @@ from jupiter.repository.sqlite.domain.projects import (
     SqliteProjectRepository,
     SqliteProjectCollectionRepository,
 )
+from jupiter.repository.sqlite.domain.push_integration.email_tasks import (
+    SqliteEmailTaskCollectionRepository,
+    SqliteEmailTaskRepository,
+)
 from jupiter.repository.sqlite.domain.push_integration.push_integration_groups import (
     SqlitePushIntegrationGroupRepository,
 )
@@ -185,6 +199,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _push_integration_group_repository: Final[SqlitePushIntegrationGroupRepository]
     _slack_task_collection_repository: Final[SqliteSlackTaskCollectionRepository]
     _slack_task_repository: Final[SqliteSlackTaskRepository]
+    _email_task_collection_repository: Final[SqliteEmailTaskCollectionRepository]
+    _email_task_repository: Final[SqliteEmailTaskRepository]
     _notion_connection_repository: Final[SqliteNotionConnectionRepository]
 
     def __init__(
@@ -214,6 +230,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         push_integration_group_repository: SqlitePushIntegrationGroupRepository,
         slack_task_collection_repository: SqliteSlackTaskCollectionRepository,
         slack_task_repository: SqliteSlackTaskRepository,
+        email_task_collection_repository: SqliteEmailTaskCollectionRepository,
+        email_task_repository: SqliteEmailTaskRepository,
         notion_connection_repository: SqliteNotionConnectionRepository,
     ) -> None:
         """Constructor."""
@@ -242,6 +260,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._push_integration_group_repository = push_integration_group_repository
         self._slack_task_collection_repository = slack_task_collection_repository
         self._slack_task_repository = slack_task_repository
+        self._email_task_collection_repository = email_task_collection_repository
+        self._email_task_repository = email_task_repository
         self._notion_connection_repository = notion_connection_repository
 
     def __enter__(self) -> "SqliteDomainUnitOfWork":
@@ -382,6 +402,16 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         return self._slack_task_repository
 
     @property
+    def email_task_collection_repository(self) -> EmailTaskCollectionRepository:
+        """The email task collection repository."""
+        return self._email_task_collection_repository
+
+    @property
+    def email_task_repository(self) -> EmailTaskRepository:
+        """The email task repository."""
+        return self._email_task_repository
+
+    @property
     def notion_connection_repository(self) -> NotionConnectionRepository:
         """The Notion connection repository."""
         return self._notion_connection_repository
@@ -433,6 +463,10 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         elif trunk_type == SlackTaskCollection:
             return typing.cast(
                 TrunkEntityRepository[TrunkT], self._slack_task_collection_repository
+            )
+        elif trunk_type == EmailTaskCollection:
+            return typing.cast(
+                TrunkEntityRepository[TrunkT], self._email_task_collection_repository
             )
         else:
             raise Exception(f"Unknown trunk repository type {trunk_type}")
@@ -486,6 +520,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
             return typing.cast(LeafEntityRepository[LeafT], self._person_repository)
         elif leaf_type == SlackTask:
             return typing.cast(LeafEntityRepository[LeafT], self._slack_task_repository)
+        elif leaf_type == EmailTask:
+            return typing.cast(LeafEntityRepository[LeafT], self._email_task_repository)
         else:
             raise Exception(f"Unknown leaf repository type {leaf_type}")
 
@@ -564,6 +600,12 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             slack_task_repository = SqliteSlackTaskRepository(
                 connection, self._metadata
             )
+            email_task_collection_repository = SqliteEmailTaskCollectionRepository(
+                connection, self._metadata
+            )
+            email_task_repository = SqliteEmailTaskRepository(
+                connection, self._metadata
+            )
             notion_connection_repository = SqliteNotionConnectionRepository(
                 connection, self._metadata
             )
@@ -594,5 +636,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 push_integration_group_repository=push_integration_group_repository,
                 slack_task_collection_repository=slack_task_collection_repository,
                 slack_task_repository=slack_task_repository,
+                email_task_collection_repository=email_task_collection_repository,
+                email_task_repository=email_task_repository,
                 notion_connection_repository=notion_connection_repository,
             )

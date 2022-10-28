@@ -227,7 +227,7 @@ class TrunkLeafNotionSyncService(
 
                         if updated_leaf.should_modify_on_notion:
                             updated_notion_leaf = notion_leaf.join_with_entity(
-                                updated_leaf, direct_info
+                                updated_leaf.entity, direct_info
                             )
                             self._notion_manager.save_leaf(
                                 trunk.ref_id, updated_notion_leaf

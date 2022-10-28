@@ -127,6 +127,13 @@ class Sync(command.Command):
             help="Sync only these Slack tasks",
         )
         parser.add_argument(
+            "--email-task-id",
+            dest="email_task_ref_ids",
+            default=[],
+            action="append",
+            help="Sync only these Email tasks",
+        )
+        parser.add_argument(
             "--prefer",
             dest="sync_prefer",
             choices=SyncPrefer.all_values(),
@@ -217,6 +224,11 @@ class Sync(command.Command):
             if len(args.slack_task_ref_ids) > 0
             else None
         )
+        email_task_ref_ids = (
+            [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
+            if len(args.email_task_ref_ids) > 0
+            else None
+        )
         sync_prefer = SyncPrefer.from_raw(args.sync_prefer)
         drop_all_notion = args.drop_all_notion
         sync_even_if_not_modified = args.sync_even_if_not_modified
@@ -239,6 +251,7 @@ class Sync(command.Command):
                 filter_metric_entry_ref_ids=metric_entry_ref_ids,
                 filter_person_ref_ids=person_ref_ids,
                 filter_slack_task_ref_ids=slack_task_ref_ids,
+                filter_email_task_ref_ids=email_task_ref_ids,
                 sync_prefer=sync_prefer,
             ),
         )

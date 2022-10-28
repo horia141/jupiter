@@ -44,6 +44,7 @@ class InitIntegrationTestCase(JupiterBasicIntegrationTestCase):
             self.go_to_notion(workspace_name, "Metrics")
             self.go_to_notion(workspace_name, "Persons")
             self.go_to_notion(workspace_name, "Push Integrations", "Slack")
+            self.go_to_notion(workspace_name, "Push Integrations", "Email")
 
             workspace_out = self.jupiter(
                 "workspace-show", sqlite_db_path=sqlite_db_path

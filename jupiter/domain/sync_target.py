@@ -22,6 +22,7 @@ class SyncTarget(enum.Enum):
     METRICS = "metrics"
     PERSONS = "persons"
     SLACK_TASKS = "slack-tasks"
+    EMAIL_TASKS = "email-tasks"
 
     @staticmethod
     def from_raw(sync_target_raw: Optional[str]) -> "SyncTarget":

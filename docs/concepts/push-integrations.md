@@ -1,7 +1,7 @@
 # Push Integrations
 
 Jupiter offers support for integrating with a number of external tools such as Slack, GMail,
-Google Calendar, and others, via the lightweight _push integrations_ model.
+Google Calendar, generic email, and others, via the lightweight _push integrations_ model.
 
 This relies on personal automation services such as [Zapier](https://zapier.com) or
 [IFTTT](https://ifttt.com) which can connect to both the external tools and to Notion.
@@ -18,7 +18,7 @@ The kind of behaviors which are allowed are:
 * Creating [inbox tasks](./inbox-tasks.md) from [Slack messages](./slack-tasks.md). This is very
   useful to represent the work coming in via Slack from your colleagues in the framework of Jupiter.
 * Creating inbox tasks from [email messages](./email-tasks.md). Email is
-  another big source of work. And indeed, the oncept of an inbox from tasks is lifted straight from
+  another big source of work. And indeed, the concept of an inbox from tasks is lifted straight from
   electronic mail lingo.
 * Creating [vacations](./vacations.md) from [Google Calendar events](./calendar-events.md).
 * Creating inbox tasks from calendar events matching a certain pattern. This is very useful to

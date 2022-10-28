@@ -420,6 +420,7 @@ class NotionClientV2:
                 rate_limit_retry_idx += 1
                 time.sleep(self._WAIT_TIME_BETWEEN_RATE_LIMIT_RETRIES_MS / 1000.0)
             else:
+                print(url, str(payload))
                 raise NotionClientException(
                     f"Notion API error code={response.status_code} message={response.text}"
                 )

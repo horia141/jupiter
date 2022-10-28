@@ -37,6 +37,8 @@ A Slack task in itself is a rather technical concept. You should care that you
 can create tasks from Slack in various ways. And leave the Notion representation
 as a secondary thing.
 
+## Zapier Integration Notes
+
 With the Zapier integration in Slack and Notion you are making use of the
 `Push to Zapier` functionality. This allows actions on a per-message basis. It
 also asks you for some extra text. This is optional, but you can provide

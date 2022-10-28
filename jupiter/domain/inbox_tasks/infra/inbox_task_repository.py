@@ -30,5 +30,6 @@ class InboxTaskRepository(LeafEntityRepository[InboxTask], abc.ABC):
         filter_metric_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_person_ref_ids: Optional[Iterable[EntityId]] = None,
         filter_slack_task_ref_ids: Optional[Iterable[EntityId]] = None,
+        filter_email_task_ref_ids: Optional[Iterable[EntityId]] = None,
     ) -> List[InboxTask]:
         """Find all inbox tasks."""

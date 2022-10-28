@@ -26,6 +26,7 @@ nav:
           - 'Push Integrations':
                 - 'Overview': 'concepts/push-integrations.md'
                 - 'Slack Tasks': 'concepts/slack-tasks.md'
+                - 'Email Tasks': 'concepts/email-tasks.md'
           - 'Local Storage': 'concepts/local-storage.md'
           - 'Workspace': 'concepts/workspaces.md'
           - 'Vacations': 'concepts/vacations.md'
@@ -48,6 +49,7 @@ nav:
           - 'Recreate A Missing Notion Entity': 'how-tos/recreate-a-missing-notion-entity.md'
           - 'Sync From Local To Notion': 'how-tos/sync-from-local-to-notion.md'
           - 'Use Slack As A Source Of Inbox Tasks': 'how-tos/use-slack-as-a-source-for-inbox-tasks.md'
+          - 'Use Email As A Source Of Inbox Tasks': 'how-tos/use-email-as-a-source-for-inbox-tasks.md'
     - Roadmap: 'roadmap.md'
     - Releases:
           - 'Version 0.10.1': 'releases/version-0.10.1.md'

@@ -1,49 +1,55 @@
 """A temporary migrator."""
-import logging
-
-from rich.logging import RichHandler
-
-LOGGER = logging.getLogger(__name__)
+from jupiter.domain.push_integrations.email.email_task_collection import (
+    EmailTaskCollection,
+)
+from jupiter.framework.event import EventSource
+from jupiter.repository.sqlite.connection import SqliteConnection
+from jupiter.repository.sqlite.domain.storage_engine import SqliteDomainStorageEngine
+from jupiter.utils.global_properties import build_global_properties
+from jupiter.utils.time_provider import TimeProvider
 
 
 def main() -> None:
     """Application main function."""
-    logging.basicConfig(
-        level="info",
-        format="%(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[
-            RichHandler(
-                rich_tracebacks=True, markup=True, log_time_format="%Y-%m-%d %H:%M:%S"
-            )
-        ],
+    # logging.basicConfig(
+    #     level="info",
+    #     format="%(message)s",
+    #     datefmt="%Y-%m-%d %H:%M:%S",
+    #     handlers=[
+    #         RichHandler(
+    #             rich_tracebacks=True, markup=True, log_time_format="%Y-%m-%d %H:%M:%S"
+    #         )
+    #     ],
+    # )
+    time_provider = TimeProvider()
+
+    global_properties = build_global_properties()
+
+    sqlite_connection = SqliteConnection(
+        SqliteConnection.Config(
+            global_properties.sqlite_db_url,
+            global_properties.alembic_ini_path,
+            global_properties.alembic_migrations_path,
+        )
     )
-    # time_provider = TimeProvider()
 
-    # global_properties = build_global_properties()
+    domain_storage_engine = SqliteDomainStorageEngine(sqlite_connection)
 
-    # yaml_repo = YamlInboxTaskRepository(time_provider)
-    # storage_engine = \
-    #     SqliteDomainStorageEngine(
-    #         time_provider,
-    #         SqliteDomainStorageEngine.Config(
-    #             global_properties.sqlite_db_url, global_properties.alembic_ini_path,
-    #             global_properties.alembic_migrations_path))
-    #
-    # with storage_engine.get_unit_of_work() as uow:
-    #     for entity in yaml_repo.find_all(allow_archived=True):
-    #         uow.inbox_task_collection_repository.create(entity)
+    with domain_storage_engine.get_unit_of_work() as uow:
+        workspace = uow.workspace_repository.load()
+        push_integration_group = uow.push_integration_group_repository.load_by_parent(
+            workspace.ref_id
+        )
 
-    # with storage_engine.get_unit_of_work() as uow:
-    #     for collection in uow.inbox_task_collection_repository.find_all(allow_archived=True):
-    #         for entity in yaml_repo.find_all(
-    #               allow_archived=True, filter_inbox_task_collection_ref_ids=[collection.ref_id]):
-    #             LOGGER.error(entity)
-    #             uow.inbox_task_repository.create(collection, entity)
-
-    # repository = YamlInboxTaskRepository(time_provider)
-    # entities = repository.find_all(allow_archived=True)
-    # repository.dump_all(entities)
+        new_email_task_collection = EmailTaskCollection.new_email_task_collection(
+            push_integration_group_ref_id=push_integration_group.ref_id,
+            generation_project_ref_id=workspace.default_project_ref_id,
+            source=EventSource.CLI,
+            created_time=time_provider.get_current_time(),
+        )
+        new_email_task_collection = uow.email_task_collection_repository.create(
+            new_email_task_collection
+        )
 
 
 if __name__ == "__main__":

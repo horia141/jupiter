@@ -220,3 +220,26 @@ class SyncIntegrationTestCase(JupiterIntegrationTestCase):
         assert re.search(r"@John Doe", slack_task_out)
         assert re.search(r"in #all-company", slack_task_out)
         assert re.search(r"Hard", slack_task_out)
+
+    def test_push_integration_email_sync(self) -> None:
+        """Synchronisation of an email based task via a push integration."""
+        self.go_to_notion("My Work", "Push Integrations", "Email")
+        self.add_notion_row(
+            "Time for the summer meetup",
+            {
+                "To Address": "horia@example.com",
+                "Body": "--name='Prepare for the summer meetup' "
+                + "--difficulty=hard ---------- Forwarded message --------- "
+                + "From: John Doe <john@example.com> This is the body",
+            },
+        )
+
+        self.jupiter("sync", "--target", "email-tasks")
+
+        email_task_out = self.jupiter("email-task-show")
+
+        assert re.search(r"Prepare for the summer meetup", email_task_out)
+        assert re.search(r"John Doe <john@example.com>", email_task_out)
+        assert re.search(r"Time for the summer meetup", email_task_out)
+        assert re.search(r"This is the body", email_task_out)
+        assert re.search(r"Hard", email_task_out)

@@ -15,6 +15,7 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.email_address import EmailAddress
 from jupiter.domain.entity_key import EntityKey
 from jupiter.domain.entity_name import EntityName
 from jupiter.domain.inbox_tasks.inbox_task import InboxTask
@@ -24,6 +25,7 @@ from jupiter.domain.metrics.metric_unit import MetricUnit
 from jupiter.domain.persons.person_birthday import PersonBirthday
 from jupiter.domain.persons.person_relationship import PersonRelationship
 from jupiter.domain.projects.project_name import ProjectName
+from jupiter.domain.push_integrations.email.email_user_name import EmailUserName
 from jupiter.domain.push_integrations.slack.slack_channel_name import SlackChannelName
 from jupiter.domain.push_integrations.slack.slack_user_name import SlackUserName
 from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -741,6 +743,30 @@ def slack_task_message_to_rich_text(message: str) -> Text:
     else:
         text.append(" said 💬 ")
         text.append(message[0:98])
+        text.append("...")
+    return text
+
+
+def email_user_name_to_rich_text(user: EmailUserName) -> Text:
+    """Transform an email name to rich text."""
+    return Text(str(user), style="bold on white underline")
+
+
+def email_address_to_rich_text(address: EmailAddress) -> Text:
+    """Transform an email address to rich text."""
+    return Text(str(address), style="underline")
+
+
+def email_task_subject_to_rich_text(subject: str) -> Text:
+    """Transform a subject to rich text."""
+    text = Text("")
+    subject = " ".join(l.strip() for l in subject.strip().split("\n"))
+    if len(subject) <= 100:
+        text.append(" on 💬 ")
+        text.append(subject)
+    else:
+        text.append(" on 💬 ")
+        text.append(subject[0:98])
         text.append("...")
     return text
 

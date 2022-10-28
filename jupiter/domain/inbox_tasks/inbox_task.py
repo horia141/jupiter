@@ -10,9 +10,11 @@ from jupiter.domain.adate import ADate
 from jupiter.domain.big_plans.big_plan import BigPlan
 from jupiter.domain.difficulty import Difficulty
 from jupiter.domain.eisen import Eisen
+from jupiter.domain.email_address import EmailAddress
 from jupiter.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
+from jupiter.domain.push_integrations.email.email_user_name import EmailUserName
 from jupiter.domain.push_integrations.push_generation_extra_info import (
     PushGenerationExtraInfo,
 )
@@ -68,7 +70,11 @@ class InboxTask(LeafEntity):
 
     @dataclass(frozen=True)
     class GeneratedForSlackTask(Entity.Created):
-        """Generated for a slack task event."""
+        """Generated for a Slack task event."""
+
+    @dataclass(frozen=True)
+    class GeneratedForEmailTask(Entity.Created):
+        """Generated for an email task event."""
 
     @dataclass(frozen=True)
     class ChangeProject(Entity.Updated):
@@ -111,6 +117,10 @@ class InboxTask(LeafEntity):
         """Updated link to a Slack task event."""
 
     @dataclass(frozen=True)
+    class UpdatedLinkToEmailTask(Entity.Updated):
+        """Updated link to an email task event."""
+
+    @dataclass(frozen=True)
     class Updated(Entity.Updated):
         """Updated event."""
 
@@ -127,6 +137,7 @@ class InboxTask(LeafEntity):
     metric_ref_id: Optional[EntityId]
     person_ref_id: Optional[EntityId]
     slack_task_ref_id: Optional[EntityId]
+    email_task_ref_id: Optional[EntityId]
     name: InboxTaskName
     status: InboxTaskStatus
     eisen: Eisen
@@ -184,6 +195,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
+            email_task_ref_id=None,
             name=name,
             status=status,
             eisen=eisen if eisen else Eisen.REGULAR,
@@ -239,6 +251,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
+            email_task_ref_id=None,
             name=InboxTask._build_name_for_habit(name, recurring_task_repeat_index),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
@@ -292,6 +305,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=None,
+            email_task_ref_id=None,
             name=name,
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
@@ -345,6 +359,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=metric_ref_id,
             person_ref_id=None,
             slack_task_ref_id=None,
+            email_task_ref_id=None,
             name=InboxTask._build_name_for_collection_task(name),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
@@ -398,6 +413,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=person_ref_id,
             slack_task_ref_id=None,
+            email_task_ref_id=None,
             name=InboxTask._build_name_for_catch_up_task(name),
             status=InboxTaskStatus.RECURRING,
             eisen=eisen,
@@ -449,6 +465,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=person_ref_id,
             slack_task_ref_id=None,
+            email_task_ref_id=None,
             name=InboxTask._build_name_for_birthday_task(name),
             status=InboxTaskStatus.RECURRING,
             eisen=Eisen.IMPORTANT,
@@ -499,6 +516,7 @@ class InboxTask(LeafEntity):
             metric_ref_id=None,
             person_ref_id=None,
             slack_task_ref_id=slack_task_ref_id,
+            email_task_ref_id=None,
             name=InboxTask._build_name_for_slack_task(
                 user, channel, generation_extra_info
             ),
@@ -508,6 +526,63 @@ class InboxTask(LeafEntity):
             actionable_date=generation_extra_info.actionable_date,
             due_date=generation_extra_info.due_date,
             notes=InboxTask._build_notes_for_slack_task(user, channel, message),
+            recurring_timeline=None,
+            recurring_repeat_index=None,
+            recurring_gen_right_now=None,
+            accepted_time=created_time,
+            working_time=None,
+            completed_time=None,
+        )
+        return inbox_task
+
+    @staticmethod
+    def new_inbox_task_for_email_task(
+        inbox_task_collection_ref_id: EntityId,
+        project_ref_id: EntityId,
+        email_task_ref_id: EntityId,
+        from_address: EmailAddress,
+        from_name: EmailUserName,
+        to_address: EmailAddress,
+        subject: str,
+        body: str,
+        generation_extra_info: PushGenerationExtraInfo,
+        source: EventSource,
+        created_time: Timestamp,
+    ) -> "InboxTask":
+        """Create an inbox task."""
+        inbox_task = InboxTask(
+            ref_id=BAD_REF_ID,
+            version=FIRST_VERSION,
+            archived=False,
+            created_time=created_time,
+            archived_time=None,
+            last_modified_time=created_time,
+            events=[
+                InboxTask.GeneratedForEmailTask.make_event_from_frame_args(
+                    source, FIRST_VERSION, created_time
+                )
+            ],
+            inbox_task_collection_ref_id=inbox_task_collection_ref_id,
+            source=InboxTaskSource.EMAIL_TASK,
+            project_ref_id=project_ref_id,
+            big_plan_ref_id=None,
+            habit_ref_id=None,
+            chore_ref_id=None,
+            metric_ref_id=None,
+            person_ref_id=None,
+            slack_task_ref_id=None,
+            email_task_ref_id=email_task_ref_id,
+            name=InboxTask._build_name_for_email_task(
+                from_address, from_name, to_address, generation_extra_info
+            ),
+            status=generation_extra_info.status or InboxTaskStatus.ACCEPTED,
+            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            difficulty=generation_extra_info.difficulty,
+            actionable_date=generation_extra_info.actionable_date,
+            due_date=generation_extra_info.due_date,
+            notes=InboxTask._build_notes_for_email_task(
+                from_address, from_name, to_address, subject, body
+            ),
             recurring_timeline=None,
             recurring_repeat_index=None,
             recurring_gen_right_now=None,
@@ -745,8 +820,8 @@ class InboxTask(LeafEntity):
         project_ref_id: EntityId,
         user: SlackUserName,
         channel: Optional[SlackChannelName],
-        generation_extra_info: PushGenerationExtraInfo,
         message: str,
+        generation_extra_info: PushGenerationExtraInfo,
         source: EventSource,
         modification_time: Timestamp,
     ) -> "InboxTask":
@@ -764,6 +839,40 @@ class InboxTask(LeafEntity):
             due_date=generation_extra_info.due_date,
             notes=InboxTask._build_notes_for_slack_task(user, channel, message),
             new_event=InboxTask.UpdatedLinkToSlackTask.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
+
+    def update_link_to_email_task(
+        self,
+        project_ref_id: EntityId,
+        from_address: EmailAddress,
+        from_name: EmailUserName,
+        to_address: EmailAddress,
+        subject: str,
+        body: str,
+        generation_extra_info: PushGenerationExtraInfo,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "InboxTask":
+        """Update all the info associated with a person."""
+        if self.source is not InboxTaskSource.EMAIL_TASK:
+            raise Exception(
+                f"Cannot update a task which is not a email one '{self.name}'"
+            )
+        return self._new_version(
+            project_ref_id=project_ref_id,
+            name=self._build_name_for_email_task(
+                from_address, from_name, to_address, generation_extra_info
+            ),
+            eisen=generation_extra_info.eisen or Eisen.REGULAR,
+            difficulty=generation_extra_info.difficulty,
+            actionable_date=generation_extra_info.actionable_date,
+            due_date=generation_extra_info.due_date,
+            notes=InboxTask._build_notes_for_email_task(
+                from_address, from_name, to_address, subject, body
+            ),
+            new_event=InboxTask.UpdatedLinkToEmailTask.make_event_from_frame_args(
                 source, self.version, modification_time
             ),
         )
@@ -979,6 +1088,19 @@ class InboxTask(LeafEntity):
         return InboxTaskName(f"Respond to {user}'s DM")
 
     @staticmethod
+    def _build_name_for_email_task(
+        from_address: EmailAddress,
+        from_name: EmailUserName,
+        to_address: EmailAddress,
+        generation_extra_info: PushGenerationExtraInfo,
+    ) -> InboxTaskName:
+        if generation_extra_info.name is not None:
+            return generation_extra_info.name
+        return InboxTaskName(
+            f"Respond to {from_name}'s <{from_address}> message sent to {to_address}"
+        )
+
+    @staticmethod
     def _build_notes_for_slack_task(
         user: SlackUserName, channel: Optional[SlackChannelName], message: str
     ) -> str:
@@ -988,6 +1110,23 @@ class InboxTask(LeafEntity):
             **channel**: {str(channel) if channel else "DM"}
             **message**: {message}
             """
+        ).strip()
+        return message
+
+    @staticmethod
+    def _build_notes_for_email_task(
+        from_address: EmailAddress,
+        from_name: EmailUserName,
+        to_address: EmailAddress,
+        subject: str,
+        body: str,
+    ) -> str:
+        message = textwrap.dedent(
+            f"""
+            **from**: {from_name} <{from_address}>
+            **to**: {to_address}
+            **subject**: {subject}
+            **body**: {body}"""
         ).strip()
         return message
 

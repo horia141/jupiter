@@ -97,6 +97,13 @@ class Gen(command.Command):
             help="Allow only these Slack tasks",
         )
         parser.add_argument(
+            "--email-task-id",
+            dest="email_task_ref_ids",
+            default=[],
+            action="append",
+            help="Allow only these email tasks",
+        )
+        parser.add_argument(
             "--period",
             default=[RecurringTaskPeriod.DAILY.value],
             action="append",
@@ -155,6 +162,11 @@ class Gen(command.Command):
             if len(args.slack_task_ref_ids) > 0
             else None
         )
+        email_task_ref_ids = (
+            [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
+            if len(args.email_task_ref_ids) > 0
+            else None
+        )
         period_filter = (
             frozenset(RecurringTaskPeriod.from_raw(p) for p in args.period)
             if len(args.period) > 0
@@ -173,6 +185,7 @@ class Gen(command.Command):
                 filter_metric_keys=metric_keys,
                 filter_person_ref_ids=person_ref_ids,
                 filter_slack_task_ref_ids=slack_task_ref_ids,
+                filter_email_task_ref_ids=email_task_ref_ids,
                 filter_period=period_filter,
                 sync_even_if_not_modified=sync_even_if_not_modified,
             ),

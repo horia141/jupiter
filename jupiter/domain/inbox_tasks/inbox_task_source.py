@@ -18,6 +18,7 @@ class InboxTaskSource(enum.Enum):
     PERSON_CATCH_UP = "person-catch-up"
     PERSON_BIRTHDAY = "person-birthday"
     SLACK_TASK = "slack-task"
+    EMAIL_TASK = "email-task"
 
     def for_notion(self) -> str:
         """A prettier version of the value for Notion."""
@@ -30,6 +31,7 @@ class InboxTaskSource(enum.Enum):
             InboxTaskSource.USER,
             InboxTaskSource.BIG_PLAN,
             InboxTaskSource.SLACK_TASK,
+            InboxTaskSource.EMAIL_TASK,
         )
 
     @staticmethod

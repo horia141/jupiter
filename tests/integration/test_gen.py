@@ -167,3 +167,39 @@ class GenIntegrationTestCase(JupiterIntegrationTestCase):
             r"[*][*]message[*][*]: Everybody let’s prepare for our summer meetup",
             notion_row.page_content,
         )
+
+    def test_push_integration_email(self) -> None:
+        """Generation of a slack based task via a push integration."""
+        self.go_to_notion("My Work", "Push Integrations", "Email")
+        self.add_notion_row(
+            "Time for the summer meetup",
+            {
+                "To Address": "horia@example.com",
+                "Body": "--name='Prepare for the summer meetup' "
+                + "--difficulty=hard ---------- Forwarded message --------- "
+                + "From: John Doe <john@example.com> This is the body",
+            },
+        )
+
+        self.jupiter("sync", "--target", "email-tasks")
+        self.jupiter("gen")
+
+        self.go_to_notion("My Work", "Inbox Tasks")
+
+        notion_row = self.get_notion_row(
+            "Prepare for the summer meetup",
+            ["Status", "Source", "Eisenhower", "Difficulty", "Project"],
+        )
+
+        assert re.search(r"Prepare for the summer meetup", notion_row.title)
+        assert notion_row.attributes["Status"] == "Accepted"
+        assert notion_row.attributes["Source"] == "Email Task"
+        assert notion_row.attributes["Eisenhower"] == "Regular"
+        assert notion_row.attributes["Difficulty"] == "Hard"
+        assert notion_row.attributes["Project"] == "Work"
+        assert re.search(r"[*][*]user[*][*]: John Doe", notion_row.page_content)
+        assert re.search(r"[*][*]channel[*][*]: all-company", notion_row.page_content)
+        assert re.search(
+            r"[*][*]message[*][*]: Everybody let’s prepare for our summer meetup",
+            notion_row.page_content,
+        )
