@@ -94,7 +94,7 @@ class NotionPerson(NotionLeafEntity[Person, None, None]):
                 if self.catch_up_actionable_from_day
                 else None,
                 actionable_from_month=RecurringTaskDueAtMonth.from_raw(
-                    catch_up_period, self.catch_up_due_at_month
+                    catch_up_period, self.catch_up_actionable_from_month
                 )
                 if self.catch_up_actionable_from_month
                 else None,
