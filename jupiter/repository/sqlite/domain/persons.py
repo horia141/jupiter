@@ -35,6 +35,9 @@ from jupiter.domain.persons.person_birthday import PersonBirthday
 from jupiter.domain.persons.person_name import PersonName
 from jupiter.domain.persons.person_relationship import PersonRelationship
 from jupiter.domain.persons.person_collection import PersonCollection
+from jupiter.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
+from jupiter.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
+from jupiter.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.framework.base.entity_id import EntityId, BAD_REF_ID
@@ -222,20 +225,22 @@ class SqlitePersonRepository(PersonRepository):
                     catch_up_difficulty=entity.catch_up_params.difficulty.value
                     if entity.catch_up_params and entity.catch_up_params.difficulty
                     else None,
-                    catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day
+                    catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day.as_int()
                     if entity.catch_up_params
+                    and entity.catch_up_params.actionable_from_day
                     else None,
-                    catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month
+                    catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month.as_int()
                     if entity.catch_up_params
+                    and entity.catch_up_params.actionable_from_month
                     else None,
-                    catch_up_due_at_time=entity.catch_up_params.due_at_time
-                    if entity.catch_up_params
+                    catch_up_due_at_time=str(entity.catch_up_params.due_at_time)
+                    if entity.catch_up_params and entity.catch_up_params.due_at_time
                     else None,
-                    catch_up_due_at_day=entity.catch_up_params.due_at_day
-                    if entity.catch_up_params
+                    catch_up_due_at_day=entity.catch_up_params.due_at_day.as_int()
+                    if entity.catch_up_params and entity.catch_up_params.due_at_day
                     else None,
-                    catch_up_due_at_month=entity.catch_up_params.due_at_month
-                    if entity.catch_up_params
+                    catch_up_due_at_month=entity.catch_up_params.due_at_month.as_int()
+                    if entity.catch_up_params and entity.catch_up_params.due_at_month
                     else None,
                     birthday=str(entity.birthday) if entity.birthday else None,
                 )
@@ -275,20 +280,21 @@ class SqlitePersonRepository(PersonRepository):
                 catch_up_difficulty=entity.catch_up_params.difficulty.value
                 if entity.catch_up_params and entity.catch_up_params.difficulty
                 else None,
-                catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day
-                if entity.catch_up_params
+                catch_up_actionable_from_day=entity.catch_up_params.actionable_from_day.as_int()
+                if entity.catch_up_params and entity.catch_up_params.actionable_from_day
                 else None,
-                catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month
+                catch_up_actionable_from_month=entity.catch_up_params.actionable_from_month.as_int()
                 if entity.catch_up_params
+                and entity.catch_up_params.actionable_from_month
                 else None,
-                catch_up_due_at_time=entity.catch_up_params.due_at_time
-                if entity.catch_up_params
+                catch_up_due_at_time=str(entity.catch_up_params.due_at_time)
+                if entity.catch_up_params and entity.catch_up_params.due_at_time
                 else None,
-                catch_up_due_at_day=entity.catch_up_params.due_at_day
-                if entity.catch_up_params
+                catch_up_due_at_day=entity.catch_up_params.due_at_day.as_int()
+                if entity.catch_up_params and entity.catch_up_params.due_at_day
                 else None,
-                catch_up_due_at_month=entity.catch_up_params.due_at_month
-                if entity.catch_up_params
+                catch_up_due_at_month=entity.catch_up_params.due_at_month.as_int()
+                if entity.catch_up_params and entity.catch_up_params.due_at_month
                 else None,
                 birthday=str(entity.birthday) if entity.birthday else None,
             )
@@ -370,11 +376,25 @@ class SqlitePersonRepository(PersonRepository):
                 difficulty=Difficulty.from_raw(row["catch_up_difficulty"])
                 if row["catch_up_difficulty"]
                 else None,
-                actionable_from_day=row["catch_up_actionable_from_day"],
-                actionable_from_month=row["catch_up_actionable_from_month"],
-                due_at_time=row["catch_up_due_at_time"],
-                due_at_day=row["catch_up_due_at_day"],
-                due_at_month=row["catch_up_due_at_month"],
+                actionable_from_day=RecurringTaskDueAtDay(
+                    row["catch_up_actionable_from_day"]
+                )
+                if row["catch_up_actionable_from_day"] is not None
+                else None,
+                actionable_from_month=RecurringTaskDueAtMonth(
+                    row["catch_up_actionable_from_month"]
+                )
+                if row["catch_up_actionable_from_month"] is not None
+                else None,
+                due_at_time=RecurringTaskDueAtTime.from_raw(row["catch_up_due_at_time"])
+                if row["catch_up_due_at_time"] is not None
+                else None,
+                due_at_day=RecurringTaskDueAtDay(row["catch_up_due_at_day"])
+                if row["catch_up_due_at_day"] is not None
+                else None,
+                due_at_month=RecurringTaskDueAtMonth(row["catch_up_due_at_month"])
+                if row["catch_up_due_at_month"] is not None
+                else None,
             )
             if row["catch_up_period"] is not None
             else None,
