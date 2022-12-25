@@ -9,3 +9,4 @@ site
 .build-cache/
 buildinfo/current
 secrets.info
+archive
