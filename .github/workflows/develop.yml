@@ -36,4 +36,4 @@ jobs:
       - name: Prepare for CI
         run: ./scripts/setup-for-ci.sh
       - name: Check scripts
-        run: ./scripts/lint.sh
+        run: ./scripts/check.sh
