@@ -1,27 +1,18 @@
 # Vacations
 
-A _vacation_ is a set period of time when some scheduled tasks aren't scheduled. Vacations are attached to the
-workspace. They can be created both via Jupiter commands and in Notion.
+A _vacation_ is a set period of time when some scheduled tasks aren't scheduled. These are
+essentially chores that do not have the _must do_ attribute set.
 
-In the workspace, you can see the vacations:
+Vacations are attached to the workspace. You can see the vacations in
+the `Vacations` left-hand menu tab. An example:
 
-![Vacations](../assets/concepts-workspace.png)
+![Vacations Overview](../assets/vacations-overview.png)
 
-After creating a workspace you'll have an empty set of vacations. Adding to them you can obtain something like:
-
-![Vacations](../assets/concepts-vacations.png)
-
-Alternatively you can see vacations via `vacation-show` like so:
-
-```bash
-$ jupiter vacations-show
-id=6 Barcelona trip start=2020-03-20 end=2020-04-04
-id=7 Eurotrip 2 start=2020-04-07 end=2020-04-22
-```
+Alternatively you can see vacations via `vacation-show` in the CLI.
 
 ## Vacations Properties
 
-A vacation has a name. It's the name of the vacation, and will show up in Notion too.
+A vacation has a name.
 
 The start date is the time when the vacation starts, and tasks should not be generated. It should be before the
 end date.
@@ -31,13 +22,13 @@ start date.
 
 ## Vacations Interactions Summary
 
-You can:
+In the web app you can change the properties of a vacation by clicking on it in the view:
 
-* Create a vacation via `vacation-add`, or by creating a new row in the "Vacations" page.
-* Remove a vacation via `vacation-remove`, or by removing the row in the "Vacations" page.
-* Change the name of a vacations via `vacation-update`, or by changing the name of the row in the "Vacations" page.
-* Change the start date of a vacation via `vacation-update`, or by changing it in the "Vacations" page. The
-  start date cannot be after the end date, and either the command or the sync will fail if it is.
-* Change the end date of a vacation via `vacation-update`, or by changing it in the "Vacations" page. The
-  end date cannot be before the start date, and either the command or the sync will fail if it is.
-* See a summary of the workspace via `vacation-show`.
+![Vacations Update](../assets/vacations-update.png)
+
+In the CLI app you can:
+
+* Create a vacation via `vacation-create`.
+* Archive a vacation via `vacation-archive`.
+* Change the name, start date or end date of a vacations via `vacation-update`.
+* See a summary of all the vacations via `vacation-show`.

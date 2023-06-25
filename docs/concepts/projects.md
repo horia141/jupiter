@@ -7,16 +7,12 @@ For example, you can have a project for your personal goal tracking, and one for
 your career goal tracking etc. In most cases just one or two projects are enough,
 and they should be very long lived things.
 
-Projects are created via the `jupiter project-create --key $projectKey --name "Project Name"`
-command. `jupiter project-create` is idempotent. The key is a unique identifier for the project,
-and must be some nice string with no spaces or funny characters like `personal` or `work`. It will be
-used as a reference to the project in other commands.
+Projects are attached to the workspace. You can see the projects in the `Projects`
+left-hand menu tab. An example:
 
-After creating a project, you’ll see something like the following in the Notion
-left hand bar - here with two Jupiter created pages (“Inbox” and “Big Plan”) and one
-regular Notion page (“Blog Ideas”):
+![Projects Overview](../assets/projects-overview.png)
 
-![Projects image](../assets/concepts-projects.png)
+Alternatively you can see projects via `project-show` in the CLI.
 
 ## Projects Properties
 
@@ -24,7 +20,11 @@ On their own, projects have a single property - their name.
 
 ## Projects Interactions Summary
 
-You can:
+In the web app you can change the properties of a project by clicking on it in the view.
+
+![Projects Update](../assets/projects-update.png)
+
+In the CLI app you can:
 
 * Create a project via `projects-create`.
 * Change the name via `projects-update`.

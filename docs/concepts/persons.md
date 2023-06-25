@@ -10,25 +10,14 @@ call for specific holidays.
 
 In the workspace, you can see the PRM:
 
-![PRM in Workspace](../assets/concepts-workspace.png)
+![PRM in Workspace](../assets/persons-overview.png)
+
+## Properties
 
 The PRM database contains people. But it has some metadata too.
 
 Currently this is the catch up project - the project where birthday, catch up tasks, etc are
 generated.
-
-You can see an example PRM database:
-
-![PRM Example](../assets/concepts-prm.png)
-
-## Interaction Summary
-
-You can:
-
-* View the whole PRM database via `prm-show`.
-* Update any number of properties via `prm-update`. This cannot be done from Notion
-
-## Persons
 
 A person has a name, and it must be unique. Add some clarification next to it to resolve
 conflicts.
@@ -53,14 +42,21 @@ inbox task is defined yearly for this and also generated.
   * `14` days in advance for friends
   * `2` days in advance for everyone else
 
-In general, you're going to add persons from Notion, and use [sync](notion-local-sync.md) to bring them
-over to the [local store](local-storage.md).
+## Interactions
 
-## Persons Interaction Summary
+In the web app you can change the global catch up project via the `Settings` button:
 
-You can:
+![Persons Settings](../assets/persons-settings.png)
 
-* Create a person via `person-create`, or by creating a new person in the appropriate Notion table.
-* Remove a person via `person-archive`, or by clicking the archive checkbox in Notion.
-* Change any number of person values via `person-update`, or by editing the row in Notion.
-* Show the persons database via `person-show`, or by looking in Notion.
+Similarly you can change the properties of a person by clicking on it in the view.
+
+![Metrics Entry Update](../assets/persons-update.png)
+
+In the CLI app you can:
+
+* Change the catch up project via `person-change-catch-up-project`.
+* Create a person via `person-create`.
+* Remove a person via `person-archive`.
+* Change any number of person attributes via `person-update`.
+* Show the persons database via `person-show`.
+

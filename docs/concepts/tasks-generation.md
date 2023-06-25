@@ -6,26 +6,22 @@ Tasks generation is a periodic action you must perform. It takes the _templates_
 
 It needs to be performed daily usually.
 
-The command itself is simply called `gen` and you can invoke it as:
+In the web app you can find reporting in the `Generate Tasks` left-hand side tab, under _tools_. It looks
+something like this:
 
-```bash
-$ jupiter gen
-```
+![Gen](../assets/gen.png)
 
-By default this will generate tasks with the `daily` period for today. But you can force other periods like so:
+You can select a time for which you want the tasks generated. This helps with backfills and preparation
+of tasks for the future.
 
-```bash
-$ jupiter gen --period daily --period weekly --period monthly
-```
+Otherwise you can configure generation to filter by type of entity, period, etc. These are more advanced
+filters, and are probably overkill for the majority of cases.
 
-It's the case that you'll want to run these other versions at the start of a week, month, quarter, or year.
+After pressing the `Generate` button, new tasks are created.
 
-Some things to note:
+The CLI command is called `gen` and has the same capabilities as the Web App.
 
-* The command is idempotent, so you can run it however many times you want and it'll do the right thing.
-* Via the `--date` argument you can run generation for a date different than today - either in the future or in the
-  past.
-* You can limit it to habits, chores, metrics, or persons via the `--target` option.
-* You can limit it for a particular project too via the `--project` option.
-* You can filter for specific habits, chores, metrics, and persons.
-* Check the help for more options via `jupiter gen --help`.
+The command is idempotent, so you can run it however many times you want and it'll do the right thing.
+Furthermore it does not affect task status, or any extra edits on a particular instance of a task.
+If any property of the habit template which get copied over to the instance is modified, then the command
+will take care to update the instance too. Only archived and removed tasks are regenerated.

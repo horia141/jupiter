@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "tests"
+version = "0.1.0"
+description = "Big integration tests"
+authors = ["Horia Coman <horia141@gmail.com>"]
+license = "MIT"
+homepage = "https://jupiter-goals.readthedocs.io/"
+readme = "README.md"
+repository = "https://github.com/horia141/jupiter"
+documentation = "https://jupiter-goals.readthedocs.io/"
+# packages = [{ include = "integration" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.11"
+jupiter-core = {path = "../src/core", develop = true}
+
+[tool.poetry.dev-dependencies]
+selenium = "4.1.3"
+types-requests = "2.27.16"
+webdriver-manager = "3.5.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

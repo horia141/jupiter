@@ -1,19 +1,41 @@
 # Roadmap
 
-This is a rough roadmap of getting Jupiter to `v1.0.0`. By this point it should have a lot of useful features,
-be stable and fast, and have sufficient supporting infrastructure (website, docs, installation methods, etc).
+Jupiter is now at `v1.0.0`. This means it has some notion of stability and is also shareable and usable by
+folks besides me - its creator. Nevertheless, it is a labour of love and a side-project. It has some way
+to go before doing all the things I'd like it to. This doc is a rough roadmap. But there's _no commitment_ to
+dates or order of delivery.
 
-New features:
+## New Core Features
 
-* Support a journal
-* Support megaplans
+* Gamification á la Duolingo
+* A home page with an overview of your life
+* Support journaling
+* Support megaplans - long term plans for the whole life
+* Support an internal calendar
+* Support non-inbox kanban boards
+* Support generic notes
+* Built a specialised shopping-list
+* Many other small features and improvements
+
+## New Interaction Surfaces
+
+* A desktop app
+* A mobile app
+* A chrome/firefox plugin for smart lists
+* Reinstate email integration
+* Reinstate Slack integration
+
+## Quality Of Life Improvements
+
 * Define visual identity
-* Translate app and docs in one other language
-* Integration with Google Calendar
-* Email and Slack as sources for inbox tasks
+* Powerful search in your workspace
+* Translate app and docs in other languages
+* Offline mode
+* Notifications
+* Integrate with Google Calendar & Outlook for calendar support
 * Integrate with YouTube, Spotify, Apple Music, Amazon, etc for smart lists support, playlists creation, etc
 
-Public infrastructure:
+## Public Infrastructure Developments
 
 * Have different methods of installation
 * Have data export functionality
@@ -21,14 +43,8 @@ Public infrastructure:
 * Setup a forum for discussions and support
 * Setup a blog for announcement and marketing content
 
-Quality:
+## Next-level Dreams
 
-* Upgrade to Notion public API (when available)
-
-Beyond this the plans get _ambitious_. Here's some product-wise plans:
-
-* Build a server-like component, which will allow periodic syncs, gen, and gcs, as well as interaction with online
- services
-* Build a graphical client as a counterpart to the CLI one, and an alternative to the Notion one
-* Support integration with other Notion-like apps
-* Build a hosting/SaaS setup for all of the above
+* A DOM and support for plugins and scripting
+* Collaboration support
+* Federation support

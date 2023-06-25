@@ -2,4 +2,4 @@
 
 set -ex
 
-yamllint --config-file=./scripts/lint/yamllint .github/
+poetry run yamllint --config-file=./scripts/lint/yamllint .github/

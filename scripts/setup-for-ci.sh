@@ -1,15 +1,21 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # Prepare environment
 
-sudo apt-get install python3-setuptools gnupg2
-python -m pip install --upgrade pip
-pip install -r requirements-dev.txt
-gem install mdl
+poetry config virtualenvs.create false
+poetry config virtualenvs.in-project false
+
 docker pull hadolint/hadolint:latest-debian
 
-# Prepare dependencies
+bundle install
 
-pip install -r requirements.txt
+poetry install --no-interaction --no-ansi
+(cd src/core && poetry install --no-interaction --no-ansi)
+(cd src/cli && poetry install --no-interaction --no-ansi)
+(cd src/webapi && poetry install --no-interaction --no-ansi)
+(cd tests && poetry install --no-interaction --no-ansi)
+
+npm ci --ws --include-workspace-root
+(cd gen && npx tsc)

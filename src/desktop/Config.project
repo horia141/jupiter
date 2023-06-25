@@ -1,0 +1,3 @@
+ENV=local
+BASENAME=jupiter-desktop
+DESCRIPTION="The Jupiter Desktop application"

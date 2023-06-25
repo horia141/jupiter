@@ -1,0 +1,23 @@
+{
+  "include": ["**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "request-template.ts"
+  ],
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "lib": ["ES2019", "es7", "es6", "dom"],
+    "declaration": true,
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}

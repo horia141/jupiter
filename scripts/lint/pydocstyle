@@ -1,2 +1,3 @@
 [pydocstyle]
 convention=google
+match-dir=(?!migration).*

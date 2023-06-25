@@ -32,14 +32,13 @@ As a quick reference, here is the list of the more important concepts:
   weight, days gone to the gym, or marathons ran!
 * _Person_: a family member, friend, acquaintance, etc you wish to keep in touch with, or
   otherwise know about in a more formal way.
+* _Push Integrations_: lightweight integrations with external tools such as Slack, GMail,
+  Outlook, generic email, etc. Done in a one-way fashion via these tools pushing work into Jupiter.
 
 The rest of the document will cover each of these in greater detail.
 
-> Note: When referencing Jupiter commands, we’ll use `jupiter foo` instead of the current
-Docker based `docker run -it --rm --name jupiter-app -v $(pwd):/data jupiter foo`.
-We’ll get there _sometime_ too, but for the sake of brevity it’s easier this way.
+## The Tool
 
-As a general consideration, every action in Jupiter is done via a command in the `jupiter` CLI app. It will affect
-both the local storage and Notion at the same time. You can edit things in Notion, and for most things it will be
-easier to go this route though. So you'll need to run special `sync` commands to keep the local store and Notion in
-sync.
+Jupiter is _the tool_ that allows you to run your life by using the concepts above in certain ways.
+
+You can interact with it via one of the [clients](clients.md) and in either [hosted or local mode](local-vs-hosted-mode.md)

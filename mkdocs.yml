@@ -2,7 +2,7 @@
 site_name: Jupiter
 site_description: "Documentation for Jupiter, the life planning tool"
 site_author: "Horia Coman"
-copyright: "(c) 2020 Horia Coman"
+copyright: "(c) 2023 Horia Coman"
 repo_url: https://github.com/horia141/jupiter
 repo_name: GitHub
 
@@ -10,45 +10,42 @@ docs_dir: docs
 
 theme:
     name: mkdocs
+    logo: assets/jupiter.ico
     highlightjs: true
     hljs_style: obsidian
 
 nav:
     - Home: 'index.md'
-    - Installation: 'install.md'
     - Tutorial: 'tutorial.md'
+    - Installation: 'install.md'
     - Concepts:
           - 'Overview': 'concepts/overview.md'
-          - 'The Jupiter CLI': 'concepts/jupiter-cli.md'
-          - 'Integrations':
-                - 'Notion': 'concepts/notion-connection.md'
-          - 'Local Storage': 'concepts/local-storage.md'
+          - 'Hosted Vs Local Mode': 'concepts/hosted-vs-local-mode.md'
+          - 'Clients': 'concepts/clients.md'
+          - 'Accounts': 'concepts/accounts.md'
           - 'Workspace': 'concepts/workspaces.md'
-          - 'Vacations': 'concepts/vacations.md'
-          - 'Projects': 'concepts/projects.md'
           - 'Inbox Tasks': 'concepts/inbox-tasks.md'
           - 'Habits': 'concepts/habits.md'
           - 'Chores': 'concepts/chores.md'
           - 'Big Plans': 'concepts/big-plans.md'
+          - 'Vacations': 'concepts/vacations.md'
+          - 'Projects': 'concepts/projects.md'
           - 'Smart Lists': 'concepts/smart-lists.md'
           - 'Metrics': 'concepts/metrics.md'
           - 'Personal Relationship Manager': 'concepts/persons.md'
           - 'Reporting': 'concepts/reporting.md'
-          - 'Sync Notion And Local': 'concepts/notion-local-sync.md'
           - 'Tasks Generation': 'concepts/tasks-generation.md'
           - 'Garbage Collection': 'concepts/garbage-collection.md'
     - 'How Tos':
-          - 'Garbage Collection': 'how-tos/do-garbage-collection.md'
-          - 'Update An Expired Token': 'how-tos/update-an-expired-token.md'
-          - 'Fix Data Inconsistencies': 'how-tos/fix-data-inconsistencies.md'
-          - 'Recreate A Missing Notion Entity': 'how-tos/recreate-a-missing-notion-entity.md'
-          - 'Sync From Local To Notion': 'how-tos/sync-from-local-to-notion.md'
+          - 'Do Garbage Collection': 'how-tos/do-garbage-collection.md'
+          - 'Recover Your Account': 'how-tos/recover-your-account.md'
     - Roadmap: 'roadmap.md'
     - Releases:
-          - 'Version 0.10.1': 'releases/version-0.10.1.md'
-          - 'Version 0.10.0': 'releases/version-0.10.0.md'
-          - 'Version 0.9.0': 'releases/version-0.9.0.md'
+          - 'Version 1.0.0': 'releases/version-1.0.0.md'
           - Older:
+                - 'Version 0.10.1': 'releases/version-0.10.1.md'
+                - 'Version 0.10.0': 'releases/version-0.10.0.md'
+                - 'Version 0.9.0': 'releases/version-0.9.0.md'
                 - 'Version 0.8.0': 'releases/version-0.8.0.md'
                 - 'Version 0.7.0': 'releases/version-0.7.0.md'
                 - 'Version 0.6.1': 'releases/version-0.6.1.md'

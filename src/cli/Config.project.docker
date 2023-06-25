@@ -1,0 +1,10 @@
+ENV=staging
+BASENAME=jupiter-cli
+DESCRIPTION="The CLI client for Jupiter"
+DOCS_URL=https://jupiter-goals.readthedocs.io
+DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspace/
+SESSION_INFO_PATH=/data/session-info
+SQLITE_DB_URL=sqlite+aiosqlite:////data/jupiter.sqlite
+ALEMBIC_INI_PATH=/jupiter/src/core/migrations/alembic.ini
+ALEMBIC_MIGRATIONS_PATH=/jupiter/src/core/migrations
+AUTH_TOKEN_SECRET=98079C2A2BC4865092303174B0FE4736B12E35726E8C0DA4386E8ED951139686

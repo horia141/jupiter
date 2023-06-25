@@ -1,6 +1,6 @@
 # Chores
 
-a regular activity, usually one that is imposed by the outside world.. Chores live in the
+A chore is a regular activity, usually one that is imposed by the outside world. Chores live in the
 "chores" view, but they're instantiated as regular tasks in the "inbox".
 
 For example, you can have a chore like "Clean out AC filters every week", or
@@ -8,9 +8,9 @@ For example, you can have a chore like "Clean out AC filters every week", or
 
 In the chores view, the task templates might look like this:
 
-![Chores templates](../assets/concepts-chores-view.png)
+![Chores templates](../assets/chores-overview.png)
 
-## Chores Properties
+## Properties
 
 Chores have a _period_ and a _period interval_. The former is set via the `period`
 property and the latter is derived uniquely from this. The period can be one of:
@@ -36,10 +36,9 @@ Notice that the smallest period is the `daily` one, with a period interval of on
 general, for a given period interval there can be only one instantiation of a task of that
 period.
 
-While in the inbox, the instantiated tasks might look like this - notice the "Weekly" and
-"Monthly" labels:
+While in the inbox, the instantiated tasks might look like this:
 
-![Inbox with chores](../assets/concepts-chores-instantiated.png)
+![Inbox Task from Chore](../assets/chores-inbox-task.png)
 
 The instantiated task in the inbox is constructed from the chore template, but
 it also changes in the following way:
@@ -48,8 +47,8 @@ it also changes in the following way:
   insurance" becomes "Pay home insurance Mar". The formats are "Mar13" for daily periods,
   "W13" for weekly periods, "Mar" for monthly periods, "Q1" for quarterly periods,
   and "2020" for yearly periods.
-* The "From Script", "Recurring Period" and "Recurring Timeline" fields are populated. But
-  they are rather implementation details.
+* There is a link back to the owning chore.
+* Most fields are not editable.
 
 Chores can also have an actionable date. By default there is none, and the generated
 inbox task won't have an actionable date. If you specify an `actionable_from_day` and/or
@@ -79,10 +78,6 @@ interval, at midnight. You can override it however to specify, via the `due_at_d
   of a yearly task to be the midnight of the last day of March. Adding `due_at_day: 10`
   will mark it as due at midnight of the 10th of March. and adding `due_at_time: "13:00"`
   will mark it as due at 1PM on the 10th of March.
-
-In Notion an instantiated task might look like this then:
-
-![Instantiated chore image](../assets/concepts-chores-instantiated.png)
 
 Chores can be configured to skip certain periods via a skip rule. This is
 specified via the `skip_rule` property, which can be one of:
@@ -115,38 +110,28 @@ to all the instantiated tasks that are created.
 Similarly, a chore can have the Eisenhower properties. These will be copied to
 all the instantiated tasks that are created.
 
-Chores are created via the `jupiter gen` command. This has some special
-forms too:
-
-* `jupiter gen` is the standard form and inserts all of the
-  tasks whose period interval includes today. Thus, all daily tasks will be inserted, and
-  all weekly tasks for this week, etc. Of course, if the tasks for this week have already
-  been instantiated, they won't be again.
-* `jupiter gen --date=YYYY-MM-DD` does an insert as if the day
-  were the one given by the `date` argument. Useful for creating tasks in the days before
-  the start of a certain week or month.
-* `jupiter gen --period=PERIOD` does an insert only on the
-  tasks with a certain period. Useful to speed up inserts when you know you only want
-  new tasks for the next day or week.
+Chore inbox tasks are created via [task generation](tasks-generation.md).
 
 Chores interact with vacations too. More precisely, if a task's period interval
 is fully contained within a vacation, that task won't be instantiated in the inbox via
-`jupiter gen`. For example, if you have a vacation from Monday `2020-02-09` to
+generation. For example, if you have a vacation from Monday `2020-02-09` to
 Sunday `2020-02-15`, then all daily and weekly tasks for that week won't be created, but
 all monthly, quarterly and yearly ones will.
 
-The `jupiter gen` command is idempotent, as described above. Furthermore it does
-not affect task status, or any extra edits on a particular instance of a task. If any property
-of the chore template which get copied over to the instance is modified, then the command
-will take care to update the instance too. Only archived and removed tasks are regenerated.
+## Interactions
 
-## Chores Interactions Summary
+In the web app you can change the properties of a chore by clicking on it in the view.
 
-You can:
+![Chores Update](../assets/chores-update.png)
 
-* Create a chore via `chore-create`, or by creating a new entry in the "Chores" view.
-* Remove a chore via `chore-arhive`, or by clicking the archive checkbox the entry in the "Chores" view.
-* Any of the properties of a chore can be changed via `chore-update`, or by editing the task in Notion.
+You can also view all the generated inbox tasks, and can quickly swipe left/swipe right to
+interact with them.
+
+In the CLI app you can:
+
+* Create a chore via `chore-create`.
+* Remove a chore via `chore-arhive`.
+* Any of the properties of a chore can be changed via `chore-update`.
+* Change the generation project of a chore via `chore-change-project`.
 * A chore can be suspended via `chore-suspend` and unsuspended via `chore-unsuspend`.
-  Or by editing the task in Notion.
 * Show info about the chore via `chore-show`.

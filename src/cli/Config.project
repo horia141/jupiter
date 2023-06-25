@@ -1,0 +1,10 @@
+ENV=local
+BASENAME=jupiter-cli
+DESCRIPTION="The CLI client for Jupiter"
+DOCS_URL=https://jupiter-goals.readthedocs.io
+DOCS_INIT_WORKSPACE_URL=${DOCS_URL}/en/stable/how-tos/workspaces/init-a-workspace/
+SESSION_INFO_PATH=./session-info
+SQLITE_DB_URL=sqlite+aiosqlite:///jupiter.sqlite
+ALEMBIC_INI_PATH=./core/migrations/alembic.ini
+ALEMBIC_MIGRATIONS_PATH=./core/migrations
+AUTH_TOKEN_SECRET=E001151B60336A79CC0469190A7CBBBC715714837BF198118C0FEA9C87CEC542

@@ -31,8 +31,8 @@ RELEASE_DATE=$(date +"%Y/%m/%d")
 
 git pull
 git checkout -b "${RELEASE_BRANCH}"
-sed -E "s/VERSION=.+/VERSION=${RELEASE_VERSION}/g" < Config > Config.bak
-mv Config.bak Config
+sed -E "s/VERSION=.+/VERSION=${RELEASE_VERSION}/g" < src/Config.global > src/Config.global.bak
+mv src/Config.global.bak src/Config.global
 cp scripts/docs/template.md "${RELEASE_NOTES_PATH}"
 sed -i "" -E "s/{{release_version}}/${RELEASE_VERSION}/g" "${RELEASE_NOTES_PATH}"
 sed -i "" -E "s|{{release_date}}|${RELEASE_DATE}|g" "${RELEASE_NOTES_PATH}"

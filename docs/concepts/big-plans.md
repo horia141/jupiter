@@ -7,6 +7,10 @@ in anything from a week to several months, and which consists of multiple steps.
 For example, you can have a task like "Plan a family vacation", or "Get a talk
 accepted to a conference", or "Buy a new house".
 
+## Properties
+
+Big plans have a _name, which should tell you what the task is all aboutl
+
 Big plans have a _status_, which can be one of:
 
 * _Accepted_: all big plans you create should start with this status. It means you're
@@ -22,26 +26,13 @@ Big plans have a _status_, which can be one of:
 * _Archived_: the big plan has been archived, currently just a manual operation.
 * _No Status_: some big plans don't have a status for various reasons.
 
-In the big plan page, you can see big plans in a sort of Kanban board, organised by status
-like this:
+In the big plan page, you can see big plans in a sort of timeline board, organised by project.
 
-![Big plans image](../assets/concepts-big-plan-page.png)
-
-A nice view is the timeline one:
-
-![Bit plans timeline](../assets/concepts-big-plans-timeline.png)
+![Big plans image](../assets/index-big-plans-timeline.png)
 
 The state evolution diagram is:
 
 ![Big plan states](../assets/concepts-big-plan-states.png)
-
-You can create a big plan via regular Notion mechanisms (pressing the various "New"
-buttons). You can remove a big plan by simply removing the Notion record of it.
-
-In order for things to properly work out however, you also need to run
-`jupiter sync`. This makes sure that the big plans are setup correctly, and
-that the various Notion pages know about the new or removed big plan. It is an idempotent
-operation, useful to use in case of updates too.
 
 Big plans have an actionable date, much like _inbox tasks_. Conceptually, this is the the
 time from which you can start working on a particular big plan.
@@ -55,26 +46,29 @@ plan, if it has any.
 Between them, the actionable and due dates allow you to schedule the big plans in time in
 a more organized manner. There is a special view which allows for this.
 
-In Notion a big plan might look like this:
-
-![Big Plan Image](../assets/concepts-big-plan.png)
-
-Notice there is a link to the project's Inbox for the tasks associated with that plan. You
-can view the completion status here.
-
-You can create a task for the big plan directly here, or you can create one in the Inbox
-and link it via the `Big Plan` property.
-
 ## Big Plans Page
 
 The big plan page is a representation of your current and longer term work. It's a
-collection of big plans. They are created here in the "Accepted" state.
+collection of big plans.
 
-The big plan page looks like a Kanban board, with the various states of a big plan as
-columns.
+There are multiple views for the big plans though right now:
 
-![Big Plans Kanban](../assets/concepts-big-plan-page.png)
+* _Timeline by project_: organize big plans as a Gantt chart split by project.
+* _Timeline_: organize all big plans as a Gnatt chart.
+* _List_: view all big plans as a long list of work, with limited sorting.
 
-It also has a useful _timeline_ view, which is a Gnatt chart of sorts.
+Besides the obvious button interactions, you can also _swipe left_ to mark a big plan as _done_ and
+_swipe right_ to mark it as not done.
 
-![Big Plans Timeline](../assets/concepts-big-plans-timeline.png)
+## Interactions
+
+In the web app you can change the properties of a inbox task by clicking on it in the view.
+
+![Inbox Tasks Update](../assets/big-plans-update.png)
+
+In the CLI app you can:
+
+* Create a project via `big-plan-create`.
+* Change the name, status, actionable date, due date, eisenhower, difficulty via `big-plan-update`.
+* Change the project via `big-plan-change-project`.
+* See a summary of the projects via `big-plan-show`.

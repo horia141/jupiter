@@ -2,5 +2,5 @@
 
 set -ex
 
-yamllint --config-file=./scripts/lint/yamllint .readthedocs.yml
-yamllint --config-file=./scripts/lint/yamllint mkdocs.yml
+poetry run yamllint --config-file=./scripts/lint/yamllint .readthedocs.yml
+poetry run yamllint --config-file=./scripts/lint/yamllint mkdocs.yml
