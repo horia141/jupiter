@@ -8,4 +8,4 @@ mkdocs:
 formats: all
 
 python:
-  version: 3.10
+  version: 3.8
