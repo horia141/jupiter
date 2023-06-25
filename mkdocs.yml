@@ -41,7 +41,7 @@ nav:
           - 'Recover Your Account': 'how-tos/recover-your-account.md'
     - Roadmap: 'roadmap.md'
     - Releases:
-          - 'Version 1.0.0': 'releases/version-1.0.0.md'
+          - 'Version 1.0.1': 'releases/version-1.0.1.md'
           - Older:
                 - 'Version 0.10.1': 'releases/version-0.10.1.md'
                 - 'Version 0.10.0': 'releases/version-0.10.0.md'
