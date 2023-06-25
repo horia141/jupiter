@@ -2,4 +2,4 @@
 
 set -ex
 
-alembic --config ./migrations/alembic.ini upgrade head
+alembic --config ./core/migrations/alembic.ini upgrade head

@@ -1,0 +1,8 @@
+ENV=staging
+BASENAME=jupiter-webapi
+DESCRIPTION="The Web RPC API client for Jupiter"
+SQLITE_DB_URL=sqlite+aiosqlite:////data/jupiter.sqlite
+SESSION_INFO_PATH=FAKEFAKE
+ALEMBIC_INI_PATH=/jupiter/src/core/migrations/alembic.ini
+ALEMBIC_MIGRATIONS_PATH=/jupiter/src/core/migrations 
+AUTH_TOKEN_SECRET=FAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE

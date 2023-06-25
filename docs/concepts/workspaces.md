@@ -1,41 +1,35 @@
 # Workspace
 
-All the work for life planning takes place in a _workspace_. When you use
-`jupiter init` in a local directory, you’re starting up your workspace. The local
-directory and its files, the Notion.so pages created, etc. are all part of the
-workspace.
+All the work for life planning takes place in a _workspace_. When you create a new
+account in the web app or call `jupiter init` in the CLI app you are creating
+a new workspace.
 
-You can have multiple workspaces, and they can even share the same Notion
-space/account, but realistically it makes sense to use just one. All further
-concepts we discuss are _relative_ to the workspace.
+Right now, a single account can have just one workspace, that is private to the user.
 
-Workspaces are created via the `jupiter init` command. `jupiter init` is idempotent, and is a good
-way to update workspaces as newer versions of the tool appear.
+All further concepts we discuss are _relative_ to the workspace.
 
-After creating a workspace, you’ll see something like the following in the Notion
-left hand bar:
+After creating a workspace, you’ll see something like the following:
 
-![Workspace image](../assets/concepts-workspace.png)
+![Workspace](../assets/workspaces.png)
 
-## Workspace Properties
+## Properties
 
-A workspace has a _name_. It is the name of the root page in Notion too.
-
-A workspace also has a _timezone_. It is usually the timezone in which you live. Internally
-all times are UTC, but whatever's displayed in the CLI or synced to Notion makes use of this.
+A workspace has a _name_.
 
 A workspace also has a notion of _default project_. Checkout [the projects section](./projects.md) for more details
 about projects. But in context where a project is needed - say when adding a new inbox task, or generating an
 inbox task from a metric - and none is specified, this one will be used instead.
 
-The space id is specified when calling `init`. It identifies the Notion "space" where Jupiter will work. It
-can't be changed after creation though.
+## Interactions
 
-## Workspace Interactions Summary
+In the Web app you can access workspace settings in the right-hand menu.
 
-You can:
+![Workspace Update](../assets/workspaces-update.png)
 
-* Create a workspace via `init`
-* Set the name, timezone or default project of the workspace via `workspace-update` or editing the name in Notion
- directly.
-* See a summary of the workspace via `workspace-show`.
+In the CLI app you can:
+
+* Create a workspace when creating an account in the web app of via `jupiter init`
+* Set the name via `workspace-update` or editing the name in the web app.
+* Change the default project from the `Settings` section of the right-hand side menu or
+  via `workspace-change-default-project` in the CLI.
+* See a summary of the workspace via `workspace-show` in the CLI.

@@ -16,43 +16,21 @@ mkdir -p "${BUILDINFO_ROOT}"
 
 cloc \
   --report-file="${CLOC_BUILDINFO}" \
+  --exclude-dir="node_modules,.cache,build,.mypy_cache" \
+  --not-match-f="(package-lock.json|poetry.lock)" \
   .dockerignore \
-  .github/ \
+  .eslintignore \
+  .prettierignore \
   .gitignore \
   .readthedocs.yml \
-  Config \
-  Dockerfile \
+  .github/ \
   LICENSE \
   Makefile \
   README.md \
   docs/ \
   mkdocs.yml \
-  pyproject.toml \
   scripts/ \
-  migrations/ \
-  jupiter/ \
+  src/ \
   tests/ \
 
 cat "${CLOC_BUILDINFO}"
-
-LIBYEAR_BUILDINFO="${BUILDINFO_ROOT}/libyear"
-
-REQS_FILE=$(mktemp)
-
-poetry export -f requirements.txt --output "${REQS_FILE}" --without-hashes
-sed -i -e 's/; .*//g' "${REQS_FILE}"
-poetry run libyear -r "${REQS_FILE}" > "${LIBYEAR_BUILDINFO}"
-
-cat "${LIBYEAR_BUILDINFO}"
-
-DEV_LIBYEAR_BUILDINFO="${BUILDINFO_ROOT}/libyear-dev"
-
-DEV_REQS_FILE=$(mktemp)
-JUSTDEV_REQS_FILE=$(mktemp)
-
-poetry export -f requirements.txt --output "${DEV_REQS_FILE}" --without-hashes --dev
-sed -i -e 's/; .*//g' "${DEV_REQS_FILE}"
-grep -Fvxf "${REQS_FILE}" "${DEV_REQS_FILE}"  > "${JUSTDEV_REQS_FILE}"
-poetry run libyear -r "${JUSTDEV_REQS_FILE}" > "${DEV_LIBYEAR_BUILDINFO}"
-
-cat "${DEV_LIBYEAR_BUILDINFO}"

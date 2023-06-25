@@ -14,38 +14,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        id: setup-python
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.8
-      - name: Set up Ruby 2.6
-        uses: actions/setup-ruby@v1
+          python-version: "3.10"
+      - name: Set up Node 19
+        id: setup-node
+        uses: actions/setup-node@v3
         with:
-          ruby-version: 2.6
-      - name: Load cached Poetry installation
-        uses: actions/cache@v2
+          node-version: "19"
+      - name: Set up Ruby 2.7
+        uses: ruby/setup-ruby@v1
         with:
-          path: ~/.local
-          key: poetry-0  # increment to reset cache
-      - name: Install and configure Poetry
+          ruby-version: "2.7"
+      - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.1.13
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
-        with:
-          path: .venv
-          key: env-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          version: 1.3.1
       - name: Prepare for CI
-        run: |
-          poetry env use python
-          ./scripts/setup-for-ci.sh
+        run: ./scripts/setup-for-ci.sh
       - name: Check scripts
-        run: |
-          poetry env use python
-          ./scripts/check.sh
+        run: ./scripts/lint.sh

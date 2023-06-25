@@ -8,11 +8,15 @@ tasks for a certain period.
 For example, you can have a task like "Change AC filter", or "Take visa papers to
 embassy", or "Research team off-site locations".
 
+## Properties
+
+Inbox tasks have a _name_, which should tell you what the task is all about.
+
 Tasks have a _status_, which can be one of:
 
 * _Accepted_: all tasks you created by hand should start with this status. It means
   you’re going to start working on the task in the near future.
-* _Recurring_: all tasks you created via recurring tasks and `jupiter gen`
+* _Recurring_: all tasks you created from chores, habits, metrics, persons, etc
   start with this status. It means you’re going to start working on the task in the
   near future.
 * _In Progress_: all tasks you’re currently working on should be placed in this
@@ -25,8 +29,8 @@ Tasks have a _status_, which can be one of:
   and then to “Not Done” or “Done”.
 * _Done_: all tasks that are finished, with the desired outcome.
 * _Not Done_: all tasks that are finished, but not with the desired outcome.
-* _Archived_: tasks which have been archived via `jupiter gc` are moved here. You can also achieve them via manually
-  changing their status too.
+* _Archived_: tasks which have been archived [garbage collection](./garbage-collection.md).
+  You can also achieve them via manually changing their status too.
 * _No Status_: tasks which you perhaps created, but don’t plan on actioning in any
   way.
 
@@ -40,21 +44,15 @@ Tasks also have a _source_, which can be one of:
 * _Metric_: the task has been generated for a particular [metric](metrics.md).
 * _Person Catch Up_: the task has been generated as a catch up task for a [person](persons.md).
 * _Person Birthday_: the task has been generated as a birthday task for a [person](persons.md).
-* _Slack_: the task has been generated from a [Slack message](slack-tasks.md).
-* _Email_: the task has been generated from an [email message](email-tasks.md).
 
 In the Inbox, you can see tasks in a sort of Kanban board, organised by status like
 this:
 
-![Inbox image](../assets/concepts-inbox.png)
+![Inbox image](../assets/index-inbox.png)
 
 The state evolution diagram is:
 
 ![Task states](../assets/concepts-task-states.png)
-
-You can create a task via regular Notion mechanisms (pressing the various "New" buttons),
-or Jupiter can create one for you from habits, chores, persons, Slack messages, email
-messages, etc via `jupiter gen`. You can remove a task by simply removing the Notion record of it.
 
 Tasks have an optional _actionable date_. Sometimes, it does not make sense to work
 on a task before a certain date. Think paying a bill which will be provided in a week. If a task
@@ -69,40 +67,43 @@ as either _urgent_ or _important_.
 Tasks also have a notion of _difficulty_. They can be catalogued as `Easy`, `Medium` or `Hard`. These inform
 the way certain views are sorted. But there's no other semantic meaning attached to these categories though.
 
-In Notion a task might look like this:
-
-![Task image](../assets/concepts-task.png)
-
-The “From Script”, “Recurring Period” and “Recurring Timeline” fields are relevant
-only for recurring tasks.
-
 ## The Inbox
 
 The inbox is a representation of your current work, as well as the work you recently
-finished or will recently start. It's a collection of tasks. They are created here
-in the “Accepted” or “Recurring” states, depending on who created them (you, or
-the system via `jupiter gen`, respectively).
+finished or will recently start. It's a collection of tasks organized in a particualr way.
 
 The inbox looks like a Kanban board usually, with the various states of a task as
 columns.
 
-![Inbox image](../assets/concepts-inbox.png)
+![Inbox image](../assets/index-inbox.png)
 
 There are multiple views for the inbox though right now:
 
-* _Kanban All_: views all tasks in the inbox as a Kanban board.
+* _Swiftview_: split tasks into three - habits, chores, and others. Tasks are sorted by due date
+  and Eisenhower status. Tasks that are completed are not shown. Useful to focus on habits and
+  chores, especially in the mobile view.
 * _Kanban With Eisen_: views all tasks in the inbox as a Kanban board, split by the Eisenhower status.
-* _Kanban Habits_: views all habits as a Kanban board.
-* _Kanban By Project_: views all tasks in the inbox as a Kanban board, split by [projects](projects.md).
-* _Database_: views all tasks in the inbox as a Excel-like table.
-* _Kanban Due $InPeriod Or Exceeded_: views all tasks due in a certain period
-  (week or month) or those that have exceeded their deadlines as a Kanban board.
-* _Not Completed By Date_: views all not done tasks in a calendar. Having due
-  dates is important for this purpose.
+  Tasks are sorted by due date.
+* _Kanban_: views all tasks in the inbox as a unified Kanban board. Tasks are sorted by due date.
+* _List_: views all tasks in the inbox as a long list of work, with limited sorting.
 
 Here’s a sneak peak at some views:
-![Inbox database](../assets/concepts-inbox-database.png)
 
-![Inbox by Eisen](../assets/concepts-inbox-tasks-with-eisen.png)
+![Swiftview](../assets/inbox-tasks-swiftview.png)
 
-![Inbox calendar](../assets/concepts-inbox-calendar.png)
+Besides the obvious button interactions, you can also _swipe left_ to mark a task as _done_ and
+_swipe right_ to mark it as not done.
+
+## Interactions
+
+In the web app you can change the properties of a inbox task by clicking on it in the view.
+
+![Inbox Tasks Update](../assets/inbox-tasks-update.png)
+
+In the CLI app you can:
+
+* Create a project via `inbox-task-create`.
+* Change the name, status, actionable date, due date, eisenhower, difficulty via `inbox-task-update`.
+* Change the project via `inbox-task-change-project`.
+* Change the big plan via `inbox-task-associate-with-big-plan`.
+* See a summary of the projects via `inbox-task-show`.

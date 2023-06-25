@@ -1,13 +1,16 @@
+buildinfo
+docs
+.github
+
+.build-cache/
+# node_modules/
+.mypy_cache/
 __pycache__/
+.git
+
 .system.lock
 .idea
+.vscode
 .DS_Store
-.mypy_cache
-.git
 .gitignore
-.github
-docs
-buildinfo
-venv
-.build-cache/
 secrets.info

@@ -13,6 +13,9 @@ check:
 fix-style:
 	./scripts/fix-style.sh
 
+gen:
+	./scripts/generate-client-code.sh
+
 migration-test:
 	./scripts/migration.sh
 
@@ -31,4 +34,4 @@ standalone-binary-build:
 stats-for-nerds:
 	./scripts/stats-for-nerds.sh
 
-.PHONY: fast-lint test itest coverage check fix-style docs migration-test docker-build docker-push standalone-binary-build stats-for-nerds
+.PHONY: fast-lint test itest coverage check fix-style gen docs migration-test docker-build docker-push standalone-binary-build stats-for-nerds

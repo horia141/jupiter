@@ -8,9 +8,9 @@ For example, you can have a habit like "Walk more than 10000 steps every day" or
 
 In the habits view, the task templates might look like this:
 
-![Habits templates](../assets/concepts-habits-view.png)
+![Habits Overview](../assets/habits-overview.png)
 
-## Habits Properties
+## Properties
 
 Habits have a _period_ and a _period interval_. The former is set via the `period`
 property and the latter is derived uniquely from this. The period can be one of:
@@ -36,10 +36,9 @@ Notice that the smallest period is the `daily` one, with a period interval of on
 general, for a given period interval there can be only one instantiation of a task of that
 period.
 
-While in the inbox, the instantiated tasks might look like this - notice the "Weekly" and
-"Monthly" labels:
+While in the inbox, the instantiated tasks might look like this:}
 
-![Inbox with habits](../assets/concepts-habits-instantiated.png)
+![Inbox Task from Habit](../assets/habits-inbox-task.png)
 
 The instantiated task in the inbox is constructed from the habit template, but
 it also changes in the following way:
@@ -48,8 +47,8 @@ it also changes in the following way:
   becomes "Meditate for 5 minutes Feb23". The formats are "Feb22" for daily periods,
   "W13" for weekly periods, "Mar" for monthly periods, "Q1" for quarterly periods,
   and "2020" for yearly periods.
-* The "From Script", "Recurring Period" and "Recurring Timeline" fields are populated. But
-  they are rather implementation details.
+* There is a link back to the owning habit.
+* Most fields are not editable.
 
 Habits can also have an actionable date. By default there is none, and the generated
 inbox task won't have an actionable date. If you specify an `actionable_from_day` and/or
@@ -80,10 +79,6 @@ interval, at midnight. You can override it however to specify, via the `due_at_d
   will mark it as due at midnight of the 10th of March. and adding `due_at_time: "13:00"`
   will mark it as due at 1PM on the 10th of March.
 
-In Notion an instantiated task might look like this then:
-
-![Instantiated habit image](../assets/concepts-instantiated-habit.png)
-
 Habits can be configured to skip certain periods via a skip rule. This is
 specified via the `skip_rule` property, which can be one of:
 
@@ -108,31 +103,22 @@ to all the instantiated tasks that are created.
 Similarly, a habit can have the Eisenhower properties. These will be copied to
 all the instantiated tasks that are created.
 
-Habits are created via the `jupiter gen` command. This has some special forms too:
+Habit inbox tasks are created via [task generation](tasks-generation.md).
 
-* `jupiter gen` is the standard form and inserts all of the
-  tasks whose period interval includes today. Thus, all daily tasks will be inserted, and
-  all weekly tasks for this week, etc. Of course, if the tasks for this week have already
-  been instantiated, they won't be again.
-* `jupiter gen --date=YYYY-MM-DD` does an insert as if the day
-  were the one given by the `date` argument. Useful for creating tasks in the days before
-  the start of a certain week or month.
-* `jupiter gen --period=PERIOD` does an insert only on the
-  tasks with a certain period. Useful to speed up inserts when you know you only want
-  new tasks for the next day or week.
+## Interactions
 
-The `jupiter gen` command is idempotent, as described above. Furthermore it does
-not affect task status, or any extra edits on a particular instance of a task. If any property
-of the habit template which get copied over to the instance is modified, then the command
-will take care to update the instance too. Only archived and removed tasks are regenerated.
+In the web app you can change the properties of a habit by clicking on it in the view.
 
-## Habits Interactions Summary
+![Habit Update](../assets/habits-update.png)
 
-You can:
+You can also view all the generated inbox tasks, and can quickly swipe left/swipe right to
+interact with them.
 
-* Create a habit via `habit-create`, or by creating a new entry in the "Habits" view.
-* Remove a habit via `habit-arhive`, or by clicking the archive checkbox the entry in the "Habits" view.
-* Any of the properties of a habit can be changed via `habit-update`, or by editing the task in Notion.
+In the CLI app you can:
+
+* Create a habit via `habit-create`.
+* Remove a habit via `habit-arhive`.
+* Any of the properties of a habit can be changed via `habit-update`.
+* Change the generation project of a chore via `habit-change-project`.
 * A habit can be suspended via `habit-suspend` and unsuspended via `habit-unsuspend`.
-  Or by editing the task in Notion.
 * Show info about the habit via `habit-show`.

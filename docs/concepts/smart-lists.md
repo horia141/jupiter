@@ -7,39 +7,24 @@ the construction of a plan outside of the formal constraints of [big plans](big-
 
 In the workspace overview, you can view the set of smart lists:
 
-![Smart lists](../assets/concepts-smart-lists-overview.png)
-
-Each smart list contains many items, for example:
-
-![Smart list items](../assets/concepts-smart-list-items.png)
-
-Much like [projects](projects.md), smart lists are created via the
-`jupiter smart-lists-create --smart-list $smartListKey --name "Smart List Name"` command. The command is
-idempotent. The key plays the same part it does for a project, is a unique identifier for the
-smart list, and must be some nice string with no spaces or funny characters like `books` or `movies`.
-It will be used as a reference to the project in other commands.
-
-Smart lists have a name.
-
-They also have an icon, which is a nice unicode glyph like 📖 or 🍺 which serves to visually
-distinguish the smart list.
-
-## Interaction Summary
-
-You can:
-
-* Create a smart list via `smart-list-create`.
-* Remove a smart list via `smart-list-archive`.
-* Change the name via `smart-list-update`, or by changing the name of the page in Notion.
-* See a summary of the smart lists via `smart-list-show`.
-
-## Items
+![Smart lists](../assets/smart-lists-overview.png)
 
 Smart list items are the actual books you want to read, movies you've seen, or courses you've attended.
 They are attached to a particular smart list.
 
 For example, you can have a smart list item like "The Godfather", or "Trafalgar Square", in your list of
 movies, and places to visit, respectively.
+
+Each smart list contains many items, for example:
+
+![Smart list items](../assets/smart-lists-list.png)
+
+## Properties
+
+Smart lists have a name.
+
+They also have an icon, which is a nice unicode glyph like 📖 or 🍺 which serves to visually
+distinguish the smart list.
 
 Smart list items have a name.
 
@@ -53,18 +38,23 @@ Smart list items also have an optional url. It can be used to provide extra info
 such as an Amazon link where it can be bought, or the actual link of the actual interesting article you want to
 read.
 
-In general, you're going to create smart list items from Notion, and use [sync](notion-local-sync.md) to bring them
-over to the [local store](local-storage.md).
+## Interactions
 
-## Items Interaction Summary
+In the web app you can change the properties of a smart list by clicking on it in the view.
 
-You can:
+![Smart List Update](../assets/smart-lists-update.png)
 
-* Create a smart list item via `smart-list-item-create`, or by creating a new entry in the appropriate Notion table.
-* Remove a smart list item via `smart-list-item-archive`, or by clicking the archive checkbox in Notion.
-* Change the doneness status via `smart-list-item-update`, or by clicking on
-  the checkbox in Notion.
-* Change the name of a smart list item via `smart-list-item-update`, or by changing the name from the Notion row.
-* Change the tags of a smart list item via `smart-list-item-update`, or by changing the tags from the Notion row.
-* Change the url of a smart list item via `smart-list-item-update`, or by changing the URL field from the Notion row.
+Similarly you can change the properties of an item by clicking on it in the view.
+
+![Smart List Item Update](../assets/smart-lists-item-update.png)
+
+In the CLI app you can:
+
+* Create a smart list via `smart-list-create`.
+* Remove a smart list via `smart-list-archive`.
+* Change the name or icon via `smart-list-update`.
+* See a summary of the smart lists via `smart-list-show`.
+* Create a smart list item via `smart-list-item-create`.
+* Remove a smart list item via `smart-list-item-archive`.
+* Change the name, tags, doneness, and url of a smart list item via `smart-list-item-update`.
 * There is a whole suite of `smart-list-tag-*` commands for create/update/archival of tags.

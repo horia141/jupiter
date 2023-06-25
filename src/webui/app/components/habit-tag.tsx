@@ -1,0 +1,16 @@
+import type { Habit } from "jupiter-gen";
+import { LinkTag } from "./infra/link-tag";
+
+interface Props {
+  habit: Habit;
+}
+
+export function HabitTag(props: Props) {
+  return (
+    <LinkTag
+      to={`/workspace/habits/${props.habit.ref_id.the_id}`}
+      label={props.habit.name.the_name}
+      color="primary"
+    />
+  );
+}

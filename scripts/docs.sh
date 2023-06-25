@@ -2,4 +2,4 @@
 
 set -ex
 
-poetry run mkdocs serve
+mkdocs serve

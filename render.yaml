@@ -1,0 +1,37 @@
+services:
+- type: web
+  name: jupiter-webui
+  env: docker
+  dockerfilePath: ./src/webui/Dockerfile
+  dockerContext: .
+  region: frankfurt
+  plan: starter
+  branch: feature/separate-into-cli-and-core
+  autoDeploy: true
+  rootDir: .
+  numInstances: 1
+  healthCheckPath: /healthz
+  buildFilter:
+    paths:
+    - gen/**
+    - src/webui/**
+- type: web
+  name: jupiter-webapi
+  env: docker
+  dockerfilePath: ./src/webapi/Dockerfile
+  dockerContext: .
+  region: frankfurt
+  plan: starter
+  branch: feature/separate-into-cli-and-core
+  autoDeploy: true
+  rootDir: .
+  numInstances: 1
+  healthCheckPath: /healthz
+  buildFilter:
+    paths:
+    - src/core/**
+    - src/webapi/**
+  disk:
+      name: jupiter-data
+      mountPath: /data
+      sizeGB: 5

@@ -1,0 +1,43 @@
+{
+  "name": "jupiter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Jupiter is a small tool for _life planning_.",
+  "author": "Horia Coman <horia141@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://jupiter-goals.readthedocs.io/",
+  "readme": "README.md",
+  "repository": "https://github.com/horia141/jupiter",
+  "workspaces": [
+    "src/desktop",
+    "src/webui",
+    "gen"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4",
+    "@types/react-beautiful-dnd": "^13.1.3",
+    "@typescript-eslint/eslint-plugin": "^5.47.0",
+    "@typescript-eslint/parser": "^5.47.0",
+    "eslint": "^8.30.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "openapi-typescript-codegen": "^0.23.0",
+    "prettier": "2.8.1",
+    "prettier-plugin-organize-imports": "^3.2.2"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "plugin:@typescript-eslint/recommended",
+      "prettier"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ]
+  }
+}

@@ -4,6 +4,6 @@ branch=True
 data_file=.build-cache/itest/coverage/coverage
 [paths]
 source =
-    jupiter/
+    src/
 [html]
 directory=.build-cache/itest/coverage-html/

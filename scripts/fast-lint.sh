@@ -2,4 +2,13 @@
 
 set -ex
 
-poetry run mypy --config=./scripts/lint/mypy jupiter tests
+# Check Python
+(cd src/core && poetry run mypy --config=../../scripts/lint/mypy --package jupiter.core --package tests --explicit-package-bases)
+(cd src/cli && MYPYPATH=../core poetry run mypy --config=../../scripts/lint/mypy --package jupiter.cli --package tests --explicit-package-bases)
+(cd src/webapi && MYPYPATH=../core poetry run mypy --config=../../scripts/lint/mypy --package jupiter.webapi --package tests --explicit-package-bases)
+poetry run ruff --cache-dir=.build-cache/ruff --config=./scripts/lint/ruff.toml src tests
+
+# Check Node+TS
+(cd src/webui && npx tsc)
+# (cd src/desktop && npx tsc) # TODO(horia141): typescriptify electron app
+# (cd tests && exit 1) # TODO(horia141): with new test

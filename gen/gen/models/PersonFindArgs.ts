@@ -1,0 +1,13 @@
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+
+import type { EntityId } from './EntityId';
+
+export type PersonFindArgs = {
+    allow_archived: boolean;
+    include_catch_up_inbox_tasks: boolean;
+    include_birthday_inbox_tasks: boolean;
+    filter_person_ref_ids?: Array<EntityId>;
+};
+

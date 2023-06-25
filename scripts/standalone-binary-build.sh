@@ -14,18 +14,19 @@ fi
 PLATFORM=$(uname -s | awk '{print tolower($0)}')
 ARCH=$(arch)
 
-poetry run pyinstaller \
+pyinstaller \
   --noconfirm \
-  --name Jupiter \
-  --add-data README.md:. \
+  --name Jupiter-Cli \
+  --add-data src/cli/README.md:. \
   --add-data LICENSE:. \
-  --add-data Config:. \
-  --add-data migrations:migrations \
+  --add-data src/Config.global:. \
+  --add-data src/cli/Config.project:. \
+  --add-data src/core/migrations:core/migrations \
   --distpath .build-cache/standalone-binary/dist \
   --workpath .build-cache/standalone-binary/build \
   --windowed \
   --icon assets/jupiter.icns \
-  jupiter/jupiter.py
+  src/cli/jupiter/cli/jupiter.py
 
 if [[ "${PLATFORM}" == "darwin" ]]
 then
@@ -34,11 +35,11 @@ then
   rm -f rw.*.dmg
   rm -f "${DMG_IMAGE_NAME}"
   create-dmg \
-    --volname "Jupiter" \
+    --volname "Jupiter-Cli" \
     --volicon "assets/jupiter.icns" \
     --window-size 600 600 \
-    --icon "Jupiter.app" 40 40 \
-    --hide-extension "Jupiter.app" \
+    --icon "Jupiter-Cli.app" 40 40 \
+    --hide-extension "Jupiter-Cli.app" \
     --app-drop-link 200 160 \
     --eula LICENSE \
     --skip-jenkins \

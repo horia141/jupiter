@@ -1,0 +1,134 @@
+import {
+  Button,
+  ButtonGroup,
+  Card,
+  CardActions,
+  CardContent,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+} from "@mui/material";
+import { Stack } from "@mui/system";
+import type { ActionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { useActionData, useTransition } from "@remix-run/react";
+import { StatusCodes } from "http-status-codes";
+import { ApiError } from "jupiter-gen";
+import { z } from "zod";
+import { parseForm } from "zodix";
+import { getLoggedInApiClient } from "~/api-clients";
+import { makeErrorBoundary } from "~/components/infra/error-boundary";
+import { FieldError, GlobalError } from "~/components/infra/errors";
+import { LeafCard } from "~/components/infra/leaf-card";
+import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { DisplayType } from "~/rendering/use-nested-entities";
+import { getSession } from "~/sessions";
+
+const CreateFormSchema = {
+  name: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+};
+
+export const handle = {
+  displayType: DisplayType.LEAF,
+};
+
+export async function action({ request }: ActionArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const form = await parseForm(request, CreateFormSchema);
+
+  try {
+    const result = await getLoggedInApiClient(session).vacation.createVacation({
+      name: { the_name: form.name },
+      start_date: { the_date: form.startDate, the_datetime: undefined },
+      end_date: { the_date: form.endDate, the_datetime: undefined },
+    });
+
+    return redirect(
+      `/workspace/vacations/${result.new_vacation.ref_id.the_id}`
+    );
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === StatusCodes.UNPROCESSABLE_ENTITY
+    ) {
+      return json(validationErrorToUIErrorInfo(error.body));
+    }
+
+    throw error;
+  }
+}
+
+export default function NewVacation() {
+  const transition = useTransition();
+  const actionData = useActionData<typeof action>();
+
+  const inputsEnabled = transition.state === "idle";
+
+  return (
+    <LeafCard returnLocation="/workspace/vacations">
+      <GlobalError actionResult={actionData} />
+      <Card>
+        <CardContent>
+          <Stack spacing={2} useFlexGap>
+            <FormControl fullWidth>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
+                readOnly={!inputsEnabled}
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="startDate" shrink margin="dense">
+                Start Date
+              </InputLabel>
+              <OutlinedInput
+                type="date"
+                label="startDate"
+                name="startDate"
+                readOnly={!inputsEnabled}
+              />
+
+              <FieldError actionResult={actionData} fieldName="/start_date" />
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="endDate" shrink margin="dense">
+                End Date
+              </InputLabel>
+              <OutlinedInput
+                type="date"
+                label="endDate"
+                name="endDate"
+                readOnly={!inputsEnabled}
+              />
+
+              <FieldError actionResult={actionData} fieldName="/end_date" />
+            </FormControl>
+          </Stack>
+        </CardContent>
+        <CardActions>
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="create"
+            >
+              Create
+            </Button>
+          </ButtonGroup>
+        </CardActions>
+      </Card>
+    </LeafCard>
+  );
+}
+
+export const ErrorBoundary = makeErrorBoundary(
+  () => `There was an error creating the vacation! Please try again!`
+);

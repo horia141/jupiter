@@ -12,26 +12,12 @@ fi
 
 BUILDINFO_ROOT="buildinfo/${RELEASE_BRANCH}"
 CLOC_BUILDINFO="${BUILDINFO_ROOT}/cloc"
-LIBYEAR_BUILDINFO="${BUILDINFO_ROOT}/libyear"
-DEV_LIBYEAR_BUILDINFO="${BUILDINFO_ROOT}/libyear-dev"
 COVERAGE_BUILDINFO="${BUILDINFO_ROOT}/coverage"
 TEST_BUILDINFO="${BUILDINFO_ROOT}/test"
 
 if ! [[ -f "${CLOC_BUILDINFO}" ]]
 then
     echo "No cloc information! Please run make stats-for-nerds to fix."
-    exit 1
-fi
-
-if ! [[ -f "${LIBYEAR_BUILDINFO}" ]]
-then
-    echo "No libyear information! Please run make stats-for-nerds to fix."
-    exit 1
-fi
-
-if ! [[ -f "${DEV_LIBYEAR_BUILDINFO}" ]]
-then
-    echo "No libyear-dev information! Please run make stats-for-nerds to fix."
     exit 1
 fi
 
