@@ -30,7 +30,7 @@ pyinstaller \
 
 if [[ "${PLATFORM}" == "darwin" ]]
 then
-  DMG_IMAGE_NAME="jupiter-${RELEASE_VERSION}-${PLATFORM}-${ARCH}.dmg"
+  DMG_IMAGE_NAME="jupiter-cli-${RELEASE_VERSION}-${PLATFORM}-${ARCH}.dmg"
 
   rm -f rw.*.dmg
   rm -f "${DMG_IMAGE_NAME}"
@@ -44,8 +44,8 @@ then
     --eula LICENSE \
     --skip-jenkins \
     "${DMG_IMAGE_NAME}" \
-    .build-cache/standalone-binary/dist/Jupiter.app
+    .build-cache/standalone-binary/dist/Jupiter-Cli.app
 
-  mv Jupiter.spec ".build-cache/standalone-binary/Jupiter.spec"
+  mv Jupiter-Cli.spec ".build-cache/standalone-binary/Jupiter-Cli.spec"
   mv "${DMG_IMAGE_NAME}" ".build-cache/standalone-binary/${DMG_IMAGE_NAME}"
 fi
