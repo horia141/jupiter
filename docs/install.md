@@ -29,26 +29,6 @@ You can of course add an alias to your shell about it.
 
 By using this approach you will be running in [local mode](concepts/local-vs-hosted-mode.md).
 
-## Docker (Advanced)
-
-Another way to install Jupiter is via Docker.
-
-You first need to make sure you have a recent Docker installed. After that it's a straightforward:
-
-```bash
-$ docker pull horia141/jupiter:latest
-```
-
-This will get you the latest version of the code. After this you can:
-
-```bash
-$ mkdir my-jupiter-work-dir # A dir where you manage local Jupiter data.
-$ cd my-jupiter-work-dir
-$ docker run -it --rm --name jupiter-app -v $(pwd):/data horia141/jupiter:latest init --help
-```
-
-By using this approach you will be running in [local mode](concepts/local-vs-hosted-mode.md).
-
 ## GitHub (Advanced)
 
 Another way to install it is from "sources" on GitHub.
