@@ -1,3 +1,4 @@
+previewsEnabled: true
 services:
 - type: web
   name: jupiter-webui
@@ -6,7 +7,7 @@ services:
   dockerContext: .
   region: frankfurt
   plan: starter
-  branch: feature/separate-into-cli-and-core
+  branch: master
   autoDeploy: true
   rootDir: .
   numInstances: 1
@@ -22,7 +23,7 @@ services:
   dockerContext: .
   region: frankfurt
   plan: starter
-  branch: feature/separate-into-cli-and-core
+  branch: master
   autoDeploy: true
   rootDir: .
   numInstances: 1
