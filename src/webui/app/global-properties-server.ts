@@ -32,8 +32,8 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
     localWebApiProgressReporterUrl: process.env
       .LOCAL_WEBAPI_PROGRESS_REPORTER_URL as string,
-    globalWebApiServerUrl: process.env.HOSTED_GLOBAL_WEBAPI_SERVER_URL as string,
-    globalWebApiProgressReporterUrl: process.env
+    hostedGlobalWebApiServerUrl: process.env.HOSTED_GLOBAL_WEBAPI_SERVER_URL as string,
+    hostedGlobalWebApiProgressReporterUrl: process.env
       .HOSTED_GLOBAL_WEBAPI_PROGRESS_REPORTER_URL as string,
     docsUrl: process.env.DOCS_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
