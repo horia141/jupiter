@@ -7,7 +7,7 @@ services:
   dockerContext: .
   region: frankfurt
   plan: starter
-  branch: master
+  previewPlan: starter
   autoDeploy: true
   rootDir: .
   numInstances: 1
@@ -23,7 +23,7 @@ services:
   dockerContext: .
   region: frankfurt
   plan: starter
-  branch: master
+  previewPlan: starter
   autoDeploy: true
   rootDir: .
   numInstances: 1
