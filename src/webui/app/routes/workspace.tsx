@@ -1,4 +1,5 @@
 import { Settings } from "@mui/icons-material";
+import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -22,7 +23,6 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
-import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
@@ -33,11 +33,11 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { TrunkPanel } from "~/components/infra/trunk-panel";
 import ProgressReporter from "~/components/progress-reporter";
 import SearchBox from "~/components/search-box";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { GlobalPropertiesContext } from "~/global-properties-client";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
@@ -127,7 +127,7 @@ export default function Workspace() {
             color="inherit"
           >
             <Avatar
-              sx={{width: "1.75rem", height: "1.75rem"}}
+              sx={{ width: "1.75rem", height: "1.75rem" }}
               alt={loaderData.user.name.the_name}
               src={loaderData.user.avatar.avatar_as_data_url}
             />

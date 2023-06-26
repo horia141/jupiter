@@ -5,7 +5,7 @@ import { GlobalPropertiesContext } from "~/global-properties-client";
 
 export default function Index() {
   const globalProperties = useContext(GlobalPropertiesContext);
-  
+
   return (
     <Container maxWidth="lg">
       <Button variant="outlined" to="/workspace" component={Link}>
