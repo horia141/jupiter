@@ -20,7 +20,7 @@ export function getGuestApiClient(session?: Session): ApiClient {
   if (GLOBAL_PROPERTIES.hosting === "LOCAL") {
     base = GLOBAL_PROPERTIES.localWebApiServerUrl;
   } else if (GLOBAL_PROPERTIES.hosting === "HOSTED-GLOBAL") {
-    base = GLOBAL_PROPERTIES.globalWebApiServerUrl;
+    base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
     throw new Error("Unknown use case: " + GLOBAL_PROPERTIES.hosting);
   }
@@ -51,7 +51,7 @@ export function getLoggedInApiClient(session: Session): ApiClient {
   if (GLOBAL_PROPERTIES.hosting === "LOCAL") {
     base = GLOBAL_PROPERTIES.localWebApiServerUrl;
   } else if (GLOBAL_PROPERTIES.hosting === "HOSTED-GLOBAL") {
-    base = GLOBAL_PROPERTIES.globalWebApiServerUrl;
+    base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
     throw new Error("Unknown hosting option: " + GLOBAL_PROPERTIES.hosting);
   }
