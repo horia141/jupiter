@@ -1050,7 +1050,7 @@ vacation_find_use_case = VacationFindUseCase(
 )
 
 standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
-    404: {"description": "Workspace Not Found", "content": {"plain/text": {}}},
+    410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
 }
 
 
