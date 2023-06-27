@@ -1,4 +1,5 @@
 import { Settings } from "@mui/icons-material";
+import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -26,12 +27,13 @@ import Sidebar from "~/components/sidebar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { TrunkPanel } from "~/components/infra/trunk-panel";
 import ProgressReporter from "~/components/progress-reporter";
 import SearchBox from "~/components/search-box";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
@@ -65,6 +67,8 @@ export default function Workspace() {
   const isBigScreen = useBigScreen();
   const shouldShowTrunk = useRootNeedsToShowTrunk();
   const [showSidebar, setShowSidebar] = useState(isBigScreen);
+
+  const globalProperties = useContext(GlobalPropertiesContext);
 
   const [accountMenuAnchorEl, setAccountMenuAnchorEl] =
     useState<null | HTMLElement>(null);
@@ -108,11 +112,22 @@ export default function Workspace() {
           <ProgressReporter token={loaderData.progressReporterToken} />
 
           <IconButton
+            component={"a"}
+            size="large"
+            color="inherit"
+            href={globalProperties.docsUrl}
+            target="_blank"
+          >
+            <HelpCenterIcon />
+          </IconButton>
+
+          <IconButton
             onClick={handleAccountMenuClick}
             size="large"
             color="inherit"
           >
             <Avatar
+              sx={{ width: "1.75rem", height: "1.75rem" }}
               alt={loaderData.user.name.the_name}
               src={loaderData.user.avatar.avatar_as_data_url}
             />

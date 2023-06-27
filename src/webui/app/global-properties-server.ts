@@ -8,8 +8,9 @@ export interface GlobalPropertiesServer {
   hosting: string;
   localWebApiServerUrl: string;
   localWebApiProgressReporterUrl: string;
-  globalWebApiServerUrl: string;
-  globalWebApiProgressReporterUrl: string;
+  hostedGlobalWebApiServerUrl: string;
+  hostedGlobalWebApiProgressReporterUrl: string;
+  docsUrl: string;
   sessionCookieSecret: string;
   sessionCookieName: string;
   inboxTasksToAskForGC: number;
@@ -31,9 +32,11 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
     localWebApiProgressReporterUrl: process.env
       .LOCAL_WEBAPI_PROGRESS_REPORTER_URL as string,
-    globalWebApiServerUrl: process.env.GLOBAL_WEBAPI_SERVER_URL as string,
-    globalWebApiProgressReporterUrl: process.env
-      .GLOBAL_WEBAPI_PROGRESS_REPORTER_URL as string,
+    hostedGlobalWebApiServerUrl: process.env
+      .HOSTED_GLOBAL_WEBAPI_SERVER_URL as string,
+    hostedGlobalWebApiProgressReporterUrl: process.env
+      .HOSTED_GLOBAL_WEBAPI_PROGRESS_REPORTER_URL as string,
+    docsUrl: process.env.DOCS_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
     sessionCookieName: process.env.SESSION_COOKIE_NAME as string,
     inboxTasksToAskForGC: parseInt(
