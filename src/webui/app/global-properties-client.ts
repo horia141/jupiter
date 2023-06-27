@@ -7,6 +7,7 @@ export interface GlobalPropertiesClient {
   baseName: string;
   description: string;
   webApiProgressReporterUrl: string;
+  docsUrl: string;
   inboxTasksToAskForGC: number;
   overdueInfoDays: number;
   overdueWarningDays: number;
@@ -18,6 +19,7 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   baseName: "FAKE-FAKE",
   description: "FAKE-FAKE",
   webApiProgressReporterUrl: "FAKE-FAKE",
+  docsUrl: "FAKE-FAKE",
   inboxTasksToAskForGC: 20,
   overdueInfoDays: 1,
   overdueWarningDays: 2,
@@ -34,7 +36,8 @@ export function serverToClientGlobalProperties(
     webApiProgressReporterUrl:
       globalPropertiesServer.hosting === "LOCAL"
         ? globalPropertiesServer.localWebApiProgressReporterUrl
-        : globalPropertiesServer.globalWebApiProgressReporterUrl,
+        : globalPropertiesServer.hostedGlobalWebApiProgressReporterUrl,
+    docsUrl: globalPropertiesServer.docsUrl,
     inboxTasksToAskForGC: globalPropertiesServer.inboxTasksToAskForGC,
     overdueInfoDays: globalPropertiesServer.overdueInfoDays,
     overdueWarningDays: globalPropertiesServer.overdueWarningDays,
