@@ -27,6 +27,7 @@ services:
         name: jupiter-webapi
         type: web
         property: port
+    - fromGroup: staging
 - type: web
   name: jupiter-webapi
   env: docker
@@ -47,3 +48,14 @@ services:
       name: jupiter-data
       mountPath: /data
       sizeGB: 5
+  envVars:
+    - fromGroup: staging
+envVarGroups:
+- name: staging
+  envVars:
+    - key: ENV
+      value: staging
+- name: production
+  envVars:
+    - key: ENV
+      value: production
