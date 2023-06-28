@@ -26,7 +26,15 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
   dotenv.config({ path: `${process.cwd()}/../Config.global` });
   dotenv.config({ path: `${process.cwd()}/Config.project` });
 
-  let localWebApiServerUrl;
+  const hostedGlobalWebApiServerHost = process.env
+    .HOSTED_GLOBAL_WEBAPI_SERVER_HOST as string;
+  const hostedGlobalWebApiServerPort = parseInt(
+    process.env.HOSTED_GLOBAL_WEBAPI_SERVER_PORT as string,
+    10
+  );
+
+  const hostedGlobalWebApiServerUrl = `http://${hostedGlobalWebApiServerHost}:${hostedGlobalWebApiServerPort}`;
+  const hostedGlobalWebApiProgressReporterUrl = `wss://${hostedGlobalWebApiServerHost}.onrender.com/progress-reporter`;
 
   const globalProperties = {
     env: process.env.ENV as Env,
@@ -36,10 +44,9 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
     localWebApiProgressReporterUrl: process.env
       .LOCAL_WEBAPI_PROGRESS_REPORTER_URL as string,
-    hostedGlobalWebApiServerUrl: process.env
-      .HOSTED_GLOBAL_WEBAPI_SERVER_URL as string,
-    hostedGlobalWebApiProgressReporterUrl: process.env
-      .HOSTED_GLOBAL_WEBAPI_PROGRESS_REPORTER_URL as string,
+    hostedGlobalWebApiServerUrl: hostedGlobalWebApiServerUrl,
+    hostedGlobalWebApiProgressReporterUrl:
+      hostedGlobalWebApiProgressReporterUrl,
     hostedGlobalWebApiServerHost: process.env
       .HOSTED_GLOBAL_WEBAPI_SERVER_HOST as string,
     hostedGlobalWebApiServerPort: parseInt(
