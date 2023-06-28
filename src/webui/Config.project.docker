@@ -1,4 +1,4 @@
-ENV=staging
+_ENV=WILL-BE-FILLED-BY-RENDER
 BASENAME=jupiter-webui
 DESCRIPTION="The Jupiter Web application"
 HOSTING=HOSTED-GLOBAL

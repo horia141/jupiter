@@ -1,4 +1,6 @@
 previewsEnabled: true
+previewsExpireAfterDays: 1
+
 services:
 - type: web
   name: jupiter-webui
@@ -17,6 +19,9 @@ services:
     - gen/**
     - src/webui/**
   envVars:
+    - key: ENV
+      value: production
+      previewValue: staging
     - key: HOSTED_GLOBAL_WEBAPI_SERVER_HOST
       fromService:
         name: jupiter-webapi
@@ -27,7 +32,6 @@ services:
         name: jupiter-webapi
         type: web
         property: port
-    - fromGroup: staging
 - type: web
   name: jupiter-webapi
   env: docker
@@ -49,13 +53,6 @@ services:
       mountPath: /data
       sizeGB: 5
   envVars:
-    - fromGroup: staging
-envVarGroups:
-- name: staging
-  envVars:
-    - key: ENV
-      value: staging
-- name: production
-  envVars:
     - key: ENV
       value: production
+      previewValue: staging
