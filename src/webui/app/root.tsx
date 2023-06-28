@@ -38,6 +38,8 @@ export function meta() {
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();
 
+  console.log(loaderData.globalProperties);
+
   return (
     <html lang="en">
       <head>

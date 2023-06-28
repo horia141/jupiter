@@ -10,6 +10,8 @@ export interface GlobalPropertiesServer {
   localWebApiProgressReporterUrl: string;
   hostedGlobalWebApiServerUrl: string;
   hostedGlobalWebApiProgressReporterUrl: string;
+  hostedGlobalWebApiServerHost: string;
+  hostedGlobalWebApiServerPort: number;
   docsUrl: string;
   sessionCookieSecret: string;
   sessionCookieName: string;
@@ -24,6 +26,8 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
   dotenv.config({ path: `${process.cwd()}/../Config.global` });
   dotenv.config({ path: `${process.cwd()}/Config.project` });
 
+  let localWebApiServerUrl;
+
   const globalProperties = {
     env: process.env.ENV as Env,
     baseName: process.env.BASENAME as string,
@@ -36,6 +40,12 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
       .HOSTED_GLOBAL_WEBAPI_SERVER_URL as string,
     hostedGlobalWebApiProgressReporterUrl: process.env
       .HOSTED_GLOBAL_WEBAPI_PROGRESS_REPORTER_URL as string,
+    hostedGlobalWebApiServerHost: process.env
+      .HOSTED_GLOBAL_WEBAPI_SERVER_HOST as string,
+    hostedGlobalWebApiServerPort: parseInt(
+      process.env.HOSTED_GLOBAL_WEBAPI_SERVER_PORT as string,
+      10
+    ),
     docsUrl: process.env.DOCS_URL as string,
     sessionCookieSecret: process.env.SESSION_COOKIE_SECRET as string,
     sessionCookieName: process.env.SESSION_COOKIE_NAME as string,

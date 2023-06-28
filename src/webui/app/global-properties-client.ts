@@ -6,6 +6,8 @@ export interface GlobalPropertiesClient {
   env: Env;
   baseName: string;
   description: string;
+  hostedGlobalWebApiServerHost: string;
+  hostedGlobalWebApiServerPort: number;
   webApiProgressReporterUrl: string;
   docsUrl: string;
   inboxTasksToAskForGC: number;
@@ -18,6 +20,8 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
   baseName: "FAKE-FAKE",
   description: "FAKE-FAKE",
+  hostedGlobalWebApiServerHost: "FAKE-FAKE",
+  hostedGlobalWebApiServerPort: -10,
   webApiProgressReporterUrl: "FAKE-FAKE",
   docsUrl: "FAKE-FAKE",
   inboxTasksToAskForGC: 20,
@@ -33,6 +37,10 @@ export function serverToClientGlobalProperties(
     env: globalPropertiesServer.env,
     baseName: globalPropertiesServer.baseName,
     description: globalPropertiesServer.description,
+    hostedGlobalWebApiServerHost:
+      globalPropertiesServer.hostedGlobalWebApiServerHost,
+    hostedGlobalWebApiServerPort:
+      globalPropertiesServer.hostedGlobalWebApiServerPort,
     webApiProgressReporterUrl:
       globalPropertiesServer.hosting === "LOCAL"
         ? globalPropertiesServer.localWebApiProgressReporterUrl

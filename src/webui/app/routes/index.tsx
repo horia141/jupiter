@@ -9,13 +9,17 @@ export default function Index() {
   return (
     <Container maxWidth="lg">
       <ButtonGroup>
-      <Button variant="contained" to="/workspace" component={Link}>
-        Go To The Workspace
-      </Button>
+        <Button variant="contained" to="/workspace" component={Link}>
+          Go To The Workspace
+        </Button>
 
-      <Button variant="outlined" to={globalProperties.docsUrl} component={Link}>
-        Go To The Docs
-      </Button>
+        <Button
+          variant="outlined"
+          to={globalProperties.docsUrl}
+          component={Link}
+        >
+          Go To The Docs
+        </Button>
       </ButtonGroup>
     </Container>
   );

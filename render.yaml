@@ -16,6 +16,17 @@ services:
     paths:
     - gen/**
     - src/webui/**
+  envVars:
+    - key: HOSTED_GLOBAL_WEBAPI_SERVER_HOST
+      fromService:
+        name: jupiter-webapi
+        type: web
+        property: host
+    - key: HOSTED_GLOBAL_WEBAPI_SERVER_PORT
+      fromService:
+        name: jupiter-webapi
+        type: web
+        property: port
 - type: web
   name: jupiter-webapi
   env: docker
