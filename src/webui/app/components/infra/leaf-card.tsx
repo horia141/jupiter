@@ -58,7 +58,7 @@ const StyledButtonGroup = styled("div")<StyledButtionGroupProps>(
     padding-right: 0.5rem;
     margin-bottom: 1rem;
     position: sticky;
-    top: ${isBigScreen ? "4rem" : "3.5rem"};
+    top: ${isBigScreen ? "4rem" : "3.3rem"};
     background-color: ${theme.palette.background.paper};
     z-index: ${theme.zIndex.drawer + 1};
     border-radius: 0px;

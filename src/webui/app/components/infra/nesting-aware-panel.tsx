@@ -9,10 +9,10 @@ export function NestingAwarePanel(props: PropsWithChildren<NestingAwarePanelProp
     const isBigScreen = useBigScreen();
 
     if (isBigScreen) {
-        return props.children;
+        return <>{props.children}</>;
     } else {
         if (!props.showOutlet) {
-            return props.children;
+            return <>{props.children}</>;
         } else {
             return null;
         }
