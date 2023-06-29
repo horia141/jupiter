@@ -81,6 +81,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -324,6 +325,7 @@ export default function InboxTasks() {
 
   return (
     <TrunkCard>
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
       <ActionHeader returnLocation="/workspace">
         <ButtonGroup>
           <Button
@@ -634,6 +636,7 @@ export default function InboxTasks() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>
