@@ -13,6 +13,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
@@ -70,40 +71,46 @@ export default function Habits() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <Button variant="contained" to="/workspace/habits/new" component={Link}>
-          Create
-        </Button>
-      </ActionHeader>
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <Button
+            variant="contained"
+            to="/workspace/habits/new"
+            component={Link}
+          >
+            Create
+          </Button>
+        </ActionHeader>
 
-      <EntityStack>
-        {sortedHabits.map((habit) => {
-          const entry = entriesByRefId.get(
-            habit.ref_id.the_id
-          ) as HabitFindResultEntry;
-          return (
-            <EntityCard
-              key={habit.ref_id.the_id}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveHabit(habit)}
-            >
-              <EntityLink to={`/workspace/habits/${habit.ref_id.the_id}`}>
-                <EntityNameComponent name={habit.name} />
-                <ProjectTag project={entry.project as Project} />
-                {habit.suspended && <span className="tag">Suspended</span>}
-                <PeriodTag period={habit.gen_params.period} />
-                {habit.gen_params.eisen && (
-                  <EisenTag eisen={habit.gen_params.eisen} />
-                )}
-                {habit.gen_params.difficulty && (
-                  <DifficultyTag difficulty={habit.gen_params.difficulty} />
-                )}
-              </EntityLink>
-            </EntityCard>
-          );
-        })}
-      </EntityStack>
+        <EntityStack>
+          {sortedHabits.map((habit) => {
+            const entry = entriesByRefId.get(
+              habit.ref_id.the_id
+            ) as HabitFindResultEntry;
+            return (
+              <EntityCard
+                key={habit.ref_id.the_id}
+                allowSwipe
+                allowMarkNotDone
+                onMarkNotDone={() => archiveHabit(habit)}
+              >
+                <EntityLink to={`/workspace/habits/${habit.ref_id.the_id}`}>
+                  <EntityNameComponent name={habit.name} />
+                  <ProjectTag project={entry.project as Project} />
+                  {habit.suspended && <span className="tag">Suspended</span>}
+                  <PeriodTag period={habit.gen_params.period} />
+                  {habit.gen_params.eisen && (
+                    <EisenTag eisen={habit.gen_params.eisen} />
+                  )}
+                  {habit.gen_params.difficulty && (
+                    <DifficultyTag difficulty={habit.gen_params.difficulty} />
+                  )}
+                </EntityLink>
+              </EntityCard>
+            );
+          })}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>

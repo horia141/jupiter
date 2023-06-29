@@ -12,6 +12,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -62,42 +63,49 @@ export default function Metrics() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/metrics/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-          <Button
-            variant="outlined"
-            to={`/workspace/metrics/settings`}
-            component={Link}
-          >
-            Settings
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
+      <NestingAwarePanel
+        branchForceHide={shouldShowABranch}
+        showOutlet={shouldShowABranch || shouldShowALeafToo}
+      >
+        <ActionHeader returnLocation="/workspace">
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              to={`/workspace/metrics/new`}
+              component={Link}
+            >
+              Create
+            </Button>
+            <Button
+              variant="outlined"
+              to={`/workspace/metrics/settings`}
+              component={Link}
+            >
+              Settings
+            </Button>
+          </ButtonGroup>
+        </ActionHeader>
 
-      <EntityStack>
-        {loaderData.entries.map((entry) => (
-          <EntityCard
-            key={entry.metric.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveMetric(entry.metric)}
-          >
-            <EntityLink to={`/workspace/metrics/${entry.metric.ref_id.the_id}`}>
-              {entry.metric.icon && (
-                <EntityIconComponent icon={entry.metric.icon} />
-              )}
-              <EntityNameComponent name={entry.metric.name} />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+        <EntityStack>
+          {loaderData.entries.map((entry) => (
+            <EntityCard
+              key={entry.metric.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveMetric(entry.metric)}
+            >
+              <EntityLink
+                to={`/workspace/metrics/${entry.metric.ref_id.the_id}`}
+              >
+                {entry.metric.icon && (
+                  <EntityIconComponent icon={entry.metric.icon} />
+                )}
+                <EntityNameComponent name={entry.metric.name} />
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <BranchPanel show={shouldShowABranch}>{outlet}</BranchPanel>
 

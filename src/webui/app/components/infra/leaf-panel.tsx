@@ -41,7 +41,7 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           transition={{ duration: 0.2 }}
           isBigScreen={isBigScreen}
         >
-          <Toolbar />
+          {isBigScreen && <Toolbar />}
           {props.children}
         </StyledMotionDrawer>
       )}
@@ -55,14 +55,13 @@ interface StyledMotionDrawerProps {
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => `
-    position: fixed;
+    position: ${isBigScreen ? "fixed" : "relative"};
     top: 0px;
     right: 0px;
     width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};
     z-index: ${theme.zIndex.appBar - 1};
-    height: 100%;
-    overflow-x: auto;
-    overflow-y: scroll;
+    height: ${isBigScreen ? "100%" : "auto"};
+    overflow-y: ${isBigScreen ? "scroll" : "inherit"};
     background-color: ${theme.palette.background.paper};
     border-left: 1px solid rgba(0, 0, 0, 0.12);
 

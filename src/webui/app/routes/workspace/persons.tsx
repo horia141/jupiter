@@ -13,6 +13,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { PersonBirthdayTag } from "~/components/person-birthday-tag";
@@ -65,57 +66,62 @@ export default function Persons() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/persons/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-          <Button
-            variant="outlined"
-            to={`/workspace/persons/settings`}
-            component={Link}
-          >
-            Settings
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              to={`/workspace/persons/new`}
+              component={Link}
+            >
+              Create
+            </Button>
+            <Button
+              variant="outlined"
+              to={`/workspace/persons/settings`}
+              component={Link}
+            >
+              Settings
+            </Button>
+          </ButtonGroup>
+        </ActionHeader>
 
-      <EntityStack>
-        {loaderData.entries.map((entry) => (
-          <EntityCard
-            key={entry.person.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archivePerson(entry.person)}
-          >
-            <EntityLink to={`/workspace/persons/${entry.person.ref_id.the_id}`}>
-              <EntityNameComponent name={entry.person.name} />
-              <PersonRelationshipTag relationship={entry.person.relationship} />
-              {entry.person.birthday && (
-                <PersonBirthdayTag birthday={entry.person.birthday} />
-              )}
-              {entry.person.catch_up_params && (
-                <>
-                  <PeriodTag period={entry.person.catch_up_params.period} />
-                  {entry.person.catch_up_params.eisen && (
-                    <EisenTag eisen={entry.person.catch_up_params.eisen} />
-                  )}
-                  {entry.person.catch_up_params.difficulty && (
-                    <DifficultyTag
-                      difficulty={entry.person.catch_up_params.difficulty}
-                    />
-                  )}
-                </>
-              )}
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
-
+        <EntityStack>
+          {loaderData.entries.map((entry) => (
+            <EntityCard
+              key={entry.person.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archivePerson(entry.person)}
+            >
+              <EntityLink
+                to={`/workspace/persons/${entry.person.ref_id.the_id}`}
+              >
+                <EntityNameComponent name={entry.person.name} />
+                <PersonRelationshipTag
+                  relationship={entry.person.relationship}
+                />
+                {entry.person.birthday && (
+                  <PersonBirthdayTag birthday={entry.person.birthday} />
+                )}
+                {entry.person.catch_up_params && (
+                  <>
+                    <PeriodTag period={entry.person.catch_up_params.period} />
+                    {entry.person.catch_up_params.eisen && (
+                      <EisenTag eisen={entry.person.catch_up_params.eisen} />
+                    )}
+                    {entry.person.catch_up_params.difficulty && (
+                      <DifficultyTag
+                        difficulty={entry.person.catch_up_params.difficulty}
+                      />
+                    )}
+                  </>
+                )}
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>
   );

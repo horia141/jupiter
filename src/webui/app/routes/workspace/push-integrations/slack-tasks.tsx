@@ -13,6 +13,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { slackTaskNiceName } from "~/logic/domain/slack-task";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -60,56 +61,62 @@ export default function SlackTasks() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <Button
-          variant="contained"
-          to="/workspace/push-integrations/slack-tasks/settings"
-          component={Link}
-        >
-          Setings
-        </Button>
-      </ActionHeader>
-
-      <EntityStack>
-        {sortedEntries.map((entry) => (
-          <EntityCard
-            key={entry.slack_task.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveSlackTask(entry.slack_task)}
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <Button
+            variant="contained"
+            to="/workspace/push-integrations/slack-tasks/settings"
+            component={Link}
           >
-            <EntityLink
-              to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id.the_id}`}
+            Setings
+          </Button>
+        </ActionHeader>
+
+        <EntityStack>
+          {sortedEntries.map((entry) => (
+            <EntityCard
+              key={entry.slack_task.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveSlackTask(entry.slack_task)}
             >
-              <EntityNameComponent
-                name={slackTaskNiceName(entry.slack_task as SlackTask)}
-              />
-              {entry.slack_task.generation_extra_info.actionable_date && (
-                <ADateTag
-                  label="Actionabel From"
-                  date={entry.slack_task.generation_extra_info.actionable_date}
+              <EntityLink
+                to={`/workspace/push-integrations/slack-tasks/${entry.slack_task.ref_id.the_id}`}
+              >
+                <EntityNameComponent
+                  name={slackTaskNiceName(entry.slack_task as SlackTask)}
                 />
-              )}
-              {entry.slack_task.generation_extra_info.due_date && (
-                <ADateTag
-                  label="Due At"
-                  date={entry.slack_task.generation_extra_info.due_date}
-                />
-              )}
-              {entry.slack_task.generation_extra_info.eisen && (
-                <EisenTag
-                  eisen={entry.slack_task.generation_extra_info.eisen}
-                />
-              )}
-              {entry.slack_task.generation_extra_info.difficulty && (
-                <DifficultyTag
-                  difficulty={entry.slack_task.generation_extra_info.difficulty}
-                />
-              )}
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+                {entry.slack_task.generation_extra_info.actionable_date && (
+                  <ADateTag
+                    label="Actionabel From"
+                    date={
+                      entry.slack_task.generation_extra_info.actionable_date
+                    }
+                  />
+                )}
+                {entry.slack_task.generation_extra_info.due_date && (
+                  <ADateTag
+                    label="Due At"
+                    date={entry.slack_task.generation_extra_info.due_date}
+                  />
+                )}
+                {entry.slack_task.generation_extra_info.eisen && (
+                  <EisenTag
+                    eisen={entry.slack_task.generation_extra_info.eisen}
+                  />
+                )}
+                {entry.slack_task.generation_extra_info.difficulty && (
+                  <DifficultyTag
+                    difficulty={
+                      entry.slack_task.generation_extra_info.difficulty
+                    }
+                  />
+                )}
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>

@@ -13,6 +13,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { emailTaskNiceName } from "~/logic/domain/email-task";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -64,56 +65,62 @@ export default function EmailTasks() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <Button
-          variant="contained"
-          to="/workspace/push-integrations/email-tasks/settings"
-          component={Link}
-        >
-          Setings
-        </Button>
-      </ActionHeader>
-
-      <EntityStack>
-        {sortedEntries.map((entry) => (
-          <EntityCard
-            key={entry.email_task.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveEmailTask(entry.email_task)}
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <Button
+            variant="contained"
+            to="/workspace/push-integrations/email-tasks/settings"
+            component={Link}
           >
-            <EntityLink
-              to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id.the_id}`}
+            Setings
+          </Button>
+        </ActionHeader>
+
+        <EntityStack>
+          {sortedEntries.map((entry) => (
+            <EntityCard
+              key={entry.email_task.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveEmailTask(entry.email_task)}
             >
-              <EntityNameComponent
-                name={emailTaskNiceName(entry.email_task as EmailTask)}
-              />
-              {entry.email_task.generation_extra_info.actionable_date && (
-                <ADateTag
-                  label="Actionabel From"
-                  date={entry.email_task.generation_extra_info.actionable_date}
+              <EntityLink
+                to={`/workspace/push-integrations/email-tasks/${entry.email_task.ref_id.the_id}`}
+              >
+                <EntityNameComponent
+                  name={emailTaskNiceName(entry.email_task as EmailTask)}
                 />
-              )}
-              {entry.email_task.generation_extra_info.due_date && (
-                <ADateTag
-                  label="Due At"
-                  date={entry.email_task.generation_extra_info.due_date}
-                />
-              )}
-              {entry.email_task.generation_extra_info.eisen && (
-                <EisenTag
-                  eisen={entry.email_task.generation_extra_info.eisen}
-                />
-              )}
-              {entry.email_task.generation_extra_info.difficulty && (
-                <DifficultyTag
-                  difficulty={entry.email_task.generation_extra_info.difficulty}
-                />
-              )}
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+                {entry.email_task.generation_extra_info.actionable_date && (
+                  <ADateTag
+                    label="Actionabel From"
+                    date={
+                      entry.email_task.generation_extra_info.actionable_date
+                    }
+                  />
+                )}
+                {entry.email_task.generation_extra_info.due_date && (
+                  <ADateTag
+                    label="Due At"
+                    date={entry.email_task.generation_extra_info.due_date}
+                  />
+                )}
+                {entry.email_task.generation_extra_info.eisen && (
+                  <EisenTag
+                    eisen={entry.email_task.generation_extra_info.eisen}
+                  />
+                )}
+                {entry.email_task.generation_extra_info.difficulty && (
+                  <DifficultyTag
+                    difficulty={
+                      entry.email_task.generation_extra_info.difficulty
+                    }
+                  />
+                )}
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>

@@ -17,6 +17,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -93,60 +94,62 @@ export default function SmartListViewItems() {
 
   return (
     <BranchCard key={`${loaderData.smartList.ref_id.the_id}/items`}>
-      <ActionHeader returnLocation="/workspace/smart-lists">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-
-          <Button
-            variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
-            component={Link}
-          >
-            Details
-          </Button>
-        </ButtonGroup>
-
-        <ButtonGroup>
-          <Button variant="contained">Items</Button>
-          <Button
-            variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
-            component={Link}
-          >
-            Tags
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      <EntityStack>
-        {loaderData.smartListItems.map((item) => (
-          <EntityCard
-            key={item.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveItem(item)}
-          >
-            <EntityLink
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/${item.ref_id.the_id}`}
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace/smart-lists">
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
+              component={Link}
             >
-              <EntityNameComponent name={item.name} />
-              <Check isDone={item.is_done} />
-              {item.tags_ref_id.map((tid) => (
-                <SmartListTagTag
-                  key={tid.the_id}
-                  tag={tagsByRefId[tid.the_id]}
-                />
-              ))}
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              Create
+            </Button>
+
+            <Button
+              variant="outlined"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+              component={Link}
+            >
+              Details
+            </Button>
+          </ButtonGroup>
+
+          <ButtonGroup>
+            <Button variant="contained">Items</Button>
+            <Button
+              variant="outlined"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
+              component={Link}
+            >
+              Tags
+            </Button>
+          </ButtonGroup>
+        </ActionHeader>
+
+        <EntityStack>
+          {loaderData.smartListItems.map((item) => (
+            <EntityCard
+              key={item.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveItem(item)}
+            >
+              <EntityLink
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/${item.ref_id.the_id}`}
+              >
+                <EntityNameComponent name={item.name} />
+                <Check isDone={item.is_done} />
+                {item.tags_ref_id.map((tid) => (
+                  <SmartListTagTag
+                    key={tid.the_id}
+                    tag={tagsByRefId[tid.the_id]}
+                  />
+                ))}
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </BranchCard>

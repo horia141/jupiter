@@ -14,6 +14,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
@@ -71,40 +72,46 @@ export default function Chores() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <Button variant="contained" to="/workspace/chores/new" component={Link}>
-          Create
-        </Button>
-      </ActionHeader>
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <Button
+            variant="contained"
+            to="/workspace/chores/new"
+            component={Link}
+          >
+            Create
+          </Button>
+        </ActionHeader>
 
-      <EntityStack>
-        {sortedChores.map((chore) => {
-          const entry = entriesByRefId.get(
-            chore.ref_id.the_id
-          ) as ChoreFindResultEntry;
-          return (
-            <EntityCard
-              key={chore.ref_id.the_id}
-              allowSwipe
-              allowMarkNotDone
-              onMarkNotDone={() => archiveChore(chore)}
-            >
-              <EntityLink to={`/workspace/chores/${chore.ref_id.the_id}`}>
-                <EntityNameComponent name={chore.name} />
-                <ProjectTag project={entry.project as Project} />
-                <Check isDone={!chore.suspended} label="Active" />
-                <PeriodTag period={chore.gen_params.period} />
-                {chore.gen_params.eisen && (
-                  <EisenTag eisen={chore.gen_params.eisen} />
-                )}
-                {chore.gen_params.difficulty && (
-                  <DifficultyTag difficulty={chore.gen_params.difficulty} />
-                )}
-              </EntityLink>
-            </EntityCard>
-          );
-        })}
-      </EntityStack>
+        <EntityStack>
+          {sortedChores.map((chore) => {
+            const entry = entriesByRefId.get(
+              chore.ref_id.the_id
+            ) as ChoreFindResultEntry;
+            return (
+              <EntityCard
+                key={chore.ref_id.the_id}
+                allowSwipe
+                allowMarkNotDone
+                onMarkNotDone={() => archiveChore(chore)}
+              >
+                <EntityLink to={`/workspace/chores/${chore.ref_id.the_id}`}>
+                  <EntityNameComponent name={chore.name} />
+                  <ProjectTag project={entry.project as Project} />
+                  <Check isDone={!chore.suspended} label="Active" />
+                  <PeriodTag period={chore.gen_params.period} />
+                  {chore.gen_params.eisen && (
+                    <EisenTag eisen={chore.gen_params.eisen} />
+                  )}
+                  {chore.gen_params.difficulty && (
+                    <DifficultyTag difficulty={chore.gen_params.difficulty} />
+                  )}
+                </EntityLink>
+              </EntityCard>
+            );
+          })}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>

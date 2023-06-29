@@ -34,11 +34,9 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
           transition={{ duration: 0.2 }}
           isBigScreen={isBigScreen}
         >
-          <Container maxWidth="lg">
+          <Container maxWidth="lg" disableGutters>
             <Toolbar />
-            <div style={{ position: "relative", minHeight: "100vh" }}>
-              {props.children}
-            </div>
+            {props.children}
           </Container>
         </StyledMotionDrawer>
       )}

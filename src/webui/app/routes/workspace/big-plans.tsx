@@ -37,6 +37,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
@@ -124,141 +125,149 @@ export default function BigPlans() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to="/workspace/big-plans/new"
-            component={Link}
-          >
-            Create
-          </Button>
-        </ButtonGroup>
-
-        {isBigScreen && (
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
           <ButtonGroup>
             <Button
-              variant={
-                selectedView === View.TIMELINE_BY_PROJECT
-                  ? "contained"
-                  : "outlined"
-              }
-              onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+              variant="contained"
+              to="/workspace/big-plans/new"
+              component={Link}
             >
-              Timeline by Project
-            </Button>
-            <Button
-              variant={
-                selectedView === View.TIMELINE ? "contained" : "outlined"
-              }
-              onClick={() => setSelectedView(View.TIMELINE)}
-            >
-              Timeline
-            </Button>
-            <Button
-              variant={selectedView === View.LIST ? "contained" : "outlined"}
-              onClick={() => setSelectedView(View.LIST)}
-            >
-              List
+              Create
             </Button>
           </ButtonGroup>
-        )}
 
-        {!isBigScreen && (
-          <>
+          {isBigScreen && (
             <ButtonGroup>
-              <Button onClick={() => setShowFilterDialog(true)}>Filters</Button>
+              <Button
+                variant={
+                  selectedView === View.TIMELINE_BY_PROJECT
+                    ? "contained"
+                    : "outlined"
+                }
+                onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+              >
+                Timeline by Project
+              </Button>
+              <Button
+                variant={
+                  selectedView === View.TIMELINE ? "contained" : "outlined"
+                }
+                onClick={() => setSelectedView(View.TIMELINE)}
+              >
+                Timeline
+              </Button>
+              <Button
+                variant={selectedView === View.LIST ? "contained" : "outlined"}
+                onClick={() => setSelectedView(View.LIST)}
+              >
+                List
+              </Button>
             </ButtonGroup>
+          )}
 
-            <Dialog
-              onClose={() => setShowFilterDialog(false)}
-              open={showFilterDialog}
-            >
-              <DialogTitle>Filters</DialogTitle>
-              <DialogContent>
-                <ButtonGroup orientation="vertical">
-                  <Button
-                    variant={
-                      selectedView === View.TIMELINE_BY_PROJECT
-                        ? "contained"
-                        : "outlined"
-                    }
-                    onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-                  >
-                    Timeline by Project
-                  </Button>
-                  <Button
-                    variant={
-                      selectedView === View.TIMELINE ? "contained" : "outlined"
-                    }
-                    onClick={() => setSelectedView(View.TIMELINE)}
-                  >
-                    Timeline
-                  </Button>
-                  <Button
-                    variant={
-                      selectedView === View.LIST ? "contained" : "outlined"
-                    }
-                    onClick={() => setSelectedView(View.LIST)}
-                  >
-                    List
-                  </Button>
-                </ButtonGroup>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setShowFilterDialog(false)}>
-                  Close
+          {!isBigScreen && (
+            <>
+              <ButtonGroup>
+                <Button onClick={() => setShowFilterDialog(true)}>
+                  Filters
                 </Button>
-              </DialogActions>
-            </Dialog>
+              </ButtonGroup>
+
+              <Dialog
+                onClose={() => setShowFilterDialog(false)}
+                open={showFilterDialog}
+              >
+                <DialogTitle>Filters</DialogTitle>
+                <DialogContent>
+                  <ButtonGroup orientation="vertical">
+                    <Button
+                      variant={
+                        selectedView === View.TIMELINE_BY_PROJECT
+                          ? "contained"
+                          : "outlined"
+                      }
+                      onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+                    >
+                      Timeline by Project
+                    </Button>
+                    <Button
+                      variant={
+                        selectedView === View.TIMELINE
+                          ? "contained"
+                          : "outlined"
+                      }
+                      onClick={() => setSelectedView(View.TIMELINE)}
+                    >
+                      Timeline
+                    </Button>
+                    <Button
+                      variant={
+                        selectedView === View.LIST ? "contained" : "outlined"
+                      }
+                      onClick={() => setSelectedView(View.LIST)}
+                    >
+                      List
+                    </Button>
+                  </ButtonGroup>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setShowFilterDialog(false)}>
+                    Close
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
+          )}
+        </ActionHeader>
+
+        {selectedView === View.TIMELINE_BY_PROJECT && (
+          <>
+            {loaderData.allProjects.map((p) => {
+              const theProjects = sortedBigPlans.filter(
+                (se) =>
+                  entriesByRefId.get(se.ref_id.the_id)?.big_plan.project_ref_id
+                    .the_id === p.ref_id.the_id
+              );
+
+              if (theProjects.length === 0) {
+                return null;
+              }
+
+              return (
+                <Box key={p.ref_id.the_id}>
+                  <Divider>
+                    <Typography variant="h6">{p.name.the_name}</Typography>
+                  </Divider>
+                  <>
+                    {isBigScreen && (
+                      <BigScreenTimeline bigPlans={theProjects} />
+                    )}
+                    {!isBigScreen && (
+                      <SmallScreenTimeline bigPlans={theProjects} />
+                    )}
+                  </>
+                </Box>
+              );
+            })}
           </>
         )}
-      </ActionHeader>
 
-      {selectedView === View.TIMELINE_BY_PROJECT && (
-        <>
-          {loaderData.allProjects.map((p) => {
-            const theProjects = sortedBigPlans.filter(
-              (se) =>
-                entriesByRefId.get(se.ref_id.the_id)?.big_plan.project_ref_id
-                  .the_id === p.ref_id.the_id
-            );
+        {selectedView === View.TIMELINE && (
+          <>
+            {isBigScreen && <BigScreenTimeline bigPlans={sortedBigPlans} />}
+            {!isBigScreen && <SmallScreenTimeline bigPlans={sortedBigPlans} />}
+          </>
+        )}
 
-            if (theProjects.length === 0) {
-              return null;
-            }
-
-            return (
-              <Box key={p.ref_id.the_id}>
-                <Divider>
-                  <Typography variant="h6">{p.name.the_name}</Typography>
-                </Divider>
-                <>
-                  {isBigScreen && <BigScreenTimeline bigPlans={theProjects} />}
-                  {!isBigScreen && (
-                    <SmallScreenTimeline bigPlans={theProjects} />
-                  )}
-                </>
-              </Box>
-            );
-          })}
-        </>
-      )}
-
-      {selectedView === View.TIMELINE && (
-        <>
-          {isBigScreen && <BigScreenTimeline bigPlans={sortedBigPlans} />}
-          {!isBigScreen && <SmallScreenTimeline bigPlans={sortedBigPlans} />}
-        </>
-      )}
-
-      {selectedView === View.LIST && (
-        <List
-          bigPlans={sortedBigPlans}
-          entriesByRefId={entriesByRefId}
-          onArchiveBigPlan={archiveBigPlan}
-        />
-      )}
+        {selectedView === View.LIST && (
+          <List
+            bigPlans={sortedBigPlans}
+            entriesByRefId={entriesByRefId}
+            onArchiveBigPlan={archiveBigPlan}
+          />
+        )}
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>
