@@ -19,6 +19,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -90,45 +91,47 @@ export default function Metric() {
 
   return (
     <BranchCard key={loaderData.metric.ref_id.the_id}>
-      <ActionHeader returnLocation="/workspace/metrics">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-
-          <Button
-            variant="outlined"
-            to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
-            component={Link}
-          >
-            Details
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      <MetricGraph sortedMetricEntries={sortedEntries} />
-
-      <EntityStack>
-        {sortedEntries.map((entry) => (
-          <EntityCard
-            key={entry.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveEntry(entry)}
-          >
-            <EntityLink
-              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${entry.ref_id.the_id}`}
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace/metrics">
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
+              component={Link}
             >
-              <EntityNameComponent name={metricEntryName(entry)} />
-              <CollectionTimeDiffTag collectionTime={entry.collection_time} />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              Create
+            </Button>
+
+            <Button
+              variant="outlined"
+              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
+              component={Link}
+            >
+              Details
+            </Button>
+          </ButtonGroup>
+        </ActionHeader>
+
+        <MetricGraph sortedMetricEntries={sortedEntries} />
+
+        <EntityStack>
+          {sortedEntries.map((entry) => (
+            <EntityCard
+              key={entry.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveEntry(entry)}
+            >
+              <EntityLink
+                to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${entry.ref_id.the_id}`}
+              >
+                <EntityNameComponent name={metricEntryName(entry)} />
+                <CollectionTimeDiffTag collectionTime={entry.collection_time} />
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </BranchCard>

@@ -50,7 +50,14 @@ export default function App() {
             <ThemeProvider theme={THEME}>
               <CssBaseline />
               <EnvBanner />
-              <ScrollToTop smooth style={{ width: "4rem", height: "4rem" }} />
+              <ScrollToTop
+                smooth
+                style={{
+                  zIndex: THEME.zIndex.appBar + 1,
+                  width: "4rem",
+                  height: "4rem",
+                }}
+              />
               <Outlet />
             </ThemeProvider>
           </GlobalPropertiesContext.Provider>

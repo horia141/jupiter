@@ -19,6 +19,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortVacationsNaturally } from "~/logic/domain/vacation";
@@ -69,38 +70,40 @@ export default function Vacations({ request }: LoaderArgs) {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <Button
-          variant="contained"
-          to="/workspace/vacations/new"
-          component={Link}
-        >
-          Create
-        </Button>
-      </ActionHeader>
-
-      <VacationCalendar sortedVacations={sortedVacations} />
-
-      <EntityStack>
-        {sortedVacations.map((vacation) => (
-          <EntityCard
-            key={vacation.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveVacation(vacation)}
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <Button
+            variant="contained"
+            to="/workspace/vacations/new"
+            component={Link}
           >
-            <EntityLink to={`/workspace/vacations/${vacation.ref_id.the_id}`}>
-              <EntityNameComponent name={vacation.name} />
-              <ADateTag label="Start Date" date={vacation.start_date} />
-              <ADateTag
-                label="End Date"
-                date={vacation.end_date}
-                color="success"
-              />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+            Create
+          </Button>
+        </ActionHeader>
+
+        <VacationCalendar sortedVacations={sortedVacations} />
+
+        <EntityStack>
+          {sortedVacations.map((vacation) => (
+            <EntityCard
+              key={vacation.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveVacation(vacation)}
+            >
+              <EntityLink to={`/workspace/vacations/${vacation.ref_id.the_id}`}>
+                <EntityNameComponent name={vacation.name} />
+                <ADateTag label="Start Date" date={vacation.start_date} />
+                <ADateTag
+                  label="End Date"
+                  date={vacation.end_date}
+                  color="success"
+                />
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </TrunkCard>

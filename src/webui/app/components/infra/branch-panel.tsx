@@ -67,14 +67,7 @@ interface StyledMotionDrawerProps {
 }
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
-  ({ theme, isBigScreen }) => `
-    position: absolute;
-    top: 0px;
-    width: 100%;
-    min-height: 100%;
-    background-color: ${theme.palette.background.paper};
-    z-index: ${theme.zIndex.appBar - 2};
-
+  ({}) => `
     &::-webkit-scrollbar {
       display: none;
     }

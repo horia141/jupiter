@@ -12,6 +12,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -64,37 +65,42 @@ export default function SmartLists() {
 
   return (
     <TrunkCard>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/smart-lists/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      <EntityStack>
-        {loaderData.entries.map((entry) => (
-          <EntityCard
-            key={entry.smart_list.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveSmartList(entry.smart_list)}
-          >
-            <EntityLink
-              to={`/workspace/smart-lists/${entry.smart_list.ref_id.the_id}/items`}
+      <NestingAwarePanel
+        branchForceHide={shouldShowABranch}
+        showOutlet={shouldShowABranch || shouldShowALeafToo}
+      >
+        <ActionHeader returnLocation="/workspace">
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              to={`/workspace/smart-lists/new`}
+              component={Link}
             >
-              {entry.smart_list.icon && (
-                <EntityIconComponent icon={entry.smart_list.icon} />
-              )}
-              <EntityNameComponent name={entry.smart_list.name} />
-            </EntityLink>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              Create
+            </Button>
+          </ButtonGroup>
+        </ActionHeader>
+
+        <EntityStack>
+          {loaderData.entries.map((entry) => (
+            <EntityCard
+              key={entry.smart_list.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveSmartList(entry.smart_list)}
+            >
+              <EntityLink
+                to={`/workspace/smart-lists/${entry.smart_list.ref_id.the_id}/items`}
+              >
+                {entry.smart_list.icon && (
+                  <EntityIconComponent icon={entry.smart_list.icon} />
+                )}
+                <EntityNameComponent name={entry.smart_list.name} />
+              </EntityLink>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <BranchPanel show={shouldShowABranch}>{outlet}</BranchPanel>
 

@@ -15,6 +15,7 @@ import { EntityCard } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -87,54 +88,56 @@ export default function SmartListViewTags() {
 
   return (
     <BranchCard key={`${loaderData.smartList.ref_id.the_id}/tags`}>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/new`}
-            component={Link}
-          >
-            Create
-          </Button>
-
-          <Button
-            variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
-            component={Link}
-          >
-            Details
-          </Button>
-        </ButtonGroup>
-
-        <ButtonGroup>
-          <Button
-            variant="outlined"
-            to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items`}
-            component={Link}
-          >
-            Items
-          </Button>
-          <Button variant="contained">Tags</Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      <EntityStack>
-        {loaderData.smartListTags.map((tag) => (
-          <EntityCard
-            key={tag.ref_id.the_id}
-            allowSwipe
-            allowMarkNotDone
-            onMarkNotDone={() => archiveTag(tag)}
-          >
-            <Link
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`}
-              prefetch="none"
+      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+        <ActionHeader returnLocation="/workspace">
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/new`}
+              component={Link}
             >
-              <SmartListTagTag tag={tag} />
-            </Link>
-          </EntityCard>
-        ))}
-      </EntityStack>
+              Create
+            </Button>
+
+            <Button
+              variant="outlined"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
+              component={Link}
+            >
+              Details
+            </Button>
+          </ButtonGroup>
+
+          <ButtonGroup>
+            <Button
+              variant="outlined"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items`}
+              component={Link}
+            >
+              Items
+            </Button>
+            <Button variant="contained">Tags</Button>
+          </ButtonGroup>
+        </ActionHeader>
+
+        <EntityStack>
+          {loaderData.smartListTags.map((tag) => (
+            <EntityCard
+              key={tag.ref_id.the_id}
+              allowSwipe
+              allowMarkNotDone
+              onMarkNotDone={() => archiveTag(tag)}
+            >
+              <Link
+                to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags/${tag.ref_id.the_id}`}
+                prefetch="none"
+              >
+                <SmartListTagTag tag={tag} />
+              </Link>
+            </EntityCard>
+          ))}
+        </EntityStack>
+      </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
     </BranchCard>

@@ -50,6 +50,7 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/leaf-panel";
+import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { NoTasksCard } from "~/components/no-tasks-card";
 import { TabPanel } from "~/components/tab-panel";
@@ -81,7 +82,6 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -326,87 +326,19 @@ export default function InboxTasks() {
   return (
     <TrunkCard>
       <NestingAwarePanel showOutlet={shouldShowALeaf}>
-      <ActionHeader returnLocation="/workspace">
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            to="/workspace/inbox-tasks/new"
-            component={Link}
-          >
-            Create
-          </Button>
-        </ButtonGroup>
-
-        {isBigScreen && (
+        <ActionHeader returnLocation="/workspace">
           <ButtonGroup>
             <Button
-              variant={
-                selectedView === View.SWIFTVIEW ? "contained" : "outlined"
-              }
-              onClick={() => setSelectedView(View.SWIFTVIEW)}
+              variant="contained"
+              to="/workspace/inbox-tasks/new"
+              component={Link}
             >
-              SwiftView
-            </Button>
-            <Button
-              variant={
-                selectedView === View.KANBAN_BY_EISEN ? "contained" : "outlined"
-              }
-              onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
-            >
-              Kanban by Eisen
-            </Button>
-            <Button
-              variant={selectedView === View.KANBAN ? "contained" : "outlined"}
-              onClick={() => setSelectedView(View.KANBAN)}
-            >
-              Kanban
-            </Button>
-            <Button
-              variant={selectedView === View.LIST ? "contained" : "outlined"}
-              onClick={() => setSelectedView(View.LIST)}
-            >
-              List
+              Create
             </Button>
           </ButtonGroup>
-        )}
 
-        <ButtonGroup>
-          {!isBigScreen && (
-            <Button variant="outlined" onClick={() => setShowViewsDialog(true)}>
-              Views
-            </Button>
-          )}
-          <Button variant="outlined" onClick={() => setShowFilterDialog(true)}>
-            Filters
-          </Button>
-        </ButtonGroup>
-      </ActionHeader>
-
-      {shouldDoAGc && (
-        <GCSection>
-          There are quite a lot of finished inbox tasks. Consider doing a{" "}
-          <Link to="/workspace/tools/gc">GC</Link> to decultter and speed things
-          up.
-        </GCSection>
-      )}
-
-      <>
-        <GlobalError actionResult={kanbanBoardMoveFetcher.data} />
-        <FieldError
-          actionResult={kanbanBoardMoveFetcher.data}
-          fieldName="/status"
-        />
-        <FieldError
-          actionResult={kanbanBoardMoveFetcher.data}
-          fieldName="/eisen"
-        />
-      </>
-
-      <Dialog onClose={() => setShowViewsDialog(false)} open={showViewsDialog}>
-        <DialogTitle>Views</DialogTitle>
-        <DialogContent>
-          <Stack spacing={1} useFlexGap>
-            <ButtonGroup orientation="vertical">
+          {isBigScreen && (
+            <ButtonGroup>
               <Button
                 variant={
                   selectedView === View.SWIFTVIEW ? "contained" : "outlined"
@@ -440,202 +372,287 @@ export default function InboxTasks() {
                 List
               </Button>
             </ButtonGroup>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowViewsDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+          )}
 
-      <Dialog
-        onClose={() => setShowFilterDialog(false)}
-        open={showFilterDialog}
-      >
-        <DialogTitle>Filters</DialogTitle>
-        <DialogContent>
-          <Stack spacing={1} useFlexGap>
-            <Divider>
-              <Typography variant="h6">Actionable From</Typography>
-            </Divider>
-            <ButtonGroup orientation={isBigScreen ? "horizontal" : "vertical"}>
+          <ButtonGroup>
+            {!isBigScreen && (
               <Button
-                variant={
-                  selectedActionableTime === ActionableTime.NOW
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() => setSelectedActionableTime(ActionableTime.NOW)}
+                variant="outlined"
+                onClick={() => setShowViewsDialog(true)}
               >
-                From Now
+                Views
               </Button>
-              <Button
-                variant={
-                  selectedActionableTime === ActionableTime.ONE_WEEK
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() =>
-                  setSelectedActionableTime(ActionableTime.ONE_WEEK)
-                }
-              >
-                From One Week
-              </Button>
-              <Button
-                variant={
-                  selectedActionableTime === ActionableTime.ONE_MONTH
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() =>
-                  setSelectedActionableTime(ActionableTime.ONE_MONTH)
-                }
-              >
-                From One Month
-              </Button>
-            </ButtonGroup>
-            {selectedView === View.KANBAN_BY_EISEN && (
-              <>
-                <Divider>
-                  <Typography variant="h6">Show Eisen</Typography>
-                </Divider>
-                <FormGroup>
-                  {EISENS.map((eisen) => (
-                    <FormControlLabel
-                      key={eisen}
-                      label={eisenName(eisen)}
-                      control={
-                        <Checkbox
-                          checked={showEisenBoard[eisen]}
-                          onChange={(e) =>
-                            setShowEisenBoard((c) => ({
-                              ...c,
-                              [eisen]: e.target.checked,
-                            }))
-                          }
-                        />
-                      }
-                    />
-                  ))}
-                </FormGroup>
-              </>
             )}
-            {(selectedView === View.KANBAN_BY_EISEN ||
-              selectedView === View.KANBAN) && (
-              <>
-                <Divider>
-                  <Typography variant="h6">Collapse Columns</Typography>
-                </Divider>
-                <FormGroup>
-                  {INBOX_TASK_STATUSES.map((status) => (
-                    <FormControlLabel
-                      key={status}
-                      label={inboxTaskStatusName(status)}
-                      control={
-                        <Checkbox
-                          checked={collapseInboxTaskStatusColumn[status]}
-                          onChange={(e) =>
-                            setCollapseInboxTaskStatusColumn((c) => ({
-                              ...c,
-                              [status]: e.target.checked,
-                            }))
-                          }
-                        />
-                      }
-                    />
-                  ))}
-                </FormGroup>
-              </>
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+            <Button
+              variant="outlined"
+              onClick={() => setShowFilterDialog(true)}
+            >
+              Filters
+            </Button>
+          </ButtonGroup>
+        </ActionHeader>
 
-      {selectedView === View.SWIFTVIEW && (
-        <SwiftView
-          isBigScreen={isBigScreen}
-          inboxTasks={sortedInboxTasks}
-          optimisticUpdates={optimisticUpdates}
-          moreInfoByRefId={entriesByRefId}
-          actionableTime={selectedActionableTime}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+        {shouldDoAGc && (
+          <GCSection>
+            There are quite a lot of finished inbox tasks. Consider doing a{" "}
+            <Link to="/workspace/tools/gc">GC</Link> to decultter and speed
+            things up.
+          </GCSection>
+        )}
 
-      {selectedView === View.KANBAN_BY_EISEN && (
         <>
-          {isBigScreen && (
-            <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-              <BigScreenKanbanByEisen
+          <GlobalError actionResult={kanbanBoardMoveFetcher.data} />
+          <FieldError
+            actionResult={kanbanBoardMoveFetcher.data}
+            fieldName="/status"
+          />
+          <FieldError
+            actionResult={kanbanBoardMoveFetcher.data}
+            fieldName="/eisen"
+          />
+        </>
+
+        <Dialog
+          onClose={() => setShowViewsDialog(false)}
+          open={showViewsDialog}
+        >
+          <DialogTitle>Views</DialogTitle>
+          <DialogContent>
+            <Stack spacing={1} useFlexGap>
+              <ButtonGroup orientation="vertical">
+                <Button
+                  variant={
+                    selectedView === View.SWIFTVIEW ? "contained" : "outlined"
+                  }
+                  onClick={() => setSelectedView(View.SWIFTVIEW)}
+                >
+                  SwiftView
+                </Button>
+                <Button
+                  variant={
+                    selectedView === View.KANBAN_BY_EISEN
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() => setSelectedView(View.KANBAN_BY_EISEN)}
+                >
+                  Kanban by Eisen
+                </Button>
+                <Button
+                  variant={
+                    selectedView === View.KANBAN ? "contained" : "outlined"
+                  }
+                  onClick={() => setSelectedView(View.KANBAN)}
+                >
+                  Kanban
+                </Button>
+                <Button
+                  variant={
+                    selectedView === View.LIST ? "contained" : "outlined"
+                  }
+                  onClick={() => setSelectedView(View.LIST)}
+                >
+                  List
+                </Button>
+              </ButtonGroup>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowViewsDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          onClose={() => setShowFilterDialog(false)}
+          open={showFilterDialog}
+        >
+          <DialogTitle>Filters</DialogTitle>
+          <DialogContent>
+            <Stack spacing={1} useFlexGap>
+              <Divider>
+                <Typography variant="h6">Actionable From</Typography>
+              </Divider>
+              <ButtonGroup
+                orientation={isBigScreen ? "horizontal" : "vertical"}
+              >
+                <Button
+                  variant={
+                    selectedActionableTime === ActionableTime.NOW
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() => setSelectedActionableTime(ActionableTime.NOW)}
+                >
+                  From Now
+                </Button>
+                <Button
+                  variant={
+                    selectedActionableTime === ActionableTime.ONE_WEEK
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() =>
+                    setSelectedActionableTime(ActionableTime.ONE_WEEK)
+                  }
+                >
+                  From One Week
+                </Button>
+                <Button
+                  variant={
+                    selectedActionableTime === ActionableTime.ONE_MONTH
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() =>
+                    setSelectedActionableTime(ActionableTime.ONE_MONTH)
+                  }
+                >
+                  From One Month
+                </Button>
+              </ButtonGroup>
+              {selectedView === View.KANBAN_BY_EISEN && (
+                <>
+                  <Divider>
+                    <Typography variant="h6">Show Eisen</Typography>
+                  </Divider>
+                  <FormGroup>
+                    {EISENS.map((eisen) => (
+                      <FormControlLabel
+                        key={eisen}
+                        label={eisenName(eisen)}
+                        control={
+                          <Checkbox
+                            checked={showEisenBoard[eisen]}
+                            onChange={(e) =>
+                              setShowEisenBoard((c) => ({
+                                ...c,
+                                [eisen]: e.target.checked,
+                              }))
+                            }
+                          />
+                        }
+                      />
+                    ))}
+                  </FormGroup>
+                </>
+              )}
+              {(selectedView === View.KANBAN_BY_EISEN ||
+                selectedView === View.KANBAN) && (
+                <>
+                  <Divider>
+                    <Typography variant="h6">Collapse Columns</Typography>
+                  </Divider>
+                  <FormGroup>
+                    {INBOX_TASK_STATUSES.map((status) => (
+                      <FormControlLabel
+                        key={status}
+                        label={inboxTaskStatusName(status)}
+                        control={
+                          <Checkbox
+                            checked={collapseInboxTaskStatusColumn[status]}
+                            onChange={(e) =>
+                              setCollapseInboxTaskStatusColumn((c) => ({
+                                ...c,
+                                [status]: e.target.checked,
+                              }))
+                            }
+                          />
+                        }
+                      />
+                    ))}
+                  </FormGroup>
+                </>
+              )}
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowFilterDialog(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+
+        {selectedView === View.SWIFTVIEW && (
+          <SwiftView
+            isBigScreen={isBigScreen}
+            inboxTasks={sortedInboxTasks}
+            optimisticUpdates={optimisticUpdates}
+            moreInfoByRefId={entriesByRefId}
+            actionableTime={selectedActionableTime}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
+
+        {selectedView === View.KANBAN_BY_EISEN && (
+          <>
+            {isBigScreen && (
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+                <BigScreenKanbanByEisen
+                  inboxTasks={sortedInboxTasks}
+                  optimisticUpdates={optimisticUpdates}
+                  inboxTasksByRefId={inboxTasksByRefId}
+                  moreInfoByRefId={entriesByRefId}
+                  actionableTime={selectedActionableTime}
+                  draggedInboxTaskId={draggedInboxTaskId}
+                  showEisenBoard={showEisenBoard}
+                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                />
+              </DragDropContext>
+            )}
+
+            {!isBigScreen && (
+              <SmallScreenKanbanByEisen
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
-                inboxTasksByRefId={inboxTasksByRefId}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                draggedInboxTaskId={draggedInboxTaskId}
                 showEisenBoard={showEisenBoard}
                 collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                onCardMarkDone={handleCardMarkDone}
+                onCardMarkNotDone={handleCardMarkNotDone}
               />
-            </DragDropContext>
-          )}
+            )}
+          </>
+        )}
 
-          {!isBigScreen && (
-            <SmallScreenKanbanByEisen
-              inboxTasks={sortedInboxTasks}
-              optimisticUpdates={optimisticUpdates}
-              moreInfoByRefId={entriesByRefId}
-              actionableTime={selectedActionableTime}
-              showEisenBoard={showEisenBoard}
-              collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-              onCardMarkDone={handleCardMarkDone}
-              onCardMarkNotDone={handleCardMarkNotDone}
-            />
-          )}
-        </>
-      )}
+        {selectedView === View.KANBAN && (
+          <>
+            {isBigScreen && (
+              <DragDropContext onDragEnd={onDragEnd}>
+                <BigScreenKanban
+                  inboxTasks={sortedInboxTasks}
+                  optimisticUpdates={optimisticUpdates}
+                  inboxTasksByRefId={inboxTasksByRefId}
+                  moreInfoByRefId={entriesByRefId}
+                  actionableTime={selectedActionableTime}
+                  draggedInboxTaskId={draggedInboxTaskId}
+                  collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                />
+              </DragDropContext>
+            )}
 
-      {selectedView === View.KANBAN && (
-        <>
-          {isBigScreen && (
-            <DragDropContext onDragEnd={onDragEnd}>
-              <BigScreenKanban
+            {!isBigScreen && (
+              <SmallScreenKanban
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
-                inboxTasksByRefId={inboxTasksByRefId}
                 moreInfoByRefId={entriesByRefId}
                 actionableTime={selectedActionableTime}
-                draggedInboxTaskId={draggedInboxTaskId}
                 collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+                onCardMarkDone={handleCardMarkDone}
+                onCardMarkNotDone={handleCardMarkNotDone}
               />
-            </DragDropContext>
-          )}
+            )}
+          </>
+        )}
 
-          {!isBigScreen && (
-            <SmallScreenKanban
-              inboxTasks={sortedInboxTasks}
-              optimisticUpdates={optimisticUpdates}
-              moreInfoByRefId={entriesByRefId}
-              actionableTime={selectedActionableTime}
-              collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-              onCardMarkDone={handleCardMarkDone}
-              onCardMarkNotDone={handleCardMarkNotDone}
-            />
-          )}
-        </>
-      )}
-
-      {selectedView === View.LIST && (
-        <List
-          inboxTasks={sortedInboxTasks}
-          optimisticUpdates={optimisticUpdates}
-          moreInfoByRefId={entriesByRefId}
-          onCardMarkDone={handleCardMarkDone}
-          onCardMarkNotDone={handleCardMarkNotDone}
-        />
-      )}
+        {selectedView === View.LIST && (
+          <List
+            inboxTasks={sortedInboxTasks}
+            optimisticUpdates={optimisticUpdates}
+            moreInfoByRefId={entriesByRefId}
+            onCardMarkDone={handleCardMarkDone}
+            onCardMarkNotDone={handleCardMarkNotDone}
+          />
+        )}
       </NestingAwarePanel>
 
       <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
