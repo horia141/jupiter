@@ -89,6 +89,68 @@ class ProjectArchiveUseCase(AppLoggedInMutationUseCase[ProjectArchiveArgs, None]
                     else:
                         await entity_reporter.mark_not_needed()
 
+                async with progress_reporter.start_updating_entity(
+                    "slack task collection"
+                ) as entity_reporter:
+                    push_integration_group = (
+                        await uow.push_integration_group_repository.load_by_parent(
+                            workspace.ref_id,
+                        )
+                    )
+                    slack_task_collection = (
+                        await uow.slack_task_collection_repository.load_by_parent(
+                            push_integration_group.ref_id,
+                        )
+                    )
+                    if slack_task_collection.generation_project_ref_id == args.ref_id:
+                        await entity_reporter.mark_known_entity_id(
+                            slack_task_collection.ref_id
+                        )
+                        slack_task_collection = (
+                            slack_task_collection.change_generation_project(
+                                args.backup_project_ref_id,
+                                EventSource.CLI,
+                                self._time_provider.get_current_time(),
+                            )
+                        )
+                        await uow.slack_task_collection_repository.save(
+                            slack_task_collection
+                        )
+                        await entity_reporter.mark_local_change()
+                    else:
+                        await entity_reporter.mark_not_needed()
+
+                async with progress_reporter.start_updating_entity(
+                    "email task collection"
+                ) as entity_reporter:
+                    push_integration_group = (
+                        await uow.push_integration_group_repository.load_by_parent(
+                            workspace.ref_id,
+                        )
+                    )
+                    email_task_collection = (
+                        await uow.email_task_collection_repository.load_by_parent(
+                            push_integration_group.ref_id,
+                        )
+                    )
+                    if email_task_collection.generation_project_ref_id == args.ref_id:
+                        await entity_reporter.mark_known_entity_id(
+                            email_task_collection.ref_id
+                        )
+                        email_task_collection = (
+                            email_task_collection.change_generation_project(
+                                args.backup_project_ref_id,
+                                EventSource.CLI,
+                                self._time_provider.get_current_time(),
+                            )
+                        )
+                        await uow.email_task_collection_repository.save(
+                            email_task_collection
+                        )
+                        await entity_reporter.mark_local_change()
+                    else:
+                        await entity_reporter.mark_not_needed()
+
         project_archive_service = ProjectArchiveService(
             EventSource.CLI, self._time_provider, self._storage_engine
         )

@@ -66,6 +66,30 @@ class ProjectArchiveService:
                     "The project is being used as the person catch up one"
                 )
 
+            push_integration_group = (
+                await uow.push_integration_group_repository.load_by_parent(
+                    workspace.ref_id,
+                )
+            )
+            slack_task_collection = (
+                await uow.slack_task_collection_repository.load_by_parent(
+                    push_integration_group.ref_id,
+                )
+            )
+            if slack_task_collection.generation_project_ref_id == project.ref_id:
+                raise ProjectInSignificantUseError(
+                    "The project is being used as the Slack task collection default one"
+                )
+            email_task_collection = (
+                await uow.email_task_collection_repository.load_by_parent(
+                    push_integration_group.ref_id,
+                )
+            )
+            if email_task_collection.generation_project_ref_id == project.ref_id:
+                raise ProjectInSignificantUseError(
+                    "The project is being used as the email task collection default one"
+                )
+
             # archive inbox tasks
             inbox_task_collection = (
                 await uow.inbox_task_collection_repository.load_by_parent(

@@ -71,6 +71,7 @@ class SlackTaskFindUseCase(
                     push_integration_group.ref_id,
                 )
             )
+
             slack_tasks = await uow.slack_task_repository.find_all(
                 parent_ref_id=slack_task_collection.ref_id,
                 allow_archived=args.allow_archived,
