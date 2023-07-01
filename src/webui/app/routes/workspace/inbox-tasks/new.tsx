@@ -17,8 +17,8 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import type { BigPlan, BigPlanSummary, Project } from "jupiter-gen";
+import { StatusCodes } from "http-status-codes";
+import type { BigPlanSummary, Project } from "jupiter-gen";
 import { ApiError, Difficulty, Eisen } from "jupiter-gen";
 import { useState } from "react";
 import { z } from "zod";
@@ -86,30 +86,32 @@ export async function loader({ request }: LoaderArgs) {
   });
 
   let ownerBigPlan = null;
+  let ownerProject = null;
   if (reason === "for-big-plan" && query.bigPlanRefId) {
-    const bigPlanResult = await getLoggedInApiClient(
-      session
-    ).bigPlan.findBigPlan({
-      allow_archived: false,
-      include_project: false,
-      include_inbox_tasks: false,
-      filter_ref_ids: [{ the_id: query.bigPlanRefId }],
-    });
-
-    if (bigPlanResult.entries.length === 0) {
-      throw new Response(ReasonPhrases.NOT_FOUND, {
-        status: StatusCodes.NOT_FOUND,
-        statusText: ReasonPhrases.NOT_FOUND,
-      });
+    if (!query.bigPlanRefId) {
+      throw new Response("Missing Big Plan Id", { status: 500 });
     }
 
-    ownerBigPlan = bigPlanResult.entries[0];
+    const bigPlanResult = await getLoggedInApiClient(
+      session
+    ).bigPlan.loadBigPlan({
+      allow_archived: false,
+      ref_id: { the_id: query.bigPlanRefId },
+    });
+
+    ownerBigPlan = bigPlanResult.big_plan;
+    ownerProject = bigPlanResult.project;
   }
+
+  const defaultProject =
+    reason === "for-big-plan"
+      ? (ownerProject as Project)
+      : (summaryResponse.default_project as Project);
 
   const defaultBigPlan: BigPlanACOption =
     reason === "for-big-plan"
       ? {
-          label: ownerBigPlan?.big_plan.name.the_name as string,
+          label: ownerBigPlan?.name.the_name as string,
           big_plan_id: query.bigPlanRefId as string,
         }
       : {
@@ -119,14 +121,14 @@ export async function loader({ request }: LoaderArgs) {
 
   return json({
     reason: reason,
-    defaultProject: summaryResponse.default_project as Project,
+    defaultProject: defaultProject,
     defaultBigPlan: defaultBigPlan,
     ownerBigPlan: ownerBigPlan,
     allProjects: summaryResponse.projects as Array<Project>,
     allBigPlans:
       reason === "standard"
-        ? (summaryResponse.big_plans as Array<BigPlan>)
-        : [ownerBigPlan?.big_plan as BigPlanSummary],
+        ? (summaryResponse.big_plans as Array<BigPlanSummary>)
+        : [ownerBigPlan as BigPlanSummary],
   });
 }
 
@@ -351,9 +353,9 @@ export default function NewInboxTask() {
                 name="actionableDate"
                 defaultValue={
                   loaderData.reason === "for-big-plan" &&
-                  loaderData.ownerBigPlan?.big_plan.actionable_date
+                  loaderData.ownerBigPlan?.actionable_date
                     ? aDateToDate(
-                        loaderData.ownerBigPlan.big_plan.actionable_date
+                        loaderData.ownerBigPlan.actionable_date
                       ).toFormat("yyyy-MM-dd")
                     : undefined
                 }
@@ -374,10 +376,10 @@ export default function NewInboxTask() {
                 name="dueDate"
                 defaultValue={
                   loaderData.reason === "for-big-plan" &&
-                  loaderData.ownerBigPlan?.big_plan.due_date
-                    ? aDateToDate(
-                        loaderData.ownerBigPlan.big_plan.due_date
-                      ).toFormat("yyyy-MM-dd")
+                  loaderData.ownerBigPlan?.due_date
+                    ? aDateToDate(loaderData.ownerBigPlan.due_date).toFormat(
+                        "yyyy-MM-dd"
+                      )
                     : undefined
                 }
               />

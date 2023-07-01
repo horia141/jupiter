@@ -1,11 +1,10 @@
 """The Jupiter Web RPC API."""
-import asyncio
 import signal
 from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Union
 
 import aiohttp
-from fastapi import Depends, FastAPI, WebSocketException
+from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
@@ -447,7 +446,6 @@ from jupiter.webapi.websocket_progress_reporter import WebsocketProgressReporter
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
-from starlette.websockets import WebSocket, WebSocketDisconnect
 
 time_provider = PerRequestTimeProvider()
 
@@ -1292,39 +1290,39 @@ LoggedInSession = Annotated[
 ]
 
 
-@app.websocket("/progress-reporter")
-async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
-    """Handle the whole lifecycle of the progress reporter websocket."""
-    if token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    try:
-        progress_reporter_token_ext = AuthTokenExt.from_raw(token)
-        progress_reporter_token = (
-            auth_token_stamper.verify_auth_token_progress_reporter(
-                progress_reporter_token_ext
-            )
-        )
-    except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
+# @app.websocket("/progress-reporter")
+# async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
+#     """Handle the whole lifecycle of the progress reporter websocket."""
+#     if token is None:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+#     try:
+#         progress_reporter_token_ext = AuthTokenExt.from_raw(token)
+#         progress_reporter_token = (
+#             auth_token_stamper.verify_auth_token_progress_reporter(
+#                 progress_reporter_token_ext
+#             )
+#         )
+#     except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
 
-    await websocket.accept()
-    await progress_reporter_factory.register_socket(
-        websocket, progress_reporter_token.user_ref_id
-    )
-    # Seems like this just needs to stay alive for the socket to not expire ...
-    try:
-        while True:
-            await asyncio.sleep(1)  # Sleep one second
-            global websocket_should_close
-            if websocket_should_close:
-                await progress_reporter_factory.unregister_websocket(
-                    progress_reporter_token.user_ref_id
-                )
-                return
-    except WebSocketDisconnect:
-        await progress_reporter_factory.unregister_websocket(
-            progress_reporter_token.user_ref_id
-        )
+#     await websocket.accept()
+#     await progress_reporter_factory.register_socket(
+#         websocket, progress_reporter_token.user_ref_id
+#     )
+#     # Seems like this just needs to stay alive for the socket to not expire ...
+#     try:
+#         while True:
+#             await asyncio.sleep(1)  # Sleep one second
+#             global websocket_should_close
+#             if websocket_should_close:
+#                 await progress_reporter_factory.unregister_websocket(
+#                     progress_reporter_token.user_ref_id
+#                 )
+#                 return
+#     except WebSocketDisconnect:
+#         await progress_reporter_factory.unregister_websocket(
+#             progress_reporter_token.user_ref_id
+#         )
 
 
 @app.get("/healthz", status_code=status.HTTP_200_OK)

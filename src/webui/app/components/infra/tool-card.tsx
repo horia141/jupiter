@@ -41,7 +41,7 @@ const StyledButtonGroup = styled("div")(
     padding-right: 0.5rem;
     margin-bottom: 1rem;
     position: sticky;
-    top: "3.5rem";
+    top: 3.5rem;
     background-color: ${theme.palette.background.paper};
     z-index: ${theme.zIndex.drawer + 1};
     border-radius: 0px;

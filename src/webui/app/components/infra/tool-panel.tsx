@@ -1,4 +1,4 @@
-import { styled, Toolbar } from "@mui/material";
+import { styled } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PropsWithChildren } from "react";
@@ -33,7 +33,6 @@ export function ToolPanel(props: PropsWithChildren<ToolPanelProps>) {
           }}
           transition={{ duration: 0.2 }}
         >
-          {!isBigScreen && <Toolbar />}
           {props.children}
         </StyledMotionDrawer>
       )}
@@ -47,33 +46,11 @@ interface StyledMotionDrawerProps {
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => {
-    if (isBigScreen) {
-      return {
-        position: "absolute",
-        top: "0px",
-        width: "100%",
-        minHeight: "100%",
-        backgroundColor: theme.palette.background.paper,
-        zIndex: theme.zIndex.appBar - 2,
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-      };
-    } else {
-      return {
-        position: "fixed",
-        top: "0px",
-        right: "0px",
-        width: "100%",
-        zIndex: theme.zIndex.appBar - 2,
-        height: "100%",
-        overflowX: "auto",
-        overflowY: "scroll",
-        backgroundColor: theme.palette.background.paper,
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-      };
-    }
+    return {
+      position: isBigScreen ? "static" : "relative",
+      "&::-webkit-scrollbar": {
+        display: "none",
+      },
+    };
   }
 );
