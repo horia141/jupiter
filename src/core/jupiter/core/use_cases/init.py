@@ -8,6 +8,10 @@ from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import (
+    DEVMODE_FEATURE_FLAGS_CONTROLS,
+    FeatureFlagsControls,
+)
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
@@ -81,6 +85,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
         args: InitArgs,
     ) -> InitResult:
         """Execute the command's action."""
+        feature_flags_controls = _infer_feature_flags_controls()
+
         async with progress_reporter.section("Creating Local"):
             async with self._storage_engine.get_unit_of_work() as uow:
                 async with progress_reporter.start_creating_entity(
@@ -113,6 +119,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 ) as entity_reporter:
                     new_workspace = Workspace.new_workspace(
                         name=args.workspace_name,
+                        feature_flag_controls=feature_flags_controls,
+                        feature_flags=feature_flags_controls.build_standard_flags(),
                         source=EventSource.CLI,
                         created_time=self._time_provider.get_current_time(),
                     )
@@ -317,3 +325,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             auth_token_ext=auth_token.to_ext(),
             recovery_token=new_recovery_token,
         )
+
+
+def _infer_feature_flags_controls() -> FeatureFlagsControls:
+    return DEVMODE_FEATURE_FLAGS_CONTROLS

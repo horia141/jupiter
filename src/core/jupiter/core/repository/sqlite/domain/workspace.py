@@ -12,6 +12,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import build_event_table, upsert_events
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
@@ -48,6 +49,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             Column("archived_time", DateTime, nullable=True),
             Column("name", String(100), nullable=False),
             Column("default_project_ref_id", Integer, nullable=True),
+            Column("feature_flags", JSON, nullable=False),
             keep_existing=True,
         )
         self._workspace_event_table = build_event_table(self._workspace_table, metadata)
@@ -68,9 +70,8 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 if entity.archived_time
                 else None,
                 name=str(entity.name),
-                default_project_ref_id=entity.default_project_ref_id.as_int()
-                if entity.default_project_ref_id is not BAD_REF_ID
-                else None,
+                default_project_ref_id=entity.default_project_ref_id.as_int(),
+                feature_flags=entity.feature_flags,
             ),
         )
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -90,9 +91,8 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 if entity.archived_time
                 else None,
                 name=str(entity.name),
-                default_project_ref_id=entity.default_project_ref_id.as_int()
-                if entity.default_project_ref_id
-                else None,
+                default_project_ref_id=entity.default_project_ref_id.as_int(),
+                feature_flags=entity.feature_flags,
             ),
         )
         if result.rowcount == 0:
@@ -145,4 +145,5 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             default_project_ref_id=EntityId.from_raw(
                 str(row["default_project_ref_id"]),
             ),
+            feature_flags=row["feature_flags"],
         )

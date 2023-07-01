@@ -1,6 +1,10 @@
 """The workspace where everything happens."""
 from dataclasses import dataclass
 
+from jupiter.core.domain.features import (
+    FeatureFlags,
+    FeatureFlagsControls,
+)
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -23,14 +27,21 @@ class Workspace(RootEntity):
 
     @dataclass
     class ChangedDefaultProject(Entity.Updated):
-        """Change the default project."""
+        """Changed the default project."""
+
+    @dataclass
+    class UpdateFeatureFlags(Entity.Updated):
+        """Changed the feature flags for the workspace."""
 
     name: WorkspaceName
     default_project_ref_id: EntityId
+    feature_flags: FeatureFlags
 
     @staticmethod
     def new_workspace(
         name: WorkspaceName,
+        feature_flag_controls: FeatureFlagsControls,
+        feature_flags: FeatureFlags,
         source: EventSource,
         created_time: Timestamp,
     ) -> "Workspace":
@@ -50,6 +61,9 @@ class Workspace(RootEntity):
                 ),
             ],
             name=name,
+            feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
+                feature_flags
+            ),
             default_project_ref_id=BAD_REF_ID,
         )
         return workspace
@@ -83,5 +97,22 @@ class Workspace(RootEntity):
                 source,
                 self.version,
                 modification_time,
+            ),
+        )
+
+    def update_feature_flags(
+        self,
+        feature_flag_controls: FeatureFlagsControls,
+        feature_flags: FeatureFlags,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "Workspace":
+        """Update the feature settings for this workspace."""
+        return self._new_version(
+            feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
+                feature_flags
+            ),
+            new_event=Workspace.UpdateFeatureFlags.make_event_from_frame_args(
+                source, self.version, modification_time
             ),
         )
