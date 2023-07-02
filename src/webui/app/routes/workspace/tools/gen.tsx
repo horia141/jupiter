@@ -114,7 +114,7 @@ export async function action({ request }: ActionArgs) {
           ? {
               the_date: DateTime.fromISO(form.today, {
                 zone: "utc",
-              }).toString(),
+              }).toISODate(),
             }
           : undefined,
       gen_targets: fixSelectOutputToEnum<SyncTarget>(form.gen_targets),
