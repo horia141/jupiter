@@ -10,6 +10,7 @@ from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.email_address import EmailAddress
 from jupiter.core.domain.features import (
     DEVMODE_FEATURE_FLAGS_CONTROLS,
+    FeatureFlags,
     FeatureFlagsControls,
 )
 from jupiter.core.domain.habits.habit_collection import HabitCollection
@@ -62,6 +63,7 @@ class InitArgs(UseCaseArgsBase):
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_first_project_name: ProjectName
+    workspace_feature_flags: FeatureFlags
 
 
 @dataclass
@@ -120,7 +122,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                     new_workspace = Workspace.new_workspace(
                         name=args.workspace_name,
                         feature_flag_controls=feature_flags_controls,
-                        feature_flags=feature_flags_controls.build_standard_flags(),
+                        feature_flags=args.workspace_feature_flags,
                         source=EventSource.CLI,
                         created_time=self._time_provider.get_current_time(),
                     )

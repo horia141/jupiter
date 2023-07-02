@@ -2,6 +2,8 @@
 from argparse import ArgumentParser, Namespace
 from typing import cast
 
+from jupiter.core.domain.features import Feature, FeatureFlags
+
 from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
@@ -77,6 +79,20 @@ class Initialize(GuestMutationCommand[InitUseCase]):
             required=True,
             help="The name of the first project",
         )
+        parser.add_argument(
+            "--workspace-feature",
+            dest="workspace_feature_flag_enabled",
+            default=[],
+            action="append",
+            choices=Feature.all_values()
+        )
+        parser.add_argument(
+            "--workspace-no-feature",
+            dest="workspace_feature_flag_disable",
+            default=[],
+            action="append",
+            choices=Feature.all_values()
+        )
 
     async def _run(
         self,
@@ -93,6 +109,11 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         workspace_first_project_name = ProjectName.from_raw(
             args.workspace_first_project_name
         )
+        workspace_feature_flags: FeatureFlags = {}
+        for enabled_feature in args.workspace_feature_flag_enabled:
+            workspace_feature_flags[enabled_feature] = True
+        for disabled_feature in args.workspace_feature_flag_disable:
+            workspace_feature_flags[disabled_feature] = False
 
         result = await self._use_case.execute(
             AppGuestUseCaseSession(
@@ -106,6 +127,7 @@ class Initialize(GuestMutationCommand[InitUseCase]):
                 auth_password_repeat=auth_password_repeat,
                 workspace_name=workspace_name,
                 workspace_first_project_name=workspace_first_project_name,
+                workspace_feature_flags=workspace_feature_flags,
             ),
         )
 

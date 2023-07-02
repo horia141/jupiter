@@ -1,7 +1,8 @@
 """Even features are expressed here."""
 import enum
 from dataclasses import dataclass
-from typing import Dict
+from functools import lru_cache
+from typing import Dict, Iterable
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import Value
@@ -22,6 +23,12 @@ class Feature(enum.Enum):
     PERSONS = "persons"
     SLACK_TASKS = "slack-tasks"
     EMAIL_TASKS = "email-tasks"
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def all_values() -> Iterable[str]:
+        """The possible values for difficulties."""
+        return list(p.value for p in Feature)
 
 
 FeatureFlags = Dict[Feature, bool]
