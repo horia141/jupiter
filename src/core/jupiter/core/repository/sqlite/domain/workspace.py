@@ -1,6 +1,7 @@
 """The SQLite based Workspace repository."""
 from typing import Final, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
     WorkspaceRepository,
@@ -71,7 +72,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 else None,
                 name=str(entity.name),
                 default_project_ref_id=entity.default_project_ref_id.as_int(),
-                feature_flags=entity.feature_flags,
+                feature_flags={f.value: v for f, v in entity.feature_flags.items()},
             ),
         )
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -92,7 +93,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 else None,
                 name=str(entity.name),
                 default_project_ref_id=entity.default_project_ref_id.as_int(),
-                feature_flags=entity.feature_flags,
+                feature_flags={f.value: v for f, v in entity.feature_flags.items()},
             ),
         )
         if result.rowcount == 0:
@@ -145,5 +146,5 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             default_project_ref_id=EntityId.from_raw(
                 str(row["default_project_ref_id"]),
             ),
-            feature_flags=row["feature_flags"],
+            feature_flags={Feature(f): v for f, v in row["feature_flags"].items()},
         )

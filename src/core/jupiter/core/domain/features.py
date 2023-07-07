@@ -81,19 +81,22 @@ class FeatureFlagsControls(Value):
         self, feature_flags: FeatureFlags
     ) -> FeatureFlags:
         """Validates a set of feature flags and also provides a complete set."""
+        print(feature_flags)
         checked_feature_flags: FeatureFlags = {}
 
         for feature, control in self.controls.items():
             if feature not in feature_flags:
                 checked_feature_flags[feature] = control.standard_flag
-            checked_feature_flags[feature] = control.check(
-                str(feature), feature_flags[feature]
-            )
+            else:
+                checked_feature_flags[feature] = control.check(
+                    str(feature), feature_flags[feature]
+                )
+        print(checked_feature_flags)
 
         return checked_feature_flags
 
 
-GLOBAL_HOSTED_FEATURE_FLAGS_CONTROLS = FeatureFlagsControls(
+HOSTED_GLOBAL_FEATURE_FLAGS_CONTROLS = FeatureFlagsControls(
     {
         Feature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
         Feature.HABITS: FeatureControl.USER,

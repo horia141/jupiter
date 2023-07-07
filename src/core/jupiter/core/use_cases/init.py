@@ -1,17 +1,17 @@
 """UseCase for initialising the workspace."""
 from dataclasses import dataclass
+from typing import Final
 
 from jupiter.core.domain.auth.auth import Auth
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.recovery_token_plain import RecoveryTokenPlain
 from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.email_address import EmailAddress
 from jupiter.core.domain.features import (
-    DEVMODE_FEATURE_FLAGS_CONTROLS,
     FeatureFlags,
-    FeatureFlagsControls,
 )
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -30,6 +30,7 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
+from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
@@ -43,6 +44,8 @@ from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     ContextProgressReporter,
+    MutationUseCaseInvocationRecorder,
+    ProgressReporterFactory,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -50,6 +53,9 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
     AppGuestUseCaseContext,
 )
+from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
+from jupiter.core.utils.global_properties import GlobalProperties
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 @dataclass
@@ -80,6 +86,27 @@ class InitResult(UseCaseResultBase):
 class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
     """UseCase for initialising the workspace."""
 
+    _global_properties: Final[GlobalProperties]
+
+    def __init__(
+        self,
+        time_provider: TimeProvider,
+        invocation_recorder: MutationUseCaseInvocationRecorder,
+        progress_reporter_factory: ProgressReporterFactory[AppGuestUseCaseContext],
+        auth_token_stamper: AuthTokenStamper,
+        storage_engine: DomainStorageEngine,
+        global_properties: GlobalProperties,
+    ) -> None:
+        """Constructor."""
+        super().__init__(
+            time_provider,
+            invocation_recorder,
+            progress_reporter_factory,
+            auth_token_stamper,
+            storage_engine,
+        )
+        self._global_properties = global_properties
+
     async def _execute(
         self,
         progress_reporter: ContextProgressReporter,
@@ -87,7 +114,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
         args: InitArgs,
     ) -> InitResult:
         """Execute the command's action."""
-        feature_flags_controls = _infer_feature_flags_controls()
+        feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
         async with progress_reporter.section("Creating Local"):
             async with self._storage_engine.get_unit_of_work() as uow:
@@ -327,7 +354,3 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             auth_token_ext=auth_token.to_ext(),
             recovery_token=new_recovery_token,
         )
-
-
-def _infer_feature_flags_controls() -> FeatureFlagsControls:
-    return DEVMODE_FEATURE_FLAGS_CONTROLS

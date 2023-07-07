@@ -303,6 +303,7 @@ async def main() -> None:
                 NoOpProgressReporterFactory(),
                 auth_token_stamper,
                 domain_storage_engine,
+                global_properties,
             ),
         ),
         Login(
@@ -1138,6 +1139,7 @@ async def main() -> None:
                 auth_token_stamper,
                 domain_storage_engine,
                 usecase_storage_engine,
+                global_properties,
             ),
         ),
         TestHelperNuke(

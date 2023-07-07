@@ -1,6 +1,6 @@
 import type { Session } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { ApiClient } from "jupiter-gen";
+import { ApiClient, Hosting } from "jupiter-gen";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
 
 const _API_CLIENTS_BY_SESSION = new Map<undefined | string, ApiClient>();
@@ -17,12 +17,12 @@ export function getGuestApiClient(session?: Session): ApiClient {
   }
 
   let base = "";
-  if (GLOBAL_PROPERTIES.hosting === "LOCAL") {
+  if (GLOBAL_PROPERTIES.hosting === Hosting.LOCAL) {
     base = GLOBAL_PROPERTIES.localWebApiServerUrl;
-  } else if (GLOBAL_PROPERTIES.hosting === "HOSTED-GLOBAL") {
+  } else if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
-    throw new Error("Unknown use case: " + GLOBAL_PROPERTIES.hosting);
+    throw new Error("Unknown hosting: " + GLOBAL_PROPERTIES.hosting);
   }
 
   const newApiClient = new ApiClient({
@@ -48,9 +48,9 @@ export function getLoggedInApiClient(session: Session): ApiClient {
   }
 
   let base = "";
-  if (GLOBAL_PROPERTIES.hosting === "LOCAL") {
+  if (GLOBAL_PROPERTIES.hosting === Hosting.LOCAL) {
     base = GLOBAL_PROPERTIES.localWebApiServerUrl;
-  } else if (GLOBAL_PROPERTIES.hosting === "HOSTED-GLOBAL") {
+  } else if (GLOBAL_PROPERTIES.hosting === Hosting.HOSTED_GLOBAL) {
     base = GLOBAL_PROPERTIES.hostedGlobalWebApiServerUrl;
   } else {
     throw new Error("Unknown hosting option: " + GLOBAL_PROPERTIES.hosting);

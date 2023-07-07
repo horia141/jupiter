@@ -83,6 +83,7 @@ export type { HabitSummary } from './models/HabitSummary';
 export type { HabitSuspendArgs } from './models/HabitSuspendArgs';
 export type { HabitUnsuspendArgs } from './models/HabitUnsuspendArgs';
 export type { HabitUpdateArgs } from './models/HabitUpdateArgs';
+export { Hosting } from './models/Hosting';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { InboxTask } from './models/InboxTask';
 export type { InboxTaskArchiveArgs } from './models/InboxTaskArchiveArgs';

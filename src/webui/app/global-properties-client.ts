@@ -1,4 +1,4 @@
-import { Env } from "jupiter-gen";
+import { Env, Hosting } from "jupiter-gen";
 import { createContext } from "react";
 import type { GlobalPropertiesServer } from "./global-properties-server";
 
@@ -34,7 +34,7 @@ export function serverToClientGlobalProperties(
     baseName: globalPropertiesServer.baseName,
     description: globalPropertiesServer.description,
     webApiProgressReporterUrl:
-      globalPropertiesServer.hosting === "LOCAL"
+      globalPropertiesServer.hosting === Hosting.LOCAL
         ? globalPropertiesServer.localWebApiProgressReporterUrl
         : globalPropertiesServer.hostedGlobalWebApiProgressReporterUrl,
     docsUrl: globalPropertiesServer.docsUrl,

@@ -6,6 +6,7 @@ import type { BigPlanSummary } from './BigPlanSummary';
 import type { ChoreSummary } from './ChoreSummary';
 import type { Env } from './Env';
 import type { HabitSummary } from './HabitSummary';
+import type { Hosting } from './Hosting';
 import type { InboxTaskSummary } from './InboxTaskSummary';
 import type { MetricSummary } from './MetricSummary';
 import type { PersonSummary } from './PersonSummary';
@@ -15,6 +16,7 @@ import type { VacationSummary } from './VacationSummary';
 
 export type GetSummariesResult = {
     env: Env;
+    hosting: Hosting;
     default_project?: ProjectSummary;
     vacations?: Array<VacationSummary>;
     projects?: Array<ProjectSummary>;

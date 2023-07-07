@@ -7,6 +7,7 @@ from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
 from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
+from jupiter.core.domain.features import FeatureFlags
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
@@ -42,6 +43,8 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
 )
+from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
+from jupiter.core.utils.global_properties import GlobalProperties
 from jupiter.core.utils.time_provider import TimeProvider
 
 
@@ -56,12 +59,14 @@ class ClearAllArgs(UseCaseArgsBase):
     auth_new_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_default_project_ref_id: EntityId
+    workspace_feature_flags: FeatureFlags
 
 
 class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
     """The command for clearing all branch and leaf type entities."""
 
     _use_case_storage_engine: Final[UseCaseStorageEngine]
+    _global_properties: Final[GlobalProperties]
 
     def __init__(
         self,
@@ -71,6 +76,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
         auth_token_stamper: AuthTokenStamper,
         storage_engine: DomainStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
+        global_properties: GlobalProperties,
     ) -> None:
         """Constructor."""
         super().__init__(
@@ -81,6 +87,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
             storage_engine,
         )
         self._use_case_storage_engine = use_case_storage_engine
+        self._global_properties = global_properties
 
     async def _execute(
         self,
@@ -91,6 +98,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
         """Execute the command's action."""
         user = context.user
         workspace = context.workspace
+        feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             vacation_collection = (
@@ -196,6 +204,12 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
 
                     workspace = workspace.change_default_project(
                         default_project_ref_id=default_project.ref_id,
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
+                    workspace = workspace.update_feature_flags(
+                        feature_flag_controls=feature_flags_controls,
+                        feature_flags=args.workspace_feature_flags,
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )

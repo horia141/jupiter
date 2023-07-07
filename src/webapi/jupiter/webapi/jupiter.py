@@ -483,6 +483,7 @@ init_use_case = InitUseCase(
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+    global_properties=global_properties,
 )
 
 login_use_case = LoginUseCase(
@@ -517,6 +518,7 @@ load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
 
 get_summaries_use_case = GetSummariesUseCase(
     env=global_properties.env,
+    hosting=global_properties.hosting,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
 )

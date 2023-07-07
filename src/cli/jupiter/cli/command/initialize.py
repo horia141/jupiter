@@ -2,12 +2,11 @@
 from argparse import ArgumentParser, Namespace
 from typing import cast
 
-from jupiter.core.domain.features import Feature, FeatureFlags
-
 from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import Feature, FeatureFlags
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
@@ -84,14 +83,14 @@ class Initialize(GuestMutationCommand[InitUseCase]):
             dest="workspace_feature_flag_enabled",
             default=[],
             action="append",
-            choices=Feature.all_values()
+            choices=Feature.all_values(),
         )
         parser.add_argument(
             "--workspace-no-feature",
             dest="workspace_feature_flag_disable",
             default=[],
             action="append",
-            choices=Feature.all_values()
+            choices=Feature.all_values(),
         )
 
     async def _run(
@@ -111,9 +110,9 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         )
         workspace_feature_flags: FeatureFlags = {}
         for enabled_feature in args.workspace_feature_flag_enabled:
-            workspace_feature_flags[enabled_feature] = True
+            workspace_feature_flags[Feature(enabled_feature)] = True
         for disabled_feature in args.workspace_feature_flag_disable:
-            workspace_feature_flags[disabled_feature] = False
+            workspace_feature_flags[Feature(disabled_feature)] = False
 
         result = await self._use_case.execute(
             AppGuestUseCaseSession(
