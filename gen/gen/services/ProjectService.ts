@@ -33,7 +33,7 @@ export class ProjectService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `Workspace Not Found`,
+                410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
         });
@@ -55,7 +55,7 @@ export class ProjectService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `Workspace Not Found`,
+                410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
         });
@@ -77,7 +77,7 @@ export class ProjectService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `Workspace Not Found`,
+                410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
         });
@@ -99,7 +99,7 @@ export class ProjectService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `Workspace Not Found`,
+                410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
         });
@@ -121,7 +121,7 @@ export class ProjectService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
-                404: `Workspace Not Found`,
+                410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
         });
