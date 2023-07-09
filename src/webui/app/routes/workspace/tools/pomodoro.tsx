@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ToolCard } from "~/components/infra/tool-card";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
-const DEFAULT_DURATION = Duration.fromMillis(1000 * 60 * 25);
+const DEFAULT_DURATION = Duration.fromMillis(1000 * 4);
 const DEFAULT_STEP_MS = 1000;
 
 export const handle = {
@@ -42,6 +42,11 @@ export default function Pomodoro() {
     }
 
     function playNotification() {
+        console.log(Notification.permission);
+        Notification.requestPermission().then((perm) => {
+            console.log(perm);
+        });
+        const x = new Notification("Hello", {icon: "/favicon.ico", body: "Hello"});
         const notificationAudio = new Audio("/pomodoro-notification.mp3");
         notificationAudio.play();
     }
