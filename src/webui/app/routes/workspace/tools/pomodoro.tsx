@@ -94,7 +94,7 @@ export default function Pomodoro() {
           </Typography>
         </PomodoroCard>
 
-        <CardActions sx={{justifyContent: "space-between"}}>
+        <CardActions sx={{ justifyContent: "space-between" }}>
           <ButtonGroup>
             <Button
               variant="contained"
