@@ -10,7 +10,7 @@ I built it to [solve an issue I had](http://www.paulgraham.com/organic.html) - m
 I wanted to get done actually got done, while juggling the standard complexities of life - family, kids, career, etc.
 
 The current version is both a [webapp](https://jupiter-webui.onrender.com/) and a
-[CLI application](install.md).
+[CLI application](how-tos/install.md).
 
 Here's a picture from the "inbox" view:
 

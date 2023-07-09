@@ -1,7 +1,7 @@
 # Recover Your Account
 
 If you somehow forget your account's password, you can recover your password by using the
-account recovery feature and the recovery code that you got when [creating your account](../install.md).
+account recovery feature and the recovery code that you got when [creating your account](../how-tos/install.md).
 
 From the login page click the `Reset Password` button:
 

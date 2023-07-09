@@ -11,7 +11,7 @@ way to use the system, both for ergonomic and ease of access reasons.
 
 ## The CLI App
 
-There is a Jupiter CLI app that you can [dowload](../install.md). It only works in
+There is a Jupiter CLI app that you can [dowload](../how-tos/install.md). It only works in
 [local mode](hosted-vs-local-mode.md) and will store all the account's and workspace's
 data on your local machine. Otherwise all functionality is the same.
 
