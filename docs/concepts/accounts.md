@@ -6,7 +6,7 @@ is your email address.
 Your account is uniquely linked to your [workspace](./workspaces.md) and this is private
 to you.
 
-You can create an account (and associated workspace) as [shown here](../install.md).
+You can create an account (and associated workspace) as [shown here](../how-tos/install.md).
 
 ## Properties
 

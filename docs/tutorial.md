@@ -4,7 +4,7 @@
 
 First, go to the [Jupiter](https://jupiter-webui.onrender.com). This is the _hosted_ version
 of Jupiter, which is the recommended way to start. If you're looking for a _local_ install,
-then checkout [installation instructions](install.md). Everything below should work the same.
+then checkout [installation instructions](how-tos/install.md). Everything below should work the same.
 
 ## Create A Workspace
 
