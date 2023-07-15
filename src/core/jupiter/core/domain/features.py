@@ -56,13 +56,13 @@ class FeatureControl(enum.Enum):
         """Verify if the property can be set."""
         if self == FeatureControl.ALWAYS_ON:
             if property_value is False:
-                raise InputValidationError(f"Cannot disable {property_name}")
+                raise InputValidationError(f"Cannot disable {property_name} because it should always be on")
         elif (
             self == FeatureControl.ALWAYS_OFF_TECH
             or self == FeatureControl.ALWAYS_OFF_HOSTING
         ):
             if property_value is True:
-                raise InputValidationError(f"Cannot enable {property_name}")
+                raise InputValidationError(f"Cannot enable {property_name} because this environment doesn't support it")
 
         return property_value
 
@@ -81,7 +81,6 @@ class FeatureFlagsControls(Value):
         self, feature_flags: FeatureFlags
     ) -> FeatureFlags:
         """Validates a set of feature flags and also provides a complete set."""
-        print(feature_flags)
         checked_feature_flags: FeatureFlags = {}
 
         for feature, control in self.controls.items():
@@ -89,10 +88,9 @@ class FeatureFlagsControls(Value):
                 checked_feature_flags[feature] = control.standard_flag
             else:
                 checked_feature_flags[feature] = control.check(
-                    str(feature), feature_flags[feature]
+                    feature.value, feature_flags[feature]
                 )
-        print(checked_feature_flags)
-
+        
         return checked_feature_flags
 
 

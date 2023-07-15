@@ -37,7 +37,7 @@ class Pomodoro(LoggedInReadonlyCommand[NoOpUseCase]):
             task1 = progress.add_task("[red]Timer: ", total=_TIMER_SECONDS)
 
             for _i in range(_TIMER_SECONDS):
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(1)
                 progress.update(task1, advance=1)
 
         beepy.beep("success")

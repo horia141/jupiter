@@ -207,7 +207,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    workspace = workspace.update_feature_flags(
+                    workspace = workspace.change_feature_flags(
                         feature_flag_controls=feature_flags_controls,
                         feature_flags=args.workspace_feature_flags,
                         source=EventSource.CLI,

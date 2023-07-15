@@ -100,14 +100,14 @@ class Workspace(RootEntity):
             ),
         )
 
-    def update_feature_flags(
+    def change_feature_flags(
         self,
         feature_flag_controls: FeatureFlagsControls,
         feature_flags: FeatureFlags,
         source: EventSource,
         modification_time: Timestamp,
     ) -> "Workspace":
-        """Update the feature settings for this workspace."""
+        """Change the feature settings for this workspace."""
         return self._new_version(
             feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
                 feature_flags

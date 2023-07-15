@@ -110,6 +110,9 @@ from jupiter.cli.command.vacation_update import VacationUpdate
 from jupiter.cli.command.workspace_change_default_project import (
     WorkspaceChangeDefaultProject,
 )
+from jupiter.cli.command.workspace_change_feature_flags import (
+    WorkspaceChangeFeatureFlags,
+)
 from jupiter.cli.command.workspace_show import WorkspaceShow
 from jupiter.cli.command.workspace_update import WorkspaceUpdate
 from jupiter.cli.session_storage import SessionInfoNotFoundError, SessionStorage
@@ -246,6 +249,9 @@ from jupiter.core.use_cases.vacations.remove import VacationRemoveUseCase
 from jupiter.core.use_cases.vacations.update import VacationUpdateUseCase
 from jupiter.core.use_cases.workspaces.change_default_project import (
     WorkspaceChangeDefaultProjectUseCase,
+)
+from jupiter.core.use_cases.workspaces.change_feature_flags import (
+    WorkspaceChangeFeatureFlagsUseCase,
 )
 from jupiter.core.use_cases.workspaces.load import WorkspaceLoadUseCase
 from jupiter.core.use_cases.workspaces.update import WorkspaceUpdateUseCase
@@ -407,6 +413,17 @@ async def main() -> None:
                 progress_reporter_factory,
                 auth_token_stamper,
                 domain_storage_engine,
+            ),
+        ),
+        WorkspaceChangeFeatureFlags(
+            session_storage,
+            WorkspaceChangeFeatureFlagsUseCase(
+                time_provider=time_provider,
+                invocation_recorder=invocation_recorder,
+                progress_reporter_factory=progress_reporter_factory,
+                auth_token_stamper=auth_token_stamper,
+                storage_engine=domain_storage_engine,
+                global_properties=global_properties,
             ),
         ),
         WorkspaceShow(
