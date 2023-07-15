@@ -44,6 +44,9 @@ implicit_reexport = True
 [mypy-avinit.*]
 ignore_missing_imports = True
 
+[mypy-beepy.*]
+ignore_missing_imports = True
+
 [mypy-coloredlogs.*]
 ignore_missing_imports = True
 

@@ -227,6 +227,17 @@ export default function Sidebar(props: SidebarProps) {
                 <ListItemText primary="Garbage Collect" />
               </ListItemButton>
             </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton
+                to="/workspace/tools/pomodoro"
+                component={Link}
+                onClick={onClickNavigation}
+              >
+                <ListItemIcon>🧰</ListItemIcon>
+                <ListItemText primary="Pomodoro Timer" />
+              </ListItemButton>
+            </ListItem>
           </List>
         </StyledMotionDrawer>
       )}

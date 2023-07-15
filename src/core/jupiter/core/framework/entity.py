@@ -1,4 +1,4 @@
-"""Framework level elements for entities."""
+"""Framework level elements for entities (aggregate roots in DDD)."""
 import abc
 import dataclasses
 from dataclasses import dataclass

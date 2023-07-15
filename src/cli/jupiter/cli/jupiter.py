@@ -69,6 +69,7 @@ from jupiter.cli.command.person_create import PersonCreate
 from jupiter.cli.command.person_remove import PersonRemove
 from jupiter.cli.command.person_show import PersonShow
 from jupiter.cli.command.person_update import PersonUpdate
+from jupiter.cli.command.pomodoro import Pomodoro
 from jupiter.cli.command.project_archive import ProjectArchive
 from jupiter.cli.command.project_create import ProjectCreate
 from jupiter.cli.command.project_remove import ProjectRemove
@@ -249,6 +250,7 @@ from jupiter.core.use_cases.workspaces.change_default_project import (
 from jupiter.core.use_cases.workspaces.load import WorkspaceLoadUseCase
 from jupiter.core.use_cases.workspaces.update import WorkspaceUpdateUseCase
 from jupiter.core.utils.global_properties import build_global_properties
+from jupiter.core.utils.noop_use_case import NoOpUseCase
 from jupiter.core.utils.progress_reporter import (
     EmptyProgressReporterFactory,
     NoOpProgressReporterFactory,
@@ -360,6 +362,13 @@ async def main() -> None:
                 progress_reporter_factory,
                 auth_token_stamper,
                 domain_storage_engine,
+            ),
+        ),
+        Pomodoro(
+            session_storage,
+            NoOpUseCase(
+                auth_token_stamper=auth_token_stamper,
+                storage_engine=domain_storage_engine,
             ),
         ),
         # CRUD Commands.

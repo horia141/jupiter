@@ -17,7 +17,6 @@ theme:
 nav:
     - Home: 'index.md'
     - Tutorial: 'tutorial.md'
-    - Installation: 'install.md'
     - Concepts:
           - 'Overview': 'concepts/overview.md'
           - 'Hosted Vs Local Mode': 'concepts/hosted-vs-local-mode.md'
@@ -36,7 +35,10 @@ nav:
           - 'Reporting': 'concepts/reporting.md'
           - 'Tasks Generation': 'concepts/tasks-generation.md'
           - 'Garbage Collection': 'concepts/garbage-collection.md'
+    - 'Tools':
+          - 'Pomodoro Timer': 'tools/pomodoro-timer.md'
     - 'How Tos':
+          - 'Installation': 'how-tos/install.md'
           - 'Do Garbage Collection': 'how-tos/do-garbage-collection.md'
           - 'Recover Your Account': 'how-tos/recover-your-account.md'
     - Roadmap: 'roadmap.md'

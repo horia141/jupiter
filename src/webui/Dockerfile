@@ -28,6 +28,7 @@ RUN cd gen && npx tsc
 
 COPY src/webui/app src/webui/app
 COPY src/webui/public/favicon.ico src/webui/public/favicon.ico
+COPY src/webui/public/pomodoro-notification.mp3 src/webui/public/pomodoro-notification.mp3
 
 ARG PORT=10020
 ENV PORT=$PORT

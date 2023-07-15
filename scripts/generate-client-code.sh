@@ -4,7 +4,7 @@ set -ex
 
 HOST=0.0.0.0
 PORT=8004
-export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/apigen/jupiter.sqlite
+export SQLITE_DB_URL=sqlite+aiosqlite:///../../.build-cache/apigen/jupiter-gen.sqlite
 
 mkdir -p .build-cache/apigen
 

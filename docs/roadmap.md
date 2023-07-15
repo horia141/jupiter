@@ -34,6 +34,7 @@ dates or order of delivery.
 * Notifications
 * Integrate with Google Calendar & Outlook for calendar support
 * Integrate with YouTube, Spotify, Apple Music, Amazon, etc for smart lists support, playlists creation, etc
+* Scheduling tool
 
 ## Public Infrastructure Developments
 
