@@ -62,7 +62,7 @@ export default function Pomodoro() {
 
   function notifyToast() {
     if (!("Notification" in window)) {
-        return;
+      return;
     }
 
     const notificationAlert = new Notification("Jupiter Pomodoro Timer", {
@@ -118,7 +118,7 @@ export default function Pomodoro() {
 
           <ButtonGroup>
             <ClientOnly fallback={<></>}>
-              {() => ("Notification" in window) && <NotificationControl />}
+              {() => "Notification" in window && <NotificationControl />}
             </ClientOnly>
           </ButtonGroup>
         </CardActions>
