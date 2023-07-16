@@ -183,8 +183,8 @@ export default function Gen() {
 
   return (
     <ToolCard returnLocation="/workspace">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

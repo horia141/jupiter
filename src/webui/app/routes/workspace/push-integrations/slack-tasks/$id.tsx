@@ -232,8 +232,8 @@ export default function SlackTask() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/slack-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

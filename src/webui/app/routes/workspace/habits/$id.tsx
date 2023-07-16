@@ -82,7 +82,7 @@ export async function loader({ request, params }: LoaderArgs) {
     session
   ).getSummaries.getSummaries({
     include_projects: true,
-    });
+  });
 
   try {
     const result = await getLoggedInApiClient(session).habit.loadHabit({
@@ -289,8 +289,8 @@ export default function Habit() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/habits"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

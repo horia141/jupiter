@@ -94,8 +94,8 @@ export default function Security() {
     <TrunkCard>
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
-          <GlobalError actionResult={actionData} />
           <Card>
+            <GlobalError actionResult={actionData} />
             <CardHeader title="Security" />
             <CardContent>
               <Stack spacing={2} useFlexGap>

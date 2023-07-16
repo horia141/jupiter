@@ -42,7 +42,7 @@ export async function loader({ request }: LoaderArgs) {
   ).getSummaries.getSummaries({
     include_default_project: true,
     include_projects: true,
-    });
+  });
 
   const personSettingsResponse = await getLoggedInApiClient(
     session
@@ -86,8 +86,8 @@ export default function PersonsSettings() {
 
   return (
     <LeafCard returnLocation="/workspace/persons">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

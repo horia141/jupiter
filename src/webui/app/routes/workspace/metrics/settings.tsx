@@ -86,9 +86,9 @@ export default function MetricsSettings() {
 
   return (
     <LeafCard returnLocation="/workspace/metrics">
-      <GlobalError actionResult={actionData} />
-
       <Card>
+        <GlobalError actionResult={actionData} />
+
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

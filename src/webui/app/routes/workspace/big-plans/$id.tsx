@@ -68,7 +68,7 @@ export async function loader({ request, params }: LoaderArgs) {
     session
   ).getSummaries.getSummaries({
     include_projects: true,
-    });
+  });
 
   try {
     const result = await getLoggedInApiClient(session).bigPlan.loadBigPlan({
@@ -228,8 +228,8 @@ export default function BigPlan() {
       enableArchiveButton={inputsEnabled}
       returnLocation={"/workspace/big-plans"}
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

@@ -58,7 +58,7 @@ export async function loader({ request }: LoaderArgs) {
   ).getSummaries.getSummaries({
     include_default_project: true,
     include_projects: true,
-    });
+  });
 
   return json({
     defaultProject: summaryResponse.default_project as Project,
@@ -118,8 +118,8 @@ export default function NewHabit() {
 
   return (
     <LeafCard returnLocation="/workspace/habits">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

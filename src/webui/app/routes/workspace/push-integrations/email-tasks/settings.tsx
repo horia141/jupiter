@@ -42,7 +42,7 @@ export async function loader({ request }: LoaderArgs) {
   ).getSummaries.getSummaries({
     include_default_project: true,
     include_projects: true,
-    });
+  });
 
   const emailTaskSettingsResponse = await getLoggedInApiClient(
     session
@@ -88,8 +88,8 @@ export default function EmailTasksSettings() {
 
   return (
     <LeafCard returnLocation="/workspace/push-integrations/email-tasks">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

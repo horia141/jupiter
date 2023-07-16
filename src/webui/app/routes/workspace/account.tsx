@@ -102,9 +102,9 @@ export default function Account() {
     <TrunkCard>
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
-          <GlobalError actionResult={actionData} />
-
           <Card>
+            <GlobalError actionResult={actionData} />
+
             <CardHeader title="Account" />
             <CardContent>
               <Stack spacing={2} useFlexGap>

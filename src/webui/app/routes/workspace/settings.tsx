@@ -130,7 +130,7 @@ export async function action({ request }: ActionArgs) {
       error instanceof ApiError &&
       error.status === StatusCodes.UNPROCESSABLE_ENTITY
     ) {
-      return json(validationErrorToUIErrorInfo(error.body));
+      return json(validationErrorToUIErrorInfo(error.body, intent));
     }
 
     throw error;
@@ -152,8 +152,9 @@ export default function Settings() {
     <TrunkCard>
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
-          <GlobalError actionResult={actionData} />
           <Card>
+            <GlobalError intent="update" actionResult={actionData} />
+
             <CardHeader title="General" />
             <CardContent>
               <Stack spacing={2} useFlexGap>
@@ -186,6 +187,10 @@ export default function Settings() {
           </Card>
 
           <Card>
+            <GlobalError
+              intent="change-default-project"
+              actionResult={actionData}
+            />
             <CardHeader title="Default Project" />
             <CardContent>
               <Stack spacing={2} useFlexGap>
@@ -228,6 +233,11 @@ export default function Settings() {
           </Card>
 
           <Card>
+            <GlobalError
+              intent="change-feature-flags"
+              actionResult={actionData}
+            />
+
             <CardHeader title="Feature Flags" />
 
             <CardContent>

@@ -87,7 +87,7 @@ export async function loader({ request, params }: LoaderArgs) {
     session
   ).getSummaries.getSummaries({
     include_projects: true,
-    });
+  });
 
   try {
     const result = await getLoggedInApiClient(session).chore.loadChore({
@@ -306,8 +306,8 @@ export default function Chore() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/chores"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

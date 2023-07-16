@@ -103,8 +103,8 @@ export default function Login() {
   return (
     <StandaloneCard>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="Login" />
           <CardContent>
             <Stack spacing={2} useFlexGap>

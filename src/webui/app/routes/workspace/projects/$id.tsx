@@ -121,8 +121,8 @@ export default function Project() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/projects"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

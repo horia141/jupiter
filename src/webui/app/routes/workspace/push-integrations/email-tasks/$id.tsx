@@ -242,8 +242,8 @@ export default function EmailTask() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/email-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonGroup,
+  Card,
   CardActions,
   CardContent,
   FormControl,
@@ -63,36 +64,38 @@ export default function NewProject() {
 
   return (
     <LeafCard returnLocation="/workspace/projects">
-      <GlobalError actionResult={actionData} />
-      <CardContent>
-        <Stack spacing={2} useFlexGap>
-          <FormControl fullWidth>
-            <InputLabel id="name">Name</InputLabel>
-            <OutlinedInput
-              label="Name"
-              name="name"
-              readOnly={!inputsEnabled}
-              type="text"
-              placeholder="Project name"
-            />
-            <FieldError actionResult={actionData} fieldName="/name" />
-          </FormControl>
-        </Stack>
-      </CardContent>
+      <Card>
+        <GlobalError actionResult={actionData} />
+        <CardContent>
+          <Stack spacing={2} useFlexGap>
+            <FormControl fullWidth>
+              <InputLabel id="name">Name</InputLabel>
+              <OutlinedInput
+                label="Name"
+                name="name"
+                readOnly={!inputsEnabled}
+                type="text"
+                placeholder="Project name"
+              />
+              <FieldError actionResult={actionData} fieldName="/name" />
+            </FormControl>
+          </Stack>
+        </CardContent>
 
-      <CardActions>
-        <ButtonGroup>
-          <Button
-            variant="contained"
-            disabled={!inputsEnabled}
-            type="submit"
-            name="intent"
-            value="create"
-          >
-            Create
-          </Button>
-        </ButtonGroup>
-      </CardActions>
+        <CardActions>
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              disabled={!inputsEnabled}
+              type="submit"
+              name="intent"
+              value="create"
+            >
+              Create
+            </Button>
+          </ButtonGroup>
+        </CardActions>
+      </Card>
     </LeafCard>
   );
 }

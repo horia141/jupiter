@@ -106,8 +106,8 @@ export default function WorkspaceInit() {
   return (
     <StandaloneCard>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="New Account & Workspace" />
           <CardContent>
             <Stack spacing={2} useFlexGap>

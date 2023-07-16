@@ -334,8 +334,8 @@ export default function InboxTask() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/inbox-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
