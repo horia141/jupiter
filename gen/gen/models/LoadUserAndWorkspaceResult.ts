@@ -13,6 +13,7 @@ export type LoadUserAndWorkspaceResult = {
     env: Env;
     hosting: Hosting;
     feature_flag_controls: FeatureFlagsControls;
+    default_feature_flags: Record<string, boolean>;
     feature_hack: Feature;
     user?: User;
     workspace?: Workspace;

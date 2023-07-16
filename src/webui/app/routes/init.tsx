@@ -1,4 +1,8 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Autocomplete,
   Button,
   ButtonGroup,
@@ -16,15 +20,17 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, Feature } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients";
+import { FeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { StandaloneCard } from "~/components/infra/standalone-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { commitSession, getSession } from "~/sessions";
 
 const WorkspaceInitFormSchema = {
@@ -35,28 +41,38 @@ const WorkspaceInitFormSchema = {
   authPasswordRepeat: z.string(),
   workspaceName: z.string(),
   workspaceFirstProjectName: z.string(),
+  workspaceFeatureFlags: z.array(z.nativeEnum(Feature)),
 };
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  if (session.has("authTokenExt")) {
-    const apiClient = getGuestApiClient(session);
-    const result = await apiClient.loadUserAndWorkspace.loadUserAndWorkspace(
-      {}
-    );
-    if (result.user || result.workspace) {
-      return redirect("/workspace");
-    }
+  const apiClient = getGuestApiClient(session);
+  const result = await apiClient.loadUserAndWorkspace.loadUserAndWorkspace({});
+  if (result.user || result.workspace) {
+    return redirect("/workspace");
   }
 
-  return json({});
+  return json({
+    hosting: result.hosting,
+    featureFlagsControl: result.feature_flag_controls,
+    defaultFeatureFlags: result.default_feature_flags,
+  });
 }
 
 // @secureFn
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, WorkspaceInitFormSchema);
+
+  const workspaceFeatureFlags: Record<string, boolean> = {};
+  for (const feature of Object.values(Feature)) {
+    if (form.workspaceFeatureFlags.find((v) => v == feature)) {
+      workspaceFeatureFlags[feature] = true;
+    } else {
+      workspaceFeatureFlags[feature] = false;
+    }
+  }
 
   try {
     const result = await getGuestApiClient(session).init.init({
@@ -69,7 +85,7 @@ export async function action({ request }: ActionArgs) {
       workspace_first_project_name: {
         the_name: form.workspaceFirstProjectName,
       },
-      workspace_feature_flags: {},
+      workspace_feature_flags: workspaceFeatureFlags,
     });
 
     session.set("authTokenExt", result.auth_token_ext);
@@ -95,6 +111,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function WorkspaceInit() {
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
@@ -221,6 +238,22 @@ export default function WorkspaceInit() {
                   fieldName="/workspacefirst_project_name"
                 />
               </FormControl>
+
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  Feature Flags
+                </AccordionSummary>
+
+                <AccordionDetails>
+                  <FeatureFlagsEditor
+                    name="workspaceFeatureFlags"
+                    inputsEnabled={true}
+                    featureFlagsControls={loaderData.featureFlagsControl}
+                    defaultFeatureFlags={loaderData.defaultFeatureFlags}
+                    hosting={loaderData.hosting}
+                  />
+                </AccordionDetails>
+              </Accordion>
             </Stack>
           </CardContent>
 

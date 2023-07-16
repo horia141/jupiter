@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final, Optional
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.features import Feature, FeatureFlagsControls
+from jupiter.core.domain.features import Feature, FeatureFlags, FeatureFlagsControls
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
@@ -37,6 +37,7 @@ class LoadUserAndWorkspaceResult(UseCaseResultBase):
     env: Env
     hosting: Hosting
     feature_flag_controls: FeatureFlagsControls
+    default_feature_flags: FeatureFlags
     feature_hack: Feature
     user: Optional[User] = None
     workspace: Optional[Workspace] = None
@@ -91,6 +92,7 @@ class LoadUserAndWorkspaceUseCase(
             env=self._global_properties.env,
             hosting=self._global_properties.hosting,
             feature_flag_controls=feature_flags_controls,
+            default_feature_flags=feature_flags_controls.build_standard_flags(),
             feature_hack=Feature.INBOX_TASKS,
             user=user,
             workspace=workspace,
