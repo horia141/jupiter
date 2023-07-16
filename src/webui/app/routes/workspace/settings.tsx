@@ -24,12 +24,12 @@ import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { DocsHelp } from "~/components/docs-help";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import {
@@ -60,17 +60,8 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
   const result = await getLoggedInApiClient(session).workspace.loadWorkspace(
     {}
@@ -287,7 +278,15 @@ export default function Settings() {
                       }
                       label={
                         <Tooltip title={extraLabel}>
-                          <span>{featureName(feature as Feature)} <DocsHelp size="small" subject={featureToDocsHelpSubject(feature as Feature)} /></span>
+                          <span>
+                            {featureName(feature as Feature)}{" "}
+                            <DocsHelp
+                              size="small"
+                              subject={featureToDocsHelpSubject(
+                                feature as Feature
+                              )}
+                            />
+                          </span>
                         </Tooltip>
                       }
                     />

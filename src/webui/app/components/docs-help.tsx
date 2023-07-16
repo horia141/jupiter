@@ -1,8 +1,7 @@
-import { IconButton } from "@mui/material";
-import { Context, useContext } from "react";
-import { GlobalPropertiesClient, GlobalPropertiesContext } from "~/global-properties-client";
 import HelpCenterIcon from "@mui/icons-material/HelpCenter";
-
+import { IconButton } from "@mui/material";
+import { useContext } from "react";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 
 export enum DocsHelpSubject {
   ROOT,
@@ -20,31 +19,36 @@ export enum DocsHelpSubject {
 }
 
 interface DocsHelpProps {
-    size: "small" | "medium" | "large";
-    subject: DocsHelpSubject;
+  size: "small" | "medium" | "large";
+  subject: DocsHelpSubject;
 }
 
 export function DocsHelp(props: DocsHelpProps) {
-    const globalProperties = useContext(GlobalPropertiesContext);
+  const globalProperties = useContext(GlobalPropertiesContext);
 
-    const helpUrl = new URL(subjectToUrl(props.subject), globalProperties.docsUrl);
+  const helpUrl = new URL(
+    subjectToUrl(props.subject),
+    globalProperties.docsUrl
+  );
 
-    return <IconButton
-            component={"a"}
-            size={props.size}
-            disableRipple
-            color="inherit"
-            href={helpUrl.toString()}
-            target="_blank"
-          >
-            <HelpCenterIcon fontSize={props.size} />
-          </IconButton>;
+  return (
+    <IconButton
+      component={"a"}
+      size={props.size}
+      disableRipple
+      color="inherit"
+      href={helpUrl.toString()}
+      target="_blank"
+    >
+      <HelpCenterIcon fontSize={props.size} />
+    </IconButton>
+  );
 }
 
 function subjectToUrl(subject: DocsHelpSubject) {
   switch (subject) {
     case DocsHelpSubject.ROOT:
-        return `/`;
+      return `/`;
     case DocsHelpSubject.INBOX_TASKS:
       return `concepts/inbox-tasks/`;
     case DocsHelpSubject.HABITS:

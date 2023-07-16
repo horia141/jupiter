@@ -29,31 +29,31 @@ export function featureName(feature: Feature): string {
 }
 
 export function featureToDocsHelpSubject(feature: Feature): DocsHelpSubject {
-    switch (feature) {
-      case Feature.INBOX_TASKS:
-        return DocsHelpSubject.INBOX_TASKS;
-      case Feature.HABITS:
-        return DocsHelpSubject.HABITS;
-      case Feature.CHORES:
-        return DocsHelpSubject.CHORES;
-      case Feature.BIG_PLANS:
-        return DocsHelpSubject.BIG_PLANS;
-      case Feature.VACATIONS:
-        return DocsHelpSubject.VACATIONS;
-      case Feature.PROJECTS:
-        return DocsHelpSubject.PROJECTS;
-      case Feature.SMART_LISTS:
-        return DocsHelpSubject.SMART_LISTS;
-      case Feature.METRICS:
-        return DocsHelpSubject.METRICS;
-      case Feature.PERSONS:
-        return DocsHelpSubject.PERSONS;
-      case Feature.SLACK_TASKS:
-        return DocsHelpSubject.SLACK_TASKS;
-      case Feature.EMAIL_TASKS:
-        return DocsHelpSubject.EMAIL_TASKS;
-    }
+  switch (feature) {
+    case Feature.INBOX_TASKS:
+      return DocsHelpSubject.INBOX_TASKS;
+    case Feature.HABITS:
+      return DocsHelpSubject.HABITS;
+    case Feature.CHORES:
+      return DocsHelpSubject.CHORES;
+    case Feature.BIG_PLANS:
+      return DocsHelpSubject.BIG_PLANS;
+    case Feature.VACATIONS:
+      return DocsHelpSubject.VACATIONS;
+    case Feature.PROJECTS:
+      return DocsHelpSubject.PROJECTS;
+    case Feature.SMART_LISTS:
+      return DocsHelpSubject.SMART_LISTS;
+    case Feature.METRICS:
+      return DocsHelpSubject.METRICS;
+    case Feature.PERSONS:
+      return DocsHelpSubject.PERSONS;
+    case Feature.SLACK_TASKS:
+      return DocsHelpSubject.SLACK_TASKS;
+    case Feature.EMAIL_TASKS:
+      return DocsHelpSubject.EMAIL_TASKS;
   }
+}
 
 export function featureControlImpliesReadonly(
   featureControl: FeatureControl

@@ -86,15 +86,9 @@ export async function loader({ request }: LoaderArgs) {
   const response = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: false,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
     include_habits: true,
     include_chores: true,
-    include_big_plans: false,
-    include_smart_lists: false,
     include_metrics: true,
     include_persons: true,
   });

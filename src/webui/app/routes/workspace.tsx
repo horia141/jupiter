@@ -1,5 +1,4 @@
 import { Settings } from "@mui/icons-material";
-import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -29,6 +28,7 @@ import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { TrunkPanel } from "~/components/infra/trunk-panel";
 import ProgressReporter from "~/components/progress-reporter";
@@ -39,7 +39,6 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
