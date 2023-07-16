@@ -22,16 +22,21 @@ import { StatusCodes } from "http-status-codes";
 import { ApiError, Feature, FeatureControl, Project } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
-import { CheckboxAsString, parseForm } from "zodix";
+import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { featureControlImpliesReadonly, featureName } from "~/logic/domain/feature";
+import {
+  featureControlImpliesReadonly,
+  featureName,
+  featureToDocsHelpSubject,
+} from "~/logic/domain/feature";
 import { hostingName } from "~/logic/domain/hosting";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -110,7 +115,7 @@ export async function action({ request }: ActionArgs) {
       case "change-feature-flags": {
         const featureFlags: Record<string, boolean> = {};
         for (const feature of Object.values(Feature)) {
-          if (form.featureFlags.find(v => v == feature)) {
+          if (form.featureFlags.find((v) => v == feature)) {
             featureFlags[feature] = true;
           } else {
             featureFlags[feature] = false;
@@ -120,7 +125,7 @@ export async function action({ request }: ActionArgs) {
         await getLoggedInApiClient(
           session
         ).workspace.changeWorkspaceFeatureFlags({
-          feature_flags: featureFlags
+          feature_flags: featureFlags,
         });
 
         return redirect(`/workspace/settings`);
@@ -242,39 +247,48 @@ export default function Settings() {
                 let extraLabel = "";
                 switch (featureControl) {
                   case FeatureControl.ALWAYS_ON:
-                    extraLabel = "Cannot disable, because this feature is necessary"
+                    extraLabel =
+                      "Cannot disable, because this feature is necessary";
                     break;
                   case FeatureControl.ALWAYS_OFF_HOSTING:
-                    extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(globalProperties.hosting)}`;
+                    extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(
+                      globalProperties.hosting
+                    )}`;
                     break;
                   case FeatureControl.ALWAYS_OFF_TECH:
-                    extraLabel = "Cannot enable, due to Jupiter technical issues";
+                    extraLabel =
+                      "Cannot enable, due to Jupiter technical issues";
                     break;
                   case FeatureControl.USER:
                     break;
                 }
 
                 return (
-                  
                   <FormControl key={feature} fullWidth>
                     <FormControlLabel
                       control={
                         <Tooltip title={extraLabel}>
                           <span>
-                        <Switch
-                          name="featureFlags"
-                          value={feature}
-                          readOnly={!inputsEnabled || featureControlImpliesReadonly(featureControl)}
-                          disabled={!inputsEnabled || featureControlImpliesReadonly(featureControl)}
-                          defaultChecked={featureFlag}
-                        />
-                        </span>
+                            <Switch
+                              name="featureFlags"
+                              value={feature}
+                              readOnly={
+                                !inputsEnabled ||
+                                featureControlImpliesReadonly(featureControl)
+                              }
+                              disabled={
+                                !inputsEnabled ||
+                                featureControlImpliesReadonly(featureControl)
+                              }
+                              defaultChecked={featureFlag}
+                            />
+                          </span>
                         </Tooltip>
                       }
                       label={
                         <Tooltip title={extraLabel}>
-                          <span>{featureName(feature as Feature)}</span>
-                          </Tooltip>
+                          <span>{featureName(feature as Feature)} <DocsHelp size="small" subject={featureToDocsHelpSubject(feature as Feature)} /></span>
+                        </Tooltip>
                       }
                     />
                     <FieldError

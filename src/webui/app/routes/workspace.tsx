@@ -39,6 +39,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
@@ -113,15 +114,7 @@ export default function Workspace() {
 
           <ProgressReporter token={loaderData.progressReporterToken} />
 
-          <IconButton
-            component={"a"}
-            size="large"
-            color="inherit"
-            href={globalProperties.docsUrl}
-            target="_blank"
-          >
-            <HelpCenterIcon />
-          </IconButton>
+          <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
 
           <IconButton
             onClick={handleAccountMenuClick}
