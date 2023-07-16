@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 
 from jupiter.core.domain.features import (
+    Feature,
     FeatureFlags,
     FeatureFlagsControls,
 )
@@ -116,3 +117,7 @@ class Workspace(RootEntity):
                 source, self.version, modification_time
             ),
         )
+
+    def is_feature_available(self, feature: Feature) -> bool:
+        """Check if a feature is available in this workspace."""
+        return self.feature_flags[feature]

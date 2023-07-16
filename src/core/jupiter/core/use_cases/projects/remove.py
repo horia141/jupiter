@@ -1,7 +1,8 @@
 """Use case for removing a project."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -22,6 +23,11 @@ class ProjectRemoveArgs(UseCaseArgsBase):
 
 class ProjectRemoveUseCase(AppLoggedInMutationUseCase[ProjectRemoveArgs, None]):
     """The command for removing a project."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PROJECTS
 
     async def _execute(
         self,

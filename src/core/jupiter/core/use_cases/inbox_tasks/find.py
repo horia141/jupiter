@@ -1,9 +1,10 @@
 """The command for finding a inbox task."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -59,6 +60,11 @@ class InboxTaskFindUseCase(
     AppLoggedInReadonlyUseCase[InboxTaskFindArgs, InboxTaskFindResult]
 ):
     """The command for finding a inbox task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.INBOX_TASKS
 
     async def _execute(
         self,

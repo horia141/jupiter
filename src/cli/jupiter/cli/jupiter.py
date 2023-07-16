@@ -121,6 +121,7 @@ from jupiter.core.domain.auth.auth_token import (
     InvalidAuthTokenError,
 )
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
@@ -1269,6 +1270,9 @@ async def main() -> None:
     except InputValidationError as err:
         print("Looks like there's something wrong with the command's arguments:")
         print(f"  {err}")
+        sys.exit(1)
+    except FeatureUnavailableError as err:
+        print(f"{err}")
         sys.exit(1)
     except UserAlreadyExistsError:
         print("A user with the same identity already seems to exist here!")

@@ -7,6 +7,7 @@ from typing import Dict, FrozenSet, List, Optional, Tuple
 from jupiter.core.domain import schedules
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -109,7 +110,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 workspace.ref_id,
             )
 
-        if SyncTarget.HABITS in gen_targets:
+        if (
+            workspace.is_feature_available(Feature.HABITS)
+            and SyncTarget.HABITS in gen_targets
+        ):
             async with progress_reporter.section("Generating habits"):
                 async with self._storage_engine.get_unit_of_work() as uow:
                     all_habits = await uow.habit_repository.find_all_with_filters(
@@ -158,7 +162,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
                     )
 
-        if SyncTarget.CHORES in gen_targets:
+        if (
+            workspace.is_feature_available(Feature.CHORES)
+            and SyncTarget.CHORES in gen_targets
+        ):
             async with progress_reporter.section("Generating chores"):
                 async with self._storage_engine.get_unit_of_work() as uow:
                     all_chores = await uow.chore_repository.find_all_with_filters(
@@ -205,7 +212,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
                     )
 
-        if SyncTarget.METRICS in gen_targets:
+        if (
+            workspace.is_feature_available(Feature.METRICS)
+            and SyncTarget.METRICS in gen_targets
+        ):
             async with progress_reporter.section("Generating for metrics"):
                 async with self._storage_engine.get_unit_of_work() as uow:
                     metric_collection = (
@@ -262,7 +272,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
                     )
 
-        if SyncTarget.PERSONS in gen_targets:
+        if (
+            workspace.is_feature_available(Feature.PERSONS)
+            and SyncTarget.PERSONS in gen_targets
+        ):
             async with progress_reporter.section("Generating for persons"):
                 async with self._storage_engine.get_unit_of_work() as uow:
                     person_collection = (
@@ -357,7 +370,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     gen_even_if_not_modified=args.gen_even_if_not_modified,
                 )
 
-        if SyncTarget.SLACK_TASKS in gen_targets:
+        if (
+            workspace.is_feature_available(Feature.SLACK_TASKS)
+            and SyncTarget.SLACK_TASKS in gen_targets
+        ):
             async with progress_reporter.section("Generating for Slack tasks"):
                 async with self._storage_engine.get_unit_of_work() as uow:
                     push_integration_group = (
@@ -405,7 +421,10 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         gen_even_if_not_modified=args.gen_even_if_not_modified,
                     )
 
-        if SyncTarget.EMAIL_TASKS in gen_targets:
+        if (
+            workspace.is_feature_available(Feature.EMAIL_TASKS)
+            and SyncTarget.EMAIL_TASKS in gen_targets
+        ):
             async with progress_reporter.section("Generating for email tasks"):
                 async with self._storage_engine.get_unit_of_work() as uow:
                     push_integration_group = (

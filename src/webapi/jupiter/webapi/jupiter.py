@@ -16,6 +16,7 @@ from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
@@ -1062,6 +1063,7 @@ vacation_find_use_case = VacationFindUseCase(
 
 standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
     410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
+    406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
 }
 
 
@@ -1103,6 +1105,17 @@ async def input_validation_error_handler(
                 },
             ],
         },
+    )
+
+
+@app.exception_handler(FeatureUnavailableError)
+async def feature_unavailable_error_handler(
+    _request: Request, exc: FeatureUnavailableError
+) -> JSONResponse:
+    """Transform FeatureUnavailableError from the core to the same thing FastAPI would do."""
+    return JSONResponse(
+        status_code=status.HTTP_406_NOT_ACCEPTABLE,
+        content=f"{exc}",
     )
 
 

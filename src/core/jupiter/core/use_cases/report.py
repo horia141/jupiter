@@ -12,6 +12,7 @@ from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -393,53 +394,73 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
             schedule,
             all_inbox_tasks,
         )
-        global_big_plans_summary = self._run_report_for_big_plan(
-            schedule,
-            all_big_plans,
-        )
+
+        if workspace.is_feature_available(Feature.BIG_PLANS):
+            global_big_plans_summary = self._run_report_for_big_plan(
+                schedule,
+                all_big_plans,
+            )
+        else:
+            global_big_plans_summary = WorkableSummary(
+                created_cnt=0,
+                accepted_cnt=0,
+                working_cnt=0,
+                not_done_cnt=0,
+                done_cnt=0,
+                not_done_big_plans=[],
+                done_big_plans=[],
+            )
 
         # Build per project breakdown
 
-        # all_inbox_tasks.groupBy(it -> it.project.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        per_project_inbox_tasks_summary = {
-            k: self._run_report_for_inbox_tasks(schedule, (vx[1] for vx in v))
-            for (k, v) in groupby(
-                sorted(
-                    [
-                        (projects_by_ref_id[it.project_ref_id].name, it)
-                        for it in all_inbox_tasks
-                    ],
+        if workspace.is_feature_available(Feature.PROJECTS):
+            # all_inbox_tasks.groupBy(it -> it.project.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
+            per_project_inbox_tasks_summary = {
+                k: self._run_report_for_inbox_tasks(schedule, (vx[1] for vx in v))
+                for (k, v) in groupby(
+                    sorted(
+                        [
+                            (projects_by_ref_id[it.project_ref_id].name, it)
+                            for it in all_inbox_tasks
+                        ],
+                        key=itemgetter(0),
+                    ),
                     key=itemgetter(0),
-                ),
-                key=itemgetter(0),
-            )
-        }
-        # all_big_plans.groupBy(it -> it.project..name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        per_project_big_plans_summary = {
-            k: self._run_report_for_big_plan(schedule, (vx[1] for vx in v))
-            for (k, v) in groupby(
-                sorted(
-                    [
-                        (projects_by_ref_id[bp.project_ref_id].name, bp)
-                        for bp in all_big_plans
-                    ],
-                    key=itemgetter(0),
-                ),
-                key=itemgetter(0),
-            )
-        }
-        per_project_breakdown = [
-            PerProjectBreakdownItem(
-                ref_id=projects_by_name[s].ref_id,
-                name=s,
-                inbox_tasks_summary=v,
-                big_plans_summary=per_project_big_plans_summary.get(
-                    s,
-                    WorkableSummary(0, 0, 0, 0, 0, [], []),
-                ),
-            )
-            for (s, v) in per_project_inbox_tasks_summary.items()
-        ]
+                )
+            }
+
+            if workspace.is_feature_available(Feature.BIG_PLANS):
+                # all_big_plans.groupBy(it -> it.project..name).map((k, v) -> (k, run_report_for_group(v))).asDict()
+                per_project_big_plans_summary = {
+                    k: self._run_report_for_big_plan(schedule, (vx[1] for vx in v))
+                    for (k, v) in groupby(
+                        sorted(
+                            [
+                                (projects_by_ref_id[bp.project_ref_id].name, bp)
+                                for bp in all_big_plans
+                            ],
+                            key=itemgetter(0),
+                        ),
+                        key=itemgetter(0),
+                    )
+                }
+            else:
+                per_project_big_plans_summary = {}
+
+            per_project_breakdown = [
+                PerProjectBreakdownItem(
+                    ref_id=projects_by_name[s].ref_id,
+                    name=s,
+                    inbox_tasks_summary=v,
+                    big_plans_summary=per_project_big_plans_summary.get(
+                        s,
+                        WorkableSummary(0, 0, 0, 0, 0, [], []),
+                    ),
+                )
+                for (s, v) in per_project_inbox_tasks_summary.items()
+            ]
+        else:
+            per_project_breakdown = []
 
         # Build per period breakdown
         per_period_breakdown = []
@@ -486,96 +507,105 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         # Build per habit breakdown
 
         # all_inbox_tasks.groupBy(it -> it.habit.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        per_habit_breakdown = [
-            hb
-            for hb in (
-                PerHabitBreakdownItem(
-                    ref_id=all_habits_by_ref_id[k].ref_id,
-                    name=all_habits_by_ref_id[k].name,
-                    archived=all_habits_by_ref_id[k].archived,
-                    suspended=all_habits_by_ref_id[k].suspended,
-                    period=all_habits_by_ref_id[k].gen_params.period,
-                    summary=self._run_report_for_inbox_for_recurring_tasks(
-                        schedule,
-                        [vx[1] for vx in v],
-                    ),
-                )
-                for (k, v) in groupby(
-                    sorted(
-                        [
-                            (it.habit_ref_id, it)
-                            for it in all_inbox_tasks
-                            if it.habit_ref_id
-                        ],
+        if workspace.is_feature_available(Feature.HABITS):
+            per_habit_breakdown = [
+                hb
+                for hb in (
+                    PerHabitBreakdownItem(
+                        ref_id=all_habits_by_ref_id[k].ref_id,
+                        name=all_habits_by_ref_id[k].name,
+                        archived=all_habits_by_ref_id[k].archived,
+                        suspended=all_habits_by_ref_id[k].suspended,
+                        period=all_habits_by_ref_id[k].gen_params.period,
+                        summary=self._run_report_for_inbox_for_recurring_tasks(
+                            schedule,
+                            [vx[1] for vx in v],
+                        ),
+                    )
+                    for (k, v) in groupby(
+                        sorted(
+                            [
+                                (it.habit_ref_id, it)
+                                for it in all_inbox_tasks
+                                if it.habit_ref_id
+                            ],
+                            key=itemgetter(0),
+                        ),
                         key=itemgetter(0),
-                    ),
-                    key=itemgetter(0),
+                    )
                 )
-            )
-            if all_habits_by_ref_id[hb.ref_id].archived is False
-        ]
+                if all_habits_by_ref_id[hb.ref_id].archived is False
+            ]
+        else:
+            per_habit_breakdown = []
 
         # Build per chore breakdown
 
         # all_inbox_tasks.groupBy(it -> it.chore.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        per_chore_breakdown = [
-            cb
-            for cb in (
-                PerChoreBreakdownItem(
-                    ref_id=all_chores_by_ref_id[k].ref_id,
-                    name=all_chores_by_ref_id[k].name,
-                    suspended=all_chores_by_ref_id[k].suspended,
-                    archived=all_chores_by_ref_id[k].archived,
-                    period=all_chores_by_ref_id[k].gen_params.period,
-                    summary=self._run_report_for_inbox_for_recurring_tasks(
-                        schedule,
-                        [vx[1] for vx in v],
-                    ),
-                )
-                for (k, v) in groupby(
-                    sorted(
-                        [
-                            (it.chore_ref_id, it)
-                            for it in all_inbox_tasks
-                            if it.chore_ref_id
-                        ],
+        if workspace.is_feature_available(Feature.CHORES):
+            per_chore_breakdown = [
+                cb
+                for cb in (
+                    PerChoreBreakdownItem(
+                        ref_id=all_chores_by_ref_id[k].ref_id,
+                        name=all_chores_by_ref_id[k].name,
+                        suspended=all_chores_by_ref_id[k].suspended,
+                        archived=all_chores_by_ref_id[k].archived,
+                        period=all_chores_by_ref_id[k].gen_params.period,
+                        summary=self._run_report_for_inbox_for_recurring_tasks(
+                            schedule,
+                            [vx[1] for vx in v],
+                        ),
+                    )
+                    for (k, v) in groupby(
+                        sorted(
+                            [
+                                (it.chore_ref_id, it)
+                                for it in all_inbox_tasks
+                                if it.chore_ref_id
+                            ],
+                            key=itemgetter(0),
+                        ),
                         key=itemgetter(0),
-                    ),
-                    key=itemgetter(0),
+                    )
                 )
-            )
-            if all_chores_by_ref_id[cb.ref_id].archived is False
-        ]
+                if all_chores_by_ref_id[cb.ref_id].archived is False
+            ]
+        else:
+            per_chore_breakdown = []
 
         # Build per big plan breakdown
 
         # all_inbox_tasks.groupBy(it -> it.bigPlan.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        per_big_plan_breakdown = [
-            bb
-            for bb in (
-                PerBigPlanBreakdownItem(
-                    ref_id=big_plans_by_ref_id[k].ref_id,
-                    name=big_plans_by_ref_id[k].name,
-                    actionable_date=big_plans_by_ref_id[k].actionable_date,
-                    summary=self._run_report_for_inbox_tasks_for_big_plan(
-                        schedule,
-                        (vx[1] for vx in v),
-                    ),
-                )
-                for (k, v) in groupby(
-                    sorted(
-                        [
-                            (it.big_plan_ref_id, it)
-                            for it in all_inbox_tasks
-                            if it.big_plan_ref_id
-                        ],
+        if workspace.is_feature_available(Feature.BIG_PLANS):
+            per_big_plan_breakdown = [
+                bb
+                for bb in (
+                    PerBigPlanBreakdownItem(
+                        ref_id=big_plans_by_ref_id[k].ref_id,
+                        name=big_plans_by_ref_id[k].name,
+                        actionable_date=big_plans_by_ref_id[k].actionable_date,
+                        summary=self._run_report_for_inbox_tasks_for_big_plan(
+                            schedule,
+                            (vx[1] for vx in v),
+                        ),
+                    )
+                    for (k, v) in groupby(
+                        sorted(
+                            [
+                                (it.big_plan_ref_id, it)
+                                for it in all_inbox_tasks
+                                if it.big_plan_ref_id
+                            ],
+                            key=itemgetter(0),
+                        ),
                         key=itemgetter(0),
-                    ),
-                    key=itemgetter(0),
+                    )
                 )
-            )
-            if big_plans_by_ref_id[bb.ref_id].archived is False
-        ]
+                if big_plans_by_ref_id[bb.ref_id].archived is False
+            ]
+        else:
+            per_big_plan_breakdown = []
 
         return ReportResult(
             today=args.today,

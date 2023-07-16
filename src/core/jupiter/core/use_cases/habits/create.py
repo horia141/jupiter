@@ -1,9 +1,10 @@
 """The command for creating a habit."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -54,6 +55,11 @@ class HabitCreateUseCase(
     AppLoggedInMutationUseCase[HabitCreateArgs, HabitCreateResult]
 ):
     """The command for creating a habit."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.HABITS
 
     async def _execute(
         self,

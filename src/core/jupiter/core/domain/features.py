@@ -8,6 +8,10 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import Value
 
 
+class FeatureUnavailableError(Exception):
+    """Exception raised when a feature is unavailable."""
+
+
 @enum.unique
 class Feature(enum.Enum):
     """A particular feature of Jupiter."""

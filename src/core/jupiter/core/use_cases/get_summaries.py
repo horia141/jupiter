@@ -13,6 +13,7 @@ from jupiter.core.domain.fast_info_repository import (
     SmartListSummary,
     VacationSummary,
 )
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -118,19 +119,28 @@ class GetSummariesUseCase(
                 )
 
             vacations = None
-            if args.include_vacations:
+            if (
+                workspace.is_feature_available(Feature.VACATIONS)
+                and args.include_vacations
+            ):
                 vacations = await uow.fast_into_repository.find_all_vacation_summaries(
                     parent_ref_id=vacation_collection.parent_ref_id,
                     allow_archived=allow_archived,
                 )
             projects = None
-            if args.include_projects:
+            if (
+                workspace.is_feature_available(Feature.PROJECTS)
+                and args.include_projects
+            ):
                 projects = await uow.fast_into_repository.find_all_project_summaries(
                     parent_ref_id=project_collection.parent_ref_id,
                     allow_archived=allow_archived,
                 )
             inbox_tasks = None
-            if args.include_inbox_tasks:
+            if (
+                workspace.is_feature_available(Feature.INBOX_TASKS)
+                and args.include_inbox_tasks
+            ):
                 inbox_tasks = (
                     await uow.fast_into_repository.find_all_inbox_task_summaries(
                         parent_ref_id=inbox_task_collection.parent_ref_id,
@@ -138,25 +148,31 @@ class GetSummariesUseCase(
                     )
                 )
             habits = None
-            if args.include_habits:
+            if workspace.is_feature_available(Feature.HABITS) and args.include_habits:
                 habits = await uow.fast_into_repository.find_all_habit_summaries(
                     parent_ref_id=habit_collection.parent_ref_id,
                     allow_archived=allow_archived,
                 )
             chores = None
-            if args.include_chores:
+            if workspace.is_feature_available(Feature.CHORES) and args.include_chores:
                 chores = await uow.fast_into_repository.find_all_chore_summaries(
                     parent_ref_id=chore_collection.parent_ref_id,
                     allow_archived=allow_archived,
                 )
             big_plans = None
-            if args.include_big_plans:
+            if (
+                workspace.is_feature_available(Feature.BIG_PLANS)
+                and args.include_big_plans
+            ):
                 big_plans = await uow.fast_into_repository.find_all_big_plan_summaries(
                     parent_ref_id=big_plan_collection.parent_ref_id,
                     allow_archived=allow_archived,
                 )
             smart_lists = None
-            if args.include_smart_lists:
+            if (
+                workspace.is_feature_available(Feature.SMART_LISTS)
+                and args.include_smart_lists
+            ):
                 smart_lists = (
                     await uow.fast_into_repository.find_all_smart_list_summaries(
                         parent_ref_id=smart_list_collection.parent_ref_id,
@@ -164,13 +180,13 @@ class GetSummariesUseCase(
                     )
                 )
             metrics = None
-            if args.include_metrics:
+            if workspace.is_feature_available(Feature.METRICS) and args.include_metrics:
                 metrics = await uow.fast_into_repository.find_all_metric_summaries(
                     parent_ref_id=metric_collection.parent_ref_id,
                     allow_archived=allow_archived,
                 )
             persons = None
-            if args.include_persons:
+            if workspace.is_feature_available(Feature.PERSONS) and args.include_persons:
                 persons = await uow.fast_into_repository.find_all_person_summaries(
                     parent_ref_id=person_collection.parent_ref_id,
                     allow_archived=allow_archived,

@@ -45,6 +45,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -67,6 +68,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -89,6 +91,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -111,6 +114,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -133,6 +137,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -155,6 +160,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -177,6 +183,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -199,6 +206,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -221,6 +229,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -243,6 +252,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -265,6 +275,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -287,6 +298,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -309,6 +321,7 @@ export class SmartListService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },

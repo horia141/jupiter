@@ -1,11 +1,12 @@
 """The command for creating a inbox task."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -46,6 +47,11 @@ class InboxTaskCreateUseCase(
     AppLoggedInMutationUseCase[InboxTaskCreateArgs, InboxTaskCreateResult],
 ):
     """The command for creating a inbox task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.INBOX_TASKS
 
     async def _execute(
         self,

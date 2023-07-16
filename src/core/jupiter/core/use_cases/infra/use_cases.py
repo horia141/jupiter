@@ -1,7 +1,7 @@
 """Jupiter specific use cases classes."""
 import abc
 from dataclasses import dataclass
-from typing import Final, Generic, TypeVar, Union
+from typing import Final, Generic, Iterable, TypeVar, Union
 
 from jupiter.core.domain.auth.auth_token import (
     AuthToken,
@@ -10,6 +10,7 @@ from jupiter.core.domain.auth.auth_token import (
 )
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
@@ -169,6 +170,13 @@ class AppLoggedInMutationUseCase(
     _auth_token_stamper: Final[AuthTokenStamper]
     _storage_engine: Final[DomainStorageEngine]
 
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[
+        Feature
+    ] | Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return None
+
     def __init__(
         self,
         time_provider: TimeProvider,
@@ -196,6 +204,21 @@ class AppLoggedInMutationUseCase(
             workspace = await uow.workspace_repository.load_by_id(
                 user_workspace_link.workspace_ref_id
             )
+
+            scoped_feature = self.get_scoped_to_feature()
+            if scoped_feature is not None:
+                if isinstance(scoped_feature, Feature):
+                    if not workspace.is_feature_available(scoped_feature):
+                        raise FeatureUnavailableError(
+                            f"Feature {scoped_feature.value} is not available in this workspace"
+                        )
+                else:
+                    for feature in scoped_feature:
+                        if not workspace.is_feature_available(feature):
+                            raise FeatureUnavailableError(
+                                f"Feature {feature.value} is not available in this workspace"
+                            )
+
             return AppLoggedInUseCaseContext(user, workspace)
 
 
@@ -210,6 +233,13 @@ class AppLoggedInReadonlyUseCase(
 
     _auth_token_stamper: Final[AuthTokenStamper]
     _storage_engine: Final[DomainStorageEngine]
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[
+        Feature
+    ] | Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return None
 
     def __init__(
         self, auth_token_stamper: AuthTokenStamper, storage_engine: DomainStorageEngine
@@ -233,6 +263,21 @@ class AppLoggedInReadonlyUseCase(
             workspace = await uow.workspace_repository.load_by_id(
                 user_workspace_link.workspace_ref_id
             )
+
+            scoped_feature = self.get_scoped_to_feature()
+            if scoped_feature is not None:
+                if isinstance(scoped_feature, Feature):
+                    if not workspace.is_feature_available(scoped_feature):
+                        raise FeatureUnavailableError(
+                            f"Feature {scoped_feature.value} is not available in this workspace"
+                        )
+                else:
+                    for feature in scoped_feature:
+                        if not workspace.is_feature_available(feature):
+                            raise FeatureUnavailableError(
+                                f"Feature {feature.value} is not available in this workspace"
+                            )
+
             return AppLoggedInUseCaseContext(user, workspace)
 
 

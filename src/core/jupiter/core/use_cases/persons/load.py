@@ -1,6 +1,8 @@
 """Use case for loading a person."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.persons.person import Person
@@ -34,6 +36,11 @@ class PersonLoadResult(UseCaseResultBase):
 
 class PersonLoadUseCase(AppLoggedInReadonlyUseCase[PersonLoadArgs, PersonLoadResult]):
     """Use case for loading a person."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PERSONS
 
     async def _execute(
         self,

@@ -1,8 +1,9 @@
 """The command for changing the project for a habit."""
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import Iterable, Optional, cast
 
 from jupiter.core.domain import schedules
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import EventSource
@@ -28,6 +29,11 @@ class HabitChangeProjectUseCase(
     AppLoggedInMutationUseCase[HabitChangeProjectArgs, None]
 ):
     """The command for changing the project of a habit."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return (Feature.HABITS, Feature.PROJECTS)
 
     async def _execute(
         self,

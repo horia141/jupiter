@@ -1,6 +1,8 @@
 """The command for hard removing a slack task."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.push_integrations.slack.service.remove_service import (
     SlackTaskRemoveService,
 )
@@ -24,6 +26,11 @@ class SlackTaskRemoveArgs(UseCaseArgsBase):
 
 class SlackTaskRemoveUseCase(AppLoggedInMutationUseCase[SlackTaskRemoveArgs, None]):
     """The command for archiving a slack task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.SLACK_TASKS
 
     async def _execute(
         self,

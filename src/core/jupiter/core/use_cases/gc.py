@@ -5,6 +5,7 @@ from typing import Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -84,7 +85,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 )
             )
 
-        if SyncTarget.INBOX_TASKS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.INBOX_TASKS)
+            and SyncTarget.INBOX_TASKS in gc_targets
+        ):
             async with progress_reporter.section("Inbox Tasks"):
                 async with progress_reporter.section(
                     "Archiving all done inbox tasks",
@@ -99,7 +103,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                         inbox_tasks,
                     )
 
-        if SyncTarget.BIG_PLANS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.BIG_PLANS)
+            and SyncTarget.BIG_PLANS in gc_targets
+        ):
             async with progress_reporter.section("Big Plans"):
                 async with progress_reporter.section(
                     "Archiving all done big plans",
@@ -114,7 +121,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                         big_plans,
                     )
 
-        if SyncTarget.SLACK_TASKS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.SLACK_TASKS)
+            and SyncTarget.SLACK_TASKS in gc_targets
+        ):
             async with progress_reporter.section("Slack Tasks"):
                 async with progress_reporter.section(
                     "Archiving all Slack tasks whose inbox tasks are done or archived",
@@ -140,7 +150,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                         inbox_tasks,
                     )
 
-        if SyncTarget.EMAIL_TASKS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.EMAIL_TASKS)
+            and SyncTarget.EMAIL_TASKS in gc_targets
+        ):
             async with progress_reporter.section("Email Tasks"):
                 async with progress_reporter.section(
                     "Archiving all email tasks whose inbox tasks are done or archived",
