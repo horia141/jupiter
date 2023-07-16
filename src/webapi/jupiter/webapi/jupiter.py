@@ -430,7 +430,10 @@ from jupiter.core.use_cases.workspaces.change_default_project import (
     WorkspaceChangeDefaultProjectArgs,
     WorkspaceChangeDefaultProjectUseCase,
 )
-from jupiter.core.use_cases.workspaces.change_feature_flags import WorkspaceChangeFeatureFlagsArgs, WorkspaceChangeFeatureFlagsUseCase
+from jupiter.core.use_cases.workspaces.change_feature_flags import (
+    WorkspaceChangeFeatureFlagsArgs,
+    WorkspaceChangeFeatureFlagsUseCase,
+)
 from jupiter.core.use_cases.workspaces.load import (
     WorkspaceLoadArgs,
     WorkspaceLoadResult,
@@ -571,7 +574,7 @@ workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
-    global_properties=global_properties
+    global_properties=global_properties,
 )
 workspace_load_use_case = WorkspaceLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -1514,6 +1517,7 @@ async def change_workspace_default_project(
 ) -> None:
     """Change the default project for a workspace."""
     await workspace_change_default_project_use_case.execute(session, args)
+
 
 @app.post(
     "/workspace/change-feature-flags",

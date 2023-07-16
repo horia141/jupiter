@@ -1,4 +1,4 @@
-import { Feature } from "jupiter-gen";
+import { Feature, FeatureControl } from "jupiter-gen";
 
 export function featureName(feature: Feature): string {
   switch (feature) {
@@ -25,4 +25,10 @@ export function featureName(feature: Feature): string {
     case Feature.EMAIL_TASKS:
       return "Email Tasks";
   }
+}
+
+export function featureControlImpliesReadonly(
+  featureControl: FeatureControl
+): boolean {
+  return featureControl != FeatureControl.USER;
 }

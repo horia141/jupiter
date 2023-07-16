@@ -13,12 +13,13 @@ import {
   Select,
   Stack,
   Switch,
+  Tooltip,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Feature, Project } from "jupiter-gen";
+import { ApiError, Feature, FeatureControl, Project } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
@@ -28,8 +29,10 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { featureName } from "~/logic/domain/feature";
+import { featureControlImpliesReadonly, featureName } from "~/logic/domain/feature";
+import { hostingName } from "~/logic/domain/hosting";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -143,6 +146,7 @@ export default function Settings() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const globalProperties = useContext(GlobalPropertiesContext);
   const topLevelInfo = useContext(TopLevelInfoContext);
   const featureFlagControls = topLevelInfo.featureFlagControls;
 
@@ -231,23 +235,47 @@ export default function Settings() {
             <CardHeader title="Feature Flags" />
 
             <CardContent>
-              {Object.keys(featureFlagControls.controls).map((feature) => {
+              {Object.values(Feature).map((feature) => {
                 const featureControl = featureFlagControls.controls[feature];
                 const featureFlag = loaderData.workspace.feature_flags[feature];
 
+                let extraLabel = "";
+                switch (featureControl) {
+                  case FeatureControl.ALWAYS_ON:
+                    extraLabel = "Cannot disable, because this feature is necessary"
+                    break;
+                  case FeatureControl.ALWAYS_OFF_HOSTING:
+                    extraLabel = `Cannot enable, due to the hosting mode being ${hostingName(globalProperties.hosting)}`;
+                    break;
+                  case FeatureControl.ALWAYS_OFF_TECH:
+                    extraLabel = "Cannot enable, due to Jupiter technical issues";
+                    break;
+                  case FeatureControl.USER:
+                    break;
+                }
+
                 return (
+                  
                   <FormControl key={feature} fullWidth>
                     <FormControlLabel
                       control={
+                        <Tooltip title={extraLabel}>
+                          <span>
                         <Switch
                           name="featureFlags"
                           value={feature}
-                          readOnly={!inputsEnabled}
-                          disabled={!inputsEnabled}
+                          readOnly={!inputsEnabled || featureControlImpliesReadonly(featureControl)}
+                          disabled={!inputsEnabled || featureControlImpliesReadonly(featureControl)}
                           defaultChecked={featureFlag}
                         />
+                        </span>
+                        </Tooltip>
                       }
-                      label={featureName(feature as Feature)}
+                      label={
+                        <Tooltip title={extraLabel}>
+                          <span>{featureName(feature as Feature)}</span>
+                          </Tooltip>
+                      }
                     />
                     <FieldError
                       actionResult={actionData}
