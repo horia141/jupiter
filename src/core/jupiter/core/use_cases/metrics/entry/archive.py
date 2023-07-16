@@ -1,5 +1,4 @@
 """The command for archiving a metric entry."""
-import logging
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -14,8 +13,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass

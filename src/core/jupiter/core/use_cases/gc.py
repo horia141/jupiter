@@ -1,5 +1,4 @@
 """The command for doing a garbage collection run."""
-import logging
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, cast
 
@@ -30,8 +29,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass

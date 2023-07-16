@@ -1,6 +1,8 @@
 """UseCase for changing the default workspace of a project."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import ContextProgressReporter, UseCaseArgsBase
@@ -21,6 +23,11 @@ class WorkspaceChangeDefaultProjectUseCase(
     AppLoggedInMutationUseCase[WorkspaceChangeDefaultProjectArgs, None],
 ):
     """UseCase for changing the default project of a workspace."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PROJECTS
 
     async def _execute(
         self,

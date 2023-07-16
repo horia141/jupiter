@@ -86,18 +86,20 @@ class FeatureFlagsControls(Value):
         return {f: c.standard_flag for f, c in self.controls.items()}
 
     def validate_and_complete_feature_flags(
-        self, feature_flags: FeatureFlags
+        self, feature_flags_delta: FeatureFlags, current_feature_flags: FeatureFlags
     ) -> FeatureFlags:
         """Validates a set of feature flags and also provides a complete set."""
         checked_feature_flags: FeatureFlags = {}
 
         for feature, control in self.controls.items():
-            if feature not in feature_flags:
-                checked_feature_flags[feature] = control.standard_flag
-            else:
+            if feature in feature_flags_delta:
                 checked_feature_flags[feature] = control.check(
-                    feature.value, feature_flags[feature]
+                    feature.value, feature_flags_delta[feature]
                 )
+            elif feature in current_feature_flags:
+                checked_feature_flags[feature] = current_feature_flags[feature]
+            else:
+                checked_feature_flags[feature] = control.standard_flag
 
         return checked_feature_flags
 

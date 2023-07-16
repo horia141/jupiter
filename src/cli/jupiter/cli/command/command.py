@@ -5,6 +5,8 @@ from argparse import ArgumentParser, Namespace
 from typing import Any, Final, Generic, TypeVar
 
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.core.domain.features import Feature
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
     AppGuestReadonlyUseCase,
@@ -40,6 +42,10 @@ class Command(abc.ABC):
     @property
     def should_appear_in_global_help(self) -> bool:
         """Should the command appear in the global help info or not."""
+        return True
+
+    def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
+        """Is this command allowed for a particular workspace."""
         return True
 
     @property
@@ -159,6 +165,18 @@ class LoggedInMutationCommand(
     ) -> None:
         """Callback to execute when the command is invoked."""
 
+    def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
+        """Is this command allowed for a particular workspace."""
+        scoped_feature = self._use_case.get_scoped_to_feature()
+        if scoped_feature is None:
+            return True
+        if isinstance(scoped_feature, Feature):
+            return workspace.is_feature_available(scoped_feature)
+        for feature in scoped_feature:
+            if not workspace.is_feature_available(feature):
+                return False
+        return True
+
 
 LoggedInReadonlyCommandUseCase = TypeVar(
     "LoggedInReadonlyCommandUseCase", bound=AppLoggedInReadonlyUseCase[Any, Any]
@@ -195,6 +213,18 @@ class LoggedInReadonlyCommand(
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+
+    def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
+        """Is this command allowed for a particular workspace."""
+        scoped_feature = self._use_case.get_scoped_to_feature()
+        if scoped_feature is None:
+            return True
+        if isinstance(scoped_feature, Feature):
+            return workspace.is_feature_available(scoped_feature)
+        for feature in scoped_feature:
+            if not workspace.is_feature_available(feature):
+                return False
+        return True
 
     @property
     def should_have_streaming_progress_report(self) -> bool:

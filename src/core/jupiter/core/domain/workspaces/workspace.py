@@ -63,7 +63,7 @@ class Workspace(RootEntity):
             ],
             name=name,
             feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
-                feature_flags
+                feature_flags_delta=feature_flags, current_feature_flags={}
             ),
             default_project_ref_id=BAD_REF_ID,
         )
@@ -111,7 +111,8 @@ class Workspace(RootEntity):
         """Change the feature settings for this workspace."""
         return self._new_version(
             feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
-                feature_flags
+                feature_flags_delta=feature_flags,
+                current_feature_flags=self.feature_flags,
             ),
             new_event=Workspace.UpdateFeatureFlags.make_event_from_frame_args(
                 source, self.version, modification_time

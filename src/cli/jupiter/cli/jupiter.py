@@ -3,6 +3,7 @@ import argparse
 import asyncio
 import logging
 import sys
+from typing import List
 
 import aiohttp
 from jupiter.cli.command.auth_change_password import AuthChangePassword
@@ -20,6 +21,7 @@ from jupiter.cli.command.chore_show import ChoreShow
 from jupiter.cli.command.chore_suspend import ChoreSuspend
 from jupiter.cli.command.chore_unsuspend import ChoreUnsuspend
 from jupiter.cli.command.chore_update import ChoreUpdate
+from jupiter.cli.command.command import Command
 from jupiter.cli.command.email_task_archive import EmailTaskArchive
 from jupiter.cli.command.email_task_change_generation_project import (
     EmailTaskChangeGenerationProject,
@@ -180,7 +182,12 @@ from jupiter.core.use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
     PersistentMutationUseCaseInvocationRecorder,
 )
+from jupiter.core.use_cases.infra.use_cases import AppGuestUseCaseSession
 from jupiter.core.use_cases.init import InitUseCase
+from jupiter.core.use_cases.load_user_and_workspace import (
+    LoadUserAndWorkspaceArgs,
+    LoadUserAndWorkspaceUseCase,
+)
 from jupiter.core.use_cases.login import InvalidLoginCredentialsError, LoginUseCase
 from jupiter.core.use_cases.metrics.archive import MetricArchiveUseCase
 from jupiter.core.use_cases.metrics.change_collection_project import (
@@ -265,24 +272,23 @@ from jupiter.core.utils.progress_reporter import (
 from jupiter.core.utils.time_provider import TimeProvider
 
 # import coverage
-from rich.logging import RichHandler
 
 
 async def main() -> None:
     """Application main function."""
+    logging.disable()
+
     time_provider = TimeProvider()
 
-    no_timezone_global_properties = build_global_properties()
+    global_properties = build_global_properties()
 
     sqlite_connection = SqliteConnection(
         SqliteConnection.Config(
-            no_timezone_global_properties.sqlite_db_url,
-            no_timezone_global_properties.alembic_ini_path,
-            no_timezone_global_properties.alembic_migrations_path,
+            global_properties.sqlite_db_url,
+            global_properties.alembic_ini_path,
+            global_properties.alembic_migrations_path,
         ),
     )
-
-    global_properties = build_global_properties()
 
     domain_storage_engine = SqliteDomainStorageEngine(sqlite_connection)
     usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
@@ -302,8 +308,23 @@ async def main() -> None:
 
     progress_reporter_factory = RichConsoleProgressReporterFactory()
 
-    commands = {
-        # Complex commands.
+    load_user_and_workspace_use_case = LoadUserAndWorkspaceUseCase(
+        auth_token_stamper=auth_token_stamper,
+        storage_engine=domain_storage_engine,
+        global_properties=global_properties,
+    )
+
+    await sqlite_connection.prepare()
+
+    session_info = session_storage.load_optional()
+    guest_session = AppGuestUseCaseSession(
+        session_info.auth_token_ext if session_info else None
+    )
+    top_level_info = await load_user_and_workspace_use_case.execute(
+        guest_session, LoadUserAndWorkspaceArgs()
+    )
+
+    no_session_command = [
         Initialize(
             session_storage=session_storage,
             use_case=InitUseCase(
@@ -322,6 +343,10 @@ async def main() -> None:
                 domain_storage_engine,
             ),
         ),
+    ]
+
+    in_session_commands = [
+        # Complex commands.
         Logout(session_storage=session_storage),
         AuthChangePassword(
             session_storage=session_storage,
@@ -1176,24 +1201,9 @@ async def main() -> None:
                 domain_storage_engine,
             ),
         ),
-    }
+    ]
 
     parser = argparse.ArgumentParser(description=global_properties.description)
-    parser.add_argument(
-        "--min-log-level",
-        dest="min_log_level",
-        default="info",
-        choices=["debug", "info", "warning", "error", "critical"],
-        help="The logging level to use",
-    )
-    parser.add_argument(
-        "--verbose",
-        dest="verbose_logging",
-        action="store_const",
-        default=False,
-        const=True,
-        help="Show more log messages",
-    )
     parser.add_argument(
         "--version",
         dest="just_show_version",
@@ -1209,8 +1219,15 @@ async def main() -> None:
         metavar="{command}",
     )
 
+    commands: List[Command] = no_session_command
+    if top_level_info.user is not None and top_level_info.workspace is not None:
+        commands.extend(in_session_commands)
+
     for command in commands:
-        if command.should_appear_in_global_help:
+        if command.should_appear_in_global_help and (
+            top_level_info.workspace is None
+            or command.is_allowed_for_workspace(top_level_info.workspace)
+        ):
             command_parser = subparsers.add_parser(
                 command.name(),
                 help=command.description(),
@@ -1229,25 +1246,6 @@ async def main() -> None:
         if args.just_show_version:
             print(f"{global_properties.description} {global_properties.version}")
             return
-
-        logging.basicConfig(
-            level=_map_log_level_to_log_class(args.min_log_level),
-            format="%(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[
-                RichHandler(
-                    rich_tracebacks=True,
-                    markup=True,
-                    log_time_format="%Y-%m-%d %H:%M:%S",
-                ),
-            ],
-        )
-
-        if not args.verbose_logging:
-            for handler in logging.root.handlers:
-                handler.addFilter(CommandsAndControllersLoggerFilter())
-
-        await sqlite_connection.prepare()
 
         for command in commands:
             if args.subparser_name != command.name():
@@ -1338,31 +1336,6 @@ async def main() -> None:
             await aio_session.close()
         finally:
             pass
-
-
-class CommandsAndControllersLoggerFilter(logging.Filter):
-    """A filter for commands and controllers."""
-
-    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
-        """Filtering the log records for commands."""
-        if record.name.startswith("command."):
-            return True
-        return False
-
-
-def _map_log_level_to_log_class(log_level: str) -> int:
-    if log_level == "debug":
-        return logging.DEBUG
-    elif log_level == "info":
-        return logging.INFO
-    elif log_level == "warning":
-        return logging.WARNING
-    elif log_level == "error":
-        return logging.ERROR
-    elif log_level == "critical":
-        return logging.CRITICAL
-    else:
-        raise InputValidationError(f"Invalid log level '{log_level}'")
 
 
 # coverage.process_startup()  # type: ignore
