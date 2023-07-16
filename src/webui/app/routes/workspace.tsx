@@ -38,6 +38,7 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
@@ -53,6 +54,7 @@ export async function loader({ request }: LoaderArgs) {
     await client.loadProgressReporterToken.loadProgressReporterToken({});
 
   return json({
+    featureFlagControls: response.feature_flag_controls,
     user: response.user,
     workspace: response.workspace,
     progressReporterToken:
@@ -203,7 +205,15 @@ export default function Workspace() {
         }}
       />
 
-      <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
+      <TopLevelInfoContext.Provider
+        value={{
+          featureFlagControls: loaderData.featureFlagControls,
+          user: loaderData.user,
+          workspace: loaderData.workspace,
+        }}
+      >
+        <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
+      </TopLevelInfoContext.Provider>
     </Box>
   );
 }

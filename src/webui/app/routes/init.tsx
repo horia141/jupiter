@@ -69,6 +69,7 @@ export async function action({ request }: ActionArgs) {
       workspace_first_project_name: {
         the_name: form.workspaceFirstProjectName,
       },
+      workspace_feature_flags: {},
     });
 
     session.set("authTokenExt", result.auth_token_ext);

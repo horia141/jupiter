@@ -6,34 +6,41 @@ import {
   CardContent,
   CardHeader,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   OutlinedInput,
   Select,
   Stack,
+  Switch,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Project } from "jupiter-gen";
+import { ApiError, Feature, Project } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
-import { parseForm } from "zodix";
+import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { featureName } from "~/logic/domain/feature";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const WorkspaceSettingsFormSchema = {
   intent: z.string(),
   name: z.string(),
   defaultProject: z.string(),
+  featureFlags: z.array(z.nativeEnum(Feature)),
 };
 
 export const handle = {
@@ -97,6 +104,25 @@ export async function action({ request }: ActionArgs) {
         return redirect(`/workspace/settings`);
       }
 
+      case "change-feature-flags": {
+        const featureFlags: Record<string, boolean> = {};
+        for (const feature of Object.values(Feature)) {
+          if (form.featureFlags.find(v => v == feature)) {
+            featureFlags[feature] = true;
+          } else {
+            featureFlags[feature] = false;
+          }
+        }
+
+        await getLoggedInApiClient(
+          session
+        ).workspace.changeWorkspaceFeatureFlags({
+          feature_flags: featureFlags
+        });
+
+        return redirect(`/workspace/settings`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -117,6 +143,9 @@ export default function Settings() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+  const featureFlagControls = topLevelInfo.featureFlagControls;
+
   const inputsEnabled = transition.state === "idle";
 
   return (
@@ -125,7 +154,7 @@ export default function Settings() {
         <ToolCard returnLocation="/workspace">
           <GlobalError actionResult={actionData} />
           <Card>
-            <CardHeader title="Settings" />
+            <CardHeader title="General" />
             <CardContent>
               <Stack spacing={2} useFlexGap>
                 <FormControl fullWidth>
@@ -197,8 +226,58 @@ export default function Settings() {
               </ButtonGroup>
             </CardActions>
           </Card>
+
+          <Card>
+            <CardHeader title="Feature Flags" />
+
+            <CardContent>
+              {Object.keys(featureFlagControls.controls).map((feature) => {
+                const featureControl = featureFlagControls.controls[feature];
+                const featureFlag = loaderData.workspace.feature_flags[feature];
+
+                return (
+                  <FormControl key={feature} fullWidth>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          name="featureFlags"
+                          value={feature}
+                          readOnly={!inputsEnabled}
+                          disabled={!inputsEnabled}
+                          defaultChecked={featureFlag}
+                        />
+                      }
+                      label={featureName(feature as Feature)}
+                    />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/feature_flags"
+                    />
+                  </FormControl>
+                );
+              })}
+            </CardContent>
+
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="change-feature-flags"
+                >
+                  Change Feature Flags
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          </Card>
         </ToolCard>
       </ToolPanel>
     </TrunkCard>
   );
 }
+
+export const ErrorBoundary = makeErrorBoundary(
+  () => `There was an error updating the workspace! Please try again!`
+);

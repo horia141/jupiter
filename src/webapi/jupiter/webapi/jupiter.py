@@ -1,11 +1,10 @@
 """The Jupiter Web RPC API."""
-import asyncio
 import signal
 from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Union
 
 import aiohttp
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
@@ -431,6 +430,7 @@ from jupiter.core.use_cases.workspaces.change_default_project import (
     WorkspaceChangeDefaultProjectArgs,
     WorkspaceChangeDefaultProjectUseCase,
 )
+from jupiter.core.use_cases.workspaces.change_feature_flags import WorkspaceChangeFeatureFlagsArgs, WorkspaceChangeFeatureFlagsUseCase
 from jupiter.core.use_cases.workspaces.load import (
     WorkspaceLoadArgs,
     WorkspaceLoadResult,
@@ -511,6 +511,7 @@ auth_reset_password_use_case = ResetPasswordUseCase(
 load_user_and_workspace_use_case = LoadUserAndWorkspaceUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+    global_properties=global_properties,
 )
 
 load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
@@ -518,8 +519,6 @@ load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
 )
 
 get_summaries_use_case = GetSummariesUseCase(
-    env=global_properties.env,
-    hosting=global_properties.hosting,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
 )
@@ -565,6 +564,14 @@ workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+)
+workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
+    global_properties=global_properties
 )
 workspace_load_use_case = WorkspaceLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -1293,39 +1300,39 @@ LoggedInSession = Annotated[
 ]
 
 
-@app.websocket("/progress-reporter")
-async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
-    """Handle the whole lifecycle of the progress reporter websocket."""
-    if token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    try:
-        progress_reporter_token_ext = AuthTokenExt.from_raw(token)
-        progress_reporter_token = (
-            auth_token_stamper.verify_auth_token_progress_reporter(
-                progress_reporter_token_ext
-            )
-        )
-    except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
+# @app.websocket("/progress-reporter")
+# async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
+#     """Handle the whole lifecycle of the progress reporter websocket."""
+#     if token is None:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+#     try:
+#         progress_reporter_token_ext = AuthTokenExt.from_raw(token)
+#         progress_reporter_token = (
+#             auth_token_stamper.verify_auth_token_progress_reporter(
+#                 progress_reporter_token_ext
+#             )
+#         )
+#     except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
 
-    await websocket.accept()
-    await progress_reporter_factory.register_socket(
-        websocket, progress_reporter_token.user_ref_id
-    )
-    # Seems like this just needs to stay alive for the socket to not expire ...
-    try:
-        while True:
-            await asyncio.sleep(1)  # Sleep one second
-            global websocket_should_close
-            if websocket_should_close:
-                await progress_reporter_factory.unregister_websocket(
-                    progress_reporter_token.user_ref_id
-                )
-                return
-    except WebSocketDisconnect:
-        await progress_reporter_factory.unregister_websocket(
-            progress_reporter_token.user_ref_id
-        )
+#     await websocket.accept()
+#     await progress_reporter_factory.register_socket(
+#         websocket, progress_reporter_token.user_ref_id
+#     )
+#     # Seems like this just needs to stay alive for the socket to not expire ...
+#     try:
+#         while True:
+#             await asyncio.sleep(1)  # Sleep one second
+#             global websocket_should_close
+#             if websocket_should_close:
+#                 await progress_reporter_factory.unregister_websocket(
+#                     progress_reporter_token.user_ref_id
+#                 )
+#                 return
+#     except WebSocketDisconnect:
+#         await progress_reporter_factory.unregister_websocket(
+#             progress_reporter_token.user_ref_id
+#         )
 
 
 @app.get("/healthz", status_code=status.HTTP_200_OK)
@@ -1507,6 +1514,18 @@ async def change_workspace_default_project(
 ) -> None:
     """Change the default project for a workspace."""
     await workspace_change_default_project_use_case.execute(session, args)
+
+@app.post(
+    "/workspace/change-feature-flags",
+    response_model=None,
+    tags=["workspace"],
+    responses=standard_responses,
+)
+async def change_workspace_feature_flags(
+    args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
+) -> None:
+    """Change the feature flags for a workspace."""
+    await workspace_change_feature_flags_use_case.execute(session, args)
 
 
 @app.post(

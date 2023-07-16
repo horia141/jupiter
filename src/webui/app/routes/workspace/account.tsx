@@ -20,6 +20,7 @@ import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
@@ -102,6 +103,7 @@ export default function Account() {
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
           <GlobalError actionResult={actionData} />
+
           <Card>
             <CardHeader title="Account" />
             <CardContent>
@@ -167,3 +169,7 @@ export default function Account() {
     </TrunkCard>
   );
 }
+
+export const ErrorBoundary = makeErrorBoundary(
+  () => `There was an error updating the account! Please try again!`
+);

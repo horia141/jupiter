@@ -1,8 +1,7 @@
 """A use case for retrieving summaries about entities."""
 from dataclasses import dataclass
-from typing import Final, List, Optional
+from typing import List, Optional
 
-from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.fast_info_repository import (
     BigPlanSummary,
     ChoreSummary,
@@ -14,9 +13,6 @@ from jupiter.core.domain.fast_info_repository import (
     SmartListSummary,
     VacationSummary,
 )
-from jupiter.core.domain.hosting import Hosting
-from jupiter.core.domain.storage_engine import DomainStorageEngine
-from jupiter.core.framework.env import Env
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -48,8 +44,6 @@ class GetSummariesArgs(UseCaseArgsBase):
 class GetSummariesResult(UseCaseResultBase):
     """Get summaries result."""
 
-    env: Env
-    hosting: Hosting
     default_project: Optional[ProjectSummary] = None
     vacations: Optional[List[VacationSummary]] = None
     projects: Optional[List[ProjectSummary]] = None
@@ -66,23 +60,6 @@ class GetSummariesUseCase(
     AppLoggedInReadonlyUseCase[GetSummariesArgs, GetSummariesResult]
 ):
     """The use case for retrieving summaries about entities."""
-
-    _env: Final[Env]
-    _hosting: Final[Hosting]
-
-    def __init__(
-        self,
-        env: Env,
-        hosting: Hosting,
-        auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
-    ) -> None:
-        """Constructor."""
-        super().__init__(
-            auth_token_stamper=auth_token_stamper, storage_engine=storage_engine
-        )
-        self._env = env
-        self._hosting = hosting
 
     async def _execute(
         self,
@@ -199,8 +176,6 @@ class GetSummariesUseCase(
                 )
 
         return GetSummariesResult(
-            env=self._env,
-            hosting=self._hosting,
             default_project=default_project,
             vacations=vacations,
             projects=projects,
