@@ -4,6 +4,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Autocomplete,
+  Box,
   Button,
   ButtonGroup,
   Card,
@@ -55,6 +56,8 @@ export async function loader({ request }: LoaderArgs) {
 
   return json({
     hosting: result.hosting,
+    defaultWorkspaceName: result.deafult_workspace_name,
+    defaultFirstProjectName: result.default_first_project_name,
     featureFlagsControl: result.feature_flag_controls,
     defaultFeatureFlags: result.default_feature_flags,
   });
@@ -211,49 +214,67 @@ export default function WorkspaceInit() {
                 />
               </FormControl>
 
-              <FormControl fullWidth>
-                <InputLabel id="workspaceName">Workspace Name</InputLabel>
-                <OutlinedInput
-                  label="Workspace Name"
-                  name="workspaceName"
-                  readOnly={!inputsEnabled}
-                  defaultValue={""}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/workspace_name"
-                />
-              </FormControl>
+              <Box>
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    Advanced
+                  </AccordionSummary>
 
-              <FormControl fullWidth>
-                <InputLabel id="name">First Project Name</InputLabel>
-                <OutlinedInput
-                  label="First Project Name"
-                  name="workspaceFirstProjectName"
-                  readOnly={!inputsEnabled}
-                  defaultValue={""}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/workspacefirst_project_name"
-                />
-              </FormControl>
+                  <AccordionDetails>
+                    <Stack spacing={2} useFlexGap>
+                      <FormControl fullWidth>
+                        <InputLabel id="workspaceName">
+                          Workspace Name
+                        </InputLabel>
+                        <OutlinedInput
+                          label="Workspace Name"
+                          name="workspaceName"
+                          readOnly={!inputsEnabled}
+                          defaultValue={
+                            loaderData.defaultWorkspaceName.the_name
+                          }
+                        />
+                        <FieldError
+                          actionResult={actionData}
+                          fieldName="/workspace_name"
+                        />
+                      </FormControl>
 
-              <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  Feature Flags
-                </AccordionSummary>
+                      <FormControl fullWidth>
+                        <InputLabel id="name">First Project Name</InputLabel>
+                        <OutlinedInput
+                          label="First Project Name"
+                          name="workspaceFirstProjectName"
+                          readOnly={!inputsEnabled}
+                          defaultValue={
+                            loaderData.defaultFirstProjectName.the_name
+                          }
+                        />
+                        <FieldError
+                          actionResult={actionData}
+                          fieldName="/workspacefirst_project_name"
+                        />
+                      </FormControl>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
 
-                <AccordionDetails>
-                  <FeatureFlagsEditor
-                    name="workspaceFeatureFlags"
-                    inputsEnabled={true}
-                    featureFlagsControls={loaderData.featureFlagsControl}
-                    defaultFeatureFlags={loaderData.defaultFeatureFlags}
-                    hosting={loaderData.hosting}
-                  />
-                </AccordionDetails>
-              </Accordion>
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    Feature Flags
+                  </AccordionSummary>
+
+                  <AccordionDetails>
+                    <FeatureFlagsEditor
+                      name="workspaceFeatureFlags"
+                      inputsEnabled={true}
+                      featureFlagsControls={loaderData.featureFlagsControl}
+                      defaultFeatureFlags={loaderData.defaultFeatureFlags}
+                      hosting={loaderData.hosting}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
             </Stack>
           </CardContent>
 

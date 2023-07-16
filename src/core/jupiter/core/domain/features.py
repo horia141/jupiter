@@ -98,6 +98,21 @@ class FeatureFlagsControls(Value):
         return checked_feature_flags
 
 
+BASIC_FEATURE_FLAGS = {
+    Feature.INBOX_TASKS: True,
+    Feature.HABITS: True,
+    Feature.CHORES: False,
+    Feature.BIG_PLANS: False,
+    Feature.VACATIONS: False,
+    Feature.PROJECTS: False,
+    Feature.SMART_LISTS: False,
+    Feature.METRICS: False,
+    Feature.PERSONS: False,
+    Feature.SLACK_TASKS: False,
+    Feature.EMAIL_TASKS: False,
+}
+
+
 HOSTED_GLOBAL_FEATURE_FLAGS_CONTROLS = FeatureFlagsControls(
     {
         Feature.INBOX_TASKS: FeatureControl.ALWAYS_ON,

@@ -3,8 +3,14 @@ from dataclasses import dataclass
 from typing import Final, Optional
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.features import Feature, FeatureFlags, FeatureFlagsControls
+from jupiter.core.domain.features import (
+    BASIC_FEATURE_FLAGS,
+    Feature,
+    FeatureFlags,
+    FeatureFlagsControls,
+)
 from jupiter.core.domain.hosting import Hosting
+from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.domain.user.user import User
@@ -12,6 +18,7 @@ from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
 )
 from jupiter.core.domain.workspaces.workspace import Workspace
+from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.env import Env
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
@@ -36,6 +43,8 @@ class LoadUserAndWorkspaceResult(UseCaseResultBase):
 
     env: Env
     hosting: Hosting
+    deafult_workspace_name: WorkspaceName
+    default_first_project_name: ProjectName
     feature_flag_controls: FeatureFlagsControls
     default_feature_flags: FeatureFlags
     feature_hack: Feature
@@ -91,8 +100,10 @@ class LoadUserAndWorkspaceUseCase(
         return LoadUserAndWorkspaceResult(
             env=self._global_properties.env,
             hosting=self._global_properties.hosting,
+            deafult_workspace_name=WorkspaceName.from_raw("Work"),
+            default_first_project_name=ProjectName.from_raw("Work"),
             feature_flag_controls=feature_flags_controls,
-            default_feature_flags=feature_flags_controls.build_standard_flags(),
+            default_feature_flags=BASIC_FEATURE_FLAGS,
             feature_hack=Feature.INBOX_TASKS,
             user=user,
             workspace=workspace,
