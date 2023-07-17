@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional, cast
 
 from jupiter.core.domain import schedules
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import EventSource
@@ -44,6 +44,12 @@ class HabitChangeProjectUseCase(
         """Execute the command's action."""
         user = context.user
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.project_ref_id is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             habit = await uow.habit_repository.load_by_id(args.ref_id)

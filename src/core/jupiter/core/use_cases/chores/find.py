@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
@@ -59,6 +59,12 @@ class ChoreFindUseCase(AppLoggedInReadonlyUseCase[ChoreFindArgs, ChoreFindResult
     ) -> ChoreFindResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.filter_project_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             project_collection = await uow.project_collection_repository.load_by_parent(

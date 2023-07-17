@@ -5,6 +5,7 @@ from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -31,12 +32,13 @@ class HabitCreate(LoggedInMutationCommand[HabitCreateUseCase]):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_id",
-            required=False,
-            help="The project to add the task to",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_id",
+                required=False,
+                help="The project to add the task to",
+            )
         parser.add_argument(
             "--name",
             dest="name",
@@ -119,9 +121,12 @@ class HabitCreate(LoggedInMutationCommand[HabitCreateUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        project_ref_id = (
-            EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_id = (
+                EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
+            )
+        else:
+            project_ref_id = None
         name = HabitName.from_raw(args.name)
         period = RecurringTaskPeriod.from_raw(args.period)
         eisen = Eisen.from_raw(args.eisen) if args.eisen else None

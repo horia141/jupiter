@@ -7,7 +7,7 @@ from typing import Dict, FrozenSet, List, Optional, Tuple
 from jupiter.core.domain import schedules
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -28,6 +28,7 @@ from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.vacations.vacation import Vacation
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -75,6 +76,42 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             if args.gen_targets is not None
             else list(st for st in SyncTarget)
         )
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.filter_project_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
+        if (
+            not workspace.is_feature_available(Feature.HABITS)
+            and args.filter_habit_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.HABITS)
+        if (
+            not workspace.is_feature_available(Feature.CHORES)
+            and args.filter_chore_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.CHORES)
+        if (
+            not workspace.is_feature_available(Feature.METRICS)
+            and args.filter_metric_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.METRICS)
+        if (
+            not workspace.is_feature_available(Feature.PERSONS)
+            and args.filter_person_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PERSONS)
+        if (
+            not workspace.is_feature_available(Feature.SLACK_TASKS)
+            and args.filter_slack_task_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.SLACK_TASKS)
+        if (
+            not workspace.is_feature_available(Feature.EMAIL_TASKS)
+            and args.filter_email_task_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.EMAIL_TASKS)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             vacation_collection = (
@@ -202,6 +239,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     await self._generate_inbox_tasks_for_chore(
                         progress_reporter=progress_reporter,
                         user=user,
+                        workspace=workspace,
                         inbox_task_collection=inbox_task_collection,
                         project=project,
                         today=today,
@@ -610,6 +648,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         self,
         progress_reporter: ContextProgressReporter,
         user: User,
+        workspace: Workspace,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         today: ADate,
@@ -649,10 +688,13 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 chore.gen_params.due_at_month,
             )
 
-            if not chore.must_do:
-                for vacation in all_vacations:
-                    if vacation.is_in_vacation(schedule.first_day, schedule.end_day):
-                        return
+            if workspace.is_feature_available(Feature.VACATIONS):
+                if not chore.must_do:
+                    for vacation in all_vacations:
+                        if vacation.is_in_vacation(
+                            schedule.first_day, schedule.end_day
+                        ):
+                            return
 
             if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
                 return

@@ -2,7 +2,7 @@
 import enum
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Dict, Iterable
+from typing import Dict, Final, Iterable
 
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import Value
@@ -10,6 +10,17 @@ from jupiter.core.framework.value import Value
 
 class FeatureUnavailableError(Exception):
     """Exception raised when a feature is unavailable."""
+
+    _feature: Final["Feature"]
+
+    def __init__(self, feature: "Feature"):
+        """Constructor."""
+        super().__init__()
+        self._feature = feature
+
+    def __str__(self) -> str:
+        """Form a string representation here."""
+        return f"Feature {self._feature.value} is not available in this workspace"
 
 
 @enum.unique

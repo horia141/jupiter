@@ -10,6 +10,7 @@ from jupiter.cli.command.rendering import (
     start_date_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.vacations.find import VacationFindArgs, VacationFindUseCase
@@ -28,10 +29,11 @@ class VacationsShow(LoggedInReadonlyCommand[VacationFindUseCase]):
         self,
         global_properties: GlobalProperties,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: VacationFindUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
     @staticmethod

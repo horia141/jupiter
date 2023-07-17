@@ -10,6 +10,7 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -54,10 +55,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
         global_properties: GlobalProperties,
         time_provider: TimeProvider,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: ReportUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
         self._time_provider = time_provider
 

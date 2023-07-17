@@ -16,6 +16,7 @@ from jupiter.cli.command.rendering import (
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.inbox_tasks.find import (
@@ -58,13 +59,14 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             action="append",
             help="Show only tasks selected by this id",
         )
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from this project",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from this project",
+            )
         parser.add_argument(
             "--source",
             dest="sources",
@@ -87,11 +89,14 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             if len(args.ref_ids) > 0
             else None
         )
-        project_ref_ids = (
-            [EntityId.from_raw(p) for p in args.project_ref_ids]
-            if len(args.project_ref_ids) > 0
-            else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_ids = (
+                [EntityId.from_raw(p) for p in args.project_ref_ids]
+                if len(args.project_ref_ids) > 0
+                else None
+            )
+        else:
+            project_ref_ids = None
         sources = (
             [InboxTaskSource.from_raw(s) for s in args.sources]
             if len(args.sources) > 0
@@ -130,6 +135,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             metric = inbox_task_entry.metric
             person = inbox_task_entry.person
             slack_task = inbox_task_entry.slack_task
+            email_task = inbox_task_entry.email_task
 
             inbox_task_text = inbox_task_status_to_rich_text(
                 inbox_task.status,
@@ -151,31 +157,71 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                     difficulty_to_rich_text(inbox_task.difficulty),
                 )
 
-            if habit is not None:
+            if (
+                habit is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.HABITS
+                )
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(parent_entity_name_to_rich_text(habit.name))
-            elif chore is not None:
+            elif (
+                chore is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.CHORES
+                )
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(parent_entity_name_to_rich_text(chore.name))
-            elif big_plan is not None:
+            elif (
+                big_plan is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.BIG_PLANS
+                )
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(big_plan.name),
                 )
-            elif metric is not None:
+            elif (
+                metric is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.METRICS
+                )
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(metric.name),
                 )
-            elif person is not None:
+            elif (
+                person is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.PERSONS
+                )
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(person.name),
                 )
-            elif slack_task is not None:
+            elif (
+                slack_task is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.SLACK_TASKS
+                )
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
                     parent_entity_name_to_rich_text(slack_task.simple_name),
+                )
+            elif (
+                email_task is not None
+                and self._top_level_context.workspace.is_feature_available(
+                    Feature.EMAIL_TASKS
+                )
+            ):
+                inbox_task_info_text.append(" ")
+                inbox_task_info_text.append(
+                    parent_entity_name_to_rich_text(email_task.simple_name),
                 )
 
             if inbox_task.actionable_date:
@@ -188,8 +234,9 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(due_date_to_rich_text(inbox_task.due_date))
 
-            inbox_task_info_text.append(" ")
-            inbox_task_info_text.append(project_to_rich_text(project.name))
+            if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+                inbox_task_info_text.append(" ")
+                inbox_task_info_text.append(project_to_rich_text(project.name))
 
             if inbox_task.archived:
                 inbox_task_text.stylize("gray62")

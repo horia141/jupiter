@@ -5,6 +5,7 @@ from argparse import ArgumentParser, Namespace
 from typing import Any, Final, Generic, TypeVar
 
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.features import Feature
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.use_cases.infra.use_cases import (
@@ -140,13 +141,18 @@ class LoggedInMutationCommand(
     """Base class for commands which require authentication."""
 
     _session_storage: Final[SessionStorage]
+    _top_level_context: Final[LoggedInTopLevelContext]
     _use_case: LoggedInMutationCommandUseCase
 
     def __init__(
-        self, session_storage: SessionStorage, use_case: LoggedInMutationCommandUseCase
+        self,
+        session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
+        use_case: LoggedInMutationCommandUseCase,
     ) -> None:
         """Constructor."""
         self._session_storage = session_storage
+        self._top_level_context = top_level_context
         self._use_case = use_case
 
     async def run(
@@ -189,13 +195,18 @@ class LoggedInReadonlyCommand(
     """Base class for commands which just read and present data."""
 
     _session_storage: Final[SessionStorage]
+    _top_level_context: Final[LoggedInTopLevelContext]
     _use_case: LoggedInReadonlyCommandUseCase
 
     def __init__(
-        self, session_storage: SessionStorage, use_case: LoggedInReadonlyCommandUseCase
+        self,
+        session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
+        use_case: LoggedInReadonlyCommandUseCase,
     ) -> None:
         """Constructor."""
         self._session_storage = session_storage
+        self._top_level_context = top_level_context
         self._use_case = use_case
 
     async def run(

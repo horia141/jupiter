@@ -4,7 +4,7 @@ from typing import Iterable, List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -13,6 +13,7 @@ from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
@@ -66,6 +67,53 @@ class InboxTaskFindUseCase(
         """The feature the use case is scope to."""
         return Feature.INBOX_TASKS
 
+    @staticmethod
+    def _infer_sources_from_features(
+        workspace: Workspace, filter_sources: Optional[List[InboxTaskSource]] = None
+    ) -> List[InboxTaskSource]:
+        all_sources = filter_sources or [s for s in InboxTaskSource]
+        inferred_sources: List[InboxTaskSource] = []
+        for source in all_sources:
+            if source is InboxTaskSource.USER:
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.HABIT and workspace.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.CHORE and workspace.is_feature_available(
+                Feature.CHORES
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.BIG_PLAN and workspace.is_feature_available(
+                Feature.BIG_PLANS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.METRIC and workspace.is_feature_available(
+                Feature.METRICS
+            ):
+                inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.PERSON_BIRTHDAY
+                and workspace.is_feature_available(Feature.PERSONS)
+            ):
+                inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.PERSON_CATCH_UP
+                and workspace.is_feature_available(Feature.PERSONS)
+            ):
+                inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.SLACK_TASK
+                and workspace.is_feature_available(Feature.SLACK_TASKS)
+            ):
+                inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.EMAIL_TASK
+                and workspace.is_feature_available(Feature.EMAIL_TASKS)
+            ):
+                inferred_sources.append(source)
+        return inferred_sources
+
     async def _execute(
         self,
         context: AppLoggedInUseCaseContext,
@@ -73,6 +121,16 @@ class InboxTaskFindUseCase(
     ) -> InboxTaskFindResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.filter_project_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
+
+        filter_sources = self._infer_sources_from_features(
+            workspace, args.filter_sources
+        )
 
         async with self._storage_engine.get_unit_of_work() as uow:
             project_collection = await uow.project_collection_repository.load_by_parent(
@@ -126,7 +184,7 @@ class InboxTaskFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=args.allow_archived,
                 filter_ref_ids=args.filter_ref_ids,
-                filter_sources=args.filter_sources,
+                filter_sources=filter_sources,
                 filter_project_ref_ids=args.filter_project_ref_ids,
             )
 

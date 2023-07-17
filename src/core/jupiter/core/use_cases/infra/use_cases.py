@@ -209,15 +209,11 @@ class AppLoggedInMutationUseCase(
             if scoped_feature is not None:
                 if isinstance(scoped_feature, Feature):
                     if not workspace.is_feature_available(scoped_feature):
-                        raise FeatureUnavailableError(
-                            f"Feature {scoped_feature.value} is not available in this workspace"
-                        )
+                        raise FeatureUnavailableError(scoped_feature)
                 else:
                     for feature in scoped_feature:
                         if not workspace.is_feature_available(feature):
-                            raise FeatureUnavailableError(
-                                f"Feature {feature.value} is not available in this workspace"
-                            )
+                            raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
 
@@ -268,15 +264,11 @@ class AppLoggedInReadonlyUseCase(
             if scoped_feature is not None:
                 if isinstance(scoped_feature, Feature):
                     if not workspace.is_feature_available(scoped_feature):
-                        raise FeatureUnavailableError(
-                            f"Feature {scoped_feature.value} is not available in this workspace"
-                        )
+                        raise FeatureUnavailableError(scoped_feature)
                 else:
                     for feature in scoped_feature:
                         if not workspace.is_feature_available(feature):
-                            raise FeatureUnavailableError(
-                                f"Feature {feature.value} is not available in this workspace"
-                            )
+                            raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
 

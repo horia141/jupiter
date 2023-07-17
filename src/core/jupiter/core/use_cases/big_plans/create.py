@@ -6,7 +6,7 @@ from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -55,6 +55,12 @@ class BigPlanCreateUseCase(
     ) -> BigPlanCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.project_ref_id is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
 
         async with progress_reporter.start_creating_entity(
             "big plan",
