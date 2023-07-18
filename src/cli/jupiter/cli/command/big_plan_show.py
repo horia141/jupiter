@@ -43,7 +43,7 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             dest="show_archived",
             default=False,
             action="store_true",
-            help="Whether to show archived vacations or not",
+            help="Whether to show archived big plans or not",
         )
         parser.add_argument(
             "--id",
@@ -51,7 +51,7 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             dest="ref_ids",
             default=[],
             action="append",
-            help="The id of the vacations to modify",
+            help="The id of the big plan to modify",
         )
         if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
             parser.add_argument(
@@ -59,7 +59,7 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 dest="project_ref_ids",
                 default=[],
                 action="append",
-                help="Allow only tasks from this project",
+                help="Allow only big plans from this project",
             )
         parser.add_argument(
             "--show-inbox-tasks",
@@ -67,7 +67,7 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             default=False,
             action="store_const",
             const=True,
-            help="Show inbox tasks",
+            help="Show inbox tasks for the big plan",
         )
 
     async def _run(

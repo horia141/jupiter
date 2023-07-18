@@ -47,7 +47,7 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
             dest="show_archived",
             default=False,
             action="store_true",
-            help="Whether to show archived vacations or not",
+            help="Whether to show archived email tasks or not",
         )
         parser.add_argument(
             "--id",
@@ -55,7 +55,7 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
             dest="ref_ids",
             default=[],
             action="append",
-            help="The id of the vacations to modify",
+            help="The id of the email tasks to modify",
         )
         parser.add_argument(
             "--show-inbox-task",

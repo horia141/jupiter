@@ -12,7 +12,7 @@ from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.entity_name import EntityName
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -41,8 +41,8 @@ class ReportArgs(UseCaseArgsBase):
 
     today: ADate
     period: RecurringTaskPeriod
-    filter_project_ref_ids: Optional[Iterable[EntityId]] = None
     filter_sources: Optional[Iterable[InboxTaskSource]] = None
+    filter_project_ref_ids: Optional[Iterable[EntityId]] = None
     filter_big_plan_ref_ids: Optional[Iterable[EntityId]] = None
     filter_habit_ref_ids: Optional[Iterable[EntityId]] = None
     filter_chore_ref_ids: Optional[Iterable[EntityId]] = None
@@ -209,6 +209,58 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         user = context.user
         workspace = context.workspace
 
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.filter_project_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
+        if (
+            not workspace.is_feature_available(Feature.HABITS)
+            and args.filter_habit_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.HABITS)
+        if (
+            not workspace.is_feature_available(Feature.CHORES)
+            and args.filter_chore_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.CHORES)
+        if (
+            not workspace.is_feature_available(Feature.METRICS)
+            and args.filter_metric_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.METRICS)
+        if (
+            not workspace.is_feature_available(Feature.PERSONS)
+            and args.filter_person_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PERSONS)
+        if (
+            not workspace.is_feature_available(Feature.SLACK_TASKS)
+            and args.filter_slack_task_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.SLACK_TASKS)
+        if (
+            not workspace.is_feature_available(Feature.EMAIL_TASKS)
+            and args.filter_email_task_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.EMAIL_TASKS)
+
+        filter_sources = (
+            args.filter_sources
+            if args.filter_sources is not None
+            else workspace.infer_sources_for_enabled_features(None)
+        )
+
+        big_diff = list(
+            set(filter_sources).difference(
+                workspace.infer_sources_for_enabled_features(filter_sources)
+            )
+        )
+        if len(big_diff) > 0:
+            raise FeatureUnavailableError(
+                f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
+            )
+
         if args.breakdown_period:
             self._check_period_against_breakdown_period(
                 args.breakdown_period,
@@ -279,16 +331,17 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
                 None,
             )
 
+            raw_all_inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                filter_sources=filter_sources,
+                filter_project_ref_ids=filter_project_ref_ids,
+                filter_last_modified_time_start=schedule.first_day.start_of_day(),
+                filter_last_modified_time_end=schedule.end_day.next_day(),
+            )
             all_inbox_tasks = [
                 it
-                for it in await uow.inbox_task_repository.find_all_with_filters(
-                    parent_ref_id=inbox_task_collection.ref_id,
-                    allow_archived=True,
-                    filter_sources=args.filter_sources,
-                    filter_project_ref_ids=filter_project_ref_ids,
-                    filter_last_modified_time_start=schedule.first_day.start_of_day(),
-                    filter_last_modified_time_end=schedule.end_day.next_day(),
-                )
+                for it in raw_all_inbox_tasks
                 # (source is BIG_PLAN and (need to filter then (big_plan_ref_id in filter))
                 if it.source is InboxTaskSource.USER
                 or (

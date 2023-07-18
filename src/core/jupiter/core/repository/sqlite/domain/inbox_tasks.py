@@ -461,7 +461,7 @@ class SqliteInboxTaskRepository(InboxTaskRepository):
             )
         if filter_sources is not None:
             query_stmt = query_stmt.where(
-                self._inbox_task_table.c.source.in_(str(s) for s in filter_sources),
+                self._inbox_task_table.c.source.in_(s.value for s in filter_sources),
             )
         if filter_project_ref_ids is not None:
             query_stmt = query_stmt.where(

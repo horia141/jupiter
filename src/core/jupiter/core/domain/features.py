@@ -11,16 +11,18 @@ from jupiter.core.framework.value import Value
 class FeatureUnavailableError(Exception):
     """Exception raised when a feature is unavailable."""
 
-    _feature: Final["Feature"]
+    _error_str: Final[str]
 
-    def __init__(self, feature: "Feature"):
+    def __init__(self, feature_or_str: "Feature | str"):
         """Constructor."""
         super().__init__()
-        self._feature = feature
+        self._error_str = (
+                f"Feature {feature_or_str.value} is not available in this workspace"
+            ) if isinstance(feature_or_str, Feature) else feature_or_str
 
     def __str__(self) -> str:
         """Form a string representation here."""
-        return f"Feature {self._feature.value} is not available in this workspace"
+        return self._error_str
 
 
 @enum.unique

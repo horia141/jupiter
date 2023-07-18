@@ -71,11 +71,22 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         user = context.user
         workspace = context.workspace
         today = args.today or self._time_provider.get_current_date()
+
         gen_targets = (
             args.gen_targets
             if args.gen_targets is not None
-            else list(st for st in SyncTarget)
+            else workspace.infer_sync_targets_for_enabled_features(None)
         )
+
+        big_diff = list(
+            set(gen_targets).difference(
+                workspace.infer_sync_targets_for_enabled_features(gen_targets)
+            )
+        )
+        if len(big_diff) > 0:
+            raise FeatureUnavailableError(
+                f"Gen targets {','.join(s.value for s in big_diff)} are not supported in this workspace"
+            )
 
         if (
             not workspace.is_feature_available(Feature.PROJECTS)

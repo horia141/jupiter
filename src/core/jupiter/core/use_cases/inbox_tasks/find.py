@@ -13,7 +13,6 @@ from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
-from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
@@ -67,53 +66,6 @@ class InboxTaskFindUseCase(
         """The feature the use case is scope to."""
         return Feature.INBOX_TASKS
 
-    @staticmethod
-    def _infer_sources_from_features(
-        workspace: Workspace, filter_sources: Optional[List[InboxTaskSource]] = None
-    ) -> List[InboxTaskSource]:
-        all_sources = filter_sources or [s for s in InboxTaskSource]
-        inferred_sources: List[InboxTaskSource] = []
-        for source in all_sources:
-            if source is InboxTaskSource.USER:
-                inferred_sources.append(source)
-            elif source is InboxTaskSource.HABIT and workspace.is_feature_available(
-                Feature.HABITS
-            ):
-                inferred_sources.append(source)
-            elif source is InboxTaskSource.CHORE and workspace.is_feature_available(
-                Feature.CHORES
-            ):
-                inferred_sources.append(source)
-            elif source is InboxTaskSource.BIG_PLAN and workspace.is_feature_available(
-                Feature.BIG_PLANS
-            ):
-                inferred_sources.append(source)
-            elif source is InboxTaskSource.METRIC and workspace.is_feature_available(
-                Feature.METRICS
-            ):
-                inferred_sources.append(source)
-            elif (
-                source is InboxTaskSource.PERSON_BIRTHDAY
-                and workspace.is_feature_available(Feature.PERSONS)
-            ):
-                inferred_sources.append(source)
-            elif (
-                source is InboxTaskSource.PERSON_CATCH_UP
-                and workspace.is_feature_available(Feature.PERSONS)
-            ):
-                inferred_sources.append(source)
-            elif (
-                source is InboxTaskSource.SLACK_TASK
-                and workspace.is_feature_available(Feature.SLACK_TASKS)
-            ):
-                inferred_sources.append(source)
-            elif (
-                source is InboxTaskSource.EMAIL_TASK
-                and workspace.is_feature_available(Feature.EMAIL_TASKS)
-            ):
-                inferred_sources.append(source)
-        return inferred_sources
-
     async def _execute(
         self,
         context: AppLoggedInUseCaseContext,
@@ -128,8 +80,24 @@ class InboxTaskFindUseCase(
         ):
             raise FeatureUnavailableError(Feature.PROJECTS)
 
-        filter_sources = self._infer_sources_from_features(
-            workspace, args.filter_sources
+        filter_sources = (
+            args.filter_sources
+            if args.filter_sources is not None
+            else workspace.infer_sources_for_enabled_features(None)
+        )
+
+        big_diff = list(
+            set(filter_sources).difference(
+                workspace.infer_sources_for_enabled_features(filter_sources)
+            )
+        )
+        if len(big_diff) > 0:
+            raise FeatureUnavailableError(
+                f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
+            )
+
+        filter_sources = workspace.infer_sources_for_enabled_features(
+            args.filter_sources
         )
 
         async with self._storage_engine.get_unit_of_work() as uow:

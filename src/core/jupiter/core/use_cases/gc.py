@@ -4,7 +4,7 @@ from typing import Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -52,8 +52,18 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         gc_targets = (
             args.gc_targets
             if args.gc_targets is not None
-            else list(st for st in SyncTarget)
+            else workspace.infer_sync_targets_for_enabled_features(None)
         )
+
+        big_diff = list(
+            set(gc_targets).difference(
+                workspace.infer_sync_targets_for_enabled_features(gc_targets)
+            )
+        )
+        if len(big_diff) > 0:
+            raise FeatureUnavailableError(
+                f"GC targets {','.join(s.value for s in big_diff)} are not supported in this workspace"
+            )
 
         async with self._storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = (

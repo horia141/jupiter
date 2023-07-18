@@ -1,11 +1,14 @@
 """The workspace where everything happens."""
 from dataclasses import dataclass
+from typing import Iterable, List
 
 from jupiter.core.domain.features import (
     Feature,
     FeatureFlags,
     FeatureFlagsControls,
 )
+from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -122,3 +125,101 @@ class Workspace(RootEntity):
     def is_feature_available(self, feature: Feature) -> bool:
         """Check if a feature is available in this workspace."""
         return self.feature_flags[feature]
+
+    def infer_sources_for_enabled_features(
+        self, filter_sources: Iterable[InboxTaskSource] | None = None
+    ) -> List[InboxTaskSource]:
+        """Filter and complete a set of sources according to the enabled features."""
+        all_sources = filter_sources or [s for s in InboxTaskSource]
+        inferred_sources: List[InboxTaskSource] = []
+        for source in all_sources:
+            if source is InboxTaskSource.USER:
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.HABIT and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.CHORE and self.is_feature_available(
+                Feature.CHORES
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.BIG_PLAN and self.is_feature_available(
+                Feature.BIG_PLANS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.METRIC and self.is_feature_available(
+                Feature.METRICS
+            ):
+                inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.PERSON_BIRTHDAY
+                and self.is_feature_available(Feature.PERSONS)
+            ):
+                inferred_sources.append(source)
+            elif (
+                source is InboxTaskSource.PERSON_CATCH_UP
+                and self.is_feature_available(Feature.PERSONS)
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.SLACK_TASK and self.is_feature_available(
+                Feature.SLACK_TASKS
+            ):
+                inferred_sources.append(source)
+            elif source is InboxTaskSource.EMAIL_TASK and self.is_feature_available(
+                Feature.EMAIL_TASKS
+            ):
+                inferred_sources.append(source)
+        return inferred_sources
+
+    def infer_sync_targets_for_enabled_features(
+        self, sync_targets: Iterable[SyncTarget] | None = None
+    ) -> List[SyncTarget]:
+        """Filter and complete a set of sources according to the enabled features."""
+        all_sources = sync_targets or [s for s in SyncTarget]
+        inferred_sources: List[SyncTarget] = []
+        for sync_target in all_sources:
+            if sync_target is SyncTarget.INBOX_TASKS and self.is_feature_available(
+                Feature.INBOX_TASKS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.HABITS and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.CHORES and self.is_feature_available(
+                Feature.CHORES
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.BIG_PLANS and self.is_feature_available(
+                Feature.BIG_PLANS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.VACATIONS and self.is_feature_available(
+                Feature.VACATIONS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.PROJECTS and self.is_feature_available(
+                Feature.PROJECTS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.SMART_LISTS and self.is_feature_available(
+                Feature.SMART_LISTS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.METRICS and self.is_feature_available(
+                Feature.METRICS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.PERSONS and self.is_feature_available(
+                Feature.PERSONS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.SLACK_TASKS and self.is_feature_available(
+                Feature.SLACK_TASKS
+            ):
+                inferred_sources.append(sync_target)
+            elif sync_target is SyncTarget.EMAIL_TASKS and self.is_feature_available(
+                Feature.EMAIL_TASKS
+            ):
+                inferred_sources.append(sync_target)
+        return inferred_sources

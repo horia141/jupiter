@@ -55,7 +55,12 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             dest="gen_targets",
             default=[],
             action="append",
-            choices=SyncTarget.all_values(),
+            choices=[
+                s.value
+                for s in self._top_level_context.workspace.infer_sync_targets_for_enabled_features(
+                    None
+                )
+            ],
             help="What exactly to try to generate for",
         )
         parser.add_argument(

@@ -72,7 +72,9 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             dest="sources",
             default=[],
             action="append",
-            choices=InboxTaskSource.all_values(),
+            choices=self._top_level_context.workspace.infer_sources_for_enabled_features(
+                None
+            ),
             help="Allow only inbox tasks form this particular source. Defaults to all",
         )
 
