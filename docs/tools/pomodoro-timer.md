@@ -5,4 +5,4 @@ You can use it during your work, instead of an external tool.
 
 ![Timer](../../assets/pomodoro-timer.png)
 
-A CLI command also exists invoked via `jupiter pomodoro`
+A CLI command also exists invoked via `jupiter pomodoro`.

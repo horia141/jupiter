@@ -4,9 +4,11 @@ from typing import Final
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.inbox_tasks.create import (
@@ -26,10 +28,11 @@ class InboxTaskCreate(LoggedInMutationCommand[InboxTaskCreateUseCase]):
         self,
         global_properties: GlobalProperties,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: InboxTaskCreateUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
     @staticmethod
@@ -44,24 +47,26 @@ class InboxTaskCreate(LoggedInMutationCommand[InboxTaskCreateUseCase]):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_id",
-            required=False,
-            help="The key of the project",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_id",
+                required=False,
+                help="The key of the project",
+            )
         parser.add_argument(
             "--name",
             dest="name",
             required=True,
             help="The name of the inbox task",
         )
-        parser.add_argument(
-            "--big-plan-id",
-            type=str,
-            dest="big_plan_ref_id",
-            help="The id of a big plan to associate this task to.",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            parser.add_argument(
+                "--big-plan-id",
+                type=str,
+                dest="big_plan_ref_id",
+                help="The id of a big plan to associate this task to.",
+            )
         parser.add_argument(
             "--eisen",
             dest="eisen",
@@ -91,13 +96,21 @@ class InboxTaskCreate(LoggedInMutationCommand[InboxTaskCreateUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        project_ref_id = (
-            EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_id = (
+                EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
+            )
+        else:
+            project_ref_id = None
         name = InboxTaskName.from_raw(args.name)
-        big_plan_ref_id = (
-            EntityId.from_raw(args.big_plan_ref_id) if args.big_plan_ref_id else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            big_plan_ref_id = (
+                EntityId.from_raw(args.big_plan_ref_id)
+                if args.big_plan_ref_id
+                else None
+            )
+        else:
+            big_plan_ref_id = None
         eisen = Eisen.from_raw(args.eisen) if args.eisen else None
         difficulty = Difficulty.from_raw(args.difficulty) if args.difficulty else None
         actionable_date = (

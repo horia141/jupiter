@@ -17,5 +17,6 @@ export type InitArgs = {
     auth_password_repeat: PasswordNewPlain;
     workspace_name: WorkspaceName;
     workspace_first_project_name: ProjectName;
+    workspace_feature_flags: Record<string, boolean>;
 };
 

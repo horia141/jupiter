@@ -1,11 +1,11 @@
 import dotenv from "dotenv";
-import type { Env } from "jupiter-gen";
+import type { Env, Hosting } from "jupiter-gen";
 
 export interface GlobalPropertiesServer {
   env: Env;
+  hosting: Hosting;
   baseName: string;
   description: string;
-  hosting: string;
   localWebApiServerUrl: string;
   localWebApiProgressReporterUrl: string;
   hostedGlobalWebApiServerUrl: string;
@@ -36,9 +36,9 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
 
   const globalProperties = {
     env: process.env.ENV as Env,
+    hosting: process.env.HOSTING as Hosting,
     baseName: process.env.BASENAME as string,
     description: process.env.DESCRIPTION as string,
-    hosting: process.env.HOSTING as string,
     localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
     localWebApiProgressReporterUrl: process.env
       .LOCAL_WEBAPI_PROGRESS_REPORTER_URL as string,

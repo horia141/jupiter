@@ -21,6 +21,7 @@ from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.habits.find import HabitFindArgs, HabitFindUseCase
@@ -60,14 +61,15 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
             action="append",
             help="The id of the vacations to show",
         )
-        parser.add_argument(
-            "--project-id",
-            type=str,
-            dest="project_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from this project",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                type=str,
+                dest="project_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from this project",
+            )
         parser.add_argument(
             "--show-inbox-tasks",
             dest="show_inbox_tasks",
@@ -89,11 +91,14 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
             if len(args.ref_ids) > 0
             else None
         )
-        project_ref_ids = (
-            [EntityId.from_raw(p) for p in args.project_ref_ids]
-            if len(args.project_ref_ids) > 0
-            else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_ids = (
+                [EntityId.from_raw(p) for p in args.project_ref_ids]
+                if len(args.project_ref_ids) > 0
+                else None
+            )
+        else:
+            project_ref_ids = None
         show_inbox_tasks = args.show_inbox_tasks
 
         result = await self._use_case.execute(
@@ -180,8 +185,9 @@ class HabitShow(LoggedInReadonlyCommand[HabitFindUseCase]):
                     due_at_month_to_rich_text(habit.gen_params.due_at_month),
                 )
 
-            habit_info_text.append(" ")
-            habit_info_text.append(project_to_rich_text(project.name))
+            if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+                habit_info_text.append(" ")
+                habit_info_text.append(project_to_rich_text(project.name))
 
             if habit.suspended:
                 habit_text.stylize("yellow")

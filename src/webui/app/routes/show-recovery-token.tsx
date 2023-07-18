@@ -28,7 +28,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const response = await getLoggedInApiClient(
     session
-  ).loadUserAndWorkspace.loadUserAndWorkspace({});
+  ).loadTopLevelInfo.loadTopLevelInfo({});
 
   if (!response.user || !response.workspace) {
     return redirect("/init");

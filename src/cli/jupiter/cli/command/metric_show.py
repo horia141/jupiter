@@ -18,6 +18,7 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.metrics.find import MetricFindArgs, MetricFindUseCase
@@ -97,10 +98,11 @@ class MetricShow(LoggedInReadonlyCommand[MetricFindUseCase]):
 
         rich_tree = Tree("📈 Metrics", guide_style="bold bright_blue")
 
-        collection_project_text = Text(
-            f"The collection project is {result.collection_project.name}",
-        )
-        rich_tree.add(collection_project_text)
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            collection_project_text = Text(
+                f"The collection project is {result.collection_project.name}",
+            )
+            rich_tree.add(collection_project_text)
 
         for metric_result_entry in sorted_metrics:
             metric = metric_result_entry.metric

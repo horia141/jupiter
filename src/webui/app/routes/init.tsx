@@ -42,7 +42,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   if (session.has("authTokenExt")) {
     const apiClient = getGuestApiClient(session);
-    const result = await apiClient.loadUserAndWorkspace.loadUserAndWorkspace(
+    const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo(
       {}
     );
     if (result.user || result.workspace) {
@@ -69,6 +69,7 @@ export async function action({ request }: ActionArgs) {
       workspace_first_project_name: {
         the_name: form.workspaceFirstProjectName,
       },
+      workspace_feature_flags: {},
     });
 
     session.set("authTokenExt", result.auth_token_ext);
@@ -105,8 +106,8 @@ export default function WorkspaceInit() {
   return (
     <StandaloneCard>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="New Account & Workspace" />
           <CardContent>
             <Stack spacing={2} useFlexGap>

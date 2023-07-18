@@ -1,4 +1,5 @@
 ENV=local
+HOSTING=local
 BASENAME=jupiter-webapi
 DESCRIPTION="The Web RPC API client for Jupiter"
 SQLITE_DB_URL=sqlite+aiosqlite:///jupiter.sqlite

@@ -1,9 +1,10 @@
 """The command for creating a habit."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -55,6 +56,11 @@ class HabitCreateUseCase(
 ):
     """The command for creating a habit."""
 
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.HABITS
+
     async def _execute(
         self,
         progress_reporter: ContextProgressReporter,
@@ -63,6 +69,12 @@ class HabitCreateUseCase(
     ) -> HabitCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.project_ref_id is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
 
         async with progress_reporter.start_creating_entity(
             "habit",

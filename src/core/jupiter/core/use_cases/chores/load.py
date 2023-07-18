@@ -1,7 +1,9 @@
 """Use case for loading a particular chore."""
 from dataclasses import dataclass
+from typing import Iterable
 
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
@@ -34,6 +36,11 @@ class ChoreLoadResult(UseCaseResultBase):
 
 class ChoreLoadUseCase(AppLoggedInReadonlyUseCase[ChoreLoadArgs, ChoreLoadResult]):
     """Use case for loading a particular chore."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.CHORES
 
     async def _execute(
         self,

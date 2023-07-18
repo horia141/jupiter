@@ -155,8 +155,8 @@ export default function NewPerson() {
 
   return (
     <LeafCard returnLocation="/workspace/persons">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

@@ -1,4 +1,5 @@
 _ENV=WILL-BE-FILLED-BY-RENDER
+HOSTING=hosted-global
 BASENAME=jupiter-webapi
 DESCRIPTION="The Web RPC API client for Jupiter"
 SQLITE_DB_URL=sqlite+aiosqlite:////data/jupiter.sqlite

@@ -40,17 +40,8 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   const metricSettingsResponse = await getLoggedInApiClient(
@@ -95,9 +86,9 @@ export default function MetricsSettings() {
 
   return (
     <LeafCard returnLocation="/workspace/metrics">
-      <GlobalError actionResult={actionData} />
-
       <Card>
+        <GlobalError actionResult={actionData} />
+
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

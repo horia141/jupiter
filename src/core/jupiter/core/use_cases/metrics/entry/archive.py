@@ -1,7 +1,8 @@
 """The command for archiving a metric entry."""
-import logging
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -12,8 +13,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
 )
-
-LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -27,6 +26,11 @@ class MetricEntryArchiveUseCase(
     AppLoggedInMutationUseCase[MetricEntryArchiveArgs, None]
 ):
     """The command for archiving a metric entry."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.METRICS
 
     async def _execute(
         self,

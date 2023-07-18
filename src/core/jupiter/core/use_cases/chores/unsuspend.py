@@ -1,6 +1,8 @@
 """The command for unsuspending a chore."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -22,6 +24,11 @@ class ChoreUnsuspendArgs(UseCaseArgsBase):
 
 class ChoreUnsuspendUseCase(AppLoggedInMutationUseCase[ChoreUnsuspendArgs, None]):
     """The command for unsuspending a chore."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.CHORES
 
     async def _execute(
         self,

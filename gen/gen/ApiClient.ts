@@ -17,7 +17,7 @@ import { HabitService } from './services/HabitService';
 import { InboxTaskService } from './services/InboxTaskService';
 import { InitService } from './services/InitService';
 import { LoadProgressReporterTokenService } from './services/LoadProgressReporterTokenService';
-import { LoadUserAndWorkspaceService } from './services/LoadUserAndWorkspaceService';
+import { LoadTopLevelInfoService } from './services/LoadTopLevelInfoService';
 import { LoginService } from './services/LoginService';
 import { MetricService } from './services/MetricService';
 import { PersonService } from './services/PersonService';
@@ -45,7 +45,7 @@ export class ApiClient {
     public readonly inboxTask: InboxTaskService;
     public readonly init: InitService;
     public readonly loadProgressReporterToken: LoadProgressReporterTokenService;
-    public readonly loadUserAndWorkspace: LoadUserAndWorkspaceService;
+    public readonly loadTopLevelInfo: LoadTopLevelInfoService;
     public readonly login: LoginService;
     public readonly metric: MetricService;
     public readonly person: PersonService;
@@ -84,7 +84,7 @@ export class ApiClient {
         this.inboxTask = new InboxTaskService(this.request);
         this.init = new InitService(this.request);
         this.loadProgressReporterToken = new LoadProgressReporterTokenService(this.request);
-        this.loadUserAndWorkspace = new LoadUserAndWorkspaceService(this.request);
+        this.loadTopLevelInfo = new LoadTopLevelInfoService(this.request);
         this.login = new LoginService(this.request);
         this.metric = new MetricService(this.request);
         this.person = new PersonService(this.request);

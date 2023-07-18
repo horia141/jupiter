@@ -13,6 +13,7 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.big_plans.find import BigPlanFindArgs, BigPlanFindUseCase
@@ -42,7 +43,7 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             dest="show_archived",
             default=False,
             action="store_true",
-            help="Whether to show archived vacations or not",
+            help="Whether to show archived big plans or not",
         )
         parser.add_argument(
             "--id",
@@ -50,22 +51,23 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             dest="ref_ids",
             default=[],
             action="append",
-            help="The id of the vacations to modify",
+            help="The id of the big plan to modify",
         )
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from this project",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only big plans from this project",
+            )
         parser.add_argument(
             "--show-inbox-tasks",
             dest="show_inbox_tasks",
             default=False,
             action="store_const",
             const=True,
-            help="Show inbox tasks",
+            help="Show inbox tasks for the big plan",
         )
 
     async def _run(
@@ -80,11 +82,14 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             if len(args.ref_ids) > 0
             else None
         )
-        project_ref_ids = (
-            [EntityId.from_raw(pk) for pk in args.project_ref_ids]
-            if len(args.project_ref_ids) > 0
-            else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_ids = (
+                [EntityId.from_raw(pk) for pk in args.project_ref_ids]
+                if len(args.project_ref_ids) > 0
+                else None
+            )
+        else:
+            project_ref_ids = None
         show_inbox_tasks = args.show_inbox_tasks
 
         result = await self._use_case.execute(
@@ -134,8 +139,9 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
 
-            big_plan_info_text.append(" ")
-            big_plan_info_text.append(project_to_rich_text(project.name))
+            if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+                big_plan_info_text.append(" ")
+                big_plan_info_text.append(project_to_rich_text(project.name))
 
             if big_plan.archived:
                 big_plan_text.stylize("gray62")

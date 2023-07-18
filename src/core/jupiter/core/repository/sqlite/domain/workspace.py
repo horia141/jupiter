@@ -1,6 +1,7 @@
 """The SQLite based Workspace repository."""
 from typing import Final, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.workspaces.infra.workspace_repository import (
     WorkspaceNotFoundError,
     WorkspaceRepository,
@@ -12,6 +13,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import build_event_table, upsert_events
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
@@ -48,6 +50,7 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             Column("archived_time", DateTime, nullable=True),
             Column("name", String(100), nullable=False),
             Column("default_project_ref_id", Integer, nullable=True),
+            Column("feature_flags", JSON, nullable=False),
             keep_existing=True,
         )
         self._workspace_event_table = build_event_table(self._workspace_table, metadata)
@@ -68,9 +71,8 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 if entity.archived_time
                 else None,
                 name=str(entity.name),
-                default_project_ref_id=entity.default_project_ref_id.as_int()
-                if entity.default_project_ref_id is not BAD_REF_ID
-                else None,
+                default_project_ref_id=entity.default_project_ref_id.as_int(),
+                feature_flags={f.value: v for f, v in entity.feature_flags.items()},
             ),
         )
         entity = entity.assign_ref_id(EntityId(str(result.inserted_primary_key[0])))
@@ -90,9 +92,8 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
                 if entity.archived_time
                 else None,
                 name=str(entity.name),
-                default_project_ref_id=entity.default_project_ref_id.as_int()
-                if entity.default_project_ref_id
-                else None,
+                default_project_ref_id=entity.default_project_ref_id.as_int(),
+                feature_flags={f.value: v for f, v in entity.feature_flags.items()},
             ),
         )
         if result.rowcount == 0:
@@ -145,4 +146,5 @@ class SqliteWorkspaceRepository(WorkspaceRepository):
             default_project_ref_id=EntityId.from_raw(
                 str(row["default_project_ref_id"]),
             ),
+            feature_flags={Feature(f): v for f, v in row["feature_flags"].items()},
         )

@@ -1,6 +1,8 @@
 """The command for suspend a habit."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -22,6 +24,11 @@ class HabitSuspendArgs(UseCaseArgsBase):
 
 class HabitSuspendUseCase(AppLoggedInMutationUseCase[HabitSuspendArgs, None]):
     """The command for suspending a habit."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.HABITS
 
     async def _execute(
         self,

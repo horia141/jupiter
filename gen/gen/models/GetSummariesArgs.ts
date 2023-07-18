@@ -3,16 +3,16 @@
 /* eslint-disable */
 
 export type GetSummariesArgs = {
-    allow_archived: boolean;
-    include_default_project: boolean;
-    include_vacations: boolean;
-    include_projects: boolean;
-    include_inbox_tasks: boolean;
-    include_habits: boolean;
-    include_chores: boolean;
-    include_big_plans: boolean;
-    include_smart_lists: boolean;
-    include_metrics: boolean;
-    include_persons: boolean;
+    allow_archived?: boolean;
+    include_default_project?: boolean;
+    include_vacations?: boolean;
+    include_projects?: boolean;
+    include_inbox_tasks?: boolean;
+    include_habits?: boolean;
+    include_chores?: boolean;
+    include_big_plans?: boolean;
+    include_smart_lists?: boolean;
+    include_metrics?: boolean;
+    include_persons?: boolean;
 };
 

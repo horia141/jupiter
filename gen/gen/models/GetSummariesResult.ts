@@ -4,7 +4,6 @@
 
 import type { BigPlanSummary } from './BigPlanSummary';
 import type { ChoreSummary } from './ChoreSummary';
-import type { Env } from './Env';
 import type { HabitSummary } from './HabitSummary';
 import type { InboxTaskSummary } from './InboxTaskSummary';
 import type { MetricSummary } from './MetricSummary';
@@ -14,7 +13,6 @@ import type { SmartListSummary } from './SmartListSummary';
 import type { VacationSummary } from './VacationSummary';
 
 export type GetSummariesResult = {
-    env: Env;
     default_project?: ProjectSummary;
     vacations?: Array<VacationSummary>;
     projects?: Array<ProjectSummary>;

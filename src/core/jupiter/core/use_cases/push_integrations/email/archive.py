@@ -1,6 +1,8 @@
 """The command for archiving a email task."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.push_integrations.email.service.archive_service import (
     EmailTaskArchiveService,
 )
@@ -25,6 +27,11 @@ class EmailTaskArchiveArgs(UseCaseArgsBase):
 
 class EmailTaskArchiveUseCase(AppLoggedInMutationUseCase[EmailTaskArchiveArgs, None]):
     """The command for archiving a email task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.EMAIL_TASKS
 
     async def _execute(
         self,

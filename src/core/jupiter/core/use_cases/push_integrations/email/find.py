@@ -1,7 +1,8 @@
 """The command for finding a email task."""
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import Iterable, List, Optional, cast
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.projects.project import Project
@@ -46,6 +47,11 @@ class EmailTaskFindUseCase(
     AppLoggedInReadonlyUseCase[EmailTaskFindArgs, EmailTaskFindResult]
 ):
     """The command for finding a email task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.EMAIL_TASKS
 
     async def _execute(
         self,

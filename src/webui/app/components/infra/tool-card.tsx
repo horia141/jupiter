@@ -1,6 +1,6 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import { Box, ButtonGroup, IconButton, styled } from "@mui/material";
+import { ButtonGroup, IconButton, Stack, styled } from "@mui/material";
 import { Form, Link, useNavigate } from "@remix-run/react";
 import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -28,7 +28,9 @@ export function ToolCard(props: PropsWithChildren<ToolCardProps>) {
           </ButtonGroup>
         </StyledButtonGroup>
       )}
-      <Box style={{ padding: "0.5rem " }}>{props.children}</Box>
+      <Stack spacing={2} useFlexGap style={{ padding: "0.5rem " }}>
+        {props.children}
+      </Stack>
     </Form>
   );
 }

@@ -99,8 +99,8 @@ export default function NewMetricEntry() {
       key={loaderData.metric.ref_id.the_id}
       returnLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}`}
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

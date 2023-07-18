@@ -128,8 +128,8 @@ export default function Vacation() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/vacations"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

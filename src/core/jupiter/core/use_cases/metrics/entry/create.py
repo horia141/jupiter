@@ -1,8 +1,9 @@
 """The command for creating a metric entry."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -38,6 +39,11 @@ class MetricEntryCreateUseCase(
     AppLoggedInMutationUseCase[MetricEntryCreateArgs, MetricEntryCreateResult],
 ):
     """The command for creating a metric entry."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.METRICS
 
     async def _execute(
         self,

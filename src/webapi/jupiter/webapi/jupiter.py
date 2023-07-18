@@ -1,11 +1,10 @@
 """The Jupiter Web RPC API."""
-import asyncio
 import signal
 from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Union
 
 import aiohttp
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
@@ -17,6 +16,7 @@ from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
@@ -174,10 +174,10 @@ from jupiter.core.use_cases.load_progress_reporter_token import (
     LoadProgressReporterTokenResult,
     LoadProgressReporterTokenUseCase,
 )
-from jupiter.core.use_cases.load_user_and_workspace import (
-    LoadUserAndWorkspaceArgs,
-    LoadUserAndWorkspaceResult,
-    LoadUserAndWorkspaceUseCase,
+from jupiter.core.use_cases.load_top_level_info import (
+    LoadTopLevelInfoArgs,
+    LoadTopLevelInfoResult,
+    LoadTopLevelInfoUseCase,
 )
 from jupiter.core.use_cases.login import (
     InvalidLoginCredentialsError,
@@ -431,6 +431,10 @@ from jupiter.core.use_cases.workspaces.change_default_project import (
     WorkspaceChangeDefaultProjectArgs,
     WorkspaceChangeDefaultProjectUseCase,
 )
+from jupiter.core.use_cases.workspaces.change_feature_flags import (
+    WorkspaceChangeFeatureFlagsArgs,
+    WorkspaceChangeFeatureFlagsUseCase,
+)
 from jupiter.core.use_cases.workspaces.load import (
     WorkspaceLoadArgs,
     WorkspaceLoadResult,
@@ -484,6 +488,7 @@ init_use_case = InitUseCase(
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+    global_properties=global_properties,
 )
 
 login_use_case = LoginUseCase(
@@ -507,9 +512,10 @@ auth_reset_password_use_case = ResetPasswordUseCase(
     storage_engine=domain_storage_engine,
 )
 
-load_user_and_workspace_use_case = LoadUserAndWorkspaceUseCase(
+load_top_level_info_use_case = LoadTopLevelInfoUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+    global_properties=global_properties,
 )
 
 load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
@@ -517,7 +523,6 @@ load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
 )
 
 get_summaries_use_case = GetSummariesUseCase(
-    env=global_properties.env,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
 )
@@ -563,6 +568,14 @@ workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+)
+workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
+    global_properties=global_properties,
 )
 workspace_load_use_case = WorkspaceLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -1050,6 +1063,7 @@ vacation_find_use_case = VacationFindUseCase(
 
 standard_responses: Dict[Union[int, str], Dict[str, Any]] = {  # type: ignore
     410: {"description": "Workspace Or User Not Found", "content": {"plain/text": {}}},
+    406: {"description": "Feature Not Available", "content": {"plain/text": {}}},
 }
 
 
@@ -1091,6 +1105,17 @@ async def input_validation_error_handler(
                 },
             ],
         },
+    )
+
+
+@app.exception_handler(FeatureUnavailableError)
+async def feature_unavailable_error_handler(
+    _request: Request, exc: FeatureUnavailableError
+) -> JSONResponse:
+    """Transform FeatureUnavailableError from the core to the same thing FastAPI would do."""
+    return JSONResponse(
+        status_code=status.HTTP_406_NOT_ACCEPTABLE,
+        content=f"{exc}",
     )
 
 
@@ -1291,39 +1316,39 @@ LoggedInSession = Annotated[
 ]
 
 
-@app.websocket("/progress-reporter")
-async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
-    """Handle the whole lifecycle of the progress reporter websocket."""
-    if token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    try:
-        progress_reporter_token_ext = AuthTokenExt.from_raw(token)
-        progress_reporter_token = (
-            auth_token_stamper.verify_auth_token_progress_reporter(
-                progress_reporter_token_ext
-            )
-        )
-    except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
+# @app.websocket("/progress-reporter")
+# async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
+#     """Handle the whole lifecycle of the progress reporter websocket."""
+#     if token is None:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+#     try:
+#         progress_reporter_token_ext = AuthTokenExt.from_raw(token)
+#         progress_reporter_token = (
+#             auth_token_stamper.verify_auth_token_progress_reporter(
+#                 progress_reporter_token_ext
+#             )
+#         )
+#     except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
 
-    await websocket.accept()
-    await progress_reporter_factory.register_socket(
-        websocket, progress_reporter_token.user_ref_id
-    )
-    # Seems like this just needs to stay alive for the socket to not expire ...
-    try:
-        while True:
-            await asyncio.sleep(1)  # Sleep one second
-            global websocket_should_close
-            if websocket_should_close:
-                await progress_reporter_factory.unregister_websocket(
-                    progress_reporter_token.user_ref_id
-                )
-                return
-    except WebSocketDisconnect:
-        await progress_reporter_factory.unregister_websocket(
-            progress_reporter_token.user_ref_id
-        )
+#     await websocket.accept()
+#     await progress_reporter_factory.register_socket(
+#         websocket, progress_reporter_token.user_ref_id
+#     )
+#     # Seems like this just needs to stay alive for the socket to not expire ...
+#     try:
+#         while True:
+#             await asyncio.sleep(1)  # Sleep one second
+#             global websocket_should_close
+#             if websocket_should_close:
+#                 await progress_reporter_factory.unregister_websocket(
+#                     progress_reporter_token.user_ref_id
+#                 )
+#                 return
+#     except WebSocketDisconnect:
+#         await progress_reporter_factory.unregister_websocket(
+#             progress_reporter_token.user_ref_id
+#         )
 
 
 @app.get("/healthz", status_code=status.HTTP_200_OK)
@@ -1400,16 +1425,16 @@ async def reset_password(
 
 
 @app.post(
-    "/load-user-and-workspace",
-    response_model=LoadUserAndWorkspaceResult,
-    tags=["load-user-and-workspace"],
+    "/load-top-level-info",
+    response_model=LoadTopLevelInfoResult,
+    tags=["load-top-level-info"],
     responses=standard_responses,
 )
-async def load_user_and_workspace(
-    args: LoadUserAndWorkspaceArgs, session: GuestSession
-) -> LoadUserAndWorkspaceResult:
-    """Load a user and workspace if they exist, or signal that it doesn't."""
-    return await load_user_and_workspace_use_case.execute(session, args)
+async def load_top_level_info(
+    args: LoadTopLevelInfoArgs, session: GuestSession
+) -> LoadTopLevelInfoResult:
+    """Load a user and workspace if they exist and other assorted data."""
+    return await load_top_level_info_use_case.execute(session, args)
 
 
 @app.post(
@@ -1505,6 +1530,19 @@ async def change_workspace_default_project(
 ) -> None:
     """Change the default project for a workspace."""
     await workspace_change_default_project_use_case.execute(session, args)
+
+
+@app.post(
+    "/workspace/change-feature-flags",
+    response_model=None,
+    tags=["workspace"],
+    responses=standard_responses,
+)
+async def change_workspace_feature_flags(
+    args: WorkspaceChangeFeatureFlagsArgs, session: LoggedInSession
+) -> None:
+    """Change the feature flags for a workspace."""
+    await workspace_change_feature_flags_use_case.execute(session, args)
 
 
 @app.post(

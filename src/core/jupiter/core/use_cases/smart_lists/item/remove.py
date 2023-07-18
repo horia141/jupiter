@@ -1,6 +1,8 @@
 """The command for removing a smart list item."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ContextProgressReporter,
@@ -23,6 +25,11 @@ class SmartListItemRemoveUseCase(
     AppLoggedInMutationUseCase[SmartListItemRemoveArgs, None]
 ):
     """The command for removing a smart list item."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.SMART_LISTS
 
     async def _execute(
         self,

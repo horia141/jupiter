@@ -1,12 +1,9 @@
 """Shared service for removing a chore."""
-import logging
 from typing import Final
 
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import ContextProgressReporter
-
-LOGGER = logging.getLogger(__name__)
 
 
 class ChoreRemoveService:

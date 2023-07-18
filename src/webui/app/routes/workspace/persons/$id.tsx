@@ -314,8 +314,8 @@ export default function Person() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/persons"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>

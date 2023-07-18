@@ -1,12 +1,13 @@
 """The command for updating a metric's properties."""
 import typing
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain import schedules
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
 from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
@@ -51,6 +52,11 @@ class MetricUpdateArgs(UseCaseArgsBase):
 
 class MetricUpdateUseCase(AppLoggedInMutationUseCase[MetricUpdateArgs, None]):
     """The command for updating a metric's properties."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.METRICS
 
     async def _execute(
         self,

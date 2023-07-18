@@ -18,6 +18,7 @@ import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
@@ -93,8 +94,8 @@ export default function Security() {
     <TrunkCard>
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
-          <GlobalError actionResult={actionData} />
           <Card>
+            <GlobalError actionResult={actionData} />
             <CardHeader title="Security" />
             <CardContent>
               <Stack spacing={2} useFlexGap>
@@ -169,3 +170,7 @@ export default function Security() {
     </TrunkCard>
   );
 }
+
+export const ErrorBoundary = makeErrorBoundary(
+  () => `There was an error changing security settings! Please try again!`
+);

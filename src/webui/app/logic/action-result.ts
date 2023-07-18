@@ -6,6 +6,7 @@ export interface NoErrorNoData {
 
 export interface SomeErrorNoData {
   theType: "some-error-no-data";
+  intent?: string;
   globalError: string | null;
   fieldErrors: { [key: string]: string };
 }
@@ -60,7 +61,8 @@ const ValidationErrorSchema = z.object({
 });
 
 export function validationErrorToUIErrorInfo(
-  errorBodyRaw: object
+  errorBodyRaw: object,
+  intent?: string
 ): SomeErrorNoData {
   const errorBody = ValidationErrorSchema.parse(errorBodyRaw);
   const detail = errorBody.detail;
@@ -77,5 +79,5 @@ export function validationErrorToUIErrorInfo(
     }
   }
 
-  return { theType: "some-error-no-data", globalError, fieldErrors };
+  return { theType: "some-error-no-data", intent, globalError, fieldErrors };
 }

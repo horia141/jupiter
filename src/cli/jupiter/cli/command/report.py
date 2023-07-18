@@ -10,7 +10,9 @@ from jupiter.cli.command.rendering import (
     period_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
@@ -54,10 +56,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
         global_properties: GlobalProperties,
         time_provider: TimeProvider,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: ReportUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
         self._time_provider = time_provider
 
@@ -78,77 +81,97 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             help="The date on which the upsert should run at",
         )
         parser.add_argument(
-            "--project-id",
-            dest="project_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from this project",
-        )
-        parser.add_argument(
             "--source",
             dest="sources",
             default=[],
             action="append",
-            choices=InboxTaskSource.all_values(),
+            choices=self._top_level_context.workspace.infer_sources_for_enabled_features(
+                None
+            ),
             help="Allow only inbox tasks form this particular source. Defaults to all",
         )
-        parser.add_argument(
-            "--habit-id",
-            dest="habit_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from these habits",
-        )
-        parser.add_argument(
-            "--chore-id",
-            dest="chore_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from these chores",
-        )
-        parser.add_argument(
-            "--big-plan-id",
-            dest="big_plan_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from these big plans",
-        )
-        parser.add_argument(
-            "--metric-id",
-            dest="metric_ref_ids",
-            required=False,
-            default=[],
-            action="append",
-            help="Allow only tasks from this metric",
-        )
-        parser.add_argument(
-            "--person-id",
-            dest="person_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from these persons",
-        )
-        parser.add_argument(
-            "--slack-task-id",
-            dest="slack_task_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only these Slack tasks",
-        )
-        parser.add_argument(
-            "--email-task-id",
-            dest="email_task_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only these email tasks",
-        )
-        parser.add_argument(
-            "--cover",
-            dest="covers",
-            default=["inbox-tasks", "big-plans"],
-            choices=["inbox-tasks", "big-plans"],
-            help="Show reporting info about certain parts",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from this project",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+            parser.add_argument(
+                "--habit-id",
+                dest="habit_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from these habits",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+            parser.add_argument(
+                "--chore-id",
+                dest="chore_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from these chores",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            parser.add_argument(
+                "--big-plan-id",
+                dest="big_plan_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from these big plans",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.METRICS):
+            parser.add_argument(
+                "--metric-id",
+                dest="metric_ref_ids",
+                required=False,
+                default=[],
+                action="append",
+                help="Allow only tasks from this metric",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.PERSONS):
+            parser.add_argument(
+                "--person-id",
+                dest="person_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from these persons",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.SLACK_TASKS):
+            parser.add_argument(
+                "--slack-task-id",
+                dest="slack_task_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only these Slack tasks",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.EMAIL_TASKS):
+            parser.add_argument(
+                "--email-task-id",
+                dest="email_task_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only these email tasks",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            parser.add_argument(
+                "--cover",
+                dest="covers",
+                default=["inbox-tasks", "big-plans"],
+                choices=["inbox-tasks", "big-plans"],
+                help="Show reporting info about certain parts",
+            )
+        allowed_breakdowns = ["global", "periods"]
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            allowed_breakdowns.append("projects")
+        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+            allowed_breakdowns.append("habits")
+        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+            allowed_breakdowns.append("chores")
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            allowed_breakdowns.append("big-plans")
         parser.add_argument(
             "--breakdown",
             dest="breakdowns",
@@ -156,12 +179,11 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             action="append",
             choices=[
                 "global",
-                "projects",
                 "periods",
-                "big-plans",
+                "projects",
                 "habits",
                 "chores",
-                "metrics",
+                "big-plans",
             ],
             help="Breakdown report by one or more dimensions",
         )
@@ -199,52 +221,79 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             if args.today
             else self._time_provider.get_current_date()
         )
-        project_ref_ids = (
-            [EntityId.from_raw(pk) for pk in args.project_ref_ids]
-            if len(args.project_ref_ids) > 0
-            else None
-        )
         sources = (
             [InboxTaskSource.from_raw(s) for s in args.sources]
             if len(args.sources) > 0
             else None
         )
-        habit_ref_ids = (
-            [EntityId.from_raw(rt) for rt in args.habit_ref_ids]
-            if len(args.habit_ref_ids) > 0
-            else None
-        )
-        chore_ref_ids = (
-            [EntityId.from_raw(rt) for rt in args.chore_ref_ids]
-            if len(args.chore_ref_ids) > 0
-            else None
-        )
-        big_plan_ref_ids = (
-            [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids]
-            if len(args.big_plan_ref_ids) > 0
-            else None
-        )
-        metric_ref_ids = (
-            [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
-            if len(args.metric_ref_ids) > 0
-            else None
-        )
-        person_ref_ids = (
-            [EntityId.from_raw(bp) for bp in args.person_ref_ids]
-            if len(args.person_ref_ids) > 0
-            else None
-        )
-        slack_task_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
-            if len(args.slack_task_ref_ids) > 0
-            else None
-        )
-        email_task_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
-            if len(args.email_task_ref_ids) > 0
-            else None
-        )
-        covers = args.covers
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_ids = (
+                [EntityId.from_raw(pk) for pk in args.project_ref_ids]
+                if len(args.project_ref_ids) > 0
+                else None
+            )
+        else:
+            project_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+            habit_ref_ids = (
+                [EntityId.from_raw(rt) for rt in args.habit_ref_ids]
+                if len(args.habit_ref_ids) > 0
+                else None
+            )
+        else:
+            habit_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+            chore_ref_ids = (
+                [EntityId.from_raw(rt) for rt in args.chore_ref_ids]
+                if len(args.chore_ref_ids) > 0
+                else None
+            )
+        else:
+            chore_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            big_plan_ref_ids = (
+                [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids]
+                if len(args.big_plan_ref_ids) > 0
+                else None
+            )
+        else:
+            big_plan_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.METRICS):
+            metric_ref_ids = (
+                [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
+                if len(args.metric_ref_ids) > 0
+                else None
+            )
+        else:
+            metric_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PERSONS):
+            person_ref_ids = (
+                [EntityId.from_raw(bp) for bp in args.person_ref_ids]
+                if len(args.person_ref_ids) > 0
+                else None
+            )
+        else:
+            person_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.SLACK_TASKS):
+            slack_task_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
+                if len(args.slack_task_ref_ids) > 0
+                else None
+            )
+        else:
+            slack_task_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.EMAIL_TASKS):
+            email_task_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
+                if len(args.email_task_ref_ids) > 0
+                else None
+            )
+        else:
+            email_task_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+            covers = args.covers
+        else:
+            covers = ["inbox-tasks"]
         breakdowns = (
             args.breakdowns if len(args.breakdowns) > 0 else ["global", "habits"]
         )
@@ -282,9 +331,13 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
         )
 
         sources_to_present = (
-            [s for s in Report._SOURCES_TO_REPORT if s in sources]
-            if sources
-            else Report._SOURCES_TO_REPORT
+            self._top_level_context.workspace.infer_sources_for_enabled_features(
+                (
+                    [s for s in Report._SOURCES_TO_REPORT if s in sources]
+                    if sources
+                    else Report._SOURCES_TO_REPORT
+                )
+            )
         )
 
         today_str = ADate.to_user_date_str(today)
@@ -310,13 +363,21 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 )
                 global_tree.add(inbox_task_table)
 
-            if "big-plans" in covers:
+            if (
+                self._top_level_context.workspace.is_feature_available(
+                    Feature.BIG_PLANS
+                )
+                and "big-plans" in covers
+            ):
                 big_plan_tree = self._build_big_plans_summary_tree(
                     result.global_big_plans_summary,
                 )
                 global_tree.add(big_plan_tree)
 
-        if "projects" in breakdowns:
+        if (
+            self._top_level_context.workspace.is_feature_available(Feature.PROJECTS)
+            and "projects" in breakdowns
+        ):
             global_text = Text("💡 By Projects:")
 
             global_tree = rich_tree.add(global_text)
@@ -333,7 +394,12 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                     )
                     project_tree.add(inbox_task_table)
 
-                if "big-plans" in covers:
+                if (
+                    self._top_level_context.workspace.is_feature_available(
+                        Feature.BIG_PLANS
+                    )
+                    and "big-plans" in covers
+                ):
                     big_plan_tree = self._build_big_plans_summary_tree(
                         project_item.big_plans_summary,
                     )
@@ -367,7 +433,10 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                     )
                     global_tree.add(big_plan_tree)
 
-        if "habits" in breakdowns:
+        if (
+            self._top_level_context.workspace.is_feature_available(Feature.HABITS)
+            and "habits" in breakdowns
+        ):
             global_text = Text("💪 By Habits:")
 
             global_tree = rich_tree.add(global_text)
@@ -466,7 +535,10 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
                 global_tree.add(period_table)
 
-        if "chores" in breakdowns:
+        if (
+            self._top_level_context.workspace.is_feature_available(Feature.CHORES)
+            and "chores" in breakdowns
+        ):
             global_text = Text("♻️ By Chores:")
 
             global_tree = rich_tree.add(global_text)
@@ -551,7 +623,10 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
                 global_tree.add(period_table)
 
-        if "big-plans" in breakdowns:
+        if (
+            self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS)
+            and "big-plans" in breakdowns
+        ):
             global_table = Table(
                 title="🌍 By Big Plan:",
                 title_justify="left",

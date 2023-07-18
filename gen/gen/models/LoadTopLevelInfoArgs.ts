@@ -2,6 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type LoadUserAndWorkspaceArgs = {
+export type LoadTopLevelInfoArgs = {
 };
 

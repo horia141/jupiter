@@ -1,6 +1,8 @@
 """The command for removing a inbox task."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
@@ -24,6 +26,11 @@ class InboxTaskRemoveArgs(UseCaseArgsBase):
 
 class InboxTaskRemoveUseCase(AppLoggedInMutationUseCase[InboxTaskRemoveArgs, None]):
     """The command for removing a inbox task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.INBOX_TASKS
 
     async def _execute(
         self,

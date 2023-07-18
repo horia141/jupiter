@@ -1,7 +1,9 @@
 """The command for updating a vacation's properties."""
 from dataclasses import dataclass
+from typing import Iterable
 
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -28,6 +30,11 @@ class VacationUpdateArgs(UseCaseArgsBase):
 
 class VacationUpdateUseCase(AppLoggedInMutationUseCase[VacationUpdateArgs, None]):
     """The command for updating a vacation's properties."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.VACATIONS
 
     async def _execute(
         self,

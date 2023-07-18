@@ -91,8 +91,8 @@ export default function ResetPassword() {
   return (
     <StandaloneCard>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="Reset Password" />
           <CardContent>
             <Stack spacing={2}>

@@ -4,6 +4,7 @@ from typing import Final, Optional
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
@@ -28,10 +29,11 @@ class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
         self,
         global_properties: GlobalProperties,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: InboxTaskUpdateUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
     @staticmethod

@@ -1,10 +1,10 @@
 """The command for doing a garbage collection run."""
-import logging
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -30,8 +30,6 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInUseCaseContext,
 )
 
-LOGGER = logging.getLogger(__name__)
-
 
 @dataclass
 class GCArgs(UseCaseArgsBase):
@@ -54,8 +52,18 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         gc_targets = (
             args.gc_targets
             if args.gc_targets is not None
-            else list(st for st in SyncTarget)
+            else workspace.infer_sync_targets_for_enabled_features(None)
         )
+
+        big_diff = list(
+            set(gc_targets).difference(
+                workspace.infer_sync_targets_for_enabled_features(gc_targets)
+            )
+        )
+        if len(big_diff) > 0:
+            raise FeatureUnavailableError(
+                f"GC targets {','.join(s.value for s in big_diff)} are not supported in this workspace"
+            )
 
         async with self._storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = (
@@ -84,7 +92,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 )
             )
 
-        if SyncTarget.INBOX_TASKS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.INBOX_TASKS)
+            and SyncTarget.INBOX_TASKS in gc_targets
+        ):
             async with progress_reporter.section("Inbox Tasks"):
                 async with progress_reporter.section(
                     "Archiving all done inbox tasks",
@@ -99,7 +110,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                         inbox_tasks,
                     )
 
-        if SyncTarget.BIG_PLANS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.BIG_PLANS)
+            and SyncTarget.BIG_PLANS in gc_targets
+        ):
             async with progress_reporter.section("Big Plans"):
                 async with progress_reporter.section(
                     "Archiving all done big plans",
@@ -114,7 +128,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                         big_plans,
                     )
 
-        if SyncTarget.SLACK_TASKS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.SLACK_TASKS)
+            and SyncTarget.SLACK_TASKS in gc_targets
+        ):
             async with progress_reporter.section("Slack Tasks"):
                 async with progress_reporter.section(
                     "Archiving all Slack tasks whose inbox tasks are done or archived",
@@ -140,7 +157,10 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                         inbox_tasks,
                     )
 
-        if SyncTarget.EMAIL_TASKS in gc_targets:
+        if (
+            workspace.is_feature_available(Feature.EMAIL_TASKS)
+            and SyncTarget.EMAIL_TASKS in gc_targets
+        ):
             async with progress_reporter.section("Email Tasks"):
                 async with progress_reporter.section(
                     "Archiving all email tasks whose inbox tasks are done or archived",

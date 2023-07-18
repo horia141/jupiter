@@ -1,12 +1,13 @@
 """The command for creating a chore."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -58,6 +59,11 @@ class ChoreCreateUseCase(
 ):
     """The command for creating a chore."""
 
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.CHORES
+
     async def _execute(
         self,
         progress_reporter: ContextProgressReporter,
@@ -66,6 +72,12 @@ class ChoreCreateUseCase(
     ) -> ChoreCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.project_ref_id is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
 
         async with progress_reporter.start_creating_entity(
             "chore",

@@ -14,6 +14,32 @@ JSONValueType = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]  #
 JSONDictType = Dict[str, JSONValueType]
 
 
+def process_primitive_to_json_key(primitive: int | float | str | object) -> str:
+    """Transform a primitive-ish type to a JSON object key."""
+    if isinstance(primitive, int):
+        return str(primitive)
+    elif isinstance(primitive, float):
+        return str(primitive)
+    elif isinstance(primitive, str):
+        return primitive
+    elif isinstance(primitive, Date):
+        return str(primitive)
+    elif isinstance(primitive, DateTime):
+        return str(primitive)
+    elif isinstance(primitive, Enum):
+        return str(primitive.value)
+    elif isinstance(primitive, SecretValue):
+        return f"Redacted {str(primitive)}"
+    elif isinstance(primitive, Value):
+        return str(primitive)  # A bit of a hack really!
+    elif isinstance(primitive, uuid.UUID):
+        return str(primitive)
+    else:
+        raise Exception(
+            f"Invalid type for key of type {primitive.__class__.__name__}",
+        )
+
+
 def process_primitive_to_json(
     primitive: typing.Union[None, int, float, str, object],
     key: str,
@@ -52,7 +78,10 @@ def process_primitive_to_json(
     elif isinstance(primitive, list):
         return [process_primitive_to_json(p, key) for p in primitive]
     elif isinstance(primitive, dict):
-        return {k: process_primitive_to_json(v, k) for k, v in primitive.items()}
+        return {
+            process_primitive_to_json_key(k): process_primitive_to_json(v, k)
+            for k, v in primitive.items()
+        }
     elif isinstance(primitive, frozenset):
         return [process_primitive_to_json(p, key) for p in primitive]
     elif isinstance(primitive, set):

@@ -1,6 +1,8 @@
 """Use case for loading a particular vacation."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -32,6 +34,11 @@ class VacationLoadUseCase(
     AppLoggedInReadonlyUseCase[VacationLoadArgs, VacationLoadResult]
 ):
     """Use case for loading a particular vacation."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.VACATIONS
 
     async def _execute(
         self,

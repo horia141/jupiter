@@ -4,6 +4,7 @@ from typing import Final, Optional
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
@@ -26,10 +27,11 @@ class BigPlanUpdate(LoggedInMutationCommand[BigPlanUpdateUseCase]):
         self,
         global_properties: GlobalProperties,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: BigPlanUpdateUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
     @staticmethod

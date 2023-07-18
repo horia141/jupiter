@@ -65,8 +65,8 @@ export default function GC() {
 
   return (
     <ToolCard returnLocation="/workspace">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <FormControl fullWidth>
             <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
