@@ -11,7 +11,7 @@ import type { User } from './User';
 import type { Workspace } from './Workspace';
 import type { WorkspaceName } from './WorkspaceName';
 
-export type LoadUserAndWorkspaceResult = {
+export type LoadTopLevelInfoResult = {
     env: Env;
     hosting: Hosting;
     deafult_workspace_name: WorkspaceName;

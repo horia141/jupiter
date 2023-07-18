@@ -44,7 +44,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const client = getLoggedInApiClient(session);
-  const response = await client.loadUserAndWorkspace.loadUserAndWorkspace({});
+  const response = await client.loadTopLevelInfo.loadTopLevelInfo({});
 
   if (!response.user || !response.workspace) {
     return redirect("/init");

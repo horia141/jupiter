@@ -1,6 +1,8 @@
 """UseCase for initialising a workspace."""
 from argparse import ArgumentParser, Namespace
-from typing import cast
+from typing import Final, cast
+from jupiter.cli.session_storage import SessionStorage
+from jupiter.cli.top_level_context import TopLevelContext
 
 from jupiter.cli.command.command import GuestMutationCommand
 from jupiter.cli.session_storage import SessionInfo
@@ -21,6 +23,18 @@ from rich.text import Text
 @secure_class
 class Initialize(GuestMutationCommand[InitUseCase]):
     """UseCase class for initialising a workspace."""
+
+    _top_level_context: Final[TopLevelContext]
+
+    def __init__(
+        self, 
+        session_storage: SessionStorage,
+        top_level_context: TopLevelContext,
+        use_case: InitUseCase
+    ) -> None:
+        """Constructor."""
+        super().__init__(session_storage, use_case)
+        self._top_level_context = top_level_context
 
     @staticmethod
     def name() -> str:
@@ -69,13 +83,13 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         parser.add_argument(
             "--workspace-name",
             dest="workspace_name",
-            required=True,
+            default=str(self._top_level_context.default_workspace_name),
             help="The workspace name to use",
         )
         parser.add_argument(
             "--workspace-project-name",
             dest="workspace_first_project_name",
-            required=True,
+            default=str(self._top_level_context.default_first_project_name),
             help="The name of the first project",
         )
         parser.add_argument(

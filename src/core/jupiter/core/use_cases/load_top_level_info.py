@@ -33,12 +33,12 @@ from jupiter.core.utils.global_properties import GlobalProperties
 
 
 @dataclass
-class LoadUserAndWorkspaceArgs(UseCaseArgsBase):
+class LoadTopLevelInfoArgs(UseCaseArgsBase):
     """Load user and workspsace args."""
 
 
 @dataclass
-class LoadUserAndWorkspaceResult(UseCaseResultBase):
+class LoadTopLevelInfoResult(UseCaseResultBase):
     """Load user and workspace result."""
 
     env: Env
@@ -52,10 +52,10 @@ class LoadUserAndWorkspaceResult(UseCaseResultBase):
     workspace: Optional[Workspace] = None
 
 
-class LoadUserAndWorkspaceUseCase(
-    AppGuestReadonlyUseCase[LoadUserAndWorkspaceArgs, LoadUserAndWorkspaceResult],
+class LoadTopLevelInfoUseCase(
+    AppGuestReadonlyUseCase[LoadTopLevelInfoArgs, LoadTopLevelInfoResult],
 ):
-    """The command for loading a user and workspace if they exist."""
+    """The command for loading a user and workspace if they exist and other data too."""
 
     _global_properties: Final[GlobalProperties]
 
@@ -71,8 +71,8 @@ class LoadUserAndWorkspaceUseCase(
     async def _execute(
         self,
         context: AppGuestUseCaseContext,
-        args: LoadUserAndWorkspaceArgs,
-    ) -> LoadUserAndWorkspaceResult:
+        args: LoadTopLevelInfoArgs,
+    ) -> LoadTopLevelInfoResult:
         """Execute the command's action."""
         feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
@@ -97,7 +97,7 @@ class LoadUserAndWorkspaceUseCase(
                     user = None
                     workspace = None
 
-        return LoadUserAndWorkspaceResult(
+        return LoadTopLevelInfoResult(
             env=self._global_properties.env,
             hosting=self._global_properties.hosting,
             deafult_workspace_name=WorkspaceName.from_raw("Work"),

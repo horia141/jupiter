@@ -185,9 +185,9 @@ from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
 )
 from jupiter.core.use_cases.infra.use_cases import AppGuestUseCaseSession
 from jupiter.core.use_cases.init import InitUseCase
-from jupiter.core.use_cases.load_user_and_workspace import (
-    LoadUserAndWorkspaceArgs,
-    LoadUserAndWorkspaceUseCase,
+from jupiter.core.use_cases.load_top_level_info import (
+    LoadTopLevelInfoArgs,
+    LoadTopLevelInfoUseCase,
 )
 from jupiter.core.use_cases.login import InvalidLoginCredentialsError, LoginUseCase
 from jupiter.core.use_cases.metrics.archive import MetricArchiveUseCase
@@ -309,7 +309,7 @@ async def main() -> None:
 
     progress_reporter_factory = RichConsoleProgressReporterFactory()
 
-    load_user_and_workspace_use_case = LoadUserAndWorkspaceUseCase(
+    load_top_level_info_use_case = LoadTopLevelInfoUseCase(
         auth_token_stamper=auth_token_stamper,
         storage_engine=domain_storage_engine,
         global_properties=global_properties,
@@ -321,17 +321,21 @@ async def main() -> None:
     guest_session = AppGuestUseCaseSession(
         session_info.auth_token_ext if session_info else None
     )
-    top_level_info = await load_user_and_workspace_use_case.execute(
-        guest_session, LoadUserAndWorkspaceArgs()
+    top_level_info = await load_top_level_info_use_case.execute(
+        guest_session, LoadTopLevelInfoArgs()
     )
 
     top_level_context = TopLevelContext(
-        user=top_level_info.user, workspace=top_level_info.workspace
+        default_workspace_name=top_level_info.deafult_workspace_name,
+        default_first_project_name=top_level_info.default_first_project_name,
+        user=top_level_info.user,
+        workspace=top_level_info.workspace
     )
 
     no_session_command = [
         Initialize(
             session_storage=session_storage,
+            top_level_context=top_level_context,
             use_case=InitUseCase(
                 time_provider,
                 invocation_recorder,

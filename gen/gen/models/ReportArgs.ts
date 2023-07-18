@@ -10,8 +10,8 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 export type ReportArgs = {
     today: ADate;
     period: RecurringTaskPeriod;
-    filter_project_ref_ids?: Array<EntityId>;
     filter_sources?: Array<InboxTaskSource>;
+    filter_project_ref_ids?: Array<EntityId>;
     filter_big_plan_ref_ids?: Array<EntityId>;
     filter_habit_ref_ids?: Array<EntityId>;
     filter_chore_ref_ids?: Array<EntityId>;

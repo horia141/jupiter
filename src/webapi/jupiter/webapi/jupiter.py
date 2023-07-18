@@ -174,10 +174,10 @@ from jupiter.core.use_cases.load_progress_reporter_token import (
     LoadProgressReporterTokenResult,
     LoadProgressReporterTokenUseCase,
 )
-from jupiter.core.use_cases.load_user_and_workspace import (
-    LoadUserAndWorkspaceArgs,
-    LoadUserAndWorkspaceResult,
-    LoadUserAndWorkspaceUseCase,
+from jupiter.core.use_cases.load_top_level_info import (
+    LoadTopLevelInfoArgs,
+    LoadTopLevelInfoResult,
+    LoadTopLevelInfoUseCase,
 )
 from jupiter.core.use_cases.login import (
     InvalidLoginCredentialsError,
@@ -512,7 +512,7 @@ auth_reset_password_use_case = ResetPasswordUseCase(
     storage_engine=domain_storage_engine,
 )
 
-load_user_and_workspace_use_case = LoadUserAndWorkspaceUseCase(
+load_top_level_info_use_case = LoadTopLevelInfoUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
     global_properties=global_properties,
@@ -1425,16 +1425,16 @@ async def reset_password(
 
 
 @app.post(
-    "/load-user-and-workspace",
-    response_model=LoadUserAndWorkspaceResult,
-    tags=["load-user-and-workspace"],
+    "/load-top-level-info",
+    response_model=LoadTopLevelInfoResult,
+    tags=["load-top-level-info"],
     responses=standard_responses,
 )
-async def load_user_and_workspace(
-    args: LoadUserAndWorkspaceArgs, session: GuestSession
-) -> LoadUserAndWorkspaceResult:
-    """Load a user and workspace if they exist, or signal that it doesn't."""
-    return await load_user_and_workspace_use_case.execute(session, args)
+async def load_top_level_info(
+    args: LoadTopLevelInfoArgs, session: GuestSession
+) -> LoadTopLevelInfoResult:
+    """Load a user and workspace if they exist and other assorted data."""
+    return await load_top_level_info_use_case.execute(session, args)
 
 
 @app.post(
