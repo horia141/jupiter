@@ -48,7 +48,7 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
           exit={{ opacity: 0, height: "0px" }}
           transition={{ duration: 1 }}
         >
-          <Stack spacing={2} useFlexGap>
+          <Stack spacing={2}>
             {props.showLabel && (
               <Divider style={{ paddingTop: "0.5rem" }}>
                 <Typography variant="h6">{props.label}</Typography>
