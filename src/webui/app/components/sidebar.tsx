@@ -215,7 +215,7 @@ export default function Sidebar(props: SidebarProps) {
 
             {(isFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.HABITS
+              Feature.SLACK_TASKS
             ) ||
               isFeatureAvailable(
                 props.topLevelInfo.workspace,
