@@ -18,13 +18,13 @@ You'll see a login form. You need to press `New Workspace` and you'll be prompte
 
 ![Init](assets/tutorial-init.png)
 
-Besides the standard fields that identify you and help keep your accunt secure, you will need to
-provide a workspace name and initial [project](concepts/projects.md) name.
+You can check what the advanced and [feature flags](concepts/feature-flags.md)
+accordions to, but equally you can ignore them.
 
 Press `Create` and you will be shown an [account recovery token](how-tos/recover-your-account.md) that
 you need to store in a safe space. Once you do that, you can proceed to _your newly created workspace_.
 
-This will be empty:
+This will be empty and minimalistic from a features point of view:
 
 ![Empty Workspace](assets/tutorial-empty-workspace.png)
 

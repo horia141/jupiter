@@ -1,6 +1,8 @@
 """Load settings for persons use case."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
@@ -28,6 +30,11 @@ class PersonLoadSettingsUseCase(
     AppLoggedInReadonlyUseCase[PersonLoadSettingsArgs, PersonLoadSettingsResult],
 ):
     """The command for loading the settings around persons."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PERSONS
 
     async def _execute(
         self,

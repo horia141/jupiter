@@ -19,8 +19,8 @@ import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { BigPlanSummary, Project } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen } from "jupiter-gen";
-import { useState } from "react";
+import { ApiError, Difficulty, Eisen, Feature } from "jupiter-gen";
+import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -35,9 +35,11 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const QuerySchema = {
   reason: z.literal("for-big-plan").optional(),
@@ -46,7 +48,7 @@ const QuerySchema = {
 
 const CreateFormSchema = {
   name: z.string(),
-  project: z.string(),
+  project: z.string().optional(),
   bigPlan: z.string().optional(),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
@@ -72,17 +74,9 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
     include_big_plans: reason === "standard",
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   let ownerBigPlan = null;
@@ -144,7 +138,8 @@ export async function action({ request }: ActionArgs) {
       session
     ).inboxTask.createInboxTask({
       name: { the_name: form.name },
-      project_ref_id: { the_id: form.project },
+      project_ref_id:
+        form.project !== undefined ? { the_id: form.project } : undefined,
       big_plan_ref_id:
         reason === "standard"
           ? form.bigPlan !== undefined && form.bigPlan !== "none"
@@ -187,6 +182,7 @@ export default function NewInboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const [selectedBigPlan, setSelectedBigPlan] = useState(
     loaderData.defaultBigPlan
@@ -201,25 +197,32 @@ export default function NewInboxTask() {
   const inputsEnabled = transition.state === "idle";
 
   const allProjectsById: { [k: string]: Project } = {};
-  for (const project of loaderData.allProjects) {
-    allProjectsById[project.ref_id.the_id] = project;
-  }
-  const allBigPlansById: { [k: string]: BigPlanSummary } = {};
-  for (const bigPlan of loaderData.allBigPlans) {
-    allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+  if (isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS)) {
+    for (const project of loaderData.allProjects) {
+      allProjectsById[project.ref_id.the_id] = project;
+    }
   }
 
-  const allBigPlansAsOptions = [
-    {
-      label: "None",
-      big_plan_id: "none",
-    },
-  ].concat(
-    loaderData.allBigPlans.map((bp: BigPlanSummary) => ({
-      label: bp.name.the_name,
-      big_plan_id: bp.ref_id.the_id,
-    }))
-  );
+  const allBigPlansById: { [k: string]: BigPlanSummary } = {};
+  let allBigPlansAsOptions: Array<{ label: string; big_plan_id: string }> = [];
+
+  if (isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS)) {
+    for (const bigPlan of loaderData.allBigPlans) {
+      allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+    }
+
+    allBigPlansAsOptions = [
+      {
+        label: "None",
+        big_plan_id: "none",
+      },
+    ].concat(
+      loaderData.allBigPlans.map((bp: BigPlanSummary) => ({
+        label: bp.name.the_name,
+        big_plan_id: bp.ref_id.the_id,
+      }))
+    );
+  }
 
   function handleChangeBigPlan(
     e: React.SyntheticEvent,
@@ -243,8 +246,8 @@ export default function NewInboxTask() {
 
   return (
     <LeafCard returnLocation="/workspace/inbox-tasks">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -261,51 +264,60 @@ export default function NewInboxTask() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <Autocomplete
-                disablePortal
-                id="bigPlan"
-                options={allBigPlansAsOptions}
-                readOnly={!inputsEnabled || loaderData.reason !== "standard"}
-                value={selectedBigPlan}
-                disableClearable={true}
-                onChange={handleChangeBigPlan}
-                isOptionEqualToValue={(o, v) => o.big_plan_id === v.big_plan_id}
-                renderInput={(params) => (
-                  <TextField {...params} label="Big Plan" />
-                )}
-              />
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) && (
+              <FormControl fullWidth>
+                <Autocomplete
+                  disablePortal
+                  id="bigPlan"
+                  options={allBigPlansAsOptions}
+                  readOnly={!inputsEnabled || loaderData.reason !== "standard"}
+                  value={selectedBigPlan}
+                  disableClearable={true}
+                  onChange={handleChangeBigPlan}
+                  isOptionEqualToValue={(o, v) =>
+                    o.big_plan_id === v.big_plan_id
+                  }
+                  renderInput={(params) => (
+                    <TextField {...params} label="Big Plan" />
+                  )}
+                />
 
-              <FieldError
-                actionResult={actionData}
-                fieldName="/big_plan_ref_id"
-              />
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/big_plan_ref_id"
+                />
 
-              <input
-                type="hidden"
-                name="bigPlan"
-                value={selectedBigPlan.big_plan_id}
-              />
-            </FormControl>
+                <input
+                  type="hidden"
+                  name="bigPlan"
+                  value={selectedBigPlan.big_plan_id}
+                />
+              </FormControl>
+            )}
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled || blockedToSelectProject}
-                value={selectedProject}
-                onChange={handleChangeProject}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project_key" />
-            </FormControl>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled || blockedToSelectProject}
+                  value={selectedProject}
+                  onChange={handleChangeProject}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p: Project) => (
+                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
+                      {p.name.the_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/project_key"
+                />
+              </FormControl>
+            )}
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>

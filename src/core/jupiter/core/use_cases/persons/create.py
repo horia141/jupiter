@@ -1,9 +1,10 @@
 """Create a person."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_name import PersonName
@@ -53,6 +54,11 @@ class PersonCreateUseCase(
     AppLoggedInMutationUseCase[PersonCreateArgs, PersonCreateResult]
 ):
     """The command for creating a person."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PERSONS
 
     async def _execute(
         self,

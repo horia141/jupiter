@@ -3,6 +3,7 @@ import argparse
 import asyncio
 import logging
 import sys
+from typing import List
 
 import aiohttp
 from jupiter.cli.command.auth_change_password import AuthChangePassword
@@ -20,6 +21,7 @@ from jupiter.cli.command.chore_show import ChoreShow
 from jupiter.cli.command.chore_suspend import ChoreSuspend
 from jupiter.cli.command.chore_unsuspend import ChoreUnsuspend
 from jupiter.cli.command.chore_update import ChoreUpdate
+from jupiter.cli.command.command import Command
 from jupiter.cli.command.email_task_archive import EmailTaskArchive
 from jupiter.cli.command.email_task_change_generation_project import (
     EmailTaskChangeGenerationProject,
@@ -110,14 +112,19 @@ from jupiter.cli.command.vacation_update import VacationUpdate
 from jupiter.cli.command.workspace_change_default_project import (
     WorkspaceChangeDefaultProject,
 )
+from jupiter.cli.command.workspace_change_feature_flags import (
+    WorkspaceChangeFeatureFlags,
+)
 from jupiter.cli.command.workspace_show import WorkspaceShow
 from jupiter.cli.command.workspace_update import WorkspaceUpdate
 from jupiter.cli.session_storage import SessionInfoNotFoundError, SessionStorage
+from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.auth.auth_token import (
     ExpiredAuthTokenError,
     InvalidAuthTokenError,
 )
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
+from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.projects.errors import ProjectInSignificantUseError
 from jupiter.core.domain.user.infra.user_repository import (
     UserAlreadyExistsError,
@@ -176,7 +183,12 @@ from jupiter.core.use_cases.inbox_tasks.update import InboxTaskUpdateUseCase
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
     PersistentMutationUseCaseInvocationRecorder,
 )
+from jupiter.core.use_cases.infra.use_cases import AppGuestUseCaseSession
 from jupiter.core.use_cases.init import InitUseCase
+from jupiter.core.use_cases.load_top_level_info import (
+    LoadTopLevelInfoArgs,
+    LoadTopLevelInfoUseCase,
+)
 from jupiter.core.use_cases.login import InvalidLoginCredentialsError, LoginUseCase
 from jupiter.core.use_cases.metrics.archive import MetricArchiveUseCase
 from jupiter.core.use_cases.metrics.change_collection_project import (
@@ -247,6 +259,9 @@ from jupiter.core.use_cases.vacations.update import VacationUpdateUseCase
 from jupiter.core.use_cases.workspaces.change_default_project import (
     WorkspaceChangeDefaultProjectUseCase,
 )
+from jupiter.core.use_cases.workspaces.change_feature_flags import (
+    WorkspaceChangeFeatureFlagsUseCase,
+)
 from jupiter.core.use_cases.workspaces.load import WorkspaceLoadUseCase
 from jupiter.core.use_cases.workspaces.update import WorkspaceUpdateUseCase
 from jupiter.core.utils.global_properties import build_global_properties
@@ -258,24 +273,23 @@ from jupiter.core.utils.progress_reporter import (
 from jupiter.core.utils.time_provider import TimeProvider
 
 # import coverage
-from rich.logging import RichHandler
 
 
 async def main() -> None:
     """Application main function."""
+    logging.disable()
+
     time_provider = TimeProvider()
 
-    no_timezone_global_properties = build_global_properties()
+    global_properties = build_global_properties()
 
     sqlite_connection = SqliteConnection(
         SqliteConnection.Config(
-            no_timezone_global_properties.sqlite_db_url,
-            no_timezone_global_properties.alembic_ini_path,
-            no_timezone_global_properties.alembic_migrations_path,
+            global_properties.sqlite_db_url,
+            global_properties.alembic_ini_path,
+            global_properties.alembic_migrations_path,
         ),
     )
-
-    global_properties = build_global_properties()
 
     domain_storage_engine = SqliteDomainStorageEngine(sqlite_connection)
     usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
@@ -295,16 +309,40 @@ async def main() -> None:
 
     progress_reporter_factory = RichConsoleProgressReporterFactory()
 
-    commands = {
-        # Complex commands.
+    load_top_level_info_use_case = LoadTopLevelInfoUseCase(
+        auth_token_stamper=auth_token_stamper,
+        storage_engine=domain_storage_engine,
+        global_properties=global_properties,
+    )
+
+    await sqlite_connection.prepare()
+
+    session_info = session_storage.load_optional()
+    guest_session = AppGuestUseCaseSession(
+        session_info.auth_token_ext if session_info else None
+    )
+    top_level_info = await load_top_level_info_use_case.execute(
+        guest_session, LoadTopLevelInfoArgs()
+    )
+
+    top_level_context = TopLevelContext(
+        default_workspace_name=top_level_info.deafult_workspace_name,
+        default_first_project_name=top_level_info.default_first_project_name,
+        user=top_level_info.user,
+        workspace=top_level_info.workspace,
+    )
+
+    no_session_command = [
         Initialize(
             session_storage=session_storage,
+            top_level_context=top_level_context,
             use_case=InitUseCase(
                 time_provider,
                 invocation_recorder,
                 NoOpProgressReporterFactory(),
                 auth_token_stamper,
                 domain_storage_engine,
+                global_properties,
             ),
         ),
         Login(
@@ -314,9 +352,14 @@ async def main() -> None:
                 domain_storage_engine,
             ),
         ),
+    ]
+
+    in_session_commands = [
+        # Complex commands.
         Logout(session_storage=session_storage),
         AuthChangePassword(
             session_storage=session_storage,
+            top_level_context=top_level_context.to_logged_in(),
             use_case=ChangePasswordUseCase(
                 time_provider=time_provider,
                 invocation_recorder=invocation_recorder,
@@ -339,6 +382,7 @@ async def main() -> None:
             global_properties,
             time_provider,
             session_storage,
+            top_level_context.to_logged_in(),
             GenUseCase(
                 time_provider,
                 invocation_recorder,
@@ -351,10 +395,12 @@ async def main() -> None:
             global_properties,
             time_provider,
             session_storage,
+            top_level_context.to_logged_in(),
             ReportUseCase(auth_token_stamper, domain_storage_engine),
         ),
         GC(
             session_storage,
+            top_level_context.to_logged_in(),
             GCUseCase(
                 time_provider,
                 invocation_recorder,
@@ -365,6 +411,7 @@ async def main() -> None:
         ),
         Pomodoro(
             session_storage,
+            top_level_context.to_logged_in(),
             NoOpUseCase(
                 auth_token_stamper=auth_token_stamper,
                 storage_engine=domain_storage_engine,
@@ -373,6 +420,7 @@ async def main() -> None:
         # CRUD Commands.
         UserUpdate(
             session_storage=session_storage,
+            top_level_context=top_level_context.to_logged_in(),
             use_case=UserUpdateUseCase(
                 time_provider=time_provider,
                 invocation_recorder=invocation_recorder,
@@ -383,6 +431,7 @@ async def main() -> None:
         ),
         UserShow(
             session_storage=session_storage,
+            top_level_context=top_level_context.to_logged_in(),
             use_case=UserLoadUseCase(
                 auth_token_stamper=auth_token_stamper,
                 storage_engine=domain_storage_engine,
@@ -390,6 +439,7 @@ async def main() -> None:
         ),
         WorkspaceUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             WorkspaceUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -400,6 +450,7 @@ async def main() -> None:
         ),
         WorkspaceChangeDefaultProject(
             session_storage,
+            top_level_context.to_logged_in(),
             WorkspaceChangeDefaultProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -408,13 +459,27 @@ async def main() -> None:
                 domain_storage_engine,
             ),
         ),
+        WorkspaceChangeFeatureFlags(
+            session_storage,
+            top_level_context.to_logged_in(),
+            WorkspaceChangeFeatureFlagsUseCase(
+                time_provider=time_provider,
+                invocation_recorder=invocation_recorder,
+                progress_reporter_factory=progress_reporter_factory,
+                auth_token_stamper=auth_token_stamper,
+                storage_engine=domain_storage_engine,
+                global_properties=global_properties,
+            ),
+        ),
         WorkspaceShow(
             session_storage,
+            top_level_context.to_logged_in(),
             WorkspaceLoadUseCase(auth_token_stamper, domain_storage_engine),
         ),
         VacationCreate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             VacationCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -425,6 +490,7 @@ async def main() -> None:
         ),
         VacationArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             VacationArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -436,6 +502,7 @@ async def main() -> None:
         VacationUpdate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             VacationUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -446,6 +513,7 @@ async def main() -> None:
         ),
         VacationRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             VacationRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -457,10 +525,12 @@ async def main() -> None:
         VacationsShow(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             VacationFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         ProjectCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             ProjectCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -471,6 +541,7 @@ async def main() -> None:
         ),
         ProjectArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             ProjectArchiveUseCase(
                 time_provider=time_provider,
                 invocation_recorder=invocation_recorder,
@@ -481,6 +552,7 @@ async def main() -> None:
         ),
         ProjectUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             ProjectUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -491,10 +563,12 @@ async def main() -> None:
         ),
         ProjectShow(
             session_storage,
+            top_level_context.to_logged_in(),
             ProjectFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         ProjectRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             ProjectRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -506,6 +580,7 @@ async def main() -> None:
         InboxTaskCreate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -516,6 +591,7 @@ async def main() -> None:
         ),
         InboxTaskArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -526,6 +602,7 @@ async def main() -> None:
         ),
         InboxTaskChangeProject(
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskChangeProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -536,6 +613,7 @@ async def main() -> None:
         ),
         InboxTaskAssociateWithBigPlan(
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskAssociateWithBigPlanUseCase(
                 time_provider,
                 invocation_recorder,
@@ -546,6 +624,7 @@ async def main() -> None:
         ),
         InboxTaskRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -557,6 +636,7 @@ async def main() -> None:
         InboxTaskUpdate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -567,10 +647,12 @@ async def main() -> None:
         ),
         InboxTaskShow(
             session_storage,
+            top_level_context.to_logged_in(),
             InboxTaskFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         HabitCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -581,6 +663,7 @@ async def main() -> None:
         ),
         HabitArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -591,6 +674,7 @@ async def main() -> None:
         ),
         HabitChangeProject(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitChangeProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -601,6 +685,7 @@ async def main() -> None:
         ),
         HabitSuspend(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitSuspendUseCase(
                 time_provider,
                 invocation_recorder,
@@ -611,6 +696,7 @@ async def main() -> None:
         ),
         HabitUnsuspend(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitUnsuspendUseCase(
                 time_provider,
                 invocation_recorder,
@@ -621,6 +707,7 @@ async def main() -> None:
         ),
         HabitUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -631,6 +718,7 @@ async def main() -> None:
         ),
         HabitRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             HabitRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -640,11 +728,14 @@ async def main() -> None:
             ),
         ),
         HabitShow(
-            session_storage, HabitFindUseCase(auth_token_stamper, domain_storage_engine)
+            session_storage,
+            top_level_context.to_logged_in(),
+            HabitFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         ChoreCreate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -655,6 +746,7 @@ async def main() -> None:
         ),
         ChoreArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -665,6 +757,7 @@ async def main() -> None:
         ),
         ChoreChangeProject(
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreChangeProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -675,6 +768,7 @@ async def main() -> None:
         ),
         ChoreSuspend(
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreSuspendUseCase(
                 time_provider,
                 invocation_recorder,
@@ -685,6 +779,7 @@ async def main() -> None:
         ),
         ChoreUnsuspend(
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreUnsuspendUseCase(
                 time_provider,
                 invocation_recorder,
@@ -696,6 +791,7 @@ async def main() -> None:
         ChoreUpdate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -706,6 +802,7 @@ async def main() -> None:
         ),
         ChoreRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -717,11 +814,13 @@ async def main() -> None:
         ChoreShow(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             ChoreFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         BigPlanCreate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             BigPlanCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -732,6 +831,7 @@ async def main() -> None:
         ),
         BigPlanArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             BigPlanArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -742,6 +842,7 @@ async def main() -> None:
         ),
         BigPlanRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             BigPlanRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -752,6 +853,7 @@ async def main() -> None:
         ),
         BigPlanChangeProject(
             session_storage,
+            top_level_context.to_logged_in(),
             BigPlanChangeProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -763,6 +865,7 @@ async def main() -> None:
         BigPlanUpdate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             BigPlanUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -773,10 +876,12 @@ async def main() -> None:
         ),
         BigPlanShow(
             session_storage,
+            top_level_context.to_logged_in(),
             BigPlanFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         SmartListCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -787,6 +892,7 @@ async def main() -> None:
         ),
         SmartListArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -797,6 +903,7 @@ async def main() -> None:
         ),
         SmartListUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -807,10 +914,12 @@ async def main() -> None:
         ),
         SmartListShow(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         SmartListsRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -821,6 +930,7 @@ async def main() -> None:
         ),
         SmartListTagCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListTagCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -831,6 +941,7 @@ async def main() -> None:
         ),
         SmartListTagArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListTagArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -841,6 +952,7 @@ async def main() -> None:
         ),
         SmartListTagUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListTagUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -851,6 +963,7 @@ async def main() -> None:
         ),
         SmartListTagRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListTagRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -861,6 +974,7 @@ async def main() -> None:
         ),
         SmartListItemCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListItemCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -871,6 +985,7 @@ async def main() -> None:
         ),
         SmartListItemArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListItemArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -881,6 +996,7 @@ async def main() -> None:
         ),
         SmartListItemUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListItemUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -891,6 +1007,7 @@ async def main() -> None:
         ),
         SmartListItemRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             SmartListItemRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -901,6 +1018,7 @@ async def main() -> None:
         ),
         MetricChangeCollectionProject(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricChangeCollectionProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -911,6 +1029,7 @@ async def main() -> None:
         ),
         MetricCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -921,6 +1040,7 @@ async def main() -> None:
         ),
         MetricArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -931,6 +1051,7 @@ async def main() -> None:
         ),
         MetricUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -941,10 +1062,12 @@ async def main() -> None:
         ),
         MetricShow(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         MetricRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -955,6 +1078,7 @@ async def main() -> None:
         ),
         MetricEntryCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricEntryCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -965,6 +1089,7 @@ async def main() -> None:
         ),
         MetricEntryArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricEntryArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -975,6 +1100,7 @@ async def main() -> None:
         ),
         MetricEntryUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricEntryUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -985,6 +1111,7 @@ async def main() -> None:
         ),
         MetricEntryRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             MetricEntryRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -995,6 +1122,7 @@ async def main() -> None:
         ),
         PersonChangeCatchUpProject(
             session_storage,
+            top_level_context.to_logged_in(),
             PersonChangeCatchUpProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1005,6 +1133,7 @@ async def main() -> None:
         ),
         PersonCreate(
             session_storage,
+            top_level_context.to_logged_in(),
             PersonCreateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1015,6 +1144,7 @@ async def main() -> None:
         ),
         PersonArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             PersonArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1025,6 +1155,7 @@ async def main() -> None:
         ),
         PersonUpdate(
             session_storage,
+            top_level_context.to_logged_in(),
             PersonUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1035,6 +1166,7 @@ async def main() -> None:
         ),
         PersonRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             PersonRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1045,10 +1177,12 @@ async def main() -> None:
         ),
         PersonShow(
             session_storage,
+            top_level_context.to_logged_in(),
             PersonFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         SlackTaskArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             SlackTaskArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1059,6 +1193,7 @@ async def main() -> None:
         ),
         SlackTaskRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             SlackTaskRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1070,6 +1205,7 @@ async def main() -> None:
         SlackTaskUpdate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             SlackTaskUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1080,6 +1216,7 @@ async def main() -> None:
         ),
         SlackTaskChangeGenerationProject(
             session_storage,
+            top_level_context.to_logged_in(),
             SlackTaskChangeGenerationProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1090,10 +1227,12 @@ async def main() -> None:
         ),
         SlackTaskShow(
             session_storage,
+            top_level_context.to_logged_in(),
             SlackTaskFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         EmailTaskArchive(
             session_storage,
+            top_level_context.to_logged_in(),
             EmailTaskArchiveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1104,6 +1243,7 @@ async def main() -> None:
         ),
         EmailTaskRemove(
             session_storage,
+            top_level_context.to_logged_in(),
             EmailTaskRemoveUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1115,6 +1255,7 @@ async def main() -> None:
         EmailTaskUpdate(
             global_properties,
             session_storage,
+            top_level_context.to_logged_in(),
             EmailTaskUpdateUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1125,6 +1266,7 @@ async def main() -> None:
         ),
         EmailTaskChangeGenerationProject(
             session_storage,
+            top_level_context.to_logged_in(),
             EmailTaskChangeGenerationProjectUseCase(
                 time_provider,
                 invocation_recorder,
@@ -1135,6 +1277,7 @@ async def main() -> None:
         ),
         EmailTaskShow(
             session_storage,
+            top_level_context.to_logged_in(),
             EmailTaskFindUseCase(auth_token_stamper, domain_storage_engine),
         ),
         # Test Helper Commands
@@ -1147,6 +1290,7 @@ async def main() -> None:
                 auth_token_stamper,
                 domain_storage_engine,
                 usecase_storage_engine,
+                global_properties,
             ),
         ),
         TestHelperNuke(
@@ -1156,24 +1300,9 @@ async def main() -> None:
                 domain_storage_engine,
             ),
         ),
-    }
+    ]
 
     parser = argparse.ArgumentParser(description=global_properties.description)
-    parser.add_argument(
-        "--min-log-level",
-        dest="min_log_level",
-        default="info",
-        choices=["debug", "info", "warning", "error", "critical"],
-        help="The logging level to use",
-    )
-    parser.add_argument(
-        "--verbose",
-        dest="verbose_logging",
-        action="store_const",
-        default=False,
-        const=True,
-        help="Show more log messages",
-    )
     parser.add_argument(
         "--version",
         dest="just_show_version",
@@ -1189,8 +1318,15 @@ async def main() -> None:
         metavar="{command}",
     )
 
+    commands: List[Command] = no_session_command
+    if top_level_info.user is not None and top_level_info.workspace is not None:
+        commands.extend(in_session_commands)
+
     for command in commands:
-        if command.should_appear_in_global_help:
+        if command.should_appear_in_global_help and (
+            top_level_info.workspace is None
+            or command.is_allowed_for_workspace(top_level_info.workspace)
+        ):
             command_parser = subparsers.add_parser(
                 command.name(),
                 help=command.description(),
@@ -1209,25 +1345,6 @@ async def main() -> None:
         if args.just_show_version:
             print(f"{global_properties.description} {global_properties.version}")
             return
-
-        logging.basicConfig(
-            level=_map_log_level_to_log_class(args.min_log_level),
-            format="%(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[
-                RichHandler(
-                    rich_tracebacks=True,
-                    markup=True,
-                    log_time_format="%Y-%m-%d %H:%M:%S",
-                ),
-            ],
-        )
-
-        if not args.verbose_logging:
-            for handler in logging.root.handlers:
-                handler.addFilter(CommandsAndControllersLoggerFilter())
-
-        await sqlite_connection.prepare()
 
         for command in commands:
             if args.subparser_name != command.name():
@@ -1250,6 +1367,9 @@ async def main() -> None:
     except InputValidationError as err:
         print("Looks like there's something wrong with the command's arguments:")
         print(f"  {err}")
+        sys.exit(1)
+    except FeatureUnavailableError as err:
+        print(f"{err}")
         sys.exit(1)
     except UserAlreadyExistsError:
         print("A user with the same identity already seems to exist here!")
@@ -1315,31 +1435,6 @@ async def main() -> None:
             await aio_session.close()
         finally:
             pass
-
-
-class CommandsAndControllersLoggerFilter(logging.Filter):
-    """A filter for commands and controllers."""
-
-    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
-        """Filtering the log records for commands."""
-        if record.name.startswith("command."):
-            return True
-        return False
-
-
-def _map_log_level_to_log_class(log_level: str) -> int:
-    if log_level == "debug":
-        return logging.DEBUG
-    elif log_level == "info":
-        return logging.INFO
-    elif log_level == "warning":
-        return logging.WARNING
-    elif log_level == "error":
-        return logging.ERROR
-    elif log_level == "critical":
-        return logging.CRITICAL
-    else:
-        raise InputValidationError(f"Invalid log level '{log_level}'")
 
 
 # coverage.process_startup()  # type: ignore

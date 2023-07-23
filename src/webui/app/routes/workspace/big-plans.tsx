@@ -2,7 +2,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
-import { BigPlanStatus } from "jupiter-gen";
+import { BigPlanStatus, Feature } from "jupiter-gen";
 import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { ProjectTag } from "~/components/project-tag";
@@ -26,7 +26,7 @@ import {
   Typography,
 } from "@mui/material";
 import { DateTime } from "luxon";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import {
   EntityNameComponent,
@@ -41,6 +41,7 @@ import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -48,6 +49,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -58,17 +60,7 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: false,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
   const response = await getLoggedInApiClient(session).bigPlan.findBigPlan({
     allow_archived: false,
@@ -102,7 +94,15 @@ export default function BigPlans() {
     entriesByRefId.set(entry.big_plan.ref_id.the_id, entry);
   }
 
-  const [selectedView, setSelectedView] = useState(View.TIMELINE_BY_PROJECT);
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
+  const initialView = isFeatureAvailable(
+    topLevelInfo.workspace,
+    Feature.PROJECTS
+  )
+    ? View.TIMELINE_BY_PROJECT
+    : View.TIMELINE;
+  const [selectedView, setSelectedView] = useState(initialView);
 
   const archiveBigPlanFetch = useFetcher();
 
@@ -139,16 +139,18 @@ export default function BigPlans() {
 
           {isBigScreen && (
             <ButtonGroup>
-              <Button
-                variant={
-                  selectedView === View.TIMELINE_BY_PROJECT
-                    ? "contained"
-                    : "outlined"
-                }
-                onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-              >
-                Timeline by Project
-              </Button>
+              {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+                <Button
+                  variant={
+                    selectedView === View.TIMELINE_BY_PROJECT
+                      ? "contained"
+                      : "outlined"
+                  }
+                  onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
+                >
+                  Timeline by Project
+                </Button>
+              )}
               <Button
                 variant={
                   selectedView === View.TIMELINE ? "contained" : "outlined"
@@ -181,16 +183,23 @@ export default function BigPlans() {
                 <DialogTitle>Filters</DialogTitle>
                 <DialogContent>
                   <ButtonGroup orientation="vertical">
-                    <Button
-                      variant={
-                        selectedView === View.TIMELINE_BY_PROJECT
-                          ? "contained"
-                          : "outlined"
-                      }
-                      onClick={() => setSelectedView(View.TIMELINE_BY_PROJECT)}
-                    >
-                      Timeline by Project
-                    </Button>
+                    {isFeatureAvailable(
+                      topLevelInfo.workspace,
+                      Feature.PROJECTS
+                    ) && (
+                      <Button
+                        variant={
+                          selectedView === View.TIMELINE_BY_PROJECT
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() =>
+                          setSelectedView(View.TIMELINE_BY_PROJECT)
+                        }
+                      >
+                        Timeline by Project
+                      </Button>
+                    )}
                     <Button
                       variant={
                         selectedView === View.TIMELINE
@@ -221,37 +230,38 @@ export default function BigPlans() {
           )}
         </ActionHeader>
 
-        {selectedView === View.TIMELINE_BY_PROJECT && (
-          <>
-            {loaderData.allProjects.map((p) => {
-              const theProjects = sortedBigPlans.filter(
-                (se) =>
-                  entriesByRefId.get(se.ref_id.the_id)?.big_plan.project_ref_id
-                    .the_id === p.ref_id.the_id
-              );
+        {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) &&
+          selectedView === View.TIMELINE_BY_PROJECT && (
+            <>
+              {loaderData.allProjects.map((p) => {
+                const theProjects = sortedBigPlans.filter(
+                  (se) =>
+                    entriesByRefId.get(se.ref_id.the_id)?.big_plan
+                      .project_ref_id.the_id === p.ref_id.the_id
+                );
 
-              if (theProjects.length === 0) {
-                return null;
-              }
+                if (theProjects.length === 0) {
+                  return null;
+                }
 
-              return (
-                <Box key={p.ref_id.the_id}>
-                  <Divider>
-                    <Typography variant="h6">{p.name.the_name}</Typography>
-                  </Divider>
-                  <>
-                    {isBigScreen && (
-                      <BigScreenTimeline bigPlans={theProjects} />
-                    )}
-                    {!isBigScreen && (
-                      <SmallScreenTimeline bigPlans={theProjects} />
-                    )}
-                  </>
-                </Box>
-              );
-            })}
-          </>
-        )}
+                return (
+                  <Box key={p.ref_id.the_id}>
+                    <Divider>
+                      <Typography variant="h6">{p.name.the_name}</Typography>
+                    </Divider>
+                    <>
+                      {isBigScreen && (
+                        <BigScreenTimeline bigPlans={theProjects} />
+                      )}
+                      {!isBigScreen && (
+                        <SmallScreenTimeline bigPlans={theProjects} />
+                      )}
+                    </>
+                  </Box>
+                );
+              })}
+            </>
+          )}
 
         {selectedView === View.TIMELINE && (
           <>
@@ -262,6 +272,7 @@ export default function BigPlans() {
 
         {selectedView === View.LIST && (
           <List
+            topLevelInfo={topLevelInfo}
             bigPlans={sortedBigPlans}
             entriesByRefId={entriesByRefId}
             onArchiveBigPlan={archiveBigPlan}
@@ -458,12 +469,18 @@ const TimelineLink = styled(Link)<TimelineLinkProps>(
 );
 
 interface ListProps {
+  topLevelInfo: TopLevelInfo;
   bigPlans: Array<BigPlan>;
   entriesByRefId: Map<string, BigPlanFindResultEntry>;
   onArchiveBigPlan: (bigPlan: BigPlan) => void;
 }
 
-function List({ bigPlans, entriesByRefId, onArchiveBigPlan }: ListProps) {
+function List({
+  topLevelInfo,
+  bigPlans,
+  entriesByRefId,
+  onArchiveBigPlan,
+}: ListProps) {
   return (
     <EntityStack>
       {bigPlans.map((entry) => (
@@ -478,11 +495,13 @@ function List({ bigPlans, entriesByRefId, onArchiveBigPlan }: ListProps) {
           </EntityLink>
           <Divider />
           <BigPlanStatusTag status={entry.status} />
-          <ProjectTag
-            project={
-              entriesByRefId.get(entry.ref_id.the_id)?.project as Project
-            }
-          />
+          {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            <ProjectTag
+              project={
+                entriesByRefId.get(entry.ref_id.the_id)?.project as Project
+              }
+            />
+          )}
 
           {entry.actionable_date && (
             <ADateTag label="Actionable Date" date={entry.actionable_date} />

@@ -14,7 +14,7 @@ poetry run pydocstyle --config=./scripts/lint/pydocstyle src/core src/cli src/we
 poetry run vulture src/core src/cli src/webapi tests \
     --exclude=migrations/ \
     --ignore-decorators=@app.post,@app.get,@app.exception_handler,@app.on_event,@app.middleware,@app.websocket \
-    --ignore-names sync_sqlite_db_url,COUNT,MONETARY_AMOUNT,WEIGHT,icon,branch_key,'Stub*',new_email_task,new_slack_task,EASY,MEDIUM,HARD,ACQUAINTANCE,SCHOOL_BUDDY,WORK_BUDDY,COLLEAGUE,OTHER,VACATIONS,PROJECTS,SMART_LISTS,STAGING,LOCAL,URGENT,IMPORTANT_AND_URGENT,REGULAR,IMPORTANT
+    --ignore-names sync_sqlite_db_url,COUNT,MONETARY_AMOUNT,WEIGHT,icon,branch_key,'Stub*',new_email_task,new_slack_task,EASY,MEDIUM,HARD,ACQUAINTANCE,SCHOOL_BUDDY,WORK_BUDDY,COLLEAGUE,OTHER,VACATIONS,PROJECTS,SMART_LISTS,STAGING,LOCAL,URGENT,IMPORTANT_AND_URGENT,REGULAR,IMPORTANT,HOSTED_GLOBAL,default_feature_flags,feature_hack
 
 # TS+Node
 (cd src/webui && npx tsc)

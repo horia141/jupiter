@@ -15,5 +15,6 @@ export type Workspace = {
     archived_time: Timestamp;
     name: WorkspaceName;
     default_project_ref_id: EntityId;
+    feature_flags: Record<string, boolean>;
 };
 

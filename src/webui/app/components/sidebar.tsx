@@ -10,7 +10,10 @@ import {
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Feature } from "jupiter-gen";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { TopLevelInfo } from "~/top-level-context";
 
 const BIG_SCREEN_WIDTH = "240px";
 const BIG_SCREEN_ANIMATION_START = "-240px";
@@ -21,6 +24,7 @@ const SMALL_SCREEN_ANIMATION_END = "0vw";
 
 interface SidebarProps {
   showSidebar: boolean;
+  topLevelInfo: TopLevelInfo;
   onClickForNavigation?: () => void;
 }
 
@@ -81,117 +85,174 @@ export default function Sidebar(props: SidebarProps) {
               </ListItemButton>
             </ListItem>
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/habits"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>💪</ListItemIcon>
-                <ListItemText primary="Habits" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.HABITS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/habits"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>💪</ListItemIcon>
+                  <ListItemText primary="Habits" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/chores"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>♻️</ListItemIcon>
-                <ListItemText primary="Chores" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.CHORES
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/chores"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>♻️</ListItemIcon>
+                  <ListItemText primary="Chores" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/big-plans"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>🌍</ListItemIcon>
-                <ListItemText primary="Big Plans" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.BIG_PLANS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/big-plans"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>🌍</ListItemIcon>
+                  <ListItemText primary="Big Plans" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/vacations"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>🌴</ListItemIcon>
-                <ListItemText primary="Vacations" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.VACATIONS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/vacations"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>🌴</ListItemIcon>
+                  <ListItemText primary="Vacations" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/projects"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>💡</ListItemIcon>
-                <ListItemText primary="Projects" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.PROJECTS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/projects"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>💡</ListItemIcon>
+                  <ListItemText primary="Projects" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/smart-lists"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>🏛️</ListItemIcon>
-                <ListItemText primary="Smart Lists" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.SMART_LISTS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/smart-lists"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>🏛️</ListItemIcon>
+                  <ListItemText primary="Smart Lists" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/metrics"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>📈</ListItemIcon>
-                <ListItemText primary="Metrics" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.METRICS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/metrics"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>📈</ListItemIcon>
+                  <ListItemText primary="Metrics" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/persons"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>👨</ListItemIcon>
-                <ListItemText primary="Persons" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.PERSONS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/persons"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>👨</ListItemIcon>
+                  <ListItemText primary="Persons" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <Divider textAlign="left">Push Integrations</Divider>
+            {(isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.HABITS
+            ) ||
+              isFeatureAvailable(
+                props.topLevelInfo.workspace,
+                Feature.EMAIL_TASKS
+              )) && <Divider textAlign="left">Push Integrations</Divider>}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/push-integrations/slack-tasks"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>💬</ListItemIcon>
-                <ListItemText primary="Slack Tasks" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.SLACK_TASKS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/push-integrations/slack-tasks"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>💬</ListItemIcon>
+                  <ListItemText primary="Slack Tasks" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
-            <ListItem disablePadding>
-              <ListItemButton
-                to="/workspace/push-integrations/email-tasks"
-                component={Link}
-                onClick={onClickNavigation}
-              >
-                <ListItemIcon>📧</ListItemIcon>
-                <ListItemText primary="Email Tasks" />
-              </ListItemButton>
-            </ListItem>
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.EMAIL_TASKS
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/push-integrations/email-tasks"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>📧</ListItemIcon>
+                  <ListItemText primary="Email Tasks" />
+                </ListItemButton>
+              </ListItem>
+            )}
 
             <Divider textAlign="left">Tools</Divider>
 

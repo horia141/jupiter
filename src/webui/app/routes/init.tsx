@@ -1,4 +1,8 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Autocomplete,
   Button,
   ButtonGroup,
@@ -11,19 +15,29 @@ import {
   OutlinedInput,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useTransition } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, Feature } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients";
+import { FeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { StandaloneCard } from "~/components/infra/standalone-card";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { commitSession, getSession } from "~/sessions";
 
@@ -35,28 +49,39 @@ const WorkspaceInitFormSchema = {
   authPasswordRepeat: z.string(),
   workspaceName: z.string(),
   workspaceFirstProjectName: z.string(),
+  workspaceFeatureFlags: z.array(z.nativeEnum(Feature)),
 };
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  if (session.has("authTokenExt")) {
-    const apiClient = getGuestApiClient(session);
-    const result = await apiClient.loadUserAndWorkspace.loadUserAndWorkspace(
-      {}
-    );
-    if (result.user || result.workspace) {
-      return redirect("/workspace");
-    }
+  const apiClient = getGuestApiClient(session);
+  const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
+  if (result.user || result.workspace) {
+    return redirect("/workspace");
   }
 
-  return json({});
+  return json({
+    defaultWorkspaceName: result.deafult_workspace_name,
+    defaultFirstProjectName: result.default_first_project_name,
+    featureFlagControls: result.feature_flag_controls,
+    defaultFeatureFlags: result.default_feature_flags,
+  });
 }
 
 // @secureFn
 export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, WorkspaceInitFormSchema);
+
+  const workspaceFeatureFlags: Record<string, boolean> = {};
+  for (const feature of Object.values(Feature)) {
+    if (form.workspaceFeatureFlags.find((v) => v == feature)) {
+      workspaceFeatureFlags[feature] = true;
+    } else {
+      workspaceFeatureFlags[feature] = false;
+    }
+  }
 
   try {
     const result = await getGuestApiClient(session).init.init({
@@ -69,6 +94,7 @@ export async function action({ request }: ActionArgs) {
       workspace_first_project_name: {
         the_name: form.workspaceFirstProjectName,
       },
+      workspace_feature_flags: workspaceFeatureFlags,
     });
 
     session.set("authTokenExt", result.auth_token_ext);
@@ -94,6 +120,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function WorkspaceInit() {
+  const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
@@ -102,11 +129,13 @@ export default function WorkspaceInit() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
 
+  const globalProperties = useContext(GlobalPropertiesContext);
+
   return (
     <StandaloneCard>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="New Account & Workspace" />
           <CardContent>
             <Stack spacing={2} useFlexGap>
@@ -193,33 +222,61 @@ export default function WorkspaceInit() {
                 />
               </FormControl>
 
-              <FormControl fullWidth>
-                <InputLabel id="workspaceName">Workspace Name</InputLabel>
-                <OutlinedInput
-                  label="Workspace Name"
-                  name="workspaceName"
-                  readOnly={!inputsEnabled}
-                  defaultValue={""}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/workspace_name"
-                />
-              </FormControl>
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography>Advanced</Typography>
+                </AccordionSummary>
 
-              <FormControl fullWidth>
-                <InputLabel id="name">First Project Name</InputLabel>
-                <OutlinedInput
-                  label="First Project Name"
-                  name="workspaceFirstProjectName"
-                  readOnly={!inputsEnabled}
-                  defaultValue={""}
-                />
-                <FieldError
-                  actionResult={actionData}
-                  fieldName="/workspacefirst_project_name"
-                />
-              </FormControl>
+                <AccordionDetails>
+                  <Stack spacing={2} useFlexGap>
+                    <FormControl fullWidth>
+                      <InputLabel id="workspaceName">Workspace Name</InputLabel>
+                      <OutlinedInput
+                        label="Workspace Name"
+                        name="workspaceName"
+                        readOnly={!inputsEnabled}
+                        defaultValue={loaderData.defaultWorkspaceName.the_name}
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/workspace_name"
+                      />
+                    </FormControl>
+
+                    <FormControl fullWidth>
+                      <InputLabel id="name">First Project Name</InputLabel>
+                      <OutlinedInput
+                        label="First Project Name"
+                        name="workspaceFirstProjectName"
+                        readOnly={!inputsEnabled}
+                        defaultValue={
+                          loaderData.defaultFirstProjectName.the_name
+                        }
+                      />
+                      <FieldError
+                        actionResult={actionData}
+                        fieldName="/workspace_first_project_name"
+                      />
+                    </FormControl>
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
+
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography>Feature Flags</Typography>
+                </AccordionSummary>
+
+                <AccordionDetails>
+                  <FeatureFlagsEditor
+                    name="workspaceFeatureFlags"
+                    inputsEnabled={inputsEnabled}
+                    featureFlagsControls={loaderData.featureFlagControls}
+                    defaultFeatureFlags={loaderData.defaultFeatureFlags}
+                    hosting={globalProperties.hosting}
+                  />
+                </AccordionDetails>
+              </Accordion>
             </Stack>
           </CardContent>
 

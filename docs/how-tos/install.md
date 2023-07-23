@@ -5,14 +5,14 @@
 The simplest way to use Jupiter is by using the [web application](https://jupiter-webui.onrender.com/).
 If this is the first time you're visiting you'll be prompted to create an account.
 
-By using the web application you will be running in [hosted mode](concepts/hosted-vs-local-mode.md).
+By using the web application you will be running in [hosted mode](../concepts/hosted-vs-local-mode.md).
 
 ## MacOS Dmg Local
 
 For MacOS, a simple way of installing the Jupiter CLI is via a `dmg` archive published
 together with a release. You can check them [in the release page](https://github.com/horia141/jupiter/releases).
 
-![Releases](assets/install-release.png)
+![Releases](../assets/install-release.png)
 
 You can then download and install it into your `Applications` folder by dragging and dropping it
 like any other application.
@@ -27,7 +27,7 @@ $ /Applications/Jupiter.app/Contents/MacOS/jupiter init --help
 
 You can of course add an alias to your shell about it.
 
-By using this approach you will be running in [local mode](concepts/hosted-vs-local-mode.md).
+By using this approach you will be running in [local mode](../concepts/hosted-vs-local-mode.md).
 
 ## GitHub (Advanced)
 
@@ -75,4 +75,4 @@ $ cd src/cli # still in jupiter root
 $ SQLITE_DB_URL=sqlite+aiosqlite:///~/my-jupiter-work-dir python -m jupiter.cli.jupiter --help
 ```
 
-By using this approach you will be running in [local mode](concepts/hosted-vs-local-mode.md).
+By using this approach you will be running in [local mode](../concepts/hosted-vs-local-mode.md).

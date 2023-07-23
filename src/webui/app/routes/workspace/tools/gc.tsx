@@ -12,6 +12,7 @@ import { json } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, SyncTarget } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -26,6 +27,7 @@ import {
 import { fixSelectOutputToEnum, selectZod } from "~/logic/select";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const GCFormSchema = {
   gcTargets: selectZod(z.nativeEnum(SyncTarget)),
@@ -60,17 +62,19 @@ export async function action({ request }: ActionArgs) {
 export default function GC() {
   const transition = useTransition();
   const actionData = useActionData<typeof action>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
 
   return (
     <ToolCard returnLocation="/workspace">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <FormControl fullWidth>
             <InputLabel id="gcTargets">Garbage Collect Targets</InputLabel>
             <SyncTargetSelect
+              topLevelInfo={topLevelInfo}
               labelId="gcTargets"
               label="Garbage Collect Targets"
               name="gcTargets"

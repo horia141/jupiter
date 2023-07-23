@@ -22,6 +22,7 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { InboxTask } from "jupiter-gen";
 import { ApiError, Difficulty, Eisen, InboxTaskStatus } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -39,6 +40,7 @@ import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -193,6 +195,7 @@ export default function SlackTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled =
     transition.state === "idle" && !loaderData.slackTask.archived;
@@ -232,8 +235,8 @@ export default function SlackTask() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/push-integrations/slack-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -431,6 +434,7 @@ export default function SlackTask() {
 
       {loaderData.inboxTask && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,

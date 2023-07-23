@@ -1,4 +1,5 @@
 ENV=staging
+HOSTING=local
 BASENAME=jupiter-cli
 DESCRIPTION="The CLI client for Jupiter"
 DOCS_URL=https://jupiter-goals.readthedocs.io

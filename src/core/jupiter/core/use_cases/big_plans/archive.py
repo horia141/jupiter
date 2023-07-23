@@ -1,7 +1,9 @@
 """The command for archiving a big plan."""
 from dataclasses import dataclass
+from typing import Iterable
 
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -23,6 +25,11 @@ class BigPlanArchiveArgs(UseCaseArgsBase):
 
 class BigPlanArchiveUseCase(AppLoggedInMutationUseCase[BigPlanArchiveArgs, None]):
     """The command for archiving a big plan."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.BIG_PLANS
 
     async def _execute(
         self,

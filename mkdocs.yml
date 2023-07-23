@@ -23,6 +23,7 @@ nav:
           - 'Clients': 'concepts/clients.md'
           - 'Accounts': 'concepts/accounts.md'
           - 'Workspace': 'concepts/workspaces.md'
+          - 'Feature Flags': 'concepts/feature-flags.md'
           - 'Inbox Tasks': 'concepts/inbox-tasks.md'
           - 'Habits': 'concepts/habits.md'
           - 'Chores': 'concepts/chores.md'

@@ -3,15 +3,15 @@
 /* eslint-disable */
 
 /**
- * What exactly to generate, gc, or look at systematicallym.
+ * What exactly to generate, gc, or look at systematically.
  */
 export enum SyncTarget {
-    VACATIONS = 'vacations',
-    PROJECTS = 'projects',
     INBOX_TASKS = 'inbox-tasks',
     HABITS = 'habits',
     CHORES = 'chores',
     BIG_PLANS = 'big-plans',
+    VACATIONS = 'vacations',
+    PROJECTS = 'projects',
     SMART_LISTS = 'smart-lists',
     METRICS = 'metrics',
     PERSONS = 'persons',

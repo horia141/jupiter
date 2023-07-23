@@ -6,6 +6,7 @@ from jupiter.cli.command.command import TestHelperCommand
 from jupiter.cli.session_storage import SessionStorage
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
+from jupiter.core.domain.features import Feature, FeatureFlags
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
@@ -84,6 +85,20 @@ class TestHelperClearAll(TestHelperCommand):
             required=False,
             help="The project key to use as a general default",
         )
+        parser.add_argument(
+            "--workspace-feature",
+            dest="workspace_feature_flag_enabled",
+            default=[],
+            action="append",
+            choices=Feature.all_values(),
+        )
+        parser.add_argument(
+            "--workspace-no-feature",
+            dest="workspace_feature_flag_disable",
+            default=[],
+            action="append",
+            choices=Feature.all_values(),
+        )
 
     async def run(
         self,
@@ -99,6 +114,11 @@ class TestHelperClearAll(TestHelperCommand):
         workspace_default_project_ref_id = EntityId.from_raw(
             args.workspace_default_project_ref_id
         )
+        workspace_feature_flags: FeatureFlags = {}
+        for enabled_feature in args.workspace_feature_flag_enabled:
+            workspace_feature_flags[Feature(enabled_feature)] = True
+        for disabled_feature in args.workspace_feature_flag_disable:
+            workspace_feature_flags[Feature(disabled_feature)] = False
 
         session_info = self._session_storage.load()
 
@@ -112,5 +132,6 @@ class TestHelperClearAll(TestHelperCommand):
                 auth_new_password_repeat=auth_new_password_repeat,
                 workspace_name=workspace_name,
                 workspace_default_project_ref_id=workspace_default_project_ref_id,
+                workspace_feature_flags=workspace_feature_flags,
             ),
         )

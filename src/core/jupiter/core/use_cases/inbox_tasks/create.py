@@ -1,11 +1,12 @@
 """The command for creating a inbox task."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -47,6 +48,11 @@ class InboxTaskCreateUseCase(
 ):
     """The command for creating a inbox task."""
 
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.INBOX_TASKS
+
     async def _execute(
         self,
         progress_reporter: ContextProgressReporter,
@@ -55,6 +61,17 @@ class InboxTaskCreateUseCase(
     ) -> InboxTaskCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.project_ref_id is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
+        if (
+            not workspace.is_feature_available(Feature.BIG_PLANS)
+            and args.big_plan_ref_id is not None
+        ):
+            raise FeatureUnavailableError(Feature.BIG_PLANS)
 
         async with progress_reporter.start_creating_entity(
             "inbox task",

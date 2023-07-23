@@ -14,17 +14,18 @@ import {
 } from "@mui/material";
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import type {
-  ADate,
-  BigPlan,
-  Chore,
-  EmailTask,
-  Habit,
-  InboxTask,
-  InboxTaskStatus,
-  Metric,
-  Person,
-  SlackTask,
+import {
+  Feature,
+  type ADate,
+  type BigPlan,
+  type Chore,
+  type EmailTask,
+  type Habit,
+  type InboxTask,
+  type InboxTaskStatus,
+  type Metric,
+  type Person,
+  type SlackTask,
 } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -35,7 +36,9 @@ import type {
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
 import { isCompleted } from "~/logic/domain/inbox-task-status";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { TopLevelInfo } from "~/top-level-context";
 import { ADateTag } from "./adate-tag";
 import { BigPlanTag } from "./big-plan-tag";
 import { ChoreTag } from "./chore-tag";
@@ -66,6 +69,7 @@ export interface InboxTaskShowOptions {
 }
 
 export interface InboxTaskCardProps {
+  topLevelInfo: TopLevelInfo;
   compact?: boolean;
   allowSwipe?: boolean;
   showOptions: InboxTaskShowOptions;
@@ -177,9 +181,14 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
             {props.showOptions.showSource && (
               <InboxTaskSourceTag source={props.inboxTask.source} />
             )}
-            {props.showOptions.showProject && props.parent?.project && (
-              <ProjectTag project={props.parent?.project} />
-            )}
+            {isFeatureAvailable(
+              props.topLevelInfo.workspace,
+              Feature.PROJECTS
+            ) &&
+              props.showOptions.showProject &&
+              props.parent?.project && (
+                <ProjectTag project={props.parent?.project} />
+              )}
             {props.showOptions.showEisen && (
               <EisenTag
                 eisen={props.optimisticState?.eisen ?? props.inboxTask.eisen}
@@ -200,31 +209,66 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
             )}
             {props.showOptions.showParent && (
               <>
-                {props.parent && props.parent.bigPlan && (
-                  <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
-                )}
-                {props.parent && props.parent.habit && (
-                  <HabitTag habit={props.parent.habit as Habit} />
-                )}
-                {props.parent && props.parent.chore && (
-                  <ChoreTag chore={props.parent.chore as Chore} />
-                )}
-                {props.parent && props.parent.metric && (
-                  <MetricTag metric={props.parent.metric as Metric} />
-                )}
-                {props.parent && props.parent.person && (
-                  <PersonTag person={props.parent.person as Person} />
-                )}
-                {props.parent && props.parent.slackTask && (
-                  <SlackTaskTag
-                    slackTask={props.parent.slackTask as SlackTask}
-                  />
-                )}
-                {props.parent && props.parent.emailTask && (
-                  <EmailTaskTag
-                    emailTask={props.parent.emailTask as EmailTask}
-                  />
-                )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.BIG_PLANS
+                ) &&
+                  props.parent &&
+                  props.parent.bigPlan && (
+                    <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
+                  )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.HABITS
+                ) &&
+                  props.parent &&
+                  props.parent.habit && (
+                    <HabitTag habit={props.parent.habit as Habit} />
+                  )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.CHORES
+                ) &&
+                  props.parent &&
+                  props.parent.chore && (
+                    <ChoreTag chore={props.parent.chore as Chore} />
+                  )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.METRICS
+                ) &&
+                  props.parent &&
+                  props.parent.metric && (
+                    <MetricTag metric={props.parent.metric as Metric} />
+                  )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.PERSONS
+                ) &&
+                  props.parent &&
+                  props.parent.person && (
+                    <PersonTag person={props.parent.person as Person} />
+                  )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.SLACK_TASKS
+                ) &&
+                  props.parent &&
+                  props.parent.slackTask && (
+                    <SlackTaskTag
+                      slackTask={props.parent.slackTask as SlackTask}
+                    />
+                  )}
+                {isFeatureAvailable(
+                  props.topLevelInfo.workspace,
+                  Feature.EMAIL_TASKS
+                ) &&
+                  props.parent &&
+                  props.parent.emailTask && (
+                    <EmailTaskTag
+                      emailTask={props.parent.emailTask as EmailTask}
+                    />
+                  )}
               </>
             )}
           </TagsContained>

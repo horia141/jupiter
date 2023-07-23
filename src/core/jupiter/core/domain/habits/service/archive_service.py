@@ -1,5 +1,4 @@
 """Shared service for archiving a habit."""
-import logging
 from typing import Final
 
 from jupiter.core.domain.habits.habit import Habit
@@ -7,8 +6,6 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import ContextProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
-
-LOGGER = logging.getLogger(__name__)
 
 
 class HabitArchiveService:

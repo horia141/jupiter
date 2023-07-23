@@ -4,10 +4,12 @@ from typing import Final
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -28,10 +30,11 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
         self,
         global_properties: GlobalProperties,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: ChoreCreateUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
 
     @staticmethod
@@ -46,12 +49,13 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_id",
-            required=False,
-            help="The project to add the task to",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_id",
+                required=False,
+                help="The project to add the task to",
+            )
         parser.add_argument(
             "--name",
             dest="name",
@@ -140,9 +144,12 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        project_ref_id = (
-            EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_id = (
+                EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
+            )
+        else:
+            project_ref_id = None
         name = ChoreName.from_raw(args.name)
         period = RecurringTaskPeriod.from_raw(args.period)
         eisen = Eisen.from_raw(args.eisen) if args.eisen else None

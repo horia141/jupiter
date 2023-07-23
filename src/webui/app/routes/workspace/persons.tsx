@@ -3,7 +3,8 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { Person } from "jupiter-gen";
-import { PersonRelationship } from "jupiter-gen";
+import { Feature, PersonRelationship } from "jupiter-gen";
+import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { EisenTag } from "~/components/eisen-tag";
@@ -18,12 +19,14 @@ import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { PersonBirthdayTag } from "~/components/person-birthday-tag";
 import { PersonRelationshipTag } from "~/components/person-relationship-tag";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -45,6 +48,8 @@ export async function loader({ request }: LoaderArgs) {
 export default function Persons() {
   const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
@@ -76,13 +81,15 @@ export default function Persons() {
             >
               Create
             </Button>
-            <Button
-              variant="outlined"
-              to={`/workspace/persons/settings`}
-              component={Link}
-            >
-              Settings
-            </Button>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <Button
+                variant="outlined"
+                to={`/workspace/persons/settings`}
+                component={Link}
+              >
+                Settings
+              </Button>
+            )}
           </ButtonGroup>
         </ActionHeader>
 

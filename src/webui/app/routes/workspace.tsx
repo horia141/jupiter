@@ -1,5 +1,4 @@
 import { Settings } from "@mui/icons-material";
-import HelpCenterIcon from "@mui/icons-material/HelpCenter";
 import Logout from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -29,6 +28,7 @@ import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
+import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { TrunkPanel } from "~/components/infra/trunk-panel";
 import ProgressReporter from "~/components/progress-reporter";
@@ -38,12 +38,13 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const client = getLoggedInApiClient(session);
-  const response = await client.loadUserAndWorkspace.loadUserAndWorkspace({});
+  const response = await client.loadTopLevelInfo.loadTopLevelInfo({});
 
   if (!response.user || !response.workspace) {
     return redirect("/init");
@@ -53,6 +54,7 @@ export async function loader({ request }: LoaderArgs) {
     await client.loadProgressReporterToken.loadProgressReporterToken({});
 
   return json({
+    featureFlagControls: response.feature_flag_controls,
     user: response.user,
     workspace: response.workspace,
     progressReporterToken:
@@ -80,6 +82,12 @@ export default function Workspace() {
   };
   const handleAccountMenuClose = () => {
     setAccountMenuAnchorEl(null);
+  };
+
+  const topLevelInfo = {
+    featureFlagControls: loaderData.featureFlagControls,
+    user: loaderData.user,
+    workspace: loaderData.workspace,
   };
 
   return (
@@ -111,15 +119,7 @@ export default function Workspace() {
 
           <ProgressReporter token={loaderData.progressReporterToken} />
 
-          <IconButton
-            component={"a"}
-            size="large"
-            color="inherit"
-            href={globalProperties.docsUrl}
-            target="_blank"
-          >
-            <HelpCenterIcon />
-          </IconButton>
+          <DocsHelp size="medium" subject={DocsHelpSubject.ROOT} />
 
           <IconButton
             onClick={handleAccountMenuClick}
@@ -197,13 +197,16 @@ export default function Workspace() {
 
       <Sidebar
         showSidebar={showSidebar}
+        topLevelInfo={topLevelInfo}
         onClickForNavigation={() => {
           if (isBigScreen) return;
           setShowSidebar(false);
         }}
       />
 
-      <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
+      <TopLevelInfoContext.Provider value={topLevelInfo}>
+        <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
+      </TopLevelInfoContext.Provider>
     </Box>
   );
 }

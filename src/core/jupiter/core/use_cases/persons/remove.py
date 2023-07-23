@@ -1,6 +1,8 @@
 """Remove a person."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -22,6 +24,11 @@ class PersonRemoveArgs(UseCaseArgsBase):
 
 class PersonRemoveUseCase(AppLoggedInMutationUseCase[PersonRemoveArgs, None]):
     """The command for removing a person."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PERSONS
 
     async def _execute(
         self,

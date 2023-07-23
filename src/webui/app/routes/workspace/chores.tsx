@@ -3,7 +3,8 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { Chore, ChoreFindResultEntry, Project } from "jupiter-gen";
-import { Eisen, RecurringTaskPeriod } from "jupiter-gen";
+import { Eisen, Feature, RecurringTaskPeriod } from "jupiter-gen";
+import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import Check from "~/components/check";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -19,12 +20,14 @@ import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortChoresNaturally } from "~/logic/domain/chore";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -43,6 +46,8 @@ export async function loader({ request }: LoaderArgs) {
 export default function Chores() {
   const outlet = useOutlet();
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
+
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
@@ -97,7 +102,10 @@ export default function Chores() {
               >
                 <EntityLink to={`/workspace/chores/${chore.ref_id.the_id}`}>
                   <EntityNameComponent name={chore.name} />
-                  <ProjectTag project={entry.project as Project} />
+                  {isFeatureAvailable(
+                    topLevelInfo.workspace,
+                    Feature.PROJECTS
+                  ) && <ProjectTag project={entry.project as Project} />}
                   <Check isDone={!chore.suspended} label="Active" />
                   <PeriodTag period={chore.gen_params.period} />
                   {chore.gen_params.eisen && (

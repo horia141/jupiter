@@ -41,9 +41,7 @@ export async function loader({ request }: LoaderArgs) {
 
   if (session.has("authTokenExt")) {
     const apiClient = getGuestApiClient(session);
-    const result = await apiClient.loadUserAndWorkspace.loadUserAndWorkspace(
-      {}
-    );
+    const result = await apiClient.loadTopLevelInfo.loadTopLevelInfo({});
     if (result.user || result.workspace) {
       return redirect("/workspace");
     }
@@ -103,8 +101,8 @@ export default function Login() {
   return (
     <StandaloneCard>
       <Form method="post">
-        <GlobalError actionResult={actionData} />
         <Card>
+          <GlobalError actionResult={actionData} />
           <CardHeader title="Login" />
           <CardContent>
             <Stack spacing={2} useFlexGap>

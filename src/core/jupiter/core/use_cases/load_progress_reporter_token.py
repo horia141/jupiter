@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -24,6 +25,7 @@ class LoadProgressReporterTokenResult(UseCaseResultBase):
     progress_reporter_token_ext: AuthTokenExt
 
 
+@secure_class
 class LoadProgressReporterTokenUseCase(
     AppLoggedInReadonlyUseCase[
         LoadProgressReporterTokenArgs, LoadProgressReporterTokenResult

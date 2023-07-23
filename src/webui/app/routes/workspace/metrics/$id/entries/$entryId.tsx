@@ -134,8 +134,8 @@ export default function MetricEntry() {
       enableArchiveButton={inputsEnabled}
       returnLocation={`/workspace/metrics/${id}`}
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <CollectionTimeDiffTag

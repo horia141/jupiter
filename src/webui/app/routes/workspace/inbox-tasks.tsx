@@ -82,6 +82,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -148,6 +149,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 };
 
 export default function InboxTasks() {
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const outlet = useOutlet();
   const { entries } = useLoaderDataSafeForAnimation<typeof loader>();
 
@@ -572,6 +574,7 @@ export default function InboxTasks() {
 
         {selectedView === View.SWIFTVIEW && (
           <SwiftView
+            topLevelInfo={topLevelInfo}
             isBigScreen={isBigScreen}
             inboxTasks={sortedInboxTasks}
             optimisticUpdates={optimisticUpdates}
@@ -587,6 +590,7 @@ export default function InboxTasks() {
             {isBigScreen && (
               <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <BigScreenKanbanByEisen
+                  topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
                   optimisticUpdates={optimisticUpdates}
                   inboxTasksByRefId={inboxTasksByRefId}
@@ -601,6 +605,7 @@ export default function InboxTasks() {
 
             {!isBigScreen && (
               <SmallScreenKanbanByEisen
+                topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
                 moreInfoByRefId={entriesByRefId}
@@ -619,6 +624,7 @@ export default function InboxTasks() {
             {isBigScreen && (
               <DragDropContext onDragEnd={onDragEnd}>
                 <BigScreenKanban
+                  topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
                   optimisticUpdates={optimisticUpdates}
                   inboxTasksByRefId={inboxTasksByRefId}
@@ -632,6 +638,7 @@ export default function InboxTasks() {
 
             {!isBigScreen && (
               <SmallScreenKanban
+                topLevelInfo={topLevelInfo}
                 inboxTasks={sortedInboxTasks}
                 optimisticUpdates={optimisticUpdates}
                 moreInfoByRefId={entriesByRefId}
@@ -646,6 +653,7 @@ export default function InboxTasks() {
 
         {selectedView === View.LIST && (
           <List
+            topLevelInfo={topLevelInfo}
             inboxTasks={sortedInboxTasks}
             optimisticUpdates={optimisticUpdates}
             moreInfoByRefId={entriesByRefId}
@@ -671,6 +679,7 @@ const GCSection = styled(Box)(({ theme }) => ({
 }));
 
 interface SwiftViewProps {
+  topLevelInfo: TopLevelInfo;
   isBigScreen: boolean;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -1023,6 +1032,7 @@ function SwiftView(props: SwiftViewProps) {
       <AnimatePresence>
         <InboxTaskStack
           key="habit-due-today"
+          topLevelInfo={props.topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,
@@ -1042,6 +1052,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-week"
           showLabel
           showOptions={{
@@ -1062,6 +1073,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-month"
           showLabel
           showOptions={{
@@ -1083,6 +1095,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-quarter"
           showLabel
           showOptions={{
@@ -1104,6 +1117,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="habit-due-this-year"
           showLabel
           showOptions={{
@@ -1131,6 +1145,7 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-today"
           showLabel
           showOptions={{
@@ -1151,6 +1166,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-week"
           showLabel
           showOptions={{
@@ -1171,6 +1187,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-month"
           showLabel
           showOptions={{
@@ -1192,6 +1209,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-quarter"
           showLabel
           showOptions={{
@@ -1213,6 +1231,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="chore-due-this-year"
           showLabel
           showOptions={{
@@ -1240,6 +1259,7 @@ function SwiftView(props: SwiftViewProps) {
     <Stack>
       <AnimatePresence>
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-today"
           showLabel
           showOptions={{
@@ -1261,6 +1281,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-week"
           showLabel
           showOptions={{
@@ -1282,6 +1303,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-month"
           showLabel
           showOptions={{
@@ -1304,6 +1326,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-quarter"
           showLabel
           showOptions={{
@@ -1326,6 +1349,7 @@ function SwiftView(props: SwiftViewProps) {
         />
 
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           key="rest-due-this-year"
           showLabel
           showOptions={{
@@ -1460,6 +1484,7 @@ function SwiftView(props: SwiftViewProps) {
 }
 
 interface BigScreenKanbanByEisenProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -1471,6 +1496,7 @@ interface BigScreenKanbanByEisenProps {
 }
 
 function BigScreenKanbanByEisen({
+  topLevelInfo,
   inboxTasks,
   optimisticUpdates,
   inboxTasksByRefId,
@@ -1499,6 +1525,7 @@ function BigScreenKanbanByEisen({
                   </Typography>
                 </Divider>
                 <KanbanBoard
+                  topLevelInfo={topLevelInfo}
                   inboxTasks={inboxTasks}
                   optimisticUpdates={optimisticUpdates}
                   inboxTasksByRefId={inboxTasksByRefId}
@@ -1518,6 +1545,7 @@ function BigScreenKanbanByEisen({
 }
 
 interface BigScreenKanbanProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -1529,6 +1557,7 @@ interface BigScreenKanbanProps {
 }
 
 function BigScreenKanban({
+  topLevelInfo,
   inboxTasks,
   optimisticUpdates,
   inboxTasksByRefId,
@@ -1547,6 +1576,7 @@ function BigScreenKanban({
         />
       )}
       <KanbanBoard
+        topLevelInfo={topLevelInfo}
         inboxTasks={inboxTasks}
         optimisticUpdates={optimisticUpdates}
         inboxTasksByRefId={inboxTasksByRefId}
@@ -1561,6 +1591,7 @@ function BigScreenKanban({
 }
 
 interface KanbanBoardProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   inboxTasksByRefId: { [key: string]: InboxTask };
@@ -1572,6 +1603,7 @@ interface KanbanBoardProps {
 }
 
 function KanbanBoard({
+  topLevelInfo,
   inboxTasks,
   inboxTasksByRefId,
   moreInfoByRefId,
@@ -1585,6 +1617,7 @@ function KanbanBoard({
     <Grid container spacing={2}>
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1606,6 +1639,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1627,6 +1661,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1648,6 +1683,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1669,6 +1705,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1690,6 +1727,7 @@ function KanbanBoard({
 
       <Grid xs={2}>
         <InboxTasksColumn
+          topLevelInfo={topLevelInfo}
           inboxTasks={inboxTasks}
           optimisticUpdates={optimisticUpdates}
           inboxTasksByRefId={inboxTasksByRefId}
@@ -1713,6 +1751,7 @@ function KanbanBoard({
 }
 
 interface SmallScreenKanbanByEisenProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -1815,6 +1854,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={0}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={importantAndUrgentTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1828,6 +1868,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={1}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={urgentTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1841,6 +1882,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={2}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={importantTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1854,6 +1896,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 
       <TabPanel value={smallScreenSelectedTab} index={3}>
         <SmallScreenKanban
+          topLevelInfo={props.topLevelInfo}
           inboxTasks={regularTasks}
           optimisticUpdates={props.optimisticUpdates}
           moreInfoByRefId={props.moreInfoByRefId}
@@ -1869,6 +1912,7 @@ function SmallScreenKanbanByEisen(props: SmallScreenKanbanByEisenProps) {
 }
 
 interface SmallScreenKanbanProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -2032,6 +2076,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2057,6 +2102,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2082,6 +2128,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2107,6 +2154,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2132,6 +2180,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2157,6 +2206,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
           />
         )}
         <InboxTaskStack
+          topLevelInfo={props.topLevelInfo}
           showOptions={{
             showSource: true,
             showProject: true,
@@ -2178,6 +2228,7 @@ function SmallScreenKanban(props: SmallScreenKanbanProps) {
 }
 
 interface ListProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
   moreInfoByRefId: { [key: string]: InboxTaskParent };
@@ -2186,6 +2237,7 @@ interface ListProps {
 }
 
 function List({
+  topLevelInfo,
   inboxTasks,
   moreInfoByRefId,
   optimisticUpdates,
@@ -2201,6 +2253,7 @@ function List({
         />
       )}
       <InboxTaskStack
+        topLevelInfo={topLevelInfo}
         showOptions={{
           showStatus: true,
           showSource: true,
@@ -2224,6 +2277,7 @@ function List({
 }
 
 interface InboxTasksColumnProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   inboxTasksByRefId: { [key: string]: InboxTask };
   optimisticUpdates: { [key: string]: InboxTaskOptimisticState };
@@ -2314,6 +2368,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
           >
             {!props.collapsed && (
               <InboxTaskColumnTasks
+                topLevelInfo={props.topLevelInfo}
                 inboxTasks={filteredInboxTasks}
                 moreInfoByRefId={props.moreInfoByRefId}
                 showOptions={props.showOptions}
@@ -2349,6 +2404,7 @@ const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
 );
 
 interface InboxTaskColumnTasksProps {
+  topLevelInfo: TopLevelInfo;
   inboxTasks: Array<InboxTask>;
   moreInfoByRefId: { [key: string]: InboxTaskParent };
   showOptions: InboxTaskShowOptions;
@@ -2375,6 +2431,7 @@ const InboxTaskColumnTasks = memo(function InboxTaskColumnTasks(
                 {...provided.dragHandleProps}
               >
                 <InboxTaskCard
+                  topLevelInfo={props.topLevelInfo}
                   compact
                   showOptions={{
                     ...props.showOptions,

@@ -36,10 +36,11 @@ import {
   ApiError,
   Difficulty,
   Eisen,
+  Feature,
   InboxTaskSource,
   InboxTaskStatus,
 } from "jupiter-gen";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -64,10 +65,12 @@ import {
   isInboxTaskCoreFieldEditable,
 } from "~/logic/domain/inbox-task";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -97,17 +100,8 @@ export async function loader({ request, params }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
-    include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
     include_big_plans: true,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   try {
@@ -246,6 +240,8 @@ export default function InboxTask() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const [selectedBigPlan, setSelectedBigPlan] = useState(
     loaderData.info.big_plan
       ? {
@@ -277,25 +273,32 @@ export default function InboxTask() {
   const canChangeBigPlan = doesInboxTaskAllowChangingBigPlan(inboxTask.source);
 
   const allProjectsById: { [k: string]: Project } = {};
-  for (const project of loaderData.allProjects) {
-    allProjectsById[project.ref_id.the_id] = project;
-  }
-  const allBigPlansById: { [k: string]: BigPlan } = {};
-  for (const bigPlan of loaderData.allBigPlans) {
-    allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+  if (isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS)) {
+    for (const project of loaderData.allProjects) {
+      allProjectsById[project.ref_id.the_id] = project;
+    }
   }
 
-  const allBigPlansAsOptions = [
-    {
-      label: "None",
-      big_plan_id: "none",
-    },
-  ].concat(
-    loaderData.allBigPlans.map((bp: BigPlan) => ({
-      label: bp.name.the_name,
-      big_plan_id: bp.ref_id.the_id,
-    }))
-  );
+  const allBigPlansById: { [k: string]: BigPlan } = {};
+  let allBigPlansAsOptions: Array<{ label: string; big_plan_id: string }> = [];
+
+  if (isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS)) {
+    for (const bigPlan of loaderData.allBigPlans) {
+      allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
+    }
+
+    allBigPlansAsOptions = [
+      {
+        label: "None",
+        big_plan_id: "none",
+      },
+    ].concat(
+      loaderData.allBigPlans.map((bp: BigPlan) => ({
+        label: bp.name.the_name,
+        big_plan_id: bp.ref_id.the_id,
+      }))
+    );
+  }
 
   function handleChangeBigPlan(
     e: React.SyntheticEvent,
@@ -343,8 +346,8 @@ export default function InboxTask() {
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/inbox-tasks"
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -391,89 +394,101 @@ export default function InboxTask() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            {(inboxTask.source === InboxTaskSource.USER ||
-              inboxTask.source === InboxTaskSource.BIG_PLAN) && (
-              <>
-                <FormControl fullWidth>
-                  <Autocomplete
-                    disablePortal
-                    id="bigPlan"
-                    options={allBigPlansAsOptions}
-                    readOnly={!inputsEnabled}
-                    value={selectedBigPlan}
-                    disableClearable={true}
-                    onChange={handleChangeBigPlan}
-                    isOptionEqualToValue={(o, v) =>
-                      o.big_plan_id === v.big_plan_id
-                    }
-                    renderInput={(params) => (
-                      <TextField {...params} label="Big Plan" />
-                    )}
-                  />
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) &&
+              (inboxTask.source === InboxTaskSource.USER ||
+                inboxTask.source === InboxTaskSource.BIG_PLAN) && (
+                <>
+                  <FormControl fullWidth>
+                    <Autocomplete
+                      disablePortal
+                      id="bigPlan"
+                      options={allBigPlansAsOptions}
+                      readOnly={!inputsEnabled}
+                      value={selectedBigPlan}
+                      disableClearable={true}
+                      onChange={handleChangeBigPlan}
+                      isOptionEqualToValue={(o, v) =>
+                        o.big_plan_id === v.big_plan_id
+                      }
+                      renderInput={(params) => (
+                        <TextField {...params} label="Big Plan" />
+                      )}
+                    />
 
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/big_plan_ref_id"
-                  />
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/big_plan_ref_id"
+                    />
 
-                  <input
-                    type="hidden"
-                    name="bigPlan"
-                    value={selectedBigPlan.big_plan_id}
-                  />
-                </FormControl>
-                {info.big_plan && <BigPlanTag bigPlan={info.big_plan} />}
-              </>
-            )}
+                    <input
+                      type="hidden"
+                      name="bigPlan"
+                      value={selectedBigPlan.big_plan_id}
+                    />
+                  </FormControl>
+                  {info.big_plan && <BigPlanTag bigPlan={info.big_plan} />}
+                </>
+              )}
 
-            {inboxTask.source === InboxTaskSource.HABIT && (
-              <HabitTag habit={info.habit as Habit} />
-            )}
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS) &&
+              inboxTask.source === InboxTaskSource.HABIT && (
+                <HabitTag habit={info.habit as Habit} />
+              )}
 
-            {inboxTask.source === InboxTaskSource.CHORE && (
-              <ChoreTag chore={info.chore as Chore} />
-            )}
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES) &&
+              inboxTask.source === InboxTaskSource.CHORE && (
+                <ChoreTag chore={info.chore as Chore} />
+              )}
 
-            {inboxTask.source === InboxTaskSource.PERSON_CATCH_UP ||
-              (inboxTask.source === InboxTaskSource.PERSON_BIRTHDAY && (
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PERSONS) &&
+              (inboxTask.source === InboxTaskSource.PERSON_CATCH_UP ||
+                inboxTask.source === InboxTaskSource.PERSON_BIRTHDAY) && (
                 <PersonTag person={info.person as Person} />
-              ))}
+              )}
 
-            {inboxTask.source === InboxTaskSource.METRIC && (
-              <MetricTag metric={info.metric as Metric} />
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.METRICS) &&
+              inboxTask.source === InboxTaskSource.METRIC && (
+                <MetricTag metric={info.metric as Metric} />
+              )}
+
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.SLACK_TASKS) &&
+              inboxTask.source === InboxTaskSource.SLACK_TASK && (
+                <SlackTaskTag slackTask={info.slack_task as SlackTask} />
+              )}
+
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.EMAIL_TASKS) &&
+              inboxTask.source === InboxTaskSource.EMAIL_TASK && (
+                <EmailTaskTag emailTask={info.email_task as EmailTask} />
+              )}
+
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled}
+                  disabled={
+                    !corePropertyEditable ||
+                    blockedToSelectProject ||
+                    inboxTask.source === InboxTaskSource.BIG_PLAN
+                  }
+                  value={selectedProject}
+                  onChange={handleChangeProject}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p: Project) => (
+                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
+                      {p.name.the_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError
+                  actionResult={actionData}
+                  fieldName="/project_key"
+                />
+              </FormControl>
             )}
-
-            {inboxTask.source === InboxTaskSource.SLACK_TASK && (
-              <SlackTaskTag slackTask={info.slack_task as SlackTask} />
-            )}
-
-            {inboxTask.source === InboxTaskSource.EMAIL_TASK && (
-              <EmailTaskTag emailTask={info.email_task as EmailTask} />
-            )}
-
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled}
-                disabled={
-                  !corePropertyEditable ||
-                  blockedToSelectProject ||
-                  inboxTask.source === InboxTaskSource.BIG_PLAN
-                }
-                value={selectedProject}
-                onChange={handleChangeProject}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project_key" />
-            </FormControl>
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>
@@ -564,32 +579,36 @@ export default function InboxTask() {
             >
               Save
             </Button>
-            <Button
-              variant="outlined"
-              disabled={
-                !inputsEnabled ||
-                !canChangeProject ||
-                !selectedProjectIsDifferentFromCurrent
-              }
-              type="submit"
-              name="intent"
-              value="change-project"
-            >
-              Change Project
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={
-                !inputsEnabled ||
-                !canChangeBigPlan ||
-                !selectedBigPlanIsDifferentFromCurrent
-              }
-              type="submit"
-              name="intent"
-              value="associate-with-big-plan"
-            >
-              Assoc. Big Plan
-            </Button>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <Button
+                variant="outlined"
+                disabled={
+                  !inputsEnabled ||
+                  !canChangeProject ||
+                  !selectedProjectIsDifferentFromCurrent
+                }
+                type="submit"
+                name="intent"
+                value="change-project"
+              >
+                Change Project
+              </Button>
+            )}
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) && (
+              <Button
+                variant="outlined"
+                disabled={
+                  !inputsEnabled ||
+                  !canChangeBigPlan ||
+                  !selectedBigPlanIsDifferentFromCurrent
+                }
+                type="submit"
+                name="intent"
+                value="associate-with-big-plan"
+              >
+                Assoc. Big Plan
+              </Button>
+            )}
           </ButtonGroup>
         </CardActions>
       </Card>

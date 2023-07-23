@@ -2,7 +2,8 @@ import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
-import type { EmailTask } from "jupiter-gen";
+import { Feature, type EmailTask } from "jupiter-gen";
+import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -16,12 +17,14 @@ import { LeafPanel } from "~/components/infra/leaf-panel";
 import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { emailTaskNiceName } from "~/logic/domain/email-task";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -39,6 +42,8 @@ export async function loader({ request }: LoaderArgs) {
 export default function EmailTasks() {
   const outlet = useOutlet();
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
+
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
@@ -67,13 +72,15 @@ export default function EmailTasks() {
     <TrunkCard>
       <NestingAwarePanel showOutlet={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
-          <Button
-            variant="contained"
-            to="/workspace/push-integrations/email-tasks/settings"
-            component={Link}
-          >
-            Setings
-          </Button>
+          {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            <Button
+              variant="contained"
+              to="/workspace/push-integrations/email-tasks/settings"
+              component={Link}
+            >
+              Setings
+            </Button>
+          )}
         </ActionHeader>
 
         <EntityStack>

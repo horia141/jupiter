@@ -1,6 +1,8 @@
 """The command for creating a smart list tag."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import EntityId
@@ -35,6 +37,11 @@ class SmartListTagCreateUseCase(
     AppLoggedInMutationUseCase[SmartListTagCreateArgs, SmartListTagCreateResult],
 ):
     """The command for creating a smart list tag."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.SMART_LISTS
 
     async def _execute(
         self,

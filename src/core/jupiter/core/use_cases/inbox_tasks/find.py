@@ -1,9 +1,10 @@
 """The command for finding a inbox task."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -60,6 +61,11 @@ class InboxTaskFindUseCase(
 ):
     """The command for finding a inbox task."""
 
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.INBOX_TASKS
+
     async def _execute(
         self,
         context: AppLoggedInUseCaseContext,
@@ -67,6 +73,32 @@ class InboxTaskFindUseCase(
     ) -> InboxTaskFindResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.filter_project_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
+
+        filter_sources = (
+            args.filter_sources
+            if args.filter_sources is not None
+            else workspace.infer_sources_for_enabled_features(None)
+        )
+
+        big_diff = list(
+            set(filter_sources).difference(
+                workspace.infer_sources_for_enabled_features(filter_sources)
+            )
+        )
+        if len(big_diff) > 0:
+            raise FeatureUnavailableError(
+                f"Sources {','.join(s.value for s in big_diff)} are not supported in this workspace"
+            )
+
+        filter_sources = workspace.infer_sources_for_enabled_features(
+            args.filter_sources
+        )
 
         async with self._storage_engine.get_unit_of_work() as uow:
             project_collection = await uow.project_collection_repository.load_by_parent(
@@ -120,7 +152,7 @@ class InboxTaskFindUseCase(
                 parent_ref_id=inbox_task_collection.ref_id,
                 allow_archived=args.allow_archived,
                 filter_ref_ids=args.filter_ref_ids,
-                filter_sources=args.filter_sources,
+                filter_sources=filter_sources,
                 filter_project_ref_ids=args.filter_project_ref_ids,
             )
 

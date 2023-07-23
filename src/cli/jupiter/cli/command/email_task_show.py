@@ -15,6 +15,7 @@ from jupiter.cli.command.rendering import (
     inbox_task_summary_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
+from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.push_integrations.email.find import (
@@ -46,7 +47,7 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
             dest="show_archived",
             default=False,
             action="store_true",
-            help="Whether to show archived vacations or not",
+            help="Whether to show archived email tasks or not",
         )
         parser.add_argument(
             "--id",
@@ -54,7 +55,7 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
             dest="ref_ids",
             default=[],
             action="append",
-            help="The id of the vacations to modify",
+            help="The id of the email tasks to modify",
         )
         parser.add_argument(
             "--show-inbox-task",
@@ -95,10 +96,11 @@ class EmailTaskShow(LoggedInReadonlyCommand[EmailTaskFindUseCase]):
 
         rich_tree = Tree("💬 Email Tasks", guide_style="bold bright_blue")
 
-        generation_project_text = Text(
-            f"The generation project is {result.generation_project.name}",
-        )
-        rich_tree.add(generation_project_text)
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            generation_project_text = Text(
+                f"The generation project is {result.generation_project.name}",
+            )
+            rich_tree.add(generation_project_text)
 
         for email_task_entry in sorted_email_tasks:
             email_task = email_task_entry.email_task

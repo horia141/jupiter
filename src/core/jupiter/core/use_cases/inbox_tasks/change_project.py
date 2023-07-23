@@ -1,7 +1,8 @@
 """The command for changing the project for an inbox task ."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import CannotModifyGeneratedTaskError
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.errors import InputValidationError
@@ -28,6 +29,11 @@ class InboxTaskChangeProjectUseCase(
     AppLoggedInMutationUseCase[InboxTaskChangeProjectArgs, None],
 ):
     """The command for changing the project of a inbox task."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return (Feature.INBOX_TASKS, Feature.PROJECTS)
 
     async def _execute(
         self,

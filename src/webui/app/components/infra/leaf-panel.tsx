@@ -60,7 +60,7 @@ const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
     right: 0px;
     width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};
     z-index: ${theme.zIndex.appBar - 1};
-    height: ${isBigScreen ? "100%" : "auto"};
+    // height: ${isBigScreen ? "100%" : "auto"};
     overflow-y: ${isBigScreen ? "scroll" : "inherit"};
     background-color: ${theme.palette.background.paper};
     border-left: 1px solid rgba(0, 0, 0, 0.12);

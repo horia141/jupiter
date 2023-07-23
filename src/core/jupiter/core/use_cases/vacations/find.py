@@ -1,7 +1,8 @@
 """The command for finding vacations."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -33,6 +34,11 @@ class VacationFindUseCase(
     AppLoggedInReadonlyUseCase[VacationFindArgs, VacationFindResult]
 ):
     """The command for finding vacations."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.VACATIONS
 
     async def _execute(
         self,

@@ -3,7 +3,8 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { Habit, HabitFindResultEntry, Project } from "jupiter-gen";
-import { Eisen, RecurringTaskPeriod } from "jupiter-gen";
+import { Eisen, Feature, RecurringTaskPeriod } from "jupiter-gen";
+import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { EisenTag } from "~/components/eisen-tag";
@@ -18,12 +19,14 @@ import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortHabitsNaturally } from "~/logic/domain/habit";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -42,6 +45,8 @@ export async function loader({ request }: LoaderArgs) {
 export default function Habits() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
   const outlet = useOutlet();
+
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
@@ -96,7 +101,10 @@ export default function Habits() {
               >
                 <EntityLink to={`/workspace/habits/${habit.ref_id.the_id}`}>
                   <EntityNameComponent name={habit.name} />
-                  <ProjectTag project={entry.project as Project} />
+                  {isFeatureAvailable(
+                    topLevelInfo.workspace,
+                    Feature.PROJECTS
+                  ) && <ProjectTag project={entry.project as Project} />}
                   {habit.suspended && <span className="tag">Suspended</span>}
                   <PeriodTag period={habit.gen_params.period} />
                   {habit.gen_params.eisen && (

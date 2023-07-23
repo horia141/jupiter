@@ -18,7 +18,14 @@ import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, RecurringTaskPeriod } from "jupiter-gen";
+import {
+  ApiError,
+  Difficulty,
+  Eisen,
+  Feature,
+  RecurringTaskPeriod,
+} from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -29,13 +36,15 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const CreateFormSchema = {
   name: z.string(),
-  project: z.string(),
+  project: z.string().optional(),
   period: z.nativeEnum(RecurringTaskPeriod),
   eisen: z.nativeEnum(Eisen),
   difficulty: z.union([z.nativeEnum(Difficulty), z.literal("default")]),
@@ -59,17 +68,8 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   return json({
@@ -85,7 +85,8 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(session).chore.createChore({
       name: { the_name: form.name },
-      project_ref_id: { the_id: form.project },
+      project_ref_id:
+        form.project !== undefined ? { the_id: form.project } : undefined,
       period: form.period,
       eisen: form.eisen,
       difficulty: form.difficulty === "default" ? undefined : form.difficulty,
@@ -129,12 +130,14 @@ export default function NewChore() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const inputsEnabled = transition.state === "idle";
 
   return (
     <LeafCard returnLocation="/workspace/chores">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -166,23 +169,25 @@ export default function NewChore() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.defaultProject.ref_id.the_id}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.defaultProject.ref_id.the_id}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p: Project) => (
+                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
+                      {p.name.the_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError actionResult={actionData} fieldName="/project" />
+              </FormControl>
+            )}
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>

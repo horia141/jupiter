@@ -16,7 +16,8 @@ import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
-import { ApiError } from "jupiter-gen";
+import { ApiError, Feature } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -24,13 +25,15 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafCard } from "~/components/infra/leaf-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const CreateFormSchema = {
   name: z.string(),
-  project: z.string(),
+  project: z.string().optional(),
   actionableDate: z.string().optional(),
   dueDate: z.string().optional(),
 };
@@ -44,17 +47,8 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   return json({
@@ -70,7 +64,8 @@ export async function action({ request }: ActionArgs) {
   try {
     const result = await getLoggedInApiClient(session).bigPlan.createBigPlan({
       name: { the_name: form.name },
-      project_ref_id: { the_id: form.project },
+      project_ref_id:
+        form.project !== undefined ? { the_id: form.project } : undefined,
       actionable_date:
         form.actionableDate !== undefined && form.actionableDate !== ""
           ? { the_date: form.actionableDate, the_datetime: undefined }
@@ -101,12 +96,14 @@ export default function NewBigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const inputsEnabled = transition.state === "idle";
 
   return (
     <LeafCard returnLocation="/workspace/big-plans">
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -119,23 +116,25 @@ export default function NewBigPlan() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled}
-                defaultValue={loaderData.defaultProject.ref_id.the_id}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled}
+                  defaultValue={loaderData.defaultProject.ref_id.the_id}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p) => (
+                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
+                      {p.name.the_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError actionResult={actionData} fieldName="/project" />
+              </FormControl>
+            )}
 
             <FormControl fullWidth>
               <InputLabel id="actionableDate" shrink margin="dense">

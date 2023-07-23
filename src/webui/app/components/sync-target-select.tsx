@@ -1,8 +1,11 @@
 import { Box, Chip, MenuItem, Select } from "@mui/material";
 import { SyncTarget } from "jupiter-gen";
 import { syncTargetName } from "~/logic/domain/sync-target";
+import { inferSyncTargetsForEnabledFeatures } from "~/logic/domain/workspace";
+import { TopLevelInfo } from "~/top-level-context";
 
 interface SyncTargetSelectProps {
+  topLevelInfo: TopLevelInfo;
   labelId: string;
   label: string;
   name: string;
@@ -10,6 +13,11 @@ interface SyncTargetSelectProps {
 }
 
 export function SyncTargetSelect(props: SyncTargetSelectProps) {
+  const allowedSyncTargets = inferSyncTargetsForEnabledFeatures(
+    props.topLevelInfo.workspace,
+    Object.values(SyncTarget)
+  );
+
   return (
     <Select
       labelId={props.labelId}
@@ -27,7 +35,7 @@ export function SyncTargetSelect(props: SyncTargetSelectProps) {
       )}
       label={props.label}
     >
-      {Object.values(SyncTarget).map((st) => (
+      {allowedSyncTargets.map((st) => (
         <MenuItem key={st} value={st}>
           {syncTargetName(st)}
         </MenuItem>

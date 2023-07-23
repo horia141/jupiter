@@ -1,6 +1,8 @@
 """The command for archiving a metric."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
     InboxTaskArchiveService,
@@ -26,6 +28,11 @@ class MetricArchiveArgs(UseCaseArgsBase):
 
 class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
     """The command for archiving a metric."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.METRICS
 
     async def _execute(
         self,

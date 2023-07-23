@@ -1,7 +1,8 @@
 """Use case for archiving a project."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.service.archive_service import ProjectArchiveService
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -22,6 +23,11 @@ class ProjectArchiveArgs(UseCaseArgsBase):
 
 class ProjectArchiveUseCase(AppLoggedInMutationUseCase[ProjectArchiveArgs, None]):
     """The command for archiving a project."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PROJECTS
 
     async def _execute(
         self,

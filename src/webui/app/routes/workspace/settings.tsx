@@ -16,24 +16,31 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Project } from "jupiter-gen";
+import { ApiError, Feature, Project } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { FeatureFlagsEditor } from "~/components/feature-flags-editor";
+import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const WorkspaceSettingsFormSchema = {
   intent: z.string(),
   name: z.string(),
   defaultProject: z.string(),
+  featureFlags: z.array(z.nativeEnum(Feature)),
 };
 
 export const handle = {
@@ -45,17 +52,8 @@ export async function loader({ request }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
     include_default_project: true,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
   const result = await getLoggedInApiClient(session).workspace.loadWorkspace(
     {}
@@ -97,6 +95,25 @@ export async function action({ request }: ActionArgs) {
         return redirect(`/workspace/settings`);
       }
 
+      case "change-feature-flags": {
+        const featureFlags: Record<string, boolean> = {};
+        for (const feature of Object.values(Feature)) {
+          if (form.featureFlags.find((v) => v == feature)) {
+            featureFlags[feature] = true;
+          } else {
+            featureFlags[feature] = false;
+          }
+        }
+
+        await getLoggedInApiClient(
+          session
+        ).workspace.changeWorkspaceFeatureFlags({
+          feature_flags: featureFlags,
+        });
+
+        return redirect(`/workspace/settings`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -105,7 +122,7 @@ export async function action({ request }: ActionArgs) {
       error instanceof ApiError &&
       error.status === StatusCodes.UNPROCESSABLE_ENTITY
     ) {
-      return json(validationErrorToUIErrorInfo(error.body));
+      return json(validationErrorToUIErrorInfo(error.body, intent));
     }
 
     throw error;
@@ -117,15 +134,19 @@ export default function Settings() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const globalProperties = useContext(GlobalPropertiesContext);
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const inputsEnabled = transition.state === "idle";
 
   return (
     <TrunkCard>
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
-          <GlobalError actionResult={actionData} />
           <Card>
-            <CardHeader title="Settings" />
+            <GlobalError intent="update" actionResult={actionData} />
+
+            <CardHeader title="General" />
             <CardContent>
               <Stack spacing={2} useFlexGap>
                 <FormControl fullWidth>
@@ -156,31 +177,77 @@ export default function Settings() {
             </CardActions>
           </Card>
 
-          <Card>
-            <CardHeader title="Default Project" />
-            <CardContent>
-              <Stack spacing={2} useFlexGap>
-                <FormControl fullWidth>
-                  <InputLabel id="defaultProject">Default Project</InputLabel>
-                  <Select
-                    labelId="defaultProject"
-                    name="defaultProject"
-                    readOnly={!inputsEnabled}
-                    defaultValue={loaderData.defaultProject.ref_id.the_id}
-                    label="Default Project"
+          {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            <Card>
+              <GlobalError
+                intent="change-default-project"
+                actionResult={actionData}
+              />
+              <CardHeader title="Default Project" />
+              <CardContent>
+                <Stack spacing={2} useFlexGap>
+                  <FormControl fullWidth>
+                    <InputLabel id="defaultProject">Default Project</InputLabel>
+                    <Select
+                      labelId="defaultProject"
+                      name="defaultProject"
+                      readOnly={!inputsEnabled}
+                      defaultValue={loaderData.defaultProject.ref_id.the_id}
+                      label="Default Project"
+                    >
+                      {loaderData.allProjects.map((p) => (
+                        <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
+                          {p.name.the_name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FieldError
+                      actionResult={actionData}
+                      fieldName="/deafult_project_ref_id"
+                    />
+                  </FormControl>
+                </Stack>
+              </CardContent>
+
+              <CardActions>
+                <ButtonGroup>
+                  <Button
+                    variant="contained"
+                    disabled={!inputsEnabled}
+                    type="submit"
+                    name="intent"
+                    value="change-default-project"
                   >
-                    {loaderData.allProjects.map((p) => (
-                      <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                        {p.name.the_name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  <FieldError
-                    actionResult={actionData}
-                    fieldName="/deafult_project_ref_id"
-                  />
-                </FormControl>
-              </Stack>
+                    Change Default Project
+                  </Button>
+                </ButtonGroup>
+              </CardActions>
+            </Card>
+          )}
+          {!isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            <input
+              type="hidden"
+              name="defaultProject"
+              value={loaderData.defaultProject.ref_id.the_id}
+            />
+          )}
+
+          <Card>
+            <GlobalError
+              intent="change-feature-flags"
+              actionResult={actionData}
+            />
+
+            <CardHeader title="Feature Flags" />
+
+            <CardContent>
+              <FeatureFlagsEditor
+                name="featureFlags"
+                inputsEnabled={inputsEnabled}
+                featureFlagsControls={topLevelInfo.featureFlagControls}
+                defaultFeatureFlags={loaderData.workspace.feature_flags}
+                hosting={globalProperties.hosting}
+              />
             </CardContent>
 
             <CardActions>
@@ -190,9 +257,9 @@ export default function Settings() {
                   disabled={!inputsEnabled}
                   type="submit"
                   name="intent"
-                  value="change-default-project"
+                  value="change-feature-flags"
                 >
-                  Change Default Project
+                  Change Feature Flags
                 </Button>
               </ButtonGroup>
             </CardActions>
@@ -202,3 +269,7 @@ export default function Settings() {
     </TrunkCard>
   );
 }
+
+export const ErrorBoundary = makeErrorBoundary(
+  () => `There was an error updating the workspace! Please try again!`
+);

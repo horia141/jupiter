@@ -4,7 +4,9 @@ from typing import Final
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
@@ -25,10 +27,11 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
         global_properties: GlobalProperties,
         time_provider: TimeProvider,
         session_storage: SessionStorage,
+        top_level_context: LoggedInTopLevelContext,
         use_case: GenUseCase,
     ) -> None:
         """Constructor."""
-        super().__init__(session_storage, use_case)
+        super().__init__(session_storage, top_level_context, use_case)
         self._global_properties = global_properties
         self._time_provider = time_provider
 
@@ -52,7 +55,12 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             dest="gen_targets",
             default=[],
             action="append",
-            choices=SyncTarget.all_values(),
+            choices=[
+                s.value
+                for s in self._top_level_context.workspace.infer_sync_targets_for_enabled_features(
+                    None
+                )
+            ],
             help="What exactly to try to generate for",
         )
         parser.add_argument(
@@ -62,55 +70,62 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             choices=RecurringTaskPeriod.all_values(),
             help="The period for which the upsert should happen. Defaults to all",
         )
-        parser.add_argument(
-            "--project-id",
-            dest="project_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only tasks from this project",
-        )
-        parser.add_argument(
-            "--habit-id",
-            dest="habit_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only habits with this id",
-        )
-        parser.add_argument(
-            "--chore-id",
-            dest="chore_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only chores with this id",
-        )
-        parser.add_argument(
-            "--metric-id",
-            dest="metric_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only these metrics",
-        )
-        parser.add_argument(
-            "--person-id",
-            dest="person_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only these persons",
-        )
-        parser.add_argument(
-            "--slack-task-id",
-            dest="slack_task_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only these Slack tasks",
-        )
-        parser.add_argument(
-            "--email-task-id",
-            dest="email_task_ref_ids",
-            default=[],
-            action="append",
-            help="Allow only these email tasks",
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            parser.add_argument(
+                "--project-id",
+                dest="project_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only tasks from this project",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+            parser.add_argument(
+                "--habit-id",
+                dest="habit_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only habits with this id",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+            parser.add_argument(
+                "--chore-id",
+                dest="chore_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only chores with this id",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.METRICS):
+            parser.add_argument(
+                "--metric-id",
+                dest="metric_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only these metrics",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.PERSONS):
+            parser.add_argument(
+                "--person-id",
+                dest="person_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only these persons",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.SLACK_TASKS):
+            parser.add_argument(
+                "--slack-task-id",
+                dest="slack_task_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only these Slack tasks",
+            )
+        if self._top_level_context.workspace.is_feature_available(Feature.EMAIL_TASKS):
+            parser.add_argument(
+                "--email-task-id",
+                dest="email_task_ref_ids",
+                default=[],
+                action="append",
+                help="Allow only these email tasks",
+            )
         parser.add_argument(
             "--ignore-modified-times",
             dest="gen_even_if_not_modified",
@@ -140,41 +155,62 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             if len(args.period) > 0
             else None
         )
-        project_ref_ids = (
-            [EntityId.from_raw(pk) for pk in args.project_ref_ids]
-            if len(args.project_ref_ids) > 0
-            else None
-        )
-        habit_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.habit_ref_ids]
-            if len(args.habit_ref_ids) > 0
-            else None
-        )
-        chore_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.chore_ref_ids]
-            if len(args.chore_ref_ids) > 0
-            else None
-        )
-        metric_ref_ids = (
-            [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
-            if len(args.metric_ref_ids) > 0
-            else None
-        )
-        person_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.person_ref_ids]
-            if len(args.person_ref_ids) > 0
-            else None
-        )
-        slack_task_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
-            if len(args.slack_task_ref_ids) > 0
-            else None
-        )
-        email_task_ref_ids = (
-            [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
-            if len(args.email_task_ref_ids) > 0
-            else None
-        )
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            project_ref_ids = (
+                [EntityId.from_raw(pk) for pk in args.project_ref_ids]
+                if len(args.project_ref_ids) > 0
+                else None
+            )
+        else:
+            project_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            habit_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.habit_ref_ids]
+                if len(args.habit_ref_ids) > 0
+                else None
+            )
+        else:
+            habit_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            chore_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.chore_ref_ids]
+                if len(args.chore_ref_ids) > 0
+                else None
+            )
+        else:
+            chore_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            metric_ref_ids = (
+                [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
+                if len(args.metric_ref_ids) > 0
+                else None
+            )
+        else:
+            metric_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            person_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.person_ref_ids]
+                if len(args.person_ref_ids) > 0
+                else None
+            )
+        else:
+            person_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            slack_task_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
+                if len(args.slack_task_ref_ids) > 0
+                else None
+            )
+        else:
+            slack_task_ref_ids = None
+        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            email_task_ref_ids = (
+                [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
+                if len(args.email_task_ref_ids) > 0
+                else None
+            )
+        else:
+            email_task_ref_ids = None
         gen_even_if_not_modified: bool = args.gen_even_if_not_modified
 
         await self._use_case.execute(

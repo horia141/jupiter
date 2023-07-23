@@ -1,6 +1,8 @@
 """The command for creating a project."""
 from dataclasses import dataclass
+from typing import Iterable
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.framework.event import EventSource
@@ -33,6 +35,11 @@ class ProjectCreateUseCase(
     AppLoggedInMutationUseCase[ProjectCreateArgs, ProjectCreateResult]
 ):
     """The command for creating a project."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PROJECTS
 
     async def _execute(
         self,

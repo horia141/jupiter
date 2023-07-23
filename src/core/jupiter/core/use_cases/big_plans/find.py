@@ -1,8 +1,9 @@
 """The command for finding a big plan."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
+from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
@@ -48,6 +49,11 @@ class BigPlanFindUseCase(
 ):
     """The command for finding a big plan."""
 
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.BIG_PLANS
+
     async def _execute(
         self,
         context: AppLoggedInUseCaseContext,
@@ -55,6 +61,12 @@ class BigPlanFindUseCase(
     ) -> BigPlanFindResult:
         """Execute the command's action."""
         workspace = context.workspace
+
+        if (
+            not workspace.is_feature_available(Feature.PROJECTS)
+            and args.filter_project_ref_ids is not None
+        ):
+            raise FeatureUnavailableError(Feature.PROJECTS)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             project_collection = await uow.project_collection_repository.load_by_parent(

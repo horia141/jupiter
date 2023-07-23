@@ -1,7 +1,9 @@
 """The command for creating a vacation."""
 from dataclasses import dataclass
+from typing import Iterable
 
 from jupiter.core.domain.adate import ADate
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.vacations.vacation_name import VacationName
 from jupiter.core.framework.event import EventSource
@@ -36,6 +38,11 @@ class VacationCreateUseCase(
     AppLoggedInMutationUseCase[VacationCreateArgs, VacationCreateResult],
 ):
     """The command for creating a vacation."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.VACATIONS
 
     async def _execute(
         self,

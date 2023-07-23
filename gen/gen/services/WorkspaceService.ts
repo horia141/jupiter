@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { WorkspaceChangeDefaultProjectArgs } from '../models/WorkspaceChangeDefaultProjectArgs';
+import type { WorkspaceChangeFeatureFlagsArgs } from '../models/WorkspaceChangeFeatureFlagsArgs';
 import type { WorkspaceLoadArgs } from '../models/WorkspaceLoadArgs';
 import type { WorkspaceLoadResult } from '../models/WorkspaceLoadResult';
 import type { WorkspaceUpdateArgs } from '../models/WorkspaceUpdateArgs';
@@ -29,6 +30,7 @@ export class WorkspaceService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -51,6 +53,30 @@ export class WorkspaceService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Change Workspace Feature Flags
+     * Change the feature flags for a workspace.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public changeWorkspaceFeatureFlags(
+        requestBody: WorkspaceChangeFeatureFlagsArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/workspace/change-feature-flags',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },
@@ -73,6 +99,7 @@ export class WorkspaceService {
             body: requestBody,
             mediaType: 'application/json',
             errors: {
+                406: `Feature Not Available`,
                 410: `Workspace Or User Not Found`,
                 422: `Validation Error`,
             },

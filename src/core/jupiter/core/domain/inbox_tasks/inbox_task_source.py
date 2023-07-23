@@ -11,9 +11,9 @@ class InboxTaskSource(enum.Enum):
     """The origin of an inbox task."""
 
     USER = "user"
-    BIG_PLAN = "big-plan"
     HABIT = "habit"
     CHORE = "chore"
+    BIG_PLAN = "big-plan"
     METRIC = "metric"
     PERSON_CATCH_UP = "person-catch-up"
     PERSON_BIRTHDAY = "person-birthday"

@@ -1,7 +1,8 @@
 """The command for finding the persons."""
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.persons.person import Person
@@ -46,6 +47,11 @@ class PersonFindResult(UseCaseResultBase):
 
 class PersonFindUseCase(AppLoggedInReadonlyUseCase[PersonFindArgs, PersonFindResult]):
     """The command for finding the persons."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.PERSONS
 
     async def _execute(
         self,

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union, cast
 
 import dotenv
+from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.framework.env import Env
 from jupiter.core.framework.secure import secure_fn
@@ -15,6 +16,7 @@ class GlobalProperties:
     """UseCase-level properties."""
 
     env: Env
+    hosting: Hosting
     description: str
     version: str
     timezone: Timezone
@@ -55,6 +57,7 @@ def build_global_properties() -> GlobalProperties:
     dotenv.load_dotenv(dotenv_path=project_config_path, verbose=True)
 
     env = Env(cast(str, os.getenv("ENV")))
+    hosting = Hosting(cast(str, os.getenv("HOSTING")))
     description = cast(str, os.getenv("DESCRIPTION"))
     version = cast(str, os.getenv("VERSION"))
     docs_init_workspace_url = cast(str, os.getenv("DOCS_INIT_WORKSPACE_URL"))
@@ -73,6 +76,7 @@ def build_global_properties() -> GlobalProperties:
 
     return GlobalProperties(
         env=env,
+        hosting=hosting,
         description=description,
         version=version,
         timezone=Timezone.from_raw(str(timezone)),

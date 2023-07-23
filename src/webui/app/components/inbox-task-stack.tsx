@@ -5,10 +5,12 @@ import type {
   InboxTaskOptimisticState,
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
+import { TopLevelInfo } from "~/top-level-context";
 import type { InboxTaskShowOptions } from "./inbox-task-card";
 import { InboxTaskCard } from "./inbox-task-card";
 
 interface InboxTaskStackProps {
+  topLevelInfo: TopLevelInfo;
   showLabel?: boolean;
   showOptions: InboxTaskShowOptions;
   label?: string;
@@ -56,6 +58,7 @@ export function InboxTaskStack(props: InboxTaskStackProps) {
             <AnimatePresence>
               {props.inboxTasks.map((it) => (
                 <InboxTaskCard
+                  topLevelInfo={props.topLevelInfo}
                   key={it.ref_id.the_id}
                   allowSwipe={true}
                   showOptions={props.showOptions}

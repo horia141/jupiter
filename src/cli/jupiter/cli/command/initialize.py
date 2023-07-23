@@ -1,11 +1,13 @@
 """UseCase for initialising a workspace."""
 from argparse import ArgumentParser, Namespace
-from typing import cast
+from typing import Final, cast
 
 from jupiter.cli.command.command import GuestMutationCommand
-from jupiter.cli.session_storage import SessionInfo
+from jupiter.cli.session_storage import SessionInfo, SessionStorage
+from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import Feature, FeatureFlags
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
@@ -20,6 +22,18 @@ from rich.text import Text
 @secure_class
 class Initialize(GuestMutationCommand[InitUseCase]):
     """UseCase class for initialising a workspace."""
+
+    _top_level_context: Final[TopLevelContext]
+
+    def __init__(
+        self,
+        session_storage: SessionStorage,
+        top_level_context: TopLevelContext,
+        use_case: InitUseCase,
+    ) -> None:
+        """Constructor."""
+        super().__init__(session_storage, use_case)
+        self._top_level_context = top_level_context
 
     @staticmethod
     def name() -> str:
@@ -68,14 +82,28 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         parser.add_argument(
             "--workspace-name",
             dest="workspace_name",
-            required=True,
+            default=str(self._top_level_context.default_workspace_name),
             help="The workspace name to use",
         )
         parser.add_argument(
             "--workspace-project-name",
             dest="workspace_first_project_name",
-            required=True,
+            default=str(self._top_level_context.default_first_project_name),
             help="The name of the first project",
+        )
+        parser.add_argument(
+            "--workspace-feature",
+            dest="workspace_feature_flag_enabled",
+            default=[],
+            action="append",
+            choices=Feature.all_values(),
+        )
+        parser.add_argument(
+            "--workspace-no-feature",
+            dest="workspace_feature_flag_disable",
+            default=[],
+            action="append",
+            choices=Feature.all_values(),
         )
 
     async def _run(
@@ -93,6 +121,11 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         workspace_first_project_name = ProjectName.from_raw(
             args.workspace_first_project_name
         )
+        workspace_feature_flags: FeatureFlags = {}
+        for enabled_feature in args.workspace_feature_flag_enabled:
+            workspace_feature_flags[Feature(enabled_feature)] = True
+        for disabled_feature in args.workspace_feature_flag_disable:
+            workspace_feature_flags[Feature(disabled_feature)] = False
 
         result = await self._use_case.execute(
             AppGuestUseCaseSession(
@@ -106,6 +139,7 @@ class Initialize(GuestMutationCommand[InitUseCase]):
                 auth_password_repeat=auth_password_repeat,
                 workspace_name=workspace_name,
                 workspace_first_project_name=workspace_first_project_name,
+                workspace_feature_flags=workspace_feature_flags,
             ),
         )
 

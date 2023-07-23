@@ -23,8 +23,8 @@ import {
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { InboxTask, Project } from "jupiter-gen";
-import { ApiError, BigPlanStatus, InboxTaskStatus } from "jupiter-gen";
-import { useEffect, useState } from "react";
+import { ApiError, BigPlanStatus, Feature, InboxTaskStatus } from "jupiter-gen";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -38,10 +38,12 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { bigPlanStatusName } from "~/logic/domain/big-plan-status";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
+import { isFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
@@ -67,17 +69,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
-    allow_archived: false,
-    include_default_project: false,
-    include_vacations: false,
     include_projects: true,
-    include_inbox_tasks: false,
-    include_habits: false,
-    include_chores: false,
-    include_big_plans: false,
-    include_smart_lists: false,
-    include_metrics: false,
-    include_persons: false,
   });
 
   try {
@@ -179,6 +171,8 @@ export default function BigPlan() {
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
 
+  const topLevelInfo = useContext(TopLevelInfoContext);
+
   const inputsEnabled =
     transition.state === "idle" && !loaderData.bigPlan.archived;
 
@@ -238,8 +232,8 @@ export default function BigPlan() {
       enableArchiveButton={inputsEnabled}
       returnLocation={"/workspace/big-plans"}
     >
-      <GlobalError actionResult={actionData} />
       <Card>
+        <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -271,24 +265,29 @@ export default function BigPlan() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="project">Project</InputLabel>
-              <Select
-                labelId="project"
-                name="project"
-                readOnly={!inputsEnabled}
-                value={selectedProject}
-                onChange={handleChangeProject}
-                label="Project"
-              >
-                {loaderData.allProjects.map((p: Project) => (
-                  <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
-                    {p.name.the_name}
-                  </MenuItem>
-                ))}
-              </Select>
-              <FieldError actionResult={actionData} fieldName="/project" />
-            </FormControl>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <FormControl fullWidth>
+                <InputLabel id="project">Project</InputLabel>
+                <Select
+                  labelId="project"
+                  name="project"
+                  readOnly={!inputsEnabled}
+                  value={selectedProject}
+                  onChange={handleChangeProject}
+                  label="Project"
+                >
+                  {loaderData.allProjects.map((p: Project) => (
+                    <MenuItem key={p.ref_id.the_id} value={p.ref_id.the_id}>
+                      {p.name.the_name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FieldError actionResult={actionData} fieldName="/project" />
+              </FormControl>
+            )}
+            {!isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <input type="hidden" name="project" value={selectedProject} />
+            )}
 
             <FormControl fullWidth>
               <InputLabel id="actionableDate">Actionable From</InputLabel>
@@ -344,17 +343,19 @@ export default function BigPlan() {
             >
               Save
             </Button>
-            <Button
-              variant="outlined"
-              disabled={
-                !inputsEnabled || !selectedProjectIsDifferentFromCurrent
-              }
-              type="submit"
-              name="intent"
-              value="change-project"
-            >
-              Change Project
-            </Button>
+            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              <Button
+                variant="outlined"
+                disabled={
+                  !inputsEnabled || !selectedProjectIsDifferentFromCurrent
+                }
+                type="submit"
+                name="intent"
+                value="change-project"
+              >
+                Change Project
+              </Button>
+            )}
           </ButtonGroup>
         </CardActions>
       </Card>
@@ -372,6 +373,7 @@ export default function BigPlan() {
 
       {sortedInboxTasks.length > 0 && (
         <InboxTaskStack
+          topLevelInfo={topLevelInfo}
           showLabel
           showOptions={{
             showStatus: true,

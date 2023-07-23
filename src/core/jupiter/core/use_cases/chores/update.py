@@ -1,12 +1,13 @@
 """The command for updating a chore."""
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import Iterable, Optional, cast
 
 from jupiter.core.domain import schedules
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
+from jupiter.core.domain.features import Feature
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -49,6 +50,11 @@ class ChoreUpdateArgs(UseCaseArgsBase):
 
 class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
     """The command for updating a chore."""
+
+    @staticmethod
+    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+        """The feature the use case is scope to."""
+        return Feature.CHORES
 
     async def _execute(
         self,
