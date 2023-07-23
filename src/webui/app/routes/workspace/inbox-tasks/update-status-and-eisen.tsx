@@ -14,7 +14,7 @@ import { getSession } from "~/sessions";
 const UpdateStatusAndEisenFormSchema = {
   id: z.string(),
   status: z.nativeEnum(InboxTaskStatus),
-  eisen: z.nativeEnum(Eisen).optional(),
+  eisen: z.nativeEnum(Eisen).or(z.literal("no-go")),
 };
 
 export async function action({ request }: ActionArgs) {
@@ -26,7 +26,7 @@ export async function action({ request }: ActionArgs) {
       ref_id: { the_id: form.id },
       name: { should_change: false },
       status: { should_change: true, value: form.status },
-      eisen: form.eisen
+      eisen: form.eisen !== "no-go"
         ? { should_change: true, value: form.eisen }
         : { should_change: false },
       difficulty: { should_change: false },
