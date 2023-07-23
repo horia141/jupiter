@@ -1421,11 +1421,14 @@ function SwiftView(props: SwiftViewProps) {
     initialSmallScreenSelectedTab
   );
 
+  if (noNothing) {
+    return <>{noNothingCard}</>;
+  }
+
   return (
     <Grid
       container
       spacing={2}
-      sx={{ paddingTop: props.isBigScreen ? "2rem" : "1rem" }}
     >
       {props.isBigScreen && !noNothing && (
         <>
@@ -1477,8 +1480,6 @@ function SwiftView(props: SwiftViewProps) {
           </TabPanel>
         </Grid>
       )}
-
-      {noNothing && noNothingCard}
     </Grid>
   );
 }
@@ -1575,6 +1576,7 @@ function BigScreenKanban({
           parentNewLocations="/workspace/inbox-tasks/new"
         />
       )}
+      {inboxTasks.length > 0 &&
       <KanbanBoard
         topLevelInfo={topLevelInfo}
         inboxTasks={inboxTasks}
@@ -1585,7 +1587,7 @@ function BigScreenKanban({
         allowEisen={allowEisen}
         draggedInboxTaskId={draggedInboxTaskId}
         collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-      />
+      />}
     </>
   );
 }
