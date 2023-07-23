@@ -914,7 +914,6 @@ function SwiftView(props: SwiftViewProps) {
       ],
       includeIfNoActionableDate: true,
       actionableDateEnd: actionableTime,
-      includeIfNoDueDate: true,
       dueDateEnd: today,
     }
   );
