@@ -62,6 +62,7 @@ import type {
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
 import {
+  canInboxTaskBeInStatus,
   filterInboxTasksForDisplay,
   isInboxTaskCoreFieldEditable,
   sortInboxTasksByEisenAndDifficulty,
@@ -238,7 +239,7 @@ export default function InboxTasks() {
       );
     } else {
       kanbanBoardMoveFetcher.submit(
-        { id: result.draggableId, status: status },
+        { id: result.draggableId, eisen: "no-go", status: status },
         {
           method: "post",
           action: "/workspace/inbox-tasks/update-status-and-eisen",
@@ -622,7 +623,7 @@ export default function InboxTasks() {
         {selectedView === View.KANBAN && (
           <>
             {isBigScreen && (
-              <DragDropContext onDragEnd={onDragEnd}>
+              <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
                 <BigScreenKanban
                   topLevelInfo={topLevelInfo}
                   inboxTasks={sortedInboxTasks}
@@ -2303,7 +2304,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     }
 
     if (props.draggedInboxTaskId !== undefined) {
-      if (allowDraggingOver()) {
+      if (allowDraggingOverStatus() && allowDraggingOverEisen()) {
         return DragTargetStatus.ALLOW_DRAG;
       } else {
         return DragTargetStatus.FORBID_DRAG;
@@ -2313,7 +2314,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     return DragTargetStatus.FREE;
   }
 
-  function allowDraggingOver() {
+  function allowDraggingOverEisen() {
     if (props.draggedInboxTaskId === undefined) {
       return true;
     }
@@ -2329,6 +2330,16 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
     }
 
     return inboxTask.eisen === props.allowEisen;
+  }
+
+  function allowDraggingOverStatus() {
+    if (props.draggedInboxTaskId === undefined) {
+      return true;
+    }
+
+    const inboxTask = props.inboxTasksByRefId[props.draggedInboxTaskId];
+
+    return canInboxTaskBeInStatus(inboxTask, props.allowStatus);
   }
 
   const actionableTime = actionableTimeToDateTime(props.actionableTime);
@@ -2360,7 +2371,7 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
         type="inbox-task"
         droppableId={`inbox-tasks-column:${props.allowEisen}:${props.allowStatus}`}
         direction="vertical"
-        isDropDisabled={!allowDraggingOver()}
+        isDropDisabled={!(allowDraggingOverStatus() && allowDraggingOverEisen())}
       >
         {(provided, snapshot) => (
           <InboxTasksColumnHighDiv

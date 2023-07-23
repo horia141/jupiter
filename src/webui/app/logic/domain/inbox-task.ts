@@ -1,4 +1,4 @@
-import type {
+import {
   BigPlan,
   Chore,
   Difficulty,
@@ -235,6 +235,30 @@ export function sortInboxTasksByEisenAndDifficulty(
 
 export function isInboxTaskCoreFieldEditable(source: InboxTaskSource): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
+}
+
+export function canInboxTaskBeInStatus(inboxTasks: InboxTask, status: InboxTaskStatus): boolean {
+  switch (inboxTasks.source) {
+    case InboxTaskSource.USER:
+    case InboxTaskSource.BIG_PLAN:
+      if (status === InboxTaskStatus.RECURRING) {
+        return false;
+      }
+
+      return true;
+    case InboxTaskSource.HABIT:
+    case InboxTaskSource.CHORE:
+    case InboxTaskSource.METRIC:
+    case InboxTaskSource.PERSON_BIRTHDAY:
+    case InboxTaskSource.PERSON_CATCH_UP:
+    case InboxTaskSource.SLACK_TASK:
+    case InboxTaskSource.EMAIL_TASK:
+      if (status === InboxTaskStatus.ACCEPTED) {
+        return false;
+      }
+
+      return true;
+  }
 }
 
 export function doesInboxTaskAllowChangingProject(
