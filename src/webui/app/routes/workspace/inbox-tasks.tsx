@@ -2402,7 +2402,7 @@ interface InboxTasksColumnHighDivProps {
 
 const InboxTasksColumnHighDiv = styled("div")<InboxTasksColumnHighDivProps>(
   ({ theme, divStatus }) => ({
-    height: "100%",
+    minHeight: "100%",
     backgroundColor:
       divStatus === DragTargetStatus.SOURCE_DRAG
         ? "rgb(191, 204, 229)"
