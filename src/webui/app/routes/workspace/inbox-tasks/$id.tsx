@@ -101,6 +101,7 @@ export async function loader({ request, params }: LoaderArgs) {
     session
   ).getSummaries.getSummaries({
     include_default_project: true,
+    include_projects: true,
     include_big_plans: true,
   });
 
