@@ -24,7 +24,7 @@ class SyncTarget(enum.Enum):
 
     @staticmethod
     def from_raw(sync_target_raw: Optional[str]) -> "SyncTarget":
-        """Validate and clean the big plan status."""
+        """Validate and clean the synt target."""
         if not sync_target_raw:
             raise InputValidationError("Expected sync target to be non-null")
 

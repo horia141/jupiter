@@ -59,7 +59,7 @@ class MetricRemoveService:
             async with progress_reporter.start_removing_entity(
                 "metric entry",
                 metric_entry.ref_id,
-                str(metric_entry.simple_name),
+                str(metric_entry.name),
             ) as entity_reporter:
                 async with self._storage_engine.get_unit_of_work() as uow:
                     await uow.metric_entry_repository.remove(metric_entry.ref_id)

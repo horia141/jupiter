@@ -1426,10 +1426,7 @@ function SwiftView(props: SwiftViewProps) {
   }
 
   return (
-    <Grid
-      container
-      spacing={2}
-    >
+    <Grid container spacing={2}>
       {props.isBigScreen && !noNothing && (
         <>
           <Grid md={4}>
@@ -1576,18 +1573,19 @@ function BigScreenKanban({
           parentNewLocations="/workspace/inbox-tasks/new"
         />
       )}
-      {inboxTasks.length > 0 &&
-      <KanbanBoard
-        topLevelInfo={topLevelInfo}
-        inboxTasks={inboxTasks}
-        optimisticUpdates={optimisticUpdates}
-        inboxTasksByRefId={inboxTasksByRefId}
-        moreInfoByRefId={moreInfoByRefId}
-        actionableTime={actionableTime}
-        allowEisen={allowEisen}
-        draggedInboxTaskId={draggedInboxTaskId}
-        collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
-      />}
+      {inboxTasks.length > 0 && (
+        <KanbanBoard
+          topLevelInfo={topLevelInfo}
+          inboxTasks={inboxTasks}
+          optimisticUpdates={optimisticUpdates}
+          inboxTasksByRefId={inboxTasksByRefId}
+          moreInfoByRefId={moreInfoByRefId}
+          actionableTime={actionableTime}
+          allowEisen={allowEisen}
+          draggedInboxTaskId={draggedInboxTaskId}
+          collapseInboxTaskStatusColumn={collapseInboxTaskStatusColumn}
+        />
+      )}
     </>
   );
 }
@@ -2370,7 +2368,9 @@ function InboxTasksColumn(props: InboxTasksColumnProps) {
         type="inbox-task"
         droppableId={`inbox-tasks-column:${props.allowEisen}:${props.allowStatus}`}
         direction="vertical"
-        isDropDisabled={!(allowDraggingOverStatus() && allowDraggingOverEisen())}
+        isDropDisabled={
+          !(allowDraggingOverStatus() && allowDraggingOverEisen())
+        }
       >
         {(provided, snapshot) => (
           <InboxTasksColumnHighDiv

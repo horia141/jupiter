@@ -68,6 +68,7 @@ class EmailTask(LeafEntity):
                     created_time,
                 ),
             ],
+            name=EmailTask.build_name(from_address, from_name, subject),
             email_task_collection_ref_id=email_task_collection_ref_id,
             from_address=from_address,
             from_name=from_name,
@@ -131,9 +132,10 @@ class EmailTask(LeafEntity):
         """The parent."""
         return self.email_task_collection_ref_id
 
-    @property
-    def simple_name(self) -> EntityName:
-        """A simple name for the task."""
+    @staticmethod
+    def build_name(
+        from_address: EmailAddress, from_name: EmailUserName, subject: str
+    ) -> EntityName:
         return EntityName(
-            f"Respond to message from {self.from_name} <{self.from_address}> about {self.subject}",
+            f"Respond to message from {from_name} <{from_address}> about {subject}",
         )

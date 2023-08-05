@@ -55,14 +55,14 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
             else workspace.infer_sync_targets_for_enabled_features(None)
         )
 
-        big_diff = list(
+        gc_targets_diff = list(
             set(gc_targets).difference(
                 workspace.infer_sync_targets_for_enabled_features(gc_targets)
             )
         )
-        if len(big_diff) > 0:
+        if len(gc_targets_diff) > 0:
             raise FeatureUnavailableError(
-                f"GC targets {','.join(s.value for s in big_diff)} are not supported in this workspace"
+                f"GC targets {','.join(s.value for s in gc_targets_diff)} are not supported in this workspace"
             )
 
         async with self._storage_engine.get_unit_of_work() as uow:

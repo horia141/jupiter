@@ -74,7 +74,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
             async with progress_reporter.start_archiving_entity(
                 "metric entry",
                 metric_entry.ref_id,
-                str(metric_entry.simple_name),
+                str(metric_entry.name),
             ) as entity_reporter:
                 async with self._storage_engine.get_unit_of_work() as uow:
                     metric_entry = metric_entry.mark_archived(

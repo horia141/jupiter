@@ -8,6 +8,7 @@ from jupiter.core.domain.features import (
     FeatureFlagsControls,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
+from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
@@ -125,6 +126,73 @@ class Workspace(RootEntity):
     def is_feature_available(self, feature: Feature) -> bool:
         """Check if a feature is available in this workspace."""
         return self.feature_flags[feature]
+
+    def infer_entity_tags_for_enabled_features(
+        self, filter_entity_tags: Iterable[NamedEntityTag] | None = None
+    ) -> List[NamedEntityTag]:
+        """Filter and complete a set of entity tags according to the enabled features."""
+        # Keep in sync with ts:webui:interEntityTagsForEnabledFeatures
+        all_entity_tags = filter_entity_tags or [s for s in NamedEntityTag]
+        inferred_entity_tags: List[NamedEntityTag] = []
+        for entity_tag in all_entity_tags:
+            if entity_tag is NamedEntityTag.INBOX_TASK:
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.HABIT and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.CHORE and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.BIG_PLAN and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.VACATION and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.PROJECT and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.SMART_LIST and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif (
+                entity_tag is NamedEntityTag.SMART_LIST_TAG
+                and self.is_feature_available(Feature.HABITS)
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif (
+                entity_tag is NamedEntityTag.SMART_LIST_ITEM
+                and self.is_feature_available(Feature.HABITS)
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.METRIC and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif (
+                entity_tag is NamedEntityTag.METRIC_ENTRY
+                and self.is_feature_available(Feature.HABITS)
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.PERSON and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.SLACK_TASK and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+            elif entity_tag is NamedEntityTag.EMAIL_TASK and self.is_feature_available(
+                Feature.HABITS
+            ):
+                inferred_entity_tags.append(entity_tag)
+        return inferred_entity_tags
 
     def infer_sources_for_enabled_features(
         self, filter_sources: Iterable[InboxTaskSource] | None = None

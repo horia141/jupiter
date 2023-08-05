@@ -213,7 +213,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
-                    parent_entity_name_to_rich_text(slack_task.simple_name),
+                    parent_entity_name_to_rich_text(slack_task.name),
                 )
             elif (
                 email_task is not None
@@ -223,7 +223,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(
-                    parent_entity_name_to_rich_text(email_task.simple_name),
+                    parent_entity_name_to_rich_text(email_task.name),
                 )
 
             if inbox_task.actionable_date:

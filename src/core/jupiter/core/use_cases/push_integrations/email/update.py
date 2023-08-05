@@ -143,7 +143,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
         async with progress_reporter.start_updating_entity(
             "email task",
             email_task.ref_id,
-            str(email_task.simple_name),
+            str(email_task.name),
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 email_task = email_task.update(
@@ -156,7 +156,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
                     source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time(),
                 )
-                await entity_reporter.mark_known_name(str(email_task.simple_name))
+                await entity_reporter.mark_known_name(str(email_task.name))
 
                 await uow.email_task_repository.save(email_task)
                 await entity_reporter.mark_local_change()

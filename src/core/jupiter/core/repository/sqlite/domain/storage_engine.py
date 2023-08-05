@@ -53,6 +53,7 @@ from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_rep
 from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository import (
     SlackTaskRepository,
 )
+from jupiter.core.domain.search_repository import SearchRepository
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
 )
@@ -68,6 +69,8 @@ from jupiter.core.domain.smart_lists.infra.smart_list_tag_repository import (
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
+    SearchStorageEngine,
+    SearchUnitOfWork,
 )
 from jupiter.core.domain.user.infra.user_repository import UserRepository
 from jupiter.core.domain.user_workspace_link.infra.user_workspace_link_repository import (
@@ -123,6 +126,7 @@ from jupiter.core.repository.sqlite.domain.push_integration.slack_tasks import (
     SqliteSlackTaskCollectionRepository,
     SqliteSlackTaskRepository,
 )
+from jupiter.core.repository.sqlite.domain.search import SqliteSearchRepository
 from jupiter.core.repository.sqlite.domain.smart_lists import (
     SqliteSmartListCollectionRepository,
     SqliteSmartListItemRepository,
@@ -145,7 +149,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 class SqliteDomainUnitOfWork(DomainUnitOfWork):
-    """A Sqlite specific metric unit of work."""
+    """A Sqlite specific unit of work."""
 
     _user_repository: Final[SqliteUserRepository]
     _auth_repository: Final[SqliteAuthRepository]
@@ -553,3 +557,49 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 email_task_repository=email_task_repository,
                 fast_into_repository=fast_info_repository,
             )
+
+
+class SqliteSearchUnitOfWork(SearchUnitOfWork):
+    """A Sqlite specific search unit of work."""
+
+    _search_repository: Final[SqliteSearchRepository]
+
+    def __init__(self, search_repository: SqliteSearchRepository) -> None:
+        """Constructor."""
+        self._search_repository = search_repository
+
+    def __enter__(self) -> "SqliteSearchUnitOfWork":
+        """Enter the context."""
+        return self
+
+    def __exit__(
+        self,
+        _exc_type: Optional[Type[BaseException]],
+        _exc_val: Optional[BaseException],
+        _exc_tb: Optional[TracebackType],
+    ) -> None:
+        """Exit context."""
+
+    @property
+    def search_repository(self) -> SearchRepository:
+        """The search repository."""
+        return self._search_repository
+
+
+class SqliteSearchStorageEngine(SearchStorageEngine):
+    """An Sqlite specific engine."""
+
+    _sql_engine: Final[AsyncEngine]
+    _metadata: Final[MetaData]
+
+    def __init__(self, connection: SqliteConnection) -> None:
+        """Constructor."""
+        self._sql_engine = connection.sql_engine
+        self._metadata = MetaData(bind=self._sql_engine)
+
+    @asynccontextmanager
+    async def get_unit_of_work(self) -> AsyncIterator[SearchUnitOfWork]:
+        """Get the unit of work."""
+        async with self._sql_engine.begin() as connection:
+            search_repository = SqliteSearchRepository(connection, self._metadata)
+            yield SqliteSearchUnitOfWork(search_repository=search_repository)

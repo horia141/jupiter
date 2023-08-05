@@ -15,6 +15,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.metrics.metric_unit import MetricUnit
+from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_relationship import PersonRelationship
 from jupiter.core.domain.projects.project_name import ProjectName
@@ -648,6 +649,11 @@ def due_date_to_rich_text(due_date: ADate) -> Text:
 def project_to_rich_text(project_name: ProjectName) -> Text:
     """Transform a project into text."""
     return Text("In Project ").append(str(project_name), style="underline")
+
+
+def entity_tag_to_rich_text(entity_tag: NamedEntityTag) -> Text:
+    """Transform a sync target into text."""
+    return Text(entity_tag.value, style="blue italic")
 
 
 def entity_name_to_rich_text(name: EntityName) -> Text:

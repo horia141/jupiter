@@ -60,7 +60,7 @@ class EmailTaskRemoveService:
         async with progress_reporter.start_removing_entity(
             "email task",
             email_task.ref_id,
-            str(email_task.simple_name),
+            str(email_task.name),
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 await uow.email_task_repository.remove(email_task.ref_id)

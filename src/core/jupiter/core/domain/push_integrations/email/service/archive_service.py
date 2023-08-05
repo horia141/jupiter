@@ -77,7 +77,7 @@ class EmailTaskArchiveService:
         async with progress_reporter.start_archiving_entity(
             "email task",
             email_task.ref_id,
-            str(email_task.simple_name),
+            str(email_task.name),
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 email_task = email_task.mark_archived(

@@ -42,5 +42,5 @@ class MetricEntryRemoveUseCase(AppLoggedInMutationUseCase[MetricEntryRemoveArgs,
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 metric_entry = await uow.metric_entry_repository.remove(args.ref_id)
-                await entity_reporter.mark_known_name(str(metric_entry.simple_name))
+                await entity_reporter.mark_known_name(str(metric_entry.name))
                 await entity_reporter.mark_local_change()

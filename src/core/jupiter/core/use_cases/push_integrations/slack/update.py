@@ -141,7 +141,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
         async with progress_reporter.start_updating_entity(
             "slack task",
             slack_task.ref_id,
-            str(slack_task.simple_name),
+            str(slack_task.name),
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 slack_task = slack_task.update(
@@ -152,7 +152,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
                     source=EventSource.CLI,
                     modification_time=self._time_provider.get_current_time(),
                 )
-                await entity_reporter.mark_known_name(str(slack_task.simple_name))
+                await entity_reporter.mark_known_name(str(slack_task.name))
 
                 await uow.slack_task_repository.save(slack_task)
                 await entity_reporter.mark_local_change()

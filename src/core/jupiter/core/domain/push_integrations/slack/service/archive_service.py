@@ -77,7 +77,7 @@ class SlackTaskArchiveService:
         async with progress_reporter.start_archiving_entity(
             "Slack task",
             slack_task.ref_id,
-            str(slack_task.simple_name),
+            str(slack_task.name),
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 slack_task = slack_task.mark_archived(

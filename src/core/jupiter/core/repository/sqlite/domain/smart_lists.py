@@ -2,6 +2,7 @@
 from typing import Final, Iterable, List, Optional
 
 from jupiter.core.domain.entity_icon import EntityIcon
+from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionNotFoundError,
     SmartListCollectionRepository,
@@ -511,6 +512,7 @@ class SqliteSmartListTagRepository(SmartListTagRepository):
             else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
+            name=EntityName.from_raw(row["tag_name"]),
             smart_list_ref_id=EntityId.from_raw(str(row["smart_list_ref_id"])),
             tag_name=SmartListTagName.from_raw(row["tag_name"]),
         )

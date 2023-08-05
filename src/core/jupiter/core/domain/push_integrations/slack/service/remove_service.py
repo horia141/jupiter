@@ -60,7 +60,7 @@ class SlackTaskRemoveService:
         async with progress_reporter.start_removing_entity(
             "slack task",
             slack_task.ref_id,
-            str(slack_task.simple_name),
+            str(slack_task.name),
         ) as entity_reporter:
             async with self._storage_engine.get_unit_of_work() as uow:
                 await uow.slack_task_repository.remove(slack_task.ref_id)

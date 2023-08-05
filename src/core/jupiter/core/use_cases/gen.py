@@ -1076,7 +1076,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         async with progress_reporter.start_complex_entity_work(
             "slack task",
             slack_task.ref_id,
-            str(slack_task.simple_name),
+            str(slack_task.name),
         ) as subprogress_reporter:
             found_task = all_inbox_tasks_by_slack_task_ref_id.get(
                 slack_task.ref_id,
@@ -1151,7 +1151,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         async with progress_reporter.start_complex_entity_work(
             "email task",
             email_task.ref_id,
-            str(email_task.simple_name),
+            str(email_task.name),
         ) as subprogress_reporter:
             found_task = all_inbox_tasks_by_email_task_ref_id.get(
                 email_task.ref_id,

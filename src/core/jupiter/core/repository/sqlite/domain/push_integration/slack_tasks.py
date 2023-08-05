@@ -358,6 +358,10 @@ class SqliteSlackTaskRepository(SlackTaskRepository):
             else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
+            name=SlackTask.build_name(
+                SlackUserName.from_raw(row["user"]),
+                SlackChannelName.from_raw(row["channel"]) if row["channel"] else None,
+            ),
             slack_task_collection_ref_id=EntityId.from_raw(
                 str(row["slack_task_collection_ref_id"]),
             ),

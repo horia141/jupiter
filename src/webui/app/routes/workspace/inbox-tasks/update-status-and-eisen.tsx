@@ -26,9 +26,10 @@ export async function action({ request }: ActionArgs) {
       ref_id: { the_id: form.id },
       name: { should_change: false },
       status: { should_change: true, value: form.status },
-      eisen: (form.eisen !== "no-go" && form.eisen !== undefined)
-        ? { should_change: true, value: form.eisen }
-        : { should_change: false },
+      eisen:
+        form.eisen !== "no-go" && form.eisen !== undefined
+          ? { should_change: true, value: form.eisen }
+          : { should_change: false },
       difficulty: { should_change: false },
       actionable_date: { should_change: false },
       due_date: { should_change: false },

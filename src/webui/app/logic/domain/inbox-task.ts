@@ -7,6 +7,7 @@ import {
   EntityId,
   Habit,
   InboxTask,
+  InboxTaskSource,
   InboxTaskStatus,
   Metric,
   Person,
@@ -14,7 +15,6 @@ import {
   RecurringTaskPeriod,
   SlackTask,
 } from "jupiter-gen";
-import { InboxTaskSource } from "jupiter-gen";
 import type { DateTime } from "luxon";
 import { aDateToDate, compareADate } from "./adate";
 import { compareDifficulty } from "./difficulty";
@@ -237,7 +237,10 @@ export function isInboxTaskCoreFieldEditable(source: InboxTaskSource): boolean {
   return source === InboxTaskSource.USER || source === InboxTaskSource.BIG_PLAN;
 }
 
-export function canInboxTaskBeInStatus(inboxTasks: InboxTask, status: InboxTaskStatus): boolean {
+export function canInboxTaskBeInStatus(
+  inboxTasks: InboxTask,
+  status: InboxTaskStatus
+): boolean {
   switch (inboxTasks.source) {
     case InboxTaskSource.USER:
     case InboxTaskSource.BIG_PLAN:

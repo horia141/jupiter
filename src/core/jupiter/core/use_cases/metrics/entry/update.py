@@ -55,7 +55,7 @@ class MetricEntryUpdateUseCase(AppLoggedInMutationUseCase[MetricEntryUpdateArgs,
                     )
                 )
                 metric_entry = await uow.metric_entry_repository.load_by_id(args.ref_id)
-                await entity_reporter.mark_known_name(str(metric_entry.simple_name))
+                await entity_reporter.mark_known_name(str(metric_entry.name))
 
                 metric_entry = metric_entry.update(
                     collection_time=args.collection_time,
@@ -66,5 +66,5 @@ class MetricEntryUpdateUseCase(AppLoggedInMutationUseCase[MetricEntryUpdateArgs,
                 )
 
                 await uow.metric_entry_repository.save(metric_entry)
-                await entity_reporter.mark_known_name(str(metric_entry.simple_name))
+                await entity_reporter.mark_known_name(str(metric_entry.name))
                 await entity_reporter.mark_local_change()
