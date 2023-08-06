@@ -98,7 +98,14 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
             match_text.append(" ")
             match_text.append(entity_name_to_rich_text(match.name))
 
-            rich_tree.add(match_text)
+            match_tree = Tree(match_text)
+
+            match_snippet_with_markup = match.match_snippet.replace("found", "bold underline blue")
+
+            snippet_text = Text.from_markup(match_snippet_with_markup)
+            match_tree.add(snippet_text)
+
+            rich_tree.add(match_tree)
 
         console = Console()
         console.print(rich_tree)

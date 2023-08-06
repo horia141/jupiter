@@ -94,7 +94,15 @@ class SqliteSearchRepository(SearchRepository):
     ) -> List[SearchMatch]:
         """Search for entities in the index."""
         query_stmt = (
-            select(self._search_index_table)
+            select(
+                self._search_index_table.c.workspace_ref_id,
+                self._search_index_table.c.entity_tag,
+                self._search_index_table.c.ref_id,
+                self._search_index_table.c.name,
+                self._search_index_table.c.archived,
+                text("highlight(search_index, 3, '[found]', '[/found]') as highlight"),
+                text("snippet(search_index, 3, '[found]', '[/found]', '[nomatch]', 64) as snippet"),
+                text("rank"))
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
@@ -122,7 +130,7 @@ class SqliteSearchRepository(SearchRepository):
             ref_id=EntityId.from_raw(str(row["ref_id"])),
             name=EntityName.from_raw(row["name"]),
             archived=row["archived"],
-            match_highlight="",
-            match_snippet="",
-            search_rank=10.0,
+            match_highlight=row["highlight"],
+            match_snippet=row["snippet"],
+            search_rank=row["rank"],
         )
