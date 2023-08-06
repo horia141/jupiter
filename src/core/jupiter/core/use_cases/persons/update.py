@@ -56,7 +56,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -66,7 +66,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             person_collection = await uow.person_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -199,7 +199,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
             inbox_task_archive_service = InboxTaskArchiveService(
                 source=EventSource.CLI,
                 time_provider=self._time_provider,
-                storage_engine=self._storage_engine,
+                storage_engine=self._domain_storage_engine,
             )
             for inbox_task in person_catch_up_tasks:
                 await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
@@ -238,7 +238,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
                     await entity_reporter.mark_known_name(str(inbox_task.name))
 
                     # Situation 2a: we're handling the same project.
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(inbox_task)
                         await entity_reporter.mark_local_change()
 
@@ -248,7 +248,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
             inbox_task_archive_service = InboxTaskArchiveService(
                 source=EventSource.CLI,
                 time_provider=self._time_provider,
-                storage_engine=self._storage_engine,
+                storage_engine=self._domain_storage_engine,
             )
             for inbox_task in person_birthday_tasks:
                 await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
@@ -291,7 +291,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
                     await entity_reporter.mark_known_name(str(inbox_task.name))
 
                     # Situation 2a: we're handling the same project.
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(inbox_task)
                         await entity_reporter.mark_local_change()
 
@@ -300,7 +300,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
             person.ref_id,
             str(person.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 person = person.update(
                     name=args.name,
                     relationship=args.relationship,

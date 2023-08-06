@@ -60,7 +60,7 @@ class PersonCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -73,7 +73,7 @@ class PersonCreateUseCase(
             "person",
             str(args.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 person_collection = (
                     await uow.person_collection_repository.load_by_parent(
                         workspace.ref_id,
@@ -103,7 +103,7 @@ class PersonCreateUseCase(
                     created_time=self._time_provider.get_current_time(),
                 )
                 person = await uow.person_repository.create(person)
-                await entity_reporter.mark_known_entity_id(person.ref_id)
+                await entity_reporter.mark_known_entity(person)
                 await entity_reporter.mark_local_change()
 
         return PersonCreateResult(new_person=person)

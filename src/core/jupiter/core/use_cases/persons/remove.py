@@ -30,7 +30,7 @@ class PersonRemoveUseCase(AppLoggedInMutationUseCase[PersonRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -39,7 +39,7 @@ class PersonRemoveUseCase(AppLoggedInMutationUseCase[PersonRemoveArgs, None]):
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             person_collection = await uow.person_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -49,5 +49,5 @@ class PersonRemoveUseCase(AppLoggedInMutationUseCase[PersonRemoveArgs, None]):
             )
 
         await PersonRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).do_it(progress_reporter, person_collection, person)

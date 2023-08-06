@@ -56,7 +56,7 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
         """The feature the use case is scope to."""
         return Feature.CHORES
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -70,7 +70,7 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
             "chore",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 chore = await uow.chore_repository.load_by_id(args.ref_id)
                 await entity_reporter.mark_known_name(str(chore.name))
 
@@ -133,7 +133,7 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
                 await entity_reporter.mark_local_change()
 
         if need_to_change_inbox_tasks:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 inbox_task_collection = (
                     await uow.inbox_task_collection_repository.load_by_parent(
                         workspace.ref_id,
@@ -177,6 +177,6 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(inbox_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(inbox_task)
                         await entity_reporter.mark_local_change()

@@ -53,7 +53,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
         """The feature the use case is scope to."""
         return Feature.EMAIL_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -63,7 +63,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             email_task = await uow.email_task_repository.load_by_id(args.ref_id)
 
             if (
@@ -123,7 +123,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
             generated_inbox_task.ref_id,
             str(generated_inbox_task.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 generated_inbox_task = generated_inbox_task.update_link_to_email_task(
                     project_ref_id=generated_inbox_task.project_ref_id,
                     from_address=email_task.from_address,
@@ -145,7 +145,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
             email_task.ref_id,
             str(email_task.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 email_task = email_task.update(
                     from_address=args.from_address,
                     from_name=args.from_name,

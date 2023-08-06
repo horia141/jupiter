@@ -35,7 +35,7 @@ class InboxTaskChangeProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.INBOX_TASKS, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -48,7 +48,7 @@ class InboxTaskChangeProjectUseCase(
             "inbox task",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 inbox_task = await uow.inbox_task_repository.load_by_id(args.ref_id)
                 await entity_reporter.mark_known_name(str(inbox_task.name))
 

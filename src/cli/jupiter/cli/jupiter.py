@@ -373,7 +373,8 @@ async def main() -> None:
                         invocation_recorder=invocation_recorder,
                         progress_reporter_factory=progress_reporter_factory,
                         auth_token_stamper=auth_token_stamper,
-                        storage_engine=domain_storage_engine,
+                        domain_storage_engine=domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ResetPassword(
@@ -406,6 +407,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 Report(
@@ -424,6 +426,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 Pomodoro(
@@ -443,7 +446,8 @@ async def main() -> None:
                         invocation_recorder=invocation_recorder,
                         progress_reporter_factory=progress_reporter_factory,
                         auth_token_stamper=auth_token_stamper,
-                        storage_engine=domain_storage_engine,
+                        domain_storage_engine=domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 UserShow(
@@ -463,6 +467,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 WorkspaceChangeDefaultProject(
@@ -474,6 +479,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 WorkspaceChangeFeatureFlags(
@@ -484,7 +490,8 @@ async def main() -> None:
                         invocation_recorder=invocation_recorder,
                         progress_reporter_factory=progress_reporter_factory,
                         auth_token_stamper=auth_token_stamper,
-                        storage_engine=domain_storage_engine,
+                        domain_storage_engine=domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                         global_properties=global_properties,
                     ),
                 ),
@@ -503,6 +510,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 VacationArchive(
@@ -514,6 +522,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 VacationUpdate(
@@ -526,6 +535,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 VacationRemove(
@@ -537,6 +547,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 VacationsShow(
@@ -554,6 +565,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ProjectArchive(
@@ -564,7 +576,8 @@ async def main() -> None:
                         invocation_recorder=invocation_recorder,
                         progress_reporter_factory=progress_reporter_factory,
                         auth_token_stamper=auth_token_stamper,
-                        storage_engine=domain_storage_engine,
+                        domain_storage_engine=domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ProjectUpdate(
@@ -576,6 +589,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ProjectShow(
@@ -592,6 +606,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskCreate(
@@ -604,6 +619,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskArchive(
@@ -615,6 +631,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskChangeProject(
@@ -626,6 +643,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskAssociateWithBigPlan(
@@ -637,6 +655,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskRemove(
@@ -648,6 +667,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskUpdate(
@@ -660,6 +680,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 InboxTaskShow(
@@ -676,6 +697,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitArchive(
@@ -687,6 +709,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitChangeProject(
@@ -698,6 +721,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitSuspend(
@@ -709,6 +733,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitUnsuspend(
@@ -720,6 +745,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitUpdate(
@@ -731,6 +757,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitRemove(
@@ -742,6 +769,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 HabitShow(
@@ -759,6 +787,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreArchive(
@@ -770,6 +799,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreChangeProject(
@@ -781,6 +811,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreSuspend(
@@ -792,6 +823,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreUnsuspend(
@@ -803,6 +835,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreUpdate(
@@ -815,6 +848,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreRemove(
@@ -826,6 +860,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 ChoreShow(
@@ -844,6 +879,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 BigPlanArchive(
@@ -855,6 +891,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 BigPlanRemove(
@@ -866,6 +903,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 BigPlanChangeProject(
@@ -877,6 +915,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 BigPlanUpdate(
@@ -889,6 +928,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 BigPlanShow(
@@ -905,6 +945,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListArchive(
@@ -916,6 +957,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListUpdate(
@@ -927,6 +969,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListShow(
@@ -943,6 +986,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListTagCreate(
@@ -954,6 +998,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListTagArchive(
@@ -965,6 +1010,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListTagUpdate(
@@ -976,6 +1022,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListTagRemove(
@@ -987,6 +1034,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListItemCreate(
@@ -998,6 +1046,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListItemArchive(
@@ -1009,6 +1058,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListItemUpdate(
@@ -1020,6 +1070,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SmartListItemRemove(
@@ -1031,6 +1082,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricChangeCollectionProject(
@@ -1042,6 +1094,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricCreate(
@@ -1053,6 +1106,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricArchive(
@@ -1064,6 +1118,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricUpdate(
@@ -1075,6 +1130,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricShow(
@@ -1091,6 +1147,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricEntryCreate(
@@ -1102,6 +1159,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricEntryArchive(
@@ -1113,6 +1171,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricEntryUpdate(
@@ -1124,6 +1183,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 MetricEntryRemove(
@@ -1135,6 +1195,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 PersonChangeCatchUpProject(
@@ -1146,6 +1207,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 PersonCreate(
@@ -1157,6 +1219,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 PersonArchive(
@@ -1168,6 +1231,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 PersonUpdate(
@@ -1179,6 +1243,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 PersonRemove(
@@ -1190,6 +1255,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 PersonShow(
@@ -1206,6 +1272,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SlackTaskRemove(
@@ -1217,6 +1284,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SlackTaskUpdate(
@@ -1229,6 +1297,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SlackTaskChangeGenerationProject(
@@ -1240,6 +1309,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 SlackTaskShow(
@@ -1256,6 +1326,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 EmailTaskRemove(
@@ -1267,6 +1338,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 EmailTaskUpdate(
@@ -1279,6 +1351,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 EmailTaskChangeGenerationProject(
@@ -1290,6 +1363,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
                     ),
                 ),
                 EmailTaskShow(
@@ -1306,6 +1380,7 @@ async def main() -> None:
                         progress_reporter_factory,
                         auth_token_stamper,
                         domain_storage_engine,
+                        search_storage_engine,
                         usecase_storage_engine,
                         global_properties,
                     ),

@@ -35,7 +35,7 @@ class SmartListTagUpdateUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -46,7 +46,7 @@ class SmartListTagUpdateUseCase(
             "smart list tag",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 smart_list_tag = await uow.smart_list_tag_repository.load_by_id(
                     args.ref_id
                 )

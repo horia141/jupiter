@@ -30,7 +30,7 @@ class ChoreSuspendUseCase(AppLoggedInMutationUseCase[ChoreSuspendArgs, None]):
         """The feature the use case is scope to."""
         return Feature.CHORES
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -41,7 +41,7 @@ class ChoreSuspendUseCase(AppLoggedInMutationUseCase[ChoreSuspendArgs, None]):
             "chore",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 chore = await uow.chore_repository.load_by_id(args.ref_id)
                 await entity_reporter.mark_known_name(str(chore.name))
                 chore = chore.suspend(

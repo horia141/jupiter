@@ -33,7 +33,7 @@ class BigPlanChangeProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.BIG_PLANS, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -46,7 +46,7 @@ class BigPlanChangeProjectUseCase(
             "big plan",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 big_plan = await uow.big_plan_repository.load_by_id(args.ref_id)
                 await entity_reporter.mark_known_name(str(big_plan.name))
 
@@ -77,7 +77,7 @@ class BigPlanChangeProjectUseCase(
                 inbox_task.ref_id,
                 str(inbox_task.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     inbox_task = inbox_task.update_link_to_big_plan(
                         big_plan.project_ref_id,
                         big_plan.ref_id,

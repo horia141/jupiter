@@ -41,7 +41,7 @@ class GCArgs(UseCaseArgsBase):
 class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
     """The command for doing a garbage collection run."""
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -65,7 +65,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 f"GC targets {','.join(s.value for s in gc_targets_diff)} are not supported in this workspace"
             )
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = (
                 await uow.inbox_task_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -100,7 +100,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 async with progress_reporter.section(
                     "Archiving all done inbox tasks",
                 ):
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         inbox_tasks = await uow.inbox_task_repository.find_all(
                             parent_ref_id=inbox_task_collection.ref_id,
                             allow_archived=False,
@@ -118,7 +118,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 async with progress_reporter.section(
                     "Archiving all done big plans",
                 ):
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         big_plans = await uow.big_plan_repository.find_all(
                             parent_ref_id=big_plan_collection.ref_id,
                             allow_archived=False,
@@ -136,7 +136,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 async with progress_reporter.section(
                     "Archiving all Slack tasks whose inbox tasks are done or archived",
                 ):
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         slack_tasks = await uow.slack_task_repository.find_all(
                             parent_ref_id=slack_task_collection.ref_id,
                             allow_archived=False,
@@ -165,7 +165,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 async with progress_reporter.section(
                     "Archiving all email tasks whose inbox tasks are done or archived",
                 ):
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         email_tasks = await uow.email_task_repository.find_all(
                             parent_ref_id=email_task_collection.ref_id,
                             allow_archived=False,
@@ -194,7 +194,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         )
         for inbox_task in inbox_tasks:
             if not inbox_task.status.is_completed:
@@ -210,7 +210,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         big_plan_archive_service = BigPlanArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         )
         need_to_modify_something = False
         for big_plan in big_plans:
@@ -230,7 +230,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         slack_task_arhive_service = SlackTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         )
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
@@ -250,7 +250,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         email_task_arhive_service = EmailTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         )
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):

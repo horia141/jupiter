@@ -35,7 +35,7 @@ class MetricEntryUpdateUseCase(AppLoggedInMutationUseCase[MetricEntryUpdateArgs,
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -48,7 +48,7 @@ class MetricEntryUpdateUseCase(AppLoggedInMutationUseCase[MetricEntryUpdateArgs,
             "metric entry",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 (
                     await uow.metric_collection_repository.load_by_parent(
                         workspace.ref_id,

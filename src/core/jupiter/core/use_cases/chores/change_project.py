@@ -35,7 +35,7 @@ class ChoreChangeProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.CHORES, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -45,7 +45,7 @@ class ChoreChangeProjectUseCase(
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             chore = await uow.chore_repository.load_by_id(args.ref_id)
 
             inbox_task_collection = (
@@ -65,7 +65,7 @@ class ChoreChangeProjectUseCase(
                 inbox_task.ref_id,
                 str(inbox_task.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     schedule = schedules.get_schedule(
                         chore.gen_params.period,
                         chore.name,
@@ -100,7 +100,7 @@ class ChoreChangeProjectUseCase(
             args.ref_id,
             str(chore.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 chore = chore.change_project(
                     project_ref_id=args.project_ref_id
                     or workspace.default_project_ref_id,

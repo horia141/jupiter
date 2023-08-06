@@ -32,18 +32,18 @@ class InboxTaskRemoveUseCase(AppLoggedInMutationUseCase[InboxTaskRemoveArgs, Non
         """The feature the use case is scope to."""
         return Feature.INBOX_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: InboxTaskRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             inbox_task = await uow.inbox_task_repository.load_by_id(
                 args.ref_id,
                 allow_archived=True,
             )
         await InboxTaskRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).do_it(progress_reporter, inbox_task)

@@ -30,7 +30,7 @@ class ChangePasswordArgs(UseCaseArgsBase):
 class ChangePasswordUseCase(AppLoggedInMutationUseCase[ChangePasswordArgs, None]):
     """Use case for changing a password."""
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -38,10 +38,9 @@ class ChangePasswordUseCase(AppLoggedInMutationUseCase[ChangePasswordArgs, None]
     ) -> None:
         """Execute the command's action."""
         async with progress_reporter.start_updating_entity("auth") as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 try:
                     auth = await uow.auth_repository.load_by_parent(context.user.ref_id)
-                    await entity_reporter.mark_known_entity_id(auth.ref_id)
                     auth = auth.change_password(
                         current_password=args.current_password,
                         new_password=args.new_password,
@@ -50,6 +49,7 @@ class ChangePasswordUseCase(AppLoggedInMutationUseCase[ChangePasswordArgs, None]
                         modification_time=self._time_provider.get_current_time(),
                     )
                     await uow.auth_repository.save(auth)
+                    await entity_reporter.mark_known_entity(auth)
                     await entity_reporter.mark_local_change()
                 except IncorrectPasswordError as err:
                     raise InvalidChangePasswordCredentialsError(

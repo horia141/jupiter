@@ -34,7 +34,7 @@ class MetricChangeCollectionProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.METRICS, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -43,7 +43,7 @@ class MetricChangeCollectionProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             await uow.project_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -70,7 +70,7 @@ class MetricChangeCollectionProjectUseCase(
             old_catch_up_project_ref_id != collection_project_ref_id
             and len(metrics) > 0
         ):
-            async with self._storage_engine.get_unit_of_work() as inbox_task_uow:
+            async with self._domain_storage_engine.get_unit_of_work() as inbox_task_uow:
                 inbox_task_collection = await inbox_task_uow.inbox_task_collection_repository.load_by_parent(
                     workspace.ref_id,
                 )
@@ -89,7 +89,7 @@ class MetricChangeCollectionProjectUseCase(
                     inbox_task.ref_id,
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as inbox_task_uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as inbox_task_uow:
                         inbox_task = inbox_task.update_link_to_metric(
                             project_ref_id=collection_project_ref_id,
                             name=inbox_task.name,
@@ -113,7 +113,7 @@ class MetricChangeCollectionProjectUseCase(
             metric_collection.ref_id,
             "Metric Collection",
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 metric_collection = metric_collection.change_collection_project(
                     collection_project_ref_id=collection_project_ref_id,
                     source=EventSource.CLI,

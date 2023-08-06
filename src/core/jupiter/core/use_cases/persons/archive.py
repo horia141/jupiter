@@ -34,7 +34,7 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -43,7 +43,7 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             await uow.person_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -66,7 +66,7 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         )
 
         for inbox_task in all_inbox_tasks:
@@ -77,7 +77,7 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
             person.ref_id,
             str(person.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 person = person.mark_archived(
                     EventSource.CLI,
                     self._time_provider.get_current_time(),

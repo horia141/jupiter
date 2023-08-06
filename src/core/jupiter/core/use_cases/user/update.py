@@ -26,7 +26,7 @@ class UserUpdateArgs(UseCaseArgsBase):
 class UserUpdateUseCase(AppLoggedInMutationUseCase[UserUpdateArgs, None]):
     """The command for updating a user's properties."""
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -37,7 +37,7 @@ class UserUpdateUseCase(AppLoggedInMutationUseCase[UserUpdateArgs, None]):
             "user",
             context.user.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 user = context.user.update(
                     name=args.name,
                     timezone=args.timezone,

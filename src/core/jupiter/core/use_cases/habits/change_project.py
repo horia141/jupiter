@@ -35,7 +35,7 @@ class HabitChangeProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.HABITS, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -51,7 +51,7 @@ class HabitChangeProjectUseCase(
         ):
             raise FeatureUnavailableError(Feature.PROJECTS)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             habit = await uow.habit_repository.load_by_id(args.ref_id)
 
             inbox_task_collection = (
@@ -71,7 +71,7 @@ class HabitChangeProjectUseCase(
                 inbox_task.ref_id,
                 str(inbox_task.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     schedule = schedules.get_schedule(
                         habit.gen_params.period,
                         habit.name,
@@ -108,7 +108,7 @@ class HabitChangeProjectUseCase(
             args.ref_id,
             str(habit.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 habit = habit.change_project(
                     project_ref_id=args.project_ref_id
                     or workspace.default_project_ref_id,

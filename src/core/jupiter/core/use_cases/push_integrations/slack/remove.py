@@ -32,18 +32,18 @@ class SlackTaskRemoveUseCase(AppLoggedInMutationUseCase[SlackTaskRemoveArgs, Non
         """The feature the use case is scope to."""
         return Feature.SLACK_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SlackTaskRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             slack_task = await uow.slack_task_repository.load_by_id(ref_id=args.ref_id)
 
         slack_task_remove_service = SlackTaskRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         )
 
         await slack_task_remove_service.do_it(progress_reporter, slack_task)

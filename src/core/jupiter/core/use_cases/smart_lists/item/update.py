@@ -41,7 +41,7 @@ class SmartListItemUpdateUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -50,7 +50,7 @@ class SmartListItemUpdateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             (
                 await uow.smart_list_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -62,7 +62,7 @@ class SmartListItemUpdateUseCase(
             )
 
         if args.tags.should_change:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 smart_list_tags = {
                     t.tag_name: t
                     for t in await uow.smart_list_tag_repository.find_all_with_filters(
@@ -79,7 +79,7 @@ class SmartListItemUpdateUseCase(
                     "smart list tag",
                     str(tag),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         smart_list_tag = SmartListTag.new_smart_list_tag(
                             smart_list_ref_id=smart_list_item.smart_list_ref_id,
                             tag_name=tag,
@@ -107,7 +107,7 @@ class SmartListItemUpdateUseCase(
             args.ref_id,
             str(smart_list_item.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 smart_list_item = smart_list_item.update(
                     name=args.name,
                     is_done=args.is_done,

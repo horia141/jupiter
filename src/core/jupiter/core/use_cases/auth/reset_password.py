@@ -60,8 +60,6 @@ class ResetPasswordUseCase(
                         args.email_address
                     )
                     auth = await uow.auth_repository.load_by_parent(user.ref_id)
-                    await entity_reporter.mark_known_entity_id(auth.ref_id)
-
                     auth, new_recovery_token = auth.reset_password(
                         recovery_token=args.recovery_token,
                         new_password=args.new_password,
@@ -69,7 +67,8 @@ class ResetPasswordUseCase(
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    await uow.auth_repository.save(auth)
+                    auth = await uow.auth_repository.save(auth)
+                    await entity_reporter.mark_known_entity(auth)
                     await entity_reporter.mark_local_change()
                 except (UserNotFoundError, IncorrectRecoveryTokenError) as err:
                     raise InvalidResetPasswordCredentialsError(

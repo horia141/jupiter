@@ -31,16 +31,16 @@ class BigPlanArchiveUseCase(AppLoggedInMutationUseCase[BigPlanArchiveArgs, None]
         """The feature the use case is scope to."""
         return Feature.BIG_PLANS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: BigPlanArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             big_plan = await uow.big_plan_repository.load_by_id(args.ref_id)
 
         await BigPlanArchiveService(
-            EventSource.CLI, self._time_provider, self._storage_engine
+            EventSource.CLI, self._time_provider, self._domain_storage_engine
         ).do_it(progress_reporter, big_plan)

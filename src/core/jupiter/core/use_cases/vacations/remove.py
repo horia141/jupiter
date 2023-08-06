@@ -30,19 +30,19 @@ class VacationRemoveUseCase(AppLoggedInMutationUseCase[VacationRemoveArgs, None]
         """The feature the use case is scope to."""
         return Feature.VACATIONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: VacationRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             vacation = await uow.vacation_repository.load_by_id(
                 args.ref_id,
                 allow_archived=True,
             )
         vacation_remove_service = VacationRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         )
         await vacation_remove_service.do_it(progress_reporter, vacation)

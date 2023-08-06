@@ -61,7 +61,7 @@ class GenArgs(UseCaseArgsBase):
 class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
     """The command for generating new tasks."""
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -124,7 +124,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         ):
             raise FeatureUnavailableError(Feature.EMAIL_TASKS)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             vacation_collection = (
                 await uow.vacation_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -163,14 +163,14 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             and SyncTarget.HABITS in gen_targets
         ):
             async with progress_reporter.section("Generating habits"):
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_habits = await uow.habit_repository.find_all_with_filters(
                         parent_ref_id=habit_collection.ref_id,
                         filter_ref_ids=args.filter_habit_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids,
                     )
 
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_collection_inbox_tasks = (
                         await uow.inbox_task_repository.find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
@@ -215,14 +215,14 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             and SyncTarget.CHORES in gen_targets
         ):
             async with progress_reporter.section("Generating chores"):
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_chores = await uow.chore_repository.find_all_with_filters(
                         parent_ref_id=chore_collection.ref_id,
                         filter_ref_ids=args.filter_chore_ref_ids,
                         filter_project_ref_ids=filter_project_ref_ids,
                     )
 
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     all_collection_inbox_tasks = (
                         await uow.inbox_task_repository.find_all_with_filters(
                             parent_ref_id=inbox_task_collection.ref_id,
@@ -266,7 +266,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             and SyncTarget.METRICS in gen_targets
         ):
             async with progress_reporter.section("Generating for metrics"):
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     metric_collection = (
                         await uow.metric_collection_repository.load_by_parent(
                             workspace.ref_id,
@@ -326,7 +326,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             and SyncTarget.PERSONS in gen_targets
         ):
             async with progress_reporter.section("Generating for persons"):
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     person_collection = (
                         await uow.person_collection_repository.load_by_parent(
                             workspace.ref_id,
@@ -424,7 +424,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             and SyncTarget.SLACK_TASKS in gen_targets
         ):
             async with progress_reporter.section("Generating for Slack tasks"):
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     push_integration_group = (
                         await uow.push_integration_group_repository.load_by_parent(
                             workspace.ref_id,
@@ -475,7 +475,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             and SyncTarget.EMAIL_TASKS in gen_targets
         ):
             async with progress_reporter.section("Generating for email tasks"):
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     push_integration_group = (
                         await uow.push_integration_group_repository.load_by_parent(
                             workspace.ref_id,
@@ -611,7 +611,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         )
                         await entity_reporter.mark_known_name(str(found_task.name))
 
-                        async with self._storage_engine.get_unit_of_work() as uow:
+                        async with self._domain_storage_engine.get_unit_of_work() as uow:
                             await uow.inbox_task_repository.save(found_task)
                             await entity_reporter.mark_local_change()
 
@@ -636,17 +636,17 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         "inbox task",
                         str(inbox_task.name),
                     ) as entity_reporter:
-                        async with self._storage_engine.get_unit_of_work() as uow:
+                        async with self._domain_storage_engine.get_unit_of_work() as uow:
                             inbox_task = await uow.inbox_task_repository.create(
                                 inbox_task,
                             )
-                            await entity_reporter.mark_known_entity_id(
-                                inbox_task.ref_id,
+                            await entity_reporter.mark_known_entity(
+                                inbox_task,
                             )
                             await entity_reporter.mark_local_change()
 
             inbox_task_remove_service = InboxTaskRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for task in all_found_tasks_by_repeat_index.values():
                 if task.recurring_repeat_index is None:
@@ -744,7 +744,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(found_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(found_task)
                         await entity_reporter.mark_local_change()
             else:
@@ -767,9 +767,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     "inbox task",
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity_id(inbox_task.ref_id)
+                        await entity_reporter.mark_known_entity(inbox_task)
                         await entity_reporter.mark_local_change()
 
     async def _generate_collection_inbox_tasks_for_metric(
@@ -843,7 +843,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(found_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(found_task)
                         await entity_reporter.mark_local_change()
             else:
@@ -866,9 +866,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     "inbox task",
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity_id(inbox_task.ref_id)
+                        await entity_reporter.mark_known_entity(inbox_task)
                         await entity_reporter.mark_local_change()
 
     async def _generate_catch_up_inbox_tasks_for_person(
@@ -942,7 +942,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(found_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(found_task)
                         await entity_reporter.mark_local_change()
             else:
@@ -965,9 +965,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     "inbox task",
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity_id(inbox_task.ref_id)
+                        await entity_reporter.mark_known_entity(inbox_task)
                         await entity_reporter.mark_local_change()
 
     async def _generate_birthday_inbox_task_for_person(
@@ -1038,7 +1038,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(found_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(found_task)
                         await entity_reporter.mark_local_change()
             else:
@@ -1059,9 +1059,9 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     "inbox task",
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity_id(inbox_task.ref_id)
+                        await entity_reporter.mark_known_entity(inbox_task)
                         await entity_reporter.mark_local_change()
 
     async def _generate_slack_inbox_task_for_slack_task(
@@ -1108,7 +1108,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(found_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(found_task)
                         await entity_reporter.mark_local_change()
             else:
@@ -1128,7 +1128,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     "inbox task",
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         slack_task = slack_task.mark_as_used_for_generation(
                             source=EventSource.CLI,
                             modification_time=self._time_provider.get_current_time(),
@@ -1136,7 +1136,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         await uow.slack_task_repository.save(slack_task)
 
                         inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity_id(inbox_task.ref_id)
+                        await entity_reporter.mark_known_entity(inbox_task)
                         await entity_reporter.mark_local_change()
 
     async def _generate_email_inbox_task_for_email_task(
@@ -1185,7 +1185,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await entity_reporter.mark_known_name(str(found_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         await uow.inbox_task_repository.save(found_task)
                         await entity_reporter.mark_local_change()
             else:
@@ -1207,7 +1207,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     "inbox task",
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         email_task = email_task.mark_as_used_for_generation(
                             source=EventSource.CLI,
                             modification_time=self._time_provider.get_current_time(),
@@ -1215,5 +1215,5 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                         await uow.email_task_repository.save(email_task)
 
                         inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity_id(inbox_task.ref_id)
+                        await entity_reporter.mark_known_entity(inbox_task)
                         await entity_reporter.mark_local_change()

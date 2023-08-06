@@ -33,7 +33,7 @@ class EmailTaskChangeGenerationProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.EMAIL_TASKS, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -42,7 +42,7 @@ class EmailTaskChangeGenerationProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             await uow.project_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -103,7 +103,7 @@ class EmailTaskChangeGenerationProjectUseCase(
                     inbox_task.ref_id,
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as inbox_task_uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as inbox_task_uow:
                         email_task = email_tasks_by_ref_id[
                             cast(EntityId, inbox_task.email_task_ref_id)
                         ]
@@ -134,7 +134,7 @@ class EmailTaskChangeGenerationProjectUseCase(
             email_task_collection.ref_id,
             "email task collection",
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 email_task_collection = email_task_collection.change_generation_project(
                     generation_project_ref_id=generation_project_ref_id,
                     source=EventSource.CLI,

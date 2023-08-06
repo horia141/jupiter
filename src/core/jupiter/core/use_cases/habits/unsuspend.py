@@ -30,7 +30,7 @@ class HabitUnsuspendUseCase(AppLoggedInMutationUseCase[HabitUnsuspendArgs, None]
         """The feature the use case is scope to."""
         return Feature.HABITS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -41,7 +41,7 @@ class HabitUnsuspendUseCase(AppLoggedInMutationUseCase[HabitUnsuspendArgs, None]
             "habit",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 habit = await uow.habit_repository.load_by_id(args.ref_id)
                 await entity_reporter.mark_known_name(str(habit.name))
                 habit = habit.unsuspend(

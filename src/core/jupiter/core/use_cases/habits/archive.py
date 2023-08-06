@@ -31,17 +31,17 @@ class HabitArchiveUseCase(AppLoggedInMutationUseCase[HabitArchiveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.HABITS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: HabitArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             habit = await uow.habit_repository.load_by_id(args.ref_id)
         await HabitArchiveService(
             EventSource.CLI,
             self._time_provider,
-            self._storage_engine,
+            self._domain_storage_engine,
         ).do_it(progress_reporter, habit)

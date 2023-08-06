@@ -30,14 +30,14 @@ class SmartListArchiveUseCase(AppLoggedInMutationUseCase[SmartListArchiveArgs, N
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             smart_list = await uow.smart_list_repository.load_by_id(args.ref_id)
 
             smart_list_tags = await uow.smart_list_tag_repository.find_all(
@@ -53,7 +53,7 @@ class SmartListArchiveUseCase(AppLoggedInMutationUseCase[SmartListArchiveArgs, N
                 smart_list_tag.ref_id,
                 str(smart_list_tag.tag_name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     smart_list_tag = smart_list_tag.mark_archived(
                         EventSource.CLI,
                         self._time_provider.get_current_time(),
@@ -67,7 +67,7 @@ class SmartListArchiveUseCase(AppLoggedInMutationUseCase[SmartListArchiveArgs, N
                 smart_list_item.ref_id,
                 str(smart_list_item.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     smart_list_item = smart_list_item.mark_archived(
                         EventSource.CLI,
                         self._time_provider.get_current_time(),
@@ -80,7 +80,7 @@ class SmartListArchiveUseCase(AppLoggedInMutationUseCase[SmartListArchiveArgs, N
             smart_list.ref_id,
             str(smart_list.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 smart_list = smart_list.mark_archived(
                     EventSource.CLI,
                     self._time_provider.get_current_time(),

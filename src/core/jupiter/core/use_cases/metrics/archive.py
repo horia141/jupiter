@@ -34,7 +34,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -43,7 +43,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             inbox_task_collection = (
                 await uow.inbox_task_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -65,7 +65,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         )
         for inbox_task in inbox_tasks_to_archive:
             await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
@@ -76,7 +76,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
                 metric_entry.ref_id,
                 str(metric_entry.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     metric_entry = metric_entry.mark_archived(
                         EventSource.CLI,
                         self._time_provider.get_current_time(),
@@ -89,7 +89,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
             metric.ref_id,
             str(metric.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 metric = metric.mark_archived(
                     EventSource.CLI,
                     self._time_provider.get_current_time(),

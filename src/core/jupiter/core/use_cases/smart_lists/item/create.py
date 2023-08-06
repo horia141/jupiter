@@ -49,14 +49,14 @@ class SmartListItemCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListItemCreateArgs,
     ) -> SmartListItemCreateResult:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             smart_list = await uow.smart_list_repository.load_by_id(
                 args.smart_list_ref_id,
             )
@@ -76,7 +76,7 @@ class SmartListItemCreateUseCase(
                 "smart list tag",
                 str(tag_name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     smart_list_tag = SmartListTag.new_smart_list_tag(
                         smart_list_ref_id=smart_list.ref_id,
                         tag_name=tag_name,
@@ -94,7 +94,7 @@ class SmartListItemCreateUseCase(
             "smart list item",
             str(args.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 new_smart_list_item = SmartListItem.new_smart_list_item(
                     archived=False,
                     smart_list_ref_id=smart_list.ref_id,

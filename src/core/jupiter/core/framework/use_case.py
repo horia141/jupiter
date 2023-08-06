@@ -3,10 +3,11 @@ import abc
 import enum
 import logging
 from dataclasses import dataclass, fields
-from typing import AsyncContextManager, Final, Generic, Optional, TypeVar, Union
+from typing import AsyncContextManager, Final, Generic, Iterable, List, Optional, TypeVar, Union
 
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
+from jupiter.core.framework.entity import BranchEntity, Entity, LeafEntity
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.core.framework.update_action import UpdateAction
@@ -172,6 +173,13 @@ class EntityProgressReporter(abc.ABC):
         """Mark the fact that we now know the entity id for the entity being processed."""
 
     @abc.abstractmethod
+    async def mark_known_entity(
+        self,
+        entity: BranchEntity | LeafEntity
+    ) -> "EntityProgressReporter":
+        """Mark the fact that we now know the entity fully."""
+
+    @abc.abstractmethod
     async def mark_known_name(self, name: str) -> "EntityProgressReporter":
         """Mark the fact that we now know the entity name for the entity being processed."""
 
@@ -245,6 +253,22 @@ class ContextProgressReporter(abc.ABC):
         entity_name: str,
     ) -> AsyncContextManager["ContextProgressReporter"]:
         """Create a progress reporter with some scoping to operate with subentities of a main entity."""
+
+    @property
+    @abc.abstractmethod
+    def created_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+        """The set of entities that were created while this progress reporter was active."""
+
+    @property
+    @abc.abstractmethod
+    def updated_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+        """The set of entities that were updated while this progress reporter was active."""
+
+    @property
+    @abc.abstractmethod
+    def removed_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+        """The set of entities that were removed while this progress reporter was active."""
+    
 
 
 class ProgressReporterFactory(Generic[UseCaseContext], abc.ABC):

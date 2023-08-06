@@ -16,6 +16,7 @@ from sqlalchemy import (
     MetaData,
     String,
     Table,
+    delete,
     insert,
     select,
     text,
@@ -83,6 +84,24 @@ class SqliteSearchRepository(SearchRepository):
             raise EntityNotFoundError(
                 "The entity does not exist",
             )
+        
+    async def remove(self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity) -> None:
+        """Remove an entity from the index."""
+        await self._connection.execute(
+            delete(self._search_index_table)
+            .where(
+                self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
+            )
+            .where(
+                self._search_index_table.c.entity_tag
+                == str(NamedEntityTag.from_entity(entity))
+            )
+            .where(self._search_index_table.c.ref_id == entity.ref_id.as_int())
+        )
+
+    async def drop(self) -> None:
+        """Remove everything from the index."""
+        await self._connection.execute(delete(self._search_index_table))
 
     async def search(
         self,

@@ -60,7 +60,7 @@ class MetricCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -74,7 +74,7 @@ class MetricCreateUseCase(
             str(args.name),
         ) as entity_reporter:
             collection_params = None
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 metric_collection = (
                     await uow.metric_collection_repository.load_by_parent(
                         workspace.ref_id,
@@ -103,7 +103,7 @@ class MetricCreateUseCase(
                     created_time=self._time_provider.get_current_time(),
                 )
                 new_metric = await uow.metric_repository.create(new_metric)
-                await entity_reporter.mark_known_entity_id(new_metric.ref_id)
+                await entity_reporter.mark_known_entity(new_metric)
                 await entity_reporter.mark_local_change()
 
         return MetricCreateResult(new_metric=new_metric)

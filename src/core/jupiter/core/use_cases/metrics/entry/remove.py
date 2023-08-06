@@ -29,7 +29,7 @@ class MetricEntryRemoveUseCase(AppLoggedInMutationUseCase[MetricEntryRemoveArgs,
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -40,7 +40,7 @@ class MetricEntryRemoveUseCase(AppLoggedInMutationUseCase[MetricEntryRemoveArgs,
             "metric entry",
             args.ref_id,
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 metric_entry = await uow.metric_entry_repository.remove(args.ref_id)
                 await entity_reporter.mark_known_name(str(metric_entry.name))
                 await entity_reporter.mark_local_change()

@@ -24,7 +24,7 @@ from jupiter.core.domain.push_integrations.slack.service.remove_service import (
 from jupiter.core.domain.smart_lists.service.remove_service import (
     SmartListRemoveService,
 )
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.vacations.service.remove_service import VacationRemoveService
@@ -74,7 +74,8 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[AppLoggedInUseCaseContext],
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
         use_case_storage_engine: UseCaseStorageEngine,
         global_properties: GlobalProperties,
     ) -> None:
@@ -84,12 +85,13 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
             invocation_recorder,
             progress_reporter_factory,
             auth_token_stamper,
-            storage_engine,
+            domain_storage_engine,
+            search_storage_engine
         )
         self._use_case_storage_engine = use_case_storage_engine
         self._global_properties = global_properties
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -100,7 +102,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
         workspace = context.workspace
         feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             vacation_collection = (
                 await uow.vacation_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -156,7 +158,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
             async with progress_reporter.start_updating_entity(
                 "user", user.ref_id, str(user.name)
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     user = user.update(
                         name=UpdateAction.change_to(args.user_name),
                         timezone=UpdateAction.change_to(args.user_timezone),
@@ -170,7 +172,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
             async with progress_reporter.start_updating_entity(
                 "auth for", user.ref_id, str(user.name)
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     auth = await uow.auth_repository.load_by_parent(
                         parent_ref_id=user.ref_id
                     )
@@ -190,7 +192,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 workspace.ref_id,
                 str(workspace.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     default_project = await uow.project_repository.load_by_id(
                         args.workspace_default_project_ref_id,
                     )
@@ -218,20 +220,20 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                     await entity_reporter.mark_local_change()
 
         async with progress_reporter.section("Clearing vacations"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_vacations = await uow.vacation_repository.find_all(
                     parent_ref_id=vacation_collection.ref_id,
                     allow_archived=True,
                 )
 
             vacation_remove_service = VacationRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for vacation in all_vacations:
                 await vacation_remove_service.do_it(progress_reporter, vacation)
 
         async with progress_reporter.section("Clearing projects"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_projects = await uow.project_repository.find_all(
                     parent_ref_id=project_collection.ref_id,
                     allow_archived=True,
@@ -240,7 +242,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
             project_remove_service = ProjectRemoveService(
                 EventSource.CLI,
                 self._time_provider,
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for project in all_projects:
                 if project.ref_id == args.workspace_default_project_ref_id:
@@ -250,37 +252,37 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 )
 
         async with progress_reporter.section("Clearing habits"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_habits = await uow.habit_repository.find_all(
                     parent_ref_id=habit_collection.ref_id,
                     allow_archived=True,
                 )
             habit_remove_service = HabitRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for habit in all_habits:
                 await habit_remove_service.remove(progress_reporter, habit.ref_id)
 
         async with progress_reporter.section("Clearing chores"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_chores = await uow.chore_repository.find_all(
                     parent_ref_id=chore_collection.ref_id,
                     allow_archived=True,
                 )
             chore_remove_service = ChoreRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for chore in all_chores:
                 await chore_remove_service.remove(progress_reporter, chore.ref_id)
 
         async with progress_reporter.section("Clearing big plans"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_big_plans = await uow.big_plan_repository.find_all(
                     parent_ref_id=big_plan_collection.ref_id,
                     allow_archived=True,
                 )
             big_plan_remove_service = BigPlanRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for big_plan in all_big_plans:
                 await big_plan_remove_service.remove(
@@ -290,13 +292,13 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 )
 
         async with progress_reporter.section("Clearing smart lists"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_smart_lists = await uow.smart_list_repository.find_all(
                     parent_ref_id=smart_list_collection.ref_id,
                     allow_archived=True,
                 )
             smart_list_remove_service = SmartListRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for smart_list in all_smart_lists:
                 await smart_list_remove_service.execute(
@@ -306,7 +308,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 )
 
         async with progress_reporter.section("Clearing metrics"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_metrics = await uow.metric_repository.find_all(
                     parent_ref_id=metric_collection.ref_id,
                     allow_archived=True,
@@ -321,7 +323,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 await uow.metric_collection_repository.save(metric_collection)
 
             metric_remove_service = MetricRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for metric in all_metrics:
                 await metric_remove_service.execute(
@@ -332,7 +334,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 )
 
         async with progress_reporter.section("Clearing person"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_persons = await uow.person_repository.find_all(
                     parent_ref_id=person_collection.ref_id,
                     allow_archived=True,
@@ -347,7 +349,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 await uow.person_collection_repository.save(person_collection)
 
             person_remove_service = PersonRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for person in all_persons:
                 await person_remove_service.do_it(
@@ -357,7 +359,7 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 )
 
         async with progress_reporter.section("Clearing Slack tasks"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_slack_tasks = await uow.slack_task_repository.find_all(
                     parent_ref_id=slack_task_collection.ref_id,
                     allow_archived=True,
@@ -371,13 +373,13 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 await uow.slack_task_collection_repository.save(slack_task_collection)
 
             slack_task_remove_service = SlackTaskRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for slack_task in all_slack_tasks:
                 await slack_task_remove_service.do_it(progress_reporter, slack_task)
 
         async with progress_reporter.section("Clearing email tasks"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_email_tasks = await uow.email_task_repository.find_all(
                     parent_ref_id=email_task_collection.ref_id,
                     allow_archived=True,
@@ -391,19 +393,19 @@ class ClearAllUseCase(AppLoggedInMutationUseCase[ClearAllArgs, None]):
                 await uow.email_task_collection_repository.save(email_task_collection)
 
             email_task_remove_service = EmailTaskRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for email_task in all_email_tasks:
                 await email_task_remove_service.do_it(progress_reporter, email_task)
 
         async with progress_reporter.section("Clearing inbox tasks"):
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 all_inbox_tasks = await uow.inbox_task_repository.find_all(
                     parent_ref_id=inbox_task_collection.ref_id,
                     allow_archived=True,
                 )
             inbox_task_remove_service = InboxTaskRemoveService(
-                self._storage_engine,
+                self._domain_storage_engine,
             )
             for inbox_task in all_inbox_tasks:
                 await inbox_task_remove_service.do_it(progress_reporter, inbox_task)

@@ -30,7 +30,7 @@ class HabitRemoveUseCase(AppLoggedInMutationUseCase[HabitRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.HABITS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -38,5 +38,5 @@ class HabitRemoveUseCase(AppLoggedInMutationUseCase[HabitRemoveArgs, None]):
     ) -> None:
         """Execute the command's action."""
         await HabitRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).remove(progress_reporter, args.ref_id)

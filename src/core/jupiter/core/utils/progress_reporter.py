@@ -1,8 +1,9 @@
 """The helpers are helping."""
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, Optional
+from typing import AsyncIterator, Iterable, Optional
 
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.use_case import (
     ContextProgressReporter,
     EmptyContext,
@@ -25,6 +26,10 @@ class NoOpEntityProgressReporter(EntityProgressReporter):
         entity_id: EntityId,
     ) -> "NoOpEntityProgressReporter":
         """Mark the fact that we now know the entity id for the entity being processed."""
+        return self
+    
+    async def mark_known_entity(self, entity: BranchEntity | LeafEntity) -> "NoOpEntityProgressReporter":
+        """Mark the fact that we now know the entity being processed fully."""
         return self
 
     async def mark_known_name(self, name: str) -> "NoOpEntityProgressReporter":
@@ -107,6 +112,18 @@ class NoOpContextProgressReporter(ContextProgressReporter):
     ) -> AsyncIterator["NoOpContextProgressReporter"]:
         """Create a progress reporter with some scoping to operate with subentities of a main entity."""
         yield NoOpContextProgressReporter()
+
+    @property
+    def created_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+        raise NotImplementedError("This one")
+    
+    @property
+    def updated_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+        raise NotImplementedError("This one")
+    
+    @property
+    def removed_entities(self) -> Iterable[BranchEntity | LeafEntity]:
+        raise NotImplementedError("This one")
 
 
 class NoOpProgressReporterFactory(ProgressReporterFactory[AppGuestUseCaseContext]):

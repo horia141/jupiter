@@ -33,7 +33,7 @@ class SmartListTagRemoveUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -42,7 +42,7 @@ class SmartListTagRemoveUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             (
                 await uow.smart_list_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -65,7 +65,7 @@ class SmartListTagRemoveUseCase(
                 smart_list_item.ref_id,
                 str(smart_list_item.name),
             ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
                     smart_list_item = smart_list_item.update(
                         name=UpdateAction.do_nothing(),
                         is_done=UpdateAction.do_nothing(),
@@ -89,6 +89,6 @@ class SmartListTagRemoveUseCase(
         ) as entity_reporter:
             await entity_reporter.mark_known_name(str(smart_list_tag.tag_name))
 
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 await uow.smart_list_tag_repository.remove(args.ref_id)
                 await entity_reporter.mark_local_change()

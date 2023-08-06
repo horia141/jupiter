@@ -30,7 +30,7 @@ class ChoreRemoveUseCase(AppLoggedInMutationUseCase[ChoreRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.CHORES
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -38,5 +38,5 @@ class ChoreRemoveUseCase(AppLoggedInMutationUseCase[ChoreRemoveArgs, None]):
     ) -> None:
         """Execute the command's action."""
         await ChoreRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).remove(progress_reporter, args.ref_id)

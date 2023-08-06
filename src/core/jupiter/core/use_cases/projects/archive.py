@@ -29,7 +29,7 @@ class ProjectArchiveUseCase(AppLoggedInMutationUseCase[ProjectArchiveArgs, None]
         """The feature the use case is scope to."""
         return Feature.PROJECTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -38,7 +38,7 @@ class ProjectArchiveUseCase(AppLoggedInMutationUseCase[ProjectArchiveArgs, None]
         """Execute the command's action."""
         workspace = context.workspace
         if args.backup_project_ref_id:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 async with progress_reporter.start_updating_entity(
                     "workspace",
                     context.workspace.ref_id,
@@ -158,6 +158,6 @@ class ProjectArchiveUseCase(AppLoggedInMutationUseCase[ProjectArchiveArgs, None]
                         await entity_reporter.mark_not_needed()
 
         project_archive_service = ProjectArchiveService(
-            EventSource.CLI, self._time_provider, self._storage_engine
+            EventSource.CLI, self._time_provider, self._domain_storage_engine
         )
         await project_archive_service.do_it(progress_reporter, workspace, args.ref_id)

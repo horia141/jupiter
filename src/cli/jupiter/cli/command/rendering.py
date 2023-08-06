@@ -31,6 +31,7 @@ from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.use_case import (
     ContextProgressReporter,
     EntityProgressReporter,
@@ -55,6 +56,7 @@ class RichConsoleEntityProgressReporter(EntityProgressReporter):
     _entity_type: Final[str]
     _action_type: Final[str]
     _entity_id: Optional[EntityId]
+    _entity: Optional[BranchEntity | LeafEntity]
     _entity_name: Optional[str]
     _local_change_status: Optional[MarkProgressStatus]
     _remote_change_status: Optional[MarkProgressStatus]
@@ -78,6 +80,7 @@ class RichConsoleEntityProgressReporter(EntityProgressReporter):
         self._entity_type = entity_type
         self._action_type = action_type
         self._entity_id = entity_id
+        self._entity = None
         self._entity_name = entity_name
         self._local_change_status = None
         self._remote_change_status = None
@@ -93,6 +96,13 @@ class RichConsoleEntityProgressReporter(EntityProgressReporter):
     async def mark_known_entity_id(self, entity_id: EntityId) -> EntityProgressReporter:
         """Mark the fact that we now know the entity id for the entity being processed."""
         self._entity_id = entity_id
+        self._status.update(self.to_str_form())
+        return self
+    
+    async def mark_known_entity(self, entity: BranchEntity | LeafEntity) -> EntityProgressReporter:
+        """Mark the fact that we now know the entity being processed fully."""
+        self._entity_id = entity.ref_id
+        self._entity = entity
         self._status.update(self.to_str_form())
         return self
 
@@ -213,6 +223,18 @@ class RichConsoleEntityProgressReporter(EntityProgressReporter):
         if self._entity_id is None:
             raise Exception("Someone forgot to call `mark_known_entity_id`")
         return self._entity_id
+    
+    @property
+    def has_entity(self) -> bool:
+        """Whether there's a full entity here."""
+        return self._entity is not None
+    
+    @property
+    def entity(self) -> BranchEntity | LeafEntity:
+        """The entity id if it was set."""
+        if self._entity is None:
+            raise Exception("Someone forgot to call `mark_known_entity`")
+        return self._entity
 
     @property
     def is_needed(self) -> bool:
@@ -226,9 +248,12 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
     _console: Final[Console]
     _status: Final[Status]
     _sections: Final[List[str]]
+    _created_entities: Final[List[BranchEntity | LeafEntity]]
     _created_entities_stats: Final[DefaultDict[str, List[Tuple[str, EntityId]]]]
+    _updated_entities: Final[List[BranchEntity | LeafEntity]]
     _updated_entities_stats: Final[DefaultDict[str, int]]
     _archived_entities_stats: Final[DefaultDict[str, int]]
+    _removed_entities: Final[List[BranchEntity | LeafEntity]]
     _removed_entities_stats: Final[DefaultDict[str, int]]
     _print_indent: Final[int]
     _is_needed: bool
@@ -238,9 +263,12 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
         console: Console,
         status: Status,
         sections: List[str],
+        created_entities: List[BranchEntity | LeafEntity],
         created_entities_stats: DefaultDict[str, List[Tuple[str, EntityId]]],
+        updated_entities: List[BranchEntity | LeafEntity],
         updated_entities_stats: DefaultDict[str, int],
         archived_entities_stats: DefaultDict[str, int],
+        removed_entities: List[BranchEntity | LeafEntity],
         removed_entities_stats: DefaultDict[str, int],
         print_indent: int,
     ) -> None:
@@ -248,9 +276,12 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
         self._console = console
         self._status = status
         self._sections = sections
+        self._created_entities = created_entities
         self._created_entities_stats = created_entities_stats
+        self._updated_entities = updated_entities
         self._updated_entities_stats = updated_entities_stats
         self._archived_entities_stats = archived_entities_stats
+        self._removed_entities = removed_entities
         self._removed_entities_stats = removed_entities_stats
         self._print_indent = print_indent
         self._is_needed = False
@@ -295,6 +326,8 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
             )
             self._console.print(entity_progress_reporter.to_final_str_form())
             self._is_needed = True
+            if entity_progress_reporter.has_entity:
+                self._created_entities.append(entity_progress_reporter.entity)
         else:
             self._console.control(Control.move_to_column(0))
 
@@ -327,6 +360,8 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
             self._updated_entities_stats[entity_type] += 1
             self._console.print(entity_progress_reporter.to_final_str_form())
             self._is_needed = True
+            if entity_progress_reporter.has_entity:
+                self._updated_entities.append(entity_progress_reporter.entity)
         else:
             self._console.control(Control.move_to_column(0))
 
@@ -359,6 +394,8 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
             self._archived_entities_stats[entity_type] += 1
             self._console.print(entity_progress_reporter.to_final_str_form())
             self._is_needed = True
+            if entity_progress_reporter.has_entity:
+                self._updated_entities.append(entity_progress_reporter.entity)
         else:
             self._console.control(Control.move_to_column(0))
 
@@ -391,6 +428,8 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
             self._removed_entities_stats[entity_type] += 1
             self._console.print(entity_progress_reporter.to_final_str_form())
             self._is_needed = True
+            if entity_progress_reporter.has_entity:
+                self._removed_entities.append(entity_progress_reporter.entity)
         else:
             self._console.control(Control.move_to_column(0))
 
@@ -408,9 +447,12 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
             console=self._console,
             status=self._status,
             sections=[],
+            created_entities=self._created_entities,
             created_entities_stats=self._created_entities_stats,
+            updated_entities=self._updated_entities,
             updated_entities_stats=self._updated_entities_stats,
             archived_entities_stats=self._archived_entities_stats,
+            removed_entities=self._removed_entities,
             removed_entities_stats=self._removed_entities_stats,
             print_indent=self._print_indent + 1,
         )
@@ -501,6 +543,21 @@ class RichConsoleContextProgressReporter(ContextProgressReporter):
         self._console.print(results_panel)
 
     @property
+    def created_entities(self) -> List[BranchEntity | LeafEntity]:
+        """Created entities."""
+        return self._created_entities
+    
+    @property
+    def updated_entities(self) -> List[BranchEntity | LeafEntity]:
+        """Created entities."""
+        return self._updated_entities
+    
+    @property
+    def removed_entities(self) -> List[BranchEntity | LeafEntity]:
+        """Created entities."""
+        return self._removed_entities
+
+    @property
     def is_needed(self) -> bool:
         """Whether this whole section is actually needed for rendering."""
         return self._is_needed
@@ -524,9 +581,12 @@ class RichConsoleProgressReporterFactory(
             console=self._console,
             status=self._status,
             sections=[],
+            created_entities=[],
             created_entities_stats=defaultdict(list),
+            updated_entities=[],
             updated_entities_stats=defaultdict(lambda: 0),
             archived_entities_stats=defaultdict(lambda: 0),
+            removed_entities=[],
             removed_entities_stats=defaultdict(lambda: 0),
             print_indent=0,
         )

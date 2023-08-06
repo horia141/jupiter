@@ -34,7 +34,7 @@ class PersonChangeCatchUpProjectUseCase(
         """The feature the use case is scope to."""
         return (Feature.PERSONS, Feature.PROJECTS)
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -43,7 +43,7 @@ class PersonChangeCatchUpProjectUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             await uow.project_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -99,7 +99,7 @@ class PersonChangeCatchUpProjectUseCase(
                     inbox_task.ref_id,
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         inbox_task = inbox_task.update_link_to_person_catch_up(
                             project_ref_id=catch_up_project_ref_id,
                             name=inbox_task.name,
@@ -122,7 +122,7 @@ class PersonChangeCatchUpProjectUseCase(
                     inbox_task.ref_id,
                     str(inbox_task.name),
                 ) as entity_reporter:
-                    async with self._storage_engine.get_unit_of_work() as uow:
+                    async with self._domain_storage_engine.get_unit_of_work() as uow:
                         person = persons_by_ref_id[
                             cast(EntityId, inbox_task.person_ref_id)
                         ]
@@ -145,7 +145,7 @@ class PersonChangeCatchUpProjectUseCase(
             person_collection.ref_id,
             "Person Collection",
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 person_collection = person_collection.change_catch_up_project(
                     catch_up_project_ref_id=catch_up_project_ref_id,
                     source=EventSource.CLI,

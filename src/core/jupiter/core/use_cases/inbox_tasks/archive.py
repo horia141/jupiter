@@ -33,17 +33,17 @@ class InboxTaskArchiveUseCase(AppLoggedInMutationUseCase[InboxTaskArchiveArgs, N
         """The feature the use case is scope to."""
         return Feature.INBOX_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: InboxTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             inbox_task = await uow.inbox_task_repository.load_by_id(args.ref_id)
         await InboxTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._storage_engine,
+            storage_engine=self._domain_storage_engine,
         ).do_it(progress_reporter, inbox_task)

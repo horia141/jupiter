@@ -53,7 +53,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
         """The feature the use case is scope to."""
         return Feature.SLACK_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -63,7 +63,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             slack_task = await uow.slack_task_repository.load_by_id(args.ref_id)
 
             if (
@@ -123,7 +123,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
             generated_inbox_task.ref_id,
             str(generated_inbox_task.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 generated_inbox_task = generated_inbox_task.update_link_to_slack_task(
                     project_ref_id=generated_inbox_task.project_ref_id,
                     user=slack_task.user,
@@ -143,7 +143,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
             slack_task.ref_id,
             str(slack_task.name),
         ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 slack_task = slack_task.update(
                     user=args.user,
                     channel=args.channel,

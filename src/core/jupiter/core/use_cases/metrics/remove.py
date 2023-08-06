@@ -30,7 +30,7 @@ class MetricRemoveUseCase(AppLoggedInMutationUseCase[MetricRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
         progress_reporter: ContextProgressReporter,
         context: AppLoggedInUseCaseContext,
@@ -39,7 +39,7 @@ class MetricRemoveUseCase(AppLoggedInMutationUseCase[MetricRemoveArgs, None]):
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             metric_collection = await uow.metric_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -48,5 +48,5 @@ class MetricRemoveUseCase(AppLoggedInMutationUseCase[MetricRemoveArgs, None]):
             )
 
         await MetricRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).execute(progress_reporter, workspace, metric_collection, metric)
