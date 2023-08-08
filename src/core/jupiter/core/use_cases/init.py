@@ -30,7 +30,7 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
@@ -87,6 +87,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
     """UseCase for initialising the workspace."""
 
     _global_properties: Final[GlobalProperties]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
@@ -94,7 +95,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[AppGuestUseCaseContext],
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
         global_properties: GlobalProperties,
     ) -> None:
         """Constructor."""
@@ -103,9 +105,10 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             invocation_recorder,
             progress_reporter_factory,
             auth_token_stamper,
-            storage_engine,
+            domain_storage_engine,
         )
         self._global_properties = global_properties
+        self._search_storage_engine = search_storage_engine
 
     async def _execute(
         self,
@@ -293,6 +296,11 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_user_workspace_link = await uow.user_workspace_link_repository.create(
                 new_user_workspace_link
+            )
+
+        async with self._search_storage_engine.get_unit_of_work() as search_uow:
+            await search_uow.search_repository.create(
+                new_workspace.ref_id, new_default_project
             )
 
         auth_token = self._auth_token_stamper.stamp_for_general(new_user)

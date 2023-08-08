@@ -32,6 +32,7 @@ from jupiter.core.framework.secure import secure_fn
 from jupiter.core.repository.sqlite.connection import SqliteConnection
 from jupiter.core.repository.sqlite.domain.storage_engine import (
     SqliteDomainStorageEngine,
+    SqliteSearchStorageEngine,
 )
 from jupiter.core.repository.sqlite.use_case.storage_engine import (
     SqliteUseCaseStorageEngine,
@@ -468,6 +469,7 @@ sqlite_connection = SqliteConnection(
 global_properties = build_global_properties()
 
 domain_storage_engine = SqliteDomainStorageEngine(sqlite_connection)
+search_storage_engine = SqliteSearchStorageEngine(sqlite_connection)
 usecase_storage_engine = SqliteUseCaseStorageEngine(sqlite_connection)
 
 auth_token_stamper = AuthTokenStamper(
@@ -488,7 +490,8 @@ init_use_case = InitUseCase(
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=NoOpProgressReporterFactory(),
     auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
     global_properties=global_properties,
 )
 
@@ -503,6 +506,7 @@ auth_change_password_use_case = ChangePasswordUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 auth_reset_password_use_case = ResetPasswordUseCase(
@@ -534,6 +538,7 @@ gen_use_case = GenUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 gc_use_case = GCUseCase(
@@ -542,6 +547,7 @@ gc_use_case = GCUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 user_update_use_case = UserUpdateUseCase(
@@ -550,6 +556,7 @@ user_update_use_case = UserUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 user_load_use_case = UserLoadUseCase(
@@ -562,6 +569,7 @@ workspace_update_use_case = WorkspaceUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase(
     time_provider=time_provider,
@@ -569,6 +577,7 @@ workspace_change_default_project_use_case = WorkspaceChangeDefaultProjectUseCase
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
     time_provider=time_provider,
@@ -576,6 +585,7 @@ workspace_change_feature_flags_use_case = WorkspaceChangeFeatureFlagsUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
     global_properties=global_properties,
 )
 workspace_load_use_case = WorkspaceLoadUseCase(
@@ -593,6 +603,7 @@ big_plan_create_use_case = BigPlanCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 big_plan_archive_use_case = BigPlanArchiveUseCase(
     time_provider=time_provider,
@@ -600,6 +611,7 @@ big_plan_archive_use_case = BigPlanArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 big_plan_update_use_case = BigPlanUpdateUseCase(
     time_provider=time_provider,
@@ -607,6 +619,7 @@ big_plan_update_use_case = BigPlanUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
     time_provider=time_provider,
@@ -614,6 +627,7 @@ big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 big_plan_load_use_case = BigPlanLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -628,6 +642,7 @@ chore_create_use_case = ChoreCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 chore_archive_use_case = ChoreArchiveUseCase(
     time_provider=time_provider,
@@ -635,6 +650,7 @@ chore_archive_use_case = ChoreArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 chore_update_use_case = ChoreUpdateUseCase(
     time_provider=time_provider,
@@ -642,6 +658,7 @@ chore_update_use_case = ChoreUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 chore_change_project_use_case = ChoreChangeProjectUseCase(
     time_provider=time_provider,
@@ -649,6 +666,7 @@ chore_change_project_use_case = ChoreChangeProjectUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 chore_suspend_use_case = ChoreSuspendUseCase(
     time_provider=time_provider,
@@ -656,6 +674,7 @@ chore_suspend_use_case = ChoreSuspendUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 chore_unsuspend_use_case = ChoreUnsuspendUseCase(
     time_provider=time_provider,
@@ -663,6 +682,7 @@ chore_unsuspend_use_case = ChoreUnsuspendUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 chore_load_use_case = ChoreLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -677,6 +697,7 @@ habit_create_use_case = HabitCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 habit_archive_use_case = HabitArchiveUseCase(
     time_provider=time_provider,
@@ -684,6 +705,7 @@ habit_archive_use_case = HabitArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 habit_update_use_case = HabitUpdateUseCase(
     time_provider=time_provider,
@@ -691,6 +713,7 @@ habit_update_use_case = HabitUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 habit_change_project_use_case = HabitChangeProjectUseCase(
     time_provider=time_provider,
@@ -698,6 +721,7 @@ habit_change_project_use_case = HabitChangeProjectUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 habit_suspend_use_case = HabitSuspendUseCase(
     time_provider=time_provider,
@@ -705,6 +729,7 @@ habit_suspend_use_case = HabitSuspendUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 habit_unsuspend_use_case = HabitUnsuspendUseCase(
     time_provider=time_provider,
@@ -712,6 +737,7 @@ habit_unsuspend_use_case = HabitUnsuspendUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 habit_load_use_case = HabitLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -726,6 +752,7 @@ inbox_task_create_use_case = InboxTaskCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     time_provider=time_provider,
@@ -733,6 +760,7 @@ inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 inbox_task_update_use_case = InboxTaskUpdateUseCase(
     time_provider=time_provider,
@@ -740,6 +768,7 @@ inbox_task_update_use_case = InboxTaskUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
     time_provider=time_provider,
@@ -747,6 +776,7 @@ inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
     time_provider=time_provider,
@@ -754,6 +784,7 @@ inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 inbox_task_load_use_case = InboxTaskLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -768,6 +799,7 @@ metric_entry_create_use_case = MetricEntryCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_entry_update_use_case = MetricEntryUpdateUseCase(
     time_provider=time_provider,
@@ -775,6 +807,7 @@ metric_entry_update_use_case = MetricEntryUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_entry_archive_use_case = MetricEntryArchiveUseCase(
     time_provider=time_provider,
@@ -782,6 +815,7 @@ metric_entry_archive_use_case = MetricEntryArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_entry_load_use_case = MetricEntryLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -793,6 +827,7 @@ metric_create_use_case = MetricCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_archive_use_case = MetricArchiveUseCase(
     time_provider=time_provider,
@@ -800,6 +835,7 @@ metric_archive_use_case = MetricArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_update_use_case = MetricUpdateUseCase(
     time_provider=time_provider,
@@ -807,6 +843,7 @@ metric_update_use_case = MetricUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_load_settings_use_case = MetricLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
@@ -818,6 +855,7 @@ metric_change_collection_project_use_case = MetricChangeCollectionProjectUseCase
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 metric_load_use_case = MetricLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -826,13 +864,13 @@ metric_find_use_case = MetricFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-
 person_create_use_case = PersonCreateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 person_archive_use_case = PersonArchiveUseCase(
     time_provider=time_provider,
@@ -840,6 +878,7 @@ person_archive_use_case = PersonArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 person_update_use_case = PersonUpdateUseCase(
     time_provider=time_provider,
@@ -847,6 +886,7 @@ person_update_use_case = PersonUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 person_load_settings_use_case = PersonLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
@@ -858,6 +898,7 @@ person_change_catch_up_project_use_case = PersonChangeCatchUpProjectUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 person_load_use_case = PersonLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -872,6 +913,7 @@ project_create_use_case = ProjectCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 project_archive_use_case = ProjectArchiveUseCase(
     time_provider=time_provider,
@@ -879,6 +921,7 @@ project_archive_use_case = ProjectArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 project_update_use_case = ProjectUpdateUseCase(
     time_provider=time_provider,
@@ -886,6 +929,7 @@ project_update_use_case = ProjectUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 project_load_use_case = ProjectLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -900,6 +944,7 @@ email_task_archive_use_case = EmailTaskArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 email_task_update_use_case = EmailTaskUpdateUseCase(
     time_provider=time_provider,
@@ -907,6 +952,7 @@ email_task_update_use_case = EmailTaskUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
@@ -918,6 +964,7 @@ email_task_change_generation_project_use_case = EmailTaskChangeGenerationProject
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 email_task_load_use_case = EmailTaskLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -932,6 +979,7 @@ slack_task_archive_use_case = SlackTaskArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 slack_task_update_use_case = SlackTaskUpdateUseCase(
     time_provider=time_provider,
@@ -939,6 +987,7 @@ slack_task_update_use_case = SlackTaskUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 slack_task_load_settings_use_case = SlackTaskLoadSettingsUseCase(
     auth_token_stamper=auth_token_stamper,
@@ -950,6 +999,7 @@ slack_task_change_generation_project_use_case = SlackTaskChangeGenerationProject
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 slack_task_load_use_case = SlackTaskLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -964,6 +1014,7 @@ smart_list_item_create_use_case = SmartListItemCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
     time_provider=time_provider,
@@ -971,6 +1022,7 @@ smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_item_update_use_case = SmartListItemUpdateUseCase(
     time_provider=time_provider,
@@ -978,6 +1030,7 @@ smart_list_item_update_use_case = SmartListItemUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_item_load_use_case = SmartListItemLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -988,6 +1041,7 @@ smart_list_tag_create_use_case = SmartListTagCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
     time_provider=time_provider,
@@ -995,6 +1049,7 @@ smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_tag_load_use_case = SmartListTagLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -1005,6 +1060,7 @@ smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_create_use_case = SmartListCreateUseCase(
     time_provider=time_provider,
@@ -1012,6 +1068,7 @@ smart_list_create_use_case = SmartListCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_archive_use_case = SmartListArchiveUseCase(
     time_provider=time_provider,
@@ -1019,6 +1076,7 @@ smart_list_archive_use_case = SmartListArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_update_use_case = SmartListUpdateUseCase(
     time_provider=time_provider,
@@ -1026,6 +1084,7 @@ smart_list_update_use_case = SmartListUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 smart_list_load_use_case = SmartListLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
@@ -1040,6 +1099,7 @@ vacation_create_use_case = VacationCreateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 vacation_archive_use_case = VacationArchiveUseCase(
     time_provider=time_provider,
@@ -1047,6 +1107,7 @@ vacation_archive_use_case = VacationArchiveUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 vacation_update_use_case = VacationUpdateUseCase(
     time_provider=time_provider,
@@ -1054,6 +1115,7 @@ vacation_update_use_case = VacationUpdateUseCase(
     progress_reporter_factory=progress_reporter_factory,
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 vacation_load_use_case = VacationLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine

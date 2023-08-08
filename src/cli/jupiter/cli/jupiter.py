@@ -346,6 +346,7 @@ async def main() -> None:
                 NoOpProgressReporterFactory(),
                 auth_token_stamper,
                 domain_storage_engine,
+                search_storage_engine,
                 global_properties,
             ),
         ),

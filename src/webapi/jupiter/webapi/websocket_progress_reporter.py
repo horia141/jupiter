@@ -14,11 +14,12 @@ from typing import (
     Tuple,
 )
 
+from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.json import JSONDictType
 from jupiter.core.framework.use_case import (
-    EntityProgressReporter,
-    MarkProgressStatus,
     ProgressReporter,
     ProgressReporterFactory,
 )
@@ -89,218 +90,45 @@ class _WebsocketHandle:
             self._websocket = None
 
 
-class WebsocketEntityProgressReporter(EntityProgressReporter):
-    """A progress reporter for a particular entity."""
-
-    _websocket: Final[_WebsocketHandle]
-    _entity_type: Final[str]
-    _action_type: Final[str]
-    _entity_id: Optional[EntityId]
-    _entity_name: Optional[str]
-    _local_change_status: Optional[MarkProgressStatus]
-    _remote_change_status: Optional[MarkProgressStatus]
-    _progresses: Final[List[Tuple[str, MarkProgressStatus]]]
-    _print_indent: Final[int]
-    _is_needed: bool
-
-    def __init__(
-        self,
-        websocket: _WebsocketHandle,
-        entity_type: str,
-        action_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-        print_indent: int = 0,
-    ) -> None:
-        """Constructor."""
-        self._websocket = websocket
-        self._entity_type = entity_type
-        self._action_type = action_type
-        self._entity_id = entity_id
-        self._entity_name = entity_name
-        self._local_change_status = None
-        self._remote_change_status = None
-        self._progresses = []
-        self._print_indent = print_indent
-        self._is_needed = True
-
-    async def mark_not_needed(self) -> EntityProgressReporter:
-        """Mark the fact that a particular modification isn't needed."""
-        self._is_needed = False
-        return self
-
-    async def mark_known_entity_id(self, entity_id: EntityId) -> EntityProgressReporter:
-        """Mark the fact that we now know the entity id for the entity being processed."""
-        self._entity_id = entity_id
-        await self._send_status_update(self.to_str_form())
-        return self
-
-    async def mark_known_name(self, name: str) -> EntityProgressReporter:
-        """Mark the fact that we now know the entity name for the entity being processed."""
-        self._entity_name = name
-        await self._send_status_update(self.to_str_form())
-        return self
-
-    async def mark_local_change(self) -> EntityProgressReporter:
-        """Mark the fact that the local change has succeeded."""
-        self._local_change_status = MarkProgressStatus.OK
-        await self._send_status_update(self.to_str_form())
-        return self
-
-    async def mark_remote_change(
-        self,
-        success: MarkProgressStatus = MarkProgressStatus.OK,
-    ) -> EntityProgressReporter:
-        """Mark the fact that the remote change has completed."""
-        self._remote_change_status = success
-        await self._send_status_update(self.to_str_form())
-        return self
-
-    async def mark_other_progress(
-        self,
-        progress: str,
-        success: MarkProgressStatus = MarkProgressStatus.OK,
-    ) -> EntityProgressReporter:
-        """Mark some other type of progress."""
-        self._progresses.append((progress, success))
-        await self._send_status_update(self.to_str_form())
-        return self
-
-    def to_str_form(self) -> str:
-        """Prepare the intermediary string form for this one."""
-        text = f"Working on {self._action_type} {self._entity_type}"
-        if self._entity_id is not None:
-            text += " "
-            text += str(self._entity_id)
-        if self._entity_name is not None:
-            text += " "
-            text += self._entity_name
-        if self._local_change_status is not None:
-            if self._local_change_status == MarkProgressStatus.PROGRESS:
-                text += " 🧭 local"
-            elif self._local_change_status == MarkProgressStatus.OK:
-                text += " ✅ local"
-            elif self._local_change_status == MarkProgressStatus.FAILED:
-                text += " ⭕ local"
-            else:
-                text += " ☑️  local"
-        if self._remote_change_status is not None:
-            if self._remote_change_status == MarkProgressStatus.PROGRESS:
-                text += " 🧭 remote"
-            elif self._remote_change_status == MarkProgressStatus.OK:
-                text += " ✅ remote"
-            elif self._remote_change_status == MarkProgressStatus.FAILED:
-                text += " ⭕ remote"
-            else:
-                text += " ☑️ local"
-        for progress, progress_status in self._progresses:
-            if progress_status == MarkProgressStatus.PROGRESS:
-                text += f" 🧭 {progress}"
-            elif progress_status == MarkProgressStatus.OK:
-                text += f" ✅ {progress}"
-            elif progress_status == MarkProgressStatus.FAILED:
-                text += f" ⭕ {progress}"
-            else:
-                text += f" ☑️  {progress}"
-
-        return text
-
-    def to_final_str_form(self) -> str:
-        """Prepare the final string form for this one."""
-        text = (
-            self._print_indent * ".."
-            + f"Done with {self._action_type} {self._entity_type}"
-        )
-        if self._entity_id is not None:
-            text += " "
-            text += str(self._entity_id)
-        if self._entity_name is not None:
-            text += " "
-            text += self._entity_name
-        if self._local_change_status is not None:
-            if self._local_change_status == MarkProgressStatus.PROGRESS:
-                text += " 🧭 local"
-            elif self._local_change_status == MarkProgressStatus.OK:
-                text += " ✅ local"
-            elif self._local_change_status == MarkProgressStatus.FAILED:
-                text += " ⭕ local"
-            else:
-                text += " ☑️  local"
-        if self._remote_change_status is not None:
-            if self._remote_change_status == MarkProgressStatus.PROGRESS:
-                text += " 🧭 remote"
-            elif self._remote_change_status == MarkProgressStatus.OK:
-                text += " ✅ remote"
-            elif self._remote_change_status == MarkProgressStatus.FAILED:
-                text += " ⭕ remote"
-            else:
-                text += " ☑️ remote"
-        for progress, progress_status in self._progresses:
-            if progress_status == MarkProgressStatus.PROGRESS:
-                text += f" 🧭 {progress}"
-            elif progress_status == MarkProgressStatus.OK:
-                text += f" ✅ {progress}"
-            elif progress_status == MarkProgressStatus.FAILED:
-                text += f" ⭕ {progress}"
-            else:
-                text += f" ☑️  {progress}"
-        return text
-
-    @property
-    def entity_id(self) -> EntityId:
-        """The entity id if it was set."""
-        if self._entity_id is None:
-            raise Exception("Someone forgot to call `mark_known_entity_id`")
-        return self._entity_id
-
-    @property
-    def is_needed(self) -> bool:
-        """Whether this particular stream of updates was needed."""
-        return self._is_needed
-
-    async def _send_status_update(self, message: str) -> None:
-        await self._websocket.send_json(
-            {
-                "type": "status-update",
-                "message": message,
-                "entity_type": self._entity_type,
-                "entity_id": str(self._entity_id) if self._entity_id else None,
-                "entity_name": self._entity_name,
-            },
-        )
-
-
-class WebsocketContextProgressReporter(ProgressReporter):
+class WebsocketProgressReporter(ProgressReporter):
     """A progress reporter based on a Rich console that outputs progress to the console."""
 
     _websocket: Final[_WebsocketHandle]
     _sections: Final[List[str]]
-    _created_entities_stats: Final[DefaultDict[str, List[Tuple[str, EntityId]]]]
-    _updated_entities_stats: Final[DefaultDict[str, int]]
-    _archived_entities_stats: Final[DefaultDict[str, int]]
-    _removed_entities_stats: Final[DefaultDict[str, int]]
+    _created_entities: Final[List[BranchEntity | LeafEntity]]
+    _created_entities_stats: Final[
+        DefaultDict[NamedEntityTag, List[Tuple[EntityName, EntityId]]]
+    ]
+    _updated_entities: Final[List[BranchEntity | LeafEntity]]
+    _updated_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
+    _removed_entities: Final[List[BranchEntity | LeafEntity]]
+    _removed_entities_stats: Final[DefaultDict[NamedEntityTag, int]]
     _print_indent: Final[int]
-    _is_needed: bool
 
     def __init__(
         self,
         websocket: _WebsocketHandle,
         sections: List[str],
-        created_entities_stats: DefaultDict[str, List[Tuple[str, EntityId]]],
-        updated_entities_stats: DefaultDict[str, int],
-        archived_entities_stats: DefaultDict[str, int],
-        removed_entities_stats: DefaultDict[str, int],
+        created_entities: List[BranchEntity | LeafEntity],
+        created_entities_stats: DefaultDict[
+            NamedEntityTag, List[Tuple[EntityName, EntityId]]
+        ],
+        updated_entities: List[BranchEntity | LeafEntity],
+        updated_entities_stats: DefaultDict[NamedEntityTag, int],
+        removed_entities: List[BranchEntity | LeafEntity],
+        removed_entities_stats: DefaultDict[NamedEntityTag, int],
         print_indent: int,
     ) -> None:
         """Constructor."""
         self._websocket = websocket
         self._sections = sections
+        self._created_entities = created_entities
         self._created_entities_stats = created_entities_stats
+        self._updated_entities = updated_entities
         self._updated_entities_stats = updated_entities_stats
-        self._archived_entities_stats = archived_entities_stats
+        self._removed_entities = removed_entities
         self._removed_entities_stats = removed_entities_stats
         self._print_indent = print_indent
-        self._is_needed = False
 
     @asynccontextmanager
     async def section(self, title: str) -> AsyncIterator[None]:
@@ -314,194 +142,34 @@ class WebsocketContextProgressReporter(ProgressReporter):
         yield None
         self._sections.pop()
 
-    @asynccontextmanager
-    async def start_creating_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-    ) -> AsyncIterator[WebsocketEntityProgressReporter]:
-        """Report that a particular entity is being created."""
-        entity_progress_reporter = WebsocketEntityProgressReporter(
-            self._websocket,
-            entity_type,
-            "creating",
-            entity_name=entity_name,
-            print_indent=self._print_indent,
+    async def mark_created(self, entity: BranchEntity | LeafEntity) -> None:
+        """Mark an entity as created."""
+        self._created_entities.append(entity)
+        self._created_entities_stats[NamedEntityTag.from_entity(entity)].append(
+            (entity.name, entity.ref_id),
+        )
+        text = self._entity_to_str("creating", entity)
+        await self._send_entity_line(
+            text, NamedEntityTag.from_entity(entity), entity.ref_id, entity.name
         )
 
-        await self._send_status_create(
-            entity_progress_reporter.to_str_form(),
-            entity_type,
-            None,
-            entity_name,
+    async def mark_updated(self, entity: BranchEntity | LeafEntity) -> None:
+        """Mark an entity as created."""
+        self._updated_entities.append(entity)
+        self._updated_entities_stats[NamedEntityTag.from_entity(entity)] += 1
+        text = self._entity_to_str("updating", entity)
+        await self._send_entity_line(
+            text, NamedEntityTag.from_entity(entity), entity.ref_id, entity.name
         )
 
-        yield entity_progress_reporter
-
-        if entity_progress_reporter.is_needed:
-            self._created_entities_stats[entity_type].append(
-                (entity_name, entity_progress_reporter.entity_id),
-            )
-            await self._send_status_finish(
-                entity_progress_reporter.to_final_str_form(),
-                entity_type,
-                None,
-                entity_name,
-            )
-            self._is_needed = True
-        else:
-            await self._send_status_clear()
-
-    @asynccontextmanager
-    async def start_updating_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncIterator[WebsocketEntityProgressReporter]:
-        """Report that a particular entity is being updated."""
-        entity_progress_reporter = WebsocketEntityProgressReporter(
-            self._websocket,
-            entity_type,
-            "updating",
-            entity_id=entity_id,
-            entity_name=entity_name,
-            print_indent=self._print_indent,
+    async def mark_removed(self, entity: BranchEntity | LeafEntity) -> None:
+        """Mark an entity as created."""
+        self._removed_entities.append(entity)
+        self._removed_entities_stats[NamedEntityTag.from_entity(entity)] += 1
+        text = self._entity_to_str("removing", entity)
+        await self._send_entity_line(
+            text, NamedEntityTag.from_entity(entity), entity.ref_id, entity.name
         )
-
-        await self._send_status_create(
-            entity_progress_reporter.to_str_form(),
-            entity_type,
-            entity_id,
-            entity_name,
-        )
-
-        yield entity_progress_reporter
-
-        if entity_progress_reporter.is_needed:
-            self._updated_entities_stats[entity_type] += 1
-            await self._send_status_finish(
-                entity_progress_reporter.to_final_str_form(),
-                entity_type,
-                entity_id,
-                entity_name,
-            )
-            self._is_needed = True
-        else:
-            await self._send_status_clear()
-
-    @asynccontextmanager
-    async def start_archiving_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncIterator[WebsocketEntityProgressReporter]:
-        """Report that a particular entity is being archived."""
-        entity_progress_reporter = WebsocketEntityProgressReporter(
-            self._websocket,
-            entity_type,
-            "archiving",
-            entity_id=entity_id,
-            entity_name=entity_name,
-            print_indent=self._print_indent,
-        )
-
-        await self._send_status_create(
-            entity_progress_reporter.to_str_form(),
-            entity_type,
-            entity_id,
-            entity_name,
-        )
-
-        yield entity_progress_reporter
-
-        if entity_progress_reporter.is_needed:
-            self._archived_entities_stats[entity_type] += 1
-            await self._send_status_finish(
-                entity_progress_reporter.to_final_str_form(),
-                entity_type,
-                entity_id,
-                entity_name,
-            )
-            self._is_needed = True
-        else:
-            await self._send_status_clear()
-
-    @asynccontextmanager
-    async def start_removing_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncIterator[WebsocketEntityProgressReporter]:
-        """Report that a particular entity is being removed."""
-        entity_progress_reporter = WebsocketEntityProgressReporter(
-            self._websocket,
-            entity_type,
-            "removing",
-            entity_id=entity_id,
-            entity_name=entity_name,
-            print_indent=self._print_indent,
-        )
-
-        await self._send_status_create(
-            entity_progress_reporter.to_str_form(),
-            entity_type,
-            entity_id,
-            entity_name,
-        )
-
-        yield entity_progress_reporter
-
-        if entity_progress_reporter.is_needed:
-            self._removed_entities_stats[entity_type] += 1
-            await self._send_status_finish(
-                entity_progress_reporter.to_final_str_form(),
-                entity_type,
-                entity_id,
-                entity_name,
-            )
-            self._is_needed = True
-        else:
-            await self._send_status_clear()
-
-    @asynccontextmanager
-    async def start_complex_entity_work(
-        self,
-        entity_type: str,
-        entity_id: EntityId,
-        entity_name: str,
-    ) -> AsyncIterator[ProgressReporter]:
-        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
-        subprogress_reporter = WebsocketContextProgressReporter(
-            websocket=self._websocket,
-            sections=[],
-            created_entities_stats=self._created_entities_stats,
-            updated_entities_stats=self._updated_entities_stats,
-            archived_entities_stats=self._archived_entities_stats,
-            removed_entities_stats=self._removed_entities_stats,
-            print_indent=self._print_indent + 1,
-        )
-
-        # header_text = Text(f"Working on {entity_type} ")
-        # header_text.append(entity_id_to_rich_text(entity_id))
-        # header_text.append(" ")
-        # header_text.append(entity_name)
-        #
-        # self._console.print(header_text)
-        # time.sleep(0.01)  # Oh so ugly
-        #
-        yield subprogress_reporter
-        #
-        # if subprogress_reporter.is_needed:
-        #     self._is_needed = True
-        # else:
-        #     self._status.stop()
-        #     self._console.control(Control.move_to_column(0, -1))
-        #     self._status.start()
-        #
-        # self._status.update("Working on it ...")
 
     def print_prologue(self, command_name: str, argv: List[str]) -> None:
         """Print a prologue section."""
@@ -559,51 +227,57 @@ class WebsocketContextProgressReporter(ProgressReporter):
         # self._console.print(results_panel)
 
     @property
-    def is_needed(self) -> bool:
-        """Whether this whole section is actually needed for rendering."""
-        return self._is_needed
+    def created_entities(self) -> List[BranchEntity | LeafEntity]:
+        """Created entities."""
+        return self._created_entities
+
+    @property
+    def updated_entities(self) -> List[BranchEntity | LeafEntity]:
+        """Created entities."""
+        return self._updated_entities
+
+    @property
+    def removed_entities(self) -> List[BranchEntity | LeafEntity]:
+        """Created entities."""
+        return self._removed_entities
+
+    def _entity_to_str(
+        self, action_type: str, entity: BranchEntity | LeafEntity
+    ) -> str:
+        """Prepare the final string form for this one."""
+        text = (
+            self._print_indent * ".."
+            + f"✅ Done with {action_type} {NamedEntityTag.from_entity(entity)}"
+        )
+
+        text += " "
+        text += str(entity.ref_id)
+        text += " "
+        text += str(entity.name)
+
+        return text
 
     async def _send_section(self, section_name: str) -> None:
         await self._websocket.send_json(
             {"type": "section", "section-name": section_name},
         )
 
-    async def _send_status_create(
+    async def _send_entity_line(
         self,
         message: str,
-        entity_type: str,
-        entity_id: Optional[EntityId],
-        entity_name: Optional[str],
+        entity_tag: NamedEntityTag,
+        entity_id: EntityId,
+        entity_name: EntityName,
     ) -> None:
         await self._websocket.send_json(
             {
-                "type": "status-create",
+                "type": "entity-line",
                 "message": message,
-                "entity_type": entity_type,
-                "entity_id": str(entity_id) if entity_id else None,
-                "entity_name": entity_name,
+                "entity_tat": str(entity_tag),
+                "entity_id": str(entity_id),
+                "entity_name": str(entity_name),
             },
         )
-
-    async def _send_status_finish(
-        self,
-        message: str,
-        entity_type: str,
-        entity_id: Optional[EntityId],
-        entity_name: Optional[str],
-    ) -> None:
-        await self._websocket.send_json(
-            {
-                "type": "status-finish",
-                "message": message,
-                "entity_type": entity_type,
-                "entity_id": str(entity_id) if entity_id else None,
-                "entity_name": entity_name,
-            },
-        )
-
-    async def _send_status_clear(self) -> None:
-        await self._websocket.send_json({"type": "status-clear"})
 
 
 class WebsocketProgressReporterFactory(
@@ -644,12 +318,14 @@ class WebsocketProgressReporterFactory(
             self._web_sockets[
                 context.user_ref_id
             ] = _WebsocketHandle.with_no_websocket()
-        return WebsocketContextProgressReporter(
+        return WebsocketProgressReporter(
             websocket=self._web_sockets[context.user_ref_id],
             sections=[],
+            created_entities=[],
             created_entities_stats=defaultdict(list),
+            updated_entities=[],
             updated_entities_stats=defaultdict(lambda: 0),
-            archived_entities_stats=defaultdict(lambda: 0),
+            removed_entities=[],
             removed_entities_stats=defaultdict(lambda: 0),
             print_indent=0,
         )
