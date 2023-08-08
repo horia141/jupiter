@@ -7,7 +7,7 @@ from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -43,34 +43,26 @@ class ProjectCreateUseCase(
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: ProjectCreateArgs,
     ) -> ProjectCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with progress_reporter.start_creating_entity(
-            "project",
-            str(args.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                project_collection = (
-                    await uow.project_collection_repository.load_by_parent(
-                        workspace.ref_id,
-                    )
-                )
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            project_collection = await uow.project_collection_repository.load_by_parent(
+                workspace.ref_id,
+            )
 
-                new_project = Project.new_project(
-                    project_collection_ref_id=project_collection.ref_id,
-                    name=args.name,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
+            new_project = Project.new_project(
+                project_collection_ref_id=project_collection.ref_id,
+                name=args.name,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
 
-                new_project = await uow.project_repository.create(new_project)
-                await entity_reporter.mark_known_entity_id(new_project.ref_id)
-                await entity_reporter.mark_known_name(str(args.name))
-                await entity_reporter.mark_local_change()
+            new_project = await uow.project_repository.create(new_project)
+            await progress_reporter.mark_created(new_project)
 
         return ProjectCreateResult(new_project=new_project)

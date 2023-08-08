@@ -16,7 +16,7 @@ from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -63,7 +63,7 @@ class HabitCreateUseCase(
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: HabitCreateArgs,
     ) -> HabitCreateResult:
@@ -76,39 +76,33 @@ class HabitCreateUseCase(
         ):
             raise FeatureUnavailableError(Feature.PROJECTS)
 
-        async with progress_reporter.start_creating_entity(
-            "habit",
-            str(args.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                habit_collection = await uow.habit_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            habit_collection = await uow.habit_collection_repository.load_by_parent(
+                workspace.ref_id,
+            )
 
-                new_habit = Habit.new_habit(
-                    habit_collection_ref_id=habit_collection.ref_id,
-                    archived=False,
-                    project_ref_id=args.project_ref_id
-                    or workspace.default_project_ref_id,
-                    name=args.name,
-                    gen_params=RecurringTaskGenParams(
-                        period=args.period,
-                        eisen=args.eisen,
-                        difficulty=args.difficulty,
-                        actionable_from_day=args.actionable_from_day,
-                        actionable_from_month=args.actionable_from_month,
-                        due_at_time=args.due_at_time,
-                        due_at_day=args.due_at_day,
-                        due_at_month=args.due_at_month,
-                    ),
-                    skip_rule=args.skip_rule,
-                    suspended=False,
-                    repeats_in_period_count=args.repeats_in_period_count,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-                new_habit = await uow.habit_repository.create(new_habit)
-                await entity_reporter.mark_known_entity(new_habit)
-                await entity_reporter.mark_local_change()
+            new_habit = Habit.new_habit(
+                habit_collection_ref_id=habit_collection.ref_id,
+                archived=False,
+                project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+                name=args.name,
+                gen_params=RecurringTaskGenParams(
+                    period=args.period,
+                    eisen=args.eisen,
+                    difficulty=args.difficulty,
+                    actionable_from_day=args.actionable_from_day,
+                    actionable_from_month=args.actionable_from_month,
+                    due_at_time=args.due_at_time,
+                    due_at_day=args.due_at_day,
+                    due_at_month=args.due_at_month,
+                ),
+                skip_rule=args.skip_rule,
+                suspended=False,
+                repeats_in_period_count=args.repeats_in_period_count,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_habit = await uow.habit_repository.create(new_habit)
+            await progress_reporter.mark_created(new_habit)
 
         return HabitCreateResult(new_habit=new_habit)

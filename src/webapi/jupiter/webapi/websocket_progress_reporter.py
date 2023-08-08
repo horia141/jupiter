@@ -17,9 +17,9 @@ from typing import (
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.json import JSONDictType
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
     EntityProgressReporter,
     MarkProgressStatus,
+    ProgressReporter,
     ProgressReporterFactory,
 )
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseContext
@@ -270,7 +270,7 @@ class WebsocketEntityProgressReporter(EntityProgressReporter):
         )
 
 
-class WebsocketContextProgressReporter(ContextProgressReporter):
+class WebsocketContextProgressReporter(ProgressReporter):
     """A progress reporter based on a Rich console that outputs progress to the console."""
 
     _websocket: Final[_WebsocketHandle]
@@ -472,7 +472,7 @@ class WebsocketContextProgressReporter(ContextProgressReporter):
         entity_type: str,
         entity_id: EntityId,
         entity_name: str,
-    ) -> AsyncIterator[ContextProgressReporter]:
+    ) -> AsyncIterator[ProgressReporter]:
         """Create a progress reporter with some scoping to operate with subentities of a main entity."""
         subprogress_reporter = WebsocketContextProgressReporter(
             websocket=self._websocket,
@@ -638,9 +638,7 @@ class WebsocketProgressReporterFactory(
             await web_socket_handle.clear_websocket()
         self._web_sockets.clear()
 
-    def new_reporter(
-        self, context: AppLoggedInUseCaseContext
-    ) -> ContextProgressReporter:
+    def new_reporter(self, context: AppLoggedInUseCaseContext) -> ProgressReporter:
         """Construct a new progress reporter based on web sockets."""
         if context.user_ref_id not in self._web_sockets:
             self._web_sockets[

@@ -10,7 +10,7 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -36,7 +36,7 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: PersonArchiveArgs,
     ) -> None:
@@ -44,9 +44,6 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
         workspace = context.workspace
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            await uow.person_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
             person = await uow.person_repository.load_by_id(args.ref_id)
 
             inbox_task_collection = (
@@ -72,15 +69,10 @@ class PersonArchiveUseCase(AppLoggedInMutationUseCase[PersonArchiveArgs, None]):
         for inbox_task in all_inbox_tasks:
             await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
 
-        async with progress_reporter.start_archiving_entity(
-            "person",
-            person.ref_id,
-            str(person.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                person = person.mark_archived(
-                    EventSource.CLI,
-                    self._time_provider.get_current_time(),
-                )
-                await uow.person_repository.save(person)
-                await entity_reporter.mark_local_change()
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            person = person.mark_archived(
+                EventSource.CLI,
+                self._time_provider.get_current_time(),
+            )
+            await uow.person_repository.save(person)
+            await progress_reporter.mark_updated(person)

@@ -11,7 +11,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -43,26 +43,17 @@ class SmartListItemUpdateUseCase(
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListItemUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        workspace = context.workspace
-
         async with self._domain_storage_engine.get_unit_of_work() as uow:
-            (
-                await uow.smart_list_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
-            )
-
             smart_list_item = await uow.smart_list_item_repository.load_by_id(
                 args.ref_id,
             )
 
-        if args.tags.should_change:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
+            if args.tags.should_change:
                 smart_list_tags = {
                     t.tag_name: t
                     for t in await uow.smart_list_tag_repository.find_all_with_filters(
@@ -71,52 +62,37 @@ class SmartListItemUpdateUseCase(
                     )
                 }
 
-            for tag in args.tags.just_the_value:
-                if tag in smart_list_tags:
-                    continue
+                for tag in args.tags.just_the_value:
+                    if tag in smart_list_tags:
+                        continue
 
-                async with progress_reporter.start_creating_entity(
-                    "smart list tag",
-                    str(tag),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        smart_list_tag = SmartListTag.new_smart_list_tag(
-                            smart_list_ref_id=smart_list_item.smart_list_ref_id,
-                            tag_name=tag,
-                            source=EventSource.CLI,
-                            created_time=self._time_provider.get_current_time(),
-                        )
-                        smart_list_tag = await uow.smart_list_tag_repository.create(
-                            smart_list_tag,
-                        )
-                        await entity_reporter.mark_known_entity_id(
-                            smart_list_tag.ref_id,
-                        )
-                        await entity_reporter.mark_local_change()
+                    smart_list_tag = SmartListTag.new_smart_list_tag(
+                        smart_list_ref_id=smart_list_item.smart_list_ref_id,
+                        tag_name=tag,
+                        source=EventSource.CLI,
+                        created_time=self._time_provider.get_current_time(),
+                    )
+                    smart_list_tag = await uow.smart_list_tag_repository.create(
+                        smart_list_tag,
+                    )
+                    await progress_reporter.mark_created(smart_list_tag)
 
-                smart_list_tags[smart_list_tag.tag_name] = smart_list_tag
+                    smart_list_tags[smart_list_tag.tag_name] = smart_list_tag
 
-            tags_ref_id = UpdateAction.change_to(
-                [t.ref_id for t in smart_list_tags.values()],
-            )
-        else:
-            tags_ref_id = UpdateAction.do_nothing()
-
-        async with progress_reporter.start_updating_entity(
-            "smart list item",
-            args.ref_id,
-            str(smart_list_item.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                smart_list_item = smart_list_item.update(
-                    name=args.name,
-                    is_done=args.is_done,
-                    tags_ref_id=tags_ref_id,
-                    url=args.url,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
+                tags_ref_id = UpdateAction.change_to(
+                    [t.ref_id for t in smart_list_tags.values()],
                 )
-                await entity_reporter.mark_known_name(str(smart_list_item.name))
+            else:
+                tags_ref_id = UpdateAction.do_nothing()
 
-                await uow.smart_list_item_repository.save(smart_list_item)
-                await entity_reporter.mark_local_change()
+            smart_list_item = smart_list_item.update(
+                name=args.name,
+                is_done=args.is_done,
+                tags_ref_id=tags_ref_id,
+                url=args.url,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
+
+            await uow.smart_list_item_repository.save(smart_list_item)
+            await progress_reporter.mark_created(smart_list_item)

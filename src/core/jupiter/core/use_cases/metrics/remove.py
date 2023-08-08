@@ -6,7 +6,7 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -32,7 +32,7 @@ class MetricRemoveUseCase(AppLoggedInMutationUseCase[MetricRemoveArgs, None]):
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricRemoveArgs,
     ) -> None:

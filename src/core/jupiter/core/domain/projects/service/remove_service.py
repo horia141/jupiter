@@ -12,7 +12,7 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
 
 
@@ -36,7 +36,7 @@ class ProjectRemoveService:
 
     async def do_it(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         workspace: Workspace,
         ref_id: EntityId,
     ) -> None:
@@ -146,8 +146,5 @@ class ProjectRemoveService:
                 )
 
             # remove project
-            async with progress_reporter.start_removing_entity(
-                "project", project.ref_id, str(project.name)
-            ) as entity_reporter:
-                await uow.project_repository.remove(project.ref_id)
-                await entity_reporter.mark_local_change()
+            await uow.project_repository.remove(project.ref_id)
+            await progress_reporter.mark_removed(project)

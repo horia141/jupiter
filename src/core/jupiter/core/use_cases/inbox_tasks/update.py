@@ -14,7 +14,7 @@ from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -46,34 +46,29 @@ class InboxTaskUpdateUseCase(AppLoggedInMutationUseCase[InboxTaskUpdateArgs, Non
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: InboxTaskUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        async with progress_reporter.start_updating_entity(
-            "inbox task",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                inbox_task = await uow.inbox_task_repository.load_by_id(args.ref_id)
-                await entity_reporter.mark_known_name(str(inbox_task.name))
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            inbox_task = await uow.inbox_task_repository.load_by_id(args.ref_id)
 
-                try:
-                    inbox_task = inbox_task.update(
-                        name=args.name,
-                        status=args.status,
-                        eisen=args.eisen,
-                        difficulty=args.difficulty,
-                        actionable_date=args.actionable_date,
-                        due_date=args.due_date,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                except CannotModifyGeneratedTaskError as err:
-                    raise InputValidationError(
-                        f"Modifing a generated task's field {err.field} is not possible",
-                    ) from err
+            try:
+                inbox_task = inbox_task.update(
+                    name=args.name,
+                    status=args.status,
+                    eisen=args.eisen,
+                    difficulty=args.difficulty,
+                    actionable_date=args.actionable_date,
+                    due_date=args.due_date,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+            except CannotModifyGeneratedTaskError as err:
+                raise InputValidationError(
+                    f"Modifing a generated task's field {err.field} is not possible",
+                ) from err
 
-                await uow.inbox_task_repository.save(inbox_task)
-                await entity_reporter.mark_local_change()
+            await uow.inbox_task_repository.save(inbox_task)
+            await progress_reporter.mark_updated(inbox_task)

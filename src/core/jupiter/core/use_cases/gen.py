@@ -32,7 +32,7 @@ from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -63,7 +63,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: GenArgs,
     ) -> None:
@@ -523,7 +523,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
 
     async def _generate_inbox_tasks_for_habit(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
@@ -536,128 +536,105 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         ],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "habit",
-            habit.ref_id,
-            str(habit.name),
-        ) as subprogress_reporter:
-            if habit.suspended:
-                return
+        if habit.suspended:
+            return
 
-            if (
-                period_filter is not None
-                and habit.gen_params.period not in period_filter
-            ):
-                return
+        if period_filter is not None and habit.gen_params.period not in period_filter:
+            return
 
-            schedule = schedules.get_schedule(
-                habit.gen_params.period,
-                habit.name,
-                today.to_timestamp_at_end_of_day(),
-                user.timezone,
-                habit.skip_rule,
-                habit.gen_params.actionable_from_day,
-                habit.gen_params.actionable_from_month,
-                habit.gen_params.due_at_time,
-                habit.gen_params.due_at_day,
-                habit.gen_params.due_at_month,
+        schedule = schedules.get_schedule(
+            habit.gen_params.period,
+            habit.name,
+            today.to_timestamp_at_end_of_day(),
+            user.timezone,
+            habit.skip_rule,
+            habit.gen_params.actionable_from_day,
+            habit.gen_params.actionable_from_month,
+            habit.gen_params.due_at_time,
+            habit.gen_params.due_at_day,
+            habit.gen_params.due_at_month,
+        )
+
+        if schedule.should_skip:
+            return
+
+        all_found_tasks_by_repeat_index: Dict[Optional[int], InboxTask] = {
+            ft.recurring_repeat_index: ft
+            for ft in all_inbox_tasks_by_habit_ref_id_and_timeline.get(
+                (habit.ref_id, schedule.timeline),
+                [],
             )
+        }
+        repeat_idx_to_keep: typing.Set[Optional[int]] = set()
 
-            if schedule.should_skip:
-                return
+        for task_idx in range(habit.repeats_in_period_count or 1):
+            real_task_idx = (
+                task_idx if habit.repeats_in_period_count is not None else None
+            )
+            found_task = all_found_tasks_by_repeat_index.get(real_task_idx, None)
 
-            all_found_tasks_by_repeat_index: Dict[Optional[int], InboxTask] = {
-                ft.recurring_repeat_index: ft
-                for ft in all_inbox_tasks_by_habit_ref_id_and_timeline.get(
-                    (habit.ref_id, schedule.timeline),
-                    [],
+            if found_task:
+                repeat_idx_to_keep.add(task_idx)
+
+                if (
+                    not gen_even_if_not_modified
+                    and found_task.last_modified_time >= habit.last_modified_time
+                ):
+                    return
+
+                found_task = found_task.update_link_to_habit(
+                    project_ref_id=project.ref_id,
+                    name=schedule.full_name,
+                    timeline=schedule.timeline,
+                    repeat_index=real_task_idx,
+                    actionable_date=schedule.actionable_date,
+                    due_date=schedule.due_time,
+                    eisen=habit.gen_params.eisen,
+                    difficulty=habit.gen_params.difficulty,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
                 )
-            }
-            repeat_idx_to_keep: typing.Set[Optional[int]] = set()
 
-            for task_idx in range(habit.repeats_in_period_count or 1):
-                real_task_idx = (
-                    task_idx if habit.repeats_in_period_count is not None else None
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    await uow.inbox_task_repository.save(found_task)
+                    await progress_reporter.mark_updated(found_task)
+
+            else:
+                inbox_task = InboxTask.new_inbox_task_for_habit(
+                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                    name=schedule.full_name,
+                    project_ref_id=project.ref_id,
+                    habit_ref_id=habit.ref_id,
+                    recurring_task_timeline=schedule.timeline,
+                    recurring_task_repeat_index=real_task_idx,
+                    recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                    eisen=habit.gen_params.eisen,
+                    difficulty=habit.gen_params.difficulty,
+                    actionable_date=schedule.actionable_date,
+                    due_date=schedule.due_time,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
                 )
-                found_task = all_found_tasks_by_repeat_index.get(real_task_idx, None)
 
-                if found_task:
-                    repeat_idx_to_keep.add(task_idx)
-
-                    async with subprogress_reporter.start_updating_entity(
-                        "inbox task",
-                        found_task.ref_id,
-                        str(found_task.name),
-                    ) as entity_reporter:
-                        if (
-                            not gen_even_if_not_modified
-                            and found_task.last_modified_time
-                            >= habit.last_modified_time
-                        ):
-                            await entity_reporter.mark_not_needed()
-                            return
-
-                        found_task = found_task.update_link_to_habit(
-                            project_ref_id=project.ref_id,
-                            name=schedule.full_name,
-                            timeline=schedule.timeline,
-                            repeat_index=real_task_idx,
-                            actionable_date=schedule.actionable_date,
-                            due_date=schedule.due_time,
-                            eisen=habit.gen_params.eisen,
-                            difficulty=habit.gen_params.difficulty,
-                            source=EventSource.CLI,
-                            modification_time=self._time_provider.get_current_time(),
-                        )
-                        await entity_reporter.mark_known_name(str(found_task.name))
-
-                        async with self._domain_storage_engine.get_unit_of_work() as uow:
-                            await uow.inbox_task_repository.save(found_task)
-                            await entity_reporter.mark_local_change()
-
-                else:
-                    inbox_task = InboxTask.new_inbox_task_for_habit(
-                        inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                        name=schedule.full_name,
-                        project_ref_id=project.ref_id,
-                        habit_ref_id=habit.ref_id,
-                        recurring_task_timeline=schedule.timeline,
-                        recurring_task_repeat_index=real_task_idx,
-                        recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
-                        eisen=habit.gen_params.eisen,
-                        difficulty=habit.gen_params.difficulty,
-                        actionable_date=schedule.actionable_date,
-                        due_date=schedule.due_time,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    inbox_task = await uow.inbox_task_repository.create(
+                        inbox_task,
                     )
+                    await progress_reporter.mark_created(inbox_task)
 
-                    async with subprogress_reporter.start_creating_entity(
-                        "inbox task",
-                        str(inbox_task.name),
-                    ) as entity_reporter:
-                        async with self._domain_storage_engine.get_unit_of_work() as uow:
-                            inbox_task = await uow.inbox_task_repository.create(
-                                inbox_task,
-                            )
-                            await entity_reporter.mark_known_entity(
-                                inbox_task,
-                            )
-                            await entity_reporter.mark_local_change()
-
-            inbox_task_remove_service = InboxTaskRemoveService(
-                self._domain_storage_engine,
-            )
-            for task in all_found_tasks_by_repeat_index.values():
-                if task.recurring_repeat_index is None:
-                    continue
-                if task.recurring_repeat_index in repeat_idx_to_keep:
-                    continue
-                await inbox_task_remove_service.do_it(progress_reporter, task)
+        inbox_task_remove_service = InboxTaskRemoveService(
+            self._domain_storage_engine,
+        )
+        for task in all_found_tasks_by_repeat_index.values():
+            if task.recurring_repeat_index is None:
+                continue
+            if task.recurring_repeat_index in repeat_idx_to_keep:
+                continue
+            await inbox_task_remove_service.do_it(progress_reporter, task)
 
     async def _generate_inbox_tasks_for_chore(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         user: User,
         workspace: Workspace,
         inbox_task_collection: InboxTaskCollection,
@@ -672,109 +649,87 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         ],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "chore",
-            chore.ref_id,
-            str(chore.name),
-        ) as subprogress_reporter:
-            if chore.suspended:
-                return
+        if chore.suspended:
+            return
 
+        if period_filter is not None and chore.gen_params.period not in period_filter:
+            return
+
+        schedule = schedules.get_schedule(
+            chore.gen_params.period,
+            chore.name,
+            today.to_timestamp_at_end_of_day(),
+            user.timezone,
+            chore.skip_rule,
+            chore.gen_params.actionable_from_day,
+            chore.gen_params.actionable_from_month,
+            chore.gen_params.due_at_time,
+            chore.gen_params.due_at_day,
+            chore.gen_params.due_at_month,
+        )
+
+        if workspace.is_feature_available(Feature.VACATIONS):
+            if not chore.must_do:
+                for vacation in all_vacations:
+                    if vacation.is_in_vacation(schedule.first_day, schedule.end_day):
+                        return
+
+        if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
+            return
+
+        if schedule.should_skip:
+            return
+
+        found_task = all_inbox_tasks_by_chore_ref_id_and_timeline.get(
+            (chore.ref_id, schedule.timeline),
+            None,
+        )
+
+        if found_task:
             if (
-                period_filter is not None
-                and chore.gen_params.period not in period_filter
+                not gen_even_if_not_modified
+                and found_task.last_modified_time >= chore.last_modified_time
             ):
                 return
 
-            schedule = schedules.get_schedule(
-                chore.gen_params.period,
-                chore.name,
-                today.to_timestamp_at_end_of_day(),
-                user.timezone,
-                chore.skip_rule,
-                chore.gen_params.actionable_from_day,
-                chore.gen_params.actionable_from_month,
-                chore.gen_params.due_at_time,
-                chore.gen_params.due_at_day,
-                chore.gen_params.due_at_month,
+            found_task = found_task.update_link_to_chore(
+                project_ref_id=project.ref_id,
+                name=schedule.full_name,
+                timeline=schedule.timeline,
+                actionable_date=schedule.actionable_date,
+                due_date=schedule.due_time,
+                eisen=chore.gen_params.eisen,
+                difficulty=chore.gen_params.difficulty,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-            if workspace.is_feature_available(Feature.VACATIONS):
-                if not chore.must_do:
-                    for vacation in all_vacations:
-                        if vacation.is_in_vacation(
-                            schedule.first_day, schedule.end_day
-                        ):
-                            return
-
-            if not chore.is_in_active_interval(schedule.first_day, schedule.end_day):
-                return
-
-            if schedule.should_skip:
-                return
-
-            found_task = all_inbox_tasks_by_chore_ref_id_and_timeline.get(
-                (chore.ref_id, schedule.timeline),
-                None,
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.inbox_task_repository.save(found_task)
+                await progress_reporter.mark_updated(found_task)
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_chore(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                name=schedule.full_name,
+                project_ref_id=project.ref_id,
+                chore_ref_id=chore.ref_id,
+                recurring_task_timeline=schedule.timeline,
+                recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                eisen=chore.gen_params.eisen,
+                difficulty=chore.gen_params.difficulty,
+                actionable_date=schedule.actionable_date,
+                due_date=schedule.due_time,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
             )
 
-            if found_task:
-                async with subprogress_reporter.start_updating_entity(
-                    "inbox task",
-                    found_task.ref_id,
-                    str(found_task.name),
-                ) as entity_reporter:
-                    if (
-                        not gen_even_if_not_modified
-                        and found_task.last_modified_time >= chore.last_modified_time
-                    ):
-                        await entity_reporter.mark_not_needed()
-                        return
-
-                    found_task = found_task.update_link_to_chore(
-                        project_ref_id=project.ref_id,
-                        name=schedule.full_name,
-                        timeline=schedule.timeline,
-                        actionable_date=schedule.actionable_date,
-                        due_date=schedule.due_time,
-                        eisen=chore.gen_params.eisen,
-                        difficulty=chore.gen_params.difficulty,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await entity_reporter.mark_known_name(str(found_task.name))
-
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(found_task)
-                        await entity_reporter.mark_local_change()
-            else:
-                inbox_task = InboxTask.new_inbox_task_for_chore(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    name=schedule.full_name,
-                    project_ref_id=project.ref_id,
-                    chore_ref_id=chore.ref_id,
-                    recurring_task_timeline=schedule.timeline,
-                    recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
-                    eisen=chore.gen_params.eisen,
-                    difficulty=chore.gen_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-
-                async with subprogress_reporter.start_creating_entity(
-                    "inbox task",
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity(inbox_task)
-                        await entity_reporter.mark_local_change()
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)
 
     async def _generate_collection_inbox_tasks_for_metric(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
@@ -788,92 +743,72 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         ],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "metric",
-            metric.ref_id,
-            str(metric.name),
-        ) as subprogress_reporter:
+        if period_filter is not None and collection_params.period not in period_filter:
+            return
+
+        schedule = schedules.get_schedule(
+            typing.cast(RecurringTaskPeriod, collection_params.period),
+            metric.name,
+            today.to_timestamp_at_end_of_day(),
+            user.timezone,
+            None,
+            collection_params.actionable_from_day,
+            collection_params.actionable_from_month,
+            collection_params.due_at_time,
+            collection_params.due_at_day,
+            collection_params.due_at_month,
+        )
+
+        found_task = all_inbox_tasks_by_metric_ref_id_and_timeline.get(
+            (metric.ref_id, schedule.timeline),
+            None,
+        )
+
+        if found_task:
             if (
-                period_filter is not None
-                and collection_params.period not in period_filter
+                not gen_even_if_not_modified
+                and found_task.last_modified_time >= metric.last_modified_time
             ):
                 return
 
-            schedule = schedules.get_schedule(
-                typing.cast(RecurringTaskPeriod, collection_params.period),
-                metric.name,
-                today.to_timestamp_at_end_of_day(),
-                user.timezone,
-                None,
-                collection_params.actionable_from_day,
-                collection_params.actionable_from_month,
-                collection_params.due_at_time,
-                collection_params.due_at_day,
-                collection_params.due_at_month,
+            found_task = found_task.update_link_to_metric(
+                project_ref_id=project.ref_id,
+                name=schedule.full_name,
+                recurring_timeline=schedule.timeline,
+                eisen=collection_params.eisen,
+                difficulty=collection_params.difficulty,
+                actionable_date=schedule.actionable_date,
+                due_time=schedule.due_time,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-            found_task = all_inbox_tasks_by_metric_ref_id_and_timeline.get(
-                (metric.ref_id, schedule.timeline),
-                None,
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.inbox_task_repository.save(found_task)
+                await progress_reporter.mark_updated(found_task)
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_metric_collection(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                project_ref_id=project.ref_id,
+                name=schedule.full_name,
+                metric_ref_id=metric.ref_id,
+                recurring_task_timeline=schedule.timeline,
+                recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                eisen=collection_params.eisen,
+                difficulty=collection_params.difficulty,
+                actionable_date=schedule.actionable_date,
+                due_date=schedule.due_time,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
             )
 
-            if found_task:
-                async with subprogress_reporter.start_updating_entity(
-                    "inbox task",
-                    found_task.ref_id,
-                    str(found_task.name),
-                ) as entity_reporter:
-                    if (
-                        not gen_even_if_not_modified
-                        and found_task.last_modified_time >= metric.last_modified_time
-                    ):
-                        await entity_reporter.mark_not_needed()
-                        return
-
-                    found_task = found_task.update_link_to_metric(
-                        project_ref_id=project.ref_id,
-                        name=schedule.full_name,
-                        recurring_timeline=schedule.timeline,
-                        eisen=collection_params.eisen,
-                        difficulty=collection_params.difficulty,
-                        actionable_date=schedule.actionable_date,
-                        due_time=schedule.due_time,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await entity_reporter.mark_known_name(str(found_task.name))
-
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(found_task)
-                        await entity_reporter.mark_local_change()
-            else:
-                inbox_task = InboxTask.new_inbox_task_for_metric_collection(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    project_ref_id=project.ref_id,
-                    name=schedule.full_name,
-                    metric_ref_id=metric.ref_id,
-                    recurring_task_timeline=schedule.timeline,
-                    recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
-                    eisen=collection_params.eisen,
-                    difficulty=collection_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-
-                async with subprogress_reporter.start_creating_entity(
-                    "inbox task",
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity(inbox_task)
-                        await entity_reporter.mark_local_change()
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)
 
     async def _generate_catch_up_inbox_tasks_for_person(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
@@ -887,92 +822,72 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         ],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "person",
-            person.ref_id,
-            str(person.name),
-        ) as subprogress_reporter:
+        if period_filter is not None and catch_up_params.period not in period_filter:
+            return
+
+        schedule = schedules.get_schedule(
+            typing.cast(RecurringTaskPeriod, catch_up_params.period),
+            person.name,
+            today.to_timestamp_at_end_of_day(),
+            user.timezone,
+            None,
+            catch_up_params.actionable_from_day,
+            catch_up_params.actionable_from_month,
+            catch_up_params.due_at_time,
+            catch_up_params.due_at_day,
+            catch_up_params.due_at_month,
+        )
+
+        found_task = all_inbox_tasks_by_person_ref_id_and_timeline.get(
+            (person.ref_id, schedule.timeline),
+            None,
+        )
+
+        if found_task:
             if (
-                period_filter is not None
-                and catch_up_params.period not in period_filter
+                not gen_even_if_not_modified
+                and found_task.last_modified_time >= person.last_modified_time
             ):
                 return
 
-            schedule = schedules.get_schedule(
-                typing.cast(RecurringTaskPeriod, catch_up_params.period),
-                person.name,
-                today.to_timestamp_at_end_of_day(),
-                user.timezone,
-                None,
-                catch_up_params.actionable_from_day,
-                catch_up_params.actionable_from_month,
-                catch_up_params.due_at_time,
-                catch_up_params.due_at_day,
-                catch_up_params.due_at_month,
+            found_task = found_task.update_link_to_person_catch_up(
+                project_ref_id=project.ref_id,
+                name=schedule.full_name,
+                recurring_timeline=schedule.timeline,
+                eisen=catch_up_params.eisen,
+                difficulty=catch_up_params.difficulty,
+                actionable_date=schedule.actionable_date,
+                due_time=schedule.due_time,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-            found_task = all_inbox_tasks_by_person_ref_id_and_timeline.get(
-                (person.ref_id, schedule.timeline),
-                None,
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.inbox_task_repository.save(found_task)
+                await progress_reporter.mark_updated(found_task)
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_person_catch_up(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                name=schedule.full_name,
+                project_ref_id=project.ref_id,
+                person_ref_id=person.ref_id,
+                recurring_task_timeline=schedule.timeline,
+                recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                eisen=catch_up_params.eisen,
+                difficulty=catch_up_params.difficulty,
+                actionable_date=schedule.actionable_date,
+                due_date=schedule.due_time,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
             )
 
-            if found_task:
-                async with subprogress_reporter.start_updating_entity(
-                    "inbox task",
-                    found_task.ref_id,
-                    str(found_task.name),
-                ) as entity_reporter:
-                    if (
-                        not gen_even_if_not_modified
-                        and found_task.last_modified_time >= person.last_modified_time
-                    ):
-                        await entity_reporter.mark_not_needed()
-                        return
-
-                    found_task = found_task.update_link_to_person_catch_up(
-                        project_ref_id=project.ref_id,
-                        name=schedule.full_name,
-                        recurring_timeline=schedule.timeline,
-                        eisen=catch_up_params.eisen,
-                        difficulty=catch_up_params.difficulty,
-                        actionable_date=schedule.actionable_date,
-                        due_time=schedule.due_time,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await entity_reporter.mark_known_name(str(found_task.name))
-
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(found_task)
-                        await entity_reporter.mark_local_change()
-            else:
-                inbox_task = InboxTask.new_inbox_task_for_person_catch_up(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    name=schedule.full_name,
-                    project_ref_id=project.ref_id,
-                    person_ref_id=person.ref_id,
-                    recurring_task_timeline=schedule.timeline,
-                    recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
-                    eisen=catch_up_params.eisen,
-                    difficulty=catch_up_params.difficulty,
-                    actionable_date=schedule.actionable_date,
-                    due_date=schedule.due_time,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-
-                async with subprogress_reporter.start_creating_entity(
-                    "inbox task",
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity(inbox_task)
-                        await entity_reporter.mark_local_change()
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)
 
     async def _generate_birthday_inbox_task_for_person(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         user: User,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
@@ -985,235 +900,183 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
         ],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "person",
-            person.ref_id,
-            str(person.name),
-        ) as subprogress_reporter:
-            schedule = schedules.get_schedule(
+        schedule = schedules.get_schedule(
+            RecurringTaskPeriod.YEARLY,
+            person.name,
+            today.to_timestamp_at_end_of_day(),
+            user.timezone,
+            None,
+            None,
+            None,
+            None,
+            RecurringTaskDueAtDay.from_raw(
+                RecurringTaskPeriod.MONTHLY,
+                birthday.day,
+            ),
+            RecurringTaskDueAtMonth.from_raw(
                 RecurringTaskPeriod.YEARLY,
-                person.name,
-                today.to_timestamp_at_end_of_day(),
-                user.timezone,
-                None,
-                None,
-                None,
-                None,
-                RecurringTaskDueAtDay.from_raw(
-                    RecurringTaskPeriod.MONTHLY,
-                    birthday.day,
-                ),
-                RecurringTaskDueAtMonth.from_raw(
-                    RecurringTaskPeriod.YEARLY,
-                    birthday.month,
-                ),
+                birthday.month,
+            ),
+        )
+
+        found_task = all_inbox_tasks_by_person_ref_id_and_timeline.get(
+            (person.ref_id, schedule.timeline),
+            None,
+        )
+
+        if found_task:
+            if (
+                not gen_even_if_not_modified
+                and found_task.last_modified_time >= person.last_modified_time
+            ):
+                return
+
+            found_task = found_task.update_link_to_person_birthday(
+                project_ref_id=project.ref_id,
+                name=schedule.full_name,
+                recurring_timeline=schedule.timeline,
+                preparation_days_cnt=person.preparation_days_cnt_for_birthday,
+                due_time=schedule.due_time,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-            found_task = all_inbox_tasks_by_person_ref_id_and_timeline.get(
-                (person.ref_id, schedule.timeline),
-                None,
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.inbox_task_repository.save(found_task)
+                await progress_reporter.mark_updated(found_task)
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_person_birthday(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                name=schedule.full_name,
+                project_ref_id=project.ref_id,
+                person_ref_id=person.ref_id,
+                recurring_task_timeline=schedule.timeline,
+                preparation_days_cnt=person.preparation_days_cnt_for_birthday,
+                recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
+                due_date=schedule.due_time,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
             )
 
-            if found_task:
-                async with subprogress_reporter.start_updating_entity(
-                    "inbox task",
-                    found_task.ref_id,
-                    str(found_task.name),
-                ) as entity_reporter:
-                    if (
-                        not gen_even_if_not_modified
-                        and found_task.last_modified_time >= person.last_modified_time
-                    ):
-                        await entity_reporter.mark_not_needed()
-                        return
-
-                    found_task = found_task.update_link_to_person_birthday(
-                        project_ref_id=project.ref_id,
-                        name=schedule.full_name,
-                        recurring_timeline=schedule.timeline,
-                        preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                        due_time=schedule.due_time,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await entity_reporter.mark_known_name(str(found_task.name))
-
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(found_task)
-                        await entity_reporter.mark_local_change()
-            else:
-                inbox_task = InboxTask.new_inbox_task_for_person_birthday(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    name=schedule.full_name,
-                    project_ref_id=project.ref_id,
-                    person_ref_id=person.ref_id,
-                    recurring_task_timeline=schedule.timeline,
-                    preparation_days_cnt=person.preparation_days_cnt_for_birthday,
-                    recurring_task_gen_right_now=today.to_timestamp_at_end_of_day(),
-                    due_date=schedule.due_time,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-
-                async with subprogress_reporter.start_creating_entity(
-                    "inbox task",
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity(inbox_task)
-                        await entity_reporter.mark_local_change()
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)
 
     async def _generate_slack_inbox_task_for_slack_task(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         slack_task: SlackTask,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         all_inbox_tasks_by_slack_task_ref_id: Dict[EntityId, InboxTask],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "slack task",
+        found_task = all_inbox_tasks_by_slack_task_ref_id.get(
             slack_task.ref_id,
-            str(slack_task.name),
-        ) as subprogress_reporter:
-            found_task = all_inbox_tasks_by_slack_task_ref_id.get(
-                slack_task.ref_id,
-                None,
+            None,
+        )
+
+        if found_task:
+            if (
+                not gen_even_if_not_modified
+                and found_task.last_modified_time >= slack_task.last_modified_time
+            ):
+                return
+
+            found_task = found_task.update_link_to_slack_task(
+                project_ref_id=project.ref_id,
+                user=slack_task.user,
+                channel=slack_task.channel,
+                message=slack_task.message,
+                generation_extra_info=slack_task.generation_extra_info,
+                source=EventSource.SLACK,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-            if found_task:
-                async with subprogress_reporter.start_updating_entity(
-                    "inbox task",
-                    found_task.ref_id,
-                    str(found_task.name),
-                ) as entity_reporter:
-                    if (
-                        not gen_even_if_not_modified
-                        and found_task.last_modified_time
-                        >= slack_task.last_modified_time
-                    ):
-                        await entity_reporter.mark_not_needed()
-                        return
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.inbox_task_repository.save(found_task)
+                await progress_reporter.mark_updated(found_task)
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_slack_task(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                project_ref_id=project.ref_id,
+                slack_task_ref_id=slack_task.ref_id,
+                user=slack_task.user,
+                channel=slack_task.channel,
+                generation_extra_info=slack_task.generation_extra_info,
+                message=slack_task.message,
+                source=EventSource.SLACK,  # We consider this generation as coming from Slack
+                created_time=self._time_provider.get_current_time(),
+            )
 
-                    found_task = found_task.update_link_to_slack_task(
-                        project_ref_id=project.ref_id,
-                        user=slack_task.user,
-                        channel=slack_task.channel,
-                        message=slack_task.message,
-                        generation_extra_info=slack_task.generation_extra_info,
-                        source=EventSource.SLACK,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await entity_reporter.mark_known_name(str(found_task.name))
-
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(found_task)
-                        await entity_reporter.mark_local_change()
-            else:
-                inbox_task = InboxTask.new_inbox_task_for_slack_task(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    project_ref_id=project.ref_id,
-                    slack_task_ref_id=slack_task.ref_id,
-                    user=slack_task.user,
-                    channel=slack_task.channel,
-                    generation_extra_info=slack_task.generation_extra_info,
-                    message=slack_task.message,
-                    source=EventSource.SLACK,  # We consider this generation as coming from Slack
-                    created_time=self._time_provider.get_current_time(),
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                slack_task = slack_task.mark_as_used_for_generation(
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
                 )
+                await uow.slack_task_repository.save(slack_task)
+                await progress_reporter.mark_updated(slack_task)
 
-                async with subprogress_reporter.start_creating_entity(
-                    "inbox task",
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        slack_task = slack_task.mark_as_used_for_generation(
-                            source=EventSource.CLI,
-                            modification_time=self._time_provider.get_current_time(),
-                        )
-                        await uow.slack_task_repository.save(slack_task)
-
-                        inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity(inbox_task)
-                        await entity_reporter.mark_local_change()
+                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)
 
     async def _generate_email_inbox_task_for_email_task(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         email_task: EmailTask,
         inbox_task_collection: InboxTaskCollection,
         project: Project,
         all_inbox_tasks_by_email_task_ref_id: Dict[EntityId, InboxTask],
         gen_even_if_not_modified: bool,
     ) -> None:
-        async with progress_reporter.start_complex_entity_work(
-            "email task",
+        found_task = all_inbox_tasks_by_email_task_ref_id.get(
             email_task.ref_id,
-            str(email_task.name),
-        ) as subprogress_reporter:
-            found_task = all_inbox_tasks_by_email_task_ref_id.get(
-                email_task.ref_id,
-                None,
+            None,
+        )
+
+        if found_task:
+            if (
+                not gen_even_if_not_modified
+                and found_task.last_modified_time >= email_task.last_modified_time
+            ):
+                return
+
+            found_task = found_task.update_link_to_email_task(
+                project_ref_id=project.ref_id,
+                from_address=email_task.from_address,
+                from_name=email_task.from_name,
+                to_address=email_task.to_address,
+                subject=email_task.subject,
+                body=email_task.body,
+                generation_extra_info=email_task.generation_extra_info,
+                source=EventSource.EMAIL,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-            if found_task:
-                async with subprogress_reporter.start_updating_entity(
-                    "inbox task",
-                    found_task.ref_id,
-                    str(found_task.name),
-                ) as entity_reporter:
-                    if (
-                        not gen_even_if_not_modified
-                        and found_task.last_modified_time
-                        >= email_task.last_modified_time
-                    ):
-                        await entity_reporter.mark_not_needed()
-                        return
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await uow.inbox_task_repository.save(found_task)
+        else:
+            inbox_task = InboxTask.new_inbox_task_for_email_task(
+                inbox_task_collection_ref_id=inbox_task_collection.ref_id,
+                project_ref_id=project.ref_id,
+                email_task_ref_id=email_task.ref_id,
+                from_address=email_task.from_address,
+                from_name=email_task.from_name,
+                to_address=email_task.to_address,
+                subject=email_task.subject,
+                body=email_task.body,
+                generation_extra_info=email_task.generation_extra_info,
+                source=EventSource.EMAIL,  # We consider this generation as coming from Email
+                created_time=self._time_provider.get_current_time(),
+            )
 
-                    found_task = found_task.update_link_to_email_task(
-                        project_ref_id=project.ref_id,
-                        from_address=email_task.from_address,
-                        from_name=email_task.from_name,
-                        to_address=email_task.to_address,
-                        subject=email_task.subject,
-                        body=email_task.body,
-                        generation_extra_info=email_task.generation_extra_info,
-                        source=EventSource.EMAIL,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await entity_reporter.mark_known_name(str(found_task.name))
-
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(found_task)
-                        await entity_reporter.mark_local_change()
-            else:
-                inbox_task = InboxTask.new_inbox_task_for_email_task(
-                    inbox_task_collection_ref_id=inbox_task_collection.ref_id,
-                    project_ref_id=project.ref_id,
-                    email_task_ref_id=email_task.ref_id,
-                    from_address=email_task.from_address,
-                    from_name=email_task.from_name,
-                    to_address=email_task.to_address,
-                    subject=email_task.subject,
-                    body=email_task.body,
-                    generation_extra_info=email_task.generation_extra_info,
-                    source=EventSource.EMAIL,  # We consider this generation as coming from Email
-                    created_time=self._time_provider.get_current_time(),
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                email_task = email_task.mark_as_used_for_generation(
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
                 )
+                await uow.email_task_repository.save(email_task)
+                await progress_reporter.mark_updated(email_task)
 
-                async with subprogress_reporter.start_creating_entity(
-                    "inbox task",
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        email_task = email_task.mark_as_used_for_generation(
-                            source=EventSource.CLI,
-                            modification_time=self._time_provider.get_current_time(),
-                        )
-                        await uow.email_task_repository.save(email_task)
-
-                        inbox_task = await uow.inbox_task_repository.create(inbox_task)
-                        await entity_reporter.mark_known_entity(inbox_task)
-                        await entity_reporter.mark_local_change()
+                inbox_task = await uow.inbox_task_repository.create(inbox_task)
+                await progress_reporter.mark_created(inbox_task)

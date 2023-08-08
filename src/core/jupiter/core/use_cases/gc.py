@@ -22,7 +22,7 @@ from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -43,7 +43,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: GCArgs,
     ) -> None:
@@ -188,7 +188,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
 
     async def _archive_done_inbox_tasks(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         inbox_tasks: Iterable[InboxTask],
     ) -> None:
         inbox_task_archive_service = InboxTaskArchiveService(
@@ -203,7 +203,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
 
     async def _archive_done_big_plans(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         big_plans: Iterable[BigPlan],
     ) -> bool:
         """Archive the done big plans."""
@@ -222,7 +222,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
 
     async def _archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         slack_tasks: List[SlackTask],
         inbox_tasks: List[InboxTask],
     ) -> None:
@@ -242,7 +242,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
 
     async def _archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         email_tasks: List[EmailTask],
         inbox_tasks: List[InboxTask],
     ) -> None:

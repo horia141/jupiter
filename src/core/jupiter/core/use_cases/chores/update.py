@@ -19,7 +19,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -58,7 +58,7 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: ChoreUpdateArgs,
     ) -> None:
@@ -66,74 +66,68 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
         user = context.user
         workspace = context.workspace
 
-        async with progress_reporter.start_updating_entity(
-            "chore",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                chore = await uow.chore_repository.load_by_id(args.ref_id)
-                await entity_reporter.mark_known_name(str(chore.name))
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            chore = await uow.chore_repository.load_by_id(args.ref_id)
 
-                project = await uow.project_repository.load_by_id(chore.project_ref_id)
+            project = await uow.project_repository.load_by_id(chore.project_ref_id)
 
-                need_to_change_inbox_tasks = (
-                    args.name.should_change
-                    or args.period.should_change
-                    or args.eisen.should_change
-                    or args.difficulty.should_change
-                    or args.actionable_from_day.should_change
-                    or args.actionable_from_month.should_change
-                    or args.due_at_time.should_change
-                    or args.due_at_day.should_change
-                    or args.due_at_month.should_change
-                )
+            need_to_change_inbox_tasks = (
+                args.name.should_change
+                or args.period.should_change
+                or args.eisen.should_change
+                or args.difficulty.should_change
+                or args.actionable_from_day.should_change
+                or args.actionable_from_month.should_change
+                or args.due_at_time.should_change
+                or args.due_at_day.should_change
+                or args.due_at_month.should_change
+            )
 
-                if (
-                    args.period.should_change
-                    or args.eisen.should_change
-                    or args.difficulty.should_change
-                    or args.actionable_from_day.should_change
-                    or args.actionable_from_month.should_change
-                    or args.due_at_time.should_change
-                    or args.due_at_day.should_change
-                    or args.due_at_month.should_change
-                ):
-                    need_to_change_inbox_tasks = True
-                    chore_gen_params = UpdateAction.change_to(
-                        RecurringTaskGenParams(
-                            args.period.or_else(chore.gen_params.period),
-                            args.eisen.or_else(chore.gen_params.eisen),
-                            args.difficulty.or_else(chore.gen_params.difficulty),
-                            args.actionable_from_day.or_else(
-                                chore.gen_params.actionable_from_day,
-                            ),
-                            args.actionable_from_month.or_else(
-                                chore.gen_params.actionable_from_month,
-                            ),
-                            args.due_at_time.or_else(chore.gen_params.due_at_time),
-                            args.due_at_day.or_else(chore.gen_params.due_at_day),
-                            args.due_at_month.or_else(chore.gen_params.due_at_month),
+            if (
+                args.period.should_change
+                or args.eisen.should_change
+                or args.difficulty.should_change
+                or args.actionable_from_day.should_change
+                or args.actionable_from_month.should_change
+                or args.due_at_time.should_change
+                or args.due_at_day.should_change
+                or args.due_at_month.should_change
+            ):
+                need_to_change_inbox_tasks = True
+                chore_gen_params = UpdateAction.change_to(
+                    RecurringTaskGenParams(
+                        args.period.or_else(chore.gen_params.period),
+                        args.eisen.or_else(chore.gen_params.eisen),
+                        args.difficulty.or_else(chore.gen_params.difficulty),
+                        args.actionable_from_day.or_else(
+                            chore.gen_params.actionable_from_day,
                         ),
-                    )
-                else:
-                    chore_gen_params = UpdateAction.do_nothing()
-
-                chore = chore.update(
-                    name=args.name,
-                    gen_params=chore_gen_params,
-                    must_do=args.must_do,
-                    start_at_date=args.start_at_date,
-                    end_at_date=args.end_at_date,
-                    skip_rule=args.skip_rule,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
+                        args.actionable_from_month.or_else(
+                            chore.gen_params.actionable_from_month,
+                        ),
+                        args.due_at_time.or_else(chore.gen_params.due_at_time),
+                        args.due_at_day.or_else(chore.gen_params.due_at_day),
+                        args.due_at_month.or_else(chore.gen_params.due_at_month),
+                    ),
                 )
+            else:
+                chore_gen_params = UpdateAction.do_nothing()
 
-                await uow.chore_repository.save(chore)
-                await entity_reporter.mark_local_change()
+            chore = chore.update(
+                name=args.name,
+                gen_params=chore_gen_params,
+                must_do=args.must_do,
+                start_at_date=args.start_at_date,
+                end_at_date=args.end_at_date,
+                skip_rule=args.skip_rule,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-        if need_to_change_inbox_tasks:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
+            await uow.chore_repository.save(chore)
+            await progress_reporter.mark_updated(chore)
+
+            if need_to_change_inbox_tasks:
                 inbox_task_collection = (
                     await uow.inbox_task_collection_repository.load_by_parent(
                         workspace.ref_id,
@@ -145,12 +139,7 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
                     filter_chore_ref_ids=[chore.ref_id],
                 )
 
-            for inbox_task in all_inbox_tasks:
-                async with progress_reporter.start_updating_entity(
-                    "inbox task",
-                    inbox_task.ref_id,
-                    str(inbox_task.name),
-                ) as entity_reporter:
+                for inbox_task in all_inbox_tasks:
                     schedule = schedules.get_schedule(
                         chore.gen_params.period,
                         chore.name,
@@ -175,8 +164,6 @@ class ChoreUpdateUseCase(AppLoggedInMutationUseCase[ChoreUpdateArgs, None]):
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    await entity_reporter.mark_known_name(str(inbox_task.name))
 
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(inbox_task)
-                        await entity_reporter.mark_local_change()
+                    await uow.inbox_task_repository.save(inbox_task)
+                    await progress_reporter.mark_updated(inbox_task)

@@ -4,7 +4,7 @@ from typing import Final
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.event import EventSource
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
 
 
@@ -26,9 +26,7 @@ class HabitArchiveService:
         self._time_provider = time_provider
         self._storage_engine = storage_engine
 
-    async def do_it(
-        self, progress_reporter: ContextProgressReporter, habit: Habit
-    ) -> None:
+    async def do_it(self, progress_reporter: ProgressReporter, habit: Habit) -> None:
         """Execute the service's action."""
         if habit.archived:
             return
@@ -50,29 +48,17 @@ class HabitArchiveService:
                 )
             )
 
-        for inbox_task in inbox_tasks_to_archive:
-            async with progress_reporter.start_archiving_entity(
-                "inbox task",
-                inbox_task.ref_id,
-                str(inbox_task.name),
-            ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
-                    inbox_task = inbox_task.mark_archived(
-                        self._source,
-                        self._time_provider.get_current_time(),
-                    )
-                    await uow.inbox_task_repository.save(inbox_task)
-                    await entity_reporter.mark_local_change()
-
-        async with progress_reporter.start_archiving_entity(
-            "habit",
-            habit.ref_id,
-            str(habit.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                habit = habit.mark_archived(
+            for inbox_task in inbox_tasks_to_archive:
+                inbox_task = inbox_task.mark_archived(
                     self._source,
                     self._time_provider.get_current_time(),
                 )
-                await uow.habit_repository.save(habit)
-                await entity_reporter.mark_local_change()
+                await uow.inbox_task_repository.save(inbox_task)
+                await progress_reporter.mark_updated(inbox_task)
+
+            habit = habit.mark_archived(
+                self._source,
+                self._time_provider.get_current_time(),
+            )
+            await uow.habit_repository.save(habit)
+            await progress_reporter.mark_updated(habit)

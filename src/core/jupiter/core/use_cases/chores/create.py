@@ -17,7 +17,7 @@ from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -66,7 +66,7 @@ class ChoreCreateUseCase(
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: ChoreCreateArgs,
     ) -> ChoreCreateResult:
@@ -79,41 +79,35 @@ class ChoreCreateUseCase(
         ):
             raise FeatureUnavailableError(Feature.PROJECTS)
 
-        async with progress_reporter.start_creating_entity(
-            "chore",
-            str(args.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                chore_collection = await uow.chore_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            chore_collection = await uow.chore_collection_repository.load_by_parent(
+                workspace.ref_id,
+            )
 
-                new_chore = Chore.new_chore(
-                    chore_collection_ref_id=chore_collection.ref_id,
-                    archived=False,
-                    project_ref_id=args.project_ref_id
-                    or workspace.default_project_ref_id,
-                    name=args.name,
-                    gen_params=RecurringTaskGenParams(
-                        period=args.period,
-                        eisen=args.eisen,
-                        difficulty=args.difficulty,
-                        actionable_from_day=args.actionable_from_day,
-                        actionable_from_month=args.actionable_from_month,
-                        due_at_time=args.due_at_time,
-                        due_at_day=args.due_at_day,
-                        due_at_month=args.due_at_month,
-                    ),
-                    start_at_date=args.start_at_date,
-                    end_at_date=args.end_at_date,
-                    skip_rule=args.skip_rule,
-                    suspended=False,
-                    must_do=args.must_do,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-                new_chore = await uow.chore_repository.create(new_chore)
-                await entity_reporter.mark_known_entity(new_chore.ref_id)
-                await entity_reporter.mark_local_change()
+            new_chore = Chore.new_chore(
+                chore_collection_ref_id=chore_collection.ref_id,
+                archived=False,
+                project_ref_id=args.project_ref_id or workspace.default_project_ref_id,
+                name=args.name,
+                gen_params=RecurringTaskGenParams(
+                    period=args.period,
+                    eisen=args.eisen,
+                    difficulty=args.difficulty,
+                    actionable_from_day=args.actionable_from_day,
+                    actionable_from_month=args.actionable_from_month,
+                    due_at_time=args.due_at_time,
+                    due_at_day=args.due_at_day,
+                    due_at_month=args.due_at_month,
+                ),
+                start_at_date=args.start_at_date,
+                end_at_date=args.end_at_date,
+                skip_rule=args.skip_rule,
+                suspended=False,
+                must_do=args.must_do,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_chore = await uow.chore_repository.create(new_chore)
+            await progress_reporter.mark_created(new_chore)
 
         return ChoreCreateResult(new_chore=new_chore)

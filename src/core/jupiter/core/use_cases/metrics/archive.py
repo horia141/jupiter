@@ -10,7 +10,7 @@ from jupiter.core.domain.inbox_tasks.service.archive_service import (
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -36,7 +36,7 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricArchiveArgs,
     ) -> None:
@@ -70,28 +70,18 @@ class MetricArchiveUseCase(AppLoggedInMutationUseCase[MetricArchiveArgs, None]):
         for inbox_task in inbox_tasks_to_archive:
             await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
 
-        for metric_entry in metric_entries_to_archive:
-            async with progress_reporter.start_archiving_entity(
-                "metric entry",
-                metric_entry.ref_id,
-                str(metric_entry.name),
-            ) as entity_reporter:
-                async with self._domain_storage_engine.get_unit_of_work() as uow:
-                    metric_entry = metric_entry.mark_archived(
-                        EventSource.CLI,
-                        self._time_provider.get_current_time(),
-                    )
-                    await uow.metric_entry_repository.save(metric_entry)
-                    await entity_reporter.mark_local_change()
-
-        async with progress_reporter.start_archiving_entity(
-            "metric",
-            metric.ref_id,
-            str(metric.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                metric = metric.mark_archived(
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            for metric_entry in metric_entries_to_archive:
+                metric_entry = metric_entry.mark_archived(
                     EventSource.CLI,
                     self._time_provider.get_current_time(),
                 )
-                await uow.metric_repository.save(metric)
+                await uow.metric_entry_repository.save(metric_entry)
+                await progress_reporter.mark_updated(metric_entry)
+
+            metric = metric.mark_archived(
+                EventSource.CLI,
+                self._time_provider.get_current_time(),
+            )
+            await uow.metric_repository.save(metric)
+            await progress_reporter.mark_updated(metric)

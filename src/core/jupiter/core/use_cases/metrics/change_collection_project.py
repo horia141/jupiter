@@ -8,7 +8,7 @@ from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -36,7 +36,7 @@ class MetricChangeCollectionProjectUseCase(
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricChangeCollectionProjectArgs,
     ) -> None:
@@ -66,16 +66,17 @@ class MetricChangeCollectionProjectUseCase(
                 allow_archived=False,
             )
 
-        if (
-            old_catch_up_project_ref_id != collection_project_ref_id
-            and len(metrics) > 0
-        ):
-            async with self._domain_storage_engine.get_unit_of_work() as inbox_task_uow:
-                inbox_task_collection = await inbox_task_uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
+            if (
+                old_catch_up_project_ref_id != collection_project_ref_id
+                and len(metrics) > 0
+            ):
+                inbox_task_collection = (
+                    await uow.inbox_task_collection_repository.load_by_parent(
+                        workspace.ref_id,
+                    )
                 )
                 all_collection_inbox_tasks = (
-                    await inbox_task_uow.inbox_task_repository.find_all_with_filters(
+                    await uow.inbox_task_repository.find_all_with_filters(
                         parent_ref_id=inbox_task_collection.ref_id,
                         allow_archived=True,
                         filter_sources=[InboxTaskSource.METRIC],
@@ -83,37 +84,24 @@ class MetricChangeCollectionProjectUseCase(
                     )
                 )
 
-            for inbox_task in all_collection_inbox_tasks:
-                async with progress_reporter.start_updating_entity(
-                    "inbox task",
-                    inbox_task.ref_id,
-                    str(inbox_task.name),
-                ) as entity_reporter:
-                    async with self._domain_storage_engine.get_unit_of_work() as inbox_task_uow:
-                        inbox_task = inbox_task.update_link_to_metric(
-                            project_ref_id=collection_project_ref_id,
-                            name=inbox_task.name,
-                            recurring_timeline=cast(str, inbox_task.recurring_timeline),
-                            eisen=inbox_task.eisen,
-                            difficulty=inbox_task.difficulty,
-                            actionable_date=inbox_task.actionable_date,
-                            due_time=cast(ADate, inbox_task.due_date),
-                            source=EventSource.CLI,
-                            modification_time=self._time_provider.get_current_time(),
-                        )
-                        await entity_reporter.mark_known_name(str(inbox_task.name))
+                for inbox_task in all_collection_inbox_tasks:
+                    inbox_task = inbox_task.update_link_to_metric(
+                        project_ref_id=collection_project_ref_id,
+                        name=inbox_task.name,
+                        recurring_timeline=cast(str, inbox_task.recurring_timeline),
+                        eisen=inbox_task.eisen,
+                        difficulty=inbox_task.difficulty,
+                        actionable_date=inbox_task.actionable_date,
+                        due_time=cast(ADate, inbox_task.due_date),
+                        source=EventSource.CLI,
+                        modification_time=self._time_provider.get_current_time(),
+                    )
 
-                        inbox_task = await inbox_task_uow.inbox_task_repository.save(
-                            inbox_task,
-                        )
-                        await entity_reporter.mark_local_change()
+                    inbox_task = await uow.inbox_task_repository.save(
+                        inbox_task,
+                    )
+                    await progress_reporter.mark_updated(inbox_task)
 
-        async with progress_reporter.start_updating_entity(
-            "metric collection",
-            metric_collection.ref_id,
-            "Metric Collection",
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 metric_collection = metric_collection.change_collection_project(
                     collection_project_ref_id=collection_project_ref_id,
                     source=EventSource.CLI,
@@ -121,4 +109,3 @@ class MetricChangeCollectionProjectUseCase(
                 )
 
                 await uow.metric_collection_repository.save(metric_collection)
-                await entity_reporter.mark_local_change()

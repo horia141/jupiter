@@ -8,7 +8,7 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -34,7 +34,7 @@ class InboxTaskRemoveUseCase(AppLoggedInMutationUseCase[InboxTaskRemoveArgs, Non
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: InboxTaskRemoveArgs,
     ) -> None:

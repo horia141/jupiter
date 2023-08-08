@@ -8,7 +8,7 @@ from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.workspaces.workspace import Workspace
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 
 
 class MetricRemoveService:
@@ -25,7 +25,7 @@ class MetricRemoveService:
 
     async def execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         workspace: Workspace,
         metric_collection: MetricCollection,
         metric: Metric,
@@ -55,21 +55,10 @@ class MetricRemoveService:
         for inbox_task in all_inbox_tasks:
             await inbox_task_remove_service.do_it(progress_reporter, inbox_task)
 
-        for metric_entry in all_metric_entries:
-            async with progress_reporter.start_removing_entity(
-                "metric entry",
-                metric_entry.ref_id,
-                str(metric_entry.name),
-            ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
-                    await uow.metric_entry_repository.remove(metric_entry.ref_id)
-                    await entity_reporter.mark_local_change()
+        async with self._storage_engine.get_unit_of_work() as uow:
+            for metric_entry in all_metric_entries:
+                await uow.metric_entry_repository.remove(metric_entry.ref_id)
+                await progress_reporter.mark_removed(metric_entry)
 
-        async with progress_reporter.start_removing_entity(
-            "metric",
-            metric.ref_id,
-            str(metric.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                await uow.metric_repository.remove(metric.ref_id)
-                await entity_reporter.mark_local_change()
+            await uow.metric_repository.remove(metric.ref_id)
+            await progress_reporter.mark_removed(metric)

@@ -8,7 +8,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -37,34 +37,21 @@ class MetricEntryUpdateUseCase(AppLoggedInMutationUseCase[MetricEntryUpdateArgs,
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricEntryUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        workspace = context.workspace
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            metric_entry = await uow.metric_entry_repository.load_by_id(args.ref_id)
 
-        async with progress_reporter.start_updating_entity(
-            "metric entry",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                (
-                    await uow.metric_collection_repository.load_by_parent(
-                        workspace.ref_id,
-                    )
-                )
-                metric_entry = await uow.metric_entry_repository.load_by_id(args.ref_id)
-                await entity_reporter.mark_known_name(str(metric_entry.name))
+            metric_entry = metric_entry.update(
+                collection_time=args.collection_time,
+                value=args.value,
+                notes=args.notes,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-                metric_entry = metric_entry.update(
-                    collection_time=args.collection_time,
-                    value=args.value,
-                    notes=args.notes,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-
-                await uow.metric_entry_repository.save(metric_entry)
-                await entity_reporter.mark_known_name(str(metric_entry.name))
-                await entity_reporter.mark_local_change()
+            await uow.metric_entry_repository.save(metric_entry)
+            await progress_reporter.mark_updated(metric_entry)

@@ -100,7 +100,9 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
 
             match_tree = Tree(match_text)
 
-            match_snippet_with_markup = match.match_snippet.replace("found", "bold underline blue")
+            match_snippet_with_markup = match.match_snippet.replace(
+                "found", "bold underline blue"
+            )
 
             snippet_text = Text.from_markup(match_snippet_with_markup)
             match_tree.add(snippet_text)

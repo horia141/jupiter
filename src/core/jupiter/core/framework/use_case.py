@@ -3,11 +3,19 @@ import abc
 import enum
 import logging
 from dataclasses import dataclass, fields
-from typing import AsyncContextManager, Final, Generic, Iterable, List, Optional, TypeVar, Union
+from typing import (
+    AsyncContextManager,
+    Final,
+    Generic,
+    Iterable,
+    Optional,
+    TypeVar,
+    Union,
+)
 
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
-from jupiter.core.framework.entity import BranchEntity, Entity, LeafEntity
+from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.json import JSONDictType, process_primitive_to_json
 from jupiter.core.framework.update_action import UpdateAction
@@ -148,62 +156,7 @@ class MutationUseCaseInvocationRecorder(abc.ABC):
         """Record the invocation of the use case."""
 
 
-@enum.unique
-class MarkProgressStatus(enum.Enum):
-    """The status of a big plan."""
-
-    PROGRESS = "progress"
-    OK = "ok"
-    FAILED = "failed"
-    NOT_NEEDED = "not-needed"
-
-
-class EntityProgressReporter(abc.ABC):
-    """A reporter for the updates to a particular entity."""
-
-    @abc.abstractmethod
-    async def mark_not_needed(self) -> "EntityProgressReporter":
-        """Mark the fact that a particular modification isn't needed."""
-
-    @abc.abstractmethod
-    async def mark_known_entity_id(
-        self,
-        entity_id: EntityId,
-    ) -> "EntityProgressReporter":
-        """Mark the fact that we now know the entity id for the entity being processed."""
-
-    @abc.abstractmethod
-    async def mark_known_entity(
-        self,
-        entity: BranchEntity | LeafEntity
-    ) -> "EntityProgressReporter":
-        """Mark the fact that we now know the entity fully."""
-
-    @abc.abstractmethod
-    async def mark_known_name(self, name: str) -> "EntityProgressReporter":
-        """Mark the fact that we now know the entity name for the entity being processed."""
-
-    @abc.abstractmethod
-    async def mark_local_change(self) -> "EntityProgressReporter":
-        """Mark the fact that the local change has succeeded."""
-
-    @abc.abstractmethod
-    async def mark_remote_change(
-        self,
-        success: MarkProgressStatus = MarkProgressStatus.OK,
-    ) -> "EntityProgressReporter":
-        """Mark the fact that the remote change has completed."""
-
-    @abc.abstractmethod
-    async def mark_other_progress(
-        self,
-        progress: str,
-        success: MarkProgressStatus = MarkProgressStatus.OK,
-    ) -> "EntityProgressReporter":
-        """Mark some other type of progress."""
-
-
-class ContextProgressReporter(abc.ABC):
+class ProgressReporter(abc.ABC):
     """A reporter to the user in real-time on modifications to entities."""
 
     @abc.abstractmethod
@@ -211,48 +164,16 @@ class ContextProgressReporter(abc.ABC):
         """Start a section or subsection."""
 
     @abc.abstractmethod
-    def start_creating_entity(
-        self,
-        entity_type: str,
-        entity_name: str,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being created."""
+    async def mark_created(self, entity: BranchEntity | LeafEntity) -> None:
+        """Mark a particular entity as created."""
 
     @abc.abstractmethod
-    def start_updating_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being updated."""
+    async def mark_updated(self, entity: BranchEntity | LeafEntity) -> None:
+        """Mark a particular entity as updated."""
 
     @abc.abstractmethod
-    def start_archiving_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being archived."""
-
-    @abc.abstractmethod
-    def start_removing_entity(
-        self,
-        entity_type: str,
-        entity_id: Optional[EntityId] = None,
-        entity_name: Optional[str] = None,
-    ) -> AsyncContextManager[EntityProgressReporter]:
-        """Report that a particular entity is being removed."""
-
-    @abc.abstractmethod
-    def start_complex_entity_work(
-        self,
-        entity_type: str,
-        entity_id: EntityId,
-        entity_name: str,
-    ) -> AsyncContextManager["ContextProgressReporter"]:
-        """Create a progress reporter with some scoping to operate with subentities of a main entity."""
+    async def mark_removed(self, entity: BranchEntity | LeafEntity) -> None:
+        """Mark a particular entity as removed."""
 
     @property
     @abc.abstractmethod
@@ -268,14 +189,13 @@ class ContextProgressReporter(abc.ABC):
     @abc.abstractmethod
     def removed_entities(self) -> Iterable[BranchEntity | LeafEntity]:
         """The set of entities that were removed while this progress reporter was active."""
-    
 
 
 class ProgressReporterFactory(Generic[UseCaseContext], abc.ABC):
     """A factory for progress reporters."""
 
     @abc.abstractmethod
-    def new_reporter(self, context: UseCaseContext) -> ContextProgressReporter:
+    def new_reporter(self, context: UseCaseContext) -> ProgressReporter:
         """Build a progress reporter for a given context."""
 
 
@@ -392,7 +312,7 @@ class MutationUseCase(
     @abc.abstractmethod
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: UseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:

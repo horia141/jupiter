@@ -84,8 +84,10 @@ class SqliteSearchRepository(SearchRepository):
             raise EntityNotFoundError(
                 "The entity does not exist",
             )
-        
-    async def remove(self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity) -> None:
+
+    async def remove(
+        self, workspace_ref_id: EntityId, entity: BranchEntity | LeafEntity
+    ) -> None:
         """Remove an entity from the index."""
         await self._connection.execute(
             delete(self._search_index_table)
@@ -120,8 +122,11 @@ class SqliteSearchRepository(SearchRepository):
                 self._search_index_table.c.name,
                 self._search_index_table.c.archived,
                 text("highlight(search_index, 3, '[found]', '[/found]') as highlight"),
-                text("snippet(search_index, 3, '[found]', '[/found]', '[nomatch]', 64) as snippet"),
-                text("rank"))
+                text(
+                    "snippet(search_index, 3, '[found]', '[/found]', '[nomatch]', 64) as snippet"
+                ),
+                text("rank"),
+            )
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )

@@ -1,10 +1,13 @@
 """Service for archiving an email task and associated entities."""
 from typing import Final
 
+from jupiter.core.domain.inbox_tasks.service.archive_service import (
+    InboxTaskArchiveService,
+)
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.event import EventSource
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
 
 
@@ -28,7 +31,7 @@ class EmailTaskArchiveService:
 
     async def do_it(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         email_task: EmailTask,
     ) -> None:
         """Execute the service's action."""
@@ -60,29 +63,16 @@ class EmailTaskArchiveService:
                 )
             )
 
+        inbox_task_archive_service = InboxTaskArchiveService(
+            EventSource.CLI, self._time_provider, self._storage_engine
+        )
         for inbox_task in inbox_tasks_to_archive:
-            async with progress_reporter.start_archiving_entity(
-                "inbox task",
-                inbox_task.ref_id,
-                str(inbox_task.name),
-            ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
-                    inbox_task = inbox_task.mark_archived(
-                        self._source,
-                        self._time_provider.get_current_time(),
-                    )
-                    await uow.inbox_task_repository.save(inbox_task)
-                    await entity_reporter.mark_local_change()
+            await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
 
-        async with progress_reporter.start_archiving_entity(
-            "email task",
-            email_task.ref_id,
-            str(email_task.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                email_task = email_task.mark_archived(
-                    self._source,
-                    self._time_provider.get_current_time(),
-                )
-                await uow.email_task_repository.save(email_task)
-                await entity_reporter.mark_local_change()
+        async with self._storage_engine.get_unit_of_work() as uow:
+            email_task = email_task.mark_archived(
+                self._source,
+                self._time_provider.get_current_time(),
+            )
+            await uow.email_task_repository.save(email_task)
+            await progress_reporter.mark_updated(email_task)

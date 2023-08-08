@@ -1,7 +1,7 @@
 """Jupiter specific use cases classes."""
 import abc
 from dataclasses import dataclass
-from typing import Final, Generic, Iterable, List, TypeVar, Union
+from typing import Final, Generic, Iterable, TypeVar, Union
 
 from jupiter.core.domain.auth.auth_token import (
     AuthToken,
@@ -16,13 +16,12 @@ from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework import use_case
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.entity import Entity
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
     EmptyContext,
     EmptySession,
     MutationUseCase,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
     ProgressReporterFactory,
     ReadonlyUseCase,
     UseCase,
@@ -220,10 +219,10 @@ class AppLoggedInMutationUseCase(
                             raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
-        
+
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
@@ -233,20 +232,26 @@ class AppLoggedInMutationUseCase(
         # Register all entities that were created/changed/removed with the search index.
         async with self._search_storage_engine.get_unit_of_work() as uow:
             for created_entity in progress_reporter.created_entities:
-                await uow.search_repository.create(context.workspace_ref_id, created_entity)
+                await uow.search_repository.create(
+                    context.workspace_ref_id, created_entity
+                )
 
             for updated_entity in progress_reporter.updated_entities:
-                await uow.search_repository.update(context.workspace_ref_id, updated_entity)
+                await uow.search_repository.update(
+                    context.workspace_ref_id, updated_entity
+                )
 
             for removed_entity in progress_reporter.removed_entities:
-                await uow.search_repository.remove(context.workspace_ref_id, removed_entity)
+                await uow.search_repository.remove(
+                    context.workspace_ref_id, removed_entity
+                )
 
         return result
 
     @abc.abstractmethod
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:
@@ -344,7 +349,7 @@ class AppTestHelperUseCase(
     @abc.abstractmethod
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: EmptyContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:

@@ -9,7 +9,7 @@ from jupiter.core.domain.user.infra.user_repository import UserNotFoundError
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -48,31 +48,28 @@ class ResetPasswordUseCase(
 
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppGuestUseCaseContext,
         args: ResetPasswordArgs,
     ) -> ResetPasswordResult:
         """Execute the command's action."""
-        async with progress_reporter.start_updating_entity("auth") as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                try:
-                    user = await uow.user_repository.load_by_email_address(
-                        args.email_address
-                    )
-                    auth = await uow.auth_repository.load_by_parent(user.ref_id)
-                    auth, new_recovery_token = auth.reset_password(
-                        recovery_token=args.recovery_token,
-                        new_password=args.new_password,
-                        new_password_repeat=args.new_password_repeat,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    auth = await uow.auth_repository.save(auth)
-                    await entity_reporter.mark_known_entity(auth)
-                    await entity_reporter.mark_local_change()
-                except (UserNotFoundError, IncorrectRecoveryTokenError) as err:
-                    raise InvalidResetPasswordCredentialsError(
-                        "Username or recovery token invalid"
-                    ) from err
+        async with self._storage_engine.get_unit_of_work() as uow:
+            try:
+                user = await uow.user_repository.load_by_email_address(
+                    args.email_address
+                )
+                auth = await uow.auth_repository.load_by_parent(user.ref_id)
+                auth, new_recovery_token = auth.reset_password(
+                    recovery_token=args.recovery_token,
+                    new_password=args.new_password,
+                    new_password_repeat=args.new_password_repeat,
+                    source=EventSource.CLI,
+                    modification_time=self._time_provider.get_current_time(),
+                )
+                auth = await uow.auth_repository.save(auth)
+            except (UserNotFoundError, IncorrectRecoveryTokenError) as err:
+                raise InvalidResetPasswordCredentialsError(
+                    "Username or recovery token invalid"
+                ) from err
 
         return ResetPasswordResult(new_recovery_token=new_recovery_token)

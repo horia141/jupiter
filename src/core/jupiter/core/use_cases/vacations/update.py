@@ -9,7 +9,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -38,33 +38,21 @@ class VacationUpdateUseCase(AppLoggedInMutationUseCase[VacationUpdateArgs, None]
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: VacationUpdateArgs,
     ) -> None:
         """Execute the command's action."""
-        workspace = context.workspace
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            vacation = await uow.vacation_repository.load_by_id(args.ref_id)
 
-        async with progress_reporter.start_updating_entity(
-            "vacation",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                (
-                    await uow.vacation_collection_repository.load_by_parent(
-                        workspace.ref_id,
-                    )
-                )
-                vacation = await uow.vacation_repository.load_by_id(args.ref_id)
+            vacation = vacation.update(
+                name=args.name,
+                start_date=args.start_date,
+                end_date=args.end_date,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-                vacation = vacation.update(
-                    name=args.name,
-                    start_date=args.start_date,
-                    end_date=args.end_date,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(vacation.name))
-
-                await uow.vacation_repository.save(vacation)
-                await entity_reporter.mark_local_change()
+            await uow.vacation_repository.save(vacation)
+            await progress_reporter.mark_updated(vacation)

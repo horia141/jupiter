@@ -20,7 +20,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -55,7 +55,7 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
 
     async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SlackTaskUpdateArgs,
     ) -> None:
@@ -114,45 +114,27 @@ class SlackTaskUpdateUseCase(AppLoggedInMutationUseCase[SlackTaskUpdateArgs, Non
                 )
             )[0]
 
-            await uow.project_repository.load_by_id(
-                generated_inbox_task.project_ref_id,
+            generated_inbox_task = generated_inbox_task.update_link_to_slack_task(
+                project_ref_id=generated_inbox_task.project_ref_id,
+                user=slack_task.user,
+                channel=slack_task.channel,
+                message=slack_task.message,
+                generation_extra_info=slack_task.generation_extra_info,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-        async with progress_reporter.start_updating_entity(
-            "inbox task",
-            generated_inbox_task.ref_id,
-            str(generated_inbox_task.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                generated_inbox_task = generated_inbox_task.update_link_to_slack_task(
-                    project_ref_id=generated_inbox_task.project_ref_id,
-                    user=slack_task.user,
-                    channel=slack_task.channel,
-                    message=slack_task.message,
-                    generation_extra_info=slack_task.generation_extra_info,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(generated_inbox_task.name))
+            await uow.inbox_task_repository.save(generated_inbox_task)
+            await progress_reporter.mark_updated(generated_inbox_task)
 
-                await uow.inbox_task_repository.save(generated_inbox_task)
-                await entity_reporter.mark_local_change()
+            slack_task = slack_task.update(
+                user=args.user,
+                channel=args.channel,
+                message=args.message,
+                generation_extra_info=generation_extra_info,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-        async with progress_reporter.start_updating_entity(
-            "slack task",
-            slack_task.ref_id,
-            str(slack_task.name),
-        ) as entity_reporter:
-            async with self._domain_storage_engine.get_unit_of_work() as uow:
-                slack_task = slack_task.update(
-                    user=args.user,
-                    channel=args.channel,
-                    message=args.message,
-                    generation_extra_info=generation_extra_info,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(slack_task.name))
-
-                await uow.slack_task_repository.save(slack_task)
-                await entity_reporter.mark_local_change()
+            await uow.slack_task_repository.save(slack_task)
+            await progress_reporter.mark_updated(slack_task)
