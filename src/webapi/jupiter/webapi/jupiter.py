@@ -1,11 +1,10 @@
 """The Jupiter Web RPC API."""
-import asyncio
 import signal
 from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Union
 
 import aiohttp
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable
@@ -341,6 +340,7 @@ from jupiter.core.use_cases.push_integrations.slack.update import (
     SlackTaskUpdateUseCase,
 )
 from jupiter.core.use_cases.report import ReportArgs, ReportResult, ReportUseCase
+from jupiter.core.use_cases.search import SearchArgs, SearchResult, SearchUseCase
 from jupiter.core.use_cases.smart_lists.archive import (
     SmartListArchiveArgs,
     SmartListArchiveUseCase,
@@ -530,6 +530,12 @@ load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
 get_summaries_use_case = GetSummariesUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
+)
+
+search_use_case = SearchUseCase(
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
 )
 
 gen_use_case = GenUseCase(
@@ -1379,39 +1385,39 @@ LoggedInSession = Annotated[
 ]
 
 
-@app.websocket("/progress-reporter")
-async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
-    """Handle the whole lifecycle of the progress reporter websocket."""
-    if token is None:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
-    try:
-        progress_reporter_token_ext = AuthTokenExt.from_raw(token)
-        progress_reporter_token = (
-            auth_token_stamper.verify_auth_token_progress_reporter(
-                progress_reporter_token_ext
-            )
-        )
-    except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
-        raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
+# @app.websocket("/progress-reporter")
+# async def progress_reporter_websocket(websocket: WebSocket, token: str | None) -> None:
+#     """Handle the whole lifecycle of the progress reporter websocket."""
+#     if token is None:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+#     try:
+#         progress_reporter_token_ext = AuthTokenExt.from_raw(token)
+#         progress_reporter_token = (
+#             auth_token_stamper.verify_auth_token_progress_reporter(
+#                 progress_reporter_token_ext
+#             )
+#         )
+#     except (InputValidationError, ExpiredAuthTokenError, InvalidAuthTokenError) as err:
+#         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION) from err
 
-    await websocket.accept()
-    await progress_reporter_factory.register_socket(
-        websocket, progress_reporter_token.user_ref_id
-    )
-    # Seems like this just needs to stay alive for the socket to not expire ...
-    try:
-        while True:
-            await asyncio.sleep(1)  # Sleep one second
-            global websocket_should_close
-            if websocket_should_close:
-                await progress_reporter_factory.unregister_websocket(
-                    progress_reporter_token.user_ref_id
-                )
-                return
-    except WebSocketDisconnect:
-        await progress_reporter_factory.unregister_websocket(
-            progress_reporter_token.user_ref_id
-        )
+#     await websocket.accept()
+#     await progress_reporter_factory.register_socket(
+#         websocket, progress_reporter_token.user_ref_id
+#     )
+#     # Seems like this just needs to stay alive for the socket to not expire ...
+#     try:
+#         while True:
+#             await asyncio.sleep(1)  # Sleep one second
+#             global websocket_should_close
+#             if websocket_should_close:
+#                 await progress_reporter_factory.unregister_websocket(
+#                     progress_reporter_token.user_ref_id
+#                 )
+#                 return
+#     except WebSocketDisconnect:
+#         await progress_reporter_factory.unregister_websocket(
+#             progress_reporter_token.user_ref_id
+#         )
 
 
 @app.get("/healthz", status_code=status.HTTP_200_OK)
@@ -1524,6 +1530,17 @@ async def get_summaries(
 ) -> GetSummariesResult:
     """Get summaries about entities."""
     return await get_summaries_use_case.execute(session, args)
+
+
+@app.post(
+    "/search",
+    response_model=SearchResult,
+    tags=["search"],
+    responses=standard_responses,
+)
+async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
+    """Search entities."""
+    return await search_use_case.execute(session, args)
 
 
 @app.post("/gen", response_model=None, tags=["gen"], responses=standard_responses)

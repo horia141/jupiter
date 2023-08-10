@@ -18,10 +18,10 @@ export type InboxTask = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
+    name: InboxTaskName;
     inbox_task_collection_ref_id: EntityId;
     source: InboxTaskSource;
     project_ref_id: EntityId;
-    name: InboxTaskName;
     status: InboxTaskStatus;
     eisen: Eisen;
     difficulty?: Difficulty;

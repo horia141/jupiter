@@ -100,6 +100,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const summaryResponse = await getLoggedInApiClient(
     session
   ).getSummaries.getSummaries({
+    allow_archived: true,
     include_default_project: true,
     include_projects: true,
     include_big_plans: true,

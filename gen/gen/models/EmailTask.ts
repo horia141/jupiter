@@ -15,6 +15,7 @@ export type EmailTask = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
+    name: EntityName;
     email_task_collection_ref_id: EntityId;
     from_address: EmailAddress;
     from_name: EntityName;

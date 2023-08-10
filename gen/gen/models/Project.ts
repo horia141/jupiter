@@ -13,7 +13,7 @@ export type Project = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    project_collection_ref_id: EntityId;
     name: ProjectName;
+    project_collection_ref_id: EntityId;
 };
 

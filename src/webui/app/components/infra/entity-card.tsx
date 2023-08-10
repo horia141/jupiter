@@ -18,6 +18,7 @@ const SWIPE_THRESHOLD = 200;
 const SWIPE_COMPLETE_THRESHOLD = 150;
 
 interface EntityCardProps {
+  showAsArchived?: boolean;
   allowSwipe?: boolean;
   allowMarkDone?: boolean;
   allowMarkNotDone?: boolean;
@@ -93,7 +94,9 @@ export function EntityCard(props: PropsWithChildren<EntityCardProps>) {
           alignItems: "center",
           touchAction: "pan-y",
           position: "relative",
-          backgroundColor: "transparent",
+          backgroundColor: props.showAsArchived
+            ? theme.palette.action.hover
+            : "transparent",
         }}
       >
         <CardContent>{props.children}</CardContent>

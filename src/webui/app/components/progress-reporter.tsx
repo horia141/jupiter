@@ -45,9 +45,7 @@ interface ProgressUpdateEntityLine {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type ProgressUpdate =
-  | ProgressUpdateSection
-  | ProgressUpdateEntityLine;
+type ProgressUpdate = ProgressUpdateSection | ProgressUpdateEntityLine;
 
 const ProgressUpdateSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("section"), "section-name": z.string() }),

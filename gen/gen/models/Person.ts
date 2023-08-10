@@ -16,8 +16,8 @@ export type Person = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    person_collection_ref_id: EntityId;
     name: PersonName;
+    person_collection_ref_id: EntityId;
     relationship: PersonRelationship;
     catch_up_params?: RecurringTaskGenParams;
     birthday?: PersonBirthday;

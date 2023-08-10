@@ -4,7 +4,6 @@ from argparse import ArgumentParser, Namespace
 from jupiter.cli.command.command import LoggedInReadonlyCommand
 from jupiter.cli.command.rendering import (
     entity_id_to_rich_text,
-    entity_name_to_rich_text,
     entity_tag_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
@@ -91,23 +90,20 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
 
         rich_tree = Tree(result_page_text, guide_style="bold bright_blue")
 
-        for match in sorted(result.matches, key=lambda key: key.search_rank):
+        for match in result.matches:
             match_text = Text("")
             match_text.append(entity_tag_to_rich_text(match.entity_tag))
             match_text.append(entity_id_to_rich_text(match.ref_id))
             match_text.append(" ")
-            match_text.append(entity_name_to_rich_text(match.name))
-
-            match_tree = Tree(match_text)
 
             match_snippet_with_markup = match.match_snippet.replace(
                 "found", "bold underline blue"
             )
 
             snippet_text = Text.from_markup(match_snippet_with_markup)
-            match_tree.add(snippet_text)
+            match_text.append(snippet_text)
 
-            rich_tree.add(match_tree)
+            rich_tree.add(match_text)
 
         console = Console()
         console.print(rich_tree)

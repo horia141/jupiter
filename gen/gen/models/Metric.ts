@@ -16,8 +16,8 @@ export type Metric = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    metric_collection_ref_id: EntityId;
     name: MetricName;
+    metric_collection_ref_id: EntityId;
     icon?: EntityIcon;
     collection_params?: RecurringTaskGenParams;
     metric_unit?: MetricUnit;

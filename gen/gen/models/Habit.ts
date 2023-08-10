@@ -15,9 +15,9 @@ export type Habit = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
+    name: HabitName;
     habit_collection_ref_id: EntityId;
     project_ref_id: EntityId;
-    name: HabitName;
     gen_params: RecurringTaskGenParams;
     skip_rule?: RecurringTaskSkipRule;
     suspended?: boolean;

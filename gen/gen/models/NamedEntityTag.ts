@@ -1,0 +1,23 @@
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+
+/**
+ * A tag for all known entities.
+ */
+export enum NamedEntityTag {
+    INBOX_TASK = 'InboxTask',
+    HABIT = 'Habit',
+    CHORE = 'Chore',
+    BIG_PLAN = 'BigPlan',
+    VACATION = 'Vacation',
+    PROJECT = 'Project',
+    SMART_LIST = 'SmartList',
+    SMART_LIST_TAG = 'SmartListTag',
+    SMART_LIST_ITEM = 'SmartListItem',
+    METRIC = 'Metric',
+    METRIC_ENTRY = 'MetricEntry',
+    PERSON = 'Person',
+    SLACK_TASK = 'SlackTask',
+    EMAIL_TASK = 'EmailTask',
+}
