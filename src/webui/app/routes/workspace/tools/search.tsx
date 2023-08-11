@@ -11,8 +11,8 @@ import {
   Stack,
   Switch,
 } from "@mui/material";
-import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { json, LoaderArgs } from "@remix-run/node";
+import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import {
   ApiError,
@@ -21,7 +21,7 @@ import {
   SearchResult,
 } from "jupiter-gen";
 import { z } from "zod";
-import { BoolAsString, CheckboxAsString, parseForm, parseQuery } from "zodix";
+import { CheckboxAsString, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -29,7 +29,12 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { SlimChip } from "~/components/infra/slim-chip";
 import { ToolCard } from "~/components/infra/tool-card";
-import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import {
+  ActionResult,
+  isNoErrorSomeData,
+  noErrorSomeData,
+  validationErrorToUIErrorInfo,
+} from "~/logic/action-result";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -40,11 +45,6 @@ export const handle = {
 
 const QuerySchema = {
   query: z.string().optional(),
-  includeArchived: BoolAsString.optional(),
-};
-
-const SearchFormSchema = {
-  query: z.string(),
   includeArchived: CheckboxAsString,
 };
 
@@ -52,33 +52,29 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { query, includeArchived } = parseQuery(request, QuerySchema);
 
-  if (query === undefined) {
-    return json({
-      query: undefined,
-      includeArchived: false,
-      result: undefined,
-    });
+  if (query === undefined || query === "") {
+    return json(
+      noErrorSomeData({
+        query: undefined,
+        includeArchived: false,
+        result: undefined,
+      })
+    );
   }
 
-  const searchResponse = await getLoggedInApiClient(session).search.search({
-    query: query,
-    limit: 30,
-    include_archived: includeArchived,
-  });
-
-  return json({
-    query: query,
-    includeArchived: includeArchived,
-    result: searchResponse,
-  });
-}
-
-export async function action({ request }: ActionArgs) {
-  const form = await parseForm(request, SearchFormSchema);
-
   try {
-    return redirect(
-      `/workspace/tools/search?query=${form.query}&includeArchived=${form.includeArchived}`
+    const searchResponse = await getLoggedInApiClient(session).search.search({
+      query: query,
+      limit: 30,
+      include_archived: includeArchived,
+    });
+
+    return json(
+      noErrorSomeData({
+        query: query,
+        includeArchived: includeArchived,
+        result: searchResponse,
+      })
     );
   } catch (error) {
     if (
@@ -93,20 +89,21 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Search() {
-  const loaderData = useLoaderDataSafeForAnimation<typeof loader>() as {
+  const loaderData = useLoaderDataSafeForAnimation<
+    typeof loader
+  >() as ActionResult<{
     query: string | undefined;
     includeArchived: boolean;
     result: SearchResult | undefined;
-  };
-  const actionData = useActionData<typeof action>();
+  }>;
   const transition = useTransition();
 
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <ToolCard returnLocation="?workspace">
+    <ToolCard method="get" returnLocation="?workspace">
       <Card>
-        <GlobalError actionResult={actionData} />
+        <GlobalError actionResult={loaderData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -115,9 +112,13 @@ export default function Search() {
                 label="Query"
                 name="query"
                 readOnly={!inputsEnabled}
-                defaultValue={loaderData.query || ""}
+                defaultValue={
+                  isNoErrorSomeData(loaderData)
+                    ? loaderData.data.query || ""
+                    : ""
+                }
               />
-              <FieldError actionResult={actionData} fieldName="/query" />
+              <FieldError actionResult={loaderData} fieldName="/query" />
             </FormControl>
 
             <FormControl fullWidth>
@@ -126,13 +127,17 @@ export default function Search() {
                   <Switch
                     name="includeArchived"
                     readOnly={!inputsEnabled}
-                    defaultChecked={loaderData.includeArchived || false}
+                    defaultChecked={
+                      isNoErrorSomeData(loaderData)
+                        ? loaderData.data.includeArchived || false
+                        : false
+                    }
                   />
                 }
                 label="Include Archived"
               />
               <FieldError
-                actionResult={actionData}
+                actionResult={loaderData}
                 fieldName="/include_archived"
               />
             </FormControl>
@@ -152,9 +157,9 @@ export default function Search() {
         </CardContent>
       </Card>
 
-      {loaderData.result && (
+      {isNoErrorSomeData(loaderData) && loaderData.data.result && (
         <EntityStack>
-          {loaderData.result.matches.map((match) => {
+          {loaderData.data.result.matches.map((match) => {
             return (
               <EntityCard
                 showAsArchived={match.archived}

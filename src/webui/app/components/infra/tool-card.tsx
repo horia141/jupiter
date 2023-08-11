@@ -6,6 +6,7 @@ import type { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface ToolCardProps {
+  method?: "get" | "post";
   returnLocation: string;
 }
 
@@ -13,7 +14,7 @@ export function ToolCard(props: PropsWithChildren<ToolCardProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   return (
-    <Form method="post">
+    <Form method={props.method || "post"}>
       {!isBigScreen && (
         <StyledButtonGroup>
           <ButtonGroup size="small">
