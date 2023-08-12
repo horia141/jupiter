@@ -20,6 +20,7 @@ import {
   SearchMatch,
   SearchResult,
 } from "jupiter-gen";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -98,6 +99,18 @@ export default function Search() {
   }>;
   const transition = useTransition();
 
+  const [searchQuery, setSearchQuery] = useState(
+    isNoErrorSomeData(loaderData) ? loaderData.data.query || "" : ""
+  );
+
+  useEffect(() => {
+    setSearchQuery(
+      isNoErrorSomeData(loaderData) ? loaderData.data.query || "" : ""
+    );
+  }, [loaderData]);
+
+  console.log(loaderData);
+
   const inputsEnabled = transition.state === "idle";
 
   return (
@@ -112,11 +125,8 @@ export default function Search() {
                 label="Query"
                 name="query"
                 readOnly={!inputsEnabled}
-                defaultValue={
-                  isNoErrorSomeData(loaderData)
-                    ? loaderData.data.query || ""
-                    : ""
-                }
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <FieldError actionResult={loaderData} fieldName="/query" />
             </FormControl>
