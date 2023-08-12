@@ -103,6 +103,9 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
             snippet_text = Text.from_markup(match_snippet_with_markup)
             match_text.append(snippet_text)
 
+            if match.archived:
+                match_text.stylize("gray62")
+
             rich_tree.add(match_text)
 
         console = Console()
