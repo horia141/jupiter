@@ -5,12 +5,14 @@ from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search_repository import SearchMatch, SearchRepository
 from jupiter.core.framework.base.entity_id import EntityId
+from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import BranchEntity, LeafEntity
 from jupiter.core.framework.repository import EntityNotFoundError
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
     Boolean,
     Column,
+    DateTime,
     ForeignKey,
     Integer,
     MetaData,
@@ -44,9 +46,13 @@ class SqliteSearchRepository(SearchRepository):
                 nullable=False,
             ),
             Column("entity_tag", String, nullable=False),
+            Column("parent_ref_id", Integer, nullable=False),
             Column("ref_id", Integer, nullable=False),
             Column("name", String, nullable=False),
             Column("archived", Boolean, nullable=False),
+            Column("created_time", DateTime, nullable=False),
+            Column("last_modified_time", DateTime, nullable=False),
+            Column("archived_time", DateTime, nullable=True),
             keep_existing=True,
         )
 
@@ -58,9 +64,15 @@ class SqliteSearchRepository(SearchRepository):
             insert(self._search_index_table).values(
                 workspace_ref_id=workspace_ref_id.as_int(),
                 entity_tag=str(NamedEntityTag.from_entity(entity)),
+                parent_ref_id=entity.parent_ref_id.as_int(),
                 ref_id=entity.ref_id.as_int(),
                 name=str(entity.name),
                 archived=entity.archived,
+                created_time=entity.created_time.to_db(),
+                last_modified_time=entity.last_modified_time.to_db(),
+                archived_time=entity.archived_time.to_db()
+                if entity.archived_time
+                else None,
             )
         )
 
@@ -118,12 +130,16 @@ class SqliteSearchRepository(SearchRepository):
             select(
                 self._search_index_table.c.workspace_ref_id,
                 self._search_index_table.c.entity_tag,
+                self._search_index_table.c.parent_ref_id,
                 self._search_index_table.c.ref_id,
                 self._search_index_table.c.name,
                 self._search_index_table.c.archived,
-                text("highlight(search_index, 3, '[found]', '[/found]') as highlight"),
+                self._search_index_table.c.created_time,
+                self._search_index_table.c.last_modified_time,
+                self._search_index_table.c.archived_time,
+                text("highlight(search_index, 4, '[found]', '[/found]') as highlight"),
                 text(
-                    "snippet(search_index, 3, '[found]', '[/found]', '[nomatch]', 64) as snippet"
+                    "snippet(search_index, 4, '[found]', '[/found]', '[nomatch]', 64) as snippet"
                 ),
                 text("rank"),
             )
@@ -152,8 +168,14 @@ class SqliteSearchRepository(SearchRepository):
         return SearchMatch(
             entity_tag=NamedEntityTag.from_raw(row["entity_tag"]),
             ref_id=EntityId.from_raw(str(row["ref_id"])),
+            parent_ref_id=EntityId.from_raw(str(row["parent_ref_id"])),
             name=EntityName.from_raw(row["name"]),
             archived=row["archived"],
+            created_time=Timestamp.from_db(row["created_time"]),
+            archived_time=Timestamp.from_db(row["archived_time"])
+            if row["archived_time"]
+            else None,
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             match_highlight=row["highlight"],
             match_snippet=row["snippet"],
             search_rank=row["rank"],

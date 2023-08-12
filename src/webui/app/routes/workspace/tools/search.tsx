@@ -102,14 +102,22 @@ export default function Search() {
   const [searchQuery, setSearchQuery] = useState(
     isNoErrorSomeData(loaderData) ? loaderData.data.query || "" : ""
   );
+  const [searchIncludeArchived, setSearchIncludeArchived] = useState(
+    isNoErrorSomeData(loaderData)
+                        ? loaderData.data.includeArchived || false
+                        : false
+  );
 
   useEffect(() => {
     setSearchQuery(
       isNoErrorSomeData(loaderData) ? loaderData.data.query || "" : ""
     );
+    setSearchIncludeArchived(
+        isNoErrorSomeData(loaderData)
+                        ? loaderData.data.includeArchived || false
+                        : false
+    );
   }, [loaderData]);
-
-  console.log(loaderData);
 
   const inputsEnabled = transition.state === "idle";
 
@@ -137,11 +145,8 @@ export default function Search() {
                   <Switch
                     name="includeArchived"
                     readOnly={!inputsEnabled}
-                    defaultChecked={
-                      isNoErrorSomeData(loaderData)
-                        ? loaderData.data.includeArchived || false
-                        : false
-                    }
+                    checked={searchIncludeArchived}
+                    onChange={(e) => setSearchIncludeArchived(e.target.checked)}
                   />
                 }
                 label="Include Archived"
@@ -246,7 +251,7 @@ function Match({ match }: MatchProps) {
       );
     case NamedEntityTag.SMART_LIST_TAG:
       return (
-        <EntityLink to={`/workspace/smart-lists/1/tags/${match.ref_id.the_id}`}>
+        <EntityLink to={`/workspace/smart-lists/${match.parent_ref_id.the_id}/tags/${match.ref_id.the_id}`}>
           <SlimChip label={"Smart List Tag"} color={"primary"} />
           <MatchSnippet snippet={match.match_snippet} />
         </EntityLink>
@@ -254,7 +259,7 @@ function Match({ match }: MatchProps) {
     case NamedEntityTag.SMART_LIST_ITEM:
       return (
         <EntityLink
-          to={`/workspace/inbox-tasks/1/items/${match.ref_id.the_id}`}
+          to={`/workspace/smart-lists/${match.parent_ref_id.the_id}/items/${match.ref_id.the_id}`}
         >
           <SlimChip label={"Smart List Item"} color={"primary"} />
           <MatchSnippet snippet={match.match_snippet} />
@@ -269,7 +274,7 @@ function Match({ match }: MatchProps) {
       );
     case NamedEntityTag.METRIC_ENTRY:
       return (
-        <EntityLink to={`/workspace/metrics/1/entries/${match.ref_id.the_id}`}>
+        <EntityLink to={`/workspace/metrics/${match.parent_ref_id.the_id}/entries/${match.ref_id.the_id}`}>
           <SlimChip label={"Metric Entry"} color={"primary"} />
           <MatchSnippet snippet={match.match_snippet} />
         </EntityLink>
