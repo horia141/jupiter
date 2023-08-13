@@ -23,6 +23,7 @@ import { MetricService } from './services/MetricService';
 import { PersonService } from './services/PersonService';
 import { ProjectService } from './services/ProjectService';
 import { ReportService } from './services/ReportService';
+import { SearchService } from './services/SearchService';
 import { SlackTaskService } from './services/SlackTaskService';
 import { SmartListService } from './services/SmartListService';
 import { UserService } from './services/UserService';
@@ -51,6 +52,7 @@ export class ApiClient {
     public readonly person: PersonService;
     public readonly project: ProjectService;
     public readonly report: ReportService;
+    public readonly search: SearchService;
     public readonly slackTask: SlackTaskService;
     public readonly smartList: SmartListService;
     public readonly user: UserService;
@@ -90,6 +92,7 @@ export class ApiClient {
         this.person = new PersonService(this.request);
         this.project = new ProjectService(this.request);
         this.report = new ReportService(this.request);
+        this.search = new SearchService(this.request);
         this.slackTask = new SlackTaskService(this.request);
         this.smartList = new SmartListService(this.request);
         this.user = new UserService(this.request);

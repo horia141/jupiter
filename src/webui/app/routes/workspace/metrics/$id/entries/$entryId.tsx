@@ -17,11 +17,11 @@ import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
-import { CollectionTimeDiffTag } from "~/components/collection-time-diff-tag";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafCard } from "~/components/infra/leaf-card";
+import { TimeDiffTag } from "~/components/time-diff-tag";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -138,7 +138,8 @@ export default function MetricEntry() {
         <GlobalError actionResult={actionData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
-            <CollectionTimeDiffTag
+            <TimeDiffTag
+              labelPrefix="Collected"
               collectionTime={loaderData.metricEntry.collection_time}
             />
             <FormControl fullWidth>

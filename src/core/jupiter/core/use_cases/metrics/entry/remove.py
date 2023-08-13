@@ -5,7 +5,7 @@ from typing import Iterable
 from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -29,18 +29,13 @@ class MetricEntryRemoveUseCase(AppLoggedInMutationUseCase[MetricEntryRemoveArgs,
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricEntryRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with progress_reporter.start_removing_entity(
-            "metric entry",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                metric_entry = await uow.metric_entry_repository.remove(args.ref_id)
-                await entity_reporter.mark_known_name(str(metric_entry.simple_name))
-                await entity_reporter.mark_local_change()
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            metric_entry = await uow.metric_entry_repository.remove(args.ref_id)
+            await progress_reporter.mark_removed(metric_entry)

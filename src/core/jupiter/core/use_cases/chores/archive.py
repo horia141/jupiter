@@ -7,7 +7,7 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -31,17 +31,17 @@ class ChoreArchiveUseCase(AppLoggedInMutationUseCase[ChoreArchiveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.CHORES
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: ChoreArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             chore = await uow.chore_repository.load_by_id(args.ref_id)
         await ChoreArchiveService(
             EventSource.CLI,
             self._time_provider,
-            self._storage_engine,
+            self._domain_storage_engine,
         ).do_it(progress_reporter, chore)

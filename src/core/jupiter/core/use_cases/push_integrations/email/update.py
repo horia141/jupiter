@@ -18,7 +18,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -53,9 +53,9 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
         """The feature the use case is scope to."""
         return Feature.EMAIL_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: EmailTaskUpdateArgs,
     ) -> None:
@@ -63,7 +63,7 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             email_task = await uow.email_task_repository.load_by_id(args.ref_id)
 
             if (
@@ -114,49 +114,31 @@ class EmailTaskUpdateUseCase(AppLoggedInMutationUseCase[EmailTaskUpdateArgs, Non
                 )
             )[0]
 
-            await uow.project_repository.load_by_id(
-                generated_inbox_task.project_ref_id,
+            generated_inbox_task = generated_inbox_task.update_link_to_email_task(
+                project_ref_id=generated_inbox_task.project_ref_id,
+                from_address=email_task.from_address,
+                from_name=email_task.from_name,
+                to_address=email_task.to_address,
+                subject=email_task.subject,
+                body=email_task.body,
+                generation_extra_info=email_task.generation_extra_info,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
             )
 
-        async with progress_reporter.start_updating_entity(
-            "inbox task",
-            generated_inbox_task.ref_id,
-            str(generated_inbox_task.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                generated_inbox_task = generated_inbox_task.update_link_to_email_task(
-                    project_ref_id=generated_inbox_task.project_ref_id,
-                    from_address=email_task.from_address,
-                    from_name=email_task.from_name,
-                    to_address=email_task.to_address,
-                    subject=email_task.subject,
-                    body=email_task.body,
-                    generation_extra_info=email_task.generation_extra_info,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(generated_inbox_task.name))
+            await uow.inbox_task_repository.save(generated_inbox_task)
+            await progress_reporter.mark_updated(generated_inbox_task)
 
-                await uow.inbox_task_repository.save(generated_inbox_task)
-                await entity_reporter.mark_local_change()
+            email_task = email_task.update(
+                from_address=args.from_address,
+                from_name=args.from_name,
+                to_address=args.to_address,
+                subject=args.subject,
+                body=args.body,
+                generation_extra_info=generation_extra_info,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-        async with progress_reporter.start_updating_entity(
-            "email task",
-            email_task.ref_id,
-            str(email_task.simple_name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                email_task = email_task.update(
-                    from_address=args.from_address,
-                    from_name=args.from_name,
-                    to_address=args.to_address,
-                    subject=args.subject,
-                    body=args.body,
-                    generation_extra_info=generation_extra_info,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(email_task.simple_name))
-
-                await uow.email_task_repository.save(email_task)
-                await entity_reporter.mark_local_change()
+            await uow.email_task_repository.save(email_task)
+            await progress_reporter.mark_updated(email_task)

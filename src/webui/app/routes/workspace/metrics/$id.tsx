@@ -10,7 +10,6 @@ import { parseParams } from "zodix";
 
 import { Button, ButtonGroup, styled } from "@mui/material";
 import { getLoggedInApiClient } from "~/api-clients";
-import { CollectionTimeDiffTag } from "~/components/collection-time-diff-tag";
 import { EntityNameComponent } from "~/components/entity-name";
 import { ActionHeader } from "~/components/infra/actions-header";
 import { BranchCard } from "~/components/infra/branch-card";
@@ -20,6 +19,7 @@ import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
 import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
+import { TimeDiffTag } from "~/components/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -126,7 +126,10 @@ export default function Metric() {
                 to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/${entry.ref_id.the_id}`}
               >
                 <EntityNameComponent name={metricEntryName(entry)} />
-                <CollectionTimeDiffTag collectionTime={entry.collection_time} />
+                <TimeDiffTag
+                  labelPrefix="Collected"
+                  collectionTime={entry.collection_time}
+                />
               </EntityLink>
             </EntityCard>
           ))}

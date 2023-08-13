@@ -1,6 +1,13 @@
 import type { ADate } from "jupiter-gen";
 import { DateTime } from "luxon";
 
+export function isADate(something: object): something is ADate {
+  return (
+    something.hasOwnProperty("the_date") ||
+    something.hasOwnProperty("the_datetime")
+  );
+}
+
 export function aDateToDate(aDate: ADate): DateTime {
   if (aDate.the_date) {
     return DateTime.fromISO(aDate.the_date);

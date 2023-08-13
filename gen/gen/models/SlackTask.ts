@@ -15,6 +15,7 @@ export type SlackTask = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
+    name: EntityName;
     slack_task_collection_ref_id: EntityId;
     user: EntityName;
     message: string;

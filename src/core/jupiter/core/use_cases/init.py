@@ -30,7 +30,7 @@ from jupiter.core.domain.push_integrations.slack.slack_task_collection import (
     SlackTaskCollection,
 )
 from jupiter.core.domain.smart_lists.smart_list_collection import SmartListCollection
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.user.user_name import UserName
@@ -43,8 +43,8 @@ from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
     ProgressReporterFactory,
     UseCaseArgsBase,
     UseCaseResultBase,
@@ -87,6 +87,7 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
     """UseCase for initialising the workspace."""
 
     _global_properties: Final[GlobalProperties]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     def __init__(
         self,
@@ -94,7 +95,8 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[AppGuestUseCaseContext],
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
         global_properties: GlobalProperties,
     ) -> None:
         """Constructor."""
@@ -103,248 +105,203 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             invocation_recorder,
             progress_reporter_factory,
             auth_token_stamper,
-            storage_engine,
+            domain_storage_engine,
         )
         self._global_properties = global_properties
+        self._search_storage_engine = search_storage_engine
 
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppGuestUseCaseContext,
         args: InitArgs,
     ) -> InitResult:
         """Execute the command's action."""
         feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
-        async with progress_reporter.section("Creating Local"):
-            async with self._storage_engine.get_unit_of_work() as uow:
-                async with progress_reporter.start_creating_entity(
-                    "user", str(args.user_name)
-                ) as entity_reporter:
-                    new_user = User.new_user(
-                        email_address=args.user_email_address,
-                        name=args.user_name,
-                        timezone=args.user_timezone,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_user = await uow.user_repository.create(new_user)
-                    await entity_reporter.mark_known_entity_id(new_user.ref_id)
-                    await entity_reporter.mark_local_change()
+        async with self._storage_engine.get_unit_of_work() as uow:
+            new_user = User.new_user(
+                email_address=args.user_email_address,
+                name=args.user_name,
+                timezone=args.user_timezone,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_user = await uow.user_repository.create(new_user)
 
-                    new_auth, new_recovery_token = Auth.new_auth(
-                        user_ref_id=new_user.ref_id,
-                        password=args.auth_password,
-                        password_repeat=args.auth_password_repeat,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_auth = await uow.auth_repository.create(new_auth)
-                    await entity_reporter.mark_other_progress("auth")
+            new_auth, new_recovery_token = Auth.new_auth(
+                user_ref_id=new_user.ref_id,
+                password=args.auth_password,
+                password_repeat=args.auth_password_repeat,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_auth = await uow.auth_repository.create(new_auth)
 
-                async with progress_reporter.start_creating_entity(
-                    "workspace",
-                    str(args.workspace_name),
-                ) as entity_reporter:
-                    new_workspace = Workspace.new_workspace(
-                        name=args.workspace_name,
-                        feature_flag_controls=feature_flags_controls,
-                        feature_flags=args.workspace_feature_flags,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_workspace = await uow.workspace_repository.create(new_workspace)
-                    await entity_reporter.mark_known_entity_id(new_workspace.ref_id)
-                    await entity_reporter.mark_local_change()
+            new_workspace = Workspace.new_workspace(
+                name=args.workspace_name,
+                feature_flag_controls=feature_flags_controls,
+                feature_flags=args.workspace_feature_flags,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_workspace = await uow.workspace_repository.create(new_workspace)
 
-                    new_vacation_collection = (
-                        VacationCollection.new_vacation_collection(
-                            workspace_ref_id=new_workspace.ref_id,
-                            source=EventSource.CLI,
-                            created_time=self._time_provider.get_current_time(),
-                        )
-                    )
-                    new_vacation_collection = (
-                        await uow.vacation_collection_repository.create(
-                            new_vacation_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("vacations collection")
+            new_vacation_collection = VacationCollection.new_vacation_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_vacation_collection = await uow.vacation_collection_repository.create(
+                new_vacation_collection,
+            )
 
-                    new_project_collection = ProjectCollection.new_project_collection(
-                        workspace_ref_id=new_workspace.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_project_collection = (
-                        await uow.project_collection_repository.create(
-                            new_project_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("projects collection")
+            new_project_collection = ProjectCollection.new_project_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_project_collection = await uow.project_collection_repository.create(
+                new_project_collection,
+            )
 
-                    new_default_project = Project.new_project(
-                        project_collection_ref_id=new_project_collection.ref_id,
-                        name=args.workspace_first_project_name,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_default_project = await uow.project_repository.create(
-                        new_default_project,
-                    )
+            new_default_project = Project.new_project(
+                project_collection_ref_id=new_project_collection.ref_id,
+                name=args.workspace_first_project_name,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_default_project = await uow.project_repository.create(
+                new_default_project,
+            )
 
-                    new_workspace = new_workspace.change_default_project(
-                        default_project_ref_id=new_default_project.ref_id,
-                        source=EventSource.CLI,
-                        modification_time=self._time_provider.get_current_time(),
-                    )
-                    await uow.workspace_repository.save(new_workspace)
-                    await entity_reporter.mark_other_progress("change default")
+            new_workspace = new_workspace.change_default_project(
+                default_project_ref_id=new_default_project.ref_id,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
+            await uow.workspace_repository.save(new_workspace)
 
-                    new_inbox_task_collection = (
-                        InboxTaskCollection.new_inbox_task_collection(
-                            workspace_ref_id=new_workspace.ref_id,
-                            source=EventSource.CLI,
-                            created_time=self._time_provider.get_current_time(),
-                        )
-                    )
-                    new_inbox_task_collection = (
-                        await uow.inbox_task_collection_repository.create(
-                            new_inbox_task_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("inbox tasks collection")
+            new_inbox_task_collection = InboxTaskCollection.new_inbox_task_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_inbox_task_collection = (
+                await uow.inbox_task_collection_repository.create(
+                    new_inbox_task_collection,
+                )
+            )
 
-                    new_habit_collection = HabitCollection.new_habit_collection(
-                        workspace_ref_id=new_workspace.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_habit_collection = await uow.habit_collection_repository.create(
-                        new_habit_collection,
-                    )
-                    await entity_reporter.mark_other_progress("habits collection")
+            new_habit_collection = HabitCollection.new_habit_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_habit_collection = await uow.habit_collection_repository.create(
+                new_habit_collection,
+            )
 
-                    new_chore_collection = ChoreCollection.new_chore_collection(
-                        workspace_ref_id=new_workspace.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_chore_collection = await uow.chore_collection_repository.create(
-                        new_chore_collection,
-                    )
-                    await entity_reporter.mark_other_progress("chores collection")
+            new_chore_collection = ChoreCollection.new_chore_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_chore_collection = await uow.chore_collection_repository.create(
+                new_chore_collection,
+            )
 
-                    new_big_plan_collection = BigPlanCollection.new_big_plan_collection(
-                        workspace_ref_id=new_workspace.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_big_plan_collection = (
-                        await uow.big_plan_collection_repository.create(
-                            new_big_plan_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("big plans collection")
+            new_big_plan_collection = BigPlanCollection.new_big_plan_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_big_plan_collection = await uow.big_plan_collection_repository.create(
+                new_big_plan_collection,
+            )
 
-                    new_smart_list_collection = (
-                        SmartListCollection.new_smart_list_collection(
-                            workspace_ref_id=new_workspace.ref_id,
-                            source=EventSource.CLI,
-                            created_time=self._time_provider.get_current_time(),
-                        )
-                    )
-                    new_smart_list_collection = (
-                        await uow.smart_list_collection_repository.create(
-                            new_smart_list_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("smart lists collection")
+            new_smart_list_collection = SmartListCollection.new_smart_list_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_smart_list_collection = (
+                await uow.smart_list_collection_repository.create(
+                    new_smart_list_collection,
+                )
+            )
 
-                    new_metric_collection = MetricCollection.new_metric_collection(
-                        workspace_ref_id=new_workspace.ref_id,
-                        collection_project_ref_id=new_default_project.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_metric_collection = (
-                        await uow.metric_collection_repository.create(
-                            new_metric_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("metrics collection")
+            new_metric_collection = MetricCollection.new_metric_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                collection_project_ref_id=new_default_project.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_metric_collection = await uow.metric_collection_repository.create(
+                new_metric_collection,
+            )
 
-                    new_person_collection = PersonCollection.new_person_collection(
-                        workspace_ref_id=new_workspace.ref_id,
-                        catch_up_project_ref_id=new_default_project.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_person_collection = (
-                        await uow.person_collection_repository.create(
-                            new_person_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("persons collection")
+            new_person_collection = PersonCollection.new_person_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                catch_up_project_ref_id=new_default_project.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_person_collection = await uow.person_collection_repository.create(
+                new_person_collection,
+            )
 
-                    new_push_integration_group = (
-                        PushIntegrationGroup.new_push_integration_group(
-                            workspace_ref_id=new_workspace.ref_id,
-                            source=EventSource.CLI,
-                            created_time=self._time_provider.get_current_time(),
-                        )
-                    )
-                    new_push_integration_group = (
-                        await uow.push_integration_group_repository.create(
-                            new_push_integration_group,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("push integrations group")
+            new_push_integration_group = (
+                PushIntegrationGroup.new_push_integration_group(
+                    workspace_ref_id=new_workspace.ref_id,
+                    source=EventSource.CLI,
+                    created_time=self._time_provider.get_current_time(),
+                )
+            )
+            new_push_integration_group = (
+                await uow.push_integration_group_repository.create(
+                    new_push_integration_group,
+                )
+            )
 
-                    new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
-                        push_integration_group_ref_id=new_push_integration_group.ref_id,
-                        generation_project_ref_id=new_default_project.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_slack_task_collection = (
-                        await uow.slack_task_collection_repository.create(
-                            new_slack_task_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("Slack task collection")
+            new_slack_task_collection = SlackTaskCollection.new_slack_task_collection(
+                push_integration_group_ref_id=new_push_integration_group.ref_id,
+                generation_project_ref_id=new_default_project.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_slack_task_collection = (
+                await uow.slack_task_collection_repository.create(
+                    new_slack_task_collection,
+                )
+            )
 
-                    new_email_task_collection = EmailTaskCollection.new_email_task_collection(
-                        push_integration_group_ref_id=new_push_integration_group.ref_id,
-                        generation_project_ref_id=new_default_project.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_email_task_collection = (
-                        await uow.email_task_collection_repository.create(
-                            new_email_task_collection,
-                        )
-                    )
-                    await entity_reporter.mark_other_progress("email task collection")
+            new_email_task_collection = EmailTaskCollection.new_email_task_collection(
+                push_integration_group_ref_id=new_push_integration_group.ref_id,
+                generation_project_ref_id=new_default_project.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_email_task_collection = (
+                await uow.email_task_collection_repository.create(
+                    new_email_task_collection,
+                )
+            )
 
-                async with progress_reporter.start_creating_entity(
-                    "user workspace link", f"{new_user.name} <> {new_workspace.name}"
-                ) as entity_reporter:
-                    new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
-                        user_ref_id=new_user.ref_id,
-                        workspace_ref_id=new_workspace.ref_id,
-                        source=EventSource.CLI,
-                        created_time=self._time_provider.get_current_time(),
-                    )
-                    new_user_workspace_link = (
-                        await uow.user_workspace_link_repository.create(
-                            new_user_workspace_link
-                        )
-                    )
-                    await entity_reporter.mark_known_entity_id(
-                        new_user_workspace_link.ref_id
-                    )
-                    await entity_reporter.mark_local_change()
+            new_user_workspace_link = UserWorkspaceLink.new_user_workspace_link(
+                user_ref_id=new_user.ref_id,
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_user_workspace_link = await uow.user_workspace_link_repository.create(
+                new_user_workspace_link
+            )
+
+        async with self._search_storage_engine.get_unit_of_work() as search_uow:
+            await search_uow.search_repository.create(
+                new_workspace.ref_id, new_default_project
+            )
 
         auth_token = self._auth_token_stamper.stamp_for_general(new_user)
 

@@ -4,6 +4,7 @@ import dataclasses
 from dataclasses import dataclass
 from typing import List, Optional, TypeVar, Union, cast
 
+from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.tag_name import TagName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -138,6 +139,8 @@ class BranchEntity(Entity):
 
     # examples: smart list, metric, feeds (future)
 
+    name: EntityName
+
     @property
     def parent_ref_id(self) -> EntityId:
         """The parent of this branch entity."""
@@ -149,6 +152,8 @@ class LeafEntity(Entity):
     """An entity  with no children, sitting as a child of some other branch entity, at the top of the entity tree."""
 
     # examples: inbox task, vacation, project, smart list item etc.
+
+    name: EntityName
 
     @property
     def parent_ref_id(self) -> EntityId:

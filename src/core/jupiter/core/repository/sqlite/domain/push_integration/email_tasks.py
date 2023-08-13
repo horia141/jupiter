@@ -362,6 +362,11 @@ class SqliteEmailTaskRepository(EmailTaskRepository):
             else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
+            name=EmailTask.build_name(
+                EmailAddress.from_raw(row["from_address"]),
+                EmailUserName.from_raw(row["from_name"]),
+                row["subject"],
+            ),
             email_task_collection_ref_id=EntityId.from_raw(
                 str(row["email_task_collection_ref_id"]),
             ),

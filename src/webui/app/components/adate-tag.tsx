@@ -1,6 +1,6 @@
 import type { ADate } from "jupiter-gen";
 import { aDateToDate } from "~/logic/domain/adate";
-import { SlimChip } from "./infra/slim-chip";
+import { SlimChip } from "./infra/chips";
 
 interface Props {
   label: string;

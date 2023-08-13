@@ -23,8 +23,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
-    MarkProgressStatus,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -58,9 +57,9 @@ class MetricUpdateUseCase(AppLoggedInMutationUseCase[MetricUpdateArgs, None]):
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricUpdateArgs,
     ) -> None:
@@ -68,7 +67,7 @@ class MetricUpdateUseCase(AppLoggedInMutationUseCase[MetricUpdateArgs, None]):
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             metric_collection = await uow.metric_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -189,23 +188,16 @@ class MetricUpdateUseCase(AppLoggedInMutationUseCase[MetricUpdateArgs, None]):
                 )
             )
 
-        async with progress_reporter.start_updating_entity(
-            "metric",
-            metric.ref_id,
-            str(metric.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                metric = metric.update(
-                    name=args.name,
-                    icon=args.icon,
-                    collection_params=collection_params,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(metric.name))
+            metric = metric.update(
+                name=args.name,
+                icon=args.icon,
+                collection_params=collection_params,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-                await uow.metric_repository.save(metric)
-                await entity_reporter.mark_local_change()
+            await uow.metric_repository.save(metric)
+            await progress_reporter.mark_updated(metric)
 
         # Change the inbox tasks
         if metric.collection_params is None:
@@ -213,23 +205,18 @@ class MetricUpdateUseCase(AppLoggedInMutationUseCase[MetricUpdateArgs, None]):
             inbox_task_archive_service = InboxTaskArchiveService(
                 source=EventSource.CLI,
                 time_provider=self._time_provider,
-                storage_engine=self._storage_engine,
+                storage_engine=self._domain_storage_engine,
             )
             for inbox_task in metric_collection_tasks:
                 await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
         else:
             # Situation 2: we need to update the existing metrics.
-            async with self._storage_engine.get_unit_of_work() as uow:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
                 project = await uow.project_repository.load_by_id(
                     metric_collection.collection_project_ref_id,
                 )
 
-            for inbox_task in metric_collection_tasks:
-                async with progress_reporter.start_updating_entity(
-                    "inbox task",
-                    inbox_task.ref_id,
-                    str(inbox_task.name),
-                ) as entity_reporter:
+                for inbox_task in metric_collection_tasks:
                     schedule = schedules.get_schedule(
                         metric.collection_params.period,
                         metric.name,
@@ -254,14 +241,6 @@ class MetricUpdateUseCase(AppLoggedInMutationUseCase[MetricUpdateArgs, None]):
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    await entity_reporter.mark_known_name(str(inbox_task.name))
 
-                    async with self._storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(inbox_task)
-                        await entity_reporter.mark_local_change()
-
-                    if inbox_task.archived:
-                        await entity_reporter.mark_remote_change(
-                            MarkProgressStatus.NOT_NEEDED,
-                        )
-                        continue
+                    await uow.inbox_task_repository.save(inbox_task)
+                    await progress_reporter.mark_updated(inbox_task)

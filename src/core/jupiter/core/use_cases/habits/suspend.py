@@ -6,7 +6,7 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -30,23 +30,18 @@ class HabitSuspendUseCase(AppLoggedInMutationUseCase[HabitSuspendArgs, None]):
         """The feature the use case is scope to."""
         return Feature.HABITS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: HabitSuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        async with progress_reporter.start_updating_entity(
-            "habit",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                habit = await uow.habit_repository.load_by_id(args.ref_id)
-                await entity_reporter.mark_known_name(str(habit.name))
-                habit = habit.suspend(
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await uow.habit_repository.save(habit)
-                await entity_reporter.mark_local_change()
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            habit = await uow.habit_repository.load_by_id(args.ref_id)
+            habit = habit.suspend(
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
+            await uow.habit_repository.save(habit)
+            await progress_reporter.mark_updated(habit)

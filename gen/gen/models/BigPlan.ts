@@ -15,9 +15,9 @@ export type BigPlan = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
+    name: BigPlanName;
     big_plan_collection_ref_id: EntityId;
     project_ref_id: EntityId;
-    name: BigPlanName;
     status: BigPlanStatus;
     actionable_date?: ADate;
     due_date?: ADate;

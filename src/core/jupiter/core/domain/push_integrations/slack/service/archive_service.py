@@ -1,10 +1,13 @@
 """Service for archiving a Slack task and associated entities."""
 from typing import Final
 
+from jupiter.core.domain.inbox_tasks.service.archive_service import (
+    InboxTaskArchiveService,
+)
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.event import EventSource
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
 
 
@@ -28,7 +31,7 @@ class SlackTaskArchiveService:
 
     async def do_it(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         slack_task: SlackTask,
     ) -> None:
         """Execute the service's action."""
@@ -60,29 +63,16 @@ class SlackTaskArchiveService:
                 )
             )
 
+        inbox_task_archive_service = InboxTaskArchiveService(
+            EventSource.CLI, self._time_provider, self._storage_engine
+        )
         for inbox_task in inbox_tasks_to_archive:
-            async with progress_reporter.start_archiving_entity(
-                "inbox task",
-                inbox_task.ref_id,
-                str(inbox_task.name),
-            ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
-                    inbox_task = inbox_task.mark_archived(
-                        self._source,
-                        self._time_provider.get_current_time(),
-                    )
-                    await uow.inbox_task_repository.save(inbox_task)
-                    await entity_reporter.mark_local_change()
+            await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
 
-        async with progress_reporter.start_archiving_entity(
-            "Slack task",
-            slack_task.ref_id,
-            str(slack_task.simple_name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                slack_task = slack_task.mark_archived(
-                    self._source,
-                    self._time_provider.get_current_time(),
-                )
-                await uow.slack_task_repository.save(slack_task)
-                await entity_reporter.mark_local_change()
+        async with self._storage_engine.get_unit_of_work() as uow:
+            slack_task = slack_task.mark_archived(
+                self._source,
+                self._time_provider.get_current_time(),
+            )
+            await uow.slack_task_repository.save(slack_task)
+            await progress_reporter.mark_updated(slack_task)

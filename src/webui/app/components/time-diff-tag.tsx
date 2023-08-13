@@ -1,19 +1,20 @@
-import type { ADate } from "jupiter-gen";
+import type { ADate, Timestamp } from "jupiter-gen";
 import { DateTime } from "luxon";
-import { aDateToDate } from "~/logic/domain/adate";
-import { SlimChip } from "./infra/slim-chip";
+import { aDateToDate, isADate } from "~/logic/domain/adate";
+import { timestampToDate } from "~/logic/domain/timestamp";
+import { FatChip } from "./infra/chips";
 
-interface CollectionTimeDiffTagProps {
-  collectionTime: ADate;
+interface TimeDiffTagProps {
+  labelPrefix: string;
+  collectionTime: ADate | Timestamp;
 }
 
-export function CollectionTimeDiffTag(props: CollectionTimeDiffTagProps) {
+export function TimeDiffTag(props: TimeDiffTagProps) {
   const today = DateTime.now().startOf("day");
-  const diff = today.diff(aDateToDate(props.collectionTime), [
-    "years",
-    "months",
-    "days",
-  ]);
+  const collectionTime = isADate(props.collectionTime)
+    ? aDateToDate(props.collectionTime)
+    : timestampToDate(props.collectionTime);
+  const diff = today.diff(collectionTime, ["years", "months", "days"]);
 
   let diffStr = "";
   if (diff.years > 0) {
@@ -52,5 +53,5 @@ export function CollectionTimeDiffTag(props: CollectionTimeDiffTagProps) {
     diffStr += " ago";
   }
 
-  return <SlimChip label={`Collected ${diffStr}`} color="info" />;
+  return <FatChip label={`${props.labelPrefix} ${diffStr}`} color="info" />;
 }

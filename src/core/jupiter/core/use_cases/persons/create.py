@@ -16,7 +16,7 @@ from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -60,50 +60,43 @@ class PersonCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: PersonCreateArgs,
     ) -> PersonCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with progress_reporter.start_creating_entity(
-            "person",
-            str(args.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                person_collection = (
-                    await uow.person_collection_repository.load_by_parent(
-                        workspace.ref_id,
-                    )
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            person_collection = await uow.person_collection_repository.load_by_parent(
+                workspace.ref_id,
+            )
+
+            catch_up_params = None
+            if args.catch_up_period is not None:
+                catch_up_params = RecurringTaskGenParams(
+                    period=args.catch_up_period,
+                    eisen=args.catch_up_eisen,
+                    difficulty=args.catch_up_difficulty,
+                    actionable_from_day=args.catch_up_actionable_from_day,
+                    actionable_from_month=args.catch_up_actionable_from_month,
+                    due_at_time=args.catch_up_due_at_time,
+                    due_at_day=args.catch_up_due_at_day,
+                    due_at_month=args.catch_up_due_at_month,
                 )
 
-                catch_up_params = None
-                if args.catch_up_period is not None:
-                    catch_up_params = RecurringTaskGenParams(
-                        period=args.catch_up_period,
-                        eisen=args.catch_up_eisen,
-                        difficulty=args.catch_up_difficulty,
-                        actionable_from_day=args.catch_up_actionable_from_day,
-                        actionable_from_month=args.catch_up_actionable_from_month,
-                        due_at_time=args.catch_up_due_at_time,
-                        due_at_day=args.catch_up_due_at_day,
-                        due_at_month=args.catch_up_due_at_month,
-                    )
+            new_person = Person.new_person(
+                person_collection_ref_id=person_collection.ref_id,
+                name=args.name,
+                relationship=args.relationship,
+                catch_up_params=catch_up_params,
+                birthday=args.birthday,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_person = await uow.person_repository.create(new_person)
+            await progress_reporter.mark_created(new_person)
 
-                person = Person.new_person(
-                    person_collection_ref_id=person_collection.ref_id,
-                    name=args.name,
-                    relationship=args.relationship,
-                    catch_up_params=catch_up_params,
-                    birthday=args.birthday,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-                person = await uow.person_repository.create(person)
-                await entity_reporter.mark_known_entity_id(person.ref_id)
-                await entity_reporter.mark_local_change()
-
-        return PersonCreateResult(new_person=person)
+        return PersonCreateResult(new_person=new_person)

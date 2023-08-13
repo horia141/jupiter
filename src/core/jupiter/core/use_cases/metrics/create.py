@@ -16,7 +16,7 @@ from jupiter.core.domain.recurring_task_gen_params import RecurringTaskGenParams
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
     UseCaseResultBase,
 )
@@ -60,50 +60,43 @@ class MetricCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricCreateArgs,
     ) -> MetricCreateResult:
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with progress_reporter.start_creating_entity(
-            "metric",
-            str(args.name),
-        ) as entity_reporter:
-            collection_params = None
-            async with self._storage_engine.get_unit_of_work() as uow:
-                metric_collection = (
-                    await uow.metric_collection_repository.load_by_parent(
-                        workspace.ref_id,
-                    )
+        collection_params = None
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            metric_collection = await uow.metric_collection_repository.load_by_parent(
+                workspace.ref_id,
+            )
+
+            if args.collection_period is not None:
+                collection_params = RecurringTaskGenParams(
+                    period=args.collection_period,
+                    eisen=args.collection_eisen,
+                    difficulty=args.collection_difficulty,
+                    actionable_from_day=args.collection_actionable_from_day,
+                    actionable_from_month=args.collection_actionable_from_month,
+                    due_at_time=args.collection_due_at_time,
+                    due_at_day=args.collection_due_at_day,
+                    due_at_month=args.collection_due_at_month,
                 )
 
-                if args.collection_period is not None:
-                    collection_params = RecurringTaskGenParams(
-                        period=args.collection_period,
-                        eisen=args.collection_eisen,
-                        difficulty=args.collection_difficulty,
-                        actionable_from_day=args.collection_actionable_from_day,
-                        actionable_from_month=args.collection_actionable_from_month,
-                        due_at_time=args.collection_due_at_time,
-                        due_at_day=args.collection_due_at_day,
-                        due_at_month=args.collection_due_at_month,
-                    )
-
-                new_metric = Metric.new_metric(
-                    metric_collection_ref_id=metric_collection.ref_id,
-                    name=args.name,
-                    icon=args.icon,
-                    collection_params=collection_params,
-                    metric_unit=args.metric_unit,
-                    source=EventSource.CLI,
-                    created_time=self._time_provider.get_current_time(),
-                )
-                new_metric = await uow.metric_repository.create(new_metric)
-                await entity_reporter.mark_known_entity_id(new_metric.ref_id)
-                await entity_reporter.mark_local_change()
+            new_metric = Metric.new_metric(
+                metric_collection_ref_id=metric_collection.ref_id,
+                name=args.name,
+                icon=args.icon,
+                collection_params=collection_params,
+                metric_unit=args.metric_unit,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_metric = await uow.metric_repository.create(new_metric)
+            await progress_reporter.mark_created(new_metric)
 
         return MetricCreateResult(new_metric=new_metric)

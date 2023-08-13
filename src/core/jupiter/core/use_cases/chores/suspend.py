@@ -6,7 +6,7 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -30,23 +30,18 @@ class ChoreSuspendUseCase(AppLoggedInMutationUseCase[ChoreSuspendArgs, None]):
         """The feature the use case is scope to."""
         return Feature.CHORES
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: ChoreSuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        async with progress_reporter.start_updating_entity(
-            "chore",
-            args.ref_id,
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                chore = await uow.chore_repository.load_by_id(args.ref_id)
-                await entity_reporter.mark_known_name(str(chore.name))
-                chore = chore.suspend(
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await uow.chore_repository.save(chore)
-                await entity_reporter.mark_local_change()
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            chore = await uow.chore_repository.load_by_id(args.ref_id)
+            chore = chore.suspend(
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
+            await uow.chore_repository.save(chore)
+            await progress_reporter.mark_updated(chore)

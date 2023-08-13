@@ -12,7 +12,7 @@ from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 from jupiter.core.utils.time_provider import TimeProvider
 
 
@@ -36,7 +36,7 @@ class ProjectArchiveService:
 
     async def do_it(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         workspace: Workspace,
         ref_id: EntityId,
     ) -> None:
@@ -153,11 +153,8 @@ class ProjectArchiveService:
                 await big_plan_archive_service.do_it(progress_reporter, big_plan)
 
             # archive project
-            async with progress_reporter.start_archiving_entity(
-                "project", project.ref_id, str(project.name)
-            ) as entity_reporter:
-                project = project.mark_archived(
-                    self._source, self._time_provider.get_current_time()
-                )
-                await uow.project_repository.save(project)
-                await entity_reporter.mark_local_change()
+            project = project.mark_archived(
+                self._source, self._time_provider.get_current_time()
+            )
+            await uow.project_repository.save(project)
+            await progress_reporter.mark_updated(project)

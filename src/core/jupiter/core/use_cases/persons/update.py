@@ -23,7 +23,7 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
-from jupiter.core.framework.use_case import ContextProgressReporter, UseCaseArgsBase
+from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
@@ -56,9 +56,9 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: PersonUpdateArgs,
     ) -> None:
@@ -66,7 +66,7 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
         user = context.user
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             person_collection = await uow.person_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -199,18 +199,14 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
             inbox_task_archive_service = InboxTaskArchiveService(
                 source=EventSource.CLI,
                 time_provider=self._time_provider,
-                storage_engine=self._storage_engine,
+                storage_engine=self._domain_storage_engine,
             )
             for inbox_task in person_catch_up_tasks:
                 await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
-            for inbox_task in person_catch_up_tasks:
-                async with progress_reporter.start_updating_entity(
-                    "inbox task",
-                    inbox_task.ref_id,
-                    str(inbox_task.name),
-                ) as entity_reporter:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                for inbox_task in person_catch_up_tasks:
                     schedule = schedules.get_schedule(
                         person.catch_up_params.period,
                         person.name,
@@ -235,12 +231,9 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    await entity_reporter.mark_known_name(str(inbox_task.name))
-
                     # Situation 2a: we're handling the same project.
-                    async with self._storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(inbox_task)
-                        await entity_reporter.mark_local_change()
+                    await uow.inbox_task_repository.save(inbox_task)
+                    await progress_reporter.mark_updated(inbox_task)
 
         # Change the birthday inbox tasks
         if person.birthday is None:
@@ -248,18 +241,14 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
             inbox_task_archive_service = InboxTaskArchiveService(
                 source=EventSource.CLI,
                 time_provider=self._time_provider,
-                storage_engine=self._storage_engine,
+                storage_engine=self._domain_storage_engine,
             )
             for inbox_task in person_birthday_tasks:
                 await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
         else:
             # Situation 2: we need to update the existing persons.
-            for inbox_task in person_birthday_tasks:
-                async with progress_reporter.start_updating_entity(
-                    "inbox task",
-                    inbox_task.ref_id,
-                    str(inbox_task.name),
-                ) as entity_reporter:
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                for inbox_task in person_birthday_tasks:
                     schedule = schedules.get_schedule(
                         RecurringTaskPeriod.YEARLY,
                         person.name,
@@ -288,28 +277,19 @@ class PersonUpdateUseCase(AppLoggedInMutationUseCase[PersonUpdateArgs, None]):
                         source=EventSource.CLI,
                         modification_time=self._time_provider.get_current_time(),
                     )
-                    await entity_reporter.mark_known_name(str(inbox_task.name))
 
-                    # Situation 2a: we're handling the same project.
-                    async with self._storage_engine.get_unit_of_work() as uow:
-                        await uow.inbox_task_repository.save(inbox_task)
-                        await entity_reporter.mark_local_change()
+                    await uow.inbox_task_repository.save(inbox_task)
+                    await progress_reporter.mark_updated(inbox_task)
 
-        async with progress_reporter.start_updating_entity(
-            "person",
-            person.ref_id,
-            str(person.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                person = person.update(
-                    name=args.name,
-                    relationship=args.relationship,
-                    birthday=args.birthday,
-                    catch_up_params=catch_up_params,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await entity_reporter.mark_known_name(str(person.name))
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            person = person.update(
+                name=args.name,
+                relationship=args.relationship,
+                birthday=args.birthday,
+                catch_up_params=catch_up_params,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
 
-                await uow.person_repository.save(person)
-                await entity_reporter.mark_local_change()
+            await uow.person_repository.save(person)
+            await progress_reporter.mark_updated(person)

@@ -67,6 +67,7 @@ class SlackTask(LeafEntity):
                     created_time,
                 ),
             ],
+            name=SlackTask.build_name(user, channel),
             slack_task_collection_ref_id=slack_task_collection_ref_id,
             user=user,
             channel=channel,
@@ -124,7 +125,7 @@ class SlackTask(LeafEntity):
         """The parent."""
         return self.slack_task_collection_ref_id
 
-    @property
-    def simple_name(self) -> EntityName:
-        """A simple name for the task."""
-        return EntityName(f"Respond to {self.user} on channel {self.channel}")
+    @staticmethod
+    def build_name(user: SlackUserName, channel: SlackChannelName | None) -> EntityName:
+        """Construct a name."""
+        return EntityName(f"Respond to {user} on channel {channel}")

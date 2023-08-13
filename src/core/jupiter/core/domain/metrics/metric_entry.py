@@ -46,6 +46,7 @@ class MetricEntry(LeafEntity):
             created_time=created_time,
             archived_time=created_time if archived else None,
             last_modified_time=created_time,
+            name=MetricEntry.build_name(collection_time, value, notes),
             events=[
                 MetricEntry.Created.make_event_from_frame_args(
                     source,
@@ -85,10 +86,12 @@ class MetricEntry(LeafEntity):
         """The parent."""
         return self.metric_ref_id
 
-    @property
-    def simple_name(self) -> EntityName:
-        """A simple name for the metric entry."""
+    @staticmethod
+    def build_name(
+        collection_time: ADate, value: float, notes: str | None
+    ) -> EntityName:
+        """Construct a name."""
         return EntityName(
-            f"Entry for {ADate.to_user_date_str(self.collection_time)} value={self.value}"
-            + (f"notes={self.notes}" if self.notes else ""),
+            f"Entry for {ADate.to_user_date_str(collection_time)} value={value}"
+            + (f"notes={notes}" if notes else ""),
         )

@@ -14,8 +14,8 @@ export type Vacation = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    vacation_collection_ref_id: EntityId;
     name: VacationName;
+    vacation_collection_ref_id: EntityId;
     start_date: ADate;
     end_date: ADate;
 };

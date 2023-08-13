@@ -4,7 +4,7 @@ from typing import Final
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 
 
 class BigPlanRemoveService:
@@ -21,7 +21,7 @@ class BigPlanRemoveService:
 
     async def remove(
         self,
-        reporter: ContextProgressReporter,
+        reporter: ProgressReporter,
         workspace: Workspace,
         ref_id: EntityId,
     ) -> None:
@@ -49,21 +49,9 @@ class BigPlanRemoveService:
                 )
             )
 
-        for inbox_task in inbox_tasks_to_remove:
-            async with reporter.start_removing_entity(
-                "inbox task",
-                inbox_task.ref_id,
-                str(inbox_task.name),
-            ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
-                    await uow.inbox_task_repository.remove(inbox_task.ref_id)
-                    await entity_reporter.mark_local_change()
+            for inbox_task in inbox_tasks_to_remove:
+                await uow.inbox_task_repository.remove(inbox_task.ref_id)
+                await reporter.mark_removed(inbox_task)
 
-        async with reporter.start_removing_entity(
-            "big plan",
-            ref_id,
-            str(big_plan.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                big_plan = await uow.big_plan_repository.remove(ref_id)
-            await entity_reporter.mark_local_change()
+            big_plan = await uow.big_plan_repository.remove(ref_id)
+            await reporter.mark_removed(big_plan)

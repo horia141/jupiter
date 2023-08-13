@@ -27,9 +27,9 @@ import {
   Tabs,
   Typography,
 } from "@mui/material";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type {
   InboxTasksSummary,
@@ -45,7 +45,7 @@ import {
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseQuery } from "zodix";
+import { parseQuery } from "zodix";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { TabPanel } from "../../../components/tab-panel";
 
@@ -54,7 +54,12 @@ import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { EntityLink } from "~/components/infra/entity-card";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolCard } from "~/components/infra/tool-card";
-import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import {
+  ActionResult,
+  isNoErrorSomeData,
+  noErrorSomeData,
+  validationErrorToUIErrorInfo,
+} from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { inboxTaskSourceName } from "~/logic/domain/inbox-task-source";
 import {
@@ -105,33 +110,24 @@ export async function loader({ request }: LoaderArgs) {
     period === undefined ||
     breakdownPeriod === undefined
   ) {
-    return json({ report: undefined });
+    return json(noErrorSomeData({ report: undefined }));
   }
 
-  const reportResponse = await getLoggedInApiClient(session).report.report({
-    today: {
-      the_date: today,
-      the_datetime: undefined,
-    },
-    period: period,
-    breakdown_period: breakdownPeriod !== "none" ? breakdownPeriod : undefined,
-  });
-
-  return json({
-    report: reportResponse,
-  });
-}
-
-export async function action({ request }: ActionArgs) {
-  const form = await parseForm(request, ReportFormSchema);
-
   try {
-    const today =
-      form.today !== undefined && form.today.trim() !== ""
-        ? form.today
-        : DateTime.now().toFormat("yyyy-MM-dd");
-    return redirect(
-      `/workspace/tools/report?today=${today}&period=${form.period}&breakdownPeriod=${form.breakdownPeriod}`
+    const reportResponse = await getLoggedInApiClient(session).report.report({
+      today: {
+        the_date: today,
+        the_datetime: undefined,
+      },
+      period: period,
+      breakdown_period:
+        breakdownPeriod !== "none" ? breakdownPeriod : undefined,
+    });
+
+    return json(
+      noErrorSomeData({
+        report: reportResponse,
+      })
     );
   } catch (error) {
     if (
@@ -146,10 +142,11 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Report() {
-  const loaderData = useLoaderDataSafeForAnimation<typeof loader>() as {
+  const loaderData = useLoaderDataSafeForAnimation<
+    typeof loader
+  >() as ActionResult<{
     report: ReportResult | undefined;
-  };
-  const actionData = useActionData<typeof action>();
+  }>;
   const transition = useTransition();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -177,9 +174,9 @@ export default function Report() {
   }
 
   return (
-    <ToolCard returnLocation="/workspace">
+    <ToolCard method="get" returnLocation="/workspace">
       <Card>
-        <GlobalError actionResult={actionData} />
+        <GlobalError actionResult={loaderData} />
         <CardContent>
           <Stack spacing={2} useFlexGap>
             <FormControl fullWidth>
@@ -189,13 +186,15 @@ export default function Report() {
                 label="Today"
                 name="today"
                 defaultValue={
-                  loaderData.report?.today.the_date ??
-                  DateTime.now().toISODate()
+                  isNoErrorSomeData(loaderData)
+                    ? loaderData.data.report?.today.the_date ??
+                      DateTime.now().toISODate()
+                    : DateTime.now().toISODate()
                 }
                 readOnly={!inputsEnabled}
               />
 
-              <FieldError actionResult={actionData} fieldName="/today" />
+              <FieldError actionResult={loaderData} fieldName="/today" />
             </FormControl>
 
             <FormControl fullWidth>
@@ -214,7 +213,7 @@ export default function Report() {
                   </MenuItem>
                 ))}
               </Select>
-              <FieldError actionResult={actionData} fieldName="/status" />
+              <FieldError actionResult={loaderData} fieldName="/status" />
             </FormControl>
 
             <FormControl fullWidth>
@@ -239,7 +238,7 @@ export default function Report() {
                 ))}
               </Select>
               <FieldError
-                actionResult={actionData}
+                actionResult={loaderData}
                 fieldName="/breakdown_period"
               />
             </FormControl>
@@ -255,9 +254,13 @@ export default function Report() {
         </CardActions>
       </Card>
 
-      {loaderData && loaderData.report !== undefined && (
-        <ShowReport topLevelInfo={topLevelInfo} report={loaderData.report} />
-      )}
+      {isNoErrorSomeData(loaderData) &&
+        loaderData.data.report !== undefined && (
+          <ShowReport
+            topLevelInfo={topLevelInfo}
+            report={loaderData.data.report}
+          />
+        )}
     </ToolCard>
   );
 }

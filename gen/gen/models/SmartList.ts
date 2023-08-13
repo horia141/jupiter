@@ -14,8 +14,8 @@ export type SmartList = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    smart_list_collection_ref_id: EntityId;
     name: SmartListName;
+    smart_list_collection_ref_id: EntityId;
     icon: EntityIcon;
 };
 

@@ -582,6 +582,9 @@ class SqliteMetricEntryRepository(MetricEntryRepository):
             else None,
             last_modified_time=Timestamp.from_db(row["last_modified_time"]),
             events=[],
+            name=MetricEntry.build_name(
+                ADate.from_db(row["collection_time"]), row["value"], row["notes"]
+            ),
             metric_ref_id=EntityId.from_raw(str(row["metric_ref_id"])),
             collection_time=ADate.from_db(row["collection_time"]),
             value=row["value"],

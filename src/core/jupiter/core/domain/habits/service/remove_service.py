@@ -3,7 +3,7 @@ from typing import Final
 
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.base.entity_id import EntityId
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 
 
 class HabitRemoveService:
@@ -20,7 +20,7 @@ class HabitRemoveService:
 
     async def remove(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         ref_id: EntityId,
     ) -> None:
         """Hard remove a habit."""
@@ -42,21 +42,9 @@ class HabitRemoveService:
                 )
             )
 
-        for inbox_task in inbox_tasks_to_archive:
-            async with progress_reporter.start_removing_entity(
-                "inbox task",
-                inbox_task.ref_id,
-                str(inbox_task.name),
-            ) as entity_reporter:
-                async with self._storage_engine.get_unit_of_work() as uow:
-                    await uow.inbox_task_repository.remove(inbox_task.ref_id)
-                    await entity_reporter.mark_local_change()
+            for inbox_task in inbox_tasks_to_archive:
+                await uow.inbox_task_repository.remove(inbox_task.ref_id)
+                await progress_reporter.mark_removed(inbox_task)
 
-        async with progress_reporter.start_removing_entity(
-            "habit",
-            ref_id,
-            str(habit.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                await uow.habit_repository.remove(ref_id)
-                await entity_reporter.mark_local_change()
+            await uow.habit_repository.remove(ref_id)
+            await progress_reporter.mark_removed(habit)

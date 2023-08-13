@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import cast
 
+from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -46,6 +47,7 @@ class SmartListTag(BranchTagEntity):
                     created_time,
                 ),
             ],
+            name=EntityName(tag_name.the_tag),
             smart_list_ref_id=smart_list_ref_id,
             tag_name=tag_name,
         )

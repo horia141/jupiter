@@ -1,5 +1,5 @@
+import { SlimChip } from "./chips";
 import { EntityLink } from "./entity-card";
-import { SlimChip } from "./slim-chip";
 
 interface LinkTagProps {
   to: string;

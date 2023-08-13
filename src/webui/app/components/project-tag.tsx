@@ -1,5 +1,5 @@
 import type { Project } from "jupiter-gen";
-import { SlimChip } from "./infra/slim-chip";
+import { SlimChip } from "./infra/chips";
 
 interface Props {
   project: Project;

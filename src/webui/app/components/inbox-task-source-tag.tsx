@@ -1,6 +1,6 @@
 import { InboxTaskSource } from "jupiter-gen";
 import { inboxTaskSourceName } from "~/logic/domain/inbox-task-source";
-import { SlimChip } from "./infra/slim-chip";
+import { SlimChip } from "./infra/chips";
 
 interface Props {
   source: InboxTaskSource;

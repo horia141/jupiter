@@ -8,7 +8,7 @@ from jupiter.core.domain.smart_lists.service.remove_service import (
 )
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -32,16 +32,16 @@ class SmartListRemoveUseCase(AppLoggedInMutationUseCase[SmartListRemoveArgs, Non
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListRemoveArgs,
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             smart_list_collection = (
                 await uow.smart_list_collection_repository.load_by_parent(
                     workspace.ref_id,
@@ -53,7 +53,7 @@ class SmartListRemoveUseCase(AppLoggedInMutationUseCase[SmartListRemoveArgs, Non
             )
 
         smart_list_remove_service = SmartListRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         )
         await smart_list_remove_service.execute(
             progress_reporter,

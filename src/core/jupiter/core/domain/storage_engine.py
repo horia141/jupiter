@@ -52,6 +52,7 @@ from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_rep
 from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository import (
     SlackTaskRepository,
 )
+from jupiter.core.domain.search_repository import SearchRepository
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
 )
@@ -241,4 +242,21 @@ class DomainStorageEngine(abc.ABC):
 
     @abc.abstractmethod
     def get_unit_of_work(self) -> AsyncContextManager[DomainUnitOfWork]:
+        """Build a unit of work."""
+
+
+class SearchUnitOfWork(abc.ABC):
+    """A unit of work from a search engine."""
+
+    @property
+    @abc.abstractmethod
+    def search_repository(self) -> SearchRepository:
+        """The search repostory."""
+
+
+class SearchStorageEngine(abc.ABC):
+    """A storage engine of some form for the search engine."""
+
+    @abc.abstractmethod
+    def get_unit_of_work(self) -> AsyncContextManager[SearchUnitOfWork]:
         """Build a unit of work."""

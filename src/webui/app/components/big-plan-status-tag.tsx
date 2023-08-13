@@ -3,7 +3,7 @@ import {
   bigPlanStatusIcon,
   bigPlanStatusName,
 } from "~/logic/domain/big-plan-status";
-import { SlimChip } from "./infra/slim-chip";
+import { SlimChip } from "./infra/chips";
 
 interface Props {
   status: BigPlanStatus;

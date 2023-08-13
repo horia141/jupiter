@@ -11,17 +11,17 @@ from jupiter.core.domain.auth.auth_token import (
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import Feature, FeatureUnavailableError
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework import use_case
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
     EmptyContext,
     EmptySession,
     MutationUseCase,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
     ProgressReporterFactory,
     ReadonlyUseCase,
     UseCase,
@@ -168,7 +168,8 @@ class AppLoggedInMutationUseCase(
     """A command which does some sort of mutation for the app, and assumes a logged-in user."""
 
     _auth_token_stamper: Final[AuthTokenStamper]
-    _storage_engine: Final[DomainStorageEngine]
+    _domain_storage_engine: Final[DomainStorageEngine]
+    _search_storage_engine: Final[SearchStorageEngine]
 
     @staticmethod
     def get_scoped_to_feature() -> Iterable[
@@ -183,12 +184,14 @@ class AppLoggedInMutationUseCase(
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[AppLoggedInUseCaseContext],
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
     ) -> None:
         """Constructor."""
         super().__init__(time_provider, invocation_recorder, progress_reporter_factory)
         self._auth_token_stamper = auth_token_stamper
-        self._storage_engine = storage_engine
+        self._domain_storage_engine = domain_storage_engine
+        self._search_storage_engine = search_storage_engine
 
     async def _build_context(
         self, session: AppLoggedInUseCaseSession
@@ -196,7 +199,7 @@ class AppLoggedInMutationUseCase(
         auth_token = self._auth_token_stamper.verify_auth_token_general(
             session.auth_token_ext
         )
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             user = await uow.user_repository.load_by_id(auth_token.user_ref_id)
             user_workspace_link = await uow.user_workspace_link_repository.load_by_user(
                 auth_token.user_ref_id
@@ -216,6 +219,43 @@ class AppLoggedInMutationUseCase(
                             raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
+
+    async def _execute(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInUseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
+        result = await self._perform_mutation(progress_reporter, context, args)
+
+        # Register all entities that were created/changed/removed with the search index.
+        async with self._search_storage_engine.get_unit_of_work() as uow:
+            for created_entity in progress_reporter.created_entities:
+                await uow.search_repository.create(
+                    context.workspace_ref_id, created_entity
+                )
+
+            for updated_entity in progress_reporter.updated_entities:
+                await uow.search_repository.update(
+                    context.workspace_ref_id, updated_entity
+                )
+
+            for removed_entity in progress_reporter.removed_entities:
+                await uow.search_repository.remove(
+                    context.workspace_ref_id, removed_entity
+                )
+
+        return result
+
+    @abc.abstractmethod
+    async def _perform_mutation(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInUseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
 
 
 class AppLoggedInReadonlyUseCase(
@@ -309,7 +349,7 @@ class AppTestHelperUseCase(
     @abc.abstractmethod
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: EmptyContext,
         args: UseCaseArgs,
     ) -> UseCaseResult:

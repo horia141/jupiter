@@ -3,7 +3,7 @@ from typing import Final
 
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.domain.vacations.vacation import Vacation
-from jupiter.core.framework.use_case import ContextProgressReporter
+from jupiter.core.framework.use_case import ProgressReporter
 
 
 class VacationRemoveService:
@@ -20,15 +20,10 @@ class VacationRemoveService:
 
     async def do_it(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         vacation: Vacation,
     ) -> None:
         """Execute the service's action."""
-        async with progress_reporter.start_removing_entity(
-            "vacation",
-            vacation.ref_id,
-            str(vacation.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                await uow.vacation_repository.remove(vacation.ref_id)
-                await entity_reporter.mark_local_change()
+        async with self._storage_engine.get_unit_of_work() as uow:
+            await uow.vacation_repository.remove(vacation.ref_id)
+            await progress_reporter.mark_removed(vacation)

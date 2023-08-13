@@ -6,7 +6,7 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -30,16 +30,16 @@ class PersonRemoveUseCase(AppLoggedInMutationUseCase[PersonRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.PERSONS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: PersonRemoveArgs,
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             person_collection = await uow.person_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
@@ -49,5 +49,5 @@ class PersonRemoveUseCase(AppLoggedInMutationUseCase[PersonRemoveArgs, None]):
             )
 
         await PersonRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).do_it(progress_reporter, person_collection, person)

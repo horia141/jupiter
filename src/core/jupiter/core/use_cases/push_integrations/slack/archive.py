@@ -9,7 +9,7 @@ from jupiter.core.domain.push_integrations.slack.service.archive_service import 
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -33,20 +33,20 @@ class SlackTaskArchiveUseCase(AppLoggedInMutationUseCase[SlackTaskArchiveArgs, N
         """The feature the use case is scope to."""
         return Feature.SLACK_TASKS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SlackTaskArchiveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
             slack_task = await uow.slack_task_repository.load_by_id(ref_id=args.ref_id)
 
         slack_task_archive_service = SlackTaskArchiveService(
             EventSource.CLI,
             self._time_provider,
-            self._storage_engine,
+            self._domain_storage_engine,
         )
 
         await slack_task_archive_service.do_it(progress_reporter, slack_task)

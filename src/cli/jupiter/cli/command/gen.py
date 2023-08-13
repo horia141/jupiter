@@ -163,7 +163,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             )
         else:
             project_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
             habit_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.habit_ref_ids]
                 if len(args.habit_ref_ids) > 0
@@ -171,7 +171,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             )
         else:
             habit_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
             chore_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.chore_ref_ids]
                 if len(args.chore_ref_ids) > 0
@@ -179,7 +179,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             )
         else:
             chore_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(Feature.METRICS):
             metric_ref_ids = (
                 [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
                 if len(args.metric_ref_ids) > 0
@@ -187,7 +187,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             )
         else:
             metric_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(Feature.PERSONS):
             person_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.person_ref_ids]
                 if len(args.person_ref_ids) > 0
@@ -195,7 +195,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             )
         else:
             person_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(Feature.SLACK_TASKS):
             slack_task_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
                 if len(args.slack_task_ref_ids) > 0
@@ -203,7 +203,7 @@ class Gen(LoggedInMutationCommand[GenUseCase]):
             )
         else:
             slack_task_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(Feature.EMAIL_TASKS):
             email_task_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
                 if len(args.email_task_ref_ids) > 0

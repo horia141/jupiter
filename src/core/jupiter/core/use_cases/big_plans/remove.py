@@ -6,7 +6,7 @@ from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveSe
 from jupiter.core.domain.features import Feature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
+    ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
@@ -30,13 +30,13 @@ class BigPlanRemoveUseCase(AppLoggedInMutationUseCase[BigPlanRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.BIG_PLANS
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: BigPlanRemoveArgs,
     ) -> None:
         """Execute the command's action."""
         await BigPlanRemoveService(
-            self._storage_engine,
+            self._domain_storage_engine,
         ).remove(progress_reporter, context.workspace, args.ref_id)

@@ -4,11 +4,11 @@ from typing import Final
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import FeatureFlags
-from jupiter.core.domain.storage_engine import DomainStorageEngine
+from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
     MutationUseCaseInvocationRecorder,
+    ProgressReporter,
     ProgressReporterFactory,
     UseCaseArgsBase,
 )
@@ -41,7 +41,8 @@ class WorkspaceChangeFeatureFlagsUseCase(
         invocation_recorder: MutationUseCaseInvocationRecorder,
         progress_reporter_factory: ProgressReporterFactory[AppLoggedInUseCaseContext],
         auth_token_stamper: AuthTokenStamper,
-        storage_engine: DomainStorageEngine,
+        domain_storage_engine: DomainStorageEngine,
+        search_storage_engine: SearchStorageEngine,
         global_properties: GlobalProperties,
     ) -> None:
         """Constructor."""
@@ -50,13 +51,14 @@ class WorkspaceChangeFeatureFlagsUseCase(
             invocation_recorder,
             progress_reporter_factory,
             auth_token_stamper,
-            storage_engine,
+            domain_storage_engine,
+            search_storage_engine,
         )
         self._global_properties = global_properties
 
-    async def _execute(
+    async def _perform_mutation(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: WorkspaceChangeFeatureFlagsArgs,
     ) -> None:
@@ -64,17 +66,11 @@ class WorkspaceChangeFeatureFlagsUseCase(
         workspace = context.workspace
         feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
-        async with progress_reporter.start_updating_entity(
-            "workspace",
-            workspace.ref_id,
-            str(workspace.name),
-        ) as entity_reporter:
-            async with self._storage_engine.get_unit_of_work() as uow:
-                workspace = workspace.change_feature_flags(
-                    feature_flag_controls=feature_flags_controls,
-                    feature_flags=args.feature_flags,
-                    source=EventSource.CLI,
-                    modification_time=self._time_provider.get_current_time(),
-                )
-                await uow.workspace_repository.save(workspace)
-                await entity_reporter.mark_local_change()
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            workspace = workspace.change_feature_flags(
+                feature_flag_controls=feature_flags_controls,
+                feature_flags=args.feature_flags,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
+            await uow.workspace_repository.save(workspace)

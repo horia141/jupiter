@@ -6,8 +6,8 @@ from typing import Final
 from jupiter.core.domain.storage_engine import DomainStorageEngine
 from jupiter.core.framework.storage import Connection
 from jupiter.core.framework.use_case import (
-    ContextProgressReporter,
     EmptyContext,
+    ProgressReporter,
     ProgressReporterFactory,
     UseCaseArgsBase,
 )
@@ -40,7 +40,7 @@ class NukeUseCase(AppTestHelperUseCase[NukeArgs, None]):
 
     async def _execute(
         self,
-        progress_reporter: ContextProgressReporter,
+        progress_reporter: ProgressReporter,
         context: EmptyContext,
         args: NukeArgs,
     ) -> None:

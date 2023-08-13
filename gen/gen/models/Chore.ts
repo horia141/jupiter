@@ -16,9 +16,9 @@ export type Chore = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
+    name: ChoreName;
     chore_collection_ref_id: EntityId;
     project_ref_id: EntityId;
-    name: ChoreName;
     gen_params: RecurringTaskGenParams;
     suspended: boolean;
     must_do: boolean;
