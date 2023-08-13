@@ -1,11 +1,10 @@
 """The Jupiter Web RPC API."""
-import asyncio
 import signal
 from types import FrameType
 from typing import Annotated, Any, Callable, Dict, Union
 
 import aiohttp
-from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect, WebSocketException
+from fastapi import Depends, FastAPI
 from fastapi.routing import APIRoute
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.types import DecoratedCallable

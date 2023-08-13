@@ -77,7 +77,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
                 query=args.query,
                 limit=args.limit,
                 include_archived=args.include_archived,
-                filter_entity_tags=args.filter_entity_tags,
+                filter_entity_tags=filter_entity_tags,
             )
 
         return SearchResult(matches=matches)

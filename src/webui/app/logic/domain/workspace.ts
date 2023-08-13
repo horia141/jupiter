@@ -1,10 +1,97 @@
-import { Feature, InboxTaskSource, SyncTarget, Workspace } from "jupiter-gen";
+import {
+  Feature,
+  InboxTaskSource,
+  NamedEntityTag,
+  SyncTarget,
+  Workspace,
+} from "jupiter-gen";
 
 export function isFeatureAvailable(
   workspace: Workspace,
   feature: Feature
 ): boolean {
   return workspace.feature_flags[feature];
+}
+
+export function inferEntityTagsForEnabledFeatures(
+  workspace: Workspace,
+  entityTags: Array<NamedEntityTag>
+): Array<NamedEntityTag> {
+  // Keep in sync with python:core:infer_entity_tags_for_enabled_features
+  const inferredEntityTags: Array<NamedEntityTag> = [];
+
+  for (const entityTag of entityTags) {
+    if (entityTag === NamedEntityTag.INBOX_TASK) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.HABIT &&
+      isFeatureAvailable(workspace, Feature.HABITS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.CHORE &&
+      isFeatureAvailable(workspace, Feature.CHORES)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.BIG_PLAN &&
+      isFeatureAvailable(workspace, Feature.BIG_PLANS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.VACATION &&
+      isFeatureAvailable(workspace, Feature.VACATIONS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.PROJECT &&
+      isFeatureAvailable(workspace, Feature.PROJECTS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SMART_LIST &&
+      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SMART_LIST_ITEM &&
+      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SMART_LIST_TAG &&
+      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.METRIC &&
+      isFeatureAvailable(workspace, Feature.METRICS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.METRIC_ENTRY &&
+      isFeatureAvailable(workspace, Feature.METRICS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.PERSON &&
+      isFeatureAvailable(workspace, Feature.PERSONS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.SLACK_TASK &&
+      isFeatureAvailable(workspace, Feature.SLACK_TASKS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.EMAIL_TASK &&
+      isFeatureAvailable(workspace, Feature.EMAIL_TASKS)
+    ) {
+      inferredEntityTags.push(entityTag);
+    }
+  }
+
+  return inferredEntityTags;
 }
 
 export function inferSourcesForEnabledFeatures(

@@ -142,54 +142,54 @@ class Workspace(RootEntity):
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.CHORE and self.is_feature_available(
-                Feature.HABITS
+                Feature.CHORES
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.BIG_PLAN and self.is_feature_available(
-                Feature.HABITS
+                Feature.BIG_PLANS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.VACATION and self.is_feature_available(
-                Feature.HABITS
+                Feature.VACATIONS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.PROJECT and self.is_feature_available(
-                Feature.HABITS
+                Feature.PROJECTS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.SMART_LIST and self.is_feature_available(
-                Feature.HABITS
+                Feature.SMART_LISTS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif (
                 entity_tag is NamedEntityTag.SMART_LIST_TAG
-                and self.is_feature_available(Feature.HABITS)
+                and self.is_feature_available(Feature.SMART_LISTS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif (
                 entity_tag is NamedEntityTag.SMART_LIST_ITEM
-                and self.is_feature_available(Feature.HABITS)
+                and self.is_feature_available(Feature.SMART_LISTS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.METRIC and self.is_feature_available(
-                Feature.HABITS
+                Feature.METRICS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif (
                 entity_tag is NamedEntityTag.METRIC_ENTRY
-                and self.is_feature_available(Feature.HABITS)
+                and self.is_feature_available(Feature.METRICS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.PERSON and self.is_feature_available(
-                Feature.HABITS
+                Feature.PERSONS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.SLACK_TASK and self.is_feature_available(
-                Feature.HABITS
+                Feature.SLACK_TASKS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.EMAIL_TASK and self.is_feature_available(
-                Feature.HABITS
+                Feature.EMAIL_TASKS
             ):
                 inferred_entity_tags.append(entity_tag)
         return inferred_entity_tags
