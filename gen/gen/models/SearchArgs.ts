@@ -3,10 +3,12 @@
 /* eslint-disable */
 
 import type { NamedEntityTag } from './NamedEntityTag';
+import type { SearchLimit } from './SearchLimit';
+import type { SearchQuery } from './SearchQuery';
 
 export type SearchArgs = {
-    query: string;
-    limit: number;
+    query: SearchQuery;
+    limit: SearchLimit;
     include_archived?: boolean;
     filter_entity_tags?: Array<NamedEntityTag>;
 };

@@ -54,7 +54,7 @@ export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const { query, includeArchived } = parseQuery(request, QuerySchema);
 
-  if (query === undefined || query === "") {
+  if (query === undefined) {
     return json(
       noErrorSomeData({
         query: undefined,
@@ -66,8 +66,8 @@ export async function loader({ request }: LoaderArgs) {
 
   try {
     const searchResponse = await getLoggedInApiClient(session).search.search({
-      query: query,
-      limit: 30,
+      query: {the_query: query},
+      limit: {the_limit: 30},
       include_archived: includeArchived,
     });
 

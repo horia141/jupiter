@@ -10,6 +10,8 @@ from jupiter.cli.command.rendering import (
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
+from jupiter.core.domain.search.search_limit import SearchLimit
+from jupiter.core.domain.search.search_query import SearchQuery
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.search import SearchArgs, SearchUseCase
@@ -85,6 +87,8 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
+        query = SearchQuery.from_raw(args.query)
+        limit = SearchLimit.from_raw(args.limit)
         filter_entity_tags = (
             [NamedEntityTag.from_raw(st) for st in args.filter_entity_tags]
             if len(args.filter_entity_tags) > 0
@@ -94,8 +98,8 @@ class Search(LoggedInReadonlyCommand[SearchUseCase]):
         result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
             SearchArgs(
-                query=args.query,
-                limit=args.limit,
+                query=query,
+                limit=limit,
                 include_archived=args.include_archived,
                 filter_entity_tags=filter_entity_tags,
             ),
