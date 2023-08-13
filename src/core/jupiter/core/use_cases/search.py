@@ -5,9 +5,10 @@ from typing import Final, List, Optional
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
-from jupiter.core.domain.search_repository import SearchMatch
+from jupiter.core.domain.search.search_limit import SearchLimit
+from jupiter.core.domain.search.search_query import SearchQuery
+from jupiter.core.domain.search.search_repository import SearchMatch
 from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
-from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.use_case import UseCaseArgsBase, UseCaseResultBase
 from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInReadonlyUseCase,
@@ -19,8 +20,8 @@ from jupiter.core.use_cases.infra.use_cases import (
 class SearchArgs(UseCaseArgsBase):
     """Search args."""
 
-    query: str
-    limit: int
+    query: SearchQuery
+    limit: SearchLimit
     include_archived: bool = False
     filter_entity_tags: Optional[List[NamedEntityTag]] = None
 
@@ -30,9 +31,6 @@ class SearchResult(UseCaseResultBase):
     """Search result."""
 
     matches: List[SearchMatch]
-
-
-_MAX_QUERY_LIMIT = 100
 
 
 class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
@@ -58,13 +56,6 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
         """Execute the command's action."""
         workspace = context.workspace
 
-        if args.limit < 1:
-            raise InputValidationError("Limit needs to be at least 1")
-        if args.limit > _MAX_QUERY_LIMIT:
-            raise InputValidationError(
-                f"Limit needs to be no more than {_MAX_QUERY_LIMIT}"
-            )
-
         filter_entity_tags = (
             args.filter_entity_tags
             if args.filter_entity_tags is not None
@@ -86,7 +77,7 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
                 query=args.query,
                 limit=args.limit,
                 include_archived=args.include_archived,
-                filter_entity_tags=args.filter_entity_tags,
+                filter_entity_tags=filter_entity_tags,
             )
 
         return SearchResult(matches=matches)

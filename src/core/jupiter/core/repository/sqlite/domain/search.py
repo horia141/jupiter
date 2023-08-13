@@ -3,7 +3,9 @@ from typing import Final, Iterable, List
 
 from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
-from jupiter.core.domain.search_repository import SearchMatch, SearchRepository
+from jupiter.core.domain.search.search_limit import SearchLimit
+from jupiter.core.domain.search.search_query import SearchQuery
+from jupiter.core.domain.search.search_repository import SearchMatch, SearchRepository
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.framework.entity import BranchEntity, LeafEntity
@@ -120,8 +122,8 @@ class SqliteSearchRepository(SearchRepository):
     async def search(
         self,
         workspace_ref_id: EntityId,
-        query: str,
-        limit: int,
+        query: SearchQuery,
+        limit: SearchLimit,
         include_archived: bool,
         filter_entity_tags: Iterable[NamedEntityTag] | None,
     ) -> List[SearchMatch]:
@@ -146,7 +148,7 @@ class SqliteSearchRepository(SearchRepository):
             .where(
                 self._search_index_table.c.workspace_ref_id == workspace_ref_id.as_int()
             )
-            .where(self._search_index_table.c.name.match(query))
+            .where(self._search_index_table.c.name.match(str(query)))
         )
         if not include_archived:
             query_stmt = query_stmt.where(
@@ -158,7 +160,7 @@ class SqliteSearchRepository(SearchRepository):
                     str(f) for f in filter_entity_tags
                 )
             )
-        query_stmt = query_stmt.limit(limit)
+        query_stmt = query_stmt.limit(limit.as_int)
         query_stmt = query_stmt.order_by(text("rank"))
         query_stmt = query_stmt.order_by(self._search_index_table.c.archived)
         query_stmt = query_stmt.order_by(

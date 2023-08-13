@@ -1,4 +1,8 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Button,
   ButtonGroup,
   Card,
@@ -10,36 +14,35 @@ import {
   OutlinedInput,
   Stack,
   Switch,
+  Typography,
 } from "@mui/material";
 import { json, LoaderArgs } from "@remix-run/node";
 import { useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import {
-  ApiError,
-  NamedEntityTag,
-  SearchMatch,
-  SearchResult,
-} from "jupiter-gen";
-import { useEffect, useState } from "react";
+import { ApiError, NamedEntityTag, SearchMatch } from "jupiter-gen";
+import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckboxAsString, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { SlimChip } from "~/components/infra/chips";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
-import { EntityStack } from "~/components/infra/entity-stack";
+import { EntityStack2 } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
+import { EntityTagSelect } from "~/components/named-entity-tag-select";
 import { TimeDiffTag } from "~/components/time-diff-tag";
 import {
-  ActionResult,
   isNoErrorSomeData,
   noErrorSomeData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
+import { fixSelectOutputToEnum, selectZod } from "~/logic/select";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
   displayType: DisplayType.LEAF,
@@ -47,34 +50,39 @@ export const handle = {
 
 const QuerySchema = {
   query: z.string().optional(),
+  limit: z.string().optional(),
   includeArchived: CheckboxAsString,
+  filterEntityTags: selectZod(z.nativeEnum(NamedEntityTag)).optional(),
 };
+
+const DEFAULT_LIMIT = 30;
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const { query, includeArchived } = parseQuery(request, QuerySchema);
-
-  if (query === undefined || query === "") {
-    return json(
-      noErrorSomeData({
-        query: undefined,
-        includeArchived: false,
-        result: undefined,
-      })
-    );
-  }
+  const { query, limit, includeArchived, filterEntityTags } = parseQuery(
+    request,
+    QuerySchema
+  );
 
   try {
-    const searchResponse = await getLoggedInApiClient(session).search.search({
-      query: query,
-      limit: 30,
-      include_archived: includeArchived,
-    });
+    let searchResponse = undefined;
+    if (query !== undefined) {
+      searchResponse = await getLoggedInApiClient(session).search.search({
+        query: { the_query: query },
+        limit: { the_limit: limit ? parseInt(limit) : DEFAULT_LIMIT },
+        include_archived: includeArchived,
+        filter_entity_tags:
+          fixSelectOutputToEnum<NamedEntityTag>(filterEntityTags),
+      });
+    }
 
     return json(
       noErrorSomeData({
         query: query,
+        limit: limit,
         includeArchived: includeArchived,
+        filterEntityTags:
+          fixSelectOutputToEnum<NamedEntityTag>(filterEntityTags),
         result: searchResponse,
       })
     );
@@ -91,32 +99,37 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function Search() {
-  const loaderData = useLoaderDataSafeForAnimation<
-    typeof loader
-  >() as ActionResult<{
-    query: string | undefined;
-    includeArchived: boolean;
-    result: SearchResult | undefined;
-  }>;
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
+  const topLevelInfo = useContext(TopLevelInfoContext);
   const transition = useTransition();
 
+  const isBigScreen = useBigScreen();
+
   const [searchQuery, setSearchQuery] = useState(
-    isNoErrorSomeData(loaderData) ? loaderData.data.query || "" : ""
+    isNoErrorSomeData(loaderData) ? loaderData.data.query : ""
+  );
+  const [searchLimit, setSearchLimit] = useState(
+    isNoErrorSomeData(loaderData) ? loaderData.data.limit : undefined
   );
   const [searchIncludeArchived, setSearchIncludeArchived] = useState(
-    isNoErrorSomeData(loaderData)
-      ? loaderData.data.includeArchived || false
-      : false
+    isNoErrorSomeData(loaderData) ? loaderData.data.includeArchived : false
+  );
+  const [searchFilterEntityTags, setSearchFilterEntityTags] = useState(
+    isNoErrorSomeData(loaderData) ? loaderData.data.filterEntityTags || [] : []
   );
 
   useEffect(() => {
-    setSearchQuery(
-      isNoErrorSomeData(loaderData) ? loaderData.data.query || "" : ""
+    setSearchQuery(isNoErrorSomeData(loaderData) ? loaderData.data.query : "");
+    setSearchLimit(
+      isNoErrorSomeData(loaderData) ? loaderData.data.limit : undefined
     );
     setSearchIncludeArchived(
+      isNoErrorSomeData(loaderData) ? loaderData.data.includeArchived : false
+    );
+    setSearchFilterEntityTags(
       isNoErrorSomeData(loaderData)
-        ? loaderData.data.includeArchived || false
-        : false
+        ? loaderData.data.filterEntityTags || []
+        : []
     );
   }, [loaderData]);
 
@@ -140,23 +153,72 @@ export default function Search() {
               <FieldError actionResult={loaderData} fieldName="/query" />
             </FormControl>
 
-            <FormControl fullWidth>
-              <FormControlLabel
-                control={
-                  <Switch
-                    name="includeArchived"
-                    readOnly={!inputsEnabled}
-                    checked={searchIncludeArchived}
-                    onChange={(e) => setSearchIncludeArchived(e.target.checked)}
-                  />
-                }
-                label="Include Archived"
-              />
-              <FieldError
-                actionResult={loaderData}
-                fieldName="/include_archived"
-              />
-            </FormControl>
+            <Accordion>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>Advanced</Typography>
+              </AccordionSummary>
+
+              <AccordionDetails>
+                <Stack
+                  useFlexGap
+                  sx={{ alignItems: "center" }}
+                  direction={isBigScreen ? "row" : "column"}
+                  spacing={2}
+                >
+                  <FormControl fullWidth>
+                    <InputLabel id="limit">Limit</InputLabel>
+                    <OutlinedInput
+                      label="Limit"
+                      name="limit"
+                      type="number"
+                      readOnly={!inputsEnabled}
+                      value={searchLimit}
+                      onChange={(e) => setSearchLimit(e.target.value)}
+                    />
+                    <FieldError actionResult={loaderData} fieldName="/limit" />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          name="includeArchived"
+                          readOnly={!inputsEnabled}
+                          checked={searchIncludeArchived}
+                          onChange={(e) =>
+                            setSearchIncludeArchived(e.target.checked)
+                          }
+                        />
+                      }
+                      label="Include Archived"
+                    />
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/include_archived"
+                    />
+                  </FormControl>
+
+                  <FormControl fullWidth>
+                    <InputLabel id="filterEntityTags">
+                      Filter Entities
+                    </InputLabel>
+                    <EntityTagSelect
+                      topLevelInfo={topLevelInfo}
+                      labelId="filterEntityTags"
+                      label="Filter Entities"
+                      name="filterEntityTags"
+                      readOnly={!inputsEnabled}
+                      value={searchFilterEntityTags}
+                      onChange={(e) => setSearchFilterEntityTags(e)}
+                    />
+                    <FieldError
+                      actionResult={loaderData}
+                      fieldName="/filter_entity_tags"
+                    />
+                  </FormControl>
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
 
             <CardActions>
               <ButtonGroup>
@@ -174,7 +236,7 @@ export default function Search() {
       </Card>
 
       {isNoErrorSomeData(loaderData) && loaderData.data.result && (
-        <EntityStack>
+        <EntityStack2>
           {loaderData.data.result.matches.map((match) => {
             return (
               <EntityCard
@@ -185,7 +247,7 @@ export default function Search() {
               </EntityCard>
             );
           })}
-        </EntityStack>
+        </EntityStack2>
       )}
     </ToolCard>
   );

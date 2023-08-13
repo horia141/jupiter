@@ -52,7 +52,7 @@ from jupiter.core.domain.push_integrations.slack.infra.slack_task_collection_rep
 from jupiter.core.domain.push_integrations.slack.infra.slack_task_repository import (
     SlackTaskRepository,
 )
-from jupiter.core.domain.search_repository import SearchRepository
+from jupiter.core.domain.search.search_repository import SearchRepository
 from jupiter.core.domain.smart_lists.infra.smart_list_collection_repository import (
     SmartListCollectionRepository,
 )
