@@ -258,6 +258,17 @@ export default function Sidebar(props: SidebarProps) {
 
             <ListItem disablePadding>
               <ListItemButton
+                to="/workspace/tools/search"
+                component={Link}
+                onClick={onClickNavigation}
+              >
+                <ListItemIcon>🔍</ListItemIcon>
+                <ListItemText primary="Search" />
+              </ListItemButton>
+            </ListItem>
+
+            <ListItem disablePadding>
+              <ListItemButton
                 to="/workspace/tools/gen"
                 component={Link}
                 onClick={onClickNavigation}
