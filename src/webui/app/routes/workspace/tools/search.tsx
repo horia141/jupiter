@@ -304,7 +304,7 @@ function Match({ match }: MatchProps) {
       );
     case NamedEntityTag.PERSON:
       return (
-        <EntityLink to={`/workspace/person/${match.ref_id.the_id}`}>
+        <EntityLink to={`/workspace/persons/${match.ref_id.the_id}`}>
           <SlimChip label={"Persons"} color={"primary"} />
           {commonSequence}
         </EntityLink>
