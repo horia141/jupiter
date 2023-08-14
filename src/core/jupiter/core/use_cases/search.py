@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Final, List, Optional
 
+from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import FeatureUnavailableError
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
@@ -24,6 +25,12 @@ class SearchArgs(UseCaseArgsBase):
     limit: SearchLimit
     include_archived: bool = False
     filter_entity_tags: Optional[List[NamedEntityTag]] = None
+    filter_created_time_after: Optional[ADate] = None
+    filter_created_time_before: Optional[ADate] = None
+    filter_last_modified_time_after: Optional[ADate] = None
+    filter_last_modified_time_before: Optional[ADate] = None
+    filter_archived_time_after: Optional[ADate] = None
+    filter_archived_time_before: Optional[ADate] = None
 
 
 @dataclass
@@ -78,6 +85,12 @@ class SearchUseCase(AppLoggedInReadonlyUseCase[SearchArgs, SearchResult]):
                 limit=args.limit,
                 include_archived=args.include_archived,
                 filter_entity_tags=filter_entity_tags,
+                filter_created_time_after=args.filter_created_time_after,
+                filter_created_time_before=args.filter_created_time_before,
+                filter_last_modified_time_after=args.filter_last_modified_time_after,
+                filter_last_modified_time_before=args.filter_last_modified_time_before,
+                filter_archived_time_after=args.filter_archived_time_after,
+                filter_archived_time_before=args.filter_archived_time_before,
             )
 
         return SearchResult(matches=matches)

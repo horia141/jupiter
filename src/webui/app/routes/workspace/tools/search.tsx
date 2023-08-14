@@ -53,36 +53,76 @@ const QuerySchema = {
   limit: z.string().optional(),
   includeArchived: CheckboxAsString,
   filterEntityTags: selectZod(z.nativeEnum(NamedEntityTag)).optional(),
+  filterCreatedTimeAfter: z.string().optional(),
+  filterCreatedTimeBefore: z.string().optional(),
+  filterLastModifiedTimeAfter: z.string().optional(),
+  filterLastModifiedTimeBefore: z.string().optional(),
+  filterArchivedTimeAfter: z.string().optional(),
+  filterArchivedTimeBefore: z.string().optional(),
 };
 
 const DEFAULT_LIMIT = 30;
 
 export async function loader({ request }: LoaderArgs) {
   const session = await getSession(request.headers.get("Cookie"));
-  const { query, limit, includeArchived, filterEntityTags } = parseQuery(
-    request,
-    QuerySchema
-  );
+  const query = parseQuery(request, QuerySchema);
 
   try {
     let searchResponse = undefined;
-    if (query !== undefined) {
+    if (query.query !== undefined) {
       searchResponse = await getLoggedInApiClient(session).search.search({
-        query: { the_query: query },
-        limit: { the_limit: limit ? parseInt(limit) : DEFAULT_LIMIT },
-        include_archived: includeArchived,
-        filter_entity_tags:
-          fixSelectOutputToEnum<NamedEntityTag>(filterEntityTags),
+        query: { the_query: query.query },
+        limit: {
+          the_limit: query.limit ? parseInt(query.limit) : DEFAULT_LIMIT,
+        },
+        include_archived: query.includeArchived,
+        filter_entity_tags: fixSelectOutputToEnum<NamedEntityTag>(
+          query.filterEntityTags
+        ),
+        filter_created_time_after: query.filterCreatedTimeAfter
+          ? { the_date: query.filterCreatedTimeAfter, the_datetime: undefined }
+          : undefined,
+        filter_created_time_before: query.filterCreatedTimeBefore
+          ? { the_date: query.filterCreatedTimeBefore, the_datetime: undefined }
+          : undefined,
+        filter_last_modified_time_after: query.filterLastModifiedTimeAfter
+          ? {
+              the_date: query.filterLastModifiedTimeAfter,
+              the_datetime: undefined,
+            }
+          : undefined,
+        filter_last_modified_time_before: query.filterLastModifiedTimeBefore
+          ? {
+              the_date: query.filterLastModifiedTimeBefore,
+              the_datetime: undefined,
+            }
+          : undefined,
+        filter_archived_time_after: query.filterArchivedTimeAfter
+          ? { the_date: query.filterArchivedTimeAfter, the_datetime: undefined }
+          : undefined,
+        filter_archived_time_before: query.filterArchivedTimeBefore
+          ? {
+              the_date: query.filterArchivedTimeBefore,
+              the_datetime: undefined,
+            }
+          : undefined,
       });
     }
 
     return json(
       noErrorSomeData({
-        query: query,
-        limit: limit,
-        includeArchived: includeArchived,
-        filterEntityTags:
-          fixSelectOutputToEnum<NamedEntityTag>(filterEntityTags),
+        query: query.query,
+        limit: query.limit,
+        includeArchived: query.includeArchived,
+        filterEntityTags: fixSelectOutputToEnum<NamedEntityTag>(
+          query.filterEntityTags
+        ),
+        filterCreatedTimeAfter: query.filterCreatedTimeAfter,
+        filterCreatedTimeBefore: query.filterCreatedTimeBefore,
+        filterLastModifiedTimeAfter: query.filterLastModifiedTimeAfter,
+        filterLastModifiedTimeBefore: query.filterLastModifiedTimeBefore,
+        filterArchivedTimeAfter: query.filterArchivedTimeAfter,
+        filterArchivedTimeBefore: query.filterArchivedTimeBefore,
         result: searchResponse,
       })
     );
@@ -117,6 +157,46 @@ export default function Search() {
   const [searchFilterEntityTags, setSearchFilterEntityTags] = useState(
     isNoErrorSomeData(loaderData) ? loaderData.data.filterEntityTags || [] : []
   );
+  const [searchFilterCreatedTimeAfter, setSearchFilterCreatedTimeAfter] =
+    useState(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterCreatedTimeAfter
+        : undefined
+    );
+  const [searchFilterCreatedTimeBefore, setSearchFilterCreatedTimeBefore] =
+    useState(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterCreatedTimeBefore
+        : undefined
+    );
+  const [
+    searchFilterLastModifiedTimeAfter,
+    setSearchFilterLastModifiedTimeAfter,
+  ] = useState(
+    isNoErrorSomeData(loaderData)
+      ? loaderData.data.filterLastModifiedTimeAfter
+      : undefined
+  );
+  const [
+    searchFilterLastModifiedTimeBefore,
+    setSearchFilterLastModifiedTimeBefore,
+  ] = useState(
+    isNoErrorSomeData(loaderData)
+      ? loaderData.data.filterLastModifiedTimeBefore
+      : undefined
+  );
+  const [searchFilterArchivedTimeAfter, setSearchFilterArchivedTimeAfter] =
+    useState(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterArchivedTimeAfter
+        : undefined
+    );
+  const [searchFilterArchivedTimeBefore, setSearchFilterArchivedTimeBefore] =
+    useState(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterArchivedTimeBefore
+        : undefined
+    );
 
   useEffect(() => {
     setSearchQuery(isNoErrorSomeData(loaderData) ? loaderData.data.query : "");
@@ -130,6 +210,36 @@ export default function Search() {
       isNoErrorSomeData(loaderData)
         ? loaderData.data.filterEntityTags || []
         : []
+    );
+    setSearchFilterCreatedTimeAfter(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterCreatedTimeAfter
+        : undefined
+    );
+    setSearchFilterCreatedTimeBefore(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterCreatedTimeBefore
+        : undefined
+    );
+    setSearchFilterLastModifiedTimeAfter(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterLastModifiedTimeAfter
+        : undefined
+    );
+    setSearchFilterLastModifiedTimeBefore(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterLastModifiedTimeBefore
+        : undefined
+    );
+    setSearchFilterArchivedTimeAfter(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterArchivedTimeAfter
+        : undefined
+    );
+    setSearchFilterArchivedTimeBefore(
+      isNoErrorSomeData(loaderData)
+        ? loaderData.data.filterArchivedTimeBefore
+        : undefined
     );
   }, [loaderData]);
 
@@ -159,63 +269,208 @@ export default function Search() {
               </AccordionSummary>
 
               <AccordionDetails>
-                <Stack
-                  useFlexGap
-                  sx={{ alignItems: "center" }}
-                  direction={isBigScreen ? "row" : "column"}
-                  spacing={2}
-                >
-                  <FormControl fullWidth>
-                    <InputLabel id="limit">Limit</InputLabel>
-                    <OutlinedInput
-                      label="Limit"
-                      name="limit"
-                      type="number"
-                      readOnly={!inputsEnabled}
-                      value={searchLimit}
-                      onChange={(e) => setSearchLimit(e.target.value)}
-                    />
-                    <FieldError actionResult={loaderData} fieldName="/limit" />
-                  </FormControl>
+                <Stack useFlexGap spacing={2}>
+                  <Stack
+                    useFlexGap
+                    sx={{ alignItems: "center" }}
+                    direction={isBigScreen ? "row" : "column"}
+                    spacing={2}
+                  >
+                    <FormControl fullWidth>
+                      <InputLabel id="limit">Limit</InputLabel>
+                      <OutlinedInput
+                        label="Limit"
+                        name="limit"
+                        type="number"
+                        readOnly={!inputsEnabled}
+                        value={searchLimit}
+                        onChange={(e) => setSearchLimit(e.target.value)}
+                      />
+                      <FieldError
+                        actionResult={loaderData}
+                        fieldName="/limit"
+                      />
+                    </FormControl>
 
-                  <FormControl fullWidth>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          name="includeArchived"
-                          readOnly={!inputsEnabled}
-                          checked={searchIncludeArchived}
+                    <FormControl fullWidth>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            name="includeArchived"
+                            readOnly={!inputsEnabled}
+                            checked={searchIncludeArchived}
+                            onChange={(e) =>
+                              setSearchIncludeArchived(e.target.checked)
+                            }
+                          />
+                        }
+                        label="Include Archived"
+                      />
+                      <FieldError
+                        actionResult={loaderData}
+                        fieldName="/include_archived"
+                      />
+                    </FormControl>
+
+                    <FormControl fullWidth>
+                      <InputLabel id="filterEntityTags">
+                        Filter Entities
+                      </InputLabel>
+                      <EntityTagSelect
+                        topLevelInfo={topLevelInfo}
+                        labelId="filterEntityTags"
+                        label="Filter Entities"
+                        name="filterEntityTags"
+                        readOnly={!inputsEnabled}
+                        value={searchFilterEntityTags}
+                        onChange={(e) => setSearchFilterEntityTags(e)}
+                      />
+                      <FieldError
+                        actionResult={loaderData}
+                        fieldName="/filter_entity_tags"
+                      />
+                    </FormControl>
+                  </Stack>
+
+                  <Stack
+                    spacing={2}
+                    useFlexGap
+                    direction={isBigScreen ? "row" : "column"}
+                  >
+                    <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
+                      <FormControl fullWidth>
+                        <InputLabel id="filterCreatedTimeAfter">
+                          Created After
+                        </InputLabel>
+                        <OutlinedInput
+                          type="date"
+                          label="Created After"
+                          value={searchFilterCreatedTimeAfter}
                           onChange={(e) =>
-                            setSearchIncludeArchived(e.target.checked)
+                            setSearchFilterCreatedTimeAfter(e.target.value)
                           }
+                          name="filterCreatedTimeAfter"
+                          readOnly={!inputsEnabled}
                         />
-                      }
-                      label="Include Archived"
-                    />
-                    <FieldError
-                      actionResult={loaderData}
-                      fieldName="/include_archived"
-                    />
-                  </FormControl>
 
-                  <FormControl fullWidth>
-                    <InputLabel id="filterEntityTags">
-                      Filter Entities
-                    </InputLabel>
-                    <EntityTagSelect
-                      topLevelInfo={topLevelInfo}
-                      labelId="filterEntityTags"
-                      label="Filter Entities"
-                      name="filterEntityTags"
-                      readOnly={!inputsEnabled}
-                      value={searchFilterEntityTags}
-                      onChange={(e) => setSearchFilterEntityTags(e)}
-                    />
-                    <FieldError
-                      actionResult={loaderData}
-                      fieldName="/filter_entity_tags"
-                    />
-                  </FormControl>
+                        <FieldError
+                          actionResult={loaderData}
+                          fieldName="/filter_created_time_after"
+                        />
+                      </FormControl>
+
+                      <FormControl fullWidth>
+                        <InputLabel id="filterCreatedTimeBefore">
+                          Created Before
+                        </InputLabel>
+                        <OutlinedInput
+                          type="date"
+                          label="Created Before"
+                          value={searchFilterCreatedTimeBefore}
+                          onChange={(e) =>
+                            setSearchFilterCreatedTimeBefore(e.target.value)
+                          }
+                          name="filterCreatedTimeBefore"
+                          readOnly={!inputsEnabled}
+                        />
+
+                        <FieldError
+                          actionResult={loaderData}
+                          fieldName="/filter_created_time_before"
+                        />
+                      </FormControl>
+                    </Stack>
+
+                    <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
+                      <FormControl fullWidth>
+                        <InputLabel id="filterLastModifiedTimeAfter">
+                          Last Modified After
+                        </InputLabel>
+                        <OutlinedInput
+                          type="date"
+                          label="Last Modified After"
+                          value={searchFilterLastModifiedTimeAfter}
+                          onChange={(e) =>
+                            setSearchFilterLastModifiedTimeAfter(e.target.value)
+                          }
+                          name="filterLastModifiedTimeAfter"
+                          readOnly={!inputsEnabled}
+                        />
+
+                        <FieldError
+                          actionResult={loaderData}
+                          fieldName="/filter_last_modified_time_after"
+                        />
+                      </FormControl>
+
+                      <FormControl fullWidth>
+                        <InputLabel id="filterLastModifiedTimeBefore">
+                          Last Modified Before
+                        </InputLabel>
+                        <OutlinedInput
+                          type="date"
+                          label="Last Modified Before"
+                          value={searchFilterLastModifiedTimeBefore}
+                          onChange={(e) =>
+                            setSearchFilterLastModifiedTimeBefore(
+                              e.target.value
+                            )
+                          }
+                          name="filterLastModifiedTimeBefore"
+                          readOnly={!inputsEnabled}
+                        />
+
+                        <FieldError
+                          actionResult={loaderData}
+                          fieldName="/filter_last_modified_time_before"
+                        />
+                      </FormControl>
+                    </Stack>
+
+                    <Stack spacing={2} useFlexGap sx={{ flexGrow: 1 }}>
+                      <FormControl fullWidth>
+                        <InputLabel id="filterArchivedTimeAfter">
+                          Archived After
+                        </InputLabel>
+                        <OutlinedInput
+                          type="date"
+                          label="Archived After"
+                          value={searchFilterArchivedTimeAfter}
+                          onChange={(e) =>
+                            setSearchFilterArchivedTimeAfter(e.target.value)
+                          }
+                          name="filterArchivedTimeAfter"
+                          readOnly={!inputsEnabled}
+                        />
+
+                        <FieldError
+                          actionResult={loaderData}
+                          fieldName="/filter_archived_time_after"
+                        />
+                      </FormControl>
+
+                      <FormControl fullWidth>
+                        <InputLabel id="filterArchivedTimeBefore">
+                          Archived Before
+                        </InputLabel>
+                        <OutlinedInput
+                          type="date"
+                          label="Archived Before"
+                          value={searchFilterArchivedTimeBefore}
+                          onChange={(e) =>
+                            setSearchFilterArchivedTimeBefore(e.target.value)
+                          }
+                          name="filterArchivedTimeBefore"
+                          readOnly={!inputsEnabled}
+                        />
+
+                        <FieldError
+                          actionResult={loaderData}
+                          fieldName="/filter_archived_time_before"
+                        />
+                      </FormControl>
+                    </Stack>
+                  </Stack>
                 </Stack>
               </AccordionDetails>
             </Accordion>
@@ -237,6 +492,11 @@ export default function Search() {
 
       {isNoErrorSomeData(loaderData) && loaderData.data.result && (
         <EntityStack2>
+          <Typography>
+            Showing {loaderData.data.result.matches.length} results out of{" "}
+            {loaderData.data.limit ? loaderData.data.limit : DEFAULT_LIMIT}{" "}
+            asked
+          </Typography>
           {loaderData.data.result.matches.map((match) => {
             return (
               <EntityCard

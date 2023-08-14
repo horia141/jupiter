@@ -3,6 +3,7 @@ import abc
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
+from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.search_limit import SearchLimit
@@ -63,5 +64,11 @@ class SearchRepository(Repository, abc.ABC):
         limit: SearchLimit,
         include_archived: bool,
         filter_entity_tags: Optional[Iterable[NamedEntityTag]],
+        filter_created_time_after: Optional[ADate],
+        filter_created_time_before: Optional[ADate],
+        filter_last_modified_time_after: Optional[ADate],
+        filter_last_modified_time_before: Optional[ADate],
+        filter_archived_time_after: Optional[ADate],
+        filter_archived_time_before: Optional[ADate],
     ) -> List[SearchMatch]:
         """Search for entities."""

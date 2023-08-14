@@ -38,6 +38,7 @@ nav:
           - 'Garbage Collection': 'concepts/garbage-collection.md'
     - 'Tools':
           - 'Pomodoro Timer': 'tools/pomodoro-timer.md'
+          - 'Search': 'tools/search.md'
     - 'How Tos':
           - 'Installation': 'how-tos/install.md'
           - 'Do Garbage Collection': 'how-tos/do-garbage-collection.md'

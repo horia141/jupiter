@@ -391,6 +391,7 @@ async def main() -> None:
                 Search(
                     session_storage=session_storage,
                     top_level_context=top_level_context.to_logged_in(),
+                    global_properties=global_properties,
                     time_provider=time_provider,
                     use_case=SearchUseCase(
                         auth_token_stamper=auth_token_stamper,

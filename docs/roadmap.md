@@ -28,7 +28,6 @@ dates or order of delivery.
 ## Quality Of Life Improvements
 
 * Define visual identity
-* Powerful search in your workspace
 * Translate app and docs in other languages
 * Offline mode
 * Notifications

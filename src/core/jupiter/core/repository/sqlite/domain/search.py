@@ -1,6 +1,7 @@
 """The SQLite based search repository."""
-from typing import Final, Iterable, List
+from typing import Final, Iterable, List, Optional
 
+from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.search.search_limit import SearchLimit
@@ -126,6 +127,12 @@ class SqliteSearchRepository(SearchRepository):
         limit: SearchLimit,
         include_archived: bool,
         filter_entity_tags: Iterable[NamedEntityTag] | None,
+        filter_created_time_after: Optional[ADate],
+        filter_created_time_before: Optional[ADate],
+        filter_last_modified_time_after: Optional[ADate],
+        filter_last_modified_time_before: Optional[ADate],
+        filter_archived_time_after: Optional[ADate],
+        filter_archived_time_before: Optional[ADate],
     ) -> List[SearchMatch]:
         """Search for entities in the index."""
         query_stmt = (
@@ -159,6 +166,36 @@ class SqliteSearchRepository(SearchRepository):
                 self._search_index_table.c.entity_tag.in_(
                     str(f) for f in filter_entity_tags
                 )
+            )
+        if filter_created_time_after is not None:
+            query_stmt = query_stmt.where(
+                self._search_index_table.c.created_time
+                >= filter_created_time_after.to_db()
+            )
+        if filter_created_time_before is not None:
+            query_stmt = query_stmt.where(
+                self._search_index_table.c.created_time
+                <= filter_created_time_before.to_db()
+            )
+        if filter_last_modified_time_after is not None:
+            query_stmt = query_stmt.where(
+                self._search_index_table.c.last_modified_time
+                >= filter_last_modified_time_after.to_db()
+            )
+        if filter_last_modified_time_before is not None:
+            query_stmt = query_stmt.where(
+                self._search_index_table.c.last_modified_time
+                <= filter_last_modified_time_before.to_db()
+            )
+        if filter_archived_time_after is not None:
+            query_stmt = query_stmt.where(
+                self._search_index_table.c.archived_time
+                >= filter_archived_time_after.to_db()
+            )
+        if filter_archived_time_before is not None:
+            query_stmt = query_stmt.where(
+                self._search_index_table.c.archived_time
+                <= filter_archived_time_before.to_db()
             )
         query_stmt = query_stmt.limit(limit.as_int)
         query_stmt = query_stmt.order_by(text("rank"))
