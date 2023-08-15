@@ -622,15 +622,14 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
                     await progress_reporter.mark_created(inbox_task)
 
-        inbox_task_remove_service = InboxTaskRemoveService(
-            self._domain_storage_engine,
-        )
-        for task in all_found_tasks_by_repeat_index.values():
-            if task.recurring_repeat_index is None:
-                continue
-            if task.recurring_repeat_index in repeat_idx_to_keep:
-                continue
-            await inbox_task_remove_service.do_it(progress_reporter, task)
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            inbox_task_remove_service = InboxTaskRemoveService()
+            for task in all_found_tasks_by_repeat_index.values():
+                if task.recurring_repeat_index is None:
+                    continue
+                if task.recurring_repeat_index in repeat_idx_to_keep:
+                    continue
+                await inbox_task_remove_service.do_it(uow, progress_reporter, task)
 
     async def _generate_inbox_tasks_for_chore(
         self,

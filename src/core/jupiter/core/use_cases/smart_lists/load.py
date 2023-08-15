@@ -6,14 +6,15 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_item import SmartListItem
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -35,7 +36,7 @@ class SmartListLoadResult(UseCaseResultBase):
 
 
 class SmartListLoadUseCase(
-    AppLoggedInReadonlyUseCase[SmartListLoadArgs, SmartListLoadResult]
+    AppTransactionalLoggedInReadOnlyUseCase[SmartListLoadArgs, SmartListLoadResult]
 ):
     """Use case for loading a smart list."""
 
@@ -44,25 +45,23 @@ class SmartListLoadUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: SmartListLoadArgs,
     ) -> SmartListLoadResult:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
-            smart_list = await uow.smart_list_repository.load_by_id(
-                args.ref_id,
-                allow_archived=args.allow_archived,
-            )
-            smart_list_tags = await uow.smart_list_tag_repository.find_all_with_filters(
-                smart_list.ref_id, allow_archived=args.allow_archived
-            )
-            smart_list_items = (
-                await uow.smart_list_item_repository.find_all_with_filters(
-                    smart_list.ref_id, allow_archived=args.allow_archived
-                )
-            )
+        smart_list = await uow.smart_list_repository.load_by_id(
+            args.ref_id,
+            allow_archived=args.allow_archived,
+        )
+        smart_list_tags = await uow.smart_list_tag_repository.find_all_with_filters(
+            smart_list.ref_id, allow_archived=args.allow_archived
+        )
+        smart_list_items = await uow.smart_list_item_repository.find_all_with_filters(
+            smart_list.ref_id, allow_archived=args.allow_archived
+        )
 
         return SmartListLoadResult(
             smart_list=smart_list,

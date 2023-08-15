@@ -6,14 +6,15 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.domain.push_integrations.email.service.remove_service import (
     EmailTaskRemoveService,
 )
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 
 
@@ -24,7 +25,9 @@ class EmailTaskRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-class EmailTaskRemoveUseCase(AppLoggedInMutationUseCase[EmailTaskRemoveArgs, None]):
+class EmailTaskRemoveUseCase(
+    AppTransactionalLoggedInMutationUseCase[EmailTaskRemoveArgs, None]
+):
     """The command for archiving a email task."""
 
     @staticmethod
@@ -32,18 +35,16 @@ class EmailTaskRemoveUseCase(AppLoggedInMutationUseCase[EmailTaskRemoveArgs, Non
         """The feature the use case is scope to."""
         return Feature.EMAIL_TASKS
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: EmailTaskRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            email_task = await uow.email_task_repository.load_by_id(ref_id=args.ref_id)
+        email_task = await uow.email_task_repository.load_by_id(ref_id=args.ref_id)
 
-        email_task_remove_service = EmailTaskRemoveService(
-            self._domain_storage_engine,
-        )
+        email_task_remove_service = EmailTaskRemoveService()
 
-        await email_task_remove_service.do_it(progress_reporter, email_task)
+        await email_task_remove_service.do_it(uow, progress_reporter, email_task)

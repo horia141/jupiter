@@ -18,6 +18,7 @@ from jupiter.core.domain.push_integrations.slack.service.archive_service import 
     SlackTaskArchiveService,
 )
 from jupiter.core.domain.push_integrations.slack.slack_task import SlackTask
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.sync_target import SyncTarget
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -123,68 +124,55 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                             parent_ref_id=big_plan_collection.ref_id,
                             allow_archived=False,
                         )
-                    await self._archive_done_big_plans(
-                        progress_reporter,
-                        big_plans,
-                    )
+                await self._archive_done_big_plans(
+                    uow,
+                    progress_reporter,
+                    big_plans,
+                )
 
         if (
             workspace.is_feature_available(Feature.SLACK_TASKS)
             and SyncTarget.SLACK_TASKS in gc_targets
         ):
             async with progress_reporter.section("Slack Tasks"):
-                async with progress_reporter.section(
-                    "Archiving all Slack tasks whose inbox tasks are done or archived",
-                ):
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        slack_tasks = await uow.slack_task_repository.find_all(
-                            parent_ref_id=slack_task_collection.ref_id,
-                            allow_archived=False,
-                        )
-                        inbox_tasks = (
-                            await uow.inbox_task_repository.find_all_with_filters(
-                                parent_ref_id=inbox_task_collection.ref_id,
-                                allow_archived=True,
-                                filter_sources=[InboxTaskSource.SLACK_TASK],
-                                filter_slack_task_ref_ids=[
-                                    st.ref_id for st in slack_tasks
-                                ],
-                            )
-                        )
-                    await self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
-                        progress_reporter,
-                        slack_tasks,
-                        inbox_tasks,
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    slack_tasks = await uow.slack_task_repository.find_all(
+                        parent_ref_id=slack_task_collection.ref_id,
+                        allow_archived=False,
                     )
+                    inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        filter_sources=[InboxTaskSource.SLACK_TASK],
+                        filter_slack_task_ref_ids=[st.ref_id for st in slack_tasks],
+                    )
+                await self._archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
+                    progress_reporter,
+                    slack_tasks,
+                    inbox_tasks,
+                )
 
         if (
             workspace.is_feature_available(Feature.EMAIL_TASKS)
             and SyncTarget.EMAIL_TASKS in gc_targets
         ):
             async with progress_reporter.section("Email Tasks"):
-                async with progress_reporter.section(
-                    "Archiving all email tasks whose inbox tasks are done or archived",
-                ):
-                    async with self._domain_storage_engine.get_unit_of_work() as uow:
-                        email_tasks = await uow.email_task_repository.find_all(
-                            parent_ref_id=email_task_collection.ref_id,
-                            allow_archived=False,
-                        )
-                        inbox_tasks = (
-                            await uow.inbox_task_repository.find_all_with_filters(
-                                parent_ref_id=inbox_task_collection.ref_id,
-                                allow_archived=True,
-                                filter_sources=[InboxTaskSource.EMAIL_TASK],
-                                filter_email_task_ref_ids=[
-                                    et.ref_id for et in email_tasks
-                                ],
-                            )
-                        )
-                    await self._archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
-                        progress_reporter,
-                        email_tasks,
-                        inbox_tasks,
+                async with self._domain_storage_engine.get_unit_of_work() as uow:
+                    email_tasks = await uow.email_task_repository.find_all(
+                        parent_ref_id=email_task_collection.ref_id,
+                        allow_archived=False,
                     )
+                    inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                        parent_ref_id=inbox_task_collection.ref_id,
+                        allow_archived=True,
+                        filter_sources=[InboxTaskSource.EMAIL_TASK],
+                        filter_email_task_ref_ids=[et.ref_id for et in email_tasks],
+                    )
+                await self._archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
+                    progress_reporter,
+                    email_tasks,
+                    inbox_tasks,
+                )
 
     async def _archive_done_inbox_tasks(
         self,
@@ -194,31 +182,33 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         inbox_task_archive_service = InboxTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._domain_storage_engine,
         )
+
         for inbox_task in inbox_tasks:
             if not inbox_task.status.is_completed:
                 continue
-            await inbox_task_archive_service.do_it(progress_reporter, inbox_task)
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await inbox_task_archive_service.do_it(
+                    uow, progress_reporter, inbox_task
+                )
 
     async def _archive_done_big_plans(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         big_plans: Iterable[BigPlan],
-    ) -> bool:
+    ) -> None:
         """Archive the done big plans."""
         big_plan_archive_service = BigPlanArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._domain_storage_engine,
         )
-        need_to_modify_something = False
+
         for big_plan in big_plans:
             if not big_plan.status.is_completed:
                 continue
-            await big_plan_archive_service.do_it(progress_reporter, big_plan)
-            need_to_modify_something = True
-        return need_to_modify_something
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await big_plan_archive_service.do_it(uow, progress_reporter, big_plan)
 
     async def _archive_slack_tasks_whose_inbox_tasks_are_completed_or_archived(
         self,
@@ -230,15 +220,16 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         slack_task_arhive_service = SlackTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._domain_storage_engine,
         )
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
                 continue
-            await slack_task_arhive_service.do_it(
-                progress_reporter,
-                slack_tasks_by_ref_id[cast(EntityId, inbox_task.slack_task_ref_id)],
-            )
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await slack_task_arhive_service.do_it(
+                    uow,
+                    progress_reporter,
+                    slack_tasks_by_ref_id[cast(EntityId, inbox_task.slack_task_ref_id)],
+                )
 
     async def _archive_email_tasks_whose_inbox_tasks_are_completed_or_archived(
         self,
@@ -250,12 +241,13 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
         email_task_arhive_service = EmailTaskArchiveService(
             source=EventSource.CLI,
             time_provider=self._time_provider,
-            storage_engine=self._domain_storage_engine,
         )
         for inbox_task in inbox_tasks:
             if not (inbox_task.status.is_completed or inbox_task.archived):
                 continue
-            await email_task_arhive_service.do_it(
-                progress_reporter,
-                email_tasks_by_ref_id[cast(EntityId, inbox_task.email_task_ref_id)],
-            )
+            async with self._domain_storage_engine.get_unit_of_work() as uow:
+                await email_task_arhive_service.do_it(
+                    uow,
+                    progress_reporter,
+                    email_tasks_by_ref_id[cast(EntityId, inbox_task.email_task_ref_id)],
+                )

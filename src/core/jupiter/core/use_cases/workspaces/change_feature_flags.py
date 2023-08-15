@@ -4,7 +4,11 @@ from typing import Final
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import FeatureFlags
-from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
+from jupiter.core.domain.storage_engine import (
+    DomainStorageEngine,
+    DomainUnitOfWork,
+    SearchStorageEngine,
+)
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     MutationUseCaseInvocationRecorder,
@@ -13,8 +17,8 @@ from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 from jupiter.core.utils.global_properties import GlobalProperties
@@ -29,7 +33,7 @@ class WorkspaceChangeFeatureFlagsArgs(UseCaseArgsBase):
 
 
 class WorkspaceChangeFeatureFlagsUseCase(
-    AppLoggedInMutationUseCase[WorkspaceChangeFeatureFlagsArgs, None]
+    AppTransactionalLoggedInMutationUseCase[WorkspaceChangeFeatureFlagsArgs, None]
 ):
     """Usecase for changing the feature flags for the workspace."""
 
@@ -56,8 +60,9 @@ class WorkspaceChangeFeatureFlagsUseCase(
         )
         self._global_properties = global_properties
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: WorkspaceChangeFeatureFlagsArgs,
@@ -66,11 +71,10 @@ class WorkspaceChangeFeatureFlagsUseCase(
         workspace = context.workspace
         feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            workspace = workspace.change_feature_flags(
-                feature_flag_controls=feature_flags_controls,
-                feature_flags=args.feature_flags,
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-            await uow.workspace_repository.save(workspace)
+        workspace = workspace.change_feature_flags(
+            feature_flag_controls=feature_flags_controls,
+            feature_flags=args.feature_flags,
+            source=EventSource.CLI,
+            modification_time=self._time_provider.get_current_time(),
+        )
+        await uow.workspace_repository.save(workspace)

@@ -4,14 +4,15 @@ from typing import Iterable
 
 from jupiter.core.domain.features import Feature
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 
 
@@ -22,7 +23,9 @@ class MetricRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-class MetricRemoveUseCase(AppLoggedInMutationUseCase[MetricRemoveArgs, None]):
+class MetricRemoveUseCase(
+    AppTransactionalLoggedInMutationUseCase[MetricRemoveArgs, None]
+):
     """The command for removing a metric."""
 
     @staticmethod
@@ -30,23 +33,17 @@ class MetricRemoveUseCase(AppLoggedInMutationUseCase[MetricRemoveArgs, None]):
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: MetricRemoveArgs,
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
+        metric = await uow.metric_repository.load_by_id(
+            args.ref_id, allow_archived=True
+        )
 
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            metric_collection = await uow.metric_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
-            metric = await uow.metric_repository.load_by_id(
-                args.ref_id, allow_archived=True
-            )
-
-        await MetricRemoveService(
-            self._domain_storage_engine,
-        ).execute(progress_reporter, workspace, metric_collection, metric)
+        await MetricRemoveService().execute(uow, progress_reporter, workspace, metric)

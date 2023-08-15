@@ -6,14 +6,15 @@ from jupiter.core.domain.features import Feature
 from jupiter.core.domain.smart_lists.service.remove_service import (
     SmartListRemoveService,
 )
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     ProgressReporter,
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 
 
@@ -24,7 +25,9 @@ class SmartListRemoveArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-class SmartListRemoveUseCase(AppLoggedInMutationUseCase[SmartListRemoveArgs, None]):
+class SmartListRemoveUseCase(
+    AppTransactionalLoggedInMutationUseCase[SmartListRemoveArgs, None]
+):
     """The command for removing a smart list."""
 
     @staticmethod
@@ -32,31 +35,21 @@ class SmartListRemoveUseCase(AppLoggedInMutationUseCase[SmartListRemoveArgs, Non
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListRemoveArgs,
     ) -> None:
         """Execute the command's action."""
-        workspace = context.workspace
-
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = (
-                await uow.smart_list_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
-            )
-
-            smart_list = await uow.smart_list_repository.load_by_id(
-                args.ref_id, allow_archived=True
-            )
-
-        smart_list_remove_service = SmartListRemoveService(
-            self._domain_storage_engine,
+        smart_list = await uow.smart_list_repository.load_by_id(
+            args.ref_id, allow_archived=True
         )
+
+        smart_list_remove_service = SmartListRemoveService()
         await smart_list_remove_service.execute(
+            uow,
             progress_reporter,
-            smart_list_collection,
             smart_list,
         )

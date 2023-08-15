@@ -6,14 +6,15 @@ from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -44,7 +45,9 @@ class ChoreFindResult(UseCaseResultBase):
     entries: List[ChoreFindResultEntry]
 
 
-class ChoreFindUseCase(AppLoggedInReadonlyUseCase[ChoreFindArgs, ChoreFindResult]):
+class ChoreFindUseCase(
+    AppTransactionalLoggedInReadOnlyUseCase[ChoreFindArgs, ChoreFindResult]
+):
     """The command for finding a chore."""
 
     @staticmethod
@@ -52,8 +55,9 @@ class ChoreFindUseCase(AppLoggedInReadonlyUseCase[ChoreFindArgs, ChoreFindResult
         """The feature the use case is scope to."""
         return Feature.CHORES
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: ChoreFindArgs,
     ) -> ChoreFindResult:
@@ -66,44 +70,43 @@ class ChoreFindUseCase(AppLoggedInReadonlyUseCase[ChoreFindArgs, ChoreFindResult
         ):
             raise FeatureUnavailableError(Feature.PROJECTS)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.project_collection_repository.load_by_parent(
+        project_collection = await uow.project_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
+
+        if args.include_project:
+            projects = await uow.project_repository.find_all_with_filters(
+                parent_ref_id=project_collection.ref_id,
+                filter_ref_ids=args.filter_project_ref_ids,
+            )
+            project_by_ref_id = {p.ref_id: p for p in projects}
+        else:
+            project_by_ref_id = None
+
+        inbox_task_collection = (
+            await uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
+        )
+        chore_collection = await uow.chore_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
 
-            if args.include_project:
-                projects = await uow.project_repository.find_all_with_filters(
-                    parent_ref_id=project_collection.ref_id,
-                    filter_ref_ids=args.filter_project_ref_ids,
-                )
-                project_by_ref_id = {p.ref_id: p for p in projects}
-            else:
-                project_by_ref_id = None
+        chores = await uow.chore_repository.find_all_with_filters(
+            parent_ref_id=chore_collection.ref_id,
+            allow_archived=args.allow_archived,
+            filter_ref_ids=args.filter_ref_ids,
+            filter_project_ref_ids=args.filter_project_ref_ids,
+        )
 
-            inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+        if args.include_inbox_tasks:
+            inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                filter_chore_ref_ids=(bp.ref_id for bp in chores),
             )
-            chore_collection = await uow.chore_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
-
-            chores = await uow.chore_repository.find_all_with_filters(
-                parent_ref_id=chore_collection.ref_id,
-                allow_archived=args.allow_archived,
-                filter_ref_ids=args.filter_ref_ids,
-                filter_project_ref_ids=args.filter_project_ref_ids,
-            )
-
-            if args.include_inbox_tasks:
-                inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
-                    parent_ref_id=inbox_task_collection.ref_id,
-                    allow_archived=True,
-                    filter_chore_ref_ids=(bp.ref_id for bp in chores),
-                )
-            else:
-                inbox_tasks = None
+        else:
+            inbox_tasks = None
 
         return ChoreFindResult(
             entries=[

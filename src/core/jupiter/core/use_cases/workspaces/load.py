@@ -2,14 +2,15 @@
 from dataclasses import dataclass
 
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -27,19 +28,19 @@ class WorkspaceLoadResult(UseCaseResultBase):
 
 
 class WorkspaceLoadUseCase(
-    AppLoggedInReadonlyUseCase[WorkspaceLoadArgs, WorkspaceLoadResult]
+    AppTransactionalLoggedInReadOnlyUseCase[WorkspaceLoadArgs, WorkspaceLoadResult]
 ):
     """The command for loading workspaces."""
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: WorkspaceLoadArgs,
     ) -> WorkspaceLoadResult:
         """Execute the command's action."""
         workspace = context.workspace
-        async with self._storage_engine.get_unit_of_work() as uow:
-            default_project = await uow.project_repository.load_by_id(
-                workspace.default_project_ref_id,
-            )
+        default_project = await uow.project_repository.load_by_id(
+            workspace.default_project_ref_id,
+        )
         return WorkspaceLoadResult(workspace=workspace, default_project=default_project)

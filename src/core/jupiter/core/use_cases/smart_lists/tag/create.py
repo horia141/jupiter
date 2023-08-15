@@ -5,6 +5,7 @@ from typing import Iterable
 from jupiter.core.domain.features import Feature
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -13,8 +14,8 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 
 
@@ -34,7 +35,9 @@ class SmartListTagCreateResult(UseCaseResultBase):
 
 
 class SmartListTagCreateUseCase(
-    AppLoggedInMutationUseCase[SmartListTagCreateArgs, SmartListTagCreateResult],
+    AppTransactionalLoggedInMutationUseCase[
+        SmartListTagCreateArgs, SmartListTagCreateResult
+    ],
 ):
     """The command for creating a smart list tag."""
 
@@ -43,26 +46,26 @@ class SmartListTagCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListTagCreateArgs,
     ) -> SmartListTagCreateResult:
         """Execute the command's action."""
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            metric = await uow.smart_list_repository.load_by_id(
-                args.smart_list_ref_id,
-            )
-            new_smart_list_tag = SmartListTag.new_smart_list_tag(
-                smart_list_ref_id=metric.ref_id,
-                tag_name=args.tag_name,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
-            new_smart_list_tag = await uow.smart_list_tag_repository.create(
-                new_smart_list_tag,
-            )
-            await progress_reporter.mark_created(new_smart_list_tag)
+        metric = await uow.smart_list_repository.load_by_id(
+            args.smart_list_ref_id,
+        )
+        new_smart_list_tag = SmartListTag.new_smart_list_tag(
+            smart_list_ref_id=metric.ref_id,
+            tag_name=args.tag_name,
+            source=EventSource.CLI,
+            created_time=self._time_provider.get_current_time(),
+        )
+        new_smart_list_tag = await uow.smart_list_tag_repository.create(
+            new_smart_list_tag,
+        )
+        await progress_reporter.mark_created(new_smart_list_tag)
 
         return SmartListTagCreateResult(new_smart_list_tag=new_smart_list_tag)

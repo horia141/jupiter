@@ -6,14 +6,15 @@ from jupiter.core.domain.features import Feature, FeatureUnavailableError
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -44,7 +45,9 @@ class HabitFindResult(UseCaseResultBase):
     entries: List[HabitFindResultEntry]
 
 
-class HabitFindUseCase(AppLoggedInReadonlyUseCase[HabitFindArgs, HabitFindResult]):
+class HabitFindUseCase(
+    AppTransactionalLoggedInReadOnlyUseCase[HabitFindArgs, HabitFindResult]
+):
     """The command for finding a habit."""
 
     @staticmethod
@@ -52,8 +55,9 @@ class HabitFindUseCase(AppLoggedInReadonlyUseCase[HabitFindArgs, HabitFindResult
         """The feature the use case is scope to."""
         return Feature.HABITS
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: HabitFindArgs,
     ) -> HabitFindResult:
@@ -66,44 +70,43 @@ class HabitFindUseCase(AppLoggedInReadonlyUseCase[HabitFindArgs, HabitFindResult
         ):
             raise FeatureUnavailableError(Feature.PROJECTS)
 
-        async with self._storage_engine.get_unit_of_work() as uow:
-            project_collection = await uow.project_collection_repository.load_by_parent(
+        project_collection = await uow.project_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
+
+        if args.include_project:
+            projects = await uow.project_repository.find_all_with_filters(
+                parent_ref_id=project_collection.ref_id,
+                filter_ref_ids=args.filter_project_ref_ids,
+            )
+            project_by_ref_id = {p.ref_id: p for p in projects}
+        else:
+            project_by_ref_id = None
+
+        inbox_task_collection = (
+            await uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id,
             )
+        )
+        habit_collection = await uow.habit_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
 
-            if args.include_project:
-                projects = await uow.project_repository.find_all_with_filters(
-                    parent_ref_id=project_collection.ref_id,
-                    filter_ref_ids=args.filter_project_ref_ids,
-                )
-                project_by_ref_id = {p.ref_id: p for p in projects}
-            else:
-                project_by_ref_id = None
+        habits = await uow.habit_repository.find_all_with_filters(
+            parent_ref_id=habit_collection.ref_id,
+            allow_archived=args.allow_archived,
+            filter_ref_ids=args.filter_ref_ids,
+            filter_project_ref_ids=args.filter_project_ref_ids,
+        )
 
-            inbox_task_collection = (
-                await uow.inbox_task_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+        if args.include_inbox_tasks:
+            inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
+                parent_ref_id=inbox_task_collection.ref_id,
+                allow_archived=True,
+                filter_habit_ref_ids=(bp.ref_id for bp in habits),
             )
-            habit_collection = await uow.habit_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
-
-            habits = await uow.habit_repository.find_all_with_filters(
-                parent_ref_id=habit_collection.ref_id,
-                allow_archived=args.allow_archived,
-                filter_ref_ids=args.filter_ref_ids,
-                filter_project_ref_ids=args.filter_project_ref_ids,
-            )
-
-            if args.include_inbox_tasks:
-                inbox_tasks = await uow.inbox_task_repository.find_all_with_filters(
-                    parent_ref_id=inbox_task_collection.ref_id,
-                    allow_archived=True,
-                    filter_habit_ref_ids=(bp.ref_id for bp in habits),
-                )
-            else:
-                inbox_tasks = None
+        else:
+            inbox_tasks = None
 
         return HabitFindResult(
             entries=[

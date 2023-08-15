@@ -6,6 +6,7 @@ from jupiter.core.domain.entity_icon import EntityIcon
 from jupiter.core.domain.features import Feature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
     ProgressReporter,
@@ -13,8 +14,8 @@ from jupiter.core.framework.use_case import (
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 
 
@@ -34,7 +35,7 @@ class SmartListCreateResult(UseCaseResultBase):
 
 
 class SmartListCreateUseCase(
-    AppLoggedInMutationUseCase[SmartListCreateArgs, SmartListCreateResult]
+    AppTransactionalLoggedInMutationUseCase[SmartListCreateArgs, SmartListCreateResult]
 ):
     """The command for creating a smart list."""
 
@@ -43,8 +44,9 @@ class SmartListCreateUseCase(
         """The feature the use case is scope to."""
         return Feature.SMART_LISTS
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: SmartListCreateArgs,
@@ -52,22 +54,21 @@ class SmartListCreateUseCase(
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            smart_list_collection = (
-                await uow.smart_list_collection_repository.load_by_parent(
-                    workspace.ref_id,
-                )
+        smart_list_collection = (
+            await uow.smart_list_collection_repository.load_by_parent(
+                workspace.ref_id,
             )
+        )
 
-            new_smart_list = SmartList.new_smart_list(
-                smart_list_collection_ref_id=smart_list_collection.ref_id,
-                name=args.name,
-                icon=args.icon,
-                source=EventSource.CLI,
-                created_time=self._time_provider.get_current_time(),
-            )
+        new_smart_list = SmartList.new_smart_list(
+            smart_list_collection_ref_id=smart_list_collection.ref_id,
+            name=args.name,
+            icon=args.icon,
+            source=EventSource.CLI,
+            created_time=self._time_provider.get_current_time(),
+        )
 
-            new_smart_list = await uow.smart_list_repository.create(new_smart_list)
-            await progress_reporter.mark_created(new_smart_list)
+        new_smart_list = await uow.smart_list_repository.create(new_smart_list)
+        await progress_reporter.mark_created(new_smart_list)
 
         return SmartListCreateResult(new_smart_list=new_smart_list)

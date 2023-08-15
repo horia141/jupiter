@@ -4,14 +4,15 @@ from typing import Iterable
 
 from jupiter.core.domain.features import Feature
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -31,7 +32,7 @@ class MetricEntryLoadResult(UseCaseResultBase):
 
 
 class MetricEntryLoadUseCase(
-    AppLoggedInReadonlyUseCase[MetricEntryLoadArgs, MetricEntryLoadResult]
+    AppTransactionalLoggedInReadOnlyUseCase[MetricEntryLoadArgs, MetricEntryLoadResult]
 ):
     """Use case for loading a metric entry."""
 
@@ -40,15 +41,15 @@ class MetricEntryLoadUseCase(
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: MetricEntryLoadArgs,
     ) -> MetricEntryLoadResult:
         """Execute the command's action."""
-        async with self._storage_engine.get_unit_of_work() as uow:
-            metric_entry = await uow.metric_entry_repository.load_by_id(
-                args.ref_id, allow_archived=args.allow_archived
-            )
+        metric_entry = await uow.metric_entry_repository.load_by_id(
+            args.ref_id, allow_archived=args.allow_archived
+        )
 
         return MetricEntryLoadResult(metric_entry=metric_entry)

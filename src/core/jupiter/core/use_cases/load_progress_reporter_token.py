@@ -2,14 +2,15 @@
 from dataclasses import dataclass
 
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.secure import secure_class
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -27,14 +28,15 @@ class LoadProgressReporterTokenResult(UseCaseResultBase):
 
 @secure_class
 class LoadProgressReporterTokenUseCase(
-    AppLoggedInReadonlyUseCase[
+    AppTransactionalLoggedInReadOnlyUseCase[
         LoadProgressReporterTokenArgs, LoadProgressReporterTokenResult
     ]
 ):
     """The use case for retrieving summaries about entities."""
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: LoadProgressReporterTokenArgs,
     ) -> LoadProgressReporterTokenResult:

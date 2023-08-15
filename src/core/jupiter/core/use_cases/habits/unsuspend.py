@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from jupiter.core.domain.features import Feature
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import (
@@ -10,8 +11,8 @@ from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInMutationUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
 )
 
 
@@ -22,7 +23,9 @@ class HabitUnsuspendArgs(UseCaseArgsBase):
     ref_id: EntityId
 
 
-class HabitUnsuspendUseCase(AppLoggedInMutationUseCase[HabitUnsuspendArgs, None]):
+class HabitUnsuspendUseCase(
+    AppTransactionalLoggedInMutationUseCase[HabitUnsuspendArgs, None]
+):
     """The command for unsuspending a habit."""
 
     @staticmethod
@@ -30,18 +33,18 @@ class HabitUnsuspendUseCase(AppLoggedInMutationUseCase[HabitUnsuspendArgs, None]
         """The feature the use case is scope to."""
         return Feature.HABITS
 
-    async def _perform_mutation(
+    async def _perform_transactional_mutation(
         self,
+        uow: DomainUnitOfWork,
         progress_reporter: ProgressReporter,
         context: AppLoggedInUseCaseContext,
         args: HabitUnsuspendArgs,
     ) -> None:
         """Execute the command's action."""
-        async with self._domain_storage_engine.get_unit_of_work() as uow:
-            habit = await uow.habit_repository.load_by_id(args.ref_id)
-            habit = habit.unsuspend(
-                source=EventSource.CLI,
-                modification_time=self._time_provider.get_current_time(),
-            )
-            await uow.habit_repository.save(habit)
-            await progress_reporter.mark_updated(habit)
+        habit = await uow.habit_repository.load_by_id(args.ref_id)
+        habit = habit.unsuspend(
+            source=EventSource.CLI,
+            modification_time=self._time_provider.get_current_time(),
+        )
+        await uow.habit_repository.save(habit)
+        await progress_reporter.mark_updated(habit)

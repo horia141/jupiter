@@ -4,13 +4,14 @@ from typing import Iterable
 
 from jupiter.core.domain.features import Feature
 from jupiter.core.domain.projects.project import Project
+from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
     UseCaseResultBase,
 )
 from jupiter.core.use_cases.infra.use_cases import (
-    AppLoggedInReadonlyUseCase,
     AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInReadOnlyUseCase,
 )
 
 
@@ -27,7 +28,9 @@ class MetricLoadSettingsResult(UseCaseResultBase):
 
 
 class MetricLoadSettingsUseCase(
-    AppLoggedInReadonlyUseCase[MetricLoadSettingsArgs, MetricLoadSettingsResult],
+    AppTransactionalLoggedInReadOnlyUseCase[
+        MetricLoadSettingsArgs, MetricLoadSettingsResult
+    ],
 ):
     """The command for loading the settings around metrics."""
 
@@ -36,20 +39,20 @@ class MetricLoadSettingsUseCase(
         """The feature the use case is scope to."""
         return Feature.METRICS
 
-    async def _execute(
+    async def _perform_transactional_read(
         self,
+        uow: DomainUnitOfWork,
         context: AppLoggedInUseCaseContext,
         args: MetricLoadSettingsArgs,
     ) -> MetricLoadSettingsResult:
         """Execute the command's action."""
         workspace = context.workspace
 
-        async with self._storage_engine.get_unit_of_work() as uow:
-            metric_collection = await uow.metric_collection_repository.load_by_parent(
-                workspace.ref_id,
-            )
-            collection_project = await uow.project_repository.load_by_id(
-                metric_collection.collection_project_ref_id,
-            )
+        metric_collection = await uow.metric_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
+        collection_project = await uow.project_repository.load_by_id(
+            metric_collection.collection_project_ref_id,
+        )
 
         return MetricLoadSettingsResult(collection_project=collection_project)

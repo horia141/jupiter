@@ -11,7 +11,11 @@ from jupiter.core.domain.auth.auth_token import (
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import Feature, FeatureUnavailableError
-from jupiter.core.domain.storage_engine import DomainStorageEngine, SearchStorageEngine
+from jupiter.core.domain.storage_engine import (
+    DomainStorageEngine,
+    DomainUnitOfWork,
+    SearchStorageEngine,
+)
 from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.framework import use_case
@@ -258,6 +262,36 @@ class AppLoggedInMutationUseCase(
         """Execute the command's action."""
 
 
+class AppTransactionalLoggedInMutationUseCase(
+    Generic[UseCaseArgs, UseCaseResult],
+    AppLoggedInMutationUseCase[UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
+    """A command which does some sort of mutation for the app transactionally, and assumes a logged-in user."""
+
+    async def _perform_mutation(
+        self,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInUseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
+        async with self._domain_storage_engine.get_unit_of_work() as uow:
+            return await self._perform_transactional_mutation(
+                uow, progress_reporter, context, args
+            )
+
+    @abc.abstractmethod
+    async def _perform_transactional_mutation(
+        self,
+        uow: DomainUnitOfWork,
+        progress_reporter: ProgressReporter,
+        context: AppLoggedInUseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
+
+
 class AppLoggedInReadonlyUseCase(
     Generic[UseCaseArgs, UseCaseResult],
     ReadonlyUseCase[
@@ -265,7 +299,7 @@ class AppLoggedInReadonlyUseCase(
     ],
     abc.ABC,
 ):
-    """A command which does some sort of mutation for the app, and assumes a logged-in user."""
+    """A command which does some sort of read in the app, and assumes a logged-in user."""
 
     _auth_token_stamper: Final[AuthTokenStamper]
     _storage_engine: Final[DomainStorageEngine]
@@ -311,6 +345,32 @@ class AppLoggedInReadonlyUseCase(
                             raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
+
+
+class AppTransactionalLoggedInReadOnlyUseCase(
+    Generic[UseCaseArgs, UseCaseResult],
+    AppLoggedInReadonlyUseCase[UseCaseArgs, UseCaseResult],
+    abc.ABC,
+):
+    """A command which does some sort of transactional read in the app, and assumes a logged-in user."""
+
+    async def _execute(
+        self,
+        context: AppLoggedInUseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
+        async with self._storage_engine.get_unit_of_work() as uow:
+            return await self._perform_transactional_read(uow, context, args)
+
+    @abc.abstractmethod
+    async def _perform_transactional_read(
+        self,
+        uow: DomainUnitOfWork,
+        context: AppLoggedInUseCaseContext,
+        args: UseCaseArgs,
+    ) -> UseCaseResult:
+        """Execute the command's action."""
 
 
 class AppTestHelperUseCase(
