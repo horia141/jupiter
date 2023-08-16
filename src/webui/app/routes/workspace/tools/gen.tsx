@@ -380,6 +380,7 @@ export default function Gen() {
                   disablePortal
                   id="filter_person_ref_ids"
                   options={personOptions}
+                  disabled={!inputsEnabled}
                   readOnly={!inputsEnabled}
                   multiple
                   onChange={(e, vol) => setSelectedPersons(vol)}
