@@ -518,21 +518,6 @@ auth_reset_password_use_case = ResetPasswordUseCase(
     storage_engine=domain_storage_engine,
 )
 
-load_top_level_info_use_case = LoadTopLevelInfoUseCase(
-    auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
-    global_properties=global_properties,
-)
-
-load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-
-get_summaries_use_case = GetSummariesUseCase(
-    auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
-)
-
 search_use_case = SearchUseCase(
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
@@ -548,6 +533,11 @@ gen_use_case = GenUseCase(
     search_storage_engine=search_storage_engine,
 )
 
+report_use_case = ReportUseCase(
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
+)
+
 gc_use_case = GCUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
@@ -555,6 +545,21 @@ gc_use_case = GCUseCase(
     auth_token_stamper=auth_token_stamper,
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
+)
+
+load_top_level_info_use_case = LoadTopLevelInfoUseCase(
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
+    global_properties=global_properties,
+)
+
+load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+get_summaries_use_case = GetSummariesUseCase(
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
 )
 
 user_update_use_case = UserUpdateUseCase(
@@ -599,12 +604,7 @@ workspace_load_use_case = WorkspaceLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-report_use_case = ReportUseCase(
-    auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
-)
-
-big_plan_create_use_case = BigPlanCreateUseCase(
+inbox_task_create_use_case = InboxTaskCreateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -612,7 +612,7 @@ big_plan_create_use_case = BigPlanCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-big_plan_archive_use_case = BigPlanArchiveUseCase(
+inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -620,7 +620,7 @@ big_plan_archive_use_case = BigPlanArchiveUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-big_plan_update_use_case = BigPlanUpdateUseCase(
+inbox_task_update_use_case = InboxTaskUpdateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -628,7 +628,7 @@ big_plan_update_use_case = BigPlanUpdateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
+inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -636,65 +636,18 @@ big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-big_plan_load_use_case = BigPlanLoadUseCase(
+inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+inbox_task_load_use_case = InboxTaskLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
-big_plan_find_use_case = BigPlanFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-
-chore_create_use_case = ChoreCreateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-chore_archive_use_case = ChoreArchiveUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-chore_update_use_case = ChoreUpdateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-chore_change_project_use_case = ChoreChangeProjectUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-chore_suspend_use_case = ChoreSuspendUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-chore_unsuspend_use_case = ChoreUnsuspendUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-chore_load_use_case = ChoreLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-chore_find_use_case = ChoreFindUseCase(
+inbox_task_find_use_case = InboxTaskFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
@@ -753,7 +706,7 @@ habit_find_use_case = HabitFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-inbox_task_create_use_case = InboxTaskCreateUseCase(
+chore_create_use_case = ChoreCreateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -761,7 +714,7 @@ inbox_task_create_use_case = InboxTaskCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_archive_use_case = InboxTaskArchiveUseCase(
+chore_archive_use_case = ChoreArchiveUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -769,7 +722,7 @@ inbox_task_archive_use_case = InboxTaskArchiveUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_update_use_case = InboxTaskUpdateUseCase(
+chore_update_use_case = ChoreUpdateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -777,7 +730,7 @@ inbox_task_update_use_case = InboxTaskUpdateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
+chore_change_project_use_case = ChoreChangeProjectUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -785,7 +738,7 @@ inbox_task_change_project_use_case = InboxTaskChangeProjectUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
+chore_suspend_use_case = ChoreSuspendUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -793,14 +746,22 @@ inbox_task_associate_with_big_plan = InboxTaskAssociateWithBigPlanUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-inbox_task_load_use_case = InboxTaskLoadUseCase(
+chore_unsuspend_use_case = ChoreUnsuspendUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+chore_load_use_case = ChoreLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
-inbox_task_find_use_case = InboxTaskFindUseCase(
+chore_find_use_case = ChoreFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-metric_entry_create_use_case = MetricEntryCreateUseCase(
+big_plan_create_use_case = BigPlanCreateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -808,7 +769,7 @@ metric_entry_create_use_case = MetricEntryCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-metric_entry_update_use_case = MetricEntryUpdateUseCase(
+big_plan_archive_use_case = BigPlanArchiveUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -816,7 +777,7 @@ metric_entry_update_use_case = MetricEntryUpdateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-metric_entry_archive_use_case = MetricEntryArchiveUseCase(
+big_plan_update_use_case = BigPlanUpdateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -824,9 +785,168 @@ metric_entry_archive_use_case = MetricEntryArchiveUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-metric_entry_load_use_case = MetricEntryLoadUseCase(
+big_plan_change_project_use_case = BigPlanChangeProjectUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+big_plan_load_use_case = BigPlanLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
+big_plan_find_use_case = BigPlanFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+vacation_create_use_case = VacationCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+vacation_archive_use_case = VacationArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+vacation_update_use_case = VacationUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+vacation_load_use_case = VacationLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+vacation_find_use_case = VacationFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+project_create_use_case = ProjectCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+project_archive_use_case = ProjectArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+project_update_use_case = ProjectUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+project_load_use_case = ProjectLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+project_find_use_case = ProjectFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+smart_list_create_use_case = SmartListCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_archive_use_case = SmartListArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_update_use_case = SmartListUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_load_use_case = SmartListLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+smart_list_find_use_case = SmartListFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+smart_list_tag_create_use_case = SmartListTagCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_tag_load_use_case = SmartListTagLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_item_create_use_case = SmartListItemCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_item_update_use_case = SmartListItemUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+smart_list_item_load_use_case = SmartListItemLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
 
 metric_create_use_case = MetricCreateUseCase(
     time_provider=time_provider,
@@ -868,6 +988,33 @@ metric_load_use_case = MetricLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 metric_find_use_case = MetricFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+metric_entry_create_use_case = MetricEntryCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+metric_entry_update_use_case = MetricEntryUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+metric_entry_archive_use_case = MetricEntryArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+metric_entry_load_use_case = MetricEntryLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
@@ -914,72 +1061,6 @@ person_find_use_case = PersonFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-project_create_use_case = ProjectCreateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-project_archive_use_case = ProjectArchiveUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-project_update_use_case = ProjectUpdateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-project_load_use_case = ProjectLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-project_find_use_case = ProjectFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-
-email_task_archive_use_case = EmailTaskArchiveUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-email_task_update_use_case = EmailTaskUpdateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
-    auth_token_stamper=auth_token_stamper,
-    storage_engine=domain_storage_engine,
-)
-email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-email_task_load_use_case = EmailTaskLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-email_task_find_use_case = EmailTaskFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-
 slack_task_archive_use_case = SlackTaskArchiveUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
@@ -1015,7 +1096,7 @@ slack_task_find_use_case = SlackTaskFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
-smart_list_item_create_use_case = SmartListItemCreateUseCase(
+email_task_archive_use_case = EmailTaskArchiveUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -1023,7 +1104,7 @@ smart_list_item_create_use_case = SmartListItemCreateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
+email_task_update_use_case = EmailTaskUpdateUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -1031,7 +1112,11 @@ smart_list_item_archive_use_case = SmartListItemArchiveUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-smart_list_item_update_use_case = SmartListItemUpdateUseCase(
+email_task_load_settings_use_case = EmailTaskLoadSettingsUseCase(
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
+)
+email_task_change_generation_project_use_case = EmailTaskChangeGenerationProjectUseCase(
     time_provider=time_provider,
     invocation_recorder=invocation_recorder,
     progress_reporter_factory=progress_reporter_factory,
@@ -1039,95 +1124,10 @@ smart_list_item_update_use_case = SmartListItemUpdateUseCase(
     domain_storage_engine=domain_storage_engine,
     search_storage_engine=search_storage_engine,
 )
-smart_list_item_load_use_case = SmartListItemLoadUseCase(
+email_task_load_use_case = EmailTaskLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
-smart_list_tag_create_use_case = SmartListTagCreateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-smart_list_tag_archive_use_case = SmartListTagArchiveUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-smart_list_tag_load_use_case = SmartListTagLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-smart_list_tag_update_use_case = SmartListTagUpdateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-smart_list_create_use_case = SmartListCreateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-smart_list_archive_use_case = SmartListArchiveUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-smart_list_update_use_case = SmartListUpdateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-smart_list_load_use_case = SmartListLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-smart_list_find_use_case = SmartListFindUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-
-vacation_create_use_case = VacationCreateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-vacation_archive_use_case = VacationArchiveUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-vacation_update_use_case = VacationUpdateUseCase(
-    time_provider=time_provider,
-    invocation_recorder=invocation_recorder,
-    progress_reporter_factory=progress_reporter_factory,
-    auth_token_stamper=auth_token_stamper,
-    domain_storage_engine=domain_storage_engine,
-    search_storage_engine=search_storage_engine,
-)
-vacation_load_use_case = VacationLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
-)
-vacation_find_use_case = VacationFindUseCase(
+email_task_find_use_case = EmailTaskFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
@@ -1495,6 +1495,40 @@ async def reset_password(
 
 
 @app.post(
+    "/search",
+    response_model=SearchResult,
+    tags=["search"],
+    responses=standard_responses,
+)
+async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
+    """Search entities."""
+    return await search_use_case.execute(session, args)
+
+
+@app.post("/gen", response_model=None, tags=["gen"], responses=standard_responses)
+async def gen(args: GenArgs, session: LoggedInSession) -> None:
+    """Generate inbox tasks."""
+    await gen_use_case.execute(session, args)
+
+
+@app.post(
+    "/report",
+    response_model=ReportResult,
+    tags=["report"],
+    responses=standard_responses,
+)
+async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
+    """Report."""
+    return await report_use_case.execute(session, args)
+
+
+@app.post("/gc", response_model=None, tags=["gc"], responses=standard_responses)
+async def garbage_collect(args: GCArgs, session: LoggedInSession) -> None:
+    """Garbage collect."""
+    await gc_use_case.execute(session, args)
+
+
+@app.post(
     "/load-top-level-info",
     response_model=LoadTopLevelInfoResult,
     tags=["load-top-level-info"],
@@ -1531,40 +1565,6 @@ async def get_summaries(
 ) -> GetSummariesResult:
     """Get summaries about entities."""
     return await get_summaries_use_case.execute(session, args)
-
-
-@app.post(
-    "/search",
-    response_model=SearchResult,
-    tags=["search"],
-    responses=standard_responses,
-)
-async def search(args: SearchArgs, session: LoggedInSession) -> SearchResult:
-    """Search entities."""
-    return await search_use_case.execute(session, args)
-
-
-@app.post("/gen", response_model=None, tags=["gen"], responses=standard_responses)
-async def gen(args: GenArgs, session: LoggedInSession) -> None:
-    """Generate inbox tasks."""
-    await gen_use_case.execute(session, args)
-
-
-@app.post("/gc", response_model=None, tags=["gc"], responses=standard_responses)
-async def garbage_collect(args: GCArgs, session: LoggedInSession) -> None:
-    """Garbage collect."""
-    await gc_use_case.execute(session, args)
-
-
-@app.post(
-    "/report",
-    response_model=ReportResult,
-    tags=["report"],
-    responses=standard_responses,
-)
-async def report(args: ReportArgs, session: LoggedInSession) -> ReportResult:
-    """Report."""
-    return await report_use_case.execute(session, args)
 
 
 @app.post(
@@ -1640,169 +1640,94 @@ async def load_workspace(
 
 
 @app.post(
-    "/big-plan/create",
-    response_model=BigPlanCreateResult,
-    tags=["big-plan"],
+    "/inbox-task/create",
+    response_model=InboxTaskCreateResult,
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def create_big_plan(
-    args: BigPlanCreateArgs, session: LoggedInSession
-) -> BigPlanCreateResult:
-    """Create a big plan."""
-    return await big_plan_create_use_case.execute(session, args)
+async def create_inbox_task(
+    args: InboxTaskCreateArgs, session: LoggedInSession
+) -> InboxTaskCreateResult:
+    """Create a inbox task."""
+    return await inbox_task_create_use_case.execute(session, args)
 
 
 @app.post(
-    "/big-plan/archive",
+    "/inbox-task/archive",
     response_model=None,
-    tags=["big-plan"],
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a big plan."""
-    await big_plan_archive_use_case.execute(session, args)
-
-
-@app.post(
-    "/big-plan/update",
-    response_model=None,
-    tags=["big-plan"],
-    responses=standard_responses,
-)
-async def update_big_plan(args: BigPlanUpdateArgs, session: LoggedInSession) -> None:
-    """Update a big plan."""
-    await big_plan_update_use_case.execute(session, args)
-
-
-@app.post(
-    "/big-plan/change-project",
-    response_model=None,
-    tags=["big-plan"],
-    responses=standard_responses,
-)
-async def change_big_plan_project(
-    args: BigPlanChangeProjectArgs, session: LoggedInSession
+async def archive_inbox_task(
+    args: InboxTaskArchiveArgs, session: LoggedInSession
 ) -> None:
-    """Change the project for a big plan."""
-    await big_plan_change_project_use_case.execute(session, args)
+    """Archive a inbox task."""
+    await inbox_task_archive_use_case.execute(session, args)
 
 
 @app.post(
-    "/big-plan/load",
-    response_model=BigPlanLoadResult,
-    tags=["big-plan"],
-    responses=standard_responses,
-)
-async def load_big_plan(
-    args: BigPlanLoadArgs, session: LoggedInSession
-) -> BigPlanLoadResult:
-    """Load a big plan."""
-    return await big_plan_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/big-plan/find",
-    response_model=BigPlanFindResult,
-    tags=["big-plan"],
-    responses=standard_responses,
-)
-async def find_big_plan(
-    args: BigPlanFindArgs, session: LoggedInSession
-) -> BigPlanFindResult:
-    """Find all big plans, filtering by id."""
-    return await big_plan_find_use_case.execute(session, args)
-
-
-@app.post(
-    "/chore/create",
-    response_model=ChoreCreateResult,
-    tags=["chore"],
-    responses=standard_responses,
-)
-async def create_chore(
-    args: ChoreCreateArgs, session: LoggedInSession
-) -> ChoreCreateResult:
-    """Create a chore."""
-    return await chore_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/chore/archive",
+    "/inbox-task/update",
     response_model=None,
-    tags=["chore"],
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a chore."""
-    await chore_archive_use_case.execute(session, args)
-
-
-@app.post(
-    "/chore/update",
-    response_model=None,
-    tags=["chore"],
-    responses=standard_responses,
-)
-async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
-    """Update a chore."""
-    await chore_update_use_case.execute(session, args)
-
-
-@app.post(
-    "/chore/change-project",
-    response_model=None,
-    tags=["chore"],
-    responses=standard_responses,
-)
-async def change_chore_project(
-    args: ChoreChangeProjectArgs, session: LoggedInSession
+async def update_inbox_task(
+    args: InboxTaskUpdateArgs, session: LoggedInSession
 ) -> None:
-    """Change the project for a chore."""
-    await chore_change_project_use_case.execute(session, args)
+    """Update a inbox task."""
+    await inbox_task_update_use_case.execute(session, args)
 
 
 @app.post(
-    "/chore/suspend",
+    "/inbox-task/change-project",
     response_model=None,
-    tags=["chore"],
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
-    """Suspend a chore."""
-    await chore_suspend_use_case.execute(session, args)
+async def change_inbox_task_project(
+    args: InboxTaskChangeProjectArgs, session: LoggedInSession
+) -> None:
+    """Change the project for a inbox task."""
+    await inbox_task_change_project_use_case.execute(session, args)
 
 
 @app.post(
-    "/chore/unsuspend",
+    "/inbox-task/associate-with-big-plan",
     response_model=None,
-    tags=["chore"],
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
-    """Unsuspend a chore."""
-    await chore_unsuspend_use_case.execute(session, args)
+async def associate_inbox_task_with_big_plan(
+    args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
+) -> None:
+    """Change the inbox task for a project."""
+    await inbox_task_associate_with_big_plan.execute(session, args)
 
 
 @app.post(
-    "/chore/load",
-    response_model=ChoreLoadResult,
-    tags=["chore"],
+    "/inbox-task/load",
+    response_model=InboxTaskLoadResult,
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
-    """Load a chore."""
-    return await chore_load_use_case.execute(session, args)
+async def load_inbox_task(
+    args: InboxTaskLoadArgs, session: LoggedInSession
+) -> InboxTaskLoadResult:
+    """Load a inbox task."""
+    return await inbox_task_load_use_case.execute(session, args)
 
 
 @app.post(
-    "/chore/find",
-    response_model=ChoreFindResult,
-    tags=["chore"],
+    "/inbox-task/find",
+    response_model=InboxTaskFindResult,
+    tags=["inbox-task"],
     responses=standard_responses,
 )
-async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
-    """Find all chores, filtering by id.."""
-    return await chore_find_use_case.execute(session, args)
+async def find_inbox_task(
+    args: InboxTaskFindArgs, session: LoggedInSession
+) -> InboxTaskFindResult:
+    """Find all inbox tasks, filtering by id."""
+    return await inbox_task_find_use_case.execute(session, args)
 
 
 @app.post(
@@ -1898,146 +1823,460 @@ async def find_habit(args: HabitFindArgs, session: LoggedInSession) -> HabitFind
 
 
 @app.post(
-    "/inbox-task/create",
-    response_model=InboxTaskCreateResult,
-    tags=["inbox-task"],
+    "/chore/create",
+    response_model=ChoreCreateResult,
+    tags=["chore"],
     responses=standard_responses,
 )
-async def create_inbox_task(
-    args: InboxTaskCreateArgs, session: LoggedInSession
-) -> InboxTaskCreateResult:
-    """Create a inbox task."""
-    return await inbox_task_create_use_case.execute(session, args)
+async def create_chore(
+    args: ChoreCreateArgs, session: LoggedInSession
+) -> ChoreCreateResult:
+    """Create a chore."""
+    return await chore_create_use_case.execute(session, args)
 
 
 @app.post(
-    "/inbox-task/archive",
+    "/chore/archive",
     response_model=None,
-    tags=["inbox-task"],
+    tags=["chore"],
     responses=standard_responses,
 )
-async def archive_inbox_task(
-    args: InboxTaskArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a inbox task."""
-    await inbox_task_archive_use_case.execute(session, args)
+async def archive_chore(args: ChoreArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a chore."""
+    await chore_archive_use_case.execute(session, args)
 
 
 @app.post(
-    "/inbox-task/update",
+    "/chore/update",
     response_model=None,
-    tags=["inbox-task"],
+    tags=["chore"],
     responses=standard_responses,
 )
-async def update_inbox_task(
-    args: InboxTaskUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a inbox task."""
-    await inbox_task_update_use_case.execute(session, args)
+async def update_chore(args: ChoreUpdateArgs, session: LoggedInSession) -> None:
+    """Update a chore."""
+    await chore_update_use_case.execute(session, args)
 
 
 @app.post(
-    "/inbox-task/change-project",
+    "/chore/change-project",
     response_model=None,
-    tags=["inbox-task"],
+    tags=["chore"],
     responses=standard_responses,
 )
-async def change_inbox_task_project(
-    args: InboxTaskChangeProjectArgs, session: LoggedInSession
+async def change_chore_project(
+    args: ChoreChangeProjectArgs, session: LoggedInSession
 ) -> None:
-    """Change the project for a inbox task."""
-    await inbox_task_change_project_use_case.execute(session, args)
+    """Change the project for a chore."""
+    await chore_change_project_use_case.execute(session, args)
 
 
 @app.post(
-    "/inbox-task/associate-with-big-plan",
+    "/chore/suspend",
     response_model=None,
-    tags=["inbox-task"],
+    tags=["chore"],
     responses=standard_responses,
 )
-async def associate_inbox_task_with_big_plan(
-    args: InboxTaskAssociateWithBigPlanArgs, session: LoggedInSession
-) -> None:
-    """Change the inbox task for a project."""
-    await inbox_task_associate_with_big_plan.execute(session, args)
+async def suspend_chore(args: ChoreSuspendArgs, session: LoggedInSession) -> None:
+    """Suspend a chore."""
+    await chore_suspend_use_case.execute(session, args)
 
 
 @app.post(
-    "/inbox-task/load",
-    response_model=InboxTaskLoadResult,
-    tags=["inbox-task"],
-    responses=standard_responses,
-)
-async def load_inbox_task(
-    args: InboxTaskLoadArgs, session: LoggedInSession
-) -> InboxTaskLoadResult:
-    """Load a inbox task."""
-    return await inbox_task_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/inbox-task/find",
-    response_model=InboxTaskFindResult,
-    tags=["inbox-task"],
-    responses=standard_responses,
-)
-async def find_inbox_task(
-    args: InboxTaskFindArgs, session: LoggedInSession
-) -> InboxTaskFindResult:
-    """Find all inbox tasks, filtering by id."""
-    return await inbox_task_find_use_case.execute(session, args)
-
-
-@app.post(
-    "/metric/entry/create",
-    response_model=MetricEntryCreateResult,
-    tags=["metric"],
-    responses=standard_responses,
-)
-async def create_metric_entry(
-    args: MetricEntryCreateArgs, session: LoggedInSession
-) -> MetricEntryCreateResult:
-    """Create a metric entry."""
-    return await metric_entry_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/metric/entry/archive",
+    "/chore/unsuspend",
     response_model=None,
-    tags=["metric"],
+    tags=["chore"],
     responses=standard_responses,
 )
-async def archive_metric_entry(
-    args: MetricEntryArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a metric entry."""
-    await metric_entry_archive_use_case.execute(session, args)
+async def unsuspend_chore(args: ChoreUnsuspendArgs, session: LoggedInSession) -> None:
+    """Unsuspend a chore."""
+    await chore_unsuspend_use_case.execute(session, args)
 
 
 @app.post(
-    "/metric/entry/update",
+    "/chore/load",
+    response_model=ChoreLoadResult,
+    tags=["chore"],
+    responses=standard_responses,
+)
+async def load_chore(args: ChoreLoadArgs, session: LoggedInSession) -> ChoreLoadResult:
+    """Load a chore."""
+    return await chore_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/chore/find",
+    response_model=ChoreFindResult,
+    tags=["chore"],
+    responses=standard_responses,
+)
+async def find_chore(args: ChoreFindArgs, session: LoggedInSession) -> ChoreFindResult:
+    """Find all chores, filtering by id.."""
+    return await chore_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/big-plan/create",
+    response_model=BigPlanCreateResult,
+    tags=["big-plan"],
+    responses=standard_responses,
+)
+async def create_big_plan(
+    args: BigPlanCreateArgs, session: LoggedInSession
+) -> BigPlanCreateResult:
+    """Create a big plan."""
+    return await big_plan_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/big-plan/archive",
     response_model=None,
-    tags=["metric"],
+    tags=["big-plan"],
     responses=standard_responses,
 )
-async def update_metric_entry(
-    args: MetricEntryUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a metric entry."""
-    await metric_entry_update_use_case.execute(session, args)
+async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a big plan."""
+    await big_plan_archive_use_case.execute(session, args)
 
 
 @app.post(
-    "/metric/entry/load",
-    response_model=MetricEntryLoadResult,
-    tags=["metric"],
+    "/big-plan/update",
+    response_model=None,
+    tags=["big-plan"],
     responses=standard_responses,
 )
-async def load_metric_entry(
-    args: MetricEntryLoadArgs, session: LoggedInSession
-) -> MetricEntryLoadResult:
-    """Load a metric entry."""
-    return await metric_entry_load_use_case.execute(session, args)
+async def update_big_plan(args: BigPlanUpdateArgs, session: LoggedInSession) -> None:
+    """Update a big plan."""
+    await big_plan_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/big-plan/change-project",
+    response_model=None,
+    tags=["big-plan"],
+    responses=standard_responses,
+)
+async def change_big_plan_project(
+    args: BigPlanChangeProjectArgs, session: LoggedInSession
+) -> None:
+    """Change the project for a big plan."""
+    await big_plan_change_project_use_case.execute(session, args)
+
+
+@app.post(
+    "/big-plan/load",
+    response_model=BigPlanLoadResult,
+    tags=["big-plan"],
+    responses=standard_responses,
+)
+async def load_big_plan(
+    args: BigPlanLoadArgs, session: LoggedInSession
+) -> BigPlanLoadResult:
+    """Load a big plan."""
+    return await big_plan_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/big-plan/find",
+    response_model=BigPlanFindResult,
+    tags=["big-plan"],
+    responses=standard_responses,
+)
+async def find_big_plan(
+    args: BigPlanFindArgs, session: LoggedInSession
+) -> BigPlanFindResult:
+    """Find all big plans, filtering by id."""
+    return await big_plan_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/vacation/create",
+    response_model=VacationCreateResult,
+    tags=["vacation"],
+    responses=standard_responses,
+)
+async def create_vacation(
+    args: VacationCreateArgs, session: LoggedInSession
+) -> VacationCreateResult:
+    """Create a vacation."""
+    return await vacation_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/vacation/archive",
+    response_model=None,
+    tags=["vacation"],
+    responses=standard_responses,
+)
+async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a vacation."""
+    await vacation_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/vacation/update",
+    response_model=None,
+    tags=["vacation"],
+    responses=standard_responses,
+)
+async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
+    """Update a vacation."""
+    await vacation_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/vacation/load",
+    response_model=VacationLoadResult,
+    tags=["vacation"],
+    responses=standard_responses,
+)
+async def load_vacation(
+    args: VacationLoadArgs, session: LoggedInSession
+) -> VacationLoadResult:
+    """Load all vacations, filtering by id."""
+    return await vacation_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/vacation/find",
+    response_model=VacationFindResult,
+    tags=["vacation"],
+    responses=standard_responses,
+)
+async def find_vacation(
+    args: VacationFindArgs, session: LoggedInSession
+) -> VacationFindResult:
+    """Find all vacations, filtering by id."""
+    return await vacation_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/project/create",
+    response_model=ProjectCreateResult,
+    tags=["project"],
+    responses=standard_responses,
+)
+async def create_project(
+    args: ProjectCreateArgs, session: LoggedInSession
+) -> ProjectCreateResult:
+    """Create a project."""
+    return await project_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/project/archive",
+    response_model=None,
+    tags=["project"],
+    responses=standard_responses,
+)
+async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
+    """Create a project."""
+    await project_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/project/update",
+    response_model=None,
+    tags=["project"],
+    responses=standard_responses,
+)
+async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
+    """Update a project."""
+    await project_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/project/load",
+    response_model=ProjectLoadResult,
+    tags=["project"],
+    responses=standard_responses,
+)
+async def load_project(
+    args: ProjectLoadArgs, session: LoggedInSession
+) -> ProjectLoadResult:
+    """Load a project, filtering by id."""
+    return await project_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/project/find",
+    response_model=ProjectFindResult,
+    tags=["project"],
+    responses=standard_responses,
+)
+async def find_project(
+    args: ProjectFindArgs, session: LoggedInSession
+) -> ProjectFindResult:
+    """Find a project, filtering by id."""
+    return await project_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/create",
+    response_model=SmartListCreateResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def create_smart_list(
+    args: SmartListCreateArgs, session: LoggedInSession
+) -> SmartListCreateResult:
+    """Create a smart list."""
+    return await smart_list_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/archive",
+    response_model=None,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def archive_smart_list(
+    args: SmartListArchiveArgs, session: LoggedInSession
+) -> None:
+    """Archive a smart list."""
+    await smart_list_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/update",
+    response_model=None,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def update_smart_list(
+    args: SmartListUpdateArgs, session: LoggedInSession
+) -> None:
+    """Update a smart list."""
+    await smart_list_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/load",
+    response_model=SmartListLoadResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def load_smart_list(
+    args: SmartListLoadArgs, session: LoggedInSession
+) -> SmartListLoadResult:
+    """Load a smart list."""
+    return await smart_list_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/find",
+    response_model=SmartListFindResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def find_smart_list(
+    args: SmartListFindArgs, session: LoggedInSession
+) -> SmartListFindResult:
+    """Find all smart lists, filtering by id."""
+    return await smart_list_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/tag/create",
+    response_model=SmartListTagCreateResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def create_smart_list_tag(
+    args: SmartListTagCreateArgs, session: LoggedInSession
+) -> SmartListTagCreateResult:
+    """Create a smart list tag."""
+    return await smart_list_tag_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/tag/archive",
+    response_model=None,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def archive_smart_list_tag(
+    args: SmartListTagArchiveArgs, session: LoggedInSession
+) -> None:
+    """Archive a smart list tag."""
+    await smart_list_tag_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/tag/update",
+    response_model=None,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def update_smart_list_tag(
+    args: SmartListTagUpdateArgs, session: LoggedInSession
+) -> None:
+    """Update a smart list tag."""
+    await smart_list_tag_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/tag/load",
+    response_model=SmartListTagLoadResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def load_smart_list_tag(
+    args: SmartListTagLoadArgs, session: LoggedInSession
+) -> SmartListTagLoadResult:
+    """Load a smart list tag."""
+    return await smart_list_tag_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/item/create",
+    response_model=SmartListItemCreateResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def create_smart_list_item(
+    args: SmartListItemCreateArgs, session: LoggedInSession
+) -> SmartListItemCreateResult:
+    """Create a smart list item."""
+    return await smart_list_item_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/item/archive",
+    response_model=None,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def archive_smart_list_item(
+    args: SmartListItemArchiveArgs, session: LoggedInSession
+) -> None:
+    """Archive a smart list item."""
+    await smart_list_item_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/item/update",
+    response_model=None,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def update_smart_list_item(
+    args: SmartListItemUpdateArgs, session: LoggedInSession
+) -> None:
+    """Update a smart list item."""
+    await smart_list_item_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/smart-list/item/load",
+    response_model=SmartListItemLoadResult,
+    tags=["smart-list"],
+    responses=standard_responses,
+)
+async def load_smart_list_item(
+    args: SmartListItemLoadArgs, session: LoggedInSession
+) -> SmartListItemLoadResult:
+    """Load a smart list item."""
+    return await smart_list_item_load_use_case.execute(session, args)
 
 
 @app.post(
@@ -2128,6 +2367,58 @@ async def find_metric(
 
 
 @app.post(
+    "/metric/entry/create",
+    response_model=MetricEntryCreateResult,
+    tags=["metric"],
+    responses=standard_responses,
+)
+async def create_metric_entry(
+    args: MetricEntryCreateArgs, session: LoggedInSession
+) -> MetricEntryCreateResult:
+    """Create a metric entry."""
+    return await metric_entry_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/metric/entry/archive",
+    response_model=None,
+    tags=["metric"],
+    responses=standard_responses,
+)
+async def archive_metric_entry(
+    args: MetricEntryArchiveArgs, session: LoggedInSession
+) -> None:
+    """Archive a metric entry."""
+    await metric_entry_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/metric/entry/update",
+    response_model=None,
+    tags=["metric"],
+    responses=standard_responses,
+)
+async def update_metric_entry(
+    args: MetricEntryUpdateArgs, session: LoggedInSession
+) -> None:
+    """Update a metric entry."""
+    await metric_entry_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/metric/entry/load",
+    response_model=MetricEntryLoadResult,
+    tags=["metric"],
+    responses=standard_responses,
+)
+async def load_metric_entry(
+    args: MetricEntryLoadArgs, session: LoggedInSession
+) -> MetricEntryLoadResult:
+    """Load a metric entry."""
+    return await metric_entry_load_use_case.execute(session, args)
+
+
+@app.post(
     "/person/create",
     response_model=PersonCreateResult,
     tags=["person"],
@@ -2215,145 +2506,6 @@ async def find_person(
 
 
 @app.post(
-    "/project/create",
-    response_model=ProjectCreateResult,
-    tags=["project"],
-    responses=standard_responses,
-)
-async def create_project(
-    args: ProjectCreateArgs, session: LoggedInSession
-) -> ProjectCreateResult:
-    """Create a project."""
-    return await project_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/project/archive",
-    response_model=None,
-    tags=["project"],
-    responses=standard_responses,
-)
-async def archive_project(args: ProjectArchiveArgs, session: LoggedInSession) -> None:
-    """Create a project."""
-    await project_archive_use_case.execute(session, args)
-
-
-@app.post(
-    "/project/update",
-    response_model=None,
-    tags=["project"],
-    responses=standard_responses,
-)
-async def update_project(args: ProjectUpdateArgs, session: LoggedInSession) -> None:
-    """Update a project."""
-    await project_update_use_case.execute(session, args)
-
-
-@app.post(
-    "/project/load",
-    response_model=ProjectLoadResult,
-    tags=["project"],
-    responses=standard_responses,
-)
-async def load_project(
-    args: ProjectLoadArgs, session: LoggedInSession
-) -> ProjectLoadResult:
-    """Load a project, filtering by id."""
-    return await project_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/project/find",
-    response_model=ProjectFindResult,
-    tags=["project"],
-    responses=standard_responses,
-)
-async def find_project(
-    args: ProjectFindArgs, session: LoggedInSession
-) -> ProjectFindResult:
-    """Find a project, filtering by id."""
-    return await project_find_use_case.execute(session, args)
-
-
-@app.post(
-    "/email-task/archive",
-    response_model=None,
-    tags=["email-task"],
-    responses=standard_responses,
-)
-async def archive_email_task(
-    args: EmailTaskArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a email task."""
-    await email_task_archive_use_case.execute(session, args)
-
-
-@app.post(
-    "/email-task/update",
-    response_model=None,
-    tags=["email-task"],
-    responses=standard_responses,
-)
-async def update_email_task(
-    args: EmailTaskUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a email task."""
-    await email_task_update_use_case.execute(session, args)
-
-
-@app.post(
-    "/email-task/load-settings",
-    response_model=EmailTaskLoadSettingsResult,
-    tags=["email-task"],
-    responses=standard_responses,
-)
-async def load_email_task_settings(
-    args: EmailTaskLoadSettingsArgs, session: LoggedInSession
-) -> EmailTaskLoadSettingsResult:
-    """Change the project for a email task."""
-    return await email_task_load_settings_use_case.execute(session, args)
-
-
-@app.post(
-    "/email-task/change-project",
-    response_model=None,
-    tags=["email-task"],
-    responses=standard_responses,
-)
-async def change_email_task_generation_project(
-    args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
-) -> None:
-    """Change the project for a email task."""
-    await email_task_change_generation_project_use_case.execute(session, args)
-
-
-@app.post(
-    "/email-task/load",
-    response_model=EmailTaskLoadResult,
-    tags=["email-task"],
-    responses=standard_responses,
-)
-async def load_email_task(
-    args: EmailTaskLoadArgs, session: LoggedInSession
-) -> EmailTaskLoadResult:
-    """Load an email task."""
-    return await email_task_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/email-task/find",
-    response_model=EmailTaskFindResult,
-    tags=["email-task"],
-    responses=standard_responses,
-)
-async def find_email_task(
-    args: EmailTaskFindArgs, session: LoggedInSession
-) -> EmailTaskFindResult:
-    """Find all email tasks, filtering by id."""
-    return await email_task_find_use_case.execute(session, args)
-
-
-@app.post(
     "/slack-task/archive",
     response_model=None,
     tags=["slack-task"],
@@ -2432,230 +2584,78 @@ async def find_slack_task(
 
 
 @app.post(
-    "/smart-list/item/create",
-    response_model=SmartListItemCreateResult,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def create_smart_list_item(
-    args: SmartListItemCreateArgs, session: LoggedInSession
-) -> SmartListItemCreateResult:
-    """Create a smart list item."""
-    return await smart_list_item_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/item/archive",
+    "/email-task/archive",
     response_model=None,
-    tags=["smart-list"],
+    tags=["email-task"],
     responses=standard_responses,
 )
-async def archive_smart_list_item(
-    args: SmartListItemArchiveArgs, session: LoggedInSession
+async def archive_email_task(
+    args: EmailTaskArchiveArgs, session: LoggedInSession
 ) -> None:
-    """Archive a smart list item."""
-    await smart_list_item_archive_use_case.execute(session, args)
+    """Archive a email task."""
+    await email_task_archive_use_case.execute(session, args)
 
 
 @app.post(
-    "/smart-list/item/update",
+    "/email-task/update",
     response_model=None,
-    tags=["smart-list"],
+    tags=["email-task"],
     responses=standard_responses,
 )
-async def update_smart_list_item(
-    args: SmartListItemUpdateArgs, session: LoggedInSession
+async def update_email_task(
+    args: EmailTaskUpdateArgs, session: LoggedInSession
 ) -> None:
-    """Update a smart list item."""
-    await smart_list_item_update_use_case.execute(session, args)
+    """Update a email task."""
+    await email_task_update_use_case.execute(session, args)
 
 
 @app.post(
-    "/smart-list/item/load",
-    response_model=SmartListItemLoadResult,
-    tags=["smart-list"],
+    "/email-task/load-settings",
+    response_model=EmailTaskLoadSettingsResult,
+    tags=["email-task"],
     responses=standard_responses,
 )
-async def load_smart_list_item(
-    args: SmartListItemLoadArgs, session: LoggedInSession
-) -> SmartListItemLoadResult:
-    """Load a smart list item."""
-    return await smart_list_item_load_use_case.execute(session, args)
+async def load_email_task_settings(
+    args: EmailTaskLoadSettingsArgs, session: LoggedInSession
+) -> EmailTaskLoadSettingsResult:
+    """Change the project for a email task."""
+    return await email_task_load_settings_use_case.execute(session, args)
 
 
 @app.post(
-    "/smart-list/tag/create",
-    response_model=SmartListTagCreateResult,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def create_smart_list_tag(
-    args: SmartListTagCreateArgs, session: LoggedInSession
-) -> SmartListTagCreateResult:
-    """Create a smart list tag."""
-    return await smart_list_tag_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/tag/archive",
+    "/email-task/change-project",
     response_model=None,
-    tags=["smart-list"],
+    tags=["email-task"],
     responses=standard_responses,
 )
-async def archive_smart_list_tag(
-    args: SmartListTagArchiveArgs, session: LoggedInSession
+async def change_email_task_generation_project(
+    args: EmailTaskChangeGenerationProjectArgs, session: LoggedInSession
 ) -> None:
-    """Archive a smart list tag."""
-    await smart_list_tag_archive_use_case.execute(session, args)
+    """Change the project for a email task."""
+    await email_task_change_generation_project_use_case.execute(session, args)
 
 
 @app.post(
-    "/smart-list/tag/update",
-    response_model=None,
-    tags=["smart-list"],
+    "/email-task/load",
+    response_model=EmailTaskLoadResult,
+    tags=["email-task"],
     responses=standard_responses,
 )
-async def update_smart_list_tag(
-    args: SmartListTagUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a smart list tag."""
-    await smart_list_tag_update_use_case.execute(session, args)
+async def load_email_task(
+    args: EmailTaskLoadArgs, session: LoggedInSession
+) -> EmailTaskLoadResult:
+    """Load an email task."""
+    return await email_task_load_use_case.execute(session, args)
 
 
 @app.post(
-    "/smart-list/tag/load",
-    response_model=SmartListTagLoadResult,
-    tags=["smart-list"],
+    "/email-task/find",
+    response_model=EmailTaskFindResult,
+    tags=["email-task"],
     responses=standard_responses,
 )
-async def load_smart_list_tag(
-    args: SmartListTagLoadArgs, session: LoggedInSession
-) -> SmartListTagLoadResult:
-    """Load a smart list tag."""
-    return await smart_list_tag_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/create",
-    response_model=SmartListCreateResult,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def create_smart_list(
-    args: SmartListCreateArgs, session: LoggedInSession
-) -> SmartListCreateResult:
-    """Create a smart list."""
-    return await smart_list_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/archive",
-    response_model=None,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def archive_smart_list(
-    args: SmartListArchiveArgs, session: LoggedInSession
-) -> None:
-    """Archive a smart list."""
-    await smart_list_archive_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/update",
-    response_model=None,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def update_smart_list(
-    args: SmartListUpdateArgs, session: LoggedInSession
-) -> None:
-    """Update a smart list."""
-    await smart_list_update_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/load",
-    response_model=SmartListLoadResult,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def load_smart_list(
-    args: SmartListLoadArgs, session: LoggedInSession
-) -> SmartListLoadResult:
-    """Load a smart list."""
-    return await smart_list_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/smart-list/find",
-    response_model=SmartListFindResult,
-    tags=["smart-list"],
-    responses=standard_responses,
-)
-async def find_smart_list(
-    args: SmartListFindArgs, session: LoggedInSession
-) -> SmartListFindResult:
-    """Find all smart lists, filtering by id."""
-    return await smart_list_find_use_case.execute(session, args)
-
-
-@app.post(
-    "/vacation/create",
-    response_model=VacationCreateResult,
-    tags=["vacation"],
-    responses=standard_responses,
-)
-async def create_vacation(
-    args: VacationCreateArgs, session: LoggedInSession
-) -> VacationCreateResult:
-    """Create a vacation."""
-    return await vacation_create_use_case.execute(session, args)
-
-
-@app.post(
-    "/vacation/archive",
-    response_model=None,
-    tags=["vacation"],
-    responses=standard_responses,
-)
-async def archive_vacation(args: VacationArchiveArgs, session: LoggedInSession) -> None:
-    """Archive a vacation."""
-    await vacation_archive_use_case.execute(session, args)
-
-
-@app.post(
-    "/vacation/update",
-    response_model=None,
-    tags=["vacation"],
-    responses=standard_responses,
-)
-async def update_vacation(args: VacationUpdateArgs, session: LoggedInSession) -> None:
-    """Update a vacation."""
-    await vacation_update_use_case.execute(session, args)
-
-
-@app.post(
-    "/vacation/load",
-    response_model=VacationLoadResult,
-    tags=["vacation"],
-    responses=standard_responses,
-)
-async def load_vacation(
-    args: VacationLoadArgs, session: LoggedInSession
-) -> VacationLoadResult:
-    """Load all vacations, filtering by id."""
-    return await vacation_load_use_case.execute(session, args)
-
-
-@app.post(
-    "/vacation/find",
-    response_model=VacationFindResult,
-    tags=["vacation"],
-    responses=standard_responses,
-)
-async def find_vacation(
-    args: VacationFindArgs, session: LoggedInSession
-) -> VacationFindResult:
-    """Find all vacations, filtering by id."""
-    return await vacation_find_use_case.execute(session, args)
+async def find_email_task(
+    args: EmailTaskFindArgs, session: LoggedInSession
+) -> EmailTaskFindResult:
+    """Find all email tasks, filtering by id."""
+    return await email_task_find_use_case.execute(session, args)
