@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional, cast
 
 from jupiter.core.domain import schedules
-from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.features import FeatureUnavailableError, UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -32,7 +32,7 @@ class HabitChangeProjectUseCase(
     """The command for changing the project of a habit."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return (WorkspaceFeature.HABITS, WorkspaceFeature.PROJECTS)
 

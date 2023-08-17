@@ -4,7 +4,7 @@ from typing import Iterable, Optional
 
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.features import FeatureUnavailableError, UserFeature, WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
@@ -58,7 +58,7 @@ class HabitCreateUseCase(
     """The command for creating a habit."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.HABITS
 

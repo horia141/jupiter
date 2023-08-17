@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.push_integrations.email.service.archive_service import (
     EmailTaskArchiveService,
 )
@@ -32,7 +32,7 @@ class EmailTaskArchiveUseCase(
     """The command for archiving a email task."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.EMAIL_TASKS
 

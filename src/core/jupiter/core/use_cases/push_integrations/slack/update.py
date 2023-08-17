@@ -5,7 +5,7 @@ from typing import Iterable, Optional
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -52,7 +52,7 @@ class SlackTaskUpdateUseCase(
     """The command for updating a slack task."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.SLACK_TASKS
 

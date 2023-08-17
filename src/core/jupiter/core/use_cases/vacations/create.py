@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.domain.vacations.vacation import Vacation
 from jupiter.core.domain.vacations.vacation_name import VacationName
@@ -41,7 +41,7 @@ class VacationCreateUseCase(
     """The command for creating a vacation."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.VACATIONS
 

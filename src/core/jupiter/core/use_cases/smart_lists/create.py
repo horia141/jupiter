@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from jupiter.core.domain.entity_icon import EntityIcon
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list import SmartList
 from jupiter.core.domain.smart_lists.smart_list_name import SmartListName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -40,7 +40,7 @@ class SmartListCreateUseCase(
     """The command for creating a smart list."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.SMART_LISTS
 

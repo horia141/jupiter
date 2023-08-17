@@ -1433,6 +1433,9 @@ async def main() -> None:
 
     for command in commands:
         if command.should_appear_in_global_help and (
+            top_level_info.user is None
+            or command.is_allowed_for_user(top_level_info.user)
+        ) and (
             top_level_info.workspace is None
             or command.is_allowed_for_workspace(top_level_info.workspace)
         ):

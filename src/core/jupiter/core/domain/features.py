@@ -13,12 +13,12 @@ class FeatureUnavailableError(Exception):
 
     _error_str: Final[str]
 
-    def __init__(self, feature_or_str: "WorkspaceFeature | str"):
+    def __init__(self, feature_or_str: "UserFeature | WorkspaceFeature | str"):
         """Constructor."""
         super().__init__()
         self._error_str = (
             (f"Feature {feature_or_str.value} is not available in this workspace")
-            if isinstance(feature_or_str, WorkspaceFeature)
+            if isinstance(feature_or_str, (UserFeature, WorkspaceFeature))
             else feature_or_str
         )
 

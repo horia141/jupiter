@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -41,7 +41,7 @@ class BigPlanLoadUseCase(
     """The use case for loading a particular big plan."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.BIG_PLANS
 

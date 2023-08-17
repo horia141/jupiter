@@ -7,7 +7,7 @@ from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.features import FeatureUnavailableError, UserFeature, WorkspaceFeature
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -61,7 +61,7 @@ class ChoreCreateUseCase(
     """The command for creating a chore."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.CHORES
 

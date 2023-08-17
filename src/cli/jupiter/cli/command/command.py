@@ -4,9 +4,11 @@ import abc
 from argparse import ArgumentParser, Namespace
 from typing import Any, Final, Generic, TypeVar
 
+from jupiter.core.domain.user.user import User
+
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
-from jupiter.core.domain.features import WorkspaceFeature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
@@ -45,6 +47,10 @@ class Command(abc.ABC):
         """Should the command appear in the global help info or not."""
         return True
 
+    def is_allowed_for_user(self, workspace: User) -> bool:
+        """Is this command allowed for a particular user."""
+        return True
+    
     def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
         """Is this command allowed for a particular workspace."""
         return True
@@ -171,16 +177,34 @@ class LoggedInMutationCommand(
     ) -> None:
         """Callback to execute when the command is invoked."""
 
+    def is_allowed_for_user(self, user: User) -> bool:
+        """Is this command allowed for a particular user."""
+        scoped_feature = self._use_case.get_scoped_to_feature()
+        if scoped_feature is None:
+            return True
+        if isinstance(scoped_feature, UserFeature):
+            return user.is_feature_available(scoped_feature)
+        elif isinstance(scoped_feature, WorkspaceFeature):
+            return True
+        for feature in scoped_feature:
+            if isinstance(feature, UserFeature):
+                if not user.is_feature_available(feature):
+                    return False
+        return True
+
     def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
         """Is this command allowed for a particular workspace."""
         scoped_feature = self._use_case.get_scoped_to_feature()
         if scoped_feature is None:
             return True
-        if isinstance(scoped_feature, WorkspaceFeature):
+        if isinstance(scoped_feature, UserFeature):
+            return True
+        elif isinstance(scoped_feature, WorkspaceFeature):
             return workspace.is_feature_available(scoped_feature)
         for feature in scoped_feature:
-            if not workspace.is_feature_available(feature):
-                return False
+            if isinstance(feature, WorkspaceFeature):
+                if not workspace.is_feature_available(feature):
+                    return False
         return True
 
 
@@ -225,16 +249,34 @@ class LoggedInReadonlyCommand(
     ) -> None:
         """Callback to execute when the command is invoked."""
 
+    def is_allowed_for_user(self, user: User) -> bool:
+        """Is this command allowed for a particular user."""
+        scoped_feature = self._use_case.get_scoped_to_feature()
+        if scoped_feature is None:
+            return True
+        if isinstance(scoped_feature, UserFeature):
+            return user.is_feature_available(scoped_feature)
+        elif isinstance(scoped_feature, WorkspaceFeature):
+            return True
+        for feature in scoped_feature:
+            if isinstance(feature, UserFeature):
+                if not user.is_feature_available(feature):
+                    return False
+        return True
+
     def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
         """Is this command allowed for a particular workspace."""
         scoped_feature = self._use_case.get_scoped_to_feature()
         if scoped_feature is None:
             return True
-        if isinstance(scoped_feature, WorkspaceFeature):
+        if isinstance(scoped_feature, UserFeature):
+            return True
+        elif isinstance(scoped_feature, WorkspaceFeature):
             return workspace.is_feature_available(scoped_feature)
         for feature in scoped_feature:
-            if not workspace.is_feature_available(feature):
-                return False
+            if isinstance(feature, WorkspaceFeature):
+                if not workspace.is_feature_available(feature):
+                    return False
         return True
 
     @property
