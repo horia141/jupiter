@@ -4,11 +4,11 @@
 
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { SmartListName } from './SmartListName';
+import type { EntityName } from './EntityName';
 
 export type SmartListSummary = {
     ref_id: EntityId;
-    name: SmartListName;
+    name: EntityName;
     icon?: EntityIcon;
 };
 

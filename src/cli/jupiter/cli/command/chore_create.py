@@ -9,7 +9,7 @@ from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -49,7 +49,9 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             parser.add_argument(
                 "--project-id",
                 dest="project_ref_id",
@@ -144,7 +146,9 @@ class ChoreCreate(LoggedInMutationCommand[ChoreCreateUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             project_ref_id = (
                 EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
             )

@@ -5,13 +5,13 @@
 import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
-import type { InboxTaskName } from './InboxTaskName';
+import type { EntityName } from './EntityName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { Timezone } from './Timezone';
 
 export type PushGenerationExtraInfo = {
     timezone: Timezone;
-    name?: InboxTaskName;
+    name?: EntityName;
     status?: InboxTaskStatus;
     eisen?: Eisen;
     difficulty?: Difficulty;

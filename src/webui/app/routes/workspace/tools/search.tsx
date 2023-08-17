@@ -585,7 +585,7 @@ function Match({ match }: MatchProps) {
       );
     case NamedEntityTag.SMART_LIST:
       return (
-        <EntityLink to={`/workspace/smart-lists/${match.ref_id.the_id}`}>
+        <EntityLink to={`/workspace/smart-lists/${match.ref_id.the_id}/items`}>
           <SlimChip label={"Smart List"} color={"primary"} />
           {commonSequence}
         </EntityLink>
@@ -610,7 +610,7 @@ function Match({ match }: MatchProps) {
       );
     case NamedEntityTag.METRIC:
       return (
-        <EntityLink to={`/workspace/metrics/${match.ref_id.the_id}`}>
+        <EntityLink to={`/workspace/metrics/${match.ref_id.the_id}/entries`}>
           <SlimChip label={"Metric"} color={"primary"} />
           {commonSequence}
         </EntityLink>

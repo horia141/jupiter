@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.features import FeatureFlags
+from jupiter.core.domain.features import WorkspaceFeatureFlags
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -29,7 +29,7 @@ from jupiter.core.utils.time_provider import TimeProvider
 class WorkspaceChangeFeatureFlagsArgs(UseCaseArgsBase):
     """WorkspaceChangeFeatureFlags args."""
 
-    feature_flags: FeatureFlags
+    feature_flags: WorkspaceFeatureFlags
 
 
 class WorkspaceChangeFeatureFlagsUseCase(
@@ -69,7 +69,7 @@ class WorkspaceChangeFeatureFlagsUseCase(
     ) -> None:
         """Execute the command's action."""
         workspace = context.workspace
-        feature_flags_controls = infer_feature_flag_controls(self._global_properties)
+        _, feature_flags_controls = infer_feature_flag_controls(self._global_properties)
 
         workspace = workspace.change_feature_flags(
             feature_flag_controls=feature_flags_controls,

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -29,9 +29,9 @@ class BigPlanRemoveUseCase(
     """The command for removing a big plan."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.BIG_PLANS
+        return WorkspaceFeature.BIG_PLANS
 
     async def _perform_transactional_mutation(
         self,

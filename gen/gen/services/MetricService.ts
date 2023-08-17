@@ -27,98 +27,6 @@ export class MetricService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Metric Entry
-     * Create a metric entry.
-     * @param requestBody
-     * @returns MetricEntryCreateResult Successful Response
-     * @throws ApiError
-     */
-    public createMetricEntry(
-        requestBody: MetricEntryCreateArgs,
-    ): CancelablePromise<MetricEntryCreateResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/metric/entry/create',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Archive Metric Entry
-     * Archive a metric entry.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public archiveMetricEntry(
-        requestBody: MetricEntryArchiveArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/metric/entry/archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Update Metric Entry
-     * Update a metric entry.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public updateMetricEntry(
-        requestBody: MetricEntryUpdateArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/metric/entry/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Load Metric Entry
-     * Load a metric entry.
-     * @param requestBody
-     * @returns MetricEntryLoadResult Successful Response
-     * @throws ApiError
-     */
-    public loadMetricEntry(
-        requestBody: MetricEntryLoadArgs,
-    ): CancelablePromise<MetricEntryLoadResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/metric/entry/load',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Create Metric
      * Create a metric.
      * @param requestBody
@@ -269,6 +177,98 @@ export class MetricService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/metric/find',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Metric Entry
+     * Create a metric entry.
+     * @param requestBody
+     * @returns MetricEntryCreateResult Successful Response
+     * @throws ApiError
+     */
+    public createMetricEntry(
+        requestBody: MetricEntryCreateArgs,
+    ): CancelablePromise<MetricEntryCreateResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/metric/entry/create',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Archive Metric Entry
+     * Archive a metric entry.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public archiveMetricEntry(
+        requestBody: MetricEntryArchiveArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/metric/entry/archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Update Metric Entry
+     * Update a metric entry.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public updateMetricEntry(
+        requestBody: MetricEntryUpdateArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/metric/entry/update',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Load Metric Entry
+     * Load a metric entry.
+     * @param requestBody
+     * @returns MetricEntryLoadResult Successful Response
+     * @throws ApiError
+     */
+    public loadMetricEntry(
+        requestBody: MetricEntryLoadArgs,
+    ): CancelablePromise<MetricEntryLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/metric/entry/load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

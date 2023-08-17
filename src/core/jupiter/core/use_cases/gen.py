@@ -7,7 +7,7 @@ from typing import Dict, FrozenSet, List, Optional, Tuple
 from jupiter.core.domain import schedules
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
@@ -89,40 +89,40 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             )
 
         if (
-            not workspace.is_feature_available(Feature.PROJECTS)
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.filter_project_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.PROJECTS)
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
         if (
-            not workspace.is_feature_available(Feature.HABITS)
+            not workspace.is_feature_available(WorkspaceFeature.HABITS)
             and args.filter_habit_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.HABITS)
+            raise FeatureUnavailableError(WorkspaceFeature.HABITS)
         if (
-            not workspace.is_feature_available(Feature.CHORES)
+            not workspace.is_feature_available(WorkspaceFeature.CHORES)
             and args.filter_chore_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.CHORES)
+            raise FeatureUnavailableError(WorkspaceFeature.CHORES)
         if (
-            not workspace.is_feature_available(Feature.METRICS)
+            not workspace.is_feature_available(WorkspaceFeature.METRICS)
             and args.filter_metric_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.METRICS)
+            raise FeatureUnavailableError(WorkspaceFeature.METRICS)
         if (
-            not workspace.is_feature_available(Feature.PERSONS)
+            not workspace.is_feature_available(WorkspaceFeature.PERSONS)
             and args.filter_person_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.PERSONS)
+            raise FeatureUnavailableError(WorkspaceFeature.PERSONS)
         if (
-            not workspace.is_feature_available(Feature.SLACK_TASKS)
+            not workspace.is_feature_available(WorkspaceFeature.SLACK_TASKS)
             and args.filter_slack_task_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.SLACK_TASKS)
+            raise FeatureUnavailableError(WorkspaceFeature.SLACK_TASKS)
         if (
-            not workspace.is_feature_available(Feature.EMAIL_TASKS)
+            not workspace.is_feature_available(WorkspaceFeature.EMAIL_TASKS)
             and args.filter_email_task_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.EMAIL_TASKS)
+            raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
 
         async with self._domain_storage_engine.get_unit_of_work() as uow:
             vacation_collection = (
@@ -159,7 +159,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             )
 
         if (
-            workspace.is_feature_available(Feature.HABITS)
+            workspace.is_feature_available(WorkspaceFeature.HABITS)
             and SyncTarget.HABITS in gen_targets
         ):
             async with progress_reporter.section("Generating habits"):
@@ -211,7 +211,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
 
         if (
-            workspace.is_feature_available(Feature.CHORES)
+            workspace.is_feature_available(WorkspaceFeature.CHORES)
             and SyncTarget.CHORES in gen_targets
         ):
             async with progress_reporter.section("Generating chores"):
@@ -262,7 +262,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
 
         if (
-            workspace.is_feature_available(Feature.METRICS)
+            workspace.is_feature_available(WorkspaceFeature.METRICS)
             and SyncTarget.METRICS in gen_targets
         ):
             async with progress_reporter.section("Generating for metrics"):
@@ -322,7 +322,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
 
         if (
-            workspace.is_feature_available(Feature.PERSONS)
+            workspace.is_feature_available(WorkspaceFeature.PERSONS)
             and SyncTarget.PERSONS in gen_targets
         ):
             async with progress_reporter.section("Generating for persons"):
@@ -420,7 +420,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                 )
 
         if (
-            workspace.is_feature_available(Feature.SLACK_TASKS)
+            workspace.is_feature_available(WorkspaceFeature.SLACK_TASKS)
             and SyncTarget.SLACK_TASKS in gen_targets
         ):
             async with progress_reporter.section("Generating for Slack tasks"):
@@ -471,7 +471,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
                     )
 
         if (
-            workspace.is_feature_available(Feature.EMAIL_TASKS)
+            workspace.is_feature_available(WorkspaceFeature.EMAIL_TASKS)
             and SyncTarget.EMAIL_TASKS in gen_targets
         ):
             async with progress_reporter.section("Generating for email tasks"):
@@ -667,7 +667,7 @@ class GenUseCase(AppLoggedInMutationUseCase[GenArgs, None]):
             chore.gen_params.due_at_month,
         )
 
-        if workspace.is_feature_available(Feature.VACATIONS):
+        if workspace.is_feature_available(WorkspaceFeature.VACATIONS):
             if not chore.must_do:
                 for vacation in all_vacations:
                     if vacation.is_in_vacation(schedule.first_day, schedule.end_day):

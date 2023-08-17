@@ -3,22 +3,27 @@
 /* eslint-disable */
 
 import type { Env } from './Env';
-import type { Feature } from './Feature';
-import type { FeatureFlagsControls } from './FeatureFlagsControls';
 import type { Hosting } from './Hosting';
 import type { ProjectName } from './ProjectName';
 import type { User } from './User';
+import type { UserFeature } from './UserFeature';
+import type { UserFeatureFlagsControls } from './UserFeatureFlagsControls';
 import type { Workspace } from './Workspace';
+import type { WorkspaceFeature } from './WorkspaceFeature';
+import type { WorkspaceFeatureFlagsControls } from './WorkspaceFeatureFlagsControls';
 import type { WorkspaceName } from './WorkspaceName';
 
 export type LoadTopLevelInfoResult = {
     env: Env;
     hosting: Hosting;
+    user_feature_flag_controls: UserFeatureFlagsControls;
+    default_user_feature_flags: Record<string, boolean>;
+    user_feature_hack: UserFeature;
     deafult_workspace_name: WorkspaceName;
     default_first_project_name: ProjectName;
-    feature_flag_controls: FeatureFlagsControls;
-    default_feature_flags: Record<string, boolean>;
-    feature_hack: Feature;
+    workspace_feature_flag_controls: WorkspaceFeatureFlagsControls;
+    default_workspace_feature_flags: Record<string, boolean>;
+    workspace_feature_hack: WorkspaceFeature;
     user?: User;
     workspace?: Workspace;
 };

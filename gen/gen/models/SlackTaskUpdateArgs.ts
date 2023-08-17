@@ -7,7 +7,6 @@ import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
-import type { InboxTaskName } from './InboxTaskName';
 import type { InboxTaskStatus } from './InboxTaskStatus';
 import type { SlackChannelName } from './SlackChannelName';
 
@@ -27,7 +26,7 @@ export type SlackTaskUpdateArgs = {
     };
     generation_name: {
         should_change: boolean;
-        value?: InboxTaskName;
+        value?: EntityName;
     };
     generation_status: {
         should_change: boolean;

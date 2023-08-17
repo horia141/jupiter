@@ -38,9 +38,9 @@ import type {
 } from "jupiter-gen";
 import {
   ApiError,
-  Feature,
   InboxTaskSource,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -69,7 +69,7 @@ import {
 } from "~/logic/domain/period";
 import {
   inferSourcesForEnabledFeatures,
-  isFeatureAvailable,
+  isWorkspaceFeatureAvailable,
 } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -299,16 +299,31 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
     "by-big-plans": 5,
   };
 
-  if (!isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS)) {
+  if (
+    !isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.PROJECTS
+    )
+  ) {
     tabIndicesMap["by-habits"] -= 1;
     tabIndicesMap["by-chores"] -= 1;
     tabIndicesMap["by-big-plans"] -= 1;
   }
-  if (!isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS)) {
+  if (
+    !isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.HABITS
+    )
+  ) {
     tabIndicesMap["by-chores"] -= 1;
     tabIndicesMap["by-big-plans"] -= 1;
   }
-  if (!isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES)) {
+  if (
+    !isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.CHORES
+    )
+  ) {
     tabIndicesMap["by-big-plans"] -= 1;
   }
 
@@ -337,18 +352,22 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
       >
         <Tab label="🌍 Global" />
         <Tab label="⌛ By Periods" />
-        {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
-          <Tab label="💡 By Projects" />
-        )}
-        {isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS) && (
-          <Tab label="💪 By Habits" />
-        )}
-        {isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES) && (
-          <Tab label="♻️ By Chore" />
-        )}
-        {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) && (
-          <Tab label="🌍 By Big Plan" />
-        )}
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS
+        ) && <Tab label="💡 By Projects" />}
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.HABITS
+        ) && <Tab label="💪 By Habits" />}
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.CHORES
+        ) && <Tab label="♻️ By Chore" />}
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.BIG_PLANS
+        ) && <Tab label="🌍 By Big Plan" />}
       </Tabs>
 
       <TabPanel value={showTab} index={tabIndicesMap["global"]}>
@@ -376,7 +395,10 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         </Stack>
       </TabPanel>
 
-      {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PROJECTS
+      ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-projects"]}>
           <Stack spacing={2} useFlexGap>
             {report.per_project_breakdown.map((pb) => (
@@ -395,7 +417,10 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         </TabPanel>
       )}
 
-      {isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS) && (
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.HABITS
+      ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-habits"]}>
           <Stack spacing={2} useFlexGap>
             {Object.values(RecurringTaskPeriod).map((period) => {
@@ -487,7 +512,10 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         </TabPanel>
       )}
 
-      {isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES) && (
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.CHORES
+      ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-chores"]}>
           <Stack spacing={2} useFlexGap>
             {Object.values(RecurringTaskPeriod).map((period) => {
@@ -564,7 +592,10 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
         </TabPanel>
       )}
 
-      {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) && (
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.BIG_PLANS
+      ) && (
         <TabPanel value={showTab} index={tabIndicesMap["by-big-plans"]}>
           <TableContainer component={Box}>
             <Table sx={{ tableLayout: "fixed" }}>
@@ -709,7 +740,10 @@ function OverviewReport(props: OverviewReportProps) {
         </Table>
       </TableContainer>
 
-      {isFeatureAvailable(props.topLevelInfo.workspace, Feature.BIG_PLANS) && (
+      {isWorkspaceFeatureAvailable(
+        props.topLevelInfo.workspace,
+        WorkspaceFeature.BIG_PLANS
+      ) && (
         <>
           <Divider>
             <Typography variant="h6">Big Plans</Typography>

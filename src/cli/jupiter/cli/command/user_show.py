@@ -51,7 +51,16 @@ class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
         user_text.append(" ")
         user_text.append(timezone_to_rich_text(result.user.timezone))
 
+        feature_flags_tree = Tree("Feature Flags:")
+        for feature, flag in result.user.feature_flags.items():
+            if flag:
+                feature_flag_text = Text(f"✅ {feature}")
+            else:
+                feature_flag_text = Text(f"☑️ {feature}")
+            feature_flags_tree.add(feature_flag_text)
+
         rich_tree.add(user_text)
+        rich_tree.add(feature_flags_tree)
 
         console = Console()
         console.print(rich_tree)

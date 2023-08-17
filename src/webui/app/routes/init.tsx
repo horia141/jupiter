@@ -27,12 +27,15 @@ import {
   useTransition,
 } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Feature } from "jupiter-gen";
+import { ApiError, UserFeature, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients";
-import { FeatureFlagsEditor } from "~/components/feature-flags-editor";
+import {
+  UserFeatureFlagsEditor,
+  WorkspaceFeatureFlagsEditor,
+} from "~/components/feature-flags-editor";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
@@ -45,11 +48,12 @@ const WorkspaceInitFormSchema = {
   userEmailAddress: z.string(),
   userName: z.string(),
   userTimezone: z.string(),
+  userFeatureFlags: z.array(z.nativeEnum(UserFeature)),
   authPassword: z.string(),
   authPasswordRepeat: z.string(),
   workspaceName: z.string(),
   workspaceFirstProjectName: z.string(),
-  workspaceFeatureFlags: z.array(z.nativeEnum(Feature)),
+  workspaceFeatureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
 };
 
 // @secureFn
@@ -62,10 +66,12 @@ export async function loader({ request }: LoaderArgs) {
   }
 
   return json({
+    userFeatureFlagControls: result.user_feature_flag_controls,
+    defaultUserFeatureFlags: result.default_user_feature_flags,
     defaultWorkspaceName: result.deafult_workspace_name,
     defaultFirstProjectName: result.default_first_project_name,
-    featureFlagControls: result.feature_flag_controls,
-    defaultFeatureFlags: result.default_feature_flags,
+    workspaceFeatureFlagControls: result.workspace_feature_flag_controls,
+    defaultWorkspaceFeatureFlags: result.default_workspace_feature_flags,
   });
 }
 
@@ -74,8 +80,17 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));
   const form = await parseForm(request, WorkspaceInitFormSchema);
 
+  const userFeatureFlags: Record<string, boolean> = {};
+  for (const feature of Object.values(UserFeature)) {
+    if (form.userFeatureFlags.find((v) => v == feature)) {
+      userFeatureFlags[feature] = true;
+    } else {
+      userFeatureFlags[feature] = false;
+    }
+  }
+
   const workspaceFeatureFlags: Record<string, boolean> = {};
-  for (const feature of Object.values(Feature)) {
+  for (const feature of Object.values(WorkspaceFeature)) {
     if (form.workspaceFeatureFlags.find((v) => v == feature)) {
       workspaceFeatureFlags[feature] = true;
     } else {
@@ -88,6 +103,7 @@ export async function action({ request }: ActionArgs) {
       user_email_address: { the_address: form.userEmailAddress },
       user_name: { the_name: form.userName },
       user_timezone: { the_timezone: form.userTimezone },
+      user_feature_flags: userFeatureFlags,
       auth_password: { password_raw: form.authPassword },
       auth_password_repeat: { password_raw: form.authPasswordRepeat },
       workspace_name: { the_name: form.workspaceName },
@@ -268,11 +284,22 @@ export default function WorkspaceInit() {
                 </AccordionSummary>
 
                 <AccordionDetails>
-                  <FeatureFlagsEditor
+                  <UserFeatureFlagsEditor
+                    name="userFeatureFlags"
+                    inputsEnabled={inputsEnabled}
+                    featureFlagsControls={loaderData.userFeatureFlagControls}
+                    defaultFeatureFlags={loaderData.defaultUserFeatureFlags}
+                    hosting={globalProperties.hosting}
+                  />
+                  <WorkspaceFeatureFlagsEditor
                     name="workspaceFeatureFlags"
                     inputsEnabled={inputsEnabled}
-                    featureFlagsControls={loaderData.featureFlagControls}
-                    defaultFeatureFlags={loaderData.defaultFeatureFlags}
+                    featureFlagsControls={
+                      loaderData.workspaceFeatureFlagControls
+                    }
+                    defaultFeatureFlags={
+                      loaderData.defaultWorkspaceFeatureFlags
+                    }
                     hosting={globalProperties.hosting}
                   />
                 </AccordionDetails>

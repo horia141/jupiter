@@ -2,6 +2,11 @@
 from dataclasses import dataclass
 
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import (
+    UserFeature,
+    UserFeatureFlags,
+    UserFeatureFlagsControls,
+)
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.user_name import UserName
@@ -24,16 +29,23 @@ class User(RootEntity):
     class Update(Entity.Updated):
         """Updated event."""
 
+    @dataclass
+    class UpdateFeatureFlags(Entity.Updated):
+        """Changed the feature flags for the workspace."""
+
     email_address: EmailAddress
     name: UserName
     avatar: Avatar
     timezone: Timezone
+    feature_flags: UserFeatureFlags
 
     @staticmethod
     def new_user(
         email_address: EmailAddress,
         name: UserName,
         timezone: Timezone,
+        feature_flag_controls: UserFeatureFlagsControls,
+        feature_flags: UserFeatureFlags,
         source: EventSource,
         created_time: Timestamp,
     ) -> "User":
@@ -54,6 +66,9 @@ class User(RootEntity):
             name=name,
             avatar=Avatar.from_user_name(name),
             timezone=timezone,
+            feature_flags=feature_flag_controls.validate_and_complete(
+                feature_flags_delta=feature_flags, current_feature_flags={}
+            ),
         )
 
         return user
@@ -76,3 +91,25 @@ class User(RootEntity):
                 source, self.version, modification_time
             ),
         )
+
+    def change_feature_flags(
+        self,
+        feature_flag_controls: UserFeatureFlagsControls,
+        feature_flags: UserFeatureFlags,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "User":
+        """Change the feature settings for this user."""
+        return self._new_version(
+            feature_flags=feature_flag_controls.validate_and_complete(
+                feature_flags_delta=feature_flags,
+                current_feature_flags=self.feature_flags,
+            ),
+            new_event=User.UpdateFeatureFlags.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
+
+    def is_feature_available(self, feature: UserFeature) -> bool:
+        """Check if a feature is available for this user."""
+        return self.feature_flags[feature]

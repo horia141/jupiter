@@ -4,7 +4,7 @@ from typing import Iterable, Optional
 
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.persons.person_birthday import PersonBirthday
 from jupiter.core.domain.persons.person_name import PersonName
@@ -57,9 +57,9 @@ class PersonCreateUseCase(
     """The command for creating a person."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.PERSONS
+        return WorkspaceFeature.PERSONS
 
     async def _perform_transactional_mutation(
         self,

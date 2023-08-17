@@ -10,7 +10,7 @@ from jupiter.cli.command.rendering import (
     person_relationship_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
@@ -87,7 +87,9 @@ class PersonShow(LoggedInReadonlyCommand[PersonFindUseCase]):
 
         rich_tree = Tree("👨 Persons", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             catch_up_project_text = Text(
                 f"The catch up project is {result.catch_up_project.name}",
             )

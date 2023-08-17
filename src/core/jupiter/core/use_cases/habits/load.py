@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
@@ -41,9 +41,9 @@ class HabitLoadUseCase(
     """Use case for loading a particular habit."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.HABITS
+        return WorkspaceFeature.HABITS
 
     async def _perform_transactional_read(
         self,

@@ -18,9 +18,9 @@ import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import {
   ApiError,
-  Feature,
   RecurringTaskPeriod,
   SyncTarget,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -36,7 +36,7 @@ import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import {
   fixSelectOutputEntityId,
   fixSelectOutputToEnum,
@@ -250,7 +250,10 @@ export default function Gen() {
               <FieldError actionResult={actionData} fieldName="/period" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -281,7 +284,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.HABITS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -312,7 +318,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.CHORES
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -343,7 +352,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.METRICS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.METRICS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -374,7 +386,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PERSONS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PERSONS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal

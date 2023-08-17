@@ -2,6 +2,7 @@
 from typing import Final
 
 from jupiter.core.domain.email_address import EmailAddress
+from jupiter.core.domain.features import UserFeature
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.avatar import Avatar
 from jupiter.core.domain.user.infra.user_repository import (
@@ -16,6 +17,7 @@ from jupiter.core.framework.base.timestamp import Timestamp
 from jupiter.core.repository.sqlite.infra.events import build_event_table, upsert_events
 from jupiter.core.repository.sqlite.infra.row import RowType
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
@@ -56,6 +58,7 @@ class SqliteUserRepository(UserRepository):
             Column("name", String(100), nullable=False),
             Column("avatar", String, nullable=False),
             Column("timezone", String(100), nullable=False),
+            Column("feature_flags", JSON, nullable=False),
             keep_existing=True,
         )
         self._user_event_table = build_event_table(self._user_table, metadata)
@@ -80,6 +83,7 @@ class SqliteUserRepository(UserRepository):
                     name=str(entity.name),
                     avatar=entity.avatar.avatar_as_data_url,
                     timezone=str(entity.timezone),
+                    feature_flags={f.value: v for f, v in entity.feature_flags.items()},
                 )
             )
         except IntegrityError as err:
@@ -106,6 +110,7 @@ class SqliteUserRepository(UserRepository):
                 name=str(entity.name),
                 avatar=entity.avatar.avatar_as_data_url,
                 timezone=str(entity.timezone),
+                feature_flags={f.value: v for f, v in entity.feature_flags.items()},
             )
         )
         if result.rowcount == 0:
@@ -160,4 +165,5 @@ class SqliteUserRepository(UserRepository):
             name=UserName.from_raw(row["name"]),
             avatar=Avatar.from_raw(row["avatar"]),
             timezone=Timezone.from_raw(row["timezone"]),
+            feature_flags={UserFeature(f): v for f, v in row["feature_flags"].items()},
         )

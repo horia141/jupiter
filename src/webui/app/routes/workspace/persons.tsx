@@ -3,7 +3,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { Person } from "jupiter-gen";
-import { Feature, PersonRelationship } from "jupiter-gen";
+import { PersonRelationship, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -19,7 +19,7 @@ import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { PersonBirthdayTag } from "~/components/person-birthday-tag";
 import { PersonRelationshipTag } from "~/components/person-relationship-tag";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -81,7 +81,10 @@ export default function Persons() {
             >
               Create
             </Button>
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <Button
                 variant="outlined"
                 to={`/workspace/persons/settings`}

@@ -23,7 +23,12 @@ import {
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { InboxTask, Project } from "jupiter-gen";
-import { ApiError, BigPlanStatus, Feature, InboxTaskStatus } from "jupiter-gen";
+import {
+  ApiError,
+  BigPlanStatus,
+  InboxTaskStatus,
+  WorkspaceFeature,
+} from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseParams } from "zodix";
@@ -38,7 +43,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { bigPlanStatusName } from "~/logic/domain/big-plan-status";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -265,7 +270,10 @@ export default function BigPlan() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <InputLabel id="project">Project</InputLabel>
                 <Select
@@ -285,9 +293,10 @@ export default function BigPlan() {
                 <FieldError actionResult={actionData} fieldName="/project" />
               </FormControl>
             )}
-            {!isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
-              <input type="hidden" name="project" value={selectedProject} />
-            )}
+            {!isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && <input type="hidden" name="project" value={selectedProject} />}
 
             <FormControl fullWidth>
               <InputLabel id="actionableDate">Actionable From</InputLabel>
@@ -343,7 +352,10 @@ export default function BigPlan() {
             >
               Save
             </Button>
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <Button
                 variant="outlined"
                 disabled={

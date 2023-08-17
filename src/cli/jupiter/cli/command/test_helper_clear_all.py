@@ -6,7 +6,12 @@ from jupiter.cli.command.command import TestHelperCommand
 from jupiter.cli.session_storage import SessionStorage
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
-from jupiter.core.domain.features import Feature, FeatureFlags
+from jupiter.core.domain.features import (
+    UserFeature,
+    UserFeatureFlags,
+    WorkspaceFeature,
+    WorkspaceFeatureFlags,
+)
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
 from jupiter.core.domain.workspaces.workspace_name import WorkspaceName
@@ -53,6 +58,20 @@ class TestHelperClearAll(TestHelperCommand):
             help="The user timezone to use",
         )
         parser.add_argument(
+            "--user-feature",
+            dest="user_feature_flag_enabled",
+            default=[],
+            action="append",
+            choices=UserFeature.all_values(),
+        )
+        parser.add_argument(
+            "--user-no-feature",
+            dest="user_feature_flag_disable",
+            default=[],
+            action="append",
+            choices=UserFeature.all_values(),
+        )
+        parser.add_argument(
             "--auth-current-password",
             type=PasswordPlain.from_raw,
             dest="auth_current_password",
@@ -90,14 +109,14 @@ class TestHelperClearAll(TestHelperCommand):
             dest="workspace_feature_flag_enabled",
             default=[],
             action="append",
-            choices=Feature.all_values(),
+            choices=WorkspaceFeature.all_values(),
         )
         parser.add_argument(
             "--workspace-no-feature",
             dest="workspace_feature_flag_disable",
             default=[],
             action="append",
-            choices=Feature.all_values(),
+            choices=WorkspaceFeature.all_values(),
         )
 
     async def run(
@@ -107,6 +126,11 @@ class TestHelperClearAll(TestHelperCommand):
         """Callback to execute when the command is invoked."""
         user_name = UserName.from_raw(args.user_name)
         user_timezone = Timezone.from_raw(args.user_timezone)
+        user_feature_flags: UserFeatureFlags = {}
+        for enabled_feature in args.user_feature_flag_enabled:
+            user_feature_flags[UserFeature(enabled_feature)] = True
+        for disabled_feature in args.user_feature_flag_disable:
+            user_feature_flags[UserFeature(disabled_feature)] = False
         auth_current_password = cast(PasswordPlain, args.current_password)
         auth_new_password = cast(PasswordNewPlain, args.new_password)
         auth_new_password_repeat = cast(PasswordNewPlain, args.new_password_repeat)
@@ -114,11 +138,11 @@ class TestHelperClearAll(TestHelperCommand):
         workspace_default_project_ref_id = EntityId.from_raw(
             args.workspace_default_project_ref_id
         )
-        workspace_feature_flags: FeatureFlags = {}
+        workspace_feature_flags: WorkspaceFeatureFlags = {}
         for enabled_feature in args.workspace_feature_flag_enabled:
-            workspace_feature_flags[Feature(enabled_feature)] = True
+            workspace_feature_flags[WorkspaceFeature(enabled_feature)] = True
         for disabled_feature in args.workspace_feature_flag_disable:
-            workspace_feature_flags[Feature(disabled_feature)] = False
+            workspace_feature_flags[WorkspaceFeature(disabled_feature)] = False
 
         session_info = self._session_storage.load()
 
@@ -127,6 +151,7 @@ class TestHelperClearAll(TestHelperCommand):
             ClearAllArgs(
                 user_name=user_name,
                 user_timezone=user_timezone,
+                user_feature_flags=user_feature_flags,
                 auth_current_password=auth_current_password,
                 auth_new_password=auth_new_password,
                 auth_new_password_repeat=auth_new_password_repeat,

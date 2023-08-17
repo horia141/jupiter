@@ -20,5 +20,6 @@ export type User = {
     name: UserName;
     avatar: Avatar;
     timezone: Timezone;
+    feature_flags: Record<string, boolean>;
 };
 

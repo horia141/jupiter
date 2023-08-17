@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -51,9 +51,9 @@ class BigPlanFindUseCase(
     """The command for finding a big plan."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.BIG_PLANS
+        return WorkspaceFeature.BIG_PLANS
 
     async def _perform_transactional_read(
         self,
@@ -65,10 +65,10 @@ class BigPlanFindUseCase(
         workspace = context.workspace
 
         if (
-            not workspace.is_feature_available(Feature.PROJECTS)
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.filter_project_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.PROJECTS)
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
         project_collection = await uow.project_collection_repository.load_by_parent(
             workspace.ref_id,

@@ -4,8 +4,8 @@
 
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
+import type { EntityName } from './EntityName';
 import type { PersonBirthday } from './PersonBirthday';
-import type { PersonName } from './PersonName';
 import type { PersonRelationship } from './PersonRelationship';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
@@ -13,7 +13,7 @@ import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 
 export type PersonCreateArgs = {
-    name: PersonName;
+    name: EntityName;
     relationship: PersonRelationship;
     catch_up_period?: RecurringTaskPeriod;
     catch_up_eisen?: Eisen;

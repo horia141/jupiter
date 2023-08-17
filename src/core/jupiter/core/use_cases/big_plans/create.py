@@ -6,7 +6,7 @@ from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -44,9 +44,9 @@ class BigPlanCreateUseCase(
     """The command for creating a big plan."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.BIG_PLANS
+        return WorkspaceFeature.BIG_PLANS
 
     async def _perform_transactional_mutation(
         self,
@@ -59,10 +59,10 @@ class BigPlanCreateUseCase(
         workspace = context.workspace
 
         if (
-            not workspace.is_feature_available(Feature.PROJECTS)
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.project_ref_id is not None
         ):
-            raise FeatureUnavailableError(Feature.PROJECTS)
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
         big_plan_collection = await uow.big_plan_collection_repository.load_by_parent(
             workspace.ref_id,

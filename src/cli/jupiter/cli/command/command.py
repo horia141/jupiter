@@ -6,7 +6,7 @@ from typing import Any, Final, Generic, TypeVar
 
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
@@ -176,7 +176,7 @@ class LoggedInMutationCommand(
         scoped_feature = self._use_case.get_scoped_to_feature()
         if scoped_feature is None:
             return True
-        if isinstance(scoped_feature, Feature):
+        if isinstance(scoped_feature, WorkspaceFeature):
             return workspace.is_feature_available(scoped_feature)
         for feature in scoped_feature:
             if not workspace.is_feature_available(feature):
@@ -230,7 +230,7 @@ class LoggedInReadonlyCommand(
         scoped_feature = self._use_case.get_scoped_to_feature()
         if scoped_feature is None:
             return True
-        if isinstance(scoped_feature, Feature):
+        if isinstance(scoped_feature, WorkspaceFeature):
             return workspace.is_feature_available(scoped_feature)
         for feature in scoped_feature:
             if not workspace.is_feature_available(feature):

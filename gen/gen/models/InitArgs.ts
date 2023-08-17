@@ -13,6 +13,7 @@ export type InitArgs = {
     user_email_address: EmailAddress;
     user_name: UserName;
     user_timezone: Timezone;
+    user_feature_flags: Record<string, boolean>;
     auth_password: PasswordNewPlain;
     auth_password_repeat: PasswordNewPlain;
     workspace_name: WorkspaceName;

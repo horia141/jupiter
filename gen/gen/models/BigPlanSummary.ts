@@ -2,12 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { BigPlanName } from './BigPlanName';
 import type { EntityId } from './EntityId';
+import type { EntityName } from './EntityName';
 
 export type BigPlanSummary = {
     ref_id: EntityId;
-    name: BigPlanName;
+    name: EntityName;
     project_ref_id: EntityId;
 };
 

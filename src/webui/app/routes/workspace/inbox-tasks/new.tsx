@@ -19,7 +19,7 @@ import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { BigPlanSummary, Project } from "jupiter-gen";
-import { ApiError, Difficulty, Eisen, Feature } from "jupiter-gen";
+import { ApiError, Difficulty, Eisen, WorkspaceFeature } from "jupiter-gen";
 import { useContext, useState } from "react";
 import { z } from "zod";
 import { parseForm, parseQuery } from "zodix";
@@ -35,7 +35,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -197,7 +197,12 @@ export default function NewInboxTask() {
   const inputsEnabled = transition.state === "idle";
 
   const allProjectsById: { [k: string]: Project } = {};
-  if (isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS)) {
+  if (
+    isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.PROJECTS
+    )
+  ) {
     for (const project of loaderData.allProjects) {
       allProjectsById[project.ref_id.the_id] = project;
     }
@@ -206,7 +211,12 @@ export default function NewInboxTask() {
   const allBigPlansById: { [k: string]: BigPlanSummary } = {};
   let allBigPlansAsOptions: Array<{ label: string; big_plan_id: string }> = [];
 
-  if (isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS)) {
+  if (
+    isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.BIG_PLANS
+    )
+  ) {
     for (const bigPlan of loaderData.allBigPlans) {
       allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
     }
@@ -264,7 +274,10 @@ export default function NewInboxTask() {
               <FieldError actionResult={actionData} fieldName="/name" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.BIG_PLANS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -295,7 +308,10 @@ export default function NewInboxTask() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <InputLabel id="project">Project</InputLabel>
                 <Select

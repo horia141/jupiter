@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.smart_lists.smart_list_item_name import SmartListItemName
 from jupiter.core.domain.smart_lists.smart_list_tag import SmartListTag
 from jupiter.core.domain.smart_lists.smart_list_tag_name import SmartListTagName
@@ -38,9 +38,9 @@ class SmartListItemUpdateUseCase(
     """The command for updating a smart list item."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.SMART_LISTS
+        return WorkspaceFeature.SMART_LISTS
 
     async def _perform_transactional_mutation(
         self,

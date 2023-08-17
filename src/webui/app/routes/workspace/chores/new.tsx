@@ -22,8 +22,8 @@ import {
   ApiError,
   Difficulty,
   Eisen,
-  Feature,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
@@ -36,7 +36,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -169,7 +169,10 @@ export default function NewChore() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <InputLabel id="project">Project</InputLabel>
                 <Select

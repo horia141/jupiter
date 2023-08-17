@@ -7,7 +7,7 @@ from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.auth.password_plain import PasswordPlain
 from jupiter.core.domain.big_plans.service.remove_service import BigPlanRemoveService
 from jupiter.core.domain.chores.service.remove_service import ChoreRemoveService
-from jupiter.core.domain.features import FeatureFlags
+from jupiter.core.domain.features import UserFeatureFlags, WorkspaceFeatureFlags
 from jupiter.core.domain.habits.service.remove_service import HabitRemoveService
 from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
@@ -58,12 +58,13 @@ class ClearAllArgs(UseCaseArgsBase):
 
     user_name: UserName
     user_timezone: Timezone
+    user_feature_flags: UserFeatureFlags
     auth_current_password: PasswordPlain
     auth_new_password: PasswordNewPlain
     auth_new_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_default_project_ref_id: EntityId
-    workspace_feature_flags: FeatureFlags
+    workspace_feature_flags: WorkspaceFeatureFlags
 
 
 class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None]):
@@ -105,7 +106,10 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
         """Execute the command's action."""
         user = context.user
         workspace = context.workspace
-        feature_flags_controls = infer_feature_flag_controls(self._global_properties)
+        (
+            user_feature_flags_controls,
+            workspace_feature_flags_controls,
+        ) = infer_feature_flag_controls(self._global_properties)
 
         vacation_collection = await uow.vacation_collection_repository.load_by_parent(
             workspace.ref_id,
@@ -161,6 +165,13 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time(),
             )
+
+            user = user.change_feature_flags(
+                feature_flag_controls=user_feature_flags_controls,
+                feature_flags=args.user_feature_flags,
+                source=EventSource.CLI,
+                modification_time=self._time_provider.get_current_time(),
+            )
             await uow.user_repository.save(user)
 
             auth = await uow.auth_repository.load_by_parent(parent_ref_id=user.ref_id)
@@ -190,7 +201,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 modification_time=self._time_provider.get_current_time(),
             )
             workspace = workspace.change_feature_flags(
-                feature_flag_controls=feature_flags_controls,
+                feature_flag_controls=workspace_feature_flags_controls,
                 feature_flags=args.workspace_feature_flags,
                 source=EventSource.CLI,
                 modification_time=self._time_provider.get_current_time(),

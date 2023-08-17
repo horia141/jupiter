@@ -16,12 +16,12 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, Feature, Project } from "jupiter-gen";
+import { ApiError, Project, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
-import { FeatureFlagsEditor } from "~/components/feature-flags-editor";
+import { WorkspaceFeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
@@ -29,7 +29,7 @@ import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -40,7 +40,7 @@ const WorkspaceSettingsFormSchema = {
   intent: z.string(),
   name: z.string(),
   defaultProject: z.string(),
-  featureFlags: z.array(z.nativeEnum(Feature)),
+  featureFlags: z.array(z.nativeEnum(WorkspaceFeature)),
 };
 
 export const handle = {
@@ -97,11 +97,11 @@ export async function action({ request }: ActionArgs) {
 
       case "change-feature-flags": {
         const featureFlags: Record<string, boolean> = {};
-        for (const feature of Object.values(Feature)) {
-          if (form.featureFlags.find((v) => v == feature)) {
-            featureFlags[feature] = true;
+        for (const workspacefeature of Object.values(WorkspaceFeature)) {
+          if (form.featureFlags.find((v) => v == workspacefeature)) {
+            featureFlags[workspacefeature] = true;
           } else {
-            featureFlags[feature] = false;
+            featureFlags[workspacefeature] = false;
           }
         }
 
@@ -177,7 +177,10 @@ export default function Settings() {
             </CardActions>
           </Card>
 
-          {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <Card>
               <GlobalError
                 intent="change-default-project"
@@ -224,7 +227,10 @@ export default function Settings() {
               </CardActions>
             </Card>
           )}
-          {!isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+          {!isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <input
               type="hidden"
               name="defaultProject"
@@ -241,10 +247,10 @@ export default function Settings() {
             <CardHeader title="Feature Flags" />
 
             <CardContent>
-              <FeatureFlagsEditor
+              <WorkspaceFeatureFlagsEditor
                 name="featureFlags"
                 inputsEnabled={inputsEnabled}
-                featureFlagsControls={topLevelInfo.featureFlagControls}
+                featureFlagsControls={topLevelInfo.workspaceFeatureFlagControls}
                 defaultFeatureFlags={loaderData.workspace.feature_flags}
                 hosting={globalProperties.hosting}
               />

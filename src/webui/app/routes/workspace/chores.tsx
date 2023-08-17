@@ -3,7 +3,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { Chore, ChoreFindResultEntry, Project } from "jupiter-gen";
-import { Eisen, Feature, RecurringTaskPeriod } from "jupiter-gen";
+import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import Check from "~/components/check";
@@ -20,7 +20,7 @@ import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortChoresNaturally } from "~/logic/domain/chore";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -102,9 +102,9 @@ export default function Chores() {
               >
                 <EntityLink to={`/workspace/chores/${chore.ref_id.the_id}`}>
                   <EntityNameComponent name={chore.name} />
-                  {isFeatureAvailable(
+                  {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    Feature.PROJECTS
+                    WorkspaceFeature.PROJECTS
                   ) && <ProjectTag project={entry.project as Project} />}
                   <Check isDone={!chore.suspended} label="Active" />
                   <PeriodTag period={chore.gen_params.period} />

@@ -13,7 +13,7 @@ from jupiter.core.domain.fast_info_repository import (
     SmartListSummary,
     VacationSummary,
 )
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.use_case import (
     UseCaseArgsBase,
@@ -116,20 +116,26 @@ class GetSummariesUseCase(
             )
 
         vacations = None
-        if workspace.is_feature_available(Feature.VACATIONS) and args.include_vacations:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.VACATIONS)
+            and args.include_vacations
+        ):
             vacations = await uow.fast_into_repository.find_all_vacation_summaries(
                 parent_ref_id=vacation_collection.parent_ref_id,
                 allow_archived=allow_archived,
             )
         projects = None
-        if workspace.is_feature_available(Feature.PROJECTS) and args.include_projects:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.PROJECTS)
+            and args.include_projects
+        ):
             projects = await uow.fast_into_repository.find_all_project_summaries(
                 parent_ref_id=project_collection.parent_ref_id,
                 allow_archived=allow_archived,
             )
         inbox_tasks = None
         if (
-            workspace.is_feature_available(Feature.INBOX_TASKS)
+            workspace.is_feature_available(WorkspaceFeature.INBOX_TASKS)
             and args.include_inbox_tasks
         ):
             inbox_tasks = await uow.fast_into_repository.find_all_inbox_task_summaries(
@@ -137,26 +143,35 @@ class GetSummariesUseCase(
                 allow_archived=allow_archived,
             )
         habits = None
-        if workspace.is_feature_available(Feature.HABITS) and args.include_habits:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.HABITS)
+            and args.include_habits
+        ):
             habits = await uow.fast_into_repository.find_all_habit_summaries(
                 parent_ref_id=habit_collection.parent_ref_id,
                 allow_archived=allow_archived,
             )
         chores = None
-        if workspace.is_feature_available(Feature.CHORES) and args.include_chores:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.CHORES)
+            and args.include_chores
+        ):
             chores = await uow.fast_into_repository.find_all_chore_summaries(
                 parent_ref_id=chore_collection.parent_ref_id,
                 allow_archived=allow_archived,
             )
         big_plans = None
-        if workspace.is_feature_available(Feature.BIG_PLANS) and args.include_big_plans:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.BIG_PLANS)
+            and args.include_big_plans
+        ):
             big_plans = await uow.fast_into_repository.find_all_big_plan_summaries(
                 parent_ref_id=big_plan_collection.parent_ref_id,
                 allow_archived=allow_archived,
             )
         smart_lists = None
         if (
-            workspace.is_feature_available(Feature.SMART_LISTS)
+            workspace.is_feature_available(WorkspaceFeature.SMART_LISTS)
             and args.include_smart_lists
         ):
             smart_lists = await uow.fast_into_repository.find_all_smart_list_summaries(
@@ -164,13 +179,19 @@ class GetSummariesUseCase(
                 allow_archived=allow_archived,
             )
         metrics = None
-        if workspace.is_feature_available(Feature.METRICS) and args.include_metrics:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.METRICS)
+            and args.include_metrics
+        ):
             metrics = await uow.fast_into_repository.find_all_metric_summaries(
                 parent_ref_id=metric_collection.parent_ref_id,
                 allow_archived=allow_archived,
             )
         persons = None
-        if workspace.is_feature_available(Feature.PERSONS) and args.include_persons:
+        if (
+            workspace.is_feature_available(WorkspaceFeature.PERSONS)
+            and args.include_persons
+        ):
             persons = await uow.fast_into_repository.find_all_person_summaries(
                 parent_ref_id=person_collection.parent_ref_id,
                 allow_archived=allow_archived,

@@ -15,7 +15,7 @@ import {
 import type { PanInfo } from "framer-motion";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import {
-  Feature,
+  WorkspaceFeature,
   type ADate,
   type BigPlan,
   type Chore,
@@ -36,7 +36,7 @@ import type {
   InboxTaskParent,
 } from "~/logic/domain/inbox-task";
 import { isCompleted } from "~/logic/domain/inbox-task-status";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { TopLevelInfo } from "~/top-level-context";
 import { ADateTag } from "./adate-tag";
@@ -181,9 +181,9 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
             {props.showOptions.showSource && (
               <InboxTaskSourceTag source={props.inboxTask.source} />
             )}
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.PROJECTS
+              WorkspaceFeature.PROJECTS
             ) &&
               props.showOptions.showProject &&
               props.parent?.project && (
@@ -209,49 +209,49 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
             )}
             {props.showOptions.showParent && (
               <>
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.BIG_PLANS
+                  WorkspaceFeature.BIG_PLANS
                 ) &&
                   props.parent &&
                   props.parent.bigPlan && (
                     <BigPlanTag bigPlan={props.parent.bigPlan as BigPlan} />
                   )}
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.HABITS
+                  WorkspaceFeature.HABITS
                 ) &&
                   props.parent &&
                   props.parent.habit && (
                     <HabitTag habit={props.parent.habit as Habit} />
                   )}
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.CHORES
+                  WorkspaceFeature.CHORES
                 ) &&
                   props.parent &&
                   props.parent.chore && (
                     <ChoreTag chore={props.parent.chore as Chore} />
                   )}
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.METRICS
+                  WorkspaceFeature.METRICS
                 ) &&
                   props.parent &&
                   props.parent.metric && (
                     <MetricTag metric={props.parent.metric as Metric} />
                   )}
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.PERSONS
+                  WorkspaceFeature.PERSONS
                 ) &&
                   props.parent &&
                   props.parent.person && (
                     <PersonTag person={props.parent.person as Person} />
                   )}
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.SLACK_TASKS
+                  WorkspaceFeature.SLACK_TASKS
                 ) &&
                   props.parent &&
                   props.parent.slackTask && (
@@ -259,9 +259,9 @@ export function InboxTaskCard(props: InboxTaskCardProps) {
                       slackTask={props.parent.slackTask as SlackTask}
                     />
                   )}
-                {isFeatureAvailable(
+                {isWorkspaceFeatureAvailable(
                   props.topLevelInfo.workspace,
-                  Feature.EMAIL_TASKS
+                  WorkspaceFeature.EMAIL_TASKS
                 ) &&
                   props.parent &&
                   props.parent.emailTask && (

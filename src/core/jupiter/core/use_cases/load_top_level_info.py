@@ -4,10 +4,14 @@ from typing import Final, Optional
 
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
 from jupiter.core.domain.features import (
-    BASIC_FEATURE_FLAGS,
-    Feature,
-    FeatureFlags,
-    FeatureFlagsControls,
+    BASIC_USER_FEATURE_FLAGS,
+    BASIC_WORKSPACE_FEATURE_FLAGS,
+    UserFeature,
+    UserFeatureFlags,
+    UserFeatureFlagsControls,
+    WorkspaceFeature,
+    WorkspaceFeatureFlags,
+    WorkspaceFeatureFlagsControls,
 )
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.projects.project_name import ProjectName
@@ -43,11 +47,14 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
 
     env: Env
     hosting: Hosting
+    user_feature_flag_controls: UserFeatureFlagsControls
+    default_user_feature_flags: UserFeatureFlags
+    user_feature_hack: UserFeature
     deafult_workspace_name: WorkspaceName
     default_first_project_name: ProjectName
-    feature_flag_controls: FeatureFlagsControls
-    default_feature_flags: FeatureFlags
-    feature_hack: Feature
+    workspace_feature_flag_controls: WorkspaceFeatureFlagsControls
+    default_workspace_feature_flags: WorkspaceFeatureFlags
+    workspace_feature_hack: WorkspaceFeature
     user: Optional[User] = None
     workspace: Optional[Workspace] = None
 
@@ -75,7 +82,10 @@ class LoadTopLevelInfoUseCase(
         args: LoadTopLevelInfoArgs,
     ) -> LoadTopLevelInfoResult:
         """Execute the command's action."""
-        feature_flags_controls = infer_feature_flag_controls(self._global_properties)
+        (
+            user_feature_flags_controls,
+            workspace_feature_flags_controls,
+        ) = infer_feature_flag_controls(self._global_properties)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             if context.auth_token is None:
@@ -101,11 +111,14 @@ class LoadTopLevelInfoUseCase(
         return LoadTopLevelInfoResult(
             env=self._global_properties.env,
             hosting=self._global_properties.hosting,
+            user_feature_flag_controls=user_feature_flags_controls,
+            default_user_feature_flags=BASIC_USER_FEATURE_FLAGS,
+            user_feature_hack=UserFeature.GAMIFICATION_SCORES,
             deafult_workspace_name=WorkspaceName.from_raw("Work"),
             default_first_project_name=ProjectName.from_raw("Work"),
-            feature_flag_controls=feature_flags_controls,
-            default_feature_flags=BASIC_FEATURE_FLAGS,
-            feature_hack=Feature.INBOX_TASKS,
+            workspace_feature_flag_controls=workspace_feature_flags_controls,
+            default_workspace_feature_flags=BASIC_WORKSPACE_FEATURE_FLAGS,
+            workspace_feature_hack=WorkspaceFeature.INBOX_TASKS,
             user=user,
             workspace=workspace,
         )

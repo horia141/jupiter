@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 /**
- * A particular feature of Jupiter.
+ * A particular feature of a Jupiter workspace.
  */
-export enum Feature {
+export enum WorkspaceFeature {
     INBOX_TASKS = 'inbox-tasks',
     HABITS = 'habits',
     CHORES = 'chores',

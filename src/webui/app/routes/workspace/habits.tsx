@@ -3,7 +3,7 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher, useOutlet } from "@remix-run/react";
 import type { Habit, HabitFindResultEntry, Project } from "jupiter-gen";
-import { Eisen, Feature, RecurringTaskPeriod } from "jupiter-gen";
+import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
@@ -19,7 +19,7 @@ import { TrunkCard } from "~/components/infra/trunk-card";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortHabitsNaturally } from "~/logic/domain/habit";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -101,9 +101,9 @@ export default function Habits() {
               >
                 <EntityLink to={`/workspace/habits/${habit.ref_id.the_id}`}>
                   <EntityNameComponent name={habit.name} />
-                  {isFeatureAvailable(
+                  {isWorkspaceFeatureAvailable(
                     topLevelInfo.workspace,
-                    Feature.PROJECTS
+                    WorkspaceFeature.PROJECTS
                   ) && <ProjectTag project={entry.project as Project} />}
                   {habit.suspended && <span className="tag">Suspended</span>}
                   <PeriodTag period={habit.gen_params.period} />

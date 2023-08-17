@@ -13,7 +13,7 @@ from jupiter.cli.command.rendering import (
 )
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.big_plans.find import BigPlanFindArgs, BigPlanFindUseCase
@@ -53,7 +53,9 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             action="append",
             help="The id of the big plan to modify",
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             parser.add_argument(
                 "--project-id",
                 dest="project_ref_ids",
@@ -82,7 +84,9 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
             if len(args.ref_ids) > 0
             else None
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             project_ref_ids = (
                 [EntityId.from_raw(pk) for pk in args.project_ref_ids]
                 if len(args.project_ref_ids) > 0
@@ -139,7 +143,9 @@ class BigPlanShow(LoggedInReadonlyCommand[BigPlanFindUseCase]):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(due_date_to_rich_text(big_plan.due_date))
 
-            if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            if self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
+            ):
                 big_plan_info_text.append(" ")
                 big_plan_info_text.append(project_to_rich_text(project.name))
 

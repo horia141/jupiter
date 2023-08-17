@@ -1,14 +1,23 @@
-import { FeatureFlagsControls, User, Workspace } from "jupiter-gen";
+import {
+  User,
+  UserFeatureFlagsControls,
+  Workspace,
+  WorkspaceFeatureFlagsControls,
+} from "jupiter-gen";
 import { createContext } from "react";
 
 export interface TopLevelInfo {
-  featureFlagControls: FeatureFlagsControls;
+  userFeatureFlagControls: UserFeatureFlagsControls;
+  workspaceFeatureFlagControls: WorkspaceFeatureFlagsControls;
   user: User;
   workspace: Workspace;
 }
 
 export const TopLevelInfoContext = createContext<TopLevelInfo>({
-  featureFlagControls: {
+  userFeatureFlagControls: {
+    controls: {},
+  },
+  workspaceFeatureFlagControls: {
     controls: {},
   },
   user: {
@@ -22,6 +31,7 @@ export const TopLevelInfoContext = createContext<TopLevelInfo>({
     name: { the_name: "foo" },
     avatar: { avatar_as_data_url: "this-is-not-a-data-url" },
     timezone: { the_timezone: "UTC" },
+    feature_flags: {},
   },
   workspace: {
     ref_id: { the_id: "bad" },

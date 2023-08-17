@@ -13,44 +13,18 @@ class FeatureUnavailableError(Exception):
 
     _error_str: Final[str]
 
-    def __init__(self, feature_or_str: "Feature | str"):
+    def __init__(self, feature_or_str: "WorkspaceFeature | str"):
         """Constructor."""
         super().__init__()
         self._error_str = (
             (f"Feature {feature_or_str.value} is not available in this workspace")
-            if isinstance(feature_or_str, Feature)
+            if isinstance(feature_or_str, WorkspaceFeature)
             else feature_or_str
         )
 
     def __str__(self) -> str:
         """Form a string representation here."""
         return self._error_str
-
-
-@enum.unique
-class Feature(enum.Enum):
-    """A particular feature of Jupiter."""
-
-    INBOX_TASKS = "inbox-tasks"
-    HABITS = "habits"
-    CHORES = "chores"
-    BIG_PLANS = "big-plans"
-    VACATIONS = "vacations"
-    PROJECTS = "projects"
-    SMART_LISTS = "smart-lists"
-    METRICS = "metrics"
-    PERSONS = "persons"
-    SLACK_TASKS = "slack-tasks"
-    EMAIL_TASKS = "email-tasks"
-
-    @staticmethod
-    @lru_cache(maxsize=1)
-    def all_values() -> Iterable[str]:
-        """The possible values for difficulties."""
-        return list(p.value for p in Feature)
-
-
-FeatureFlags = Dict[Feature, bool]
 
 
 @enum.unique
@@ -90,17 +64,35 @@ class FeatureControl(enum.Enum):
         return property_value
 
 
+@enum.unique
+class UserFeature(enum.Enum):
+    """A particular feature of a Jupiter user."""
+
+    GAMIFICATION_SCORES = "gamification-scores"
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def all_values() -> Iterable[str]:
+        """The possible values for user features."""
+        return list(p.value for p in UserFeature)
+
+
+UserFeatureFlags = Dict[UserFeature, bool]
+
+
 @dataclass
-class FeatureFlagsControls(Value):
-    """Feature settings controls for the workspace."""
+class UserFeatureFlagsControls(Value):
+    """Feature settings controls for the user."""
 
-    controls: Dict[Feature, FeatureControl]
+    controls: Dict[UserFeature, FeatureControl]
 
-    def validate_and_complete_feature_flags(
-        self, feature_flags_delta: FeatureFlags, current_feature_flags: FeatureFlags
-    ) -> FeatureFlags:
+    def validate_and_complete(
+        self,
+        feature_flags_delta: UserFeatureFlags,
+        current_feature_flags: UserFeatureFlags,
+    ) -> UserFeatureFlags:
         """Validates a set of feature flags and also provides a complete set."""
-        checked_feature_flags: FeatureFlags = {}
+        checked_feature_flags: UserFeatureFlags = {}
 
         for feature, control in self.controls.items():
             if feature in feature_flags_delta:
@@ -115,49 +107,111 @@ class FeatureFlagsControls(Value):
         return checked_feature_flags
 
 
-BASIC_FEATURE_FLAGS = {
-    Feature.INBOX_TASKS: True,
-    Feature.HABITS: True,
-    Feature.CHORES: False,
-    Feature.BIG_PLANS: False,
-    Feature.VACATIONS: False,
-    Feature.PROJECTS: False,
-    Feature.SMART_LISTS: False,
-    Feature.METRICS: False,
-    Feature.PERSONS: False,
-    Feature.SLACK_TASKS: False,
-    Feature.EMAIL_TASKS: False,
+@enum.unique
+class WorkspaceFeature(enum.Enum):
+    """A particular feature of a Jupiter workspace."""
+
+    INBOX_TASKS = "inbox-tasks"
+    HABITS = "habits"
+    CHORES = "chores"
+    BIG_PLANS = "big-plans"
+    VACATIONS = "vacations"
+    PROJECTS = "projects"
+    SMART_LISTS = "smart-lists"
+    METRICS = "metrics"
+    PERSONS = "persons"
+    SLACK_TASKS = "slack-tasks"
+    EMAIL_TASKS = "email-tasks"
+
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def all_values() -> Iterable[str]:
+        """The possible values for workspace features."""
+        return list(p.value for p in WorkspaceFeature)
+
+
+WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]
+
+
+@dataclass
+class WorkspaceFeatureFlagsControls(Value):
+    """Feature settings controls for the workspace."""
+
+    controls: Dict[WorkspaceFeature, FeatureControl]
+
+    def validate_and_complete(
+        self,
+        feature_flags_delta: WorkspaceFeatureFlags,
+        current_feature_flags: WorkspaceFeatureFlags,
+    ) -> WorkspaceFeatureFlags:
+        """Validates a set of feature flags and also provides a complete set."""
+        checked_feature_flags: WorkspaceFeatureFlags = {}
+
+        for feature, control in self.controls.items():
+            if feature in feature_flags_delta:
+                checked_feature_flags[feature] = control.check(
+                    feature.value, feature_flags_delta[feature]
+                )
+            elif feature in current_feature_flags:
+                checked_feature_flags[feature] = current_feature_flags[feature]
+            else:
+                checked_feature_flags[feature] = control.standard_flag
+
+        return checked_feature_flags
+
+
+BASIC_USER_FEATURE_FLAGS = {UserFeature.GAMIFICATION_SCORES: True}
+
+
+USER_FEATURE_FLAGS_CONTROLS = UserFeatureFlagsControls(
+    {UserFeature.GAMIFICATION_SCORES: FeatureControl.USER}
+)
+
+
+BASIC_WORKSPACE_FEATURE_FLAGS = {
+    WorkspaceFeature.INBOX_TASKS: True,
+    WorkspaceFeature.HABITS: True,
+    WorkspaceFeature.CHORES: False,
+    WorkspaceFeature.BIG_PLANS: False,
+    WorkspaceFeature.VACATIONS: False,
+    WorkspaceFeature.PROJECTS: False,
+    WorkspaceFeature.SMART_LISTS: False,
+    WorkspaceFeature.METRICS: False,
+    WorkspaceFeature.PERSONS: False,
+    WorkspaceFeature.SLACK_TASKS: False,
+    WorkspaceFeature.EMAIL_TASKS: False,
 }
 
 
-HOSTED_GLOBAL_FEATURE_FLAGS_CONTROLS = FeatureFlagsControls(
+HOSTED_GLOBAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
     {
-        Feature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
-        Feature.HABITS: FeatureControl.USER,
-        Feature.CHORES: FeatureControl.USER,
-        Feature.BIG_PLANS: FeatureControl.USER,
-        Feature.VACATIONS: FeatureControl.USER,
-        Feature.PROJECTS: FeatureControl.USER,
-        Feature.SMART_LISTS: FeatureControl.USER,
-        Feature.METRICS: FeatureControl.USER,
-        Feature.PERSONS: FeatureControl.USER,
-        Feature.SLACK_TASKS: FeatureControl.ALWAYS_OFF_TECH,
-        Feature.EMAIL_TASKS: FeatureControl.ALWAYS_OFF_TECH,
+        WorkspaceFeature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
+        WorkspaceFeature.HABITS: FeatureControl.USER,
+        WorkspaceFeature.CHORES: FeatureControl.USER,
+        WorkspaceFeature.BIG_PLANS: FeatureControl.USER,
+        WorkspaceFeature.VACATIONS: FeatureControl.USER,
+        WorkspaceFeature.PROJECTS: FeatureControl.USER,
+        WorkspaceFeature.SMART_LISTS: FeatureControl.USER,
+        WorkspaceFeature.METRICS: FeatureControl.USER,
+        WorkspaceFeature.PERSONS: FeatureControl.USER,
+        WorkspaceFeature.SLACK_TASKS: FeatureControl.ALWAYS_OFF_TECH,
+        WorkspaceFeature.EMAIL_TASKS: FeatureControl.ALWAYS_OFF_TECH,
     }
 )
 
-LOCAL_FEATURE_FLAGS_CONTROLS = FeatureFlagsControls(
+
+LOCAL_WORKSPACE_FEATURE_FLAGS_CONTROLS = WorkspaceFeatureFlagsControls(
     {
-        Feature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
-        Feature.HABITS: FeatureControl.USER,
-        Feature.CHORES: FeatureControl.USER,
-        Feature.BIG_PLANS: FeatureControl.USER,
-        Feature.VACATIONS: FeatureControl.USER,
-        Feature.PROJECTS: FeatureControl.USER,
-        Feature.SMART_LISTS: FeatureControl.USER,
-        Feature.METRICS: FeatureControl.USER,
-        Feature.PERSONS: FeatureControl.USER,
-        Feature.SLACK_TASKS: FeatureControl.ALWAYS_OFF_HOSTING,
-        Feature.EMAIL_TASKS: FeatureControl.ALWAYS_OFF_HOSTING,
+        WorkspaceFeature.INBOX_TASKS: FeatureControl.ALWAYS_ON,
+        WorkspaceFeature.HABITS: FeatureControl.USER,
+        WorkspaceFeature.CHORES: FeatureControl.USER,
+        WorkspaceFeature.BIG_PLANS: FeatureControl.USER,
+        WorkspaceFeature.VACATIONS: FeatureControl.USER,
+        WorkspaceFeature.PROJECTS: FeatureControl.USER,
+        WorkspaceFeature.SMART_LISTS: FeatureControl.USER,
+        WorkspaceFeature.METRICS: FeatureControl.USER,
+        WorkspaceFeature.PERSONS: FeatureControl.USER,
+        WorkspaceFeature.SLACK_TASKS: FeatureControl.ALWAYS_OFF_HOSTING,
+        WorkspaceFeature.EMAIL_TASKS: FeatureControl.ALWAYS_OFF_HOSTING,
     }
 )

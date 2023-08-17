@@ -5,7 +5,7 @@ from typing import Iterable, Optional, cast
 from jupiter.core.domain import schedules
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.habits.habit_name import HabitName
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
@@ -52,9 +52,9 @@ class HabitUpdateUseCase(
     """The command for updating a habit."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.HABITS
+        return WorkspaceFeature.HABITS
 
     async def _perform_transactional_mutation(
         self,

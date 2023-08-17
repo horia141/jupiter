@@ -5,6 +5,7 @@ import { GlobalPropertiesContext } from "~/global-properties-client";
 
 export enum DocsHelpSubject {
   ROOT,
+  GAMIFICATION,
   INBOX_TASKS,
   HABITS,
   CHORES,
@@ -49,6 +50,8 @@ function subjectToUrl(subject: DocsHelpSubject) {
   switch (subject) {
     case DocsHelpSubject.ROOT:
       return `/`;
+    case DocsHelpSubject.GAMIFICATION:
+      return `concepts/gamification/`;
     case DocsHelpSubject.INBOX_TASKS:
       return `concepts/inbox-tasks/`;
     case DocsHelpSubject.HABITS:

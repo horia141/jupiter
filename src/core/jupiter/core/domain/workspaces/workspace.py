@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import Iterable, List
 
 from jupiter.core.domain.features import (
-    Feature,
-    FeatureFlags,
-    FeatureFlagsControls,
+    WorkspaceFeature,
+    WorkspaceFeatureFlags,
+    WorkspaceFeatureFlagsControls,
 )
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.named_entity_tag import NamedEntityTag
@@ -40,13 +40,13 @@ class Workspace(RootEntity):
 
     name: WorkspaceName
     default_project_ref_id: EntityId
-    feature_flags: FeatureFlags
+    feature_flags: WorkspaceFeatureFlags
 
     @staticmethod
     def new_workspace(
         name: WorkspaceName,
-        feature_flag_controls: FeatureFlagsControls,
-        feature_flags: FeatureFlags,
+        feature_flag_controls: WorkspaceFeatureFlagsControls,
+        feature_flags: WorkspaceFeatureFlags,
         source: EventSource,
         created_time: Timestamp,
     ) -> "Workspace":
@@ -66,7 +66,7 @@ class Workspace(RootEntity):
                 ),
             ],
             name=name,
-            feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
+            feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags, current_feature_flags={}
             ),
             default_project_ref_id=BAD_REF_ID,
@@ -107,14 +107,14 @@ class Workspace(RootEntity):
 
     def change_feature_flags(
         self,
-        feature_flag_controls: FeatureFlagsControls,
-        feature_flags: FeatureFlags,
+        feature_flag_controls: WorkspaceFeatureFlagsControls,
+        feature_flags: WorkspaceFeatureFlags,
         source: EventSource,
         modification_time: Timestamp,
     ) -> "Workspace":
         """Change the feature settings for this workspace."""
         return self._new_version(
-            feature_flags=feature_flag_controls.validate_and_complete_feature_flags(
+            feature_flags=feature_flag_controls.validate_and_complete(
                 feature_flags_delta=feature_flags,
                 current_feature_flags=self.feature_flags,
             ),
@@ -123,7 +123,7 @@ class Workspace(RootEntity):
             ),
         )
 
-    def is_feature_available(self, feature: Feature) -> bool:
+    def is_feature_available(self, feature: WorkspaceFeature) -> bool:
         """Check if a feature is available in this workspace."""
         return self.feature_flags[feature]
 
@@ -138,58 +138,58 @@ class Workspace(RootEntity):
             if entity_tag is NamedEntityTag.INBOX_TASK:
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.HABIT and self.is_feature_available(
-                Feature.HABITS
+                WorkspaceFeature.HABITS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.CHORE and self.is_feature_available(
-                Feature.CHORES
+                WorkspaceFeature.CHORES
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.BIG_PLAN and self.is_feature_available(
-                Feature.BIG_PLANS
+                WorkspaceFeature.BIG_PLANS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.VACATION and self.is_feature_available(
-                Feature.VACATIONS
+                WorkspaceFeature.VACATIONS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.PROJECT and self.is_feature_available(
-                Feature.PROJECTS
+                WorkspaceFeature.PROJECTS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.SMART_LIST and self.is_feature_available(
-                Feature.SMART_LISTS
+                WorkspaceFeature.SMART_LISTS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif (
                 entity_tag is NamedEntityTag.SMART_LIST_TAG
-                and self.is_feature_available(Feature.SMART_LISTS)
+                and self.is_feature_available(WorkspaceFeature.SMART_LISTS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif (
                 entity_tag is NamedEntityTag.SMART_LIST_ITEM
-                and self.is_feature_available(Feature.SMART_LISTS)
+                and self.is_feature_available(WorkspaceFeature.SMART_LISTS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.METRIC and self.is_feature_available(
-                Feature.METRICS
+                WorkspaceFeature.METRICS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif (
                 entity_tag is NamedEntityTag.METRIC_ENTRY
-                and self.is_feature_available(Feature.METRICS)
+                and self.is_feature_available(WorkspaceFeature.METRICS)
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.PERSON and self.is_feature_available(
-                Feature.PERSONS
+                WorkspaceFeature.PERSONS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.SLACK_TASK and self.is_feature_available(
-                Feature.SLACK_TASKS
+                WorkspaceFeature.SLACK_TASKS
             ):
                 inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.EMAIL_TASK and self.is_feature_available(
-                Feature.EMAIL_TASKS
+                WorkspaceFeature.EMAIL_TASKS
             ):
                 inferred_entity_tags.append(entity_tag)
         return inferred_entity_tags
@@ -205,37 +205,37 @@ class Workspace(RootEntity):
             if source is InboxTaskSource.USER:
                 inferred_sources.append(source)
             elif source is InboxTaskSource.HABIT and self.is_feature_available(
-                Feature.HABITS
+                WorkspaceFeature.HABITS
             ):
                 inferred_sources.append(source)
             elif source is InboxTaskSource.CHORE and self.is_feature_available(
-                Feature.CHORES
+                WorkspaceFeature.CHORES
             ):
                 inferred_sources.append(source)
             elif source is InboxTaskSource.BIG_PLAN and self.is_feature_available(
-                Feature.BIG_PLANS
+                WorkspaceFeature.BIG_PLANS
             ):
                 inferred_sources.append(source)
             elif source is InboxTaskSource.METRIC and self.is_feature_available(
-                Feature.METRICS
+                WorkspaceFeature.METRICS
             ):
                 inferred_sources.append(source)
             elif (
                 source is InboxTaskSource.PERSON_BIRTHDAY
-                and self.is_feature_available(Feature.PERSONS)
+                and self.is_feature_available(WorkspaceFeature.PERSONS)
             ):
                 inferred_sources.append(source)
             elif (
                 source is InboxTaskSource.PERSON_CATCH_UP
-                and self.is_feature_available(Feature.PERSONS)
+                and self.is_feature_available(WorkspaceFeature.PERSONS)
             ):
                 inferred_sources.append(source)
             elif source is InboxTaskSource.SLACK_TASK and self.is_feature_available(
-                Feature.SLACK_TASKS
+                WorkspaceFeature.SLACK_TASKS
             ):
                 inferred_sources.append(source)
             elif source is InboxTaskSource.EMAIL_TASK and self.is_feature_available(
-                Feature.EMAIL_TASKS
+                WorkspaceFeature.EMAIL_TASKS
             ):
                 inferred_sources.append(source)
         return inferred_sources
@@ -249,47 +249,47 @@ class Workspace(RootEntity):
         inferred_sync_targets: List[SyncTarget] = []
         for sync_target in all_sync_targets:
             if sync_target is SyncTarget.INBOX_TASKS and self.is_feature_available(
-                Feature.INBOX_TASKS
+                WorkspaceFeature.INBOX_TASKS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.HABITS and self.is_feature_available(
-                Feature.HABITS
+                WorkspaceFeature.HABITS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.CHORES and self.is_feature_available(
-                Feature.CHORES
+                WorkspaceFeature.CHORES
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.BIG_PLANS and self.is_feature_available(
-                Feature.BIG_PLANS
+                WorkspaceFeature.BIG_PLANS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.VACATIONS and self.is_feature_available(
-                Feature.VACATIONS
+                WorkspaceFeature.VACATIONS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.PROJECTS and self.is_feature_available(
-                Feature.PROJECTS
+                WorkspaceFeature.PROJECTS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.SMART_LISTS and self.is_feature_available(
-                Feature.SMART_LISTS
+                WorkspaceFeature.SMART_LISTS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.METRICS and self.is_feature_available(
-                Feature.METRICS
+                WorkspaceFeature.METRICS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.PERSONS and self.is_feature_available(
-                Feature.PERSONS
+                WorkspaceFeature.PERSONS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.SLACK_TASKS and self.is_feature_available(
-                Feature.SLACK_TASKS
+                WorkspaceFeature.SLACK_TASKS
             ):
                 inferred_sync_targets.append(sync_target)
             elif sync_target is SyncTarget.EMAIL_TASKS and self.is_feature_available(
-                Feature.EMAIL_TASKS
+                WorkspaceFeature.EMAIL_TASKS
             ):
                 inferred_sync_targets.append(sync_target)
         return inferred_sync_targets

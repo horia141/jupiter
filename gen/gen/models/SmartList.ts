@@ -4,7 +4,7 @@
 
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { SmartListName } from './SmartListName';
+import type { EntityName } from './EntityName';
 import type { Timestamp } from './Timestamp';
 
 export type SmartList = {
@@ -14,7 +14,7 @@ export type SmartList = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: SmartListName;
+    name: EntityName;
     smart_list_collection_ref_id: EntityId;
     icon: EntityIcon;
 };

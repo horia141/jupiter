@@ -4,7 +4,7 @@
 
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
-import type { SmartListTagName } from './SmartListTagName';
+import type { TagName } from './TagName';
 import type { URL } from './URL';
 
 export type SmartListItemUpdateArgs = {
@@ -19,7 +19,7 @@ export type SmartListItemUpdateArgs = {
     };
     tags: {
         should_change: boolean;
-        value?: Array<SmartListTagName>;
+        value?: Array<TagName>;
     };
     url: {
         should_change: boolean;

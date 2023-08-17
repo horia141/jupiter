@@ -3,10 +3,10 @@
 /* eslint-disable */
 
 import type { ADate } from './ADate';
-import type { ChoreName } from './ChoreName';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
+import type { EntityName } from './EntityName';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
@@ -14,7 +14,7 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 
 export type ChoreCreateArgs = {
-    name: ChoreName;
+    name: EntityName;
     period: RecurringTaskPeriod;
     project_ref_id?: EntityId;
     eisen?: Eisen;

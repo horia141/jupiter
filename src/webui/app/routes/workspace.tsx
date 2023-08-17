@@ -54,7 +54,8 @@ export async function loader({ request }: LoaderArgs) {
     await client.loadProgressReporterToken.loadProgressReporterToken({});
 
   return json({
-    featureFlagControls: response.feature_flag_controls,
+    userFeatureFlagControls: response.user_feature_flag_controls,
+    workspaceFeatureFlagControls: response.workspace_feature_flag_controls,
     user: response.user,
     workspace: response.workspace,
     progressReporterToken:
@@ -85,7 +86,8 @@ export default function Workspace() {
   };
 
   const topLevelInfo = {
-    featureFlagControls: loaderData.featureFlagControls,
+    userFeatureFlagControls: loaderData.userFeatureFlagControls,
+    workspaceFeatureFlagControls: loaderData.workspaceFeatureFlagControls,
     user: loaderData.user,
     workspace: loaderData.workspace,
   };
