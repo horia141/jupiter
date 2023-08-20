@@ -68,7 +68,7 @@ class FeatureControl(enum.Enum):
 class UserFeature(enum.Enum):
     """A particular feature of a Jupiter user."""
 
-    GAMIFICATION_SCORES = "gamification-scores"
+    GAMIFICATION = "gamification"
 
     @staticmethod
     @lru_cache(maxsize=1)
@@ -160,11 +160,11 @@ class WorkspaceFeatureFlagsControls(Value):
         return checked_feature_flags
 
 
-BASIC_USER_FEATURE_FLAGS = {UserFeature.GAMIFICATION_SCORES: True}
+BASIC_USER_FEATURE_FLAGS = {UserFeature.GAMIFICATION: True}
 
 
 USER_FEATURE_FLAGS_CONTROLS = UserFeatureFlagsControls(
-    {UserFeature.GAMIFICATION_SCORES: FeatureControl.USER}
+    {UserFeature.GAMIFICATION: FeatureControl.USER}
 )
 
 

@@ -18,6 +18,7 @@ from jupiter.core.use_cases.inbox_tasks.update import (
 )
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.utils.global_properties import GlobalProperties
+from rich.text import Text
 
 
 class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
@@ -163,7 +164,7 @@ class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
         else:
             due_date = UpdateAction.do_nothing()
 
-        await self._use_case.execute(
+        result = await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),
             InboxTaskUpdateArgs(
                 ref_id=ref_id,
@@ -175,3 +176,27 @@ class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
                 due_date=due_date,
             ),
         )
+
+        if result.record_score_result is not None:
+            if result.record_score_result.latest_task_score > 0:
+                color = "green"
+                rich_text = Text("Congratulations! ")
+            else:
+                color = "red"
+                rich_text = Text("Ah snap! ")
+
+            points = (
+                "points"
+                if abs(result.record_score_result.latest_task_score) > 1
+                else "point"
+            )
+
+            rich_text.append(
+                f"You scored {result.record_score_result.latest_task_score} {points}. ",
+                style=f"bold {color}",
+            )
+            rich_text.append(
+                f"Which brings your total for today to {result.record_score_result.score_overview.daily_score} and for this week to {result.record_score_result.score_overview.weekly_score}."
+            )
+
+            self.mark_postscript(rich_text)

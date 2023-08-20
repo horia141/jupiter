@@ -10,6 +10,7 @@ import type { PerHabitBreakdownItem } from './PerHabitBreakdownItem';
 import type { PerPeriodBreakdownItem } from './PerPeriodBreakdownItem';
 import type { PerProjectBreakdownItem } from './PerProjectBreakdownItem';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
+import type { UserScoreOverview } from './UserScoreOverview';
 import type { WorkableSummary } from './WorkableSummary';
 
 export type ReportResult = {
@@ -22,5 +23,6 @@ export type ReportResult = {
     per_habit_breakdown: Array<PerHabitBreakdownItem>;
     per_chore_breakdown: Array<PerChoreBreakdownItem>;
     per_big_plan_breakdown: Array<PerBigPlanBreakdownItem>;
+    user_score_overview: UserScoreOverview;
 };
 

@@ -16,7 +16,7 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError, WorkspaceFeature, Project } from "jupiter-gen";
+import { ApiError, Project, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -177,7 +177,10 @@ export default function Settings() {
             </CardActions>
           </Card>
 
-          {isWorkspaceFeatureAvailable(topLevelInfo.workspace, WorkspaceFeature.PROJECTS) && (
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <Card>
               <GlobalError
                 intent="change-default-project"
@@ -224,7 +227,10 @@ export default function Settings() {
               </CardActions>
             </Card>
           )}
-          {!isWorkspaceFeatureAvailable(topLevelInfo.workspace, WorkspaceFeature.PROJECTS) && (
+          {!isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <input
               type="hidden"
               name="defaultProject"

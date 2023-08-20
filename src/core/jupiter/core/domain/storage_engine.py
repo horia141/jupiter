@@ -12,6 +12,15 @@ from jupiter.core.domain.chores.infra.chore_collection_repository import (
 )
 from jupiter.core.domain.chores.infra.chore_repository import ChoreRepository
 from jupiter.core.domain.fast_info_repository import FastInfoRepository
+from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
+    ScoreLogEntryRepository,
+)
+from jupiter.core.domain.gamification.infra.score_log_repository import (
+    ScoreLogRepository,
+)
+from jupiter.core.domain.gamification.infra.score_stats_repository import (
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.habits.infra.habit_collection_repository import (
     HabitCollectionRepository,
 )
@@ -90,6 +99,21 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def auth_repository(self) -> AuthRepository:
         """The auth repository."""
+
+    @property
+    @abc.abstractmethod
+    def score_log_repository(self) -> ScoreLogRepository:
+        """The score log repository."""
+
+    @property
+    @abc.abstractmethod
+    def score_log_entry_repository(self) -> ScoreLogEntryRepository:
+        """The score log entry repository."""
+
+    @property
+    @abc.abstractmethod
+    def score_stats_repository(self) -> ScoreStatsRepository:
+        """The score stats repository."""
 
     @property
     @abc.abstractmethod

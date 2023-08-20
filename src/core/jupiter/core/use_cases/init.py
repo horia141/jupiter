@@ -14,6 +14,7 @@ from jupiter.core.domain.features import (
     UserFeatureFlags,
     WorkspaceFeatureFlags,
 )
+from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
@@ -144,6 +145,13 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
                 created_time=self._time_provider.get_current_time(),
             )
             new_auth = await uow.auth_repository.create(new_auth)
+
+            new_score_log = ScoreLog.new_score_log(
+                user_ref_id=new_user.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_score_log = await uow.score_log_repository.create(new_score_log)
 
             new_workspace = Workspace.new_workspace(
                 name=args.workspace_name,

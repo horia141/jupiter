@@ -113,7 +113,7 @@ class LoadTopLevelInfoUseCase(
             hosting=self._global_properties.hosting,
             user_feature_flag_controls=user_feature_flags_controls,
             default_user_feature_flags=BASIC_USER_FEATURE_FLAGS,
-            user_feature_hack=UserFeature.GAMIFICATION_SCORES,
+            user_feature_hack=UserFeature.GAMIFICATION,
             deafult_workspace_name=WorkspaceName.from_raw("Work"),
             default_first_project_name=ProjectName.from_raw("Work"),
             workspace_feature_flag_controls=workspace_feature_flags_controls,

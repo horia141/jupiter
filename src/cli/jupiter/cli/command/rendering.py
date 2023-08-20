@@ -191,7 +191,6 @@ class RichConsoleProgressReporter(ProgressReporter):
         results_panel = Panel(epilogue_tree)
 
         self._console.print(results_panel)
-        self._console.print("")
 
     @property
     def created_entities(self) -> List[BranchEntity | LeafEntity]:
@@ -235,9 +234,9 @@ class RichConsoleProgressReporterFactory(
     _stored_progress_reporter: Final[RichConsoleProgressReporter]
     _should_have_streaming_progress_report: bool
 
-    def __init__(self) -> None:
+    def __init__(self, console: Console) -> None:
         """Constructor."""
-        self._console = Console()
+        self._console = console
         self._status = self._console.status("Working on it ...", spinner="bouncingBall")
         self._stored_progress_reporter = RichConsoleProgressReporter(
             console=self._console,

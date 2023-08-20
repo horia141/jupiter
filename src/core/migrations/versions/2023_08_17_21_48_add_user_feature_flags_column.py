@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     with op.batch_alter_table("user") as batch_op:
         batch_op.add_column(sa.Column("feature_flags", sa.JSON))
-    op.execute("""update user set feature_flags='{"gamification-scores": true}'""")
+    op.execute("""update user set feature_flags='{"gamification": true}'""")
     with op.batch_alter_table("user") as batch_op:
         batch_op.alter_column("feature_flags", existing_type=sa.JSON, nullable=False)
 

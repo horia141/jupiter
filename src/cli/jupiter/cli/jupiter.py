@@ -278,6 +278,8 @@ from jupiter.core.utils.progress_reporter import (
     NoOpProgressReporterFactory,
 )
 from jupiter.core.utils.time_provider import TimeProvider
+from rich.console import Console
+from rich.panel import Panel
 
 # import coverage
 
@@ -315,7 +317,9 @@ async def main() -> None:
         usecase_storage_engine,
     )
 
-    progress_reporter_factory = RichConsoleProgressReporterFactory()
+    console = Console()
+
+    progress_reporter_factory = RichConsoleProgressReporterFactory(console)
 
     load_top_level_info_use_case = LoadTopLevelInfoUseCase(
         auth_token_stamper=auth_token_stamper,
@@ -476,6 +480,7 @@ async def main() -> None:
                     use_case=UserLoadUseCase(
                         auth_token_stamper=auth_token_stamper,
                         storage_engine=domain_storage_engine,
+                        time_provider=time_provider,
                     ),
                 ),
                 WorkspaceUpdate(
@@ -1432,12 +1437,16 @@ async def main() -> None:
     )
 
     for command in commands:
-        if command.should_appear_in_global_help and (
-            top_level_info.user is None
-            or command.is_allowed_for_user(top_level_info.user)
-        ) and (
-            top_level_info.workspace is None
-            or command.is_allowed_for_workspace(top_level_info.workspace)
+        if (
+            command.should_appear_in_global_help
+            and (
+                top_level_info.user is None
+                or command.is_allowed_for_user(top_level_info.user)
+            )
+            and (
+                top_level_info.workspace is None
+                or command.is_allowed_for_workspace(top_level_info.workspace)
+            )
         ):
             command_parser = subparsers.add_parser(
                 command.name(),
@@ -1466,6 +1475,13 @@ async def main() -> None:
                 command.should_have_streaming_progress_report, command.name(), args
             ):
                 await command.run(args)
+
+            command_postscript = command.get_postscript()
+            if command_postscript is not None:
+                postscript_panel = Panel(
+                    command_postscript, title="PS.", title_align="left"
+                )
+                console.print(postscript_panel)
 
             break
     except SessionInfoNotFoundError:

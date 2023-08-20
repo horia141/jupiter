@@ -7,6 +7,7 @@ from jupiter.core.framework.entity import (
     BranchEntity,
     Entity,
     LeafEntity,
+    Record,
     RootEntity,
     StubEntity,
     TrunkEntity,
@@ -15,6 +16,49 @@ from jupiter.core.framework.entity import (
 
 class Repository:
     """A repository."""
+
+
+RecordT = TypeVar("RecordT", bound=Record)
+RecordKeyT = TypeVar("RecordKeyT")
+RecordKeyPrefixT = TypeVar("RecordKeyPrefixT")
+
+
+class RecordAlreadyExistsError(Exception):
+    """Error raised when a record already exists."""
+
+
+class RecordNotFoundError(Exception):
+    """Error raised when a record is not found."""
+
+
+class RecordRepository(
+    Generic[RecordT, RecordKeyT, RecordKeyPrefixT], Repository, abc.ABC
+):
+    """A repository for records."""
+
+    @abc.abstractmethod
+    async def create(self, record: RecordT) -> RecordT:
+        """Create a record."""
+
+    @abc.abstractmethod
+    async def save(self, record: RecordT) -> RecordT:
+        """Save a record."""
+
+    @abc.abstractmethod
+    async def remove(self, key: RecordKeyT) -> RecordT:
+        """Hard remove a record - an irreversible operation."""
+
+    @abc.abstractmethod
+    async def load_by_key(self, key: RecordKeyT) -> RecordT:
+        """Load a record by it's unique key."""
+
+    @abc.abstractmethod
+    async def load_by_key_optional(self, key: RecordKeyT) -> RecordT | None:
+        """Load a record by it's unique key."""
+
+    @abc.abstractmethod
+    async def find_all(self, prefix: RecordKeyPrefixT) -> List[RecordT]:
+        """Find all records matching some criteria."""
 
 
 class EntityAlreadyExistsError(Exception):

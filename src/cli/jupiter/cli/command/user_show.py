@@ -62,5 +62,28 @@ class UserShow(LoggedInReadonlyCommand[UserLoadUseCase]):
         rich_tree.add(user_text)
         rich_tree.add(feature_flags_tree)
 
+        if result.score_overview is not None:
+            gamification_tree = Tree("🎮 Gamification:")
+
+            scores_tree = Tree("💪 Scores:")
+
+            daily_text = Text(f"Daily: {result.score_overview.daily_score}")
+            weekly_text = Text(f"Weekly: {result.score_overview.weekly_score}")
+            monthly_text = Text(f"Monthly: {result.score_overview.monthly_score}")
+            quarterly_text = Text(f"Quarterly: {result.score_overview.quarterly_score}")
+            yearly_text = Text(f"Yearly: {result.score_overview.yearly_score}")
+            lifetime_text = Text(f"Lifetime: {result.score_overview.lifetime_score}")
+
+            scores_tree.add(daily_text)
+            scores_tree.add(weekly_text)
+            scores_tree.add(monthly_text)
+            scores_tree.add(quarterly_text)
+            scores_tree.add(yearly_text)
+            scores_tree.add(lifetime_text)
+
+            gamification_tree.add(scores_tree)
+
+            rich_tree.add(gamification_tree)
+
         console = Console()
         console.print(rich_tree)

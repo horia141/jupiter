@@ -31,7 +31,9 @@ class EmailTaskRemoveUseCase(
     """The command for archiving a email task."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.EMAIL_TASKS
 

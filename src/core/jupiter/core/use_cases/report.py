@@ -12,7 +12,15 @@ from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.entity_name import EntityName
-from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
+)
+from jupiter.core.domain.gamification.service.score_overview_service import (
+    ScoreOverviewService,
+)
+from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -195,6 +203,7 @@ class ReportResult(UseCaseResultBase):
     per_habit_breakdown: List[PerHabitBreakdownItem]
     per_chore_breakdown: List[PerChoreBreakdownItem]
     per_big_plan_breakdown: List[PerBigPlanBreakdownItem]
+    user_score_overview: UserScoreOverview | None
 
 
 class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
@@ -660,6 +669,14 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         else:
             per_big_plan_breakdown = []
 
+        # Build user scores overview.
+        user_score_overview = None
+        if user.is_feature_available(UserFeature.GAMIFICATION):
+            async with self._storage_engine.get_unit_of_work() as uow:
+                user_score_overview = await ScoreOverviewService().do_it(
+                    uow, user, args.today.to_timestamp_at_end_of_day()
+                )
+
         return ReportResult(
             today=args.today,
             period=args.period,
@@ -670,6 +687,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
             per_habit_breakdown=per_habit_breakdown,
             per_chore_breakdown=per_chore_breakdown,
             per_big_plan_breakdown=per_big_plan_breakdown,
+            user_score_overview=user_score_overview,
         )
 
     @staticmethod

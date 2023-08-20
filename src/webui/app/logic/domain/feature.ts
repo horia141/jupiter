@@ -3,8 +3,8 @@ import { DocsHelpSubject } from "~/components/docs-help";
 
 export function userFeatureName(feature: UserFeature): string {
   switch (feature) {
-    case UserFeature.GAMIFICATION_SCORES:
-      return "Task Scores";
+    case UserFeature.GAMIFICATION:
+      return "Gamification";
   }
 }
 
@@ -12,7 +12,7 @@ export function userFeatureToDocsHelpSubject(
   feature: UserFeature
 ): DocsHelpSubject {
   switch (feature) {
-    case UserFeature.GAMIFICATION_SCORES:
+    case UserFeature.GAMIFICATION:
       return DocsHelpSubject.GAMIFICATION;
   }
 }

@@ -10,7 +10,11 @@ from jupiter.core.domain.auth.auth_token import (
 )
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.features import FeatureUnavailableError, UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
+)
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -176,7 +180,9 @@ class AppLoggedInMutationUseCase(
     _search_storage_engine: Final[SearchStorageEngine]
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return None
 
@@ -310,7 +316,9 @@ class AppLoggedInReadonlyUseCase(
     _storage_engine: Final[DomainStorageEngine]
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return None
 

@@ -70,6 +70,7 @@ from jupiter.core.use_cases.big_plans.load import (
 )
 from jupiter.core.use_cases.big_plans.update import (
     BigPlanUpdateArgs,
+    BigPlanUpdateResult,
     BigPlanUpdateUseCase,
 )
 from jupiter.core.use_cases.chores.archive import ChoreArchiveArgs, ChoreArchiveUseCase
@@ -160,6 +161,7 @@ from jupiter.core.use_cases.inbox_tasks.load import (
 )
 from jupiter.core.use_cases.inbox_tasks.update import (
     InboxTaskUpdateArgs,
+    InboxTaskUpdateResult,
     InboxTaskUpdateUseCase,
 )
 from jupiter.core.use_cases.infra.persistent_mutation_use_case_recoder import (
@@ -585,7 +587,9 @@ user_change_feature_flags_use_case = UserChangeFeatureFlagsUseCase(
 )
 
 user_load_use_case = UserLoadUseCase(
-    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+    auth_token_stamper=auth_token_stamper,
+    storage_engine=domain_storage_engine,
+    time_provider=time_provider,
 )
 
 workspace_update_use_case = WorkspaceUpdateUseCase(
@@ -1693,15 +1697,15 @@ async def archive_inbox_task(
 
 @app.post(
     "/inbox-task/update",
-    response_model=None,
+    response_model=InboxTaskUpdateResult,
     tags=["inbox-task"],
     responses=standard_responses,
 )
 async def update_inbox_task(
     args: InboxTaskUpdateArgs, session: LoggedInSession
-) -> None:
+) -> InboxTaskUpdateResult:
     """Update a inbox task."""
-    await inbox_task_update_use_case.execute(session, args)
+    return await inbox_task_update_use_case.execute(session, args)
 
 
 @app.post(
@@ -1966,13 +1970,15 @@ async def archive_big_plan(args: BigPlanArchiveArgs, session: LoggedInSession) -
 
 @app.post(
     "/big-plan/update",
-    response_model=None,
+    response_model=BigPlanUpdateResult,
     tags=["big-plan"],
     responses=standard_responses,
 )
-async def update_big_plan(args: BigPlanUpdateArgs, session: LoggedInSession) -> None:
+async def update_big_plan(
+    args: BigPlanUpdateArgs, session: LoggedInSession
+) -> BigPlanUpdateResult:
     """Update a big plan."""
-    await big_plan_update_use_case.execute(session, args)
+    return await big_plan_update_use_case.execute(session, args)
 
 
 @app.post(

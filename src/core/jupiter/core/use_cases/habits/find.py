@@ -2,7 +2,11 @@
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from jupiter.core.domain.features import FeatureUnavailableError, UserFeature, WorkspaceFeature
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
+)
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.projects.project import Project
@@ -51,7 +55,9 @@ class HabitFindUseCase(
     """The command for finding a habit."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return WorkspaceFeature.HABITS
 

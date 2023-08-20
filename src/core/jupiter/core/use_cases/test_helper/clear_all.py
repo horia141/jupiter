@@ -105,6 +105,9 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
     ) -> None:
         """Execute the command's action."""
         user = context.user
+
+        score_log = await uow.score_log_repository.load_by_parent(user.ref_id)
+
         workspace = context.workspace
         (
             user_feature_flags_controls,
@@ -183,6 +186,22 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                 modification_time=self._time_provider.get_current_time(),
             )
             await uow.auth_repository.save(auth)
+
+        async with progress_reporter.section("Resetting score log"):
+            all_score_log_entries = await uow.score_log_entry_repository.find_all(
+                parent_ref_id=score_log.ref_id,
+                allow_archived=True,
+            )
+
+            for score_log_entry in all_score_log_entries:
+                await uow.score_log_entry_repository.remove(score_log_entry.ref_id)
+
+            all_score_stats = await uow.score_stats_repository.find_all(
+                score_log.ref_id
+            )
+
+            for score_stats in all_score_stats:
+                await uow.score_stats_repository.remove(score_stats.key)
 
         async with progress_reporter.section("Resetting workspace"):
             default_project = await uow.project_repository.load_by_id(

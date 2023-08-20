@@ -32,7 +32,9 @@ class InboxTaskAssociateWithBigPlanUseCase(
     """The command for associating a inbox task with a big plan."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[UserFeature] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return (WorkspaceFeature.INBOX_TASKS, WorkspaceFeature.BIG_PLANS)
 

@@ -10,6 +10,7 @@ import type { BigPlanFindResult } from '../models/BigPlanFindResult';
 import type { BigPlanLoadArgs } from '../models/BigPlanLoadArgs';
 import type { BigPlanLoadResult } from '../models/BigPlanLoadResult';
 import type { BigPlanUpdateArgs } from '../models/BigPlanUpdateArgs';
+import type { BigPlanUpdateResult } from '../models/BigPlanUpdateResult';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -68,12 +69,12 @@ export class BigPlanService {
      * Update Big Plan
      * Update a big plan.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns BigPlanUpdateResult Successful Response
      * @throws ApiError
      */
     public updateBigPlan(
         requestBody: BigPlanUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<BigPlanUpdateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/big-plan/update',
