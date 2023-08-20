@@ -34,12 +34,14 @@ import { StatusCodes } from "http-status-codes";
 import type {
   InboxTasksSummary,
   ReportResult,
+  UserScoreOverview,
   WorkableSummary,
 } from "jupiter-gen";
 import {
   ApiError,
   InboxTaskSource,
   RecurringTaskPeriod,
+  UserFeature,
   WorkspaceFeature,
 } from "jupiter-gen";
 import { DateTime } from "luxon";
@@ -51,6 +53,7 @@ import { TabPanel } from "../../../components/tab-panel";
 
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameOneLineComponent } from "~/components/entity-name";
+import { ScoreOverview } from "~/components/gamification/score-overview";
 import { EntityLink } from "~/components/infra/entity-card";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolCard } from "~/components/infra/tool-card";
@@ -67,6 +70,7 @@ import {
   oneLessThanPeriod,
   periodName,
 } from "~/logic/domain/period";
+import { isUserFeatureAvailable } from "~/logic/domain/user";
 import {
   inferSourcesForEnabledFeatures,
   isWorkspaceFeatureAvailable,
@@ -342,6 +346,17 @@ function ShowReport({ topLevelInfo, report }: ShowReportProps) {
           {aDateToDate(report.today).toFormat("yyyy-MM-dd")}
         </Typography>
       </Box>
+
+      {isUserFeatureAvailable(topLevelInfo.user, UserFeature.GAMIFICATION) && (
+        <>
+          <Divider>
+            <Typography variant="h6">💪 Score</Typography>
+          </Divider>
+          <ScoreOverview
+            scoreOverview={topLevelInfo.userScoreOverview as UserScoreOverview}
+          />
+        </>
+      )}
 
       <Tabs
         value={showTab}
@@ -662,7 +677,7 @@ function OverviewReport(props: OverviewReportProps) {
   return (
     <Stack spacing={2} useFlexGap>
       <Divider>
-        <Typography variant="h6">Inbox Tasks</Typography>
+        <Typography variant="h6">📥 Inbox Tasks</Typography>
       </Divider>
       <TableContainer>
         <Table sx={{ tableLayout: "fixed " }}>
@@ -746,7 +761,7 @@ function OverviewReport(props: OverviewReportProps) {
       ) && (
         <>
           <Divider>
-            <Typography variant="h6">Big Plans</Typography>
+            <Typography variant="h6">🌍 Big Plans</Typography>
           </Divider>
 
           <Typography variant="h6">Summary</Typography>

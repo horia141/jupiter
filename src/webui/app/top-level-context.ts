@@ -1,6 +1,7 @@
 import {
   User,
   UserFeatureFlagsControls,
+  UserScoreOverview,
   Workspace,
   WorkspaceFeatureFlagsControls,
 } from "jupiter-gen";
@@ -10,6 +11,7 @@ export interface TopLevelInfo {
   userFeatureFlagControls: UserFeatureFlagsControls;
   workspaceFeatureFlagControls: WorkspaceFeatureFlagsControls;
   user: User;
+  userScoreOverview?: UserScoreOverview;
   workspace: Workspace;
 }
 
@@ -33,6 +35,7 @@ export const TopLevelInfoContext = createContext<TopLevelInfo>({
     timezone: { the_timezone: "UTC" },
     feature_flags: {},
   },
+  userScoreOverview: undefined,
   workspace: {
     ref_id: { the_id: "bad" },
     version: -1,

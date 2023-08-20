@@ -8,6 +8,7 @@ import type { ProjectName } from './ProjectName';
 import type { User } from './User';
 import type { UserFeature } from './UserFeature';
 import type { UserFeatureFlagsControls } from './UserFeatureFlagsControls';
+import type { UserScoreOverview } from './UserScoreOverview';
 import type { Workspace } from './Workspace';
 import type { WorkspaceFeature } from './WorkspaceFeature';
 import type { WorkspaceFeatureFlagsControls } from './WorkspaceFeatureFlagsControls';
@@ -25,6 +26,7 @@ export type LoadTopLevelInfoResult = {
     default_workspace_feature_flags: Record<string, boolean>;
     workspace_feature_hack: WorkspaceFeature;
     user?: User;
+    user_score_overview?: UserScoreOverview;
     workspace?: Workspace;
 };
 

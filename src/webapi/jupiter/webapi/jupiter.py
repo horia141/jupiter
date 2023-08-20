@@ -556,6 +556,7 @@ load_top_level_info_use_case = LoadTopLevelInfoUseCase(
     auth_token_stamper=auth_token_stamper,
     storage_engine=domain_storage_engine,
     global_properties=global_properties,
+    time_provider=time_provider,
 )
 
 load_progress_reporter_token_use_case = LoadProgressReporterTokenUseCase(

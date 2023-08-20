@@ -77,8 +77,10 @@ class BigPlanUpdateUseCase(
         await uow.big_plan_repository.save(big_plan)
         await progress_reporter.mark_updated(big_plan)
 
-        record_score_result = await RecordScoreService(
-            EventSource.CLI, self._time_provider
-        ).record_task(uow, context.user, big_plan)
+        record_score_result = None
+        if context.user.is_feature_available(UserFeature.GAMIFICATION):
+            record_score_result = await RecordScoreService(
+                EventSource.CLI, self._time_provider
+            ).record_task(uow, context.user, big_plan)
 
         return BigPlanUpdateResult(record_score_result=record_score_result)

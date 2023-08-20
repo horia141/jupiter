@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Dict, Final
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
-from jupiter.core.domain.features import UserFeature
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryAlreadyExistsError,
 )
@@ -47,9 +46,6 @@ class RecordScoreService:
         self, uow: DomainUnitOfWork, user: User, task: InboxTask | BigPlan
     ) -> RecordScoreResult | None:
         """Record a task score."""
-        if not user.is_feature_available(UserFeature.GAMIFICATION):
-            return None
-
         if not task.status.is_completed:
             return None
 

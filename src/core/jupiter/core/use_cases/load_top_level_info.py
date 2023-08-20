@@ -13,6 +13,10 @@ from jupiter.core.domain.features import (
     WorkspaceFeatureFlags,
     WorkspaceFeatureFlagsControls,
 )
+from jupiter.core.domain.gamification.service.score_overview_service import (
+    ScoreOverviewService,
+)
+from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.hosting import Hosting
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.storage_engine import DomainStorageEngine
@@ -34,6 +38,7 @@ from jupiter.core.use_cases.infra.use_cases import (
 )
 from jupiter.core.utils.feature_flag_controls import infer_feature_flag_controls
 from jupiter.core.utils.global_properties import GlobalProperties
+from jupiter.core.utils.time_provider import TimeProvider
 
 
 @dataclass
@@ -56,6 +61,7 @@ class LoadTopLevelInfoResult(UseCaseResultBase):
     default_workspace_feature_flags: WorkspaceFeatureFlags
     workspace_feature_hack: WorkspaceFeature
     user: Optional[User] = None
+    user_score_overview: UserScoreOverview | None = None
     workspace: Optional[Workspace] = None
 
 
@@ -65,16 +71,19 @@ class LoadTopLevelInfoUseCase(
     """The command for loading a user and workspace if they exist and other data too."""
 
     _global_properties: Final[GlobalProperties]
+    _time_provider: Final[TimeProvider]
 
     def __init__(
         self,
         auth_token_stamper: AuthTokenStamper,
         storage_engine: DomainStorageEngine,
         global_properties: GlobalProperties,
+        time_provider: TimeProvider,
     ) -> None:
         """Constructor."""
         super().__init__(auth_token_stamper, storage_engine)
         self._global_properties = global_properties
+        self._time_provider = time_provider
 
     async def _execute(
         self,
@@ -91,6 +100,7 @@ class LoadTopLevelInfoUseCase(
             if context.auth_token is None:
                 user = None
                 workspace = None
+                user_score_overview = None
             else:
                 try:
                     user = await uow.user_repository.load_by_id(
@@ -104,9 +114,16 @@ class LoadTopLevelInfoUseCase(
                     workspace = await uow.workspace_repository.load_by_id(
                         user_workspace_link.workspace_ref_id
                     )
+                    if user.is_feature_available(UserFeature.GAMIFICATION):
+                        user_score_overview = await ScoreOverviewService().do_it(
+                            uow, user, self._time_provider.get_current_time()
+                        )
+                    else:
+                        user_score_overview = None
                 except (UserNotFoundError, WorkspaceNotFoundError):
                     user = None
                     workspace = None
+                    user_score_overview = None
 
         return LoadTopLevelInfoResult(
             env=self._global_properties.env,
@@ -120,5 +137,6 @@ class LoadTopLevelInfoUseCase(
             default_workspace_feature_flags=BASIC_WORKSPACE_FEATURE_FLAGS,
             workspace_feature_hack=WorkspaceFeature.INBOX_TASKS,
             user=user,
+            user_score_overview=user_score_overview,
             workspace=workspace,
         )

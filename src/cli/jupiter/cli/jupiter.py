@@ -325,6 +325,7 @@ async def main() -> None:
         auth_token_stamper=auth_token_stamper,
         storage_engine=domain_storage_engine,
         global_properties=global_properties,
+        time_provider=time_provider,
     )
 
     await sqlite_connection.prepare()

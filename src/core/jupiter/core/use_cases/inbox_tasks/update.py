@@ -90,8 +90,10 @@ class InboxTaskUpdateUseCase(
         await uow.inbox_task_repository.save(inbox_task)
         await progress_reporter.mark_updated(inbox_task)
 
-        record_score_result = await RecordScoreService(
-            EventSource.CLI, self._time_provider
-        ).record_task(uow, context.user, inbox_task)
+        record_score_result = None
+        if context.user.is_feature_available(UserFeature.GAMIFICATION):
+            record_score_result = await RecordScoreService(
+                EventSource.CLI, self._time_provider
+            ).record_task(uow, context.user, inbox_task)
 
         return InboxTaskUpdateResult(record_score_result=record_score_result)
