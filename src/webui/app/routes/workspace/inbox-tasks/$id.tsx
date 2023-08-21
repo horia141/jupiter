@@ -20,7 +20,7 @@ import {
   type ActionArgs,
   type LoaderArgs,
 } from "@remix-run/node";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type {
   BigPlan,
@@ -59,6 +59,7 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
+import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import {
   doesInboxTaskAllowChangingBigPlan,
   doesInboxTaskAllowChangingProject,
@@ -67,6 +68,7 @@ import {
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -142,7 +144,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).inboxTask.updateInboxTask({
+        const result = await getLoggedInApiClient(session).inboxTask.updateInboxTask({
           ref_id: { the_id: id },
           name: corePropertyEditable
             ? {
@@ -182,6 +184,12 @@ export async function action({ request, params }: ActionArgs) {
                 : undefined,
           },
         });
+
+        if (result.record_score_result) {
+          return redirect(`/workspace/inbox-tasks/${id}`, {headers: {
+            "Set-Cookie": await saveScoreAction(result.record_score_result)
+          }});
+        }
 
         return redirect(`/workspace/inbox-tasks/${id}`);
       }
@@ -236,6 +244,8 @@ type BigPlanACOption = {
   label: string;
   big_plan_id: string;
 };
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function InboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

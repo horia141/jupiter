@@ -40,7 +40,7 @@ class BigPlanUpdateArgs(UseCaseArgsBase):
 class BigPlanUpdateResult(UseCaseResultBase):
     """InboxTaskUpdate result."""
 
-    record_score_result: RecordScoreResult | None
+    record_score_result: RecordScoreResult | None = None
 
 
 class BigPlanUpdateUseCase(

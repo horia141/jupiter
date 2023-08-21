@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { useActionData, useTransition, ShouldRevalidateFunction } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
@@ -83,6 +84,8 @@ export async function action({ request }: ActionArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Security() {
   const actionData = useActionData<typeof action>();

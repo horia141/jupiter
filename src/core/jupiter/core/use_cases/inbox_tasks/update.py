@@ -46,7 +46,7 @@ class InboxTaskUpdateArgs(UseCaseArgsBase):
 class InboxTaskUpdateResult(UseCaseResultBase):
     """InboxTaskUpdate result."""
 
-    record_score_result: RecordScoreResult | None
+    record_score_result: RecordScoreResult | None = None
 
 
 class InboxTaskUpdateUseCase(

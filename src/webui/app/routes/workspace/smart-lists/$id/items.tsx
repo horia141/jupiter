@@ -1,7 +1,7 @@
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet, useParams } from "@remix-run/react";
+import { Link, ShouldRevalidateFunction, useFetcher, useOutlet, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { SmartListItem, SmartListTag } from "jupiter-gen";
 import { ApiError } from "jupiter-gen";
@@ -19,6 +19,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
 import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -62,6 +63,8 @@ export async function loader({ request, params }: LoaderArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function SmartListViewItems() {
   const outlet = useOutlet();

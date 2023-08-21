@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
+import { Link, ShouldRevalidateFunction, useFetcher, useOutlet } from "@remix-run/react";
 import type { Chore, ChoreFindResultEntry, Project } from "jupiter-gen";
 import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
@@ -21,6 +21,7 @@ import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortChoresNaturally } from "~/logic/domain/chore";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -42,6 +43,8 @@ export async function loader({ request }: LoaderArgs) {
   });
   return json(response.entries);
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Chores() {
   const outlet = useOutlet();

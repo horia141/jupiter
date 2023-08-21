@@ -1,7 +1,7 @@
 import { ResponsiveLine } from "@nivo/line";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet, useParams } from "@remix-run/react";
+import { Link, ShouldRevalidateFunction, useFetcher, useOutlet, useParams } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { MetricEntry } from "jupiter-gen";
 import { ApiError } from "jupiter-gen";
@@ -28,6 +28,7 @@ import {
   useBranchNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 const ParamsSchema = {
   id: z.string(),
@@ -62,6 +63,8 @@ export async function loader({ request, params }: LoaderArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Metric() {
   const outlet = useOutlet();

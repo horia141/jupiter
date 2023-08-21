@@ -7,6 +7,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  ShouldRevalidateFunction,
   useLoaderData,
 } from "@remix-run/react";
 
@@ -18,6 +19,7 @@ import {
   serverToClientGlobalProperties,
 } from "./global-properties-client";
 import { GLOBAL_PROPERTIES } from "./global-properties-server";
+import { standardShouldRevalidate } from "./rendering/standard-should-revalidate";
 
 const THEME = createTheme({});
 
@@ -34,6 +36,8 @@ export function meta() {
     viewport: "width=device-width,initial-scale=1",
   };
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();

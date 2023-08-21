@@ -17,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { json, LoaderArgs } from "@remix-run/node";
-import { useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, NamedEntityTag, SearchMatch } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
@@ -38,6 +38,7 @@ import {
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { fixSelectOutputToEnum, selectZod } from "~/logic/select";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -137,6 +138,8 @@ export async function loader({ request }: LoaderArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Search() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

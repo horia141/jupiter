@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
 import {
@@ -35,6 +35,7 @@ import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { periodName } from "~/logic/domain/period";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -118,6 +119,8 @@ export async function action({ request }: ActionArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function NewHabit() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

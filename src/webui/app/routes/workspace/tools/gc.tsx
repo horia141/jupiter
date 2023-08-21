@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError, SyncTarget } from "jupiter-gen";
 import { useContext } from "react";
@@ -25,6 +25,7 @@ import {
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
 import { fixSelectOutputToEnum, selectZod } from "~/logic/select";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
@@ -58,6 +59,8 @@ export async function action({ request }: ActionArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function GC() {
   const transition = useTransition();

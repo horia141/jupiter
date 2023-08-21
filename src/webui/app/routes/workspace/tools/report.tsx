@@ -29,7 +29,7 @@ import {
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type {
   InboxTasksSummary,
@@ -80,6 +80,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 const QuerySchema = {
   today: z
@@ -144,6 +145,8 @@ export async function loader({ request }: LoaderArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Report() {
   const loaderData = useLoaderDataSafeForAnimation<

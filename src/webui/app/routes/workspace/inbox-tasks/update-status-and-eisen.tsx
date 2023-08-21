@@ -9,6 +9,7 @@ import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
+import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { getSession } from "~/sessions";
 
 const UpdateStatusAndEisenFormSchema = {
@@ -22,7 +23,7 @@ export async function action({ request }: ActionArgs) {
   const form = await parseForm(request, UpdateStatusAndEisenFormSchema);
 
   try {
-    await getLoggedInApiClient(session).inboxTask.updateInboxTask({
+    const result = await getLoggedInApiClient(session).inboxTask.updateInboxTask({
       ref_id: { the_id: form.id },
       name: { should_change: false },
       status: { should_change: true, value: form.status },
@@ -34,6 +35,12 @@ export async function action({ request }: ActionArgs) {
       actionable_date: { should_change: false },
       due_date: { should_change: false },
     });
+
+    if (result.record_score_result) {
+      return json(noErrorNoData(), {headers: {
+        "Set-Cookie": await saveScoreAction(result.record_score_result)
+      }});
+    }
 
     return json(noErrorNoData());
   } catch (error) {

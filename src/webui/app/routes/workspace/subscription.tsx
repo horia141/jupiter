@@ -1,9 +1,13 @@
+import { ShouldRevalidateFunction } from "@remix-run/react";
 import { TrunkCard } from "~/components/infra/trunk-card";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Subscription() {
   return (

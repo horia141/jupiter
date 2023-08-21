@@ -5,6 +5,6 @@
 import type { RecordScoreResult } from './RecordScoreResult';
 
 export type InboxTaskUpdateResult = {
-    record_score_result: RecordScoreResult;
+    record_score_result?: RecordScoreResult;
 };
 

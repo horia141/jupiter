@@ -1,5 +1,6 @@
 import type { SelectChangeEvent } from "@mui/material";
 import {
+  Alert,
   Button,
   ButtonGroup,
   Card,
@@ -10,12 +11,14 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  Snackbar,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Link,
+  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -31,7 +34,7 @@ import {
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams } from "zodix";
+import { parseForm, parseParams, parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -42,9 +45,11 @@ import { LeafCard } from "~/components/infra/leaf-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { bigPlanStatusName } from "~/logic/domain/big-plan-status";
+import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -52,6 +57,7 @@ import { TopLevelInfoContext } from "~/top-level-context";
 
 const ParamsSchema = {
   id: z.string(),
+  alert: z.string().optional(),
 };
 
 const UpdateFormSchema = {
@@ -110,7 +116,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).bigPlan.updateBigPlan({
+        const result = await getLoggedInApiClient(session).bigPlan.updateBigPlan({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -135,6 +141,12 @@ export async function action({ request, params }: ActionArgs) {
                 : undefined,
           },
         });
+
+        if (result.record_score_result) {
+          return redirect(`/workspace/big-plans/${id}`, {headers: {
+            "Set-Cookie": await saveScoreAction(result.record_score_result)
+          }});
+        }
 
         return redirect(`/workspace/big-plans/${id}`);
       }
@@ -170,6 +182,8 @@ export async function action({ request, params }: ActionArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function BigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -229,6 +243,8 @@ export default function BigPlan() {
     // on a navigation event.
     setSelectedProject(loaderData.project.ref_id.the_id);
   }, [loaderData]);
+
+
 
   return (
     <LeafCard

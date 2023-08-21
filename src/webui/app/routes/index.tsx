@@ -1,7 +1,10 @@
 import { Button, ButtonGroup, Container } from "@mui/material";
-import { Link } from "@remix-run/react";
+import { Link, ShouldRevalidateFunction } from "@remix-run/react";
 import { useContext } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Index() {
   const globalProperties = useContext(GlobalPropertiesContext);

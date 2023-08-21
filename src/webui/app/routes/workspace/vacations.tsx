@@ -1,6 +1,6 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useNavigate, useOutlet } from "@remix-run/react";
+import { Link, ShouldRevalidateFunction, useFetcher, useNavigate, useOutlet } from "@remix-run/react";
 
 import type { Vacation } from "jupiter-gen";
 
@@ -30,6 +30,7 @@ import {
   useTrunkNeedsToShowLeaf,
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -42,6 +43,8 @@ export async function loader({ request }: LoaderArgs) {
   });
   return json(response.vacations);
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Vacations({ request }: LoaderArgs) {
   const vacations = useLoaderDataSafeForAnimation<typeof loader>();

@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useCatch, useOutlet } from "@remix-run/react";
+import { Form, Link, ShouldRevalidateFunction, useCatch, useOutlet } from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -43,6 +43,8 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
+import { ScoreSnackbarManager } from "~/components/gamification/score-snackbar-manager";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
@@ -67,6 +69,8 @@ export async function loader({ request }: LoaderArgs) {
       progressReporterTokenResponse.progress_reporter_token_ext,
   });
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 // @secureFn
 export default function Workspace() {
@@ -240,6 +244,8 @@ export default function Workspace() {
       <TopLevelInfoContext.Provider value={topLevelInfo}>
         <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
       </TopLevelInfoContext.Provider>
+
+      <ScoreSnackbarManager />
     </Box>
   );
 }
