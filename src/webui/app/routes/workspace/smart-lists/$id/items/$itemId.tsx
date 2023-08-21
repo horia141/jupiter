@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafCard } from "~/components/infra/leaf-card";
 import { TagsEditor } from "~/components/tags-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -75,6 +76,8 @@ export async function loader({ request, params }: LoaderArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));

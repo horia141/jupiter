@@ -4,7 +4,7 @@
 
 import type { FeatureControl } from './FeatureControl';
 
-export type FeatureFlagsControls = {
+export type UserFeatureFlagsControls = {
     controls: Record<string, FeatureControl>;
 };
 

@@ -15,7 +15,7 @@ from jupiter.cli.command.rendering import (
     slack_user_name_to_rich_text,
 )
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.push_integrations.slack.find import (
@@ -96,7 +96,9 @@ class SlackTaskShow(LoggedInReadonlyCommand[SlackTaskFindUseCase]):
 
         rich_tree = Tree("💬 Slack Tasks", guide_style="bold bright_blue")
 
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             generation_project_text = Text(
                 f"The generation project is {result.generation_project.name}",
             )

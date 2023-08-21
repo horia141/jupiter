@@ -10,7 +10,11 @@ from jupiter.core.domain.auth.auth_token import (
 )
 from jupiter.core.domain.auth.auth_token_ext import AuthTokenExt
 from jupiter.core.domain.auth.infra.auth_token_stamper import AuthTokenStamper
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
+)
 from jupiter.core.domain.storage_engine import (
     DomainStorageEngine,
     DomainUnitOfWork,
@@ -177,8 +181,8 @@ class AppLoggedInMutationUseCase(
 
     @staticmethod
     def get_scoped_to_feature() -> Iterable[
-        Feature
-    ] | Iterable[Feature] | Feature | None:
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return None
 
@@ -214,13 +218,20 @@ class AppLoggedInMutationUseCase(
 
             scoped_feature = self.get_scoped_to_feature()
             if scoped_feature is not None:
-                if isinstance(scoped_feature, Feature):
+                if isinstance(scoped_feature, UserFeature):
+                    if not user.is_feature_available(scoped_feature):
+                        raise FeatureUnavailableError(scoped_feature)
+                elif isinstance(scoped_feature, WorkspaceFeature):
                     if not workspace.is_feature_available(scoped_feature):
                         raise FeatureUnavailableError(scoped_feature)
                 else:
                     for feature in scoped_feature:
-                        if not workspace.is_feature_available(feature):
-                            raise FeatureUnavailableError(feature)
+                        if isinstance(feature, UserFeature):
+                            if not user.is_feature_available(feature):
+                                raise FeatureUnavailableError(feature)
+                        elif isinstance(feature, WorkspaceFeature):
+                            if not workspace.is_feature_available(feature):
+                                raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
 
@@ -306,8 +317,8 @@ class AppLoggedInReadonlyUseCase(
 
     @staticmethod
     def get_scoped_to_feature() -> Iterable[
-        Feature
-    ] | Iterable[Feature] | Feature | None:
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
         return None
 
@@ -336,13 +347,20 @@ class AppLoggedInReadonlyUseCase(
 
             scoped_feature = self.get_scoped_to_feature()
             if scoped_feature is not None:
-                if isinstance(scoped_feature, Feature):
+                if isinstance(scoped_feature, UserFeature):
+                    if not user.is_feature_available(scoped_feature):
+                        raise FeatureUnavailableError(scoped_feature)
+                elif isinstance(scoped_feature, WorkspaceFeature):
                     if not workspace.is_feature_available(scoped_feature):
                         raise FeatureUnavailableError(scoped_feature)
                 else:
                     for feature in scoped_feature:
-                        if not workspace.is_feature_available(feature):
-                            raise FeatureUnavailableError(feature)
+                        if isinstance(feature, UserFeature):
+                            if not user.is_feature_available(feature):
+                                raise FeatureUnavailableError(feature)
+                        elif isinstance(feature, WorkspaceFeature):
+                            if not workspace.is_feature_available(feature):
+                                raise FeatureUnavailableError(feature)
 
             return AppLoggedInUseCaseContext(user, workspace)
 

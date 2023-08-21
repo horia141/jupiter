@@ -5,7 +5,7 @@
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { HabitName } from './HabitName';
+import type { EntityName } from './EntityName';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
@@ -13,7 +13,7 @@ import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 import type { RecurringTaskSkipRule } from './RecurringTaskSkipRule';
 
 export type HabitCreateArgs = {
-    name: HabitName;
+    name: EntityName;
     period: RecurringTaskPeriod;
     project_ref_id?: EntityId;
     eisen?: Eisen;

@@ -14,13 +14,13 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import {
   ApiError,
-  Feature,
   RecurringTaskPeriod,
   SyncTarget,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
@@ -36,12 +36,13 @@ import {
   noErrorNoData,
   validationErrorToUIErrorInfo,
 } from "~/logic/action-result";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import {
   fixSelectOutputEntityId,
   fixSelectOutputToEnum,
   selectZod,
 } from "~/logic/select";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -145,6 +146,8 @@ export async function action({ request }: ActionArgs) {
     throw error;
   }
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Gen() {
   const transition = useTransition();
@@ -250,7 +253,10 @@ export default function Gen() {
               <FieldError actionResult={actionData} fieldName="/period" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -281,7 +287,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.HABITS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -312,7 +321,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.CHORES
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -343,7 +355,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.METRICS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.METRICS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal
@@ -374,7 +389,10 @@ export default function Gen() {
               </FormControl>
             )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PERSONS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PERSONS
+            ) && (
               <FormControl fullWidth>
                 <Autocomplete
                   disablePortal

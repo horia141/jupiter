@@ -13,10 +13,10 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
-import { ApiError, Feature } from "jupiter-gen";
+import { ApiError, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
@@ -25,7 +25,8 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafCard } from "~/components/infra/leaf-card";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -87,6 +88,8 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+
 export default function SlackTasksSettings() {
   const transition = useTransition();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -98,7 +101,10 @@ export default function SlackTasksSettings() {
 
   return (
     <LeafCard returnLocation="/workspace/push-integrations/slack-tasks">
-      {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+      {isWorkspaceFeatureAvailable(
+        topLevelInfo.workspace,
+        WorkspaceFeature.PROJECTS
+      ) && (
         <Card>
           <GlobalError actionResult={actionData} />
 

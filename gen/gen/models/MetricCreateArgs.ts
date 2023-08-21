@@ -5,7 +5,7 @@
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityIcon } from './EntityIcon';
-import type { MetricName } from './MetricName';
+import type { EntityName } from './EntityName';
 import type { MetricUnit } from './MetricUnit';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
@@ -13,7 +13,7 @@ import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
 import type { RecurringTaskPeriod } from './RecurringTaskPeriod';
 
 export type MetricCreateArgs = {
-    name: MetricName;
+    name: EntityName;
     icon?: EntityIcon;
     collection_period?: RecurringTaskPeriod;
     collection_eisen?: Eisen;

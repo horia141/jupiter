@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 import type { ADate } from './ADate';
-import type { BigPlanName } from './BigPlanName';
 import type { BigPlanStatus } from './BigPlanStatus';
 import type { EntityId } from './EntityId';
+import type { EntityName } from './EntityName';
 import type { Timestamp } from './Timestamp';
 
 export type BigPlan = {
@@ -15,7 +15,7 @@ export type BigPlan = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: BigPlanName;
+    name: EntityName;
     big_plan_collection_ref_id: EntityId;
     project_ref_id: EntityId;
     status: BigPlanStatus;

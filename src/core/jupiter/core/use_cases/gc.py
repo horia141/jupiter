@@ -4,7 +4,7 @@ from typing import Iterable, List, Optional, cast
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.service.archive_service import BigPlanArchiveService
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import FeatureUnavailableError, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.service.archive_service import (
@@ -94,7 +94,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
             )
 
         if (
-            workspace.is_feature_available(Feature.INBOX_TASKS)
+            workspace.is_feature_available(WorkspaceFeature.INBOX_TASKS)
             and SyncTarget.INBOX_TASKS in gc_targets
         ):
             async with progress_reporter.section("Inbox Tasks"):
@@ -112,7 +112,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                     )
 
         if (
-            workspace.is_feature_available(Feature.BIG_PLANS)
+            workspace.is_feature_available(WorkspaceFeature.BIG_PLANS)
             and SyncTarget.BIG_PLANS in gc_targets
         ):
             async with progress_reporter.section("Big Plans"):
@@ -131,7 +131,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 )
 
         if (
-            workspace.is_feature_available(Feature.SLACK_TASKS)
+            workspace.is_feature_available(WorkspaceFeature.SLACK_TASKS)
             and SyncTarget.SLACK_TASKS in gc_targets
         ):
             async with progress_reporter.section("Slack Tasks"):
@@ -153,7 +153,7 @@ class GCUseCase(AppLoggedInMutationUseCase[GCArgs, None]):
                 )
 
         if (
-            workspace.is_feature_available(Feature.EMAIL_TASKS)
+            workspace.is_feature_available(WorkspaceFeature.EMAIL_TASKS)
             and SyncTarget.EMAIL_TASKS in gc_targets
         ):
             async with progress_reporter.section("Email Tasks"):

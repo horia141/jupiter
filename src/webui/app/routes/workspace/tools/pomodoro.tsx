@@ -8,12 +8,14 @@ import {
   styled,
   Typography,
 } from "@mui/material";
+import { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
 import { ToolCard } from "~/components/infra/tool-card";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
 const DEFAULT_PROD_DURATION = Duration.fromMillis(1000 * 60 * 25);
@@ -23,6 +25,8 @@ const DEFAULT_STEP_MS = 1000;
 export const handle = {
   displayType: DisplayType.LEAF,
 };
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Pomodoro() {
   const globalProperties = useContext(GlobalPropertiesContext);

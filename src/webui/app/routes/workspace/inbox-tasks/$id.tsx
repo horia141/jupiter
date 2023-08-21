@@ -20,7 +20,7 @@ import {
   type ActionArgs,
   type LoaderArgs,
 } from "@remix-run/node";
-import { useActionData, useParams, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useParams, useTransition } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type {
   BigPlan,
@@ -36,9 +36,9 @@ import {
   ApiError,
   Difficulty,
   Eisen,
-  Feature,
   InboxTaskSource,
   InboxTaskStatus,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
@@ -59,14 +59,16 @@ import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
+import { saveScoreAction } from "~/logic/domain/gamification/scores.server";
 import {
   doesInboxTaskAllowChangingBigPlan,
   doesInboxTaskAllowChangingProject,
   isInboxTaskCoreFieldEditable,
 } from "~/logic/domain/inbox-task";
 import { inboxTaskStatusName } from "~/logic/domain/inbox-task-status";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -142,7 +144,7 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        await getLoggedInApiClient(session).inboxTask.updateInboxTask({
+        const result = await getLoggedInApiClient(session).inboxTask.updateInboxTask({
           ref_id: { the_id: id },
           name: corePropertyEditable
             ? {
@@ -182,6 +184,12 @@ export async function action({ request, params }: ActionArgs) {
                 : undefined,
           },
         });
+
+        if (result.record_score_result) {
+          return redirect(`/workspace/inbox-tasks/${id}`, {headers: {
+            "Set-Cookie": await saveScoreAction(result.record_score_result)
+          }});
+        }
 
         return redirect(`/workspace/inbox-tasks/${id}`);
       }
@@ -237,6 +245,8 @@ type BigPlanACOption = {
   big_plan_id: string;
 };
 
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+
 export default function InboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -275,7 +285,12 @@ export default function InboxTask() {
   const canChangeBigPlan = doesInboxTaskAllowChangingBigPlan(inboxTask.source);
 
   const allProjectsById: { [k: string]: Project } = {};
-  if (isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS)) {
+  if (
+    isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.PROJECTS
+    )
+  ) {
     for (const project of loaderData.allProjects) {
       allProjectsById[project.ref_id.the_id] = project;
     }
@@ -284,7 +299,12 @@ export default function InboxTask() {
   const allBigPlansById: { [k: string]: BigPlan } = {};
   let allBigPlansAsOptions: Array<{ label: string; big_plan_id: string }> = [];
 
-  if (isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS)) {
+  if (
+    isWorkspaceFeatureAvailable(
+      topLevelInfo.workspace,
+      WorkspaceFeature.BIG_PLANS
+    )
+  ) {
     for (const bigPlan of loaderData.allBigPlans) {
       allBigPlansById[bigPlan.ref_id.the_id] = bigPlan;
     }
@@ -396,7 +416,10 @@ export default function InboxTask() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.BIG_PLANS
+            ) &&
               (inboxTask.source === InboxTaskSource.USER ||
                 inboxTask.source === InboxTaskSource.BIG_PLAN) && (
                 <>
@@ -432,38 +455,59 @@ export default function InboxTask() {
                 </>
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.HABITS) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.HABITS
+            ) &&
               inboxTask.source === InboxTaskSource.HABIT && (
                 <HabitTag habit={info.habit as Habit} />
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.CHORES) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.CHORES
+            ) &&
               inboxTask.source === InboxTaskSource.CHORE && (
                 <ChoreTag chore={info.chore as Chore} />
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PERSONS) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PERSONS
+            ) &&
               (inboxTask.source === InboxTaskSource.PERSON_CATCH_UP ||
                 inboxTask.source === InboxTaskSource.PERSON_BIRTHDAY) && (
                 <PersonTag person={info.person as Person} />
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.METRICS) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.METRICS
+            ) &&
               inboxTask.source === InboxTaskSource.METRIC && (
                 <MetricTag metric={info.metric as Metric} />
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.SLACK_TASKS) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.SLACK_TASKS
+            ) &&
               inboxTask.source === InboxTaskSource.SLACK_TASK && (
                 <SlackTaskTag slackTask={info.slack_task as SlackTask} />
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.EMAIL_TASKS) &&
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.EMAIL_TASKS
+            ) &&
               inboxTask.source === InboxTaskSource.EMAIL_TASK && (
                 <EmailTaskTag emailTask={info.email_task as EmailTask} />
               )}
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <InputLabel id="project">Project</InputLabel>
                 <Select
@@ -581,7 +625,10 @@ export default function InboxTask() {
             >
               Save
             </Button>
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <Button
                 variant="outlined"
                 disabled={
@@ -596,7 +643,10 @@ export default function InboxTask() {
                 Change Project
               </Button>
             )}
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.BIG_PLANS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.BIG_PLANS
+            ) && (
               <Button
                 variant="outlined"
                 disabled={

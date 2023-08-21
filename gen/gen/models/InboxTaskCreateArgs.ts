@@ -6,10 +6,10 @@ import type { ADate } from './ADate';
 import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityId } from './EntityId';
-import type { InboxTaskName } from './InboxTaskName';
+import type { EntityName } from './EntityName';
 
 export type InboxTaskCreateArgs = {
-    name: InboxTaskName;
+    name: EntityName;
     project_ref_id?: EntityId;
     big_plan_ref_id?: EntityId;
     eisen?: Eisen;

@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 
 from jupiter.cli.command.command import LoggedInMutationCommand
 from jupiter.cli.session_storage import SessionInfo
-from jupiter.core.domain.features import Feature, FeatureFlags
+from jupiter.core.domain.features import WorkspaceFeature, WorkspaceFeatureFlags
 from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseSession
 from jupiter.core.use_cases.workspaces.change_feature_flags import (
     WorkspaceChangeFeatureFlagsArgs,
@@ -33,14 +33,14 @@ class WorkspaceChangeFeatureFlags(
             dest="workspace_feature_flag_enabled",
             default=[],
             action="append",
-            choices=Feature.all_values(),
+            choices=WorkspaceFeature.all_values(),
         )
         parser.add_argument(
             "--no-feature",
             dest="workspace_feature_flag_disable",
             default=[],
             action="append",
-            choices=Feature.all_values(),
+            choices=WorkspaceFeature.all_values(),
         )
 
     async def _run(
@@ -49,11 +49,11 @@ class WorkspaceChangeFeatureFlags(
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        feature_flags: FeatureFlags = {}
+        feature_flags: WorkspaceFeatureFlags = {}
         for enabled_feature in args.workspace_feature_flag_enabled:
-            feature_flags[Feature(enabled_feature)] = True
+            feature_flags[WorkspaceFeature(enabled_feature)] = True
         for disabled_feature in args.workspace_feature_flag_disable:
-            feature_flags[Feature(disabled_feature)] = False
+            feature_flags[WorkspaceFeature(disabled_feature)] = False
 
         await self._use_case.execute(
             AppLoggedInUseCaseSession(session_info.auth_token_ext),

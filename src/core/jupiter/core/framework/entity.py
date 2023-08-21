@@ -13,6 +13,38 @@ from jupiter.core.framework.event import Event, EventKind, EventSource
 FIRST_VERSION = 0
 
 
+_RecordT = TypeVar("_RecordT", bound="Record")
+
+
+@dataclass
+class Record:
+    """A base class for a simplified object to store."""
+
+    created_time: Timestamp
+    last_modified_time: Timestamp
+
+    def _new_version(
+        self: _RecordT,
+        last_modified_time: Timestamp,
+        **kwargs: Union[None, bool, str, int, float, object],
+    ) -> _RecordT:
+        # To hell with your types!
+        # We only want to create a new version if there's any actual change in the root. This means we both
+        # create a new object, and we increment it's version, and emit a new event. Otherwise we just return
+        # the original object.
+        for arg_name, arg_value in kwargs.items():
+            if arg_value != getattr(self, arg_name):
+                return cast(
+                    _RecordT,
+                    dataclasses.replace(
+                        self,
+                        last_modified_time=last_modified_time,
+                        **kwargs,
+                    ),
+                )
+        return self
+
+
 _EntityT = TypeVar("_EntityT", bound="Entity")
 
 

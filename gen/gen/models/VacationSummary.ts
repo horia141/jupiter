@@ -3,10 +3,10 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { VacationName } from './VacationName';
+import type { EntityName } from './EntityName';
 
 export type VacationSummary = {
     ref_id: EntityId;
-    name: VacationName;
+    name: EntityName;
 };
 

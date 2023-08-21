@@ -3,10 +3,10 @@
 /* eslint-disable */
 
 import type { EntityIcon } from './EntityIcon';
-import type { SmartListName } from './SmartListName';
+import type { EntityName } from './EntityName';
 
 export type SmartListCreateArgs = {
-    name: SmartListName;
+    name: EntityName;
     icon?: EntityIcon;
 };
 

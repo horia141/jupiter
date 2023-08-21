@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { SmartListTagName } from './SmartListTagName';
+import type { TagName } from './TagName';
 
 export type SmartListFindArgs = {
     allow_archived: boolean;
@@ -11,7 +11,7 @@ export type SmartListFindArgs = {
     include_items: boolean;
     filter_ref_ids?: Array<EntityId>;
     filter_is_done?: boolean;
-    filter_tag_names?: Array<SmartListTagName>;
+    filter_tag_names?: Array<TagName>;
     filter_tag_ref_id?: Array<EntityId>;
     filter_item_ref_id?: Array<EntityId>;
 };

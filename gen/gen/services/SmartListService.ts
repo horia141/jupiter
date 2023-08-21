@@ -30,190 +30,6 @@ export class SmartListService {
     constructor(public readonly httpRequest: BaseHttpRequest) {}
 
     /**
-     * Create Smart List Item
-     * Create a smart list item.
-     * @param requestBody
-     * @returns SmartListItemCreateResult Successful Response
-     * @throws ApiError
-     */
-    public createSmartListItem(
-        requestBody: SmartListItemCreateArgs,
-    ): CancelablePromise<SmartListItemCreateResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/item/create',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Archive Smart List Item
-     * Archive a smart list item.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public archiveSmartListItem(
-        requestBody: SmartListItemArchiveArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/item/archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Update Smart List Item
-     * Update a smart list item.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public updateSmartListItem(
-        requestBody: SmartListItemUpdateArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/item/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Load Smart List Item
-     * Load a smart list item.
-     * @param requestBody
-     * @returns SmartListItemLoadResult Successful Response
-     * @throws ApiError
-     */
-    public loadSmartListItem(
-        requestBody: SmartListItemLoadArgs,
-    ): CancelablePromise<SmartListItemLoadResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/item/load',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Create Smart List Tag
-     * Create a smart list tag.
-     * @param requestBody
-     * @returns SmartListTagCreateResult Successful Response
-     * @throws ApiError
-     */
-    public createSmartListTag(
-        requestBody: SmartListTagCreateArgs,
-    ): CancelablePromise<SmartListTagCreateResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/tag/create',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Archive Smart List Tag
-     * Archive a smart list tag.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public archiveSmartListTag(
-        requestBody: SmartListTagArchiveArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/tag/archive',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Update Smart List Tag
-     * Update a smart list tag.
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public updateSmartListTag(
-        requestBody: SmartListTagUpdateArgs,
-    ): CancelablePromise<any> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/tag/update',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Load Smart List Tag
-     * Load a smart list tag.
-     * @param requestBody
-     * @returns SmartListTagLoadResult Successful Response
-     * @throws ApiError
-     */
-    public loadSmartListTag(
-        requestBody: SmartListTagLoadArgs,
-    ): CancelablePromise<SmartListTagLoadResult> {
-        return this.httpRequest.request({
-            method: 'POST',
-            url: '/smart-list/tag/load',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                406: `Feature Not Available`,
-                410: `Workspace Or User Not Found`,
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
      * Create Smart List
      * Create a smart list.
      * @param requestBody
@@ -318,6 +134,190 @@ export class SmartListService {
         return this.httpRequest.request({
             method: 'POST',
             url: '/smart-list/find',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Smart List Tag
+     * Create a smart list tag.
+     * @param requestBody
+     * @returns SmartListTagCreateResult Successful Response
+     * @throws ApiError
+     */
+    public createSmartListTag(
+        requestBody: SmartListTagCreateArgs,
+    ): CancelablePromise<SmartListTagCreateResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/tag/create',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Archive Smart List Tag
+     * Archive a smart list tag.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public archiveSmartListTag(
+        requestBody: SmartListTagArchiveArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/tag/archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Update Smart List Tag
+     * Update a smart list tag.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public updateSmartListTag(
+        requestBody: SmartListTagUpdateArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/tag/update',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Load Smart List Tag
+     * Load a smart list tag.
+     * @param requestBody
+     * @returns SmartListTagLoadResult Successful Response
+     * @throws ApiError
+     */
+    public loadSmartListTag(
+        requestBody: SmartListTagLoadArgs,
+    ): CancelablePromise<SmartListTagLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/tag/load',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Smart List Item
+     * Create a smart list item.
+     * @param requestBody
+     * @returns SmartListItemCreateResult Successful Response
+     * @throws ApiError
+     */
+    public createSmartListItem(
+        requestBody: SmartListItemCreateArgs,
+    ): CancelablePromise<SmartListItemCreateResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/item/create',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Archive Smart List Item
+     * Archive a smart list item.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public archiveSmartListItem(
+        requestBody: SmartListItemArchiveArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/item/archive',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Update Smart List Item
+     * Update a smart list item.
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public updateSmartListItem(
+        requestBody: SmartListItemUpdateArgs,
+    ): CancelablePromise<any> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/item/update',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                406: `Feature Not Available`,
+                410: `Workspace Or User Not Found`,
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Load Smart List Item
+     * Load a smart list item.
+     * @param requestBody
+     * @returns SmartListItemLoadResult Successful Response
+     * @throws ApiError
+     */
+    public loadSmartListItem(
+        requestBody: SmartListItemLoadArgs,
+    ): CancelablePromise<SmartListItemLoadResult> {
+        return this.httpRequest.request({
+            method: 'POST',
+            url: '/smart-list/item/load',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

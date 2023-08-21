@@ -11,8 +11,10 @@ from jupiter.core.domain.big_plans.big_plan_collection import BigPlanCollection
 from jupiter.core.domain.chores.chore_collection import ChoreCollection
 from jupiter.core.domain.email_address import EmailAddress
 from jupiter.core.domain.features import (
-    FeatureFlags,
+    UserFeatureFlags,
+    WorkspaceFeatureFlags,
 )
+from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
@@ -65,11 +67,12 @@ class InitArgs(UseCaseArgsBase):
     user_email_address: EmailAddress
     user_name: UserName
     user_timezone: Timezone
+    user_feature_flags: UserFeatureFlags
     auth_password: PasswordNewPlain
     auth_password_repeat: PasswordNewPlain
     workspace_name: WorkspaceName
     workspace_first_project_name: ProjectName
-    workspace_feature_flags: FeatureFlags
+    workspace_feature_flags: WorkspaceFeatureFlags
 
 
 @dataclass
@@ -117,13 +120,18 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
         args: InitArgs,
     ) -> InitResult:
         """Execute the command's action."""
-        feature_flags_controls = infer_feature_flag_controls(self._global_properties)
+        (
+            user_feature_flags_controls,
+            workspace_feature_flags_controls,
+        ) = infer_feature_flag_controls(self._global_properties)
 
         async with self._storage_engine.get_unit_of_work() as uow:
             new_user = User.new_user(
                 email_address=args.user_email_address,
                 name=args.user_name,
                 timezone=args.user_timezone,
+                feature_flag_controls=user_feature_flags_controls,
+                feature_flags=args.user_feature_flags,
                 source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time(),
             )
@@ -138,9 +146,16 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_auth = await uow.auth_repository.create(new_auth)
 
+            new_score_log = ScoreLog.new_score_log(
+                user_ref_id=new_user.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_score_log = await uow.score_log_repository.create(new_score_log)
+
             new_workspace = Workspace.new_workspace(
                 name=args.workspace_name,
-                feature_flag_controls=feature_flags_controls,
+                feature_flag_controls=workspace_feature_flags_controls,
                 feature_flags=args.workspace_feature_flags,
                 source=EventSource.CLI,
                 created_time=self._time_provider.get_current_time(),

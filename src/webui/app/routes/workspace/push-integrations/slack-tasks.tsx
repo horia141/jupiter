@@ -1,8 +1,8 @@
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
-import { Feature, type SlackTask } from "jupiter-gen";
+import { Link, ShouldRevalidateFunction, useFetcher, useOutlet } from "@remix-run/react";
+import { WorkspaceFeature, type SlackTask } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";
@@ -17,7 +17,8 @@ import { LeafPanel } from "~/components/infra/leaf-panel";
 import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { slackTaskNiceName } from "~/logic/domain/slack-task";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -38,6 +39,8 @@ export async function loader({ request }: LoaderArgs) {
   });
   return json(response.entries);
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function SlackTasks() {
   const outlet = useOutlet();
@@ -68,7 +71,10 @@ export default function SlackTasks() {
     <TrunkCard>
       <NestingAwarePanel showOutlet={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
-          {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <Button
               variant="contained"
               to="/workspace/push-integrations/slack-tasks/settings"

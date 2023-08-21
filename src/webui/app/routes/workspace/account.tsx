@@ -14,27 +14,37 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { useActionData, useTransition } from "@remix-run/react";
+import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
-import { ApiError } from "jupiter-gen";
+import { ApiError, UserFeature } from "jupiter-gen";
+import { useContext } from "react";
 import { z } from "zod";
 import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
+import { UserFeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
+import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
+import { TopLevelInfoContext } from "~/top-level-context";
 
 const AccountFormSchema = {
   intent: z.string(),
   name: z.string(),
   timezone: z.string(),
+  featureFlags: z
+    .nativeEnum(UserFeature)
+    .transform((s) => [s])
+    .optional()
+    .transform((_) => []),
 };
 
 export const handle = {
@@ -73,6 +83,23 @@ export async function action({ request }: ActionArgs) {
         return redirect(`/workspace/account`);
       }
 
+      case "change-feature-flags": {
+        const featureFlags: Record<string, boolean> = {};
+        for (const feature of Object.values(UserFeature)) {
+          if (form.featureFlags.find((v) => v == feature)) {
+            featureFlags[feature] = true;
+          } else {
+            featureFlags[feature] = false;
+          }
+        }
+
+        await getLoggedInApiClient(session).user.changeUserFeatureFlags({
+          feature_flags: featureFlags,
+        });
+
+        return redirect(`/workspace/account`);
+      }
+
       default:
         throw new Response("Bad Intent", { status: 500 });
     }
@@ -88,10 +115,15 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+
 export default function Account() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
   const transition = useTransition();
+
+  const globalProperties = useContext(GlobalPropertiesContext);
+  const topLevelInfo = useContext(TopLevelInfoContext);
 
   const inputsEnabled = transition.state === "idle";
 
@@ -160,6 +192,39 @@ export default function Account() {
                   value="update"
                 >
                   Save
+                </Button>
+              </ButtonGroup>
+            </CardActions>
+          </Card>
+
+          <Card>
+            <GlobalError
+              intent="change-feature-flags"
+              actionResult={actionData}
+            />
+
+            <CardHeader title="Feature Flags" />
+
+            <CardContent>
+              <UserFeatureFlagsEditor
+                name="featureFlags"
+                inputsEnabled={inputsEnabled}
+                featureFlagsControls={topLevelInfo.userFeatureFlagControls}
+                defaultFeatureFlags={loaderData.user.feature_flags}
+                hosting={globalProperties.hosting}
+              />
+            </CardContent>
+
+            <CardActions>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  disabled={!inputsEnabled}
+                  type="submit"
+                  name="intent"
+                  value="change-feature-flags"
+                >
+                  Change Feature Flags
                 </Button>
               </ButtonGroup>
             </CardActions>

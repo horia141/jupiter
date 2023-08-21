@@ -6,7 +6,8 @@ from typing import Any, Final, Generic, TypeVar
 
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
+from jupiter.core.domain.user.user import User
 from jupiter.core.domain.workspaces.workspace import Workspace
 from jupiter.core.use_cases.infra.use_cases import (
     AppGuestMutationUseCase,
@@ -14,10 +15,13 @@ from jupiter.core.use_cases.infra.use_cases import (
     AppLoggedInMutationUseCase,
     AppLoggedInReadonlyUseCase,
 )
+from rich.text import Text
 
 
 class Command(abc.ABC):
     """The base class for command."""
+
+    _postscript: Text | None = None
 
     @staticmethod
     @abc.abstractmethod
@@ -45,6 +49,10 @@ class Command(abc.ABC):
         """Should the command appear in the global help info or not."""
         return True
 
+    def is_allowed_for_user(self, workspace: User) -> bool:
+        """Is this command allowed for a particular user."""
+        return True
+
     def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
         """Is this command allowed for a particular workspace."""
         return True
@@ -53,6 +61,14 @@ class Command(abc.ABC):
     def should_have_streaming_progress_report(self) -> bool:
         """Whether the main script should have a streaming progress reporter."""
         return True
+
+    def mark_postscript(self, postscript: Text) -> None:
+        """Mark some postscript for the command."""
+        self._postscript = postscript
+
+    def get_postscript(self) -> Text | None:
+        """Get some postscript for the command."""
+        return self._postscript
 
 
 GuestMutationCommandUseCase = TypeVar(
@@ -171,16 +187,34 @@ class LoggedInMutationCommand(
     ) -> None:
         """Callback to execute when the command is invoked."""
 
+    def is_allowed_for_user(self, user: User) -> bool:
+        """Is this command allowed for a particular user."""
+        scoped_feature = self._use_case.get_scoped_to_feature()
+        if scoped_feature is None:
+            return True
+        if isinstance(scoped_feature, UserFeature):
+            return user.is_feature_available(scoped_feature)
+        elif isinstance(scoped_feature, WorkspaceFeature):
+            return True
+        for feature in scoped_feature:
+            if isinstance(feature, UserFeature):
+                if not user.is_feature_available(feature):
+                    return False
+        return True
+
     def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
         """Is this command allowed for a particular workspace."""
         scoped_feature = self._use_case.get_scoped_to_feature()
         if scoped_feature is None:
             return True
-        if isinstance(scoped_feature, Feature):
+        if isinstance(scoped_feature, UserFeature):
+            return True
+        elif isinstance(scoped_feature, WorkspaceFeature):
             return workspace.is_feature_available(scoped_feature)
         for feature in scoped_feature:
-            if not workspace.is_feature_available(feature):
-                return False
+            if isinstance(feature, WorkspaceFeature):
+                if not workspace.is_feature_available(feature):
+                    return False
         return True
 
 
@@ -225,16 +259,34 @@ class LoggedInReadonlyCommand(
     ) -> None:
         """Callback to execute when the command is invoked."""
 
+    def is_allowed_for_user(self, user: User) -> bool:
+        """Is this command allowed for a particular user."""
+        scoped_feature = self._use_case.get_scoped_to_feature()
+        if scoped_feature is None:
+            return True
+        if isinstance(scoped_feature, UserFeature):
+            return user.is_feature_available(scoped_feature)
+        elif isinstance(scoped_feature, WorkspaceFeature):
+            return True
+        for feature in scoped_feature:
+            if isinstance(feature, UserFeature):
+                if not user.is_feature_available(feature):
+                    return False
+        return True
+
     def is_allowed_for_workspace(self, workspace: Workspace) -> bool:
         """Is this command allowed for a particular workspace."""
         scoped_feature = self._use_case.get_scoped_to_feature()
         if scoped_feature is None:
             return True
-        if isinstance(scoped_feature, Feature):
+        if isinstance(scoped_feature, UserFeature):
+            return True
+        elif isinstance(scoped_feature, WorkspaceFeature):
             return workspace.is_feature_available(scoped_feature)
         for feature in scoped_feature:
-            if not workspace.is_feature_available(feature):
-                return False
+            if isinstance(feature, WorkspaceFeature):
+                if not workspace.is_feature_available(feature):
+                    return False
         return True
 
     @property

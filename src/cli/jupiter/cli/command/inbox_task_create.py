@@ -8,7 +8,7 @@ from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_name import InboxTaskName
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.inbox_tasks.create import (
@@ -47,7 +47,9 @@ class InboxTaskCreate(LoggedInMutationCommand[InboxTaskCreateUseCase]):
 
     def build_parser(self, parser: ArgumentParser) -> None:
         """Construct a argparse parser for the command."""
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             parser.add_argument(
                 "--project-id",
                 dest="project_ref_id",
@@ -60,7 +62,9 @@ class InboxTaskCreate(LoggedInMutationCommand[InboxTaskCreateUseCase]):
             required=True,
             help="The name of the inbox task",
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             parser.add_argument(
                 "--big-plan-id",
                 type=str,
@@ -96,14 +100,18 @@ class InboxTaskCreate(LoggedInMutationCommand[InboxTaskCreateUseCase]):
         args: Namespace,
     ) -> None:
         """Callback to execute when the command is invoked."""
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             project_ref_id = (
                 EntityId.from_raw(args.project_ref_id) if args.project_ref_id else None
             )
         else:
             project_ref_id = None
         name = InboxTaskName.from_raw(args.name)
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             big_plan_ref_id = (
                 EntityId.from_raw(args.big_plan_ref_id)
                 if args.big_plan_ref_id

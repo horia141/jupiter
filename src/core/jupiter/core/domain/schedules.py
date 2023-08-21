@@ -14,6 +14,7 @@ from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMo
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.recurring_task_skip_rule import RecurringTaskSkipRule
+from jupiter.core.domain.timeline import infer_timeline
 from jupiter.core.domain.timezone import Timezone as DomainTimezone
 from jupiter.core.framework.base.timestamp import Timestamp
 from pendulum.date import Date
@@ -252,7 +253,7 @@ class DailySchedule(Schedule):
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}{right_now.value.day}",
         )
-        self._timeline = self._generate_timeline(right_now)
+        self._timeline = infer_timeline(RecurringTaskPeriod.DAILY, right_now)
         self._should_skip = (
             self._skip_helper(skip_rule, self._due_date.day_of_week)
             if skip_rule
@@ -273,15 +274,6 @@ class DailySchedule(Schedule):
     def end_day(self) -> ADate:
         """The end day of the interval represented by the schedule block."""
         return ADate.from_date(self._due_date)
-
-    def _generate_timeline(self, right_now: Timestamp) -> str:
-        year = f"{right_now.value.year}"
-        quarter = self.month_to_quarter(right_now)
-        month = self.month_to_month(right_now)
-        week = f"W{right_now.value.week_of_year}"
-        day = f"D{right_now.value.day_of_week}"
-
-        return f"{year},{quarter},{month},{week},{day}"
 
 
 class WeeklySchedule(Schedule):
@@ -327,7 +319,7 @@ class WeeklySchedule(Schedule):
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:W{start_of_week.week_of_year}",
         )
-        self._timeline = self._generate_timeline(start_of_week)
+        self._timeline = infer_timeline(RecurringTaskPeriod.WEEKLY, right_now)
         self._should_skip = (
             self._skip_helper(skip_rule, self._due_date.week_of_year)
             if skip_rule
@@ -348,14 +340,6 @@ class WeeklySchedule(Schedule):
     def end_day(self) -> ADate:
         """The end day of the interval represented by the schedule block."""
         return ADate.from_date(self._date.end_of("week"))
-
-    def _generate_timeline(self, right_now: DateTime) -> str:
-        year = f"{right_now.year}"
-        quarter = self.month_to_quarter(right_now)
-        month = self.month_to_month(right_now)
-        week = f"W{right_now.week_of_year}"
-
-        return f"{year},{quarter},{month},{week}"
 
 
 class MonthlySchedule(Schedule):
@@ -401,7 +385,7 @@ class MonthlySchedule(Schedule):
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_month(right_now)}",
         )
-        self._timeline = self._generate_timeline(Timestamp(start_of_month))
+        self._timeline = infer_timeline(RecurringTaskPeriod.MONTHLY, right_now)
         self._should_skip = (
             self._skip_helper(skip_rule, self._due_date.month) if skip_rule else False
         )
@@ -420,13 +404,6 @@ class MonthlySchedule(Schedule):
     def end_day(self) -> ADate:
         """The end day of the interval represented by the schedule block."""
         return ADate.from_date(self._date.end_of("month"))
-
-    def _generate_timeline(self, right_now: Timestamp) -> str:
-        year = f"{right_now.value.year}"
-        quarter = self.month_to_quarter(right_now)
-        month = self.month_to_month(right_now)
-
-        return f"{year},{quarter},{month}"
 
 
 class QuarterlySchedule(Schedule):
@@ -546,7 +523,7 @@ class QuarterlySchedule(Schedule):
         self._full_name = InboxTaskName(
             f"{name} {self.year_two_digits(right_now)}:{self.month_to_quarter(right_now)}",
         )
-        self._timeline = self._generate_timeline(right_now)
+        self._timeline = infer_timeline(RecurringTaskPeriod.QUARTERLY, right_now)
         self._should_skip = (
             self._skip_helper(skip_rule, self.month_to_quarter_num(self._due_date))
             if skip_rule
@@ -581,12 +558,6 @@ class QuarterlySchedule(Schedule):
                 tzinfo=UTC,
             ).end_of("month"),
         )
-
-    def _generate_timeline(self, right_now: Timestamp) -> str:
-        year = f"{right_now.value.year}"
-        quarter = self.month_to_quarter(right_now)
-
-        return f"{year},{quarter}"
 
 
 class YearlySchedule(Schedule):
@@ -665,7 +636,7 @@ class YearlySchedule(Schedule):
         else:
             self._due_time = None
         self._full_name = InboxTaskName(f"{name} {self.year_two_digits(right_now)}")
-        self._timeline = self._generate_timeline(right_now)
+        self._timeline = infer_timeline(RecurringTaskPeriod.YEARLY, right_now)
         self._should_skip = False
 
     @property
@@ -682,12 +653,6 @@ class YearlySchedule(Schedule):
     def end_day(self) -> ADate:
         """The end day of the interval represented by the schedule block."""
         return ADate.from_date(self._date.end_of("year"))
-
-    @staticmethod
-    def _generate_timeline(right_now: Timestamp) -> str:
-        year = f"{right_now.value.year}"
-
-        return year
 
 
 def get_schedule(

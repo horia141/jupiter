@@ -4,7 +4,7 @@
 
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { MetricName } from './MetricName';
+import type { EntityName } from './EntityName';
 import type { MetricUnit } from './MetricUnit';
 import type { RecurringTaskGenParams } from './RecurringTaskGenParams';
 import type { Timestamp } from './Timestamp';
@@ -16,7 +16,7 @@ export type Metric = {
     created_time: Timestamp;
     last_modified_time: Timestamp;
     archived_time: Timestamp;
-    name: MetricName;
+    name: EntityName;
     metric_collection_ref_id: EntityId;
     icon?: EntityIcon;
     collection_params?: RecurringTaskGenParams;

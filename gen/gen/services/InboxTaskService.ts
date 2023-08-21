@@ -11,6 +11,7 @@ import type { InboxTaskFindResult } from '../models/InboxTaskFindResult';
 import type { InboxTaskLoadArgs } from '../models/InboxTaskLoadArgs';
 import type { InboxTaskLoadResult } from '../models/InboxTaskLoadResult';
 import type { InboxTaskUpdateArgs } from '../models/InboxTaskUpdateArgs';
+import type { InboxTaskUpdateResult } from '../models/InboxTaskUpdateResult';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import type { BaseHttpRequest } from '../core/BaseHttpRequest';
@@ -69,12 +70,12 @@ export class InboxTaskService {
      * Update Inbox Task
      * Update a inbox task.
      * @param requestBody
-     * @returns any Successful Response
+     * @returns InboxTaskUpdateResult Successful Response
      * @throws ApiError
      */
     public updateInboxTask(
         requestBody: InboxTaskUpdateArgs,
-    ): CancelablePromise<any> {
+    ): CancelablePromise<InboxTaskUpdateResult> {
         return this.httpRequest.request({
             method: 'POST',
             url: '/inbox-task/update',

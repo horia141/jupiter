@@ -3,10 +3,10 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
-import type { InboxTaskName } from './InboxTaskName';
+import type { EntityName } from './EntityName';
 
 export type InboxTaskSummary = {
     ref_id: EntityId;
-    name: InboxTaskName;
+    name: EntityName;
 };
 

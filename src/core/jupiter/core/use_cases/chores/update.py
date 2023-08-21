@@ -7,7 +7,7 @@ from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.chores.chore_name import ChoreName
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.recurring_task_due_at_day import RecurringTaskDueAtDay
 from jupiter.core.domain.recurring_task_due_at_month import RecurringTaskDueAtMonth
 from jupiter.core.domain.recurring_task_due_at_time import RecurringTaskDueAtTime
@@ -55,9 +55,11 @@ class ChoreUpdateUseCase(
     """The command for updating a chore."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.CHORES
+        return WorkspaceFeature.CHORES
 
     async def _perform_transactional_mutation(
         self,

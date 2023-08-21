@@ -10,8 +10,8 @@ import {
 } from "@mui/material";
 import { Link } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Feature } from "jupiter-gen";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { WorkspaceFeature } from "jupiter-gen";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { TopLevelInfo } from "~/top-level-context";
 
@@ -85,9 +85,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItemButton>
             </ListItem>
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.HABITS
+              WorkspaceFeature.HABITS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -101,9 +101,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.CHORES
+              WorkspaceFeature.CHORES
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -117,9 +117,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.BIG_PLANS
+              WorkspaceFeature.BIG_PLANS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -133,9 +133,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.VACATIONS
+              WorkspaceFeature.VACATIONS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -149,9 +149,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.PROJECTS
+              WorkspaceFeature.PROJECTS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -165,9 +165,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.SMART_LISTS
+              WorkspaceFeature.SMART_LISTS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -181,9 +181,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.METRICS
+              WorkspaceFeature.METRICS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -197,9 +197,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.PERSONS
+              WorkspaceFeature.PERSONS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -213,18 +213,18 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {(isFeatureAvailable(
+            {(isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.SLACK_TASKS
+              WorkspaceFeature.SLACK_TASKS
             ) ||
-              isFeatureAvailable(
+              isWorkspaceFeatureAvailable(
                 props.topLevelInfo.workspace,
-                Feature.EMAIL_TASKS
+                WorkspaceFeature.EMAIL_TASKS
               )) && <Divider textAlign="left">Push Integrations</Divider>}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.SLACK_TASKS
+              WorkspaceFeature.SLACK_TASKS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton
@@ -238,9 +238,9 @@ export default function Sidebar(props: SidebarProps) {
               </ListItem>
             )}
 
-            {isFeatureAvailable(
+            {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
-              Feature.EMAIL_TASKS
+              WorkspaceFeature.EMAIL_TASKS
             ) && (
               <ListItem disablePadding>
                 <ListItemButton

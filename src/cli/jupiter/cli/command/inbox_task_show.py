@@ -16,7 +16,7 @@ from jupiter.cli.command.rendering import (
 from jupiter.cli.session_storage import SessionInfo
 from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.use_cases.inbox_tasks.find import (
@@ -59,7 +59,9 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             action="append",
             help="Show only tasks selected by this id",
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             parser.add_argument(
                 "--project-id",
                 dest="project_ref_ids",
@@ -91,7 +93,9 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             if len(args.ref_ids) > 0
             else None
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             project_ref_ids = (
                 [EntityId.from_raw(p) for p in args.project_ref_ids]
                 if len(args.project_ref_ids) > 0
@@ -162,7 +166,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             if (
                 habit is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.HABITS
+                    WorkspaceFeature.HABITS
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -170,7 +174,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             elif (
                 chore is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.CHORES
+                    WorkspaceFeature.CHORES
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -178,7 +182,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             elif (
                 big_plan is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.BIG_PLANS
+                    WorkspaceFeature.BIG_PLANS
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -188,7 +192,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             elif (
                 metric is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.METRICS
+                    WorkspaceFeature.METRICS
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -198,7 +202,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             elif (
                 person is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.PERSONS
+                    WorkspaceFeature.PERSONS
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -208,7 +212,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             elif (
                 slack_task is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.SLACK_TASKS
+                    WorkspaceFeature.SLACK_TASKS
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -218,7 +222,7 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
             elif (
                 email_task is not None
                 and self._top_level_context.workspace.is_feature_available(
-                    Feature.EMAIL_TASKS
+                    WorkspaceFeature.EMAIL_TASKS
                 )
             ):
                 inbox_task_info_text.append(" ")
@@ -236,7 +240,9 @@ class InboxTaskShow(LoggedInReadonlyCommand[InboxTaskFindUseCase]):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(due_date_to_rich_text(inbox_task.due_date))
 
-            if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+            if self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
+            ):
                 inbox_task_info_text.append(" ")
                 inbox_task_info_text.append(project_to_rich_text(project.name))
 

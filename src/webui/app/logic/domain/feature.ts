@@ -1,56 +1,74 @@
-import { Feature, FeatureControl } from "jupiter-gen";
+import { FeatureControl, UserFeature, WorkspaceFeature } from "jupiter-gen";
 import { DocsHelpSubject } from "~/components/docs-help";
 
-export function featureName(feature: Feature): string {
+export function userFeatureName(feature: UserFeature): string {
   switch (feature) {
-    case Feature.INBOX_TASKS:
+    case UserFeature.GAMIFICATION:
+      return "Gamification";
+  }
+}
+
+export function userFeatureToDocsHelpSubject(
+  feature: UserFeature
+): DocsHelpSubject {
+  switch (feature) {
+    case UserFeature.GAMIFICATION:
+      return DocsHelpSubject.GAMIFICATION;
+  }
+}
+
+export function workspaceFeatureName(feature: WorkspaceFeature): string {
+  switch (feature) {
+    case WorkspaceFeature.INBOX_TASKS:
       return "Inbox Tasks";
-    case Feature.HABITS:
+    case WorkspaceFeature.HABITS:
       return "Habits";
-    case Feature.CHORES:
+    case WorkspaceFeature.CHORES:
       return "Chores";
-    case Feature.BIG_PLANS:
+    case WorkspaceFeature.BIG_PLANS:
       return "Big Plans";
-    case Feature.VACATIONS:
+    case WorkspaceFeature.VACATIONS:
       return "Vacations";
-    case Feature.PROJECTS:
+    case WorkspaceFeature.PROJECTS:
       return "Projects";
-    case Feature.SMART_LISTS:
+    case WorkspaceFeature.SMART_LISTS:
       return "Smart Lists";
-    case Feature.METRICS:
+    case WorkspaceFeature.METRICS:
       return "Metrics";
-    case Feature.PERSONS:
+    case WorkspaceFeature.PERSONS:
       return "Persons";
-    case Feature.SLACK_TASKS:
+    case WorkspaceFeature.SLACK_TASKS:
       return "Slack Tasks";
-    case Feature.EMAIL_TASKS:
+    case WorkspaceFeature.EMAIL_TASKS:
       return "Email Tasks";
   }
 }
 
-export function featureToDocsHelpSubject(feature: Feature): DocsHelpSubject {
+export function workspaceFeatureToDocsHelpSubject(
+  feature: WorkspaceFeature
+): DocsHelpSubject {
   switch (feature) {
-    case Feature.INBOX_TASKS:
+    case WorkspaceFeature.INBOX_TASKS:
       return DocsHelpSubject.INBOX_TASKS;
-    case Feature.HABITS:
+    case WorkspaceFeature.HABITS:
       return DocsHelpSubject.HABITS;
-    case Feature.CHORES:
+    case WorkspaceFeature.CHORES:
       return DocsHelpSubject.CHORES;
-    case Feature.BIG_PLANS:
+    case WorkspaceFeature.BIG_PLANS:
       return DocsHelpSubject.BIG_PLANS;
-    case Feature.VACATIONS:
+    case WorkspaceFeature.VACATIONS:
       return DocsHelpSubject.VACATIONS;
-    case Feature.PROJECTS:
+    case WorkspaceFeature.PROJECTS:
       return DocsHelpSubject.PROJECTS;
-    case Feature.SMART_LISTS:
+    case WorkspaceFeature.SMART_LISTS:
       return DocsHelpSubject.SMART_LISTS;
-    case Feature.METRICS:
+    case WorkspaceFeature.METRICS:
       return DocsHelpSubject.METRICS;
-    case Feature.PERSONS:
+    case WorkspaceFeature.PERSONS:
       return DocsHelpSubject.PERSONS;
-    case Feature.SLACK_TASKS:
+    case WorkspaceFeature.SLACK_TASKS:
       return DocsHelpSubject.SLACK_TASKS;
-    case Feature.EMAIL_TASKS:
+    case WorkspaceFeature.EMAIL_TASKS:
       return DocsHelpSubject.EMAIL_TASKS;
   }
 }

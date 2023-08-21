@@ -6,7 +6,7 @@ import type { Difficulty } from './Difficulty';
 import type { Eisen } from './Eisen';
 import type { EntityIcon } from './EntityIcon';
 import type { EntityId } from './EntityId';
-import type { MetricName } from './MetricName';
+import type { EntityName } from './EntityName';
 import type { RecurringTaskDueAtDay } from './RecurringTaskDueAtDay';
 import type { RecurringTaskDueAtMonth } from './RecurringTaskDueAtMonth';
 import type { RecurringTaskDueAtTime } from './RecurringTaskDueAtTime';
@@ -16,7 +16,7 @@ export type MetricUpdateArgs = {
     ref_id: EntityId;
     name: {
         should_change: boolean;
-        value?: MetricName;
+        value?: EntityName;
     };
     icon: {
         should_change: boolean;

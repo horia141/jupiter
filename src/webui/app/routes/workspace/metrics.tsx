@@ -1,8 +1,8 @@
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
-import { Feature, type Metric } from "jupiter-gen";
+import { Link, useFetcher, useOutlet, ShouldRevalidateFunction } from "@remix-run/react";
+import { WorkspaceFeature, type Metric } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
@@ -15,7 +15,8 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
 import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -41,6 +42,8 @@ export async function loader({ request }: LoaderArgs) {
     entries: metricResponse.entries,
   });
 }
+
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function Metrics() {
   const outlet = useOutlet();
@@ -81,7 +84,10 @@ export default function Metrics() {
             >
               Create
             </Button>
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <Button
                 variant="outlined"
                 to={`/workspace/metrics/settings`}

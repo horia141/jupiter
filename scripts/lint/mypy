@@ -32,6 +32,9 @@ disallow_untyped_calls = False
 [mypy-jupiter.core.domain.schedules]
 disallow_untyped_calls = False
 
+[mypy-jupiter.core.domain.timeline]
+disallow_untyped_calls = False
+
 [mypy-jupiter.cli.command.*]
 disallow_any_explicit = False
 

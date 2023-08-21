@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.persons.person import Person
@@ -52,9 +52,11 @@ class PersonFindUseCase(
     """The command for finding the persons."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.PERSONS
+        return WorkspaceFeature.PERSONS
 
     async def _perform_transactional_read(
         self,

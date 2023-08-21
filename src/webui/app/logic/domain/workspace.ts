@@ -1,14 +1,14 @@
 import {
-  Feature,
   InboxTaskSource,
   NamedEntityTag,
   SyncTarget,
   Workspace,
+  WorkspaceFeature,
 } from "jupiter-gen";
 
-export function isFeatureAvailable(
+export function isWorkspaceFeatureAvailable(
   workspace: Workspace,
-  feature: Feature
+  feature: WorkspaceFeature
 ): boolean {
   return workspace.feature_flags[feature];
 }
@@ -25,67 +25,67 @@ export function inferEntityTagsForEnabledFeatures(
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.HABIT &&
-      isFeatureAvailable(workspace, Feature.HABITS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.CHORE &&
-      isFeatureAvailable(workspace, Feature.CHORES)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.CHORES)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.BIG_PLAN &&
-      isFeatureAvailable(workspace, Feature.BIG_PLANS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.BIG_PLANS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.VACATION &&
-      isFeatureAvailable(workspace, Feature.VACATIONS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.VACATIONS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.PROJECT &&
-      isFeatureAvailable(workspace, Feature.PROJECTS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PROJECTS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.SMART_LIST &&
-      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SMART_LISTS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.SMART_LIST_ITEM &&
-      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SMART_LISTS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.SMART_LIST_TAG &&
-      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SMART_LISTS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.METRIC &&
-      isFeatureAvailable(workspace, Feature.METRICS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.METRICS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.METRIC_ENTRY &&
-      isFeatureAvailable(workspace, Feature.METRICS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.METRICS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.PERSON &&
-      isFeatureAvailable(workspace, Feature.PERSONS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PERSONS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.SLACK_TASK &&
-      isFeatureAvailable(workspace, Feature.SLACK_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SLACK_TASKS)
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
       entityTag === NamedEntityTag.EMAIL_TASK &&
-      isFeatureAvailable(workspace, Feature.EMAIL_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.EMAIL_TASKS)
     ) {
       inferredEntityTags.push(entityTag);
     }
@@ -106,42 +106,42 @@ export function inferSourcesForEnabledFeatures(
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.HABIT &&
-      isFeatureAvailable(workspace, Feature.HABITS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.CHORE &&
-      isFeatureAvailable(workspace, Feature.CHORES)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.CHORES)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.BIG_PLAN &&
-      isFeatureAvailable(workspace, Feature.BIG_PLANS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.BIG_PLANS)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.METRIC &&
-      isFeatureAvailable(workspace, Feature.METRICS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.METRICS)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.PERSON_BIRTHDAY &&
-      isFeatureAvailable(workspace, Feature.PERSONS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PERSONS)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.PERSON_CATCH_UP &&
-      isFeatureAvailable(workspace, Feature.PERSONS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PERSONS)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.SLACK_TASK &&
-      isFeatureAvailable(workspace, Feature.SLACK_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SLACK_TASKS)
     ) {
       inferredSources.push(source);
     } else if (
       source === InboxTaskSource.EMAIL_TASK &&
-      isFeatureAvailable(workspace, Feature.EMAIL_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.EMAIL_TASKS)
     ) {
       inferredSources.push(source);
     }
@@ -160,52 +160,52 @@ export function inferSyncTargetsForEnabledFeatures(
   for (const syncTarget of syncTargets) {
     if (
       syncTarget === SyncTarget.INBOX_TASKS &&
-      isFeatureAvailable(workspace, Feature.INBOX_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.INBOX_TASKS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.HABITS &&
-      isFeatureAvailable(workspace, Feature.HABITS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.HABITS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.CHORES &&
-      isFeatureAvailable(workspace, Feature.CHORES)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.CHORES)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.BIG_PLANS &&
-      isFeatureAvailable(workspace, Feature.BIG_PLANS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.BIG_PLANS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.VACATIONS &&
-      isFeatureAvailable(workspace, Feature.VACATIONS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.VACATIONS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.PROJECTS &&
-      isFeatureAvailable(workspace, Feature.PROJECTS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.PROJECTS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.SMART_LISTS &&
-      isFeatureAvailable(workspace, Feature.SMART_LISTS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SMART_LISTS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.METRICS &&
-      isFeatureAvailable(workspace, Feature.METRICS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.METRICS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.SLACK_TASKS &&
-      isFeatureAvailable(workspace, Feature.SLACK_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.SLACK_TASKS)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
       syncTarget === SyncTarget.EMAIL_TASKS &&
-      isFeatureAvailable(workspace, Feature.EMAIL_TASKS)
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.EMAIL_TASKS)
     ) {
       inferredSyncTargets.push(syncTarget);
     }

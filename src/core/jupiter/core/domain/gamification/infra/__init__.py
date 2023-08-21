@@ -1,0 +1,1 @@
+"""Gamification infra classes."""

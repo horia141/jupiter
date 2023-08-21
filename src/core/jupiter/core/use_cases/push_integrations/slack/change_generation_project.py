@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional, cast
 
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -30,9 +30,11 @@ class SlackTaskChangeGenerationProjectUseCase(
     """The command for updating the generation up project for slack tasks."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return (Feature.SLACK_TASKS, Feature.PROJECTS)
+        return (WorkspaceFeature.SLACK_TASKS, WorkspaceFeature.PROJECTS)
 
     async def _perform_transactional_mutation(
         self,

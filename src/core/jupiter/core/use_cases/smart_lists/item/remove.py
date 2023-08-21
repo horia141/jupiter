@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.use_case import (
@@ -28,9 +28,11 @@ class SmartListItemRemoveUseCase(
     """The command for removing a smart list item."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.SMART_LISTS
+        return WorkspaceFeature.SMART_LISTS
 
     async def _perform_transactional_mutation(
         self,

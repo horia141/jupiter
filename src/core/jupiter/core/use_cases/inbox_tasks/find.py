@@ -4,7 +4,11 @@ from typing import Iterable, List, Optional
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.chores.chore import Chore
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
+)
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -63,9 +67,11 @@ class InboxTaskFindUseCase(
     """The command for finding a inbox task."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.INBOX_TASKS
+        return WorkspaceFeature.INBOX_TASKS
 
     async def _perform_transactional_read(
         self,
@@ -77,10 +83,10 @@ class InboxTaskFindUseCase(
         workspace = context.workspace
 
         if (
-            not workspace.is_feature_available(Feature.PROJECTS)
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.filter_project_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.PROJECTS)
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
 
         filter_sources = (
             args.filter_sources

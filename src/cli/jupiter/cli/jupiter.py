@@ -103,6 +103,7 @@ from jupiter.cli.command.smart_list_tag_update import SmartListTagUpdate
 from jupiter.cli.command.smart_list_update import SmartListUpdate
 from jupiter.cli.command.test_helper_clear_all import TestHelperClearAll
 from jupiter.cli.command.test_helper_nuke import TestHelperNuke
+from jupiter.cli.command.user_change_feature_flags import UserChangeFeatureFlags
 from jupiter.cli.command.user_show import UserShow
 from jupiter.cli.command.user_update import UserUpdate
 from jupiter.cli.command.vacation_archive import VacationArchive
@@ -252,6 +253,9 @@ from jupiter.core.use_cases.smart_lists.tag.update import SmartListTagUpdateUseC
 from jupiter.core.use_cases.smart_lists.update import SmartListUpdateUseCase
 from jupiter.core.use_cases.test_helper.clear_all import ClearAllUseCase
 from jupiter.core.use_cases.test_helper.nuke import NukeUseCase
+from jupiter.core.use_cases.user.change_feature_flags import (
+    UserChangeFeatureFlagsUseCase,
+)
 from jupiter.core.use_cases.user.load import UserLoadUseCase
 from jupiter.core.use_cases.user.update import UserUpdateUseCase
 from jupiter.core.use_cases.vacations.archive import VacationArchiveUseCase
@@ -274,6 +278,8 @@ from jupiter.core.utils.progress_reporter import (
     NoOpProgressReporterFactory,
 )
 from jupiter.core.utils.time_provider import TimeProvider
+from rich.console import Console
+from rich.panel import Panel
 
 # import coverage
 
@@ -311,12 +317,15 @@ async def main() -> None:
         usecase_storage_engine,
     )
 
-    progress_reporter_factory = RichConsoleProgressReporterFactory()
+    console = Console()
+
+    progress_reporter_factory = RichConsoleProgressReporterFactory(console)
 
     load_top_level_info_use_case = LoadTopLevelInfoUseCase(
         auth_token_stamper=auth_token_stamper,
         storage_engine=domain_storage_engine,
         global_properties=global_properties,
+        time_provider=time_provider,
     )
 
     await sqlite_connection.prepare()
@@ -453,12 +462,26 @@ async def main() -> None:
                         search_storage_engine=search_storage_engine,
                     ),
                 ),
+                UserChangeFeatureFlags(
+                    session_storage,
+                    top_level_context.to_logged_in(),
+                    UserChangeFeatureFlagsUseCase(
+                        time_provider=time_provider,
+                        invocation_recorder=invocation_recorder,
+                        progress_reporter_factory=progress_reporter_factory,
+                        auth_token_stamper=auth_token_stamper,
+                        domain_storage_engine=domain_storage_engine,
+                        search_storage_engine=search_storage_engine,
+                        global_properties=global_properties,
+                    ),
+                ),
                 UserShow(
                     session_storage=session_storage,
                     top_level_context=top_level_context.to_logged_in(),
                     use_case=UserLoadUseCase(
                         auth_token_stamper=auth_token_stamper,
                         storage_engine=domain_storage_engine,
+                        time_provider=time_provider,
                     ),
                 ),
                 WorkspaceUpdate(
@@ -1415,9 +1438,16 @@ async def main() -> None:
     )
 
     for command in commands:
-        if command.should_appear_in_global_help and (
-            top_level_info.workspace is None
-            or command.is_allowed_for_workspace(top_level_info.workspace)
+        if (
+            command.should_appear_in_global_help
+            and (
+                top_level_info.user is None
+                or command.is_allowed_for_user(top_level_info.user)
+            )
+            and (
+                top_level_info.workspace is None
+                or command.is_allowed_for_workspace(top_level_info.workspace)
+            )
         ):
             command_parser = subparsers.add_parser(
                 command.name(),
@@ -1446,6 +1476,13 @@ async def main() -> None:
                 command.should_have_streaming_progress_report, command.name(), args
             ):
                 await command.run(args)
+
+            command_postscript = command.get_postscript()
+            if command_postscript is not None:
+                postscript_panel = Panel(
+                    command_postscript, title="PS.", title_align="left"
+                )
+                console.print(postscript_panel)
 
             break
     except SessionInfoNotFoundError:

@@ -13,6 +13,15 @@ from jupiter.core.domain.chores.infra.chore_collection_repository import (
 )
 from jupiter.core.domain.chores.infra.chore_repository import ChoreRepository
 from jupiter.core.domain.fast_info_repository import FastInfoRepository
+from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
+    ScoreLogEntryRepository,
+)
+from jupiter.core.domain.gamification.infra.score_log_repository import (
+    ScoreLogRepository,
+)
+from jupiter.core.domain.gamification.infra.score_stats_repository import (
+    ScoreStatsRepository,
+)
 from jupiter.core.domain.habits.infra.habit_collection_repository import (
     HabitCollectionRepository,
 )
@@ -94,6 +103,11 @@ from jupiter.core.repository.sqlite.domain.chores import (
     SqliteChoreRepository,
 )
 from jupiter.core.repository.sqlite.domain.fast_info import SqliteFastInfoRepository
+from jupiter.core.repository.sqlite.domain.gamification.scores import (
+    SqliteScoreLogEntryRepository,
+    SqliteScoreLogRepository,
+    SqliteScoreStatsRepository,
+)
 from jupiter.core.repository.sqlite.domain.habits import (
     SqliteHabitCollectionRepository,
     SqliteHabitRepository,
@@ -153,6 +167,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
 
     _user_repository: Final[SqliteUserRepository]
     _auth_repository: Final[SqliteAuthRepository]
+    _score_log_repository: Final[SqliteScoreLogRepository]
+    _score_log_entry_repository: Final[SqliteScoreLogEntryRepository]
+    _score_stats_repository: Final[SqliteScoreStatsRepository]
     _workspace_repository: Final[SqliteWorkspaceRepository]
     _user_workspace_link_repository: Final[SqliteUserWorkspaceLinkRepository]
     _vacation_collection_repository: Final[SqliteVacationCollectionRepository]
@@ -187,6 +204,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self,
         user_repository: SqliteUserRepository,
         auth_repository: SqliteAuthRepository,
+        score_log_repository: SqliteScoreLogRepository,
+        score_log_entry_repository: SqliteScoreLogEntryRepository,
+        score_stats_repository: SqliteScoreStatsRepository,
         workspace_repository: SqliteWorkspaceRepository,
         user_workspace_link_repository: SqliteUserWorkspaceLinkRepository,
         vacation_repository: SqliteVacationRepository,
@@ -220,6 +240,9 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         """Constructor."""
         self._user_repository = user_repository
         self._auth_repository = auth_repository
+        self._score_log_repository = score_log_repository
+        self._score_log_entry_repository = score_log_entry_repository
+        self._score_stats_repository = score_stats_repository
         self._workspace_repository = workspace_repository
         self._user_workspace_link_repository = user_workspace_link_repository
         self._vacation_collection_repository = vacation_collection_repository
@@ -271,6 +294,21 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def auth_repository(self) -> AuthRepository:
         """The auth repository."""
         return self._auth_repository
+
+    @property
+    def score_log_repository(self) -> ScoreLogRepository:
+        """The score log repository."""
+        return self._score_log_repository
+
+    @property
+    def score_log_entry_repository(self) -> ScoreLogEntryRepository:
+        """The score log entry repository."""
+        return self._score_log_entry_repository
+
+    @property
+    def score_stats_repository(self) -> ScoreStatsRepository:
+        """The score stats repository."""
+        return self._score_stats_repository
 
     @property
     def workspace_repository(self) -> WorkspaceRepository:
@@ -435,6 +473,13 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
         async with self._sql_engine.begin() as connection:
             user_repository = SqliteUserRepository(connection, self._metadata)
             auth_repository = SqliteAuthRepository(connection, self._metadata)
+            score_log_repository = SqliteScoreLogRepository(connection, self._metadata)
+            score_log_entry_repository = SqliteScoreLogEntryRepository(
+                connection, self._metadata
+            )
+            score_stats_repository = SqliteScoreStatsRepository(
+                connection, self._metadata
+            )
             workspace_repository = SqliteWorkspaceRepository(connection, self._metadata)
             user_workspace_link_repository = SqliteUserWorkspaceLinkRepository(
                 connection, self._metadata
@@ -527,6 +572,9 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             yield SqliteDomainUnitOfWork(
                 user_repository=user_repository,
                 auth_repository=auth_repository,
+                score_log_repository=score_log_repository,
+                score_log_entry_repository=score_log_entry_repository,
+                score_stats_repository=score_stats_repository,
                 workspace_repository=workspace_repository,
                 user_workspace_link_repository=user_workspace_link_repository,
                 vacation_collection_repository=vacation_collection_repository,

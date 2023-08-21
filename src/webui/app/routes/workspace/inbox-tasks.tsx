@@ -84,6 +84,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -130,24 +131,7 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = ({
-  actionResult,
-  currentParams,
-  currentUrl,
-  defaultShouldRevalidate,
-  formAction,
-  formData,
-  formEncType,
-  formMethod,
-  nextParams,
-  nextUrl,
-}) => {
-  if (formAction === "/workspace/inbox-tasks/update-status-and-eisen") {
-    return false;
-  }
-
-  return defaultShouldRevalidate;
-};
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
 
 export default function InboxTasks() {
   const topLevelInfo = useContext(TopLevelInfoContext);

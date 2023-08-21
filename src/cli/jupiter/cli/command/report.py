@@ -12,7 +12,7 @@ from jupiter.cli.command.rendering import (
 from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import LoggedInTopLevelContext
 from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import WorkspaceFeature
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
@@ -90,7 +90,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             ),
             help="Allow only inbox tasks form this particular source. Defaults to all",
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             parser.add_argument(
                 "--project-id",
                 dest="project_ref_ids",
@@ -98,7 +100,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only tasks from this project",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.HABITS
+        ):
             parser.add_argument(
                 "--habit-id",
                 dest="habit_ref_ids",
@@ -106,7 +110,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only tasks from these habits",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.CHORES
+        ):
             parser.add_argument(
                 "--chore-id",
                 dest="chore_ref_ids",
@@ -114,7 +120,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only tasks from these chores",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             parser.add_argument(
                 "--big-plan-id",
                 dest="big_plan_ref_ids",
@@ -122,7 +130,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only tasks from these big plans",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.METRICS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.METRICS
+        ):
             parser.add_argument(
                 "--metric-id",
                 dest="metric_ref_ids",
@@ -131,7 +141,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only tasks from this metric",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.PERSONS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PERSONS
+        ):
             parser.add_argument(
                 "--person-id",
                 dest="person_ref_ids",
@@ -139,7 +151,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only tasks from these persons",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.SLACK_TASKS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.SLACK_TASKS
+        ):
             parser.add_argument(
                 "--slack-task-id",
                 dest="slack_task_ref_ids",
@@ -147,7 +161,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only these Slack tasks",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.EMAIL_TASKS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.EMAIL_TASKS
+        ):
             parser.add_argument(
                 "--email-task-id",
                 dest="email_task_ref_ids",
@@ -155,7 +171,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 action="append",
                 help="Allow only these email tasks",
             )
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             parser.add_argument(
                 "--cover",
                 dest="covers",
@@ -164,13 +182,21 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 help="Show reporting info about certain parts",
             )
         allowed_breakdowns = ["global", "periods"]
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             allowed_breakdowns.append("projects")
-        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.HABITS
+        ):
             allowed_breakdowns.append("habits")
-        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.CHORES
+        ):
             allowed_breakdowns.append("chores")
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             allowed_breakdowns.append("big-plans")
         parser.add_argument(
             "--breakdown",
@@ -226,7 +252,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             if len(args.sources) > 0
             else None
         )
-        if self._top_level_context.workspace.is_feature_available(Feature.PROJECTS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PROJECTS
+        ):
             project_ref_ids = (
                 [EntityId.from_raw(pk) for pk in args.project_ref_ids]
                 if len(args.project_ref_ids) > 0
@@ -234,7 +262,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             project_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.HABITS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.HABITS
+        ):
             habit_ref_ids = (
                 [EntityId.from_raw(rt) for rt in args.habit_ref_ids]
                 if len(args.habit_ref_ids) > 0
@@ -242,7 +272,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             habit_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.CHORES):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.CHORES
+        ):
             chore_ref_ids = (
                 [EntityId.from_raw(rt) for rt in args.chore_ref_ids]
                 if len(args.chore_ref_ids) > 0
@@ -250,7 +282,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             chore_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             big_plan_ref_ids = (
                 [EntityId.from_raw(bp) for bp in args.big_plan_ref_ids]
                 if len(args.big_plan_ref_ids) > 0
@@ -258,7 +292,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             big_plan_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.METRICS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.METRICS
+        ):
             metric_ref_ids = (
                 [EntityId.from_raw(mk) for mk in args.metric_ref_ids]
                 if len(args.metric_ref_ids) > 0
@@ -266,7 +302,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             metric_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.PERSONS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.PERSONS
+        ):
             person_ref_ids = (
                 [EntityId.from_raw(bp) for bp in args.person_ref_ids]
                 if len(args.person_ref_ids) > 0
@@ -274,7 +312,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             person_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.SLACK_TASKS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.SLACK_TASKS
+        ):
             slack_task_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.slack_task_ref_ids]
                 if len(args.slack_task_ref_ids) > 0
@@ -282,7 +322,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             slack_task_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.EMAIL_TASKS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.EMAIL_TASKS
+        ):
             email_task_ref_ids = (
                 [EntityId.from_raw(rid) for rid in args.email_task_ref_ids]
                 if len(args.email_task_ref_ids) > 0
@@ -290,7 +332,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             )
         else:
             email_task_ref_ids = None
-        if self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS):
+        if self._top_level_context.workspace.is_feature_available(
+            WorkspaceFeature.BIG_PLANS
+        ):
             covers = args.covers
         else:
             covers = ["inbox-tasks"]
@@ -351,6 +395,33 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
             guide_style="bold bright_blue",
         )
 
+        if result.user_score_overview is not None:
+            gamification_tree = Tree("🎮 Gamification:")
+
+            scores_tree = Tree("💪 Scores:")
+
+            daily_text = Text(f"Daily: {result.user_score_overview.daily_score}")
+            weekly_text = Text(f"Weekly: {result.user_score_overview.weekly_score}")
+            monthly_text = Text(f"Monthly: {result.user_score_overview.monthly_score}")
+            quarterly_text = Text(
+                f"Quarterly: {result.user_score_overview.quarterly_score}"
+            )
+            yearly_text = Text(f"Yearly: {result.user_score_overview.yearly_score}")
+            lifetime_text = Text(
+                f"Lifetime: {result.user_score_overview.lifetime_score}"
+            )
+
+            scores_tree.add(daily_text)
+            scores_tree.add(weekly_text)
+            scores_tree.add(monthly_text)
+            scores_tree.add(quarterly_text)
+            scores_tree.add(yearly_text)
+            scores_tree.add(lifetime_text)
+
+            gamification_tree.add(scores_tree)
+
+            rich_tree.add(gamification_tree)
+
         if "global" in breakdowns:
             global_text = Text("🌍 Global:")
 
@@ -365,7 +436,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
             if (
                 self._top_level_context.workspace.is_feature_available(
-                    Feature.BIG_PLANS
+                    WorkspaceFeature.BIG_PLANS
                 )
                 and "big-plans" in covers
             ):
@@ -375,7 +446,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 global_tree.add(big_plan_tree)
 
         if (
-            self._top_level_context.workspace.is_feature_available(Feature.PROJECTS)
+            self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.PROJECTS
+            )
             and "projects" in breakdowns
         ):
             global_text = Text("💡 By Projects:")
@@ -396,7 +469,7 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
 
                 if (
                     self._top_level_context.workspace.is_feature_available(
-                        Feature.BIG_PLANS
+                        WorkspaceFeature.BIG_PLANS
                     )
                     and "big-plans" in covers
                 ):
@@ -434,7 +507,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                     global_tree.add(big_plan_tree)
 
         if (
-            self._top_level_context.workspace.is_feature_available(Feature.HABITS)
+            self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.HABITS
+            )
             and "habits" in breakdowns
         ):
             global_text = Text("💪 By Habits:")
@@ -536,7 +611,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 global_tree.add(period_table)
 
         if (
-            self._top_level_context.workspace.is_feature_available(Feature.CHORES)
+            self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.CHORES
+            )
             and "chores" in breakdowns
         ):
             global_text = Text("♻️ By Chores:")
@@ -624,7 +701,9 @@ class Report(LoggedInReadonlyCommand[ReportUseCase]):
                 global_tree.add(period_table)
 
         if (
-            self._top_level_context.workspace.is_feature_available(Feature.BIG_PLANS)
+            self._top_level_context.workspace.is_feature_available(
+                WorkspaceFeature.BIG_PLANS
+            )
             and "big-plans" in breakdowns
         ):
             global_table = Table(

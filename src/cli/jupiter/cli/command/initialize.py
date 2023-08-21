@@ -7,7 +7,12 @@ from jupiter.cli.session_storage import SessionInfo, SessionStorage
 from jupiter.cli.top_level_context import TopLevelContext
 from jupiter.core.domain.auth.password_new_plain import PasswordNewPlain
 from jupiter.core.domain.email_address import EmailAddress
-from jupiter.core.domain.features import Feature, FeatureFlags
+from jupiter.core.domain.features import (
+    UserFeature,
+    UserFeatureFlags,
+    WorkspaceFeature,
+    WorkspaceFeatureFlags,
+)
 from jupiter.core.domain.projects.project_name import ProjectName
 from jupiter.core.domain.timezone import Timezone
 from jupiter.core.domain.user.user_name import UserName
@@ -66,6 +71,20 @@ class Initialize(GuestMutationCommand[InitUseCase]):
             help="The timezone you're currently in",
         )
         parser.add_argument(
+            "--user-feature",
+            dest="user_feature_flag_enabled",
+            default=[],
+            action="append",
+            choices=UserFeature.all_values(),
+        )
+        parser.add_argument(
+            "--user-no-feature",
+            dest="user_feature_flag_disable",
+            default=[],
+            action="append",
+            choices=UserFeature.all_values(),
+        )
+        parser.add_argument(
             "--auth-password",
             dest="auth_password",
             type=PasswordNewPlain.from_raw,
@@ -96,14 +115,14 @@ class Initialize(GuestMutationCommand[InitUseCase]):
             dest="workspace_feature_flag_enabled",
             default=[],
             action="append",
-            choices=Feature.all_values(),
+            choices=WorkspaceFeature.all_values(),
         )
         parser.add_argument(
             "--workspace-no-feature",
             dest="workspace_feature_flag_disable",
             default=[],
             action="append",
-            choices=Feature.all_values(),
+            choices=WorkspaceFeature.all_values(),
         )
 
     async def _run(
@@ -115,17 +134,22 @@ class Initialize(GuestMutationCommand[InitUseCase]):
         user_email_address = EmailAddress.from_raw(args.user_email_address)
         user_name = UserName.from_raw(args.user_name)
         user_timezone = Timezone.from_raw(args.user_timezone)
+        user_feature_flags: UserFeatureFlags = {}
+        for enabled_feature in args.user_feature_flag_enabled:
+            user_feature_flags[UserFeature(enabled_feature)] = True
+        for disabled_feature in args.user_feature_flag_disable:
+            user_feature_flags[UserFeature(disabled_feature)] = False
         auth_password = cast(PasswordNewPlain, args.auth_password)
         auth_password_repeat = cast(PasswordNewPlain, args.auth_password_repeat)
         workspace_name = WorkspaceName.from_raw(args.workspace_name)
         workspace_first_project_name = ProjectName.from_raw(
             args.workspace_first_project_name
         )
-        workspace_feature_flags: FeatureFlags = {}
+        workspace_feature_flags: WorkspaceFeatureFlags = {}
         for enabled_feature in args.workspace_feature_flag_enabled:
-            workspace_feature_flags[Feature(enabled_feature)] = True
+            workspace_feature_flags[WorkspaceFeature(enabled_feature)] = True
         for disabled_feature in args.workspace_feature_flag_disable:
-            workspace_feature_flags[Feature(disabled_feature)] = False
+            workspace_feature_flags[WorkspaceFeature(disabled_feature)] = False
 
         result = await self._use_case.execute(
             AppGuestUseCaseSession(
@@ -135,6 +159,7 @@ class Initialize(GuestMutationCommand[InitUseCase]):
                 user_email_address=user_email_address,
                 user_name=user_name,
                 user_timezone=user_timezone,
+                user_feature_flags=user_feature_flags,
                 auth_password=auth_password,
                 auth_password_repeat=auth_password_repeat,
                 workspace_name=workspace_name,

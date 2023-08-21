@@ -1,8 +1,8 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
+import { Link, useFetcher, useOutlet, ShouldRevalidateFunction } from "@remix-run/react";
 import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
-import { BigPlanStatus, Feature } from "jupiter-gen";
+import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
 import { ADateTag } from "~/components/adate-tag";
 import { BigPlanStatusTag } from "~/components/big-plan-status-tag";
 import { ProjectTag } from "~/components/project-tag";
@@ -41,7 +41,7 @@ import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -50,6 +50,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
@@ -79,6 +80,8 @@ enum View {
   LIST = "list",
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+
 export default function BigPlans() {
   const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -96,9 +99,9 @@ export default function BigPlans() {
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
-  const initialView = isFeatureAvailable(
+  const initialView = isWorkspaceFeatureAvailable(
     topLevelInfo.workspace,
-    Feature.PROJECTS
+    WorkspaceFeature.PROJECTS
   )
     ? View.TIMELINE_BY_PROJECT
     : View.TIMELINE;
@@ -139,7 +142,10 @@ export default function BigPlans() {
 
           {isBigScreen && (
             <ButtonGroup>
-              {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+              {isWorkspaceFeatureAvailable(
+                topLevelInfo.workspace,
+                WorkspaceFeature.PROJECTS
+              ) && (
                 <Button
                   variant={
                     selectedView === View.TIMELINE_BY_PROJECT
@@ -183,9 +189,9 @@ export default function BigPlans() {
                 <DialogTitle>Filters</DialogTitle>
                 <DialogContent>
                   <ButtonGroup orientation="vertical">
-                    {isFeatureAvailable(
+                    {isWorkspaceFeatureAvailable(
                       topLevelInfo.workspace,
-                      Feature.PROJECTS
+                      WorkspaceFeature.PROJECTS
                     ) && (
                       <Button
                         variant={
@@ -230,7 +236,10 @@ export default function BigPlans() {
           )}
         </ActionHeader>
 
-        {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) &&
+        {isWorkspaceFeatureAvailable(
+          topLevelInfo.workspace,
+          WorkspaceFeature.PROJECTS
+        ) &&
           selectedView === View.TIMELINE_BY_PROJECT && (
             <>
               {loaderData.allProjects.map((p) => {
@@ -495,7 +504,10 @@ function List({
           </EntityLink>
           <Divider />
           <BigPlanStatusTag status={entry.status} />
-          {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <ProjectTag
               project={
                 entriesByRefId.get(entry.ref_id.the_id)?.project as Project

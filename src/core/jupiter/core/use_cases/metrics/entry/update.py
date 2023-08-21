@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from jupiter.core.domain.adate import ADate
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
@@ -34,9 +34,11 @@ class MetricEntryUpdateUseCase(
     """The command for updating a metric entry's properties."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.METRICS
+        return WorkspaceFeature.METRICS
 
     async def _perform_transactional_mutation(
         self,

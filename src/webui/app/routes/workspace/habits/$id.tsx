@@ -15,6 +15,7 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
+  ShouldRevalidateFunction,
   useActionData,
   useFetcher,
   useParams,
@@ -26,9 +27,9 @@ import {
   ApiError,
   Difficulty,
   Eisen,
-  Feature,
   InboxTaskStatus,
   RecurringTaskPeriod,
+  WorkspaceFeature,
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
@@ -44,8 +45,9 @@ import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
 import { sortInboxTasksNaturally } from "~/logic/domain/inbox-task";
 import { periodName } from "~/logic/domain/period";
-import { isFeatureAvailable } from "~/logic/domain/workspace";
+import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { getIntent } from "~/logic/intent";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
@@ -228,6 +230,8 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+
 export default function Habit() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -327,7 +331,10 @@ export default function Habit() {
               <FieldError actionResult={actionData} fieldName="/status" />
             </FormControl>
 
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <FormControl fullWidth>
                 <InputLabel id="project">Project</InputLabel>
                 <Select
@@ -347,9 +354,10 @@ export default function Habit() {
                 <FieldError actionResult={actionData} fieldName="/project" />
               </FormControl>
             )}
-            {!isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
-              <input type="hidden" name="project" value={selectedProject} />
-            )}
+            {!isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && <input type="hidden" name="project" value={selectedProject} />}
 
             <FormControl fullWidth>
               <InputLabel id="eisen">Eisenhower</InputLabel>
@@ -485,7 +493,10 @@ export default function Habit() {
             >
               Save
             </Button>
-            {isFeatureAvailable(topLevelInfo.workspace, Feature.PROJECTS) && (
+            {isWorkspaceFeatureAvailable(
+              topLevelInfo.workspace,
+              WorkspaceFeature.PROJECTS
+            ) && (
               <Button
                 variant="outlined"
                 disabled={

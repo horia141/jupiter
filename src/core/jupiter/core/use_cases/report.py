@@ -12,7 +12,15 @@ from jupiter.core.domain.big_plans.big_plan_name import BigPlanName
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
 from jupiter.core.domain.chores.chore import Chore
 from jupiter.core.domain.entity_name import EntityName
-from jupiter.core.domain.features import Feature, FeatureUnavailableError
+from jupiter.core.domain.features import (
+    FeatureUnavailableError,
+    UserFeature,
+    WorkspaceFeature,
+)
+from jupiter.core.domain.gamification.service.score_overview_service import (
+    ScoreOverviewService,
+)
+from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
@@ -195,6 +203,7 @@ class ReportResult(UseCaseResultBase):
     per_habit_breakdown: List[PerHabitBreakdownItem]
     per_chore_breakdown: List[PerChoreBreakdownItem]
     per_big_plan_breakdown: List[PerBigPlanBreakdownItem]
+    user_score_overview: UserScoreOverview | None
 
 
 class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
@@ -210,40 +219,40 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         workspace = context.workspace
 
         if (
-            not workspace.is_feature_available(Feature.PROJECTS)
+            not workspace.is_feature_available(WorkspaceFeature.PROJECTS)
             and args.filter_project_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.PROJECTS)
+            raise FeatureUnavailableError(WorkspaceFeature.PROJECTS)
         if (
-            not workspace.is_feature_available(Feature.HABITS)
+            not workspace.is_feature_available(WorkspaceFeature.HABITS)
             and args.filter_habit_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.HABITS)
+            raise FeatureUnavailableError(WorkspaceFeature.HABITS)
         if (
-            not workspace.is_feature_available(Feature.CHORES)
+            not workspace.is_feature_available(WorkspaceFeature.CHORES)
             and args.filter_chore_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.CHORES)
+            raise FeatureUnavailableError(WorkspaceFeature.CHORES)
         if (
-            not workspace.is_feature_available(Feature.METRICS)
+            not workspace.is_feature_available(WorkspaceFeature.METRICS)
             and args.filter_metric_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.METRICS)
+            raise FeatureUnavailableError(WorkspaceFeature.METRICS)
         if (
-            not workspace.is_feature_available(Feature.PERSONS)
+            not workspace.is_feature_available(WorkspaceFeature.PERSONS)
             and args.filter_person_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.PERSONS)
+            raise FeatureUnavailableError(WorkspaceFeature.PERSONS)
         if (
-            not workspace.is_feature_available(Feature.SLACK_TASKS)
+            not workspace.is_feature_available(WorkspaceFeature.SLACK_TASKS)
             and args.filter_slack_task_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.SLACK_TASKS)
+            raise FeatureUnavailableError(WorkspaceFeature.SLACK_TASKS)
         if (
-            not workspace.is_feature_available(Feature.EMAIL_TASKS)
+            not workspace.is_feature_available(WorkspaceFeature.EMAIL_TASKS)
             and args.filter_email_task_ref_ids is not None
         ):
-            raise FeatureUnavailableError(Feature.EMAIL_TASKS)
+            raise FeatureUnavailableError(WorkspaceFeature.EMAIL_TASKS)
 
         filter_sources = (
             args.filter_sources
@@ -448,7 +457,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
             all_inbox_tasks,
         )
 
-        if workspace.is_feature_available(Feature.BIG_PLANS):
+        if workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
             global_big_plans_summary = self._run_report_for_big_plan(
                 schedule,
                 all_big_plans,
@@ -466,7 +475,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
 
         # Build per project breakdown
 
-        if workspace.is_feature_available(Feature.PROJECTS):
+        if workspace.is_feature_available(WorkspaceFeature.PROJECTS):
             # all_inbox_tasks.groupBy(it -> it.project.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
             per_project_inbox_tasks_summary = {
                 k: self._run_report_for_inbox_tasks(schedule, (vx[1] for vx in v))
@@ -482,7 +491,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
                 )
             }
 
-            if workspace.is_feature_available(Feature.BIG_PLANS):
+            if workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
                 # all_big_plans.groupBy(it -> it.project..name).map((k, v) -> (k, run_report_for_group(v))).asDict()
                 per_project_big_plans_summary = {
                     k: self._run_report_for_big_plan(schedule, (vx[1] for vx in v))
@@ -560,7 +569,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         # Build per habit breakdown
 
         # all_inbox_tasks.groupBy(it -> it.habit.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        if workspace.is_feature_available(Feature.HABITS):
+        if workspace.is_feature_available(WorkspaceFeature.HABITS):
             per_habit_breakdown = [
                 hb
                 for hb in (
@@ -595,7 +604,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         # Build per chore breakdown
 
         # all_inbox_tasks.groupBy(it -> it.chore.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        if workspace.is_feature_available(Feature.CHORES):
+        if workspace.is_feature_available(WorkspaceFeature.CHORES):
             per_chore_breakdown = [
                 cb
                 for cb in (
@@ -630,7 +639,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         # Build per big plan breakdown
 
         # all_inbox_tasks.groupBy(it -> it.bigPlan.name).map((k, v) -> (k, run_report_for_group(v))).asDict()
-        if workspace.is_feature_available(Feature.BIG_PLANS):
+        if workspace.is_feature_available(WorkspaceFeature.BIG_PLANS):
             per_big_plan_breakdown = [
                 bb
                 for bb in (
@@ -660,6 +669,14 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
         else:
             per_big_plan_breakdown = []
 
+        # Build user scores overview.
+        user_score_overview = None
+        if user.is_feature_available(UserFeature.GAMIFICATION):
+            async with self._storage_engine.get_unit_of_work() as uow:
+                user_score_overview = await ScoreOverviewService().do_it(
+                    uow, user, args.today.to_timestamp_at_end_of_day()
+                )
+
         return ReportResult(
             today=args.today,
             period=args.period,
@@ -670,6 +687,7 @@ class ReportUseCase(AppLoggedInReadonlyUseCase[ReportArgs, ReportResult]):
             per_habit_breakdown=per_habit_breakdown,
             per_chore_breakdown=per_chore_breakdown,
             per_big_plan_breakdown=per_big_plan_breakdown,
+            user_score_overview=user_score_overview,
         )
 
     @staticmethod

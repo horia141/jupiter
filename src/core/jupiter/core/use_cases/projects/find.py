@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Iterable, List, Optional
 
-from jupiter.core.domain.features import Feature
+from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -37,9 +37,11 @@ class ProjectFindUseCase(
     """The command for finding projects."""
 
     @staticmethod
-    def get_scoped_to_feature() -> Iterable[Feature] | Feature | None:
+    def get_scoped_to_feature() -> Iterable[
+        UserFeature
+    ] | UserFeature | Iterable[WorkspaceFeature] | WorkspaceFeature | None:
         """The feature the use case is scope to."""
-        return Feature.PROJECTS
+        return WorkspaceFeature.PROJECTS
 
     async def _perform_transactional_read(
         self,
