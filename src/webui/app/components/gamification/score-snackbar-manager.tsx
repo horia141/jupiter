@@ -12,9 +12,9 @@ function formatScoreUpdate(result: RecordScoreResult, isBigScreen: boolean): str
     const pointsStr = Math.abs(result.latest_task_score) === 1 ? "point" : "points";
 
     if (result.latest_task_score > 0) {
-        resultStr += `⭐ Congratulations! You scored ${result.latest_task_score} ${pointsStr}!`;
+        resultStr += `⭐ Great! You scored ${result.latest_task_score} ${pointsStr}!`;
     } else {
-        resultStr += `😿 Ah snap! You lost ${Math.abs(result.latest_task_score)} ${pointsStr}!`;
+        resultStr += `😿 Snap! You lost ${Math.abs(result.latest_task_score)} ${pointsStr}!`;
     }
 
     if (isBigScreen) {
