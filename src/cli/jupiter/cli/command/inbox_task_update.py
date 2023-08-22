@@ -180,10 +180,10 @@ class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
         if result.record_score_result is not None:
             if result.record_score_result.latest_task_score > 0:
                 color = "green"
-                rich_text = Text("Congratulations! ")
+                rich_text = Text("⭐ Congratulations! You scored ")
             else:
                 color = "red"
-                rich_text = Text("Ah snap! ")
+                rich_text = Text("😿 Ah snap! You lost ")
 
             points = (
                 "points"
@@ -192,7 +192,7 @@ class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
             )
 
             rich_text.append(
-                f"You scored {result.record_score_result.latest_task_score} {points}. ",
+                f"{abs(result.record_score_result.latest_task_score)} {points}! ",
                 style=f"bold {color}",
             )
             rich_text.append(

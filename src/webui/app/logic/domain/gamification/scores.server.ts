@@ -27,6 +27,6 @@ const scoreActionCookie = createCookie(GLOBAL_PROPERTIES.scoreActionCookieName, 
 
 export async function saveScoreAction(result: RecordScoreResult) {
     return await scoreActionCookie.serialize({
-        message: formatScoreUpdate(result),
+        result: result,
     });
 }
