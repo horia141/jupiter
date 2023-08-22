@@ -45,6 +45,7 @@ import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 import { ScoreSnackbarManager, useScoreActionSingleton } from "~/components/gamification/score-snackbar-manager";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useAnimate } from "framer-motion";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
@@ -79,8 +80,6 @@ export default function Workspace() {
   const isBigScreen = useBigScreen();
   const shouldShowTrunk = useRootNeedsToShowTrunk();
   const [showSidebar, setShowSidebar] = useState(isBigScreen);
-
-  const globalProperties = useContext(GlobalPropertiesContext);
   const scoreAction = useScoreActionSingleton();
 
   const [accountMenuAnchorEl, setAccountMenuAnchorEl] =
@@ -94,6 +93,15 @@ export default function Workspace() {
   const handleAccountMenuClose = () => {
     setAccountMenuAnchorEl(null);
   };
+
+  const [badgeRef, animateBadge] = useAnimate();
+
+  useEffect(() => {
+    if (!scoreAction) return;
+    animateBadge(badgeRef.current, {scale: 1.2}, {duration: 0.5}).then(() => {
+      animateBadge(badgeRef.current, {scale: 1}, {duration: 0.5});
+    });
+  }, [scoreAction]);
 
   const topLevelInfo = {
     userFeatureFlagControls: loaderData.userFeatureFlagControls,
@@ -140,6 +148,7 @@ export default function Workspace() {
             color="inherit"
           >
             <Badge
+              ref={badgeRef}
               badgeContent={scoreAction ? scoreAction.score_overview.daily_score : loaderData.userScoreOverview?.daily_score}
               color="success"
             >
