@@ -10,6 +10,7 @@ import {
   ShouldRevalidateFunction,
   useLoaderData,
 } from "@remix-run/react";
+import {SnackbarProvider} from "notistack";
 
 import { StrictMode } from "react";
 import ScrollToTop from "react-scroll-to-top";
@@ -52,6 +53,7 @@ export default function App() {
         <StrictMode>
           <GlobalPropertiesContext.Provider value={loaderData.globalProperties}>
             <ThemeProvider theme={THEME}>
+              <SnackbarProvider>
               <CssBaseline />
               <EnvBanner />
               <ScrollToTop
@@ -63,6 +65,7 @@ export default function App() {
                 }}
               />
               <Outlet />
+              </SnackbarProvider>
             </ThemeProvider>
           </GlobalPropertiesContext.Provider>
         </StrictMode>

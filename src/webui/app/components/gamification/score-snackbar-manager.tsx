@@ -5,6 +5,7 @@ import { useContext, useEffect, useState } from "react";
 import { set } from "zod";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { useSnackbar } from "notistack";
 
 function formatScoreUpdate(result: RecordScoreResult, isBigScreen: boolean): string {
     let resultStr = "";
@@ -51,25 +52,17 @@ interface ScoreSnackbarManagerProps {
 }
 
 export function ScoreSnackbarManager({scoreAction}: ScoreSnackbarManagerProps) {
-    const [alertState, setAlertState] = useState(scoreAction !== undefined);
+    const { enqueueSnackbar } = useSnackbar();
     const isBigScreen = useBigScreen();
 
-    // const scoreAction = useScoreAction() as RecordScoreResult | undefined;
-
     useEffect(() => {
-        setAlertState(scoreAction !== undefined);
+        if (scoreAction !== undefined) {
+            enqueueSnackbar(formatScoreUpdate(scoreAction, isBigScreen), {
+                autoHideDuration: 3000,
+                hideIconVariant: true,
+                variant: scoreAction.latest_task_score > 0 ? "success" : "warning"});
+        }
     }, [scoreAction]);
 
-
-    function clearMessage() {
-        setAlertState(false);
-    }
-
-    return (
-    <Snackbar open={alertState} onClose={clearMessage} autoHideDuration={3000}>
-      <Alert icon={false} severity={scoreAction && scoreAction.latest_task_score > 0 ? "success" : "warning"} sx={{ width: '100%' }}>
-        <Typography sx={{fontWeight: "bold"}}>{scoreAction && formatScoreUpdate(scoreAction, isBigScreen)}</Typography>
-      </Alert>
-    </Snackbar>
-    );
+    return null;
 }
