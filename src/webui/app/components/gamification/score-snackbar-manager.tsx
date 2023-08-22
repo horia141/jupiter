@@ -24,7 +24,7 @@ function formatScoreUpdate(result: RecordScoreResult, isBigScreen: boolean): str
     return resultStr;
 }
 
-export function useScoreAction() {
+export function useScoreActionSingleton() {
     const [scoreAction, setScoreAction] = useState<RecordScoreResult|undefined>(undefined);
 
     const globalProperties = useContext(GlobalPropertiesContext);
@@ -33,24 +33,11 @@ export function useScoreAction() {
         const interval = setInterval(() => {
             const scoreActionStr = Cookies.get(globalProperties.scoreActionCookieName);
             if (scoreActionStr === undefined) {
-                setScoreAction(sc => {
-                    if (sc !== undefined) {
-                        return undefined;
-                    } else {
-                        return sc;
-                    }
-                });
                 return;
             }
             const scoreAction = JSON.parse(atob(scoreActionStr)).result as RecordScoreResult;
-            setScoreAction(sc => {
-                if (sc === undefined && scoreAction !== undefined) {
-                    return scoreAction;
-                } else {
-                    return sc;
-                }
-            });
-
+            setScoreAction(scoreAction);
+            Cookies.remove(globalProperties.scoreActionCookieName);
         }, 100);
 
         return () => clearInterval(interval);
@@ -59,20 +46,22 @@ export function useScoreAction() {
     return scoreAction;
 }
 
-export function ScoreSnackbarManager() {
-    const [alertState, setAlertState] = useState(false);
+interface ScoreSnackbarManagerProps {
+    scoreAction: RecordScoreResult | undefined;
+}
+
+export function ScoreSnackbarManager({scoreAction}: ScoreSnackbarManagerProps) {
+    const [alertState, setAlertState] = useState(scoreAction !== undefined);
     const isBigScreen = useBigScreen();
 
-    const globalProperties = useContext(GlobalPropertiesContext);
-    const scoreAction = useScoreAction() as RecordScoreResult | undefined;
+    // const scoreAction = useScoreAction() as RecordScoreResult | undefined;
 
     useEffect(() => {
         setAlertState(scoreAction !== undefined);
-    }, [scoreAction, isBigScreen]);
+    }, [scoreAction]);
 
 
     function clearMessage() {
-        Cookies.remove(globalProperties.scoreActionCookieName);
         setAlertState(false);
     }
 

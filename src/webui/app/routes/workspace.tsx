@@ -29,7 +29,7 @@ import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import { UserFeature } from "jupiter-gen";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -43,7 +43,7 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { ScoreSnackbarManager } from "~/components/gamification/score-snackbar-manager";
+import { ScoreSnackbarManager, useScoreActionSingleton } from "~/components/gamification/score-snackbar-manager";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 // @secureFn
@@ -81,6 +81,7 @@ export default function Workspace() {
   const [showSidebar, setShowSidebar] = useState(isBigScreen);
 
   const globalProperties = useContext(GlobalPropertiesContext);
+  const scoreAction = useScoreActionSingleton();
 
   const [accountMenuAnchorEl, setAccountMenuAnchorEl] =
     useState<null | HTMLElement>(null);
@@ -139,7 +140,7 @@ export default function Workspace() {
             color="inherit"
           >
             <Badge
-              badgeContent={loaderData.userScoreOverview?.daily_score}
+              badgeContent={scoreAction ? scoreAction.score_overview.daily_score : loaderData.userScoreOverview?.daily_score}
               color="success"
             >
               <Avatar
@@ -172,9 +173,9 @@ export default function Workspace() {
                   <SportsEsportsIcon />
                 </ListItemIcon>
                 <ListItemText>
-                  Today: {loaderData.userScoreOverview?.daily_score}
+                  Today: {scoreAction ? scoreAction.score_overview.daily_score : loaderData.userScoreOverview?.daily_score}
                   <Divider orientation="vertical" flexItem />
-                  Week: {loaderData.userScoreOverview?.weekly_score}
+                  Week: {scoreAction ? scoreAction.score_overview.weekly_score : loaderData.userScoreOverview?.weekly_score}
                 </ListItemText>
                 <Divider />
               </MenuItem>
@@ -245,7 +246,7 @@ export default function Workspace() {
         <TrunkPanel show={shouldShowTrunk}>{outlet}</TrunkPanel>
       </TopLevelInfoContext.Provider>
 
-      <ScoreSnackbarManager />
+      <ScoreSnackbarManager scoreAction={scoreAction} />
     </Box>
   );
 }
