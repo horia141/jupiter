@@ -20,17 +20,18 @@ class Note(LeafEntity):
         """Created event."""
 
     @dataclass
-    class Update(LeafEntity.Updated):
-        """Update content event."""
-
-    @dataclass
     class ChangeParent(LeafEntity.Updated):
         """Change parent event."""
 
+    @dataclass
+    class Update(LeafEntity.Updated):
+        """Update content event."""
+
     note_collection_ref_id: EntityId
-    source: NoteSource
-    name: NoteName
     parent_folder_ref_id: EntityId
+    source: NoteSource
+    source_entity_ref_id: EntityId | None
+    name: NoteName
     content: list[NoteContentBlock]
 
     @staticmethod
@@ -58,12 +59,29 @@ class Note(LeafEntity):
                 ),
             ],
             note_collection_ref_id=note_collection_ref_id,
-            source=NoteSource.USER,
-            name=name,
             parent_folder_ref_id=parent_folder_ref_id,
+            source=NoteSource.USER,
+            source_entity_ref_id=None,
+            name=name,
             content=content,
         )
         return note
+
+    def change_parent(
+        self,
+        parent_folder_ref_id: EntityId,
+        source: EventSource,
+        modification_time: Timestamp,
+    ) -> "Note":
+        """Change the parent folder of the note."""
+        return self._new_version(
+            parent_folder_ref_id=parent_folder_ref_id,
+            new_event=Note.ChangeParent.make_event_from_frame_args(
+                source,
+                self.version,
+                modification_time,
+            ),
+        )
 
     def update(
         self,
@@ -77,22 +95,6 @@ class Note(LeafEntity):
             name=name.or_else(self.name),
             content=content.or_else(self.content),
             new_event=Note.Update.make_event_from_frame_args(
-                source,
-                self.version,
-                modification_time,
-            ),
-        )
-
-    def change_parent(
-        self,
-        parent_folder_ref_id: EntityId,
-        source: EventSource,
-        modification_time: Timestamp,
-    ) -> "Note":
-        """Change the parent folder of the note."""
-        return self._new_version(
-            parent_folder_ref_id=parent_folder_ref_id,
-            new_event=Note.ChangeParent.make_event_from_frame_args(
                 source,
                 self.version,
                 modification_time,

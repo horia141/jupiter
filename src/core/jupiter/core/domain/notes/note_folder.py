@@ -18,16 +18,16 @@ class NoteFolder(LeafEntity):
         """Created event."""
 
     @dataclass
-    class Rename(Entity.Updated):
-        """Rename event."""
-
-    @dataclass
     class ChangeParent(Entity.Updated):
         """Change parent event."""
 
+    @dataclass
+    class Rename(Entity.Updated):
+        """Rename event."""
+
     note_collection_ref_id: EntityId
-    name: NoteFolderName
     parent_folder_ref_id: EntityId | None
+    name: NoteFolderName
 
     @staticmethod
     def new_root_folder(
@@ -48,9 +48,9 @@ class NoteFolder(LeafEntity):
                     created_time,
                 ),
             ],
-            name=NoteFolderName("Root"),
             note_collection_ref_id=note_collection_ref_id,
             parent_folder_ref_id=None,
+            name=NoteFolderName("Root"),
         )
         return note_folder
 
@@ -76,22 +76,11 @@ class NoteFolder(LeafEntity):
                     created_time,
                 ),
             ],
-            name=NoteFolderName("Root"),
             note_collection_ref_id=note_collection_ref_id,
             parent_folder_ref_id=parent_folder_ref_id,
+            name=NoteFolderName("Root"),
         )
         return note_folder
-
-    def rename(
-        self, name: NoteFolderName, source: EventSource, modification_time: Timestamp
-    ) -> "NoteFolder":
-        """Rename the folder."""
-        return self._new_version(
-            name=name,
-            new_event=NoteFolder.Rename.make_event_from_frame_args(
-                source, self.version, modification_time
-            ),
-        )
 
     def change_parent(
         self,
@@ -105,6 +94,17 @@ class NoteFolder(LeafEntity):
         return self._new_version(
             parent_folder_ref_id=parent_folder_ref_id,
             new_event=NoteFolder.ChangeParent.make_event_from_frame_args(
+                source, self.version, modification_time
+            ),
+        )
+
+    def rename(
+        self, name: NoteFolderName, source: EventSource, modification_time: Timestamp
+    ) -> "NoteFolder":
+        """Rename the folder."""
+        return self._new_version(
+            name=name,
+            new_event=NoteFolder.Rename.make_event_from_frame_args(
                 source, self.version, modification_time
             ),
         )
