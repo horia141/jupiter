@@ -107,9 +107,9 @@ export default function Workspace() {
 
   useEffect(() => {
     if (!scoreAction) return;
-    animateBadge(badgeRef.current, { scale: 1.2 }, { duration: 0.150 }).then(
+    animateBadge(badgeRef.current, { scale: 1.2 }, { duration: 0.15 }).then(
       () => {
-        animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.150 });
+        animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.15 });
       }
     );
   }, [scoreAction]);
