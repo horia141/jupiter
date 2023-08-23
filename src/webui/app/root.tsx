@@ -10,7 +10,7 @@ import {
   ShouldRevalidateFunction,
   useLoaderData,
 } from "@remix-run/react";
-import {SnackbarProvider} from "notistack";
+import { SnackbarProvider } from "notistack";
 
 import { StrictMode } from "react";
 import ScrollToTop from "react-scroll-to-top";
@@ -38,7 +38,8 @@ export function meta() {
   };
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function App() {
   const loaderData = useLoaderData<typeof loader>();
@@ -54,17 +55,17 @@ export default function App() {
           <GlobalPropertiesContext.Provider value={loaderData.globalProperties}>
             <ThemeProvider theme={THEME}>
               <SnackbarProvider>
-              <CssBaseline />
-              <EnvBanner />
-              <ScrollToTop
-                smooth
-                style={{
-                  zIndex: THEME.zIndex.appBar + 1,
-                  width: "4rem",
-                  height: "4rem",
-                }}
-              />
-              <Outlet />
+                <CssBaseline />
+                <EnvBanner />
+                <ScrollToTop
+                  smooth
+                  style={{
+                    zIndex: THEME.zIndex.appBar + 1,
+                    width: "4rem",
+                    height: "4rem",
+                  }}
+                />
+                <Outlet />
               </SnackbarProvider>
             </ThemeProvider>
           </GlobalPropertiesContext.Provider>

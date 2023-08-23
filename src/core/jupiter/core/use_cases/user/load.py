@@ -31,7 +31,7 @@ class UserLoadResult(UseCaseResultBase):
     """User find result."""
 
     user: User
-    score_overview: UserScoreOverview | None
+    user_score_overview: UserScoreOverview | None
 
 
 class UserLoadUseCase(
@@ -63,4 +63,4 @@ class UserLoadUseCase(
             score_overview = await ScoreOverviewService().do_it(
                 uow, context.user, self._time_provider.get_current_time()
             )
-        return UserLoadResult(user=context.user, score_overview=score_overview)
+        return UserLoadResult(user=context.user, user_score_overview=score_overview)

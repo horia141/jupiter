@@ -13,7 +13,12 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { ShouldRevalidateFunction, useActionData, useParams, useTransition } from "@remix-run/react";
+import {
+  ShouldRevalidateFunction,
+  useActionData,
+  useParams,
+  useTransition,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { z } from "zod";
@@ -77,7 +82,8 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export async function action({ request, params }: ActionArgs) {
   const session = await getSession(request.headers.get("Cookie"));

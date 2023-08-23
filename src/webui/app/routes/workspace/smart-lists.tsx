@@ -1,7 +1,12 @@
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, ShouldRevalidateFunction, useFetcher, useOutlet } from "@remix-run/react";
+import {
+  Link,
+  ShouldRevalidateFunction,
+  useFetcher,
+  useOutlet,
+} from "@remix-run/react";
 import type { SmartList } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
@@ -42,7 +47,8 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function SmartLists() {
   const outlet = useOutlet();

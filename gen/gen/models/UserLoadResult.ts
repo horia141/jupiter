@@ -7,6 +7,6 @@ import type { UserScoreOverview } from './UserScoreOverview';
 
 export type UserLoadResult = {
     user: User;
-    score_overview: UserScoreOverview;
+    user_score_overview: UserScoreOverview;
 };
 

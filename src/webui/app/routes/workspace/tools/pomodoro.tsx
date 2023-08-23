@@ -26,7 +26,8 @@ export const handle = {
   displayType: DisplayType.LEAF,
 };
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Pomodoro() {
   const globalProperties = useContext(GlobalPropertiesContext);

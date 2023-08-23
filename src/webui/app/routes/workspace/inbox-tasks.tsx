@@ -76,6 +76,7 @@ import {
   ActionableTime,
   actionableTimeToDateTime,
 } from "~/rendering/actionable-time";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -84,7 +85,6 @@ import {
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -131,7 +131,8 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function InboxTasks() {
   const topLevelInfo = useContext(TopLevelInfoContext);

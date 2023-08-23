@@ -7,7 +7,8 @@ export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Subscription() {
   return (

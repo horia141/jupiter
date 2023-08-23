@@ -11,7 +11,11 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
+import {
+  ShouldRevalidateFunction,
+  useActionData,
+  useTransition,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import { ApiError } from "jupiter-gen";
 import { DateTime } from "luxon";
@@ -88,7 +92,8 @@ export async function action({ params, request }: ActionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function NewMetricEntry() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

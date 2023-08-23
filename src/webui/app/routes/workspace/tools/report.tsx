@@ -75,12 +75,12 @@ import {
   inferSourcesForEnabledFeatures,
   isWorkspaceFeatureAvailable,
 } from "~/logic/domain/workspace";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
 const QuerySchema = {
   today: z
@@ -146,7 +146,8 @@ export async function loader({ request }: LoaderArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Report() {
   const loaderData = useLoaderDataSafeForAnimation<

@@ -1,7 +1,12 @@
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, ShouldRevalidateFunction, useFetcher, useOutlet } from "@remix-run/react";
+import {
+  Link,
+  ShouldRevalidateFunction,
+  useFetcher,
+  useOutlet,
+} from "@remix-run/react";
 import type { Person } from "jupiter-gen";
 import { PersonRelationship, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
@@ -46,7 +51,8 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Persons() {
   const outlet = useOutlet();

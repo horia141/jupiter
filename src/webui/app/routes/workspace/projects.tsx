@@ -31,7 +31,8 @@ export async function loader({ request }: LoaderArgs) {
   return json(response.projects);
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Projects() {
   const projects = useLoaderDataSafeForAnimation<typeof loader>();

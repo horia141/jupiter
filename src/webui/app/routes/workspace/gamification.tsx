@@ -1,35 +1,45 @@
 import { Card, CardContent, CardHeader } from "@mui/material";
+import { json, LoaderArgs } from "@remix-run/node";
 import { ShouldRevalidateFunction } from "@remix-run/react";
-import { useContext } from "react";
+import { getLoggedInApiClient } from "~/api-clients";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { ToolCard } from "~/components/infra/tool-card";
 import { ToolPanel } from "~/components/infra/tool-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useBigScreen } from "~/rendering/use-big-screen";
+import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
-import { TopLevelInfoContext } from "~/top-level-context";
+import { getSession } from "~/sessions";
 
 export const handle = {
   displayType: DisplayType.TRUNK,
 };
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export async function loader({ request }: LoaderArgs) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const result = await getLoggedInApiClient(session).user.loadUser({});
+
+  return json({
+    userScoreOverview: result.user_score_overview,
+  });
+}
+
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Gamification() {
-  const isBigScreen = useBigScreen();
-  const topLevelInfo = useContext(TopLevelInfoContext);
+  const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   return (
     <TrunkCard>
       <ToolPanel show={true}>
         <ToolCard returnLocation="/workspace">
-          {topLevelInfo.userScoreOverview && (
+          {loaderData.userScoreOverview && (
             <Card>
               <CardHeader title="💪 Scores" />
               <CardContent>
-                <ScoreOverview scoreOverview={topLevelInfo.userScoreOverview} />
+                <ScoreOverview scoreOverview={loaderData.userScoreOverview} />
               </CardContent>
             </Card>
           )}

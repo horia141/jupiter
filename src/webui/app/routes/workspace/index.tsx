@@ -11,4 +11,5 @@ export async function loader() {
   return redirect("/workspace/inbox-tasks");
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;

@@ -139,7 +139,8 @@ export async function loader({ request }: LoaderArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function Search() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

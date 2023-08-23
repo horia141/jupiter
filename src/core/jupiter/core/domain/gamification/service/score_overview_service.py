@@ -26,7 +26,9 @@ class ScoreOverviewService:
             score_stats = await uow.score_stats_repository.load_by_key_optional(
                 (score_log.ref_id, period, timeline)
             )
-            score_stats_by_period[period] = score_stats.total_score if score_stats else 0
+            score_stats_by_period[period] = (
+                score_stats.total_score if score_stats else 0
+            )
 
         timeline_lifetime = infer_timeline(None, right_now)
         score_stats_lifetime = await uow.score_stats_repository.load_by_key_optional(
@@ -39,5 +41,7 @@ class ScoreOverviewService:
             monthly_score=score_stats_by_period[RecurringTaskPeriod.MONTHLY],
             quarterly_score=score_stats_by_period[RecurringTaskPeriod.QUARTERLY],
             yearly_score=score_stats_by_period[RecurringTaskPeriod.YEARLY],
-            lifetime_score=score_stats_lifetime.total_score if score_stats_lifetime else 0,
+            lifetime_score=score_stats_lifetime.total_score
+            if score_stats_lifetime
+            else 0,
         )

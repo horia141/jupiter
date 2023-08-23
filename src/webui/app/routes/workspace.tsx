@@ -21,31 +21,39 @@ import {
 } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, ShouldRevalidateFunction, useCatch, useOutlet } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  ShouldRevalidateFunction,
+  useCatch,
+  useOutlet,
+} from "@remix-run/react";
 import Sidebar from "~/components/sidebar";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CardMembershipIcon from "@mui/icons-material/CardMembership";
 import SecurityIcon from "@mui/icons-material/Security";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
+import { useAnimate } from "framer-motion";
 import { UserFeature } from "jupiter-gen";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { DocsHelp, DocsHelpSubject } from "~/components/docs-help";
+import {
+  ScoreSnackbarManager,
+  useScoreActionSingleton,
+} from "~/components/gamification/score-snackbar-manager";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { TrunkPanel } from "~/components/infra/trunk-panel";
 import ProgressReporter from "~/components/progress-reporter";
 import SearchBox from "~/components/search-box";
-import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isUserFeatureAvailable } from "~/logic/domain/user";
+import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
-import { ScoreSnackbarManager, useScoreActionSingleton } from "~/components/gamification/score-snackbar-manager";
-import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
-import { useAnimate } from "framer-motion";
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {
@@ -71,7 +79,8 @@ export async function loader({ request }: LoaderArgs) {
   });
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 // @secureFn
 export default function Workspace() {
@@ -98,9 +107,11 @@ export default function Workspace() {
 
   useEffect(() => {
     if (!scoreAction) return;
-    animateBadge(badgeRef.current, {scale: 1.2}, {duration: 0.5}).then(() => {
-      animateBadge(badgeRef.current, {scale: 1}, {duration: 0.5});
-    });
+    animateBadge(badgeRef.current, { scale: 1.2 }, { duration: 0.150 }).then(
+      () => {
+        animateBadge(badgeRef.current, { scale: 1 }, { duration: 0.150 });
+      }
+    );
   }, [scoreAction]);
 
   const topLevelInfo = {
@@ -149,7 +160,11 @@ export default function Workspace() {
           >
             <Badge
               ref={badgeRef}
-              badgeContent={scoreAction ? scoreAction.score_overview.daily_score : loaderData.userScoreOverview?.daily_score}
+              badgeContent={
+                scoreAction
+                  ? scoreAction.score_overview.daily_score
+                  : loaderData.userScoreOverview?.daily_score
+              }
               color="success"
             >
               <Avatar
@@ -182,9 +197,15 @@ export default function Workspace() {
                   <SportsEsportsIcon />
                 </ListItemIcon>
                 <ListItemText>
-                  Today: {scoreAction ? scoreAction.score_overview.daily_score : loaderData.userScoreOverview?.daily_score}
+                  Today:{" "}
+                  {scoreAction
+                    ? scoreAction.score_overview.daily_score
+                    : loaderData.userScoreOverview?.daily_score}
                   <Divider orientation="vertical" flexItem />
-                  Week: {scoreAction ? scoreAction.score_overview.weekly_score : loaderData.userScoreOverview?.weekly_score}
+                  Week:{" "}
+                  {scoreAction
+                    ? scoreAction.score_overview.weekly_score
+                    : loaderData.userScoreOverview?.weekly_score}
                 </ListItemText>
                 <Divider />
               </MenuItem>

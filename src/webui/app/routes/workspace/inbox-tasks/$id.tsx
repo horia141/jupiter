@@ -20,7 +20,12 @@ import {
   type ActionArgs,
   type LoaderArgs,
 } from "@remix-run/node";
-import { ShouldRevalidateFunction, useActionData, useParams, useTransition } from "@remix-run/react";
+import {
+  ShouldRevalidateFunction,
+  useActionData,
+  useParams,
+  useTransition,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type {
   BigPlan,
@@ -144,7 +149,9 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        const result = await getLoggedInApiClient(session).inboxTask.updateInboxTask({
+        const result = await getLoggedInApiClient(
+          session
+        ).inboxTask.updateInboxTask({
           ref_id: { the_id: id },
           name: corePropertyEditable
             ? {
@@ -186,9 +193,11 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         if (result.record_score_result) {
-          return redirect(`/workspace/inbox-tasks/${id}`, {headers: {
-            "Set-Cookie": await saveScoreAction(result.record_score_result)
-          }});
+          return redirect(`/workspace/inbox-tasks/${id}`, {
+            headers: {
+              "Set-Cookie": await saveScoreAction(result.record_score_result),
+            },
+          });
         }
 
         return redirect(`/workspace/inbox-tasks/${id}`);
@@ -245,7 +254,8 @@ type BigPlanACOption = {
   big_plan_id: string;
 };
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function InboxTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

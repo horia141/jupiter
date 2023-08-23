@@ -1,7 +1,12 @@
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, ShouldRevalidateFunction, useFetcher, useOutlet } from "@remix-run/react";
+import {
+  Link,
+  ShouldRevalidateFunction,
+  useFetcher,
+  useOutlet,
+} from "@remix-run/react";
 import { WorkspaceFeature, type SlackTask } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -40,7 +45,8 @@ export async function loader({ request }: LoaderArgs) {
   return json(response.entries);
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function SlackTasks() {
   const outlet = useOutlet();

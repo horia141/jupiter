@@ -11,6 +11,7 @@ from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
 from jupiter.core.domain.email_address import EmailAddress
 from jupiter.core.domain.entity_name import EntityName
+from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -525,3 +526,28 @@ def email_task_subject_to_rich_text(subject: str) -> Text:
 def timezone_to_rich_text(timezone: Timezone) -> Text:
     """Transform a timezone to rich text."""
     return Text(str(timezone), style="bold")
+
+
+def user_score_overview_to_rich(score_overview: UserScoreOverview) -> Tree:
+    """Gamification rendering."""
+    gamification_tree = Tree("🎮 Gamification:")
+
+    scores_tree = Tree("💪 Scores:")
+
+    daily_text = Text(f"Daily: {score_overview.daily_score}")
+    weekly_text = Text(f"Weekly: {score_overview.weekly_score}")
+    monthly_text = Text(f"Monthly: {score_overview.monthly_score}")
+    quarterly_text = Text(f"Quarterly: {score_overview.quarterly_score}")
+    yearly_text = Text(f"Yearly: {score_overview.yearly_score}")
+    lifetime_text = Text(f"Lifetime: {score_overview.lifetime_score}")
+
+    scores_tree.add(daily_text)
+    scores_tree.add(weekly_text)
+    scores_tree.add(monthly_text)
+    scores_tree.add(quarterly_text)
+    scores_tree.add(yearly_text)
+    scores_tree.add(lifetime_text)
+
+    gamification_tree.add(scores_tree)
+
+    return gamification_tree

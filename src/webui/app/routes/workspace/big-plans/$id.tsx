@@ -1,6 +1,5 @@
 import type { SelectChangeEvent } from "@mui/material";
 import {
-  Alert,
   Button,
   ButtonGroup,
   Card,
@@ -11,7 +10,6 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
-  Snackbar,
   Stack,
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -34,7 +32,7 @@ import {
 } from "jupiter-gen";
 import { useContext, useEffect, useState } from "react";
 import { z } from "zod";
-import { parseForm, parseParams, parseQuery } from "zodix";
+import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
@@ -116,7 +114,9 @@ export async function action({ request, params }: ActionArgs) {
   try {
     switch (intent) {
       case "update": {
-        const result = await getLoggedInApiClient(session).bigPlan.updateBigPlan({
+        const result = await getLoggedInApiClient(
+          session
+        ).bigPlan.updateBigPlan({
           ref_id: { the_id: id },
           name: {
             should_change: true,
@@ -143,9 +143,11 @@ export async function action({ request, params }: ActionArgs) {
         });
 
         if (result.record_score_result) {
-          return redirect(`/workspace/big-plans/${id}`, {headers: {
-            "Set-Cookie": await saveScoreAction(result.record_score_result)
-          }});
+          return redirect(`/workspace/big-plans/${id}`, {
+            headers: {
+              "Set-Cookie": await saveScoreAction(result.record_score_result),
+            },
+          });
         }
 
         return redirect(`/workspace/big-plans/${id}`);
@@ -183,7 +185,8 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function BigPlan() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
@@ -243,8 +246,6 @@ export default function BigPlan() {
     // on a navigation event.
     setSelectedProject(loaderData.project.ref_id.the_id);
   }, [loaderData]);
-
-
 
   return (
     <LeafCard

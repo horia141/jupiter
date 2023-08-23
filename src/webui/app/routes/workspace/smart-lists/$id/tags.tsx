@@ -1,7 +1,13 @@
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, ShouldRevalidateFunction, useFetcher, useOutlet, useParams } from "@remix-run/react";
+import {
+  Link,
+  ShouldRevalidateFunction,
+  useFetcher,
+  useOutlet,
+  useParams,
+} from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { SmartListTag } from "jupiter-gen";
 import { ApiError } from "jupiter-gen";
@@ -61,7 +67,8 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function SmartListViewTags() {
   const outlet = useOutlet();

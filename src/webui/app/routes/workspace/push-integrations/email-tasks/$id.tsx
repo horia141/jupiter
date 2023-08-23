@@ -203,7 +203,8 @@ export async function action({ request, params }: ActionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function EmailTask() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();

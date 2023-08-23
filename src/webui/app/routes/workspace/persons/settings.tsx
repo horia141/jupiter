@@ -13,7 +13,11 @@ import {
 } from "@mui/material";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { ShouldRevalidateFunction, useActionData, useTransition } from "@remix-run/react";
+import {
+  ShouldRevalidateFunction,
+  useActionData,
+  useTransition,
+} from "@remix-run/react";
 import { StatusCodes } from "http-status-codes";
 import type { Project } from "jupiter-gen";
 import { ApiError, WorkspaceFeature } from "jupiter-gen";
@@ -86,7 +90,8 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = standardShouldRevalidate;
+export const shouldRevalidate: ShouldRevalidateFunction =
+  standardShouldRevalidate;
 
 export default function PersonsSettings() {
   const transition = useTransition();
