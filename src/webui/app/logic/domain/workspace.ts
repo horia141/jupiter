@@ -39,6 +39,16 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
+      entityTag === NamedEntityTag.NOTE &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.NOTES)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
+      entityTag === NamedEntityTag.NOTE_FOLDER &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.NOTES)
+    ) {
+      inferredEntityTags.push(entityTag);
+    } else if (
       entityTag === NamedEntityTag.VACATION &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.VACATIONS)
     ) {
@@ -176,6 +186,11 @@ export function inferSyncTargetsForEnabledFeatures(
     } else if (
       syncTarget === SyncTarget.BIG_PLANS &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.BIG_PLANS)
+    ) {
+      inferredSyncTargets.push(syncTarget);
+    } else if (
+      syncTarget === SyncTarget.NOTES &&
+      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.NOTES)
     ) {
       inferredSyncTargets.push(syncTarget);
     } else if (
