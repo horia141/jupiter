@@ -9,7 +9,6 @@ from jupiter.core.domain.habits.habit import Habit
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.metrics.metric import Metric
 from jupiter.core.domain.metrics.metric_entry import MetricEntry
-from jupiter.core.domain.notes.note_folder import NoteFolder
 from jupiter.core.domain.persons.person import Person
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.push_integrations.email.email_task import EmailTask
@@ -30,8 +29,7 @@ class NamedEntityTag(enum.Enum):
     HABIT = Habit.__name__
     CHORE = Chore.__name__
     BIG_PLAN = BigPlan.__name__
-    NOTE = "Note" # Note.__name__
-    NOTE_FOLDER = NoteFolder.__name__
+    NOTE = "Note"  # Note.__name__
     VACATION = Vacation.__name__
     PROJECT = Project.__name__
     SMART_LIST = SmartList.__name__

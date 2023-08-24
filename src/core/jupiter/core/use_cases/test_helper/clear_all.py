@@ -13,6 +13,7 @@ from jupiter.core.domain.inbox_tasks.service.remove_service import (
     InboxTaskRemoveService,
 )
 from jupiter.core.domain.metrics.service.remove_service import MetricRemoveService
+from jupiter.core.domain.notes.service.note_remove_service import NoteRemoveService
 from jupiter.core.domain.persons.service.remove_service import PersonRemoveService
 from jupiter.core.domain.projects.service.remove_service import ProjectRemoveService
 from jupiter.core.domain.push_integrations.email.service.remove_service import (
@@ -114,12 +115,6 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace_feature_flags_controls,
         ) = infer_feature_flag_controls(self._global_properties)
 
-        vacation_collection = await uow.vacation_collection_repository.load_by_parent(
-            workspace.ref_id,
-        )
-        project_collection = await uow.project_collection_repository.load_by_parent(
-            workspace.ref_id,
-        )
         inbox_task_collection = (
             await uow.inbox_task_collection_repository.load_by_parent(
                 workspace.ref_id,
@@ -132,6 +127,15 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             workspace.ref_id,
         )
         big_plan_collection = await uow.big_plan_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
+        note_collection = await uow.note_collection_repository.load_by_parent(
+            workspace.ref_id
+        )
+        vacation_collection = await uow.vacation_collection_repository.load_by_parent(
+            workspace.ref_id,
+        )
+        project_collection = await uow.project_collection_repository.load_by_parent(
             workspace.ref_id,
         )
         smart_list_collection = (
@@ -228,33 +232,6 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
 
             await uow.workspace_repository.save(workspace)
 
-        async with progress_reporter.section("Clearing vacations"):
-            all_vacations = await uow.vacation_repository.find_all(
-                parent_ref_id=vacation_collection.ref_id,
-                allow_archived=True,
-            )
-
-            vacation_remove_service = VacationRemoveService()
-            for vacation in all_vacations:
-                await vacation_remove_service.do_it(uow, progress_reporter, vacation)
-
-        async with progress_reporter.section("Clearing projects"):
-            all_projects = await uow.project_repository.find_all(
-                parent_ref_id=project_collection.ref_id,
-                allow_archived=True,
-            )
-
-            project_remove_service = ProjectRemoveService(
-                EventSource.CLI,
-                self._time_provider,
-            )
-            for project in all_projects:
-                if project.ref_id == args.workspace_default_project_ref_id:
-                    continue
-                await project_remove_service.do_it(
-                    uow, progress_reporter, workspace, project.ref_id
-                )
-
         async with progress_reporter.section("Clearing habits"):
             all_habits = await uow.habit_repository.find_all(
                 parent_ref_id=habit_collection.ref_id,
@@ -285,6 +262,43 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
                     progress_reporter,
                     workspace,
                     big_plan.ref_id,
+                )
+
+        async with progress_reporter.section("Clearing notes"):
+            root_notes = await uow.note_repository.find_all_with_filters(
+                parent_ref_id=note_collection.ref_id,
+                allow_archived=True,
+                filter_parent_note_ref_ids=[None]
+            )
+            note_remove_service = NoteRemoveService()
+            for note in root_notes:
+                await note_remove_service.do_it(uow, progress_reporter, note)
+
+        async with progress_reporter.section("Clearing vacations"):
+            all_vacations = await uow.vacation_repository.find_all(
+                parent_ref_id=vacation_collection.ref_id,
+                allow_archived=True,
+            )
+
+            vacation_remove_service = VacationRemoveService()
+            for vacation in all_vacations:
+                await vacation_remove_service.do_it(uow, progress_reporter, vacation)
+
+        async with progress_reporter.section("Clearing projects"):
+            all_projects = await uow.project_repository.find_all(
+                parent_ref_id=project_collection.ref_id,
+                allow_archived=True,
+            )
+
+            project_remove_service = ProjectRemoveService(
+                EventSource.CLI,
+                self._time_provider,
+            )
+            for project in all_projects:
+                if project.ref_id == args.workspace_default_project_ref_id:
+                    continue
+                await project_remove_service.do_it(
+                    uow, progress_reporter, workspace, project.ref_id
                 )
 
         async with progress_reporter.section("Clearing smart lists"):

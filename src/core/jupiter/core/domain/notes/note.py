@@ -28,7 +28,7 @@ class Note(LeafEntity):
         """Update content event."""
 
     note_collection_ref_id: EntityId
-    parent_folder_ref_id: EntityId
+    parent_note_ref_id: EntityId | None
     source: NoteSource
     source_entity_ref_id: EntityId | None
     name: NoteName
@@ -37,8 +37,8 @@ class Note(LeafEntity):
     @staticmethod
     def new_note(
         note_collection_ref_id: EntityId,
+        parent_note_ref_id: EntityId | None,
         name: NoteName,
-        parent_folder_ref_id: EntityId,
         content: list[NoteContentBlock],
         source: EventSource,
         created_time: Timestamp,
@@ -59,7 +59,7 @@ class Note(LeafEntity):
                 ),
             ],
             note_collection_ref_id=note_collection_ref_id,
-            parent_folder_ref_id=parent_folder_ref_id,
+            parent_note_ref_id=parent_note_ref_id,
             source=NoteSource.USER,
             source_entity_ref_id=None,
             name=name,
@@ -69,13 +69,13 @@ class Note(LeafEntity):
 
     def change_parent(
         self,
-        parent_folder_ref_id: EntityId,
+        parent_note_ref_id: EntityId | None,
         source: EventSource,
         modification_time: Timestamp,
     ) -> "Note":
-        """Change the parent folder of the note."""
+        """Change the parent note of the note."""
         return self._new_version(
-            parent_folder_ref_id=parent_folder_ref_id,
+            parent_note_ref_id=parent_note_ref_id,
             new_event=Note.ChangeParent.make_event_from_frame_args(
                 source,
                 self.version,

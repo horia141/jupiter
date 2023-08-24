@@ -44,11 +44,6 @@ export function inferEntityTagsForEnabledFeatures(
     ) {
       inferredEntityTags.push(entityTag);
     } else if (
-      entityTag === NamedEntityTag.NOTE_FOLDER &&
-      isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.NOTES)
-    ) {
-      inferredEntityTags.push(entityTag);
-    } else if (
       entityTag === NamedEntityTag.VACATION &&
       isWorkspaceFeatureAvailable(workspace, WorkspaceFeature.VACATIONS)
     ) {

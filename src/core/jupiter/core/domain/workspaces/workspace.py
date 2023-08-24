@@ -153,10 +153,6 @@ class Workspace(RootEntity):
                 WorkspaceFeature.NOTES
             ):
                 inferred_entity_tags.append(entity_tag)
-            elif entity_tag is NamedEntityTag.NOTE_FOLDER and self.is_feature_available(
-                WorkspaceFeature.NOTES
-            ):
-                inferred_entity_tags.append(entity_tag)
             elif entity_tag is NamedEntityTag.VACATION and self.is_feature_available(
                 WorkspaceFeature.VACATIONS
             ):

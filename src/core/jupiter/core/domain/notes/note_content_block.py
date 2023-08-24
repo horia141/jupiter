@@ -1,7 +1,7 @@
 """A particular block of content in a note."""
 from dataclasses import dataclass
-from jupiter.core.domain.named_entity_tag import NamedEntityTag
 
+from jupiter.core.domain.named_entity_tag import NamedEntityTag
 from jupiter.core.domain.url import URL
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.value import Value
