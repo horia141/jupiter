@@ -10,7 +10,11 @@ from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.update_action import UpdateAction
 from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseContext, AppTransactionalLoggedInMutationUseCase
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+)
+
 
 @dataclass
 class NoteUpdateArgs(UseCaseArgsBase):
@@ -21,9 +25,7 @@ class NoteUpdateArgs(UseCaseArgsBase):
     content: UpdateAction[list[NoteContentBlock]]
 
 
-class NoteUpdateUseCase(
-    AppTransactionalLoggedInMutationUseCase[NoteUpdateArgs, None]
-):
+class NoteUpdateUseCase(AppTransactionalLoggedInMutationUseCase[NoteUpdateArgs, None]):
     """Update a note use case."""
 
     @staticmethod
@@ -50,4 +52,3 @@ class NoteUpdateUseCase(
         )
         note = await uow.note_repository.save(note)
         await progress_reporter.mark_updated(note)
-    

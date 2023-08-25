@@ -268,7 +268,7 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             root_notes = await uow.note_repository.find_all_with_filters(
                 parent_ref_id=note_collection.ref_id,
                 allow_archived=True,
-                filter_parent_note_ref_ids=[None]
+                filter_parent_note_ref_ids=[None],
             )
             note_remove_service = NoteRemoveService()
             for note in root_notes:

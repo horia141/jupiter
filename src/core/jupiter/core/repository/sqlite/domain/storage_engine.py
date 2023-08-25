@@ -39,6 +39,10 @@ from jupiter.core.domain.metrics.infra.metric_entry_repository import (
     MetricEntryRepository,
 )
 from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
+from jupiter.core.domain.notes.infra.note_collection_repository import (
+    NoteCollectionRepository,
+)
+from jupiter.core.domain.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.persons.infra.person_collection_repository import (
     PersonCollectionRepository,
 )
@@ -121,6 +125,10 @@ from jupiter.core.repository.sqlite.domain.metrics import (
     SqliteMetricEntryRepository,
     SqliteMetricRepository,
 )
+from jupiter.core.repository.sqlite.domain.notes import (
+    SqliteNoteCollectionRepository,
+    SqliteNoteRepository,
+)
 from jupiter.core.repository.sqlite.domain.persons import (
     SqlitePersonCollectionRepository,
     SqlitePersonRepository,
@@ -180,6 +188,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _chore_repository: Final[SqliteChoreRepository]
     _big_plan_collection_repository: Final[SqliteBigPlanCollectionRepository]
     _big_plan_repository: Final[SqliteBigPlanRepository]
+    _note_collection_repository: Final[SqliteNoteCollectionRepository]
+    _note_repository: Final[SqliteNoteRepository]
     _vacation_collection_repository: Final[SqliteVacationCollectionRepository]
     _vacation_repository: Final[SqliteVacationRepository]
     _project_collection_repository: Final[SqliteProjectCollectionRepository]
@@ -217,6 +227,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         chore_repository: SqliteChoreRepository,
         big_plan_collection_repository: SqliteBigPlanCollectionRepository,
         big_plan_repository: SqliteBigPlanRepository,
+        note_collection_repository: SqliteNoteCollectionRepository,
+        note_repository: SqliteNoteRepository,
         vacation_repository: SqliteVacationRepository,
         vacation_collection_repository: SqliteVacationCollectionRepository,
         project_collection_repository: SqliteProjectCollectionRepository,
@@ -253,6 +265,8 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._chore_repository = chore_repository
         self._big_plan_collection_repository = big_plan_collection_repository
         self._big_plan_repository = big_plan_repository
+        self._note_collection_repository = note_collection_repository
+        self._note_repository = note_repository
         self._vacation_collection_repository = vacation_collection_repository
         self._vacation_repository = vacation_repository
         self._project_collection_repository = project_collection_repository
@@ -359,6 +373,16 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def big_plan_repository(self) -> BigPlanRepository:
         """The big plan repository."""
         return self._big_plan_repository
+
+    @property
+    def note_collection_repository(self) -> NoteCollectionRepository:
+        """The note collection repository."""
+        return self._note_collection_repository
+
+    @property
+    def note_repository(self) -> NoteRepository:
+        """The note repository."""
+        return self._note_repository
 
     @property
     def vacation_collection_repository(self) -> VacationCollectionRepository:
@@ -507,6 +531,11 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 self._metadata,
             )
             big_plan_repository = SqliteBigPlanRepository(connection, self._metadata)
+            note_collection_repository = SqliteNoteCollectionRepository(
+                connection,
+                self._metadata,
+            )
+            note_repository = SqliteNoteRepository(connection, self._metadata)
             vacation_collection_repository = SqliteVacationCollectionRepository(
                 connection,
                 self._metadata,
@@ -585,6 +614,8 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 chore_repository=chore_repository,
                 big_plan_collection_repository=big_plan_collection_repository,
                 big_plan_repository=big_plan_repository,
+                note_collection_repository=note_collection_repository,
+                note_repository=note_repository,
                 vacation_collection_repository=vacation_collection_repository,
                 vacation_repository=vacation_repository,
                 project_collection_repository=project_collection_repository,

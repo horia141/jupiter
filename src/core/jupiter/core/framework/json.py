@@ -42,7 +42,7 @@ def process_primitive_to_json_key(primitive: int | float | str | object) -> str:
 
 def process_primitive_to_json(
     primitive: typing.Union[None, int, float, str, object],
-    key: str,
+    key: str | None = None,
 ) -> JSONValueType:
     """Transform a primitive-ish type to a JSON serializable object."""
     if primitive is None:
@@ -88,5 +88,5 @@ def process_primitive_to_json(
         return [process_primitive_to_json(p, key) for p in primitive]
     else:
         raise Exception(
-            f"Invalid type for event field {key} of type {primitive.__class__.__name__}",
+            f"Invalid type for event field {key if key else 'root'} of type {primitive.__class__.__name__}",
         )

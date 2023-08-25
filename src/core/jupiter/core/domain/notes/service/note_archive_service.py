@@ -32,7 +32,7 @@ class NoteArchiveService:
         """Execute the command's action."""
         if note.archived:
             return
-        
+
         subnotes = await uow.note_repository.find_all_with_filters(
             parent_ref_id=note.ref_id,
             allow_archived=True,

@@ -45,6 +45,10 @@ class NoteChangeParentUseCase(
     ) -> None:
         """Execute the command's action."""
         note = await uow.note_repository.load_by_id(args.ref_id)
-        note = note.change_parent(args.parent_node_ref_id, EventSource.CLI, self._time_provider.get_current_time())
+        note = note.change_parent(
+            args.parent_node_ref_id,
+            EventSource.CLI,
+            self._time_provider.get_current_time(),
+        )
         await uow.note_repository.save(note)
         await progress_reporter.mark_updated(note)

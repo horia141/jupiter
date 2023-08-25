@@ -134,7 +134,6 @@ class WorkspaceFeature(enum.Enum):
 WorkspaceFeatureFlags = Dict[WorkspaceFeature, bool]
 
 
-
 @dataclass
 class WorkspaceFeatureFlagsControls(Value):
     """Feature settings controls for the workspace."""

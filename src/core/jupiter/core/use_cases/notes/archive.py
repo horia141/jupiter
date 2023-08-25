@@ -1,14 +1,18 @@
 """Use case for archiving a note."""
 from dataclasses import dataclass
 from typing import Iterable
+
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.notes.service.note_archive_service import NoteArchiveService
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
-
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.event import EventSource
 from jupiter.core.framework.use_case import ProgressReporter, UseCaseArgsBase
-from jupiter.core.use_cases.infra.use_cases import AppLoggedInUseCaseContext, AppTransactionalLoggedInMutationUseCase
+from jupiter.core.use_cases.infra.use_cases import (
+    AppLoggedInUseCaseContext,
+    AppTransactionalLoggedInMutationUseCase,
+)
+
 
 @dataclass
 class NoteArchiveArgs(UseCaseArgsBase):

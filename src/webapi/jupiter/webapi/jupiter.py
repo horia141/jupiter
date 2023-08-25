@@ -235,6 +235,27 @@ from jupiter.core.use_cases.metrics.load_settings import (
     MetricLoadSettingsUseCase,
 )
 from jupiter.core.use_cases.metrics.update import MetricUpdateArgs, MetricUpdateUseCase
+from jupiter.core.use_cases.notes.archive import NoteArchiveArgs, NoteArchiveUseCase
+from jupiter.core.use_cases.notes.change_parent import (
+    NoteChangeParentArgs,
+    NoteChangeParentUseCase,
+)
+from jupiter.core.use_cases.notes.create import (
+    NoteCreateArgs,
+    NoteCreateResult,
+    NoteCreateUseCase,
+)
+from jupiter.core.use_cases.notes.find import (
+    NoteFindArgs,
+    NoteFindResult,
+    NoteFindUseCase,
+)
+from jupiter.core.use_cases.notes.load import (
+    NoteLoadArgs,
+    NoteLoadResult,
+    NoteLoadUseCase,
+)
+from jupiter.core.use_cases.notes.update import NoteUpdateArgs, NoteUpdateUseCase
 from jupiter.core.use_cases.persons.archive import (
     PersonArchiveArgs,
     PersonArchiveUseCase,
@@ -815,6 +836,45 @@ big_plan_load_use_case = BigPlanLoadUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 big_plan_find_use_case = BigPlanFindUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+
+note_create_use_case = NoteCreateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+note_archive_use_case = NoteArchiveUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+note_update_use_case = NoteUpdateUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+note_change_parent_use_case = NoteChangeParentUseCase(
+    time_provider=time_provider,
+    invocation_recorder=invocation_recorder,
+    progress_reporter_factory=progress_reporter_factory,
+    auth_token_stamper=auth_token_stamper,
+    domain_storage_engine=domain_storage_engine,
+    search_storage_engine=search_storage_engine,
+)
+note_load_use_case = NoteLoadUseCase(
+    auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
+)
+note_find_use_case = NoteFindUseCase(
     auth_token_stamper=auth_token_stamper, storage_engine=domain_storage_engine
 )
 
@@ -2019,6 +2079,76 @@ async def find_big_plan(
 ) -> BigPlanFindResult:
     """Find all big plans, filtering by id."""
     return await big_plan_find_use_case.execute(session, args)
+
+
+@app.post(
+    "/note/create",
+    response_model=NoteCreateResult,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def create_note(
+    args: NoteCreateArgs, session: LoggedInSession
+) -> NoteCreateResult:
+    """Create a note."""
+    return await note_create_use_case.execute(session, args)
+
+
+@app.post(
+    "/note/archive",
+    response_model=None,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def archive_note(args: NoteArchiveArgs, session: LoggedInSession) -> None:
+    """Archive a note."""
+    await note_archive_use_case.execute(session, args)
+
+
+@app.post(
+    "/note/update",
+    response_model=None,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def update_note(args: NoteUpdateArgs, session: LoggedInSession) -> None:
+    """Update a note."""
+    await note_update_use_case.execute(session, args)
+
+
+@app.post(
+    "/note/change-parent",
+    response_model=None,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def change_note_parent(
+    args: NoteChangeParentArgs, session: LoggedInSession
+) -> None:
+    """Change the parent for a note."""
+    await note_change_parent_use_case.execute(session, args)
+
+
+@app.post(
+    "/note/load",
+    response_model=NoteLoadResult,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def load_note(args: NoteLoadArgs, session: LoggedInSession) -> NoteLoadResult:
+    """Load a note."""
+    return await note_load_use_case.execute(session, args)
+
+
+@app.post(
+    "/note/find",
+    response_model=NoteFindResult,
+    tags=["note"],
+    responses=standard_responses,
+)
+async def find_note(args: NoteFindArgs, session: LoggedInSession) -> NoteFindResult:
+    """Find all notes, filtering by id."""
+    return await note_find_use_case.execute(session, args)
 
 
 @app.post(
