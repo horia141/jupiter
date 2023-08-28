@@ -82,7 +82,7 @@ class NoteFindUseCase(
         return NoteFindResult(
             entries=[
                 NoteFindResultEntry(
-                    note=note, subnotes=subnotes_by_parent_ref_id.get(n.ref_id, None)
+                    note=note, subnotes=subnotes_by_parent_ref_id.get(note.ref_id, None)
                 )
                 for note in notes
             ]

@@ -573,6 +573,13 @@ function Match({ match }: MatchProps) {
           {commonSequence}
         </EntityLink>
       );
+    case NamedEntityTag.NOTE:
+      return (
+        <EntityLink to={`/workspace/notes/${match.ref_id.the_id}`}>
+          <SlimChip label={"Note"} color={"primary"} />
+          {commonSequence}
+        </EntityLink>
+      );
     case NamedEntityTag.VACATION:
       return (
         <EntityLink to={`/workspace/vacations/${match.ref_id.the_id}`}>

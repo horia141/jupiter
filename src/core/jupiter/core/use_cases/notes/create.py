@@ -4,7 +4,7 @@ from typing import Iterable
 
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
 from jupiter.core.domain.notes.note import Note
-from jupiter.core.domain.notes.note_content_block import NoteContentBlock
+from jupiter.core.domain.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.notes.note_name import NoteName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -24,9 +24,9 @@ from jupiter.core.use_cases.infra.use_cases import (
 class NoteCreateArgs(UseCaseArgsBase):
     """NoteCreate args."""
 
-    parent_note_ref_id: EntityId | None
     name: NoteName
-    content: list[NoteContentBlock]
+    content: list[OneOfNoteContentBlock]
+    parent_note_ref_id: EntityId | None = None
 
 
 @dataclass
@@ -68,6 +68,6 @@ class NoteCreateUseCase(
             source=EventSource.CLI,
             created_time=self._time_provider.get_current_time(),
         )
-        await uow.note_repository.save(note)
+        note = await uow.note_repository.create(note)
         await progress_reporter.mark_created(note)
         return NoteCreateResult(new_note=note)

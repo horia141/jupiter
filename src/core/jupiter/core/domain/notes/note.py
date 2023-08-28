@@ -1,7 +1,7 @@
 """A note in the notebook."""
 from dataclasses import dataclass
 
-from jupiter.core.domain.notes.note_content_block import NoteContentBlock
+from jupiter.core.domain.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.notes.note_name import NoteName
 from jupiter.core.domain.notes.note_source import NoteSource
 from jupiter.core.framework.base.entity_id import BAD_REF_ID, EntityId
@@ -32,14 +32,14 @@ class Note(LeafEntity):
     source: NoteSource
     source_entity_ref_id: EntityId | None
     name: NoteName
-    content: list[NoteContentBlock]
+    content: list[OneOfNoteContentBlock]
 
     @staticmethod
     def new_note(
         note_collection_ref_id: EntityId,
         parent_note_ref_id: EntityId | None,
         name: NoteName,
-        content: list[NoteContentBlock],
+        content: list[OneOfNoteContentBlock],
         source: EventSource,
         created_time: Timestamp,
     ) -> "Note":
@@ -86,7 +86,7 @@ class Note(LeafEntity):
     def update(
         self,
         name: UpdateAction[NoteName],
-        content: UpdateAction[list[NoteContentBlock]],
+        content: UpdateAction[list[OneOfNoteContentBlock]],
         source: EventSource,
         modification_time: Timestamp,
     ) -> "Note":

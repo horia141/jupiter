@@ -207,7 +207,7 @@ class SqliteNoteRepository(NoteRepository):
                 nullable=True,
             ),
             Column("source", String(), nullable=False),
-            Column("source_ref_id", Integer(), nullable=True),
+            Column("source_entity_ref_id", Integer(), nullable=True),
             Column("name", Unicode(), nullable=False),
             Column("content", JSON(), nullable=False),
             keep_existing=True,
@@ -235,7 +235,7 @@ class SqliteNoteRepository(NoteRepository):
                     if entity.parent_note_ref_id
                     else None,
                     source=entity.source.value,
-                    source_ref_id=entity.source_entity_ref_id.as_int()
+                    source_entity_ref_id=entity.source_entity_ref_id.as_int()
                     if entity.source_entity_ref_id
                     else None,
                     name=str(entity.name),
@@ -269,7 +269,7 @@ class SqliteNoteRepository(NoteRepository):
                 if entity.parent_note_ref_id
                 else None,
                 source=entity.source.value,
-                source_ref_id=entity.source_entity_ref_id.as_int()
+                source_entity_ref_id=entity.source_entity_ref_id.as_int()
                 if entity.source_entity_ref_id
                 else None,
                 name=str(entity.name),
@@ -331,11 +331,23 @@ class SqliteNoteRepository(NoteRepository):
                 self._note_table.c.ref_id.in_([fi.as_int() for fi in filter_ref_ids])
             )
         if filter_parent_note_ref_ids is not None:
-            query_stmt = query_stmt.where(
-                self._note_table.c.parent_note_ref_id.in_(
-                    [fi.as_int() if fi else None for fi in filter_parent_note_ref_ids]
+            filter_parent_note_ref_ids = list(filter_parent_note_ref_ids)  # ick
+            if (
+                len(filter_parent_note_ref_ids) == 1
+                and filter_parent_note_ref_ids[0] is None
+            ):
+                query_stmt = query_stmt.where(
+                    self._note_table.c.parent_note_ref_id.is_(None)
                 )
-            )
+            else:
+                query_stmt = query_stmt.where(
+                    self._note_table.c.parent_note_ref_id.in_(
+                        [
+                            fi.as_int() if fi else None
+                            for fi in filter_parent_note_ref_ids
+                        ]
+                    )
+                )
         results = await self._connection.execute(query_stmt)
         return [self._row_to_entity(row) for row in results]
 
@@ -370,9 +382,13 @@ class SqliteNoteRepository(NoteRepository):
             note_collection_ref_id=EntityId.from_raw(
                 str(row["note_collection_ref_id"]),
             ),
-            parent_note_ref_id=EntityId.from_raw(str(row["parent_note_ref_id"])),
+            parent_note_ref_id=EntityId.from_raw(str(row["parent_note_ref_id"]))
+            if row["parent_note_ref_id"]
+            else None,
             source=NoteSource(row["source"]),
-            source_entity_ref_id=EntityId.from_raw(str(row["source_ref_id"])),
+            source_entity_ref_id=EntityId.from_raw(str(row["source_entity_ref_id"]))
+            if row["source_entity_ref_id"]
+            else None,
             name=NoteName.from_raw(row["name"]),
             content=[NoteContentBlock.from_json(cb) for cb in row["content"]],
         )

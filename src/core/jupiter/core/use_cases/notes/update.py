@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from jupiter.core.domain.features import UserFeature, WorkspaceFeature
-from jupiter.core.domain.notes.note_content_block import NoteContentBlock
+from jupiter.core.domain.notes.note_content_block import OneOfNoteContentBlock
 from jupiter.core.domain.notes.note_name import NoteName
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
 from jupiter.core.framework.base.entity_id import EntityId
@@ -22,7 +22,7 @@ class NoteUpdateArgs(UseCaseArgsBase):
 
     ref_id: EntityId
     name: UpdateAction[NoteName]
-    content: UpdateAction[list[NoteContentBlock]]
+    content: UpdateAction[list[OneOfNoteContentBlock]]
 
 
 class NoteUpdateUseCase(AppTransactionalLoggedInMutationUseCase[NoteUpdateArgs, None]):
