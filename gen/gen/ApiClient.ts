@@ -20,6 +20,7 @@ import { LoadProgressReporterTokenService } from './services/LoadProgressReporte
 import { LoadTopLevelInfoService } from './services/LoadTopLevelInfoService';
 import { LoginService } from './services/LoginService';
 import { MetricService } from './services/MetricService';
+import { NoteService } from './services/NoteService';
 import { PersonService } from './services/PersonService';
 import { ProjectService } from './services/ProjectService';
 import { ReportService } from './services/ReportService';
@@ -49,6 +50,7 @@ export class ApiClient {
     public readonly loadTopLevelInfo: LoadTopLevelInfoService;
     public readonly login: LoginService;
     public readonly metric: MetricService;
+    public readonly note: NoteService;
     public readonly person: PersonService;
     public readonly project: ProjectService;
     public readonly report: ReportService;
@@ -89,6 +91,7 @@ export class ApiClient {
         this.loadTopLevelInfo = new LoadTopLevelInfoService(this.request);
         this.login = new LoginService(this.request);
         this.metric = new MetricService(this.request);
+        this.note = new NoteService(this.request);
         this.person = new PersonService(this.request);
         this.project = new ProjectService(this.request);
         this.report = new ReportService(this.request);

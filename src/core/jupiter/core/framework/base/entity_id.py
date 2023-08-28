@@ -7,7 +7,7 @@ from functools import total_ordering
 from jupiter.core.framework.errors import InputValidationError
 from jupiter.core.framework.value import Value
 
-_ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+|bad-entity-id$")
+_ENTITY_ID_RE: typing.Pattern[str] = re.compile(r"^\d+|[a-zA-Z0-9_]+|bad-entity-id$")
 
 
 @dataclass(eq=True, unsafe_hash=True)

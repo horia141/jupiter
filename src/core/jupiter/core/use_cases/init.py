@@ -18,6 +18,7 @@ from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.habits.habit_collection import HabitCollection
 from jupiter.core.domain.inbox_tasks.inbox_task_collection import InboxTaskCollection
 from jupiter.core.domain.metrics.metric_collection import MetricCollection
+from jupiter.core.domain.notes.note_collection import NoteCollection
 from jupiter.core.domain.persons.person_collection import PersonCollection
 from jupiter.core.domain.projects.project import Project
 from jupiter.core.domain.projects.project_collection import ProjectCollection
@@ -233,6 +234,15 @@ class InitUseCase(AppGuestMutationUseCase[InitArgs, InitResult]):
             )
             new_big_plan_collection = await uow.big_plan_collection_repository.create(
                 new_big_plan_collection,
+            )
+
+            new_note_collection = NoteCollection.new_note_collection(
+                workspace_ref_id=new_workspace.ref_id,
+                source=EventSource.CLI,
+                created_time=self._time_provider.get_current_time(),
+            )
+            new_note_collection = await uow.note_collection_repository.create(
+                new_note_collection
             )
 
             new_smart_list_collection = SmartListCollection.new_smart_list_collection(

@@ -38,7 +38,7 @@ def upgrade():
             created_time as timestamp,
             0 as session_index,
             'Created' as name,
-            'user' as source,
+            'CLI' as source,
             1 as owner_version,
             'Created' as kind,
             '{}}' as data

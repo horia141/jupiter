@@ -135,6 +135,22 @@ export default function Sidebar(props: SidebarProps) {
 
             {isWorkspaceFeatureAvailable(
               props.topLevelInfo.workspace,
+              WorkspaceFeature.NOTES
+            ) && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  to="/workspace/notes"
+                  component={Link}
+                  onClick={onClickNavigation}
+                >
+                  <ListItemIcon>🗒️</ListItemIcon>
+                  <ListItemText primary="Notes" />
+                </ListItemButton>
+              </ListItem>
+            )}
+
+            {isWorkspaceFeatureAvailable(
+              props.topLevelInfo.workspace,
               WorkspaceFeature.VACATIONS
             ) && (
               <ListItem disablePadding>

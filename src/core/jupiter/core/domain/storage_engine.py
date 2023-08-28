@@ -38,6 +38,10 @@ from jupiter.core.domain.metrics.infra.metric_entry_repository import (
     MetricEntryRepository,
 )
 from jupiter.core.domain.metrics.infra.metric_repository import MetricRepository
+from jupiter.core.domain.notes.infra.note_collection_repository import (
+    NoteCollectionRepository,
+)
+from jupiter.core.domain.notes.infra.note_repository import NoteRepository
 from jupiter.core.domain.persons.infra.person_collection_repository import (
     PersonCollectionRepository,
 )
@@ -127,26 +131,6 @@ class DomainUnitOfWork(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def vacation_collection_repository(self) -> VacationCollectionRepository:
-        """The vacation collection repository."""
-
-    @property
-    @abc.abstractmethod
-    def vacation_repository(self) -> VacationRepository:
-        """The vacation repository."""
-
-    @property
-    @abc.abstractmethod
-    def project_collection_repository(self) -> ProjectCollectionRepository:
-        """The project collection repository."""
-
-    @property
-    @abc.abstractmethod
-    def project_repository(self) -> ProjectRepository:
-        """The project database repository."""
-
-    @property
-    @abc.abstractmethod
     def inbox_task_collection_repository(self) -> InboxTaskCollectionRepository:
         """The inbox task collection repository."""
 
@@ -184,6 +168,36 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def big_plan_repository(self) -> BigPlanRepository:
         """The big plan repository."""
+
+    @property
+    @abc.abstractmethod
+    def note_collection_repository(self) -> NoteCollectionRepository:
+        """The note collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def note_repository(self) -> NoteRepository:
+        """The note repository."""
+
+    @property
+    @abc.abstractmethod
+    def vacation_collection_repository(self) -> VacationCollectionRepository:
+        """The vacation collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def vacation_repository(self) -> VacationRepository:
+        """The vacation repository."""
+
+    @property
+    @abc.abstractmethod
+    def project_collection_repository(self) -> ProjectCollectionRepository:
+        """The project collection repository."""
+
+    @property
+    @abc.abstractmethod
+    def project_repository(self) -> ProjectRepository:
+        """The project database repository."""
 
     @property
     @abc.abstractmethod

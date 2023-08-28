@@ -29,6 +29,7 @@ class NamedEntityTag(enum.Enum):
     HABIT = Habit.__name__
     CHORE = Chore.__name__
     BIG_PLAN = BigPlan.__name__
+    NOTE = "Note"  # Note.__name__
     VACATION = Vacation.__name__
     PROJECT = Project.__name__
     SMART_LIST = SmartList.__name__
