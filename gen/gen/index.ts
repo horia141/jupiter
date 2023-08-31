@@ -110,6 +110,7 @@ export type { InboxTaskUpdateResult } from './models/InboxTaskUpdateResult';
 export type { InitArgs } from './models/InitArgs';
 export type { InitResult } from './models/InitResult';
 export { LinkBlock } from './models/LinkBlock';
+export type { ListItem } from './models/ListItem';
 export type { LoadProgressReporterTokenArgs } from './models/LoadProgressReporterTokenArgs';
 export type { LoadProgressReporterTokenResult } from './models/LoadProgressReporterTokenResult';
 export type { LoadTopLevelInfoArgs } from './models/LoadTopLevelInfoArgs';

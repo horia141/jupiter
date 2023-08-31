@@ -99,6 +99,34 @@ class HeadingBlock(NoteContentBlock):
             "text": self.text,
             "level": self.level,
         }
+    
+    
+@dataclass
+class ListItem(Value):
+    """A list item."""
+
+    text: str
+    items: list["ListItem"]
+
+    @staticmethod
+    def from_json(json: JSONDictType|str) -> "ListItem":
+        """Create a list item from JSON."""
+        if isinstance(json, str):
+            return ListItem(
+                text=json,
+                items=[],
+            )
+        return ListItem(
+            text=str(json["text"]),
+            items=[ListItem.from_json(item) for item in cast(list[JSONDictType], json["items"])],
+        )
+    
+    def to_json(self) -> JSONDictType:
+        """Convert a list item to JSON."""
+        return {
+            "text": self.text,
+            "items": [item.to_json() for item in self.items],
+        }
 
 
 @dataclass
@@ -107,7 +135,7 @@ class BulletedListBlock(NoteContentBlock):
 
     kind: Literal["bulleted-list"]
     correlation_id: EntityId
-    items: list[str]
+    items: list[ListItem]
 
     @staticmethod
     def from_json(json: JSONDictType) -> "BulletedListBlock":
@@ -115,7 +143,7 @@ class BulletedListBlock(NoteContentBlock):
         return BulletedListBlock(
             kind="bulleted-list",
             correlation_id=EntityId.from_raw(json["correlation_id"]),
-            items=cast(list[str], json["items"]),
+            items=[ListItem.from_json(item) for item in cast(list[JSONDictType|str], json["items"])],
         )
 
     def to_json(self) -> JSONDictType:
@@ -123,7 +151,7 @@ class BulletedListBlock(NoteContentBlock):
         return {
             "kind": self.kind,
             "correlation_id": self.correlation_id.the_id,
-            "items": self.items,
+            "items": [item.to_json() for item in self.items],
         }
 
 
@@ -133,7 +161,7 @@ class NumberedListBlock(NoteContentBlock):
 
     kind: Literal["numbered-list"]
     correlation_id: EntityId
-    items: list[str]
+    items: list[ListItem]
 
     @staticmethod
     def from_json(json: JSONDictType) -> "NumberedListBlock":
@@ -141,7 +169,7 @@ class NumberedListBlock(NoteContentBlock):
         return NumberedListBlock(
             kind="numbered-list",
             correlation_id=EntityId.from_raw(json["correlation_id"]),
-            items=cast(list[str], json["items"]),
+            items=[ListItem.from_json(item) for item in cast(list[JSONDictType|str], json["items"])],
         )
 
     def to_json(self) -> JSONDictType:
@@ -149,7 +177,7 @@ class NumberedListBlock(NoteContentBlock):
         return {
             "kind": self.kind,
             "correlation_id": self.correlation_id.the_id,
-            "items": self.items,
+            "items": [item.to_json() for item in self.items],
         }
 
 

@@ -1,9 +1,19 @@
-import { BulletedListBlock, ChecklistBlock, HeadingBlock, NumberedListBlock, ParagraphBlock } from "jupiter-gen";
+import { BulletedListBlock, ChecklistBlock, DividerBlock, HeadingBlock, NumberedListBlock, ParagraphBlock, QuoteBlock } from "jupiter-gen";
 import { z } from "zod";
 
-export type OneOfNoteContentBlock = ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock;
+export type OneOfNoteContentBlock = ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | QuoteBlock | DividerBlock;
 
-const NoteContentBlockParser = z.discriminatedUnion("kind", [
+const BASE_LIST_ITEM_SCHEMA = z.object({
+  text: z.string(),
+});
+
+type ListItem = z.infer<typeof BASE_LIST_ITEM_SCHEMA> & { items: Array<ListItem> };
+
+const LIST_ITEM_SCHEMA: z.ZodType<ListItem> = BASE_LIST_ITEM_SCHEMA.extend({
+  items: z.lazy(() => z.array(LIST_ITEM_SCHEMA)),
+});
+
+const NOTE_CONTENT_BLOCK_PARSER = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("paragraph").transform(() => ParagraphBlock.kind.PARAGRAPH),
     correlation_id: z.object({
@@ -24,14 +34,14 @@ const NoteContentBlockParser = z.discriminatedUnion("kind", [
     correlation_id: z.object({
       the_id: z.string(),
     }),
-    items: z.array(z.string()),
+    items: z.array(LIST_ITEM_SCHEMA),
   }),
   z.object({
     kind: z.literal("numbered-list").transform(() => NumberedListBlock.kind.NUMBERED_LIST),
     correlation_id: z.object({
       the_id: z.string(),
     }),
-    items: z.array(z.string()),
+    items: z.array(LIST_ITEM_SCHEMA),
   }),
   z.object({
     kind: z.literal("checklist").transform(() => ChecklistBlock.kind.CHECKLIST),
@@ -43,6 +53,19 @@ const NoteContentBlockParser = z.discriminatedUnion("kind", [
       checked: z.boolean(),
     })),
   }),
+  z.object({
+    kind: z.literal("quote").transform(() => QuoteBlock.kind.QUOTE),
+    correlation_id: z.object({
+      the_id: z.string(),
+    }),
+    text: z.string(),
+  }),
+  z.object({
+    kind: z.literal("divider").transform(() => DividerBlock.kind.DIVIDER),
+    correlation_id: z.object({
+      the_id: z.string(),
+    }),
+  }),
 ]);
 
-export const NoteContentParser = z.array(NoteContentBlockParser);
+export const NoteContentParser = z.array(NOTE_CONTENT_BLOCK_PARSER);

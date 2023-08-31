@@ -1,8 +1,10 @@
 import EditorJS, { OutputData } from "@editorjs/editorjs";
 import Header from '@editorjs/header';
-import List from '@editorjs/list';
+import NestedList from '@editorjs/nested-list';
 import Checklist from '@editorjs/checklist';
-import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock } from "jupiter-gen";
+import Quote from '@editorjs/quote';
+import Delimiter from '@editorjs/delimiter';
+import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem } from "jupiter-gen";
 import { useEffect, useRef, useState } from "react";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
@@ -39,8 +41,10 @@ export default function BlockEditor(props: BlockEditorProps) {
             levels: [1, 2, 3],
           }
         },
-        list: List,
-        checklist: Checklist
+        list: NestedList,
+        checklist: Checklist,
+        quote: Quote,
+        delimiter: Delimiter
       },
     });
   };
@@ -65,6 +69,13 @@ export default function BlockEditor(props: BlockEditorProps) {
 function transformContentBlocksToEditorJs(
   content: Array<OneOfNoteContentBlock>
 ): OutputData {
+  function transformListItemToEditorJs(listItem: ListItem) {
+    return {
+      content: listItem.text,
+      items: listItem.items.map(transformListItemToEditorJs),
+    }
+  }
+
   return {
     time: Date.now(),
     blocks: content.map((block) => {
@@ -92,7 +103,7 @@ function transformContentBlocksToEditorJs(
             id: block.correlation_id.the_id,
             data: {
               style: "unordered",
-              items: block.items,
+              items: block.items.map(transformListItemToEditorJs),
             }
           };
         case NumberedListBlock.kind.NUMBERED_LIST:
@@ -101,7 +112,7 @@ function transformContentBlocksToEditorJs(
             id: block.correlation_id.the_id,
             data: {
               style: "ordered",
-              items: block.items,
+              items: block.items.map(transformListItemToEditorJs),
             }
           };
         case ChecklistBlock.kind.CHECKLIST:
@@ -112,6 +123,21 @@ function transformContentBlocksToEditorJs(
               items: block.items,
             }
           };
+        case QuoteBlock.kind.QUOTE:
+          return {
+            type: "quote",
+            id: block.correlation_id.the_id,
+            data: {
+              text: block.text,
+              caption: "",
+            }
+          };
+        case DividerBlock.kind.DIVIDER:
+          return {
+            type: "delimiter",
+            id: block.correlation_id.the_id,
+            data: {},
+          };
       }
     }),
     version: "2.22.2",
@@ -121,6 +147,13 @@ function transformContentBlocksToEditorJs(
 function transformEditorJsToContentBlocks(
   content: OutputData
 ): Array<OneOfNoteContentBlock> {
+  function transformEditorJsToListItem(listItem: any): ListItem {
+    return {
+      text: listItem.content,
+      items: listItem.items.map(transformEditorJsToListItem),
+    }
+  }
+
   return content.blocks.map((block) => {
     switch (block.type) {
       case "paragraph":
@@ -141,13 +174,13 @@ function transformEditorJsToContentBlocks(
           return {
             kind: BulletedListBlock.kind.BULLETED_LIST,
             correlation_id: { the_id: block.id as string },
-            items: block.data.items as Array<string>,
+            items: block.data.items.map(transformEditorJsToListItem),
           } as BulletedListBlock;
         } else if (block.data.style === "ordered") {
           return {
             kind: NumberedListBlock.kind.NUMBERED_LIST,
             correlation_id: { the_id: block.id as string },
-            items: block.data.items as Array<string>,
+            items: block.data.items.map(transformEditorJsToListItem),
           } as NumberedListBlock;
         } else {
           throw new Error(`Unknown list style: ${block.data.style}`);
@@ -161,6 +194,17 @@ function transformEditorJsToContentBlocks(
             checked: item.checked as boolean,
           })) as Array<{ text: string; checked: boolean }>,
         } as ChecklistBlock;
+      case "quote":
+        return {
+          kind: QuoteBlock.kind.QUOTE,
+          correlation_id: { the_id: block.id as string },
+          text: block.data.text as string,
+        } as QuoteBlock;
+      case "delimiter":
+        return {
+          kind: DividerBlock.kind.DIVIDER,
+          correlation_id: { the_id: block.id as string },
+        } as DividerBlock;
       default:
         throw new Error(`Unknown block type: ${block.type}`);
     }

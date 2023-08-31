@@ -3,11 +3,12 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
+import type { ListItem } from './ListItem';
 
 export type NumberedListBlock = {
     correlation_id: EntityId;
     kind: NumberedListBlock.kind;
-    items: Array<string>;
+    items: Array<ListItem>;
 };
 
 export namespace NumberedListBlock {

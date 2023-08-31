@@ -3,11 +3,12 @@
 /* eslint-disable */
 
 import type { EntityId } from './EntityId';
+import type { ListItem } from './ListItem';
 
 export type BulletedListBlock = {
     correlation_id: EntityId;
     kind: BulletedListBlock.kind;
-    items: Array<string>;
+    items: Array<ListItem>;
 };
 
 export namespace BulletedListBlock {
