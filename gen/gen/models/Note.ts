@@ -14,6 +14,7 @@ import type { NoteSource } from './NoteSource';
 import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
+import type { TableBlock } from './TableBlock';
 import type { Timestamp } from './Timestamp';
 
 export type Note = {
@@ -28,6 +29,6 @@ export type Note = {
     parent_note_ref_id: EntityId;
     source: NoteSource;
     source_entity_ref_id: EntityId;
-    content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
+    content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
 };
 

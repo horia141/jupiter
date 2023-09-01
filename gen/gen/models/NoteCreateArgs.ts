@@ -13,10 +13,11 @@ import type { LinkBlock } from './LinkBlock';
 import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
+import type { TableBlock } from './TableBlock';
 
 export type NoteCreateArgs = {
     name: EntityName;
-    content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
+    content: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
     parent_note_ref_id?: EntityId;
 };
 

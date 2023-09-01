@@ -30,6 +30,8 @@ class NoteContentBlock(Value, abc.ABC):
             return NumberedListBlock.from_json(json)
         elif block_type == "checklist":
             return ChecklistBlock.from_json(json)
+        elif block_type == "table":
+            return TableBlock.from_json(json)
         elif block_type == "quote":
             return QuoteBlock.from_json(json)
         elif block_type == "divider":
@@ -231,6 +233,37 @@ class ChecklistBlock(NoteContentBlock):
             "correlation_id": self.correlation_id.the_id,
             "items": [item.to_json() for item in self.items],
         }
+    
+
+@dataclass
+class TableBlock(NoteContentBlock):
+    """A table."""
+
+    kind: Literal["table"]
+    with_header: bool
+    contents: list[list[str]]
+
+    @staticmethod
+    def from_json(json: JSONDictType) -> "TableBlock":
+        """Create a table block from JSON."""
+        return TableBlock(
+            kind="table",
+            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            with_header=bool(json["with_header"]),
+            contents=[
+                [str(cell) for cell in row]
+                for row in cast(list[list[JSONDictType]], json["contents"])
+            ],
+        )
+    
+    def to_json(self) -> JSONDictType:
+        """Convert a table block to JSON."""
+        return {
+            "kind": self.kind,
+            "correlation_id": self.correlation_id.the_id,
+            "with_header": self.with_header,
+            "contents": self.contents,
+        }
 
 
 @dataclass
@@ -343,6 +376,7 @@ OneOfNoteContentBlock = (
     | BulletedListBlock
     | NumberedListBlock
     | ChecklistBlock
+    | TableBlock
     | QuoteBlock
     | DividerBlock
     | LinkBlock

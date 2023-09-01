@@ -5,7 +5,8 @@ import Checklist from '@editorjs/checklist';
 import Quote from '@editorjs/quote';
 import Delimiter from '@editorjs/delimiter';
 import DragDrop from 'editorjs-drag-drop';
-import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem } from "jupiter-gen";
+import Table from '@editorjs/table';
+import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem, TableBlock } from "jupiter-gen";
 import { useEffect, useRef, useState } from "react";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
@@ -40,14 +41,32 @@ export default function BlockEditor(props: BlockEditorProps) {
       tools: {
         header: {
           class: Header,
+          inlineToolbar: true,
           config: {
             levels: [1, 2, 3],
           }
         },
-        list: NestedList,
-        checklist: Checklist,
-        quote: Quote,
-        delimiter: Delimiter
+        list: {
+          class: NestedList,
+          inlineToolbar: true,
+        },
+        checklist: {
+          class: Checklist,
+          inlineToolbar: true,
+        },
+        table: {
+          class: Table,
+          inlineToolbar: true,
+          config: {
+            rows: 2,
+            cols: 3,
+          },
+        },
+        quote: {
+          class: Quote,
+          inlineToolbar: true,
+        },
+        delimiter: Delimiter,
       },
     });
   };
@@ -126,6 +145,15 @@ function transformContentBlocksToEditorJs(
               items: block.items,
             }
           };
+        case TableBlock.kind.TABLE:
+          return {
+            type: "table",
+            id: block.correlation_id.the_id,
+            data: {
+              withHeadings: block.with_header,
+              content: block.contents,
+            }
+          };
         case QuoteBlock.kind.QUOTE:
           return {
             type: "quote",
@@ -197,6 +225,13 @@ function transformEditorJsToContentBlocks(
             checked: item.checked as boolean,
           })) as Array<{ text: string; checked: boolean }>,
         } as ChecklistBlock;
+      case "table":
+        return {
+          kind: TableBlock.kind.TABLE,
+          correlation_id: { the_id: block.id as string },
+          with_header: block.data.withHeadings as boolean,
+          contents: block.data.content as Array<Array<string>>,
+        } as TableBlock;
       case "quote":
         return {
           kind: QuoteBlock.kind.QUOTE,

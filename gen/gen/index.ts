@@ -248,6 +248,7 @@ export type { SmartListTagLoadResult } from './models/SmartListTagLoadResult';
 export type { SmartListTagUpdateArgs } from './models/SmartListTagUpdateArgs';
 export type { SmartListUpdateArgs } from './models/SmartListUpdateArgs';
 export { SyncTarget } from './models/SyncTarget';
+export { TableBlock } from './models/TableBlock';
 export type { TagName } from './models/TagName';
 export type { Timestamp } from './models/Timestamp';
 export type { Timezone } from './models/Timezone';

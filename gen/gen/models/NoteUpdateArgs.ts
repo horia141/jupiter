@@ -13,6 +13,7 @@ import type { LinkBlock } from './LinkBlock';
 import type { NumberedListBlock } from './NumberedListBlock';
 import type { ParagraphBlock } from './ParagraphBlock';
 import type { QuoteBlock } from './QuoteBlock';
+import type { TableBlock } from './TableBlock';
 
 export type NoteUpdateArgs = {
     ref_id: EntityId;
@@ -22,7 +23,7 @@ export type NoteUpdateArgs = {
     };
     content: {
         should_change: boolean;
-        value?: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
+        value?: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
     };
 };
 

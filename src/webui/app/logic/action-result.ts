@@ -60,7 +60,7 @@ export function getFieldError(
 const ValidationErrorSchema = z.object({
   detail: z.array(
     z.object({
-      loc: z.array(z.string()),
+      loc: z.array(z.string().or(z.number())),
       msg: z.string(),
     })
   ),
