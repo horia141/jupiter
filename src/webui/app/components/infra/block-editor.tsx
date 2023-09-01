@@ -4,6 +4,7 @@ import NestedList from '@editorjs/nested-list';
 import Checklist from '@editorjs/checklist';
 import Quote from '@editorjs/quote';
 import Delimiter from '@editorjs/delimiter';
+import DragDrop from 'editorjs-drag-drop';
 import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem } from "jupiter-gen";
 import { useEffect, useRef, useState } from "react";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
@@ -26,9 +27,11 @@ export default function BlockEditor(props: BlockEditorProps) {
         : undefined,
       onReady: () => {
         ejInstance.current = editor;
+        new DragDrop(editor);
       },
       onChange: async () => {
         const content = await editor.saver.save();
+        console.log(content);
 
         if (props.onChange) {
           props.onChange(transformEditorJsToContentBlocks(content));
