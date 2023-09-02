@@ -4,6 +4,7 @@
 
 import type { BulletedListBlock } from './BulletedListBlock';
 import type { ChecklistBlock } from './ChecklistBlock';
+import type { CodeBlock } from './CodeBlock';
 import type { DividerBlock } from './DividerBlock';
 import type { EntityId } from './EntityId';
 import type { EntityName } from './EntityName';
@@ -23,7 +24,7 @@ export type NoteUpdateArgs = {
     };
     content: {
         should_change: boolean;
-        value?: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
+        value?: Array<(ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock | LinkBlock | EntityReferenceBlock)>;
     };
 };
 

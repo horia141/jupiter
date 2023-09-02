@@ -6,7 +6,8 @@ import Quote from '@editorjs/quote';
 import Delimiter from '@editorjs/delimiter';
 import DragDrop from 'editorjs-drag-drop';
 import Table from '@editorjs/table';
-import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem, TableBlock } from "jupiter-gen";
+import editorjsCodeflask from '@calumk/editorjs-codeflask';
+import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem, TableBlock, CodeBlock } from "jupiter-gen";
 import { useEffect, useRef, useState } from "react";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
@@ -62,6 +63,7 @@ export default function BlockEditor(props: BlockEditorProps) {
             cols: 3,
           },
         },
+        code : editorjsCodeflask,
         quote: {
           class: Quote,
           inlineToolbar: true,
@@ -154,6 +156,16 @@ function transformContentBlocksToEditorJs(
               content: block.contents,
             }
           };
+        case CodeBlock.kind.CODE:
+          return {
+            type: "code",
+            id: block.correlation_id.the_id,
+            data: {
+              code: block.code,
+              language: block.language,
+              showlinenumbers: block.show_line_numbers
+            }
+          };
         case QuoteBlock.kind.QUOTE:
           return {
             type: "quote",
@@ -232,6 +244,14 @@ function transformEditorJsToContentBlocks(
           with_header: block.data.withHeadings as boolean,
           contents: block.data.content as Array<Array<string>>,
         } as TableBlock;
+      case "code":
+        return {
+          kind: CodeBlock.kind.CODE,
+          correlation_id: { the_id: block.id as string },
+          code: block.data.code as string,
+          language: block.data.language as string|undefined,
+          show_line_numbers: block.data.showlinenumbers as boolean|undefined,
+        } as CodeBlock;
       case "quote":
         return {
           kind: QuoteBlock.kind.QUOTE,

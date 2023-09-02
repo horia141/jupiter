@@ -46,6 +46,7 @@ export type { ChoreSummary } from './models/ChoreSummary';
 export type { ChoreSuspendArgs } from './models/ChoreSuspendArgs';
 export type { ChoreUnsuspendArgs } from './models/ChoreUnsuspendArgs';
 export type { ChoreUpdateArgs } from './models/ChoreUpdateArgs';
+export { CodeBlock } from './models/CodeBlock';
 export { Difficulty } from './models/Difficulty';
 export { DividerBlock } from './models/DividerBlock';
 export { Eisen } from './models/Eisen';

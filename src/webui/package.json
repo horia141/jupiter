@@ -13,6 +13,7 @@
     "start": "remix-serve build"
   },
   "dependencies": {
+    "@calumk/editorjs-codeflask": "^1.0.9",
     "@editorjs/delimiter": "^1.3.0",
     "@editorjs/editorjs": "^2.27.2",
     "@editorjs/header": "^2.7.0",

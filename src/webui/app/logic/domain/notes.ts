@@ -1,7 +1,7 @@
-import { BulletedListBlock, ChecklistBlock, DividerBlock, HeadingBlock, NumberedListBlock, ParagraphBlock, QuoteBlock, TableBlock } from "jupiter-gen";
+import { BulletedListBlock, ChecklistBlock, CodeBlock, DividerBlock, HeadingBlock, NumberedListBlock, ParagraphBlock, QuoteBlock, TableBlock } from "jupiter-gen";
 import { z } from "zod";
 
-export type OneOfNoteContentBlock = ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | QuoteBlock | DividerBlock;
+export type OneOfNoteContentBlock = ParagraphBlock | HeadingBlock | BulletedListBlock | NumberedListBlock | ChecklistBlock | TableBlock | CodeBlock | QuoteBlock | DividerBlock;
 
 const BASE_LIST_ITEM_SCHEMA = z.object({
   text: z.string(),
@@ -60,6 +60,15 @@ const NOTE_CONTENT_BLOCK_PARSER = z.discriminatedUnion("kind", [
     }),
     with_header: z.boolean(),
     contents: z.array(z.array(z.string())),
+  }),
+  z.object({
+    kind: z.literal("code").transform(() => CodeBlock.kind.CODE),
+    correlation_id: z.object({
+      the_id: z.string(),
+    }),
+    code: z.string(),
+    language: z.string().optional(),
+    show_line_numbers: z.boolean().optional(),
   }),
   z.object({
     kind: z.literal("quote").transform(() => QuoteBlock.kind.QUOTE),

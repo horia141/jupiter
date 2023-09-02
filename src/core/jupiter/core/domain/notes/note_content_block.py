@@ -32,6 +32,8 @@ class NoteContentBlock(Value, abc.ABC):
             return ChecklistBlock.from_json(json)
         elif block_type == "table":
             return TableBlock.from_json(json)
+        elif block_type == "code":
+            return CodeBlock.from_json(json)
         elif block_type == "quote":
             return QuoteBlock.from_json(json)
         elif block_type == "divider":
@@ -264,6 +266,38 @@ class TableBlock(NoteContentBlock):
             "with_header": self.with_header,
             "contents": self.contents,
         }
+    
+
+@dataclass
+class CodeBlock(NoteContentBlock):
+    """A code block."""
+
+    kind: Literal["code"]
+    correlation_id: EntityId
+    code: str
+    language: str | None = None
+    show_line_numbers: bool | None = None
+
+    @staticmethod
+    def from_json(json: JSONDictType) -> "CodeBlock":
+        """Create a code block from JSON."""
+        return CodeBlock(
+            kind="code",
+            correlation_id=EntityId.from_raw(json["correlation_id"]),
+            code=str(json["code"]),
+            language=str(json["language"]),
+            show_line_numbers=bool(json["show_line_numbers"]) if json["show_line_numbers"] is not None else None
+        )
+    
+    def to_json(self) -> JSONDictType:
+        """Convert a code block to JSON."""
+        return {
+            "kind": self.kind,
+            "correlation_id": self.correlation_id.the_id,
+            "code": self.code,
+            "language": self.language,
+            "show_line_numbers": self.show_line_numbers,
+        }
 
 
 @dataclass
@@ -377,6 +411,7 @@ OneOfNoteContentBlock = (
     | NumberedListBlock
     | ChecklistBlock
     | TableBlock
+    | CodeBlock
     | QuoteBlock
     | DividerBlock
     | LinkBlock
