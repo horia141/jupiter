@@ -13,11 +13,19 @@ from jupiter.core.domain.gamification.infra.score_log_repository import (
     ScoreLogNotFoundError,
     ScoreLogRepository,
 )
+from jupiter.core.domain.gamification.infra.score_period_best_repository import (
+    ScorePeriodBestAlreadyExistsError,
+    ScorePeriodBestNotFoundError,
+    ScorePeriodBestRepository,
+)
 from jupiter.core.domain.gamification.infra.score_stats_repository import (
+    ScoreStatsAlreadyExistsError,
+    ScoreStatsNotFoundError,
     ScoreStatsRepository,
 )
 from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.domain.gamification.score_source import ScoureSource
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
@@ -411,7 +419,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 ),
             )
         except IntegrityError as err:
-            raise ScoreLogAlreadyExistsError(
+            raise ScoreStatsAlreadyExistsError(
                 f"Score stats for score log {record.score_log_ref_id}:{record.period}:{record.timeline} already exists",
             ) from err
         return record
@@ -437,7 +445,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             ),
         )
         if result.rowcount == 0:
-            raise ScoreLogNotFoundError(
+            raise ScoreStatsNotFoundError(
                 f"The score stats {record.score_log_ref_id}:{record.period}:{record.timeline} does not exist"
             )
         return record
@@ -457,7 +465,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             .where(self._score_stats_table.c.timeline == key[2])
         )
         if result.rowcount == 0:
-            raise ScoreLogNotFoundError(
+            raise ScoreStatsNotFoundError(
                 f"The score stats {key[0]}:{key[1]}:{key[2]} does not exist"
             )
         return self._row_to_entity(result)
@@ -479,7 +487,7 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             )
         ).first()
         if result is None:
-            raise ScoreLogNotFoundError(
+            raise ScoreStatsNotFoundError(
                 f"Score stats {key[0]}:{key[1]}:{key[2]} does not exist"
             )
         return self._row_to_entity(result)
@@ -520,5 +528,171 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             score_log_ref_id=EntityId.from_raw(str(row["score_log_ref_id"])),
             period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
             timeline=row["timeline"],
+            total_score=row["total_score"],
+        )
+
+
+class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
+    """Sqlite implementation of the score period best repository."""
+
+    _connection: Final[AsyncConnection]
+    _score_period_best_table: Final[Table]
+
+    def __init__(self, connection: AsyncConnection, metadata: MetaData) -> None:
+        """Constructor."""
+        self._connection = connection
+        self._score_period_best_table = Table(
+            "gamification_score_period_best",
+            metadata,
+            Column("created_time", DateTime, nullable=False),
+            Column("last_modified_time", DateTime, nullable=False),
+            Column(
+                "score_log_ref_id",
+                Integer,
+                ForeignKey("gamification_score_log.ref_id"),
+                nullable=False,
+            ),
+            Column("period", String, nullable=True),
+            Column("timeline", String, nullable=False),
+            Column("sub_period", String, nullable=False),
+            Column("total_score", Integer, nullable=False),
+            keep_existing=True,
+        )
+
+    async def create(self, record: ScorePeriodBest) -> ScorePeriodBest:
+        """Create a score period best."""
+        try:
+            await self._connection.execute(
+                insert(self._score_period_best_table).values(
+                    created_time=record.created_time.to_db(),
+                    last_modified_time=record.last_modified_time.to_db(),
+                    score_log_ref_id=record.score_log_ref_id.as_int(),
+                    period=record.period.value if record.period else None,
+                    timeline=record.timeline,
+                    sub_period=record.sub_period.value,
+                    total_score=record.total_score,
+                ),
+            )
+        except IntegrityError as err:
+            raise ScorePeriodBestAlreadyExistsError(
+                f"Score period best for score log {record.score_log_ref_id}:{record.period}:{record.timeline}:{record.sub_period} already exists",
+            ) from err
+        return record
+
+    async def save(self, record: ScorePeriodBest) -> ScorePeriodBest:
+        """Save a score period best."""
+        result = await self._connection.execute(
+            update(self._score_period_best_table)
+            .where(
+                self._score_period_best_table.c.score_log_ref_id
+                == record.score_log_ref_id.as_int()
+            )
+            .where(
+                self._score_period_best_table.c.period == record.period.value
+                if record.period is not None
+                else self._score_period_best_table.c.period.is_(None)
+            )
+            .where(self._score_period_best_table.c.timeline == record.timeline)
+            .where(
+                self._score_period_best_table.c.sub_period == record.sub_period.value
+            )
+            .values(
+                created_time=record.created_time.to_db(),
+                last_modified_time=record.last_modified_time.to_db(),
+                total_score=record.total_score,
+            ),
+        )
+        if result.rowcount == 0:
+            raise ScorePeriodBestNotFoundError(
+                f"The score period best {record.score_log_ref_id}:{record.period}:{record.timeline}:{record.sub_period} does not exist"
+            )
+        return record
+
+    async def remove(
+        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
+    ) -> ScorePeriodBest:
+        """Remove a score period best."""
+        result = await self._connection.execute(
+            delete(self._score_period_best_table)
+            .where(self._score_period_best_table.c.score_log_ref_id == key[0].as_int())
+            .where(
+                self._score_period_best_table.c.period == key[1].value
+                if key[1] is not None
+                else self._score_period_best_table.c.period.is_(None)
+            )
+            .where(self._score_period_best_table.c.timeline == key[2])
+            .where(self._score_period_best_table.c.sub_period == key[3].value)
+        )
+        if result.rowcount == 0:
+            raise ScorePeriodBestNotFoundError(
+                f"The score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
+            )
+        return self._row_to_entity(result)
+
+    async def load_by_key(
+        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
+    ) -> ScorePeriodBest:
+        """Load a score period best by its unique key."""
+        result = (
+            await self._connection.execute(
+                select(self._score_period_best_table)
+                .where(
+                    self._score_period_best_table.c.score_log_ref_id == key[0].as_int()
+                )
+                .where(
+                    self._score_period_best_table.c.period == key[1].value
+                    if key[1] is not None
+                    else self._score_period_best_table.c.period.is_(None)
+                )
+                .where(self._score_period_best_table.c.timeline == key[2])
+                .where(self._score_period_best_table.c.sub_period == key[3].value)
+            )
+        ).first()
+        if result is None:
+            raise ScorePeriodBestNotFoundError(
+                f"Score period best {key[0]}:{key[1]}:{key[2]}:{key[3]} does not exist"
+            )
+        return self._row_to_entity(result)
+
+    async def load_by_key_optional(
+        self, key: Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]
+    ) -> ScorePeriodBest | None:
+        """Load a score period best by it's unique key."""
+        result = (
+            await self._connection.execute(
+                select(self._score_period_best_table)
+                .where(
+                    self._score_period_best_table.c.score_log_ref_id == key[0].as_int()
+                )
+                .where(
+                    self._score_period_best_table.c.period == key[1].value
+                    if key[1] is not None
+                    else self._score_period_best_table.c.period.is_(None)
+                )
+                .where(self._score_period_best_table.c.timeline == key[2])
+                .where(self._score_period_best_table.c.sub_period == key[3].value)
+            )
+        ).first()
+        if result is None:
+            return None
+        return self._row_to_entity(result)
+
+    async def find_all(self, prefix: EntityId) -> List[ScorePeriodBest]:
+        """Find all score period best for a score log."""
+        result = await self._connection.execute(
+            select(self._score_period_best_table).where(
+                self._score_period_best_table.c.score_log_ref_id == prefix.as_int()
+            )
+        )
+        return [self._row_to_entity(row) for row in result]
+
+    def _row_to_entity(self, row: RowType) -> ScorePeriodBest:
+        return ScorePeriodBest(
+            created_time=Timestamp.from_db(row["created_time"]),
+            last_modified_time=Timestamp.from_db(row["last_modified_time"]),
+            score_log_ref_id=EntityId.from_raw(str(row["score_log_ref_id"])),
+            period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
+            timeline=row["timeline"],
+            sub_period=RecurringTaskPeriod(row["sub_period"]),
             total_score=row["total_score"],
         )

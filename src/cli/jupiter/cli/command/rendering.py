@@ -42,6 +42,7 @@ from jupiter.core.utils.progress_reporter import NoOpProgressReporter
 from rich.console import Console
 from rich.panel import Panel
 from rich.status import Status
+from rich.table import Table
 from rich.text import Text
 from rich.tree import Tree
 
@@ -532,22 +533,52 @@ def user_score_overview_to_rich(score_overview: UserScoreOverview) -> Tree:
     """Gamification rendering."""
     gamification_tree = Tree("🎮 Gamification:")
 
-    scores_tree = Tree("💪 Scores:")
+    scores_table = Table(title="💪 Scores:", title_justify="left")
+    scores_table.add_column("Period")
+    scores_table.add_column("Current", width=12)
+    scores_table.add_column("Best This Quarter", width=12)
+    scores_table.add_column("Best This Year", width=12)
+    scores_table.add_column("Best Ever", width=12)
 
-    daily_text = Text(f"Daily: {score_overview.daily_score}")
-    weekly_text = Text(f"Weekly: {score_overview.weekly_score}")
-    monthly_text = Text(f"Monthly: {score_overview.monthly_score}")
-    quarterly_text = Text(f"Quarterly: {score_overview.quarterly_score}")
-    yearly_text = Text(f"Yearly: {score_overview.yearly_score}")
-    lifetime_text = Text(f"Lifetime: {score_overview.lifetime_score}")
+    scores_table.add_row(
+        "Daily",
+        str(score_overview.daily_score),
+        str(score_overview.best_quarterly_daily_score),
+        str(score_overview.best_yearly_daily_score),
+        str(score_overview.best_lifetime_daily_score),
+    )
+    scores_table.add_row(
+        "Weekly",
+        str(score_overview.weekly_score),
+        str(score_overview.best_quarterly_weekly_score),
+        str(score_overview.best_yearly_weekly_score),
+        str(score_overview.best_lifetime_weekly_score),
+    )
+    scores_table.add_row(
+        "Monthly",
+        str(score_overview.daily_score),
+        str(score_overview.best_quarterly_monthly_score),
+        str(score_overview.best_yearly_monthly_score),
+        str(score_overview.best_lifetime_monthly_score),
+    )
+    scores_table.add_row(
+        "Quarterly",
+        str(score_overview.daily_score),
+        "N/A",
+        str(score_overview.best_yearly_quarterly_score),
+        str(score_overview.best_lifetime_quarterly_score),
+    )
+    scores_table.add_row(
+        "Yearly",
+        str(score_overview.daily_score),
+        "N/A",
+        "N/A",
+        str(score_overview.best_lifetime_yearly_score),
+    )
+    scores_table.add_row(
+        "Lifetime", str(score_overview.lifetime_score), "N/A", "N/A", "N/A"
+    )
 
-    scores_tree.add(daily_text)
-    scores_tree.add(weekly_text)
-    scores_tree.add(monthly_text)
-    scores_tree.add(quarterly_text)
-    scores_tree.add(yearly_text)
-    scores_tree.add(lifetime_text)
-
-    gamification_tree.add(scores_tree)
+    gamification_tree.add(scores_table)
 
     return gamification_tree

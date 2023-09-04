@@ -1,14 +1,25 @@
+import editorjsCodeflask from "@calumk/editorjs-codeflask";
+import Checklist from "@editorjs/checklist";
+import Delimiter from "@editorjs/delimiter";
 import EditorJS, { OutputData } from "@editorjs/editorjs";
-import Header from '@editorjs/header';
-import NestedList from '@editorjs/nested-list';
-import Checklist from '@editorjs/checklist';
-import Quote from '@editorjs/quote';
-import Delimiter from '@editorjs/delimiter';
-import DragDrop from 'editorjs-drag-drop';
-import Table from '@editorjs/table';
-import editorjsCodeflask from '@calumk/editorjs-codeflask';
-import { ParagraphBlock, HeadingBlock, BulletedListBlock, NumberedListBlock, ChecklistBlock, QuoteBlock, DividerBlock, ListItem, TableBlock, CodeBlock } from "jupiter-gen";
-import { useEffect, useRef, useState } from "react";
+import Header from "@editorjs/header";
+import NestedList from "@editorjs/nested-list";
+import Quote from "@editorjs/quote";
+import Table from "@editorjs/table";
+import DragDrop from "editorjs-drag-drop";
+import {
+  BulletedListBlock,
+  ChecklistBlock,
+  CodeBlock,
+  DividerBlock,
+  HeadingBlock,
+  ListItem,
+  NumberedListBlock,
+  ParagraphBlock,
+  QuoteBlock,
+  TableBlock,
+} from "jupiter-gen";
+import { useEffect, useRef } from "react";
 import { OneOfNoteContentBlock } from "~/logic/domain/notes";
 
 interface BlockEditorProps {
@@ -45,7 +56,7 @@ export default function BlockEditor(props: BlockEditorProps) {
           inlineToolbar: true,
           config: {
             levels: [1, 2, 3],
-          }
+          },
         },
         list: {
           class: NestedList,
@@ -63,7 +74,7 @@ export default function BlockEditor(props: BlockEditorProps) {
             cols: 3,
           },
         },
-        code : editorjsCodeflask,
+        code: editorjsCodeflask,
         quote: {
           class: Quote,
           inlineToolbar: true,
@@ -97,7 +108,7 @@ function transformContentBlocksToEditorJs(
     return {
       content: listItem.text,
       items: listItem.items.map(transformListItemToEditorJs),
-    }
+    };
   }
 
   return {
@@ -128,7 +139,7 @@ function transformContentBlocksToEditorJs(
             data: {
               style: "unordered",
               items: block.items.map(transformListItemToEditorJs),
-            }
+            },
           };
         case NumberedListBlock.kind.NUMBERED_LIST:
           return {
@@ -137,7 +148,7 @@ function transformContentBlocksToEditorJs(
             data: {
               style: "ordered",
               items: block.items.map(transformListItemToEditorJs),
-            }
+            },
           };
         case ChecklistBlock.kind.CHECKLIST:
           return {
@@ -145,7 +156,7 @@ function transformContentBlocksToEditorJs(
             id: block.correlation_id.the_id,
             data: {
               items: block.items,
-            }
+            },
           };
         case TableBlock.kind.TABLE:
           return {
@@ -154,7 +165,7 @@ function transformContentBlocksToEditorJs(
             data: {
               withHeadings: block.with_header,
               content: block.contents,
-            }
+            },
           };
         case CodeBlock.kind.CODE:
           return {
@@ -163,8 +174,8 @@ function transformContentBlocksToEditorJs(
             data: {
               code: block.code,
               language: block.language,
-              showlinenumbers: block.show_line_numbers
-            }
+              showlinenumbers: block.show_line_numbers,
+            },
           };
         case QuoteBlock.kind.QUOTE:
           return {
@@ -173,7 +184,7 @@ function transformContentBlocksToEditorJs(
             data: {
               text: block.text,
               caption: "",
-            }
+            },
           };
         case DividerBlock.kind.DIVIDER:
           return {
@@ -194,7 +205,7 @@ function transformEditorJsToContentBlocks(
     return {
       text: listItem.content,
       items: listItem.items.map(transformEditorJsToListItem),
-    }
+    };
   }
 
   return content.blocks.map((block) => {
@@ -249,8 +260,8 @@ function transformEditorJsToContentBlocks(
           kind: CodeBlock.kind.CODE,
           correlation_id: { the_id: block.id as string },
           code: block.data.code as string,
-          language: block.data.language as string|undefined,
-          show_line_numbers: block.data.showlinenumbers as boolean|undefined,
+          language: block.data.language as string | undefined,
+          show_line_numbers: block.data.showlinenumbers as boolean | undefined,
         } as CodeBlock;
       case "quote":
         return {

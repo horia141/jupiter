@@ -1,12 +1,15 @@
 """A service that records scores for various actions."""
+import asyncio
 from dataclasses import dataclass
-from typing import Dict, Final
+from typing import Final
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
     ScoreLogEntryAlreadyExistsError,
 )
+from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.domain.gamification.score_period_best import ScorePeriodBest
 from jupiter.core.domain.gamification.score_stats import ScoreStats
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
@@ -77,69 +80,230 @@ class RecordScoreService:
 
         # Update statistics at write time.
 
-        score_stats_by_period: Dict[RecurringTaskPeriod, int] = {}
-
-        for period in RecurringTaskPeriod:
-            timeline = infer_timeline(period, self._time_provider.get_current_time())
-            score_stats = await uow.score_stats_repository.load_by_key_optional(
-                (score_log.ref_id, period, timeline)
-            )
-
-            if score_stats is None:
-                score_stats = ScoreStats.new_score_stats(
-                    score_log.ref_id,
-                    period,
-                    timeline,
-                    self._time_provider.get_current_time(),
-                ).merge_score(
-                    new_score_log_entry,
-                    self._source,
-                    self._time_provider.get_current_time(),
-                )
-                await uow.score_stats_repository.create(score_stats)
-            else:
-                score_stats = score_stats.merge_score(
-                    new_score_log_entry,
-                    self._source,
-                    self._time_provider.get_current_time(),
-                )
-                await uow.score_stats_repository.save(score_stats)
-
-            score_stats_by_period[period] = score_stats.total_score
-
-        timeline_lifetime = infer_timeline(None, self._time_provider.get_current_time())
-        score_stats_lifetime = await uow.score_stats_repository.load_by_key_optional(
-            (score_log.ref_id, None, timeline_lifetime)
+        (
+            daily_score_stats,
+            weekly_score_stats,
+            monthly_score_stats,
+            quarterly_score_stats,
+            yearly_score_stats,
+            lifetime_score_stats,
+        ) = await asyncio.gather(
+            self._update_current_stats(
+                RecurringTaskPeriod.DAILY, uow, score_log, new_score_log_entry
+            ),
+            self._update_current_stats(
+                RecurringTaskPeriod.WEEKLY, uow, score_log, new_score_log_entry
+            ),
+            self._update_current_stats(
+                RecurringTaskPeriod.MONTHLY, uow, score_log, new_score_log_entry
+            ),
+            self._update_current_stats(
+                RecurringTaskPeriod.QUARTERLY, uow, score_log, new_score_log_entry
+            ),
+            self._update_current_stats(
+                RecurringTaskPeriod.YEARLY, uow, score_log, new_score_log_entry
+            ),
+            self._update_current_stats(None, uow, score_log, new_score_log_entry),
         )
 
-        if score_stats_lifetime is None:
-            score_stats_lifetime = ScoreStats.new_score_stats(
-                score_log.ref_id,
+        # Update high scores at write time.
+
+        (
+            best_quarterly_daily,
+            best_quarterly_weekly,
+            best_quarterly_monthly,
+        ) = await asyncio.gather(
+            self._update_best(
+                RecurringTaskPeriod.QUARTERLY,
+                RecurringTaskPeriod.DAILY,
+                daily_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                RecurringTaskPeriod.QUARTERLY,
+                RecurringTaskPeriod.WEEKLY,
+                weekly_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                RecurringTaskPeriod.QUARTERLY,
+                RecurringTaskPeriod.MONTHLY,
+                monthly_score_stats,
+                uow,
+                score_log,
+            ),
+        )
+
+        (
+            best_yearly_daily,
+            best_yearly_weekly,
+            best_yearly_monthly,
+            best_yearly_quarterly,
+        ) = await asyncio.gather(
+            self._update_best(
+                RecurringTaskPeriod.YEARLY,
+                RecurringTaskPeriod.DAILY,
+                daily_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                RecurringTaskPeriod.YEARLY,
+                RecurringTaskPeriod.WEEKLY,
+                weekly_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                RecurringTaskPeriod.YEARLY,
+                RecurringTaskPeriod.MONTHLY,
+                monthly_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                RecurringTaskPeriod.YEARLY,
+                RecurringTaskPeriod.QUARTERLY,
+                quarterly_score_stats,
+                uow,
+                score_log,
+            ),
+        )
+
+        (
+            best_lifetime_daily,
+            best_lifetime_weekly,
+            best_lifetime_monthly,
+            best_lifetime_quarterly,
+            best_lifetime_yearly,
+        ) = await asyncio.gather(
+            self._update_best(
                 None,
-                timeline_lifetime,
-                self._time_provider.get_current_time(),
-            ).merge_score(
-                new_score_log_entry,
-                self._source,
-                self._time_provider.get_current_time(),
-            )
-            await uow.score_stats_repository.create(score_stats_lifetime)
-        else:
-            score_stats_lifetime = score_stats_lifetime.merge_score(
-                new_score_log_entry,
-                self._source,
-                self._time_provider.get_current_time(),
-            )
-            await uow.score_stats_repository.save(score_stats_lifetime)
+                RecurringTaskPeriod.DAILY,
+                daily_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                None,
+                RecurringTaskPeriod.WEEKLY,
+                weekly_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                None,
+                RecurringTaskPeriod.MONTHLY,
+                monthly_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                None,
+                RecurringTaskPeriod.QUARTERLY,
+                quarterly_score_stats,
+                uow,
+                score_log,
+            ),
+            self._update_best(
+                None,
+                RecurringTaskPeriod.YEARLY,
+                yearly_score_stats,
+                uow,
+                score_log,
+            ),
+        )
 
         return RecordScoreResult(
             latest_task_score=new_score_log_entry.score,
             score_overview=UserScoreOverview(
-                daily_score=score_stats_by_period[RecurringTaskPeriod.DAILY],
-                weekly_score=score_stats_by_period[RecurringTaskPeriod.WEEKLY],
-                monthly_score=score_stats_by_period[RecurringTaskPeriod.MONTHLY],
-                quarterly_score=score_stats_by_period[RecurringTaskPeriod.QUARTERLY],
-                yearly_score=score_stats_by_period[RecurringTaskPeriod.YEARLY],
-                lifetime_score=score_stats_lifetime.total_score,
+                daily_score=daily_score_stats.total_score,
+                weekly_score=weekly_score_stats.total_score,
+                monthly_score=monthly_score_stats.total_score,
+                quarterly_score=quarterly_score_stats.total_score,
+                yearly_score=yearly_score_stats.total_score,
+                lifetime_score=lifetime_score_stats.total_score,
+                best_quarterly_daily_score=best_quarterly_daily.total_score,
+                best_quarterly_weekly_score=best_quarterly_weekly.total_score,
+                best_quarterly_monthly_score=best_quarterly_monthly.total_score,
+                best_yearly_daily_score=best_yearly_daily.total_score,
+                best_yearly_weekly_score=best_yearly_weekly.total_score,
+                best_yearly_monthly_score=best_yearly_monthly.total_score,
+                best_yearly_quarterly_score=best_yearly_quarterly.total_score,
+                best_lifetime_daily_score=best_lifetime_daily.total_score,
+                best_lifetime_weekly_score=best_lifetime_weekly.total_score,
+                best_lifetime_monthly_score=best_lifetime_monthly.total_score,
+                best_lifetime_quarterly_score=best_lifetime_quarterly.total_score,
+                best_lifetime_yearly_score=best_lifetime_yearly.total_score,
             ),
         )
+
+    async def _update_current_stats(
+        self,
+        period: RecurringTaskPeriod | None,
+        uow: DomainUnitOfWork,
+        score_log: ScoreLog,
+        score_log_entry: ScoreLogEntry,
+    ) -> ScoreStats:
+        timeline = infer_timeline(period, self._time_provider.get_current_time())
+        score_stats = await uow.score_stats_repository.load_by_key_optional(
+            (score_log.ref_id, period, timeline)
+        )
+
+        if score_stats is None:
+            score_stats = ScoreStats.new_score_stats(
+                score_log.ref_id,
+                period,
+                timeline,
+                self._time_provider.get_current_time(),
+            ).merge_score(
+                score_log_entry,
+                self._source,
+                self._time_provider.get_current_time(),
+            )
+            score_stats = await uow.score_stats_repository.create(score_stats)
+        else:
+            score_stats = score_stats.merge_score(
+                score_log_entry,
+                self._source,
+                self._time_provider.get_current_time(),
+            )
+            score_stats = await uow.score_stats_repository.save(score_stats)
+
+        return score_stats
+
+    async def _update_best(
+        self,
+        period: RecurringTaskPeriod | None,
+        sub_period: RecurringTaskPeriod,
+        score_stats: ScoreStats,
+        uow: DomainUnitOfWork,
+        score_log: ScoreLog,
+    ) -> ScorePeriodBest:
+        timeline = infer_timeline(period, self._time_provider.get_current_time())
+        score_period_best = await uow.score_period_best_repository.load_by_key_optional(
+            (score_log.ref_id, period, timeline, sub_period)
+        )
+
+        if score_period_best is None:
+            score_period_best = ScorePeriodBest.new_score_period_best(
+                score_log.ref_id,
+                period,
+                timeline,
+                sub_period,
+                self._time_provider.get_current_time(),
+            ).update_to_max(score_stats, self._time_provider.get_current_time())
+            score_period_best = await uow.score_period_best_repository.create(
+                score_period_best
+            )
+        else:
+            score_period_best = score_period_best.update_to_max(
+                score_stats, self._time_provider.get_current_time()
+            )
+            score_period_best = await uow.score_period_best_repository.save(
+                score_period_best
+            )
+
+        return score_period_best

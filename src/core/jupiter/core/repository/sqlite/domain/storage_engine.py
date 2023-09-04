@@ -19,6 +19,9 @@ from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
 from jupiter.core.domain.gamification.infra.score_log_repository import (
     ScoreLogRepository,
 )
+from jupiter.core.domain.gamification.infra.score_period_best_repository import (
+    ScorePeriodBestRepository,
+)
 from jupiter.core.domain.gamification.infra.score_stats_repository import (
     ScoreStatsRepository,
 )
@@ -110,6 +113,7 @@ from jupiter.core.repository.sqlite.domain.fast_info import SqliteFastInfoReposi
 from jupiter.core.repository.sqlite.domain.gamification.scores import (
     SqliteScoreLogEntryRepository,
     SqliteScoreLogRepository,
+    SqliteScorePeriodBestRepository,
     SqliteScoreStatsRepository,
 )
 from jupiter.core.repository.sqlite.domain.habits import (
@@ -178,6 +182,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     _score_log_repository: Final[SqliteScoreLogRepository]
     _score_log_entry_repository: Final[SqliteScoreLogEntryRepository]
     _score_stats_repository: Final[SqliteScoreStatsRepository]
+    _score_period_best_repository: Final[SqliteScorePeriodBestRepository]
     _workspace_repository: Final[SqliteWorkspaceRepository]
     _user_workspace_link_repository: Final[SqliteUserWorkspaceLinkRepository]
     _inbox_task_collection_repository: Final[SqliteInboxTaskCollectionRepository]
@@ -217,6 +222,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         score_log_repository: SqliteScoreLogRepository,
         score_log_entry_repository: SqliteScoreLogEntryRepository,
         score_stats_repository: SqliteScoreStatsRepository,
+        score_period_best_repository: SqliteScorePeriodBestRepository,
         workspace_repository: SqliteWorkspaceRepository,
         user_workspace_link_repository: SqliteUserWorkspaceLinkRepository,
         inbox_task_collection_repository: SqliteInboxTaskCollectionRepository,
@@ -255,6 +261,7 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
         self._score_log_repository = score_log_repository
         self._score_log_entry_repository = score_log_entry_repository
         self._score_stats_repository = score_stats_repository
+        self._score_period_best_repository = score_period_best_repository
         self._workspace_repository = workspace_repository
         self._user_workspace_link_repository = user_workspace_link_repository
         self._inbox_task_collection_repository = inbox_task_collection_repository
@@ -323,6 +330,11 @@ class SqliteDomainUnitOfWork(DomainUnitOfWork):
     def score_stats_repository(self) -> ScoreStatsRepository:
         """The score stats repository."""
         return self._score_stats_repository
+
+    @property
+    def score_period_best_repository(self) -> ScorePeriodBestRepository:
+        """The score period best repository."""
+        return self._score_period_best_repository
 
     @property
     def workspace_repository(self) -> WorkspaceRepository:
@@ -504,6 +516,9 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
             score_stats_repository = SqliteScoreStatsRepository(
                 connection, self._metadata
             )
+            score_period_best_repository = SqliteScorePeriodBestRepository(
+                connection, self._metadata
+            )
             workspace_repository = SqliteWorkspaceRepository(connection, self._metadata)
             user_workspace_link_repository = SqliteUserWorkspaceLinkRepository(
                 connection, self._metadata
@@ -604,6 +619,7 @@ class SqliteDomainStorageEngine(DomainStorageEngine):
                 score_log_repository=score_log_repository,
                 score_log_entry_repository=score_log_entry_repository,
                 score_stats_repository=score_stats_repository,
+                score_period_best_repository=score_period_best_repository,
                 workspace_repository=workspace_repository,
                 user_workspace_link_repository=user_workspace_link_repository,
                 inbox_task_collection_repository=inbox_task_collection_repository,

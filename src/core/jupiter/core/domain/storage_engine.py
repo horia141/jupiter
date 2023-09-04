@@ -18,6 +18,9 @@ from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
 from jupiter.core.domain.gamification.infra.score_log_repository import (
     ScoreLogRepository,
 )
+from jupiter.core.domain.gamification.infra.score_period_best_repository import (
+    ScorePeriodBestRepository,
+)
 from jupiter.core.domain.gamification.infra.score_stats_repository import (
     ScoreStatsRepository,
 )
@@ -118,6 +121,11 @@ class DomainUnitOfWork(abc.ABC):
     @abc.abstractmethod
     def score_stats_repository(self) -> ScoreStatsRepository:
         """The score stats repository."""
+
+    @property
+    @abc.abstractmethod
+    def score_period_best_repository(self) -> ScorePeriodBestRepository:
+        """The score period best repository."""
 
     @property
     @abc.abstractmethod

@@ -207,6 +207,13 @@ class ClearAllUseCase(AppTransactionalLoggedInMutationUseCase[ClearAllArgs, None
             for score_stats in all_score_stats:
                 await uow.score_stats_repository.remove(score_stats.key)
 
+            all_period_bests = await uow.score_period_best_repository.find_all(
+                score_log.ref_id
+            )
+
+            for period_best in all_period_bests:
+                await uow.score_period_best_repository.remove(period_best.key)
+
         async with progress_reporter.section("Resetting workspace"):
             default_project = await uow.project_repository.load_by_id(
                 args.workspace_default_project_ref_id,

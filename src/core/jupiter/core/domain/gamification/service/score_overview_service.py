@@ -1,7 +1,8 @@
 """A service for getting the scores overview for a user."""
 
-from typing import Dict
+import asyncio
 
+from jupiter.core.domain.gamification.score_log import ScoreLog
 from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.domain.storage_engine import DomainUnitOfWork
@@ -19,29 +20,154 @@ class ScoreOverviewService:
         """Get the scores overview for a user."""
         score_log = await uow.score_log_repository.load_by_parent(user.ref_id)
 
-        score_stats_by_period: Dict[RecurringTaskPeriod, int] = {}
+        (
+            daily_score,
+            weekly_score,
+            monthly_score,
+            quarterly_score,
+            yearly_score,
+            lifetime_score,
+        ) = await asyncio.gather(
+            self._load_stats(uow, score_log, RecurringTaskPeriod.DAILY, right_now),
+            self._load_stats(uow, score_log, RecurringTaskPeriod.WEEKLY, right_now),
+            self._load_stats(uow, score_log, RecurringTaskPeriod.MONTHLY, right_now),
+            self._load_stats(uow, score_log, RecurringTaskPeriod.QUARTERLY, right_now),
+            self._load_stats(uow, score_log, RecurringTaskPeriod.YEARLY, right_now),
+            self._load_stats(uow, score_log, None, right_now),
+        )
 
-        for period in RecurringTaskPeriod:
-            timeline = infer_timeline(period, right_now)
-            score_stats = await uow.score_stats_repository.load_by_key_optional(
-                (score_log.ref_id, period, timeline)
-            )
-            score_stats_by_period[period] = (
-                score_stats.total_score if score_stats else 0
-            )
+        (
+            best_quarterly_daily_score,
+            best_quarterly_weekly_score,
+            best_quarterly_monthly_score,
+        ) = await asyncio.gather(
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.QUARTERLY,
+                right_now,
+                RecurringTaskPeriod.DAILY,
+            ),
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.QUARTERLY,
+                right_now,
+                RecurringTaskPeriod.WEEKLY,
+            ),
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.QUARTERLY,
+                right_now,
+                RecurringTaskPeriod.MONTHLY,
+            ),
+        )
 
-        timeline_lifetime = infer_timeline(None, right_now)
-        score_stats_lifetime = await uow.score_stats_repository.load_by_key_optional(
-            (score_log.ref_id, None, timeline_lifetime)
+        (
+            best_yearly_daily_score,
+            best_yearly_weekly_score,
+            best_yearly_monthly_score,
+            best_yearly_quarterly_score,
+        ) = await asyncio.gather(
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.YEARLY,
+                right_now,
+                RecurringTaskPeriod.DAILY,
+            ),
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.YEARLY,
+                right_now,
+                RecurringTaskPeriod.WEEKLY,
+            ),
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.YEARLY,
+                right_now,
+                RecurringTaskPeriod.MONTHLY,
+            ),
+            self._load_period_best(
+                uow,
+                score_log,
+                RecurringTaskPeriod.YEARLY,
+                right_now,
+                RecurringTaskPeriod.QUARTERLY,
+            ),
+        )
+
+        (
+            best_lifetime_daily_score,
+            best_lifetime_weekly_score,
+            best_lifetime_monthly_score,
+            best_lifetime_quarterly_score,
+            best_lifetime_yearly_score,
+        ) = await asyncio.gather(
+            self._load_period_best(
+                uow, score_log, None, right_now, RecurringTaskPeriod.DAILY
+            ),
+            self._load_period_best(
+                uow, score_log, None, right_now, RecurringTaskPeriod.WEEKLY
+            ),
+            self._load_period_best(
+                uow, score_log, None, right_now, RecurringTaskPeriod.MONTHLY
+            ),
+            self._load_period_best(
+                uow, score_log, None, right_now, RecurringTaskPeriod.QUARTERLY
+            ),
+            self._load_period_best(
+                uow, score_log, None, right_now, RecurringTaskPeriod.YEARLY
+            ),
         )
 
         return UserScoreOverview(
-            daily_score=score_stats_by_period[RecurringTaskPeriod.DAILY],
-            weekly_score=score_stats_by_period[RecurringTaskPeriod.WEEKLY],
-            monthly_score=score_stats_by_period[RecurringTaskPeriod.MONTHLY],
-            quarterly_score=score_stats_by_period[RecurringTaskPeriod.QUARTERLY],
-            yearly_score=score_stats_by_period[RecurringTaskPeriod.YEARLY],
-            lifetime_score=score_stats_lifetime.total_score
-            if score_stats_lifetime
-            else 0,
+            daily_score=daily_score,
+            weekly_score=weekly_score,
+            monthly_score=monthly_score,
+            quarterly_score=quarterly_score,
+            yearly_score=yearly_score,
+            lifetime_score=lifetime_score,
+            best_quarterly_daily_score=best_quarterly_daily_score,
+            best_quarterly_weekly_score=best_quarterly_weekly_score,
+            best_quarterly_monthly_score=best_quarterly_monthly_score,
+            best_yearly_daily_score=best_yearly_daily_score,
+            best_yearly_weekly_score=best_yearly_weekly_score,
+            best_yearly_monthly_score=best_yearly_monthly_score,
+            best_yearly_quarterly_score=best_yearly_quarterly_score,
+            best_lifetime_daily_score=best_lifetime_daily_score,
+            best_lifetime_weekly_score=best_lifetime_weekly_score,
+            best_lifetime_monthly_score=best_lifetime_monthly_score,
+            best_lifetime_quarterly_score=best_lifetime_quarterly_score,
+            best_lifetime_yearly_score=best_lifetime_yearly_score,
         )
+
+    async def _load_stats(
+        self,
+        uow: DomainUnitOfWork,
+        score_log: ScoreLog,
+        period: RecurringTaskPeriod | None,
+        right_now: Timestamp,
+    ) -> int:
+        timeline = infer_timeline(period, right_now)
+        score_stats = await uow.score_stats_repository.load_by_key_optional(
+            (score_log.ref_id, period, timeline)
+        )
+        return score_stats.total_score if score_stats else 0
+
+    async def _load_period_best(
+        self,
+        uow: DomainUnitOfWork,
+        score_log: ScoreLog,
+        period: RecurringTaskPeriod | None,
+        right_now: Timestamp,
+        sub_period: RecurringTaskPeriod,
+    ) -> int:
+        timeline = infer_timeline(period, right_now)
+        score_period_best = await uow.score_period_best_repository.load_by_key_optional(
+            (score_log.ref_id, period, timeline, sub_period)
+        )
+        return score_period_best.total_score if score_period_best else 0

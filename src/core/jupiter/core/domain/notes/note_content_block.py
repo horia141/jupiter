@@ -92,7 +92,7 @@ class HeadingBlock(NoteContentBlock):
             kind="heading",
             correlation_id=EntityId.from_raw(json["correlation_id"]),
             text=str(json["text"]),
-            level=cast(int, json["level"]) if "level" in json else 1
+            level=cast(int, json["level"]) if "level" in json else 1,
         )
 
     def to_json(self) -> JSONDictType:
@@ -103,8 +103,8 @@ class HeadingBlock(NoteContentBlock):
             "text": self.text,
             "level": self.level,
         }
-    
-    
+
+
 @dataclass
 class ListItem(Value):
     """A list item."""
@@ -113,7 +113,7 @@ class ListItem(Value):
     items: list["ListItem"]
 
     @staticmethod
-    def from_json(json: JSONDictType|str) -> "ListItem":
+    def from_json(json: JSONDictType | str) -> "ListItem":
         """Create a list item from JSON."""
         if isinstance(json, str):
             return ListItem(
@@ -122,9 +122,12 @@ class ListItem(Value):
             )
         return ListItem(
             text=str(json["text"]),
-            items=[ListItem.from_json(item) for item in cast(list[JSONDictType], json["items"])],
+            items=[
+                ListItem.from_json(item)
+                for item in cast(list[JSONDictType], json["items"])
+            ],
         )
-    
+
     def to_json(self) -> JSONDictType:
         """Convert a list item to JSON."""
         return {
@@ -147,7 +150,10 @@ class BulletedListBlock(NoteContentBlock):
         return BulletedListBlock(
             kind="bulleted-list",
             correlation_id=EntityId.from_raw(json["correlation_id"]),
-            items=[ListItem.from_json(item) for item in cast(list[JSONDictType|str], json["items"])],
+            items=[
+                ListItem.from_json(item)
+                for item in cast(list[JSONDictType | str], json["items"])
+            ],
         )
 
     def to_json(self) -> JSONDictType:
@@ -173,7 +179,10 @@ class NumberedListBlock(NoteContentBlock):
         return NumberedListBlock(
             kind="numbered-list",
             correlation_id=EntityId.from_raw(json["correlation_id"]),
-            items=[ListItem.from_json(item) for item in cast(list[JSONDictType|str], json["items"])],
+            items=[
+                ListItem.from_json(item)
+                for item in cast(list[JSONDictType | str], json["items"])
+            ],
         )
 
     def to_json(self) -> JSONDictType:
@@ -235,7 +244,7 @@ class ChecklistBlock(NoteContentBlock):
             "correlation_id": self.correlation_id.the_id,
             "items": [item.to_json() for item in self.items],
         }
-    
+
 
 @dataclass
 class TableBlock(NoteContentBlock):
@@ -257,7 +266,7 @@ class TableBlock(NoteContentBlock):
                 for row in cast(list[list[JSONDictType]], json["contents"])
             ],
         )
-    
+
     def to_json(self) -> JSONDictType:
         """Convert a table block to JSON."""
         return {
@@ -266,7 +275,7 @@ class TableBlock(NoteContentBlock):
             "with_header": self.with_header,
             "contents": self.contents,
         }
-    
+
 
 @dataclass
 class CodeBlock(NoteContentBlock):
@@ -286,9 +295,11 @@ class CodeBlock(NoteContentBlock):
             correlation_id=EntityId.from_raw(json["correlation_id"]),
             code=str(json["code"]),
             language=str(json["language"]),
-            show_line_numbers=bool(json["show_line_numbers"]) if json["show_line_numbers"] is not None else None
+            show_line_numbers=bool(json["show_line_numbers"])
+            if json["show_line_numbers"] is not None
+            else None,
         )
-    
+
     def to_json(self) -> JSONDictType:
         """Convert a code block to JSON."""
         return {
