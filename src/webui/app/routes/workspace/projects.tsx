@@ -48,6 +48,7 @@ export default function Projects() {
             variant="contained"
             to="/workspace/projects/new"
             component={Link}
+            preventScrollReset
           >
             Create
           </Button>

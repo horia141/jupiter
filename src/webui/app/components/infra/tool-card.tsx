@@ -19,7 +19,7 @@ export function ToolCard(props: PropsWithChildren<ToolCardProps>) {
         <StyledButtonGroup>
           <ButtonGroup size="small">
             <IconButton>
-              <Link to={props.returnLocation}>
+              <Link to={props.returnLocation} preventScrollReset>
                 <KeyboardDoubleArrowRightIcon />
               </Link>
             </IconButton>

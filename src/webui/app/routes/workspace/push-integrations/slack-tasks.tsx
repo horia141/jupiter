@@ -85,6 +85,7 @@ export default function SlackTasks() {
               variant="contained"
               to="/workspace/push-integrations/slack-tasks/settings"
               component={Link}
+              preventScrollReset
             >
               Setings
             </Button>

@@ -87,6 +87,7 @@ export default function Metrics() {
               variant="contained"
               to={`/workspace/metrics/new`}
               component={Link}
+              preventScrollReset
             >
               Create
             </Button>
@@ -98,6 +99,7 @@ export default function Metrics() {
                 variant="outlined"
                 to={`/workspace/metrics/settings`}
                 component={Link}
+                preventScrollReset
               >
                 Settings
               </Button>

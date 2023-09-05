@@ -78,6 +78,7 @@ export default function Notes() {
               variant="contained"
               to={`/workspace/notes/new`}
               component={Link}
+              preventScrollReset
             >
               Create
             </Button>

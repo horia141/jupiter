@@ -86,6 +86,7 @@ export default function Vacations({ request }: LoaderArgs) {
             variant="contained"
             to="/workspace/vacations/new"
             component={Link}
+            preventScrollReset
           >
             Create
           </Button>

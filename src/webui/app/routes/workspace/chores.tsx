@@ -92,6 +92,7 @@ export default function Chores() {
             variant="contained"
             to="/workspace/chores/new"
             component={Link}
+            preventScrollReset
           >
             Create
           </Button>

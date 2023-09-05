@@ -108,6 +108,7 @@ export default function Metric() {
               variant="contained"
               to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
               component={Link}
+              preventScrollReset
             >
               Create
             </Button>
@@ -116,6 +117,7 @@ export default function Metric() {
               variant="outlined"
               to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
               component={Link}
+              preventScrollReset
             >
               Details
             </Button>
