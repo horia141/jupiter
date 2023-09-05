@@ -98,4 +98,4 @@ class SmartListItemUpdateUseCase(
         )
 
         await uow.smart_list_item_repository.save(smart_list_item)
-        await progress_reporter.mark_created(smart_list_item)
+        await progress_reporter.mark_updated(smart_list_item)
