@@ -12,6 +12,6 @@
   "author": "Horia Coman <horia141@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^22.0.3"
+    "electron": "^22.3.21"
   }
 }
