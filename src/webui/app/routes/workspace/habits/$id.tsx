@@ -480,6 +480,22 @@ export default function Habit() {
               />
               <FieldError actionResult={actionData} fieldName="/skip_rule" />
             </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="repeatsInPeriodCount">
+                Repeats In Period
+              </InputLabel>
+              <OutlinedInput
+                label="Repeats In Period"
+                name="repeatsInPeriodCount"
+                readOnly={!inputsEnabled}
+                defaultValue={loaderData.habit.repeats_in_period_count}
+              />
+              <FieldError
+                actionResult={actionData}
+                fieldName="/repeats_in_period_count"
+              />
+            </FormControl>
           </Stack>
         </CardContent>
 
