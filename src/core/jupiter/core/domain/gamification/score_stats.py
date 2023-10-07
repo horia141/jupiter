@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
+from jupiter.core.domain.gamification.score_source import ScoureSource
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -18,6 +19,8 @@ class ScoreStats(Record):
     period: RecurringTaskPeriod | None
     timeline: str
     total_score: int
+    inbox_task_cnt: int
+    big_plan_cnt: int
 
     @staticmethod
     def new_score_stats(
@@ -34,6 +37,8 @@ class ScoreStats(Record):
             period=period,
             timeline=timeline,
             total_score=0,
+            inbox_task_cnt=0,
+            big_plan_cnt=0
         )
         return score_stats
 
@@ -46,6 +51,8 @@ class ScoreStats(Record):
         return self._new_version(
             last_modified_time=modification_time,
             total_score=max(0, self.total_score + score_log_entry.score),
+            inbox_task_cnt=self.inbox_task_cnt + (1 if score_log_entry.source == ScoureSource.INBOX_TASK else 0),
+            big_plan_cnt=self.big_plan_cnt + (1 if score_log_entry.source == ScoureSource.BIG_PLAN else 0),
         )
 
     @property

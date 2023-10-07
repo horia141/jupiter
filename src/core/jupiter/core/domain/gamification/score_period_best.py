@@ -19,6 +19,8 @@ class ScorePeriodBest(Record):
     timeline: str
     sub_period: RecurringTaskPeriod
     total_score: int
+    inbox_task_cnt: int
+    big_plan_cnt: int
 
     @staticmethod
     def new_score_period_best(
@@ -43,6 +45,8 @@ class ScorePeriodBest(Record):
             timeline=timeline,
             sub_period=sub_period,
             total_score=0,
+            inbox_task_cnt=0,
+            big_plan_cnt=0,
         )
         return score_period_best
 
@@ -52,6 +56,8 @@ class ScorePeriodBest(Record):
         return self._new_version(
             last_modified_time=modification_time,
             total_score=max(self.total_score, score_stats.total_score),
+            inbox_task_cnt=self.inbox_task_cnt if self.total_score > score_stats.total_score else score_stats.inbox_task_cnt,
+            big_plan_cnt=self.big_plan_cnt if self.total_score > score_stats.total_score else score_stats.big_plan_cnt,
         )
 
     @property
