@@ -11,7 +11,10 @@ from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.eisen import Eisen
 from jupiter.core.domain.email_address import EmailAddress
 from jupiter.core.domain.entity_name import EntityName
-from jupiter.core.domain.gamification.user_score_overview import UserScoreOverview
+from jupiter.core.domain.gamification.user_score_overview import (
+    UserScore,
+    UserScoreOverview,
+)
 from jupiter.core.domain.inbox_tasks.inbox_task import InboxTask
 from jupiter.core.domain.inbox_tasks.inbox_task_source import InboxTaskSource
 from jupiter.core.domain.inbox_tasks.inbox_task_status import InboxTaskStatus
@@ -529,6 +532,18 @@ def timezone_to_rich_text(timezone: Timezone) -> Text:
     return Text(str(timezone), style="bold")
 
 
+def user_score_to_rich(user_score: UserScore) -> Text:
+    """Transform a user score to rich text."""
+    text = Text(str(user_score.total_score))
+    if user_score.inbox_task_cnt > 0:
+        text.append(" 📥 ")
+        text.append(str(user_score.inbox_task_cnt), style="italic")
+    if user_score.big_plan_cnt > 0:
+        text.append(" 🌍 ")
+        text.append(str(user_score.big_plan_cnt), style="italic")
+    return text
+
+
 def user_score_overview_to_rich(score_overview: UserScoreOverview) -> Tree:
     """Gamification rendering."""
     gamification_tree = Tree("🎮 Gamification:")
@@ -542,41 +557,45 @@ def user_score_overview_to_rich(score_overview: UserScoreOverview) -> Tree:
 
     scores_table.add_row(
         "Daily",
-        str(score_overview.daily_score),
-        str(score_overview.best_quarterly_daily_score),
-        str(score_overview.best_yearly_daily_score),
-        str(score_overview.best_lifetime_daily_score),
+        user_score_to_rich(score_overview.daily_score),
+        user_score_to_rich(score_overview.best_quarterly_daily_score),
+        user_score_to_rich(score_overview.best_yearly_daily_score),
+        user_score_to_rich(score_overview.best_lifetime_daily_score),
     )
     scores_table.add_row(
         "Weekly",
-        str(score_overview.weekly_score),
-        str(score_overview.best_quarterly_weekly_score),
-        str(score_overview.best_yearly_weekly_score),
-        str(score_overview.best_lifetime_weekly_score),
+        user_score_to_rich(score_overview.weekly_score),
+        user_score_to_rich(score_overview.best_quarterly_weekly_score),
+        user_score_to_rich(score_overview.best_yearly_weekly_score),
+        user_score_to_rich(score_overview.best_lifetime_weekly_score),
     )
     scores_table.add_row(
         "Monthly",
-        str(score_overview.daily_score),
-        str(score_overview.best_quarterly_monthly_score),
-        str(score_overview.best_yearly_monthly_score),
-        str(score_overview.best_lifetime_monthly_score),
+        user_score_to_rich(score_overview.daily_score),
+        user_score_to_rich(score_overview.best_quarterly_monthly_score),
+        user_score_to_rich(score_overview.best_yearly_monthly_score),
+        user_score_to_rich(score_overview.best_lifetime_monthly_score),
     )
     scores_table.add_row(
         "Quarterly",
-        str(score_overview.daily_score),
+        user_score_to_rich(score_overview.daily_score),
         "N/A",
-        str(score_overview.best_yearly_quarterly_score),
-        str(score_overview.best_lifetime_quarterly_score),
+        user_score_to_rich(score_overview.best_yearly_quarterly_score),
+        user_score_to_rich(score_overview.best_lifetime_quarterly_score),
     )
     scores_table.add_row(
         "Yearly",
-        str(score_overview.daily_score),
+        user_score_to_rich(score_overview.daily_score),
         "N/A",
         "N/A",
-        str(score_overview.best_lifetime_yearly_score),
+        user_score_to_rich(score_overview.best_lifetime_yearly_score),
     )
     scores_table.add_row(
-        "Lifetime", str(score_overview.lifetime_score), "N/A", "N/A", "N/A"
+        "Lifetime",
+        user_score_to_rich(score_overview.lifetime_score),
+        "N/A",
+        "N/A",
+        "N/A",
     )
 
     gamification_tree.add(scores_table)

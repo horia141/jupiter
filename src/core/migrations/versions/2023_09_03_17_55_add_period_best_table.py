@@ -26,7 +26,7 @@ def upgrade():
         total_score INTEGER NOT NULL,
         created_time DATETIME NOT NULL, 
         last_modified_time DATETIME NOT NULL, 
-        FOREIGN KEY (score_log_ref_id) REFERENCES score_log (ref_id)
+        FOREIGN KEY (score_log_ref_id) REFERENCES gamification_score_log (ref_id)
     );
     """
     )
@@ -38,4 +38,4 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("""DROP TABLE gamification_score_stats;""")
+    op.execute("""DROP TABLE gamification_score_period_best;""")

@@ -402,6 +402,8 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             Column("period", String, nullable=True),
             Column("timeline", String, nullable=False),
             Column("total_score", Integer, nullable=False),
+            Column("inbox_task_cnt", Integer, nullable=False),
+            Column("big_plan_cnt", Integer, nullable=False),
             keep_existing=True,
         )
 
@@ -416,6 +418,8 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                     period=record.period.value if record.period else None,
                     timeline=record.timeline,
                     total_score=record.total_score,
+                    inbox_task_cnt=record.inbox_task_cnt,
+                    big_plan_cnt=record.big_plan_cnt,
                 ),
             )
         except IntegrityError as err:
@@ -442,6 +446,8 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 created_time=record.created_time.to_db(),
                 last_modified_time=record.last_modified_time.to_db(),
                 total_score=record.total_score,
+                inbox_task_cnt=record.inbox_task_cnt,
+                big_plan_cnt=record.big_plan_cnt,
             ),
         )
         if result.rowcount == 0:
@@ -529,6 +535,8 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
             period=RecurringTaskPeriod(row["period"]) if row["period"] else None,
             timeline=row["timeline"],
             total_score=row["total_score"],
+            inbox_task_cnt=row["inbox_task_cnt"],
+            big_plan_cnt=row["big_plan_cnt"],
         )
 
 
@@ -556,6 +564,8 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
             Column("timeline", String, nullable=False),
             Column("sub_period", String, nullable=False),
             Column("total_score", Integer, nullable=False),
+            Column("inbox_task_cnt", Integer, nullable=False),
+            Column("big_plan_cnt", Integer, nullable=False),
             keep_existing=True,
         )
 
@@ -571,6 +581,8 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
                     timeline=record.timeline,
                     sub_period=record.sub_period.value,
                     total_score=record.total_score,
+                    inbox_task_cnt=record.inbox_task_cnt,
+                    big_plan_cnt=record.big_plan_cnt,
                 ),
             )
         except IntegrityError as err:
@@ -600,6 +612,8 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
                 created_time=record.created_time.to_db(),
                 last_modified_time=record.last_modified_time.to_db(),
                 total_score=record.total_score,
+                inbox_task_cnt=record.inbox_task_cnt,
+                big_plan_cnt=record.big_plan_cnt,
             ),
         )
         if result.rowcount == 0:
@@ -695,4 +709,6 @@ class SqliteScorePeriodBestRepository(ScorePeriodBestRepository):
             timeline=row["timeline"],
             sub_period=RecurringTaskPeriod(row["sub_period"]),
             total_score=row["total_score"],
+            inbox_task_cnt=row["inbox_task_cnt"],
+            big_plan_cnt=row["big_plan_cnt"],
         )

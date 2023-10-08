@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Tuple
 
 from jupiter.core.domain.gamification.score_stats import ScoreStats
+from jupiter.core.domain.gamification.user_score_overview import UserScore
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
 from jupiter.core.framework.base.timestamp import Timestamp
@@ -19,6 +20,8 @@ class ScorePeriodBest(Record):
     timeline: str
     sub_period: RecurringTaskPeriod
     total_score: int
+    inbox_task_cnt: int
+    big_plan_cnt: int
 
     @staticmethod
     def new_score_period_best(
@@ -43,6 +46,8 @@ class ScorePeriodBest(Record):
             timeline=timeline,
             sub_period=sub_period,
             total_score=0,
+            inbox_task_cnt=0,
+            big_plan_cnt=0,
         )
         return score_period_best
 
@@ -52,6 +57,12 @@ class ScorePeriodBest(Record):
         return self._new_version(
             last_modified_time=modification_time,
             total_score=max(self.total_score, score_stats.total_score),
+            inbox_task_cnt=self.inbox_task_cnt
+            if self.total_score > score_stats.total_score
+            else score_stats.inbox_task_cnt,
+            big_plan_cnt=self.big_plan_cnt
+            if self.total_score > score_stats.total_score
+            else score_stats.big_plan_cnt,
         )
 
     @property
@@ -60,3 +71,11 @@ class ScorePeriodBest(Record):
     ) -> Tuple[EntityId, RecurringTaskPeriod | None, str, RecurringTaskPeriod]:
         """The key of the score best."""
         return self.score_log_ref_id, self.period, self.timeline, self.sub_period
+
+    def to_user_score(self) -> UserScore:
+        """Build a user score."""
+        return UserScore(
+            total_score=self.total_score,
+            inbox_task_cnt=self.inbox_task_cnt,
+            big_plan_cnt=self.big_plan_cnt,
+        )
