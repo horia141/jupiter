@@ -261,6 +261,7 @@ export type { UserFeatureFlagsControls } from './models/UserFeatureFlagsControls
 export type { UserLoadArgs } from './models/UserLoadArgs';
 export type { UserLoadResult } from './models/UserLoadResult';
 export type { UserName } from './models/UserName';
+export type { UserScore } from './models/UserScore';
 export type { UserScoreOverview } from './models/UserScoreOverview';
 export type { UserUpdateArgs } from './models/UserUpdateArgs';
 export type { Vacation } from './models/Vacation';
