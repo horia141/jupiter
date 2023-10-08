@@ -2,8 +2,10 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.gamification.score_log_entry import ScoreLogEntry
 from jupiter.core.domain.gamification.score_source import ScoureSource
+from jupiter.core.domain.gamification.user_score_history import UserScoreAtDate
 from jupiter.core.domain.gamification.user_score_overview import UserScore
 from jupiter.core.domain.recurring_task_period import RecurringTaskPeriod
 from jupiter.core.framework.base.entity_id import EntityId
@@ -66,6 +68,15 @@ class ScoreStats(Record):
     def to_user_score(self) -> UserScore:
         """Build a user score."""
         return UserScore(
+            total_score=self.total_score,
+            inbox_task_cnt=self.inbox_task_cnt,
+            big_plan_cnt=self.big_plan_cnt,
+        )
+
+    def to_user_score_at_date(self) -> UserScoreAtDate:
+        """Build a user score at time."""
+        return UserScoreAtDate(
+            date=ADate.from_timestamp(self.created_time).just_the_date(),
             total_score=self.total_score,
             inbox_task_cnt=self.inbox_task_cnt,
             big_plan_cnt=self.big_plan_cnt,

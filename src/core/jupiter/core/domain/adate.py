@@ -180,6 +180,13 @@ class ADate(Value):
         else:
             return self
 
+    def just_the_date(self) -> "ADate":
+        """Just the date part."""
+        if self.the_datetime is not None:
+            return ADate.from_date(self.the_datetime.date())
+        else:
+            return self
+
     def next_day(self) -> "ADate":
         """Return the next day for a date."""
         if self.the_datetime is not None:

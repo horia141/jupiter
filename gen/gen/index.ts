@@ -262,6 +262,8 @@ export type { UserLoadArgs } from './models/UserLoadArgs';
 export type { UserLoadResult } from './models/UserLoadResult';
 export type { UserName } from './models/UserName';
 export type { UserScore } from './models/UserScore';
+export type { UserScoreAtDate } from './models/UserScoreAtDate';
+export type { UserScoreHistory } from './models/UserScoreHistory';
 export type { UserScoreOverview } from './models/UserScoreOverview';
 export type { UserUpdateArgs } from './models/UserUpdateArgs';
 export type { Vacation } from './models/Vacation';

@@ -48,7 +48,6 @@ export async function loader({ request, params }: LoaderArgs) {
 
     return json(result.note);
   } catch (error) {
-    console.log(error);
     if (error instanceof ApiError && error.status === StatusCodes.NOT_FOUND) {
       throw new Response(ReasonPhrases.NOT_FOUND, {
         status: StatusCodes.NOT_FOUND,

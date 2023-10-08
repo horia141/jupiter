@@ -81,6 +81,7 @@ def upgrade():
         FROM _gamification_score_period_best;
     """
     )
+    op.execute("DROP TABLE _gamification_score_period_best")
 
 
 def downgrade():

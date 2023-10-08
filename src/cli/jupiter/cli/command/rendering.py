@@ -550,10 +550,10 @@ def user_score_overview_to_rich(score_overview: UserScoreOverview) -> Tree:
 
     scores_table = Table(title="💪 Scores:", title_justify="left")
     scores_table.add_column("Period")
-    scores_table.add_column("Current", width=12)
-    scores_table.add_column("Best This Quarter", width=12)
-    scores_table.add_column("Best This Year", width=12)
-    scores_table.add_column("Best Ever", width=12)
+    scores_table.add_column("Current", width=16)
+    scores_table.add_column("Best This Quarter", width=16)
+    scores_table.add_column("Best This Year", width=16)
+    scores_table.add_column("Best Ever", width=16)
 
     scores_table.add_row(
         "Daily",

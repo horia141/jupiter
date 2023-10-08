@@ -1,5 +1,4 @@
 """An overview of the scores for a user."""
-
 from dataclasses import dataclass
 
 from jupiter.core.framework.value import Value

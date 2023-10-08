@@ -1,6 +1,7 @@
 """SQLite implementation of gamification task scores classes."""
 from typing import Final, Iterable, List, Optional, Tuple
 
+from jupiter.core.domain.adate import ADate
 from jupiter.core.domain.difficulty import Difficulty
 from jupiter.core.domain.entity_name import EntityName
 from jupiter.core.domain.gamification.infra.score_log_entry_repository import (
@@ -525,6 +526,29 @@ class SqliteScoreStatsRepository(ScoreStatsRepository):
                 self._score_stats_table.c.score_log_ref_id == prefix.as_int()
             )
         )
+        return [self._row_to_entity(row) for row in result]
+
+    async def find_all_in_timerange(
+        self,
+        score_log_ref_id: EntityId,
+        period: RecurringTaskPeriod,
+        start_date: ADate,
+        end_date: ADate,
+    ) -> list[ScoreStats]:
+        """Find all score stats in a given time range."""
+        result = await self._connection.execute(
+            select(self._score_stats_table)
+            .where(
+                self._score_stats_table.c.score_log_ref_id == score_log_ref_id.as_int()
+            )
+            .where(self._score_stats_table.c.period == period.value)
+            .where(self._score_stats_table.c.created_time >= start_date.to_db())
+            .where(
+                self._score_stats_table.c.created_time
+                <= end_date.to_timestamp_at_end_of_day().to_db()
+            )
+        )
+
         return [self._row_to_entity(row) for row in result]
 
     def _row_to_entity(self, row: RowType) -> ScoreStats:
