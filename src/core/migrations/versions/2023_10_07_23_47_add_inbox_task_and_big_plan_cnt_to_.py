@@ -6,12 +6,11 @@ Create Date: 2023-10-07 23:47:44.507280
 
 """
 from alembic import op
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c8ac5dcc06e5'
-down_revision = '1b78d1ca755a'
+revision = "c8ac5dcc06e5"
+down_revision = "1b78d1ca755a"
 branch_labels = None
 depends_on = None
 
@@ -31,7 +30,8 @@ def upgrade():
     );
     """
     )
-    op.execute("""
+    op.execute(
+        """
         INSERT INTO _gamification_score_period_best
         SELECT
             score_log_ref_id,
@@ -42,7 +42,8 @@ def upgrade():
             created_time,
             last_modified_time
         FROM gamification_score_period_best;
-    """)
+    """
+    )
     op.execute("""DROP TABLE gamification_score_period_best;""")
     op.execute(
         """
@@ -65,7 +66,8 @@ def upgrade():
         CREATE INDEX ix_gamification_score_period_best_score_log_ref_id_period_timeline_sub_period ON gamification_score_period_best (score_log_ref_id, period, timeline, sub_period);
     """
     )
-    op.execute("""
+    op.execute(
+        """
         INSERT INTO gamification_score_period_best
         SELECT score_log_ref_id,
                period,
@@ -77,7 +79,8 @@ def upgrade():
                created_time,
                last_modified_time
         FROM _gamification_score_period_best;
-    """)
+    """
+    )
 
 
 def downgrade():
