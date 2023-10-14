@@ -67,9 +67,9 @@ interface StyledMotionDrawerProps {
 }
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
-  ({}) => `
-  height: 100vh;
-  overflow-y: scroll;
+  ({isBigScreen}) => `
+  width: ${isBigScreen ? "100vw" : "auto"};
+  height: ${isBigScreen ? "100vh" : "auto"};
     &::-webkit-scrollbar {
       display: none;
     }
