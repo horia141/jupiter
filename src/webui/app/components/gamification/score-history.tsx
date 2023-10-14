@@ -2,7 +2,6 @@ import { styled, Typography } from "@mui/material";
 import { ResponsiveLine } from "@nivo/line";
 import { UserScoreAtDate, UserScoreHistory } from "jupiter-gen";
 import { aDateToDate } from "~/logic/domain/adate";
-
 interface ScoreHistoryProps {
   scoreHistory: UserScoreHistory;
 }
@@ -36,7 +35,7 @@ interface ScoresGraphProps {
 }
 
 function ScoresGraph({ title, scores }: ScoresGraphProps) {
-  if (scores.length <= 2) {
+    if (scores.length <= 2) {
     return null;
   }
 
@@ -90,20 +89,20 @@ function ScoresGraph({ title, scores }: ScoresGraphProps) {
           from: "color",
           modifiers: [["darker", 0.3]],
         }}
-        margin={{ top: 20, right: 110, bottom: 50, left: 50 }}
+        margin={{ top: 20, right: 50, bottom: 110, left: 50 }}
         useMesh={true}
         enableSlices={false}
         legends={[
           {
-            anchor: "bottom-right",
-            direction: "column",
+            anchor: "bottom",
+            direction: "row",
             justify: false,
-            translateX: 100,
-            translateY: 0,
+            translateX: 0,
+            translateY: 50,
             itemsSpacing: 0,
             itemDirection: "left-to-right",
-            itemWidth: 80,
-            itemHeight: 20,
+            itemWidth: 100,
+            itemHeight: 30,
             itemOpacity: 0.75,
             symbolSize: 12,
             symbolShape: "circle",

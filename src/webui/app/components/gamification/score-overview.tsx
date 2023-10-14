@@ -153,6 +153,12 @@ interface ScoreProps {
 }
 
 function Score({ userScore }: ScoreProps) {
+  const isBigScreen = useBigScreen();
+
+  if (!isBigScreen) {
+    return <>{userScore.total_score}</>;
+  }
+
   if (userScore.inbox_task_cnt > 0 && userScore.big_plan_cnt > 0) {
     return (
       <>
