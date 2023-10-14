@@ -23,7 +23,7 @@ function formatScoreUpdate(
   }
 
   if (isBigScreen) {
-    resultStr += ` Which brings your total for today to ${result.score_overview.daily_score} and for this week to ${result.score_overview.weekly_score}.`;
+    resultStr += ` Which brings your total for today to ${result.score_overview.daily_score.total_score} and for this week to ${result.score_overview.weekly_score.total_score}.`;
   }
 
   return resultStr;
