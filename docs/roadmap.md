@@ -7,7 +7,6 @@ dates or order of delivery.
 
 ## New Core Features
 
-* Gamification á la Duolingo
 * A home page with an overview of your life
 * Support journaling
 * Support megaplans - long term plans for the whole life

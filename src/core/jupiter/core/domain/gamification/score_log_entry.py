@@ -1,6 +1,6 @@
 """A particular entry in the score log related to an task being completed."""
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
@@ -43,7 +43,7 @@ class ScoreLogEntry(LeafEntity):
             raise Exception(
                 "Cannot create score logs for inbox tasks that are not complete!"
             )
-        
+
         has_lucky_puppy_bonus = None
         if inbox_task.status == InboxTaskStatus.DONE:
             has_lucky_puppy_bonus = random.randint(0, 99) < 10
@@ -69,7 +69,9 @@ class ScoreLogEntry(LeafEntity):
             difficulty=inbox_task.difficulty,
             success=inbox_task.status == InboxTaskStatus.DONE,
             has_lucky_puppy_bonus=has_lucky_puppy_bonus,
-            score=ScoreLogEntry._compute_score_for_inbox_task(inbox_task, has_lucky_puppy_bonus),
+            score=ScoreLogEntry._compute_score_for_inbox_task(
+                inbox_task, has_lucky_puppy_bonus
+            ),
         )
         return score_log_entry
 
@@ -112,7 +114,9 @@ class ScoreLogEntry(LeafEntity):
         return score_log_entry
 
     @staticmethod
-    def _compute_score_for_inbox_task(inbox_task: InboxTask, has_lucky_puppy_bonus: bool | None) -> int:
+    def _compute_score_for_inbox_task(
+        inbox_task: InboxTask, has_lucky_puppy_bonus: bool | None
+    ) -> int:
         lucky_puppy_modifier = 1 if has_lucky_puppy_bonus else 0
         if inbox_task.status == InboxTaskStatus.DONE:
             if inbox_task.difficulty is None:

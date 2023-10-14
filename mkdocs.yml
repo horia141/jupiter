@@ -33,6 +33,7 @@ nav:
           - 'Smart Lists': 'concepts/smart-lists.md'
           - 'Metrics': 'concepts/metrics.md'
           - 'Personal Relationship Manager': 'concepts/persons.md'
+          - 'Gamification': 'concepts/gamification.md'
           - 'Reporting': 'concepts/reporting.md'
           - 'Tasks Generation': 'concepts/tasks-generation.md'
           - 'Garbage Collection': 'concepts/garbage-collection.md'

@@ -60,6 +60,12 @@ There are multiple views for the big plans though right now:
 Besides the obvious button interactions, you can also _swipe left_ to mark a big plan as _done_ and
 _swipe right_ to mark it as not done.
 
+## Gamification
+
+Big plans participate in [gamification](gamification.md) if it is enabled. Every plan
+marked as `Done` brings you number of points. Every task marked as `Not Done` loses you a number
+of points.
+
 ## Interactions
 
 In the web app you can change the properties of a inbox task by clicking on it in the view.

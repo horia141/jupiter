@@ -35,7 +35,7 @@ interface ScoresGraphProps {
 }
 
 function ScoresGraph({ title, scores }: ScoresGraphProps) {
-    if (scores.length <= 2) {
+  if (scores.length <= 2) {
     return null;
   }
 

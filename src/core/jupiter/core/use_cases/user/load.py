@@ -64,6 +64,7 @@ class UserLoadUseCase(
     ) -> UserLoadResult:
         """Execute the command's action."""
         score_overview = None
+        score_history = None
         if context.user.is_feature_available(UserFeature.GAMIFICATION):
             score_overview = await ScoreOverviewService().do_it(
                 uow, context.user, self._time_provider.get_current_time()

@@ -1,15 +1,14 @@
 import Cookies from "js-cookie";
-import { RecordScoreResult } from "jupiter-gen";
 import { useSnackbar } from "notistack";
 import { useContext, useEffect, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
-import { SCORE_ACTION_COOKIE_SCHEMA, ScoreAction } from "~/logic/domain/gamification/scores";
+import {
+  ScoreAction,
+  SCORE_ACTION_COOKIE_SCHEMA,
+} from "~/logic/domain/gamification/scores";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
-function formatScoreUpdate(
-  result: ScoreAction,
-  isBigScreen: boolean
-): string {
+function formatScoreUpdate(result: ScoreAction, isBigScreen: boolean): string {
   let resultStr = "";
 
   const pointsStr =
@@ -49,7 +48,9 @@ export function useScoreActionSingleton() {
       if (scoreActionStr === undefined) {
         return;
       }
-      const scoreAction = SCORE_ACTION_COOKIE_SCHEMA.parse(JSON.parse(atob(scoreActionStr)));
+      const scoreAction = SCORE_ACTION_COOKIE_SCHEMA.parse(
+        JSON.parse(atob(scoreActionStr))
+      );
       setScoreAction(scoreAction);
       Cookies.remove(globalProperties.scoreActionCookieName);
     }, 100);

@@ -94,6 +94,12 @@ Here’s a sneak peak at some views:
 Besides the obvious button interactions, you can also _swipe left_ to mark a task as _done_ and
 _swipe right_ to mark it as not done.
 
+## Gamification
+
+Inbox tasks participate in [gamification](gamification.md) if it is enabled. Every task
+marked as `Done` brings you number of points. Every task marked as `Not Done` loses you a number
+of points. There's a random "Puppy Bonus" from time to time to spice things up.
+
 ## Interactions
 
 In the web app you can change the properties of a inbox task by clicking on it in the view.
