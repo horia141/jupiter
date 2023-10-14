@@ -3,10 +3,11 @@ import { RecordScoreResult } from "jupiter-gen";
 import { useSnackbar } from "notistack";
 import { useContext, useEffect, useState } from "react";
 import { GlobalPropertiesContext } from "~/global-properties-client";
+import { SCORE_ACTION_COOKIE_SCHEMA, ScoreAction } from "~/logic/domain/gamification/scores";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 function formatScoreUpdate(
-  result: RecordScoreResult,
+  result: ScoreAction,
   isBigScreen: boolean
 ): string {
   let resultStr = "";
@@ -23,14 +24,14 @@ function formatScoreUpdate(
   }
 
   if (isBigScreen) {
-    resultStr += ` Which brings your total for today to ${result.score_overview.daily_score.total_score} and for this week to ${result.score_overview.weekly_score.total_score}.`;
+    resultStr += ` Which brings your total for today to ${result.daily_total_score} and for this week to ${result.weekly_total_score}.`;
   }
 
   return resultStr;
 }
 
 export function useScoreActionSingleton() {
-  const [scoreAction, setScoreAction] = useState<RecordScoreResult | undefined>(
+  const [scoreAction, setScoreAction] = useState<ScoreAction | undefined>(
     undefined
   );
 
@@ -44,8 +45,7 @@ export function useScoreActionSingleton() {
       if (scoreActionStr === undefined) {
         return;
       }
-      const scoreAction = JSON.parse(atob(scoreActionStr))
-        .result as RecordScoreResult;
+      const scoreAction = SCORE_ACTION_COOKIE_SCHEMA.parse(JSON.parse(atob(scoreActionStr)));
       setScoreAction(scoreAction);
       Cookies.remove(globalProperties.scoreActionCookieName);
     }, 100);
@@ -57,7 +57,7 @@ export function useScoreActionSingleton() {
 }
 
 interface ScoreSnackbarManagerProps {
-  scoreAction: RecordScoreResult | undefined;
+  scoreAction: ScoreAction | undefined;
 }
 
 export function ScoreSnackbarManager({

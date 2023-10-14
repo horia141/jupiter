@@ -162,7 +162,7 @@ export default function Workspace() {
               ref={badgeRef}
               badgeContent={
                 scoreAction
-                  ? scoreAction.score_overview.daily_score.total_score
+                  ? scoreAction.daily_total_score
                   : loaderData.userScoreOverview?.daily_score.total_score
               }
               color="success"
@@ -199,12 +199,12 @@ export default function Workspace() {
                 <ListItemText>
                   Today:{" "}
                   {scoreAction
-                    ? scoreAction.score_overview.daily_score.total_score
+                    ? scoreAction.daily_total_score
                     : loaderData.userScoreOverview?.daily_score.total_score}
                   <Divider orientation="vertical" flexItem />
                   Week:{" "}
                   {scoreAction
-                    ? scoreAction.score_overview.weekly_score.total_score
+                    ? scoreAction.daily_total_score
                     : loaderData.userScoreOverview?.weekly_score.total_score}
                 </ListItemText>
                 <Divider />

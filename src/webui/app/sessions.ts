@@ -25,7 +25,7 @@ const { getSession, commitSession, destroySession } =
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: "/",
-      sameSite: "lax",
+      sameSite: "strict",
       secure: GLOBAL_PROPERTIES.env === Env.LOCAL ? false : true,
       secrets: [GLOBAL_PROPERTIES.sessionCookieSecret],
     },
