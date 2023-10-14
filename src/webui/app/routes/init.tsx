@@ -48,7 +48,9 @@ const WorkspaceInitFormSchema = {
   userEmailAddress: z.string(),
   userName: z.string(),
   userTimezone: z.string(),
-  userFeatureFlags: z.array(z.nativeEnum(UserFeature)),
+  userFeatureFlags: z
+    .array(z.nativeEnum(UserFeature))
+    .or(z.nativeEnum(UserFeature).transform((v) => [v])),
   authPassword: z.string(),
   authPasswordRepeat: z.string(),
   workspaceName: z.string(),

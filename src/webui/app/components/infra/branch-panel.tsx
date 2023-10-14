@@ -67,9 +67,12 @@ interface StyledMotionDrawerProps {
 }
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
-  ({}) => `
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  `
+  ({ isBigScreen }) => ({
+    width: isBigScreen ? "100vw" : undefined,
+    height: isBigScreen ? "100vh" : undefined,
+
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
+  })
 );
