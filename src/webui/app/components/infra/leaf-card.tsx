@@ -41,7 +41,7 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
           </IconButton>
         )}
       </StyledButtonGroup>
-      <Box style={{ padding: "0.5rem " }}>{props.children}</Box>
+      <Box style={{ padding: "0.5rem ", paddingTop: isBigScreen ? "0.5rem" : "3.6rem" }}>{props.children}</Box>
     </Form>
   );
 }
@@ -58,7 +58,7 @@ const StyledButtonGroup = styled("div")<StyledButtionGroupProps>(
     padding-right: 0.5rem;
     margin-bottom: 1rem;
     position: sticky;
-    top: ${isBigScreen ? "4rem" : "3.3rem"};
+    top: ${isBigScreen ? "4rem" : "3.6rem"};
     background-color: ${theme.palette.background.paper};
     z-index: ${theme.zIndex.drawer + 1};
     border-radius: 0px;

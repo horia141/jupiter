@@ -34,8 +34,8 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
           transition={{ duration: 0.2 }}
           isBigScreen={isBigScreen}
         >
-          <Container maxWidth="lg" disableGutters>
-            <Toolbar />
+          <Container maxWidth="lg" disableGutters style={{overflowY: "scroll", height: "100vh"}}>
+            {isBigScreen && <Toolbar />}
             {props.children}
           </Container>
         </StyledMotionDrawer>
@@ -51,6 +51,8 @@ interface StyledMotionDrawerProps {
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => `
     background-color: ${theme.palette.background.paper};
+    width: 100vw;
+    height: 100vh;
 
     &::-webkit-scrollbar {
       display: none;
