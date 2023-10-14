@@ -27,6 +27,7 @@ class RecordScoreResult(Value):
     """The result of the score recording."""
 
     latest_task_score: int
+    has_lucky_puppy_bonus: bool | None
     score_overview: UserScoreOverview
 
 
@@ -218,6 +219,7 @@ class RecordScoreService:
 
         return RecordScoreResult(
             latest_task_score=new_score_log_entry.score,
+            has_lucky_puppy_bonus=new_score_log_entry.has_lucky_puppy_bonus,
             score_overview=UserScoreOverview(
                 daily_score=daily_score_stats.to_user_score(),
                 weekly_score=weekly_score_stats.to_user_score(),

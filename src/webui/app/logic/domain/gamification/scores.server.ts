@@ -15,6 +15,7 @@ const scoreActionCookie = createCookie(
 export async function saveScoreAction(result: RecordScoreResult) {
   return await scoreActionCookie.serialize({
     latest_task_score: result.latest_task_score,
+    has_lucky_puppy_bonus: result.has_lucky_puppy_bonus,
     daily_total_score: result.score_overview.daily_score.total_score,
     weekly_total_score: result.score_overview.weekly_score.total_score,
   });

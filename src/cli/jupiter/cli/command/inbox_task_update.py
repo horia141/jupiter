@@ -195,6 +195,11 @@ class InboxTaskUpdate(LoggedInMutationCommand[InboxTaskUpdateUseCase]):
                 f"{abs(result.record_score_result.latest_task_score)} {points}! ",
                 style=f"bold {color}",
             )
+            if result.record_score_result.has_lucky_puppy_bonus:
+                rich_text.append(
+                    "You got a 🐶lucky puppy🐶 bonus! ",
+                    style="bold green",
+                )
             rich_text.append(
                 f"Which brings your total for today to {result.record_score_result.score_overview.daily_score} and for this week to {result.record_score_result.score_overview.weekly_score}."
             )

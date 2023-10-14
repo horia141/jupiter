@@ -23,6 +23,10 @@ function formatScoreUpdate(
     )} ${pointsStr}!`;
   }
 
+  if (result.has_lucky_puppy_bonus) {
+    resultStr += " You got a 🐶lucky puppy🐶 bonus! ";
+  }
+
   if (isBigScreen) {
     resultStr += ` Which brings your total for today to ${result.daily_total_score} and for this week to ${result.weekly_total_score}.`;
   }

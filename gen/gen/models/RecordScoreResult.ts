@@ -6,6 +6,7 @@ import type { UserScoreOverview } from './UserScoreOverview';
 
 export type RecordScoreResult = {
     latest_task_score: number;
+    has_lucky_puppy_bonus: boolean;
     score_overview: UserScoreOverview;
 };
 

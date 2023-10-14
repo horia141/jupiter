@@ -1,5 +1,6 @@
 """A particular entry in the score log related to an task being completed."""
 from dataclasses import dataclass
+import random
 
 from jupiter.core.domain.big_plans.big_plan import BigPlan
 from jupiter.core.domain.big_plans.big_plan_status import BigPlanStatus
@@ -27,6 +28,7 @@ class ScoreLogEntry(LeafEntity):
     task_ref_id: EntityId
     difficulty: Difficulty | None
     success: bool
+    has_lucky_puppy_bonus: bool | None
     score: int
 
     @staticmethod
@@ -41,6 +43,10 @@ class ScoreLogEntry(LeafEntity):
             raise Exception(
                 "Cannot create score logs for inbox tasks that are not complete!"
             )
+        
+        has_lucky_puppy_bonus = None
+        if inbox_task.status == InboxTaskStatus.DONE:
+            has_lucky_puppy_bonus = random.randint(0, 99) < 10
 
         score_log_entry = ScoreLogEntry(
             ref_id=BAD_REF_ID,
@@ -62,7 +68,8 @@ class ScoreLogEntry(LeafEntity):
             task_ref_id=inbox_task.ref_id,
             difficulty=inbox_task.difficulty,
             success=inbox_task.status == InboxTaskStatus.DONE,
-            score=ScoreLogEntry._compute_score_for_inbox_task(inbox_task),
+            has_lucky_puppy_bonus=has_lucky_puppy_bonus,
+            score=ScoreLogEntry._compute_score_for_inbox_task(inbox_task, has_lucky_puppy_bonus),
         )
         return score_log_entry
 
@@ -99,21 +106,23 @@ class ScoreLogEntry(LeafEntity):
             task_ref_id=big_plan.ref_id,
             difficulty=None,
             success=big_plan.status == BigPlanStatus.DONE,
+            has_lucky_puppy_bonus=None,
             score=ScoreLogEntry._compute_score_for_big_plan(big_plan),
         )
         return score_log_entry
 
     @staticmethod
-    def _compute_score_for_inbox_task(inbox_task: InboxTask) -> int:
+    def _compute_score_for_inbox_task(inbox_task: InboxTask, has_lucky_puppy_bonus: bool | None) -> int:
+        lucky_puppy_modifier = 1 if has_lucky_puppy_bonus else 0
         if inbox_task.status == InboxTaskStatus.DONE:
             if inbox_task.difficulty is None:
-                return 1
+                return 1 + lucky_puppy_modifier
             elif inbox_task.difficulty == Difficulty.EASY:
-                return 1
+                return 1 + lucky_puppy_modifier
             elif inbox_task.difficulty == Difficulty.MEDIUM:
-                return 2
+                return 2 + lucky_puppy_modifier
             else:  # inbox_task.difficulty == Difficulty.HARD:
-                return 5
+                return 5 + lucky_puppy_modifier
         else:  # inbox_task.status == InboxTaskStatus.NOT_DONE:
             if inbox_task.difficulty is None:
                 return -1

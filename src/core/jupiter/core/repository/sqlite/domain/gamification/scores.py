@@ -221,6 +221,7 @@ class SqliteScoreLogEntryRepository(ScoreLogEntryRepository):
             Column("source", String, nullable=False),
             Column("task_ref_id", Integer, nullable=False),
             Column("difficulty", String, nullable=True),
+            Column("has_lucky_puppy_bonus", Boolean, nullable=True),
             Column("success", Boolean, nullable=False),
             Column("score", Integer, nullable=False),
             keep_existing=True,
@@ -251,6 +252,7 @@ class SqliteScoreLogEntryRepository(ScoreLogEntryRepository):
                     task_ref_id=entity.task_ref_id.as_int(),
                     difficulty=entity.difficulty.value if entity.difficulty else None,
                     success=entity.success,
+                    has_lucky_puppy_bonus=entity.has_lucky_puppy_bonus,
                     score=entity.score,
                 ),
             )
@@ -283,6 +285,7 @@ class SqliteScoreLogEntryRepository(ScoreLogEntryRepository):
                 task_ref_id=entity.task_ref_id.as_int(),
                 difficulty=entity.difficulty.value if entity.difficulty else None,
                 success=entity.success,
+                has_lucky_puppy_bonus=entity.has_lucky_puppy_bonus,
                 score=entity.score,
             ),
         )
@@ -376,6 +379,7 @@ class SqliteScoreLogEntryRepository(ScoreLogEntryRepository):
             task_ref_id=EntityId.from_raw(str(row["task_ref_id"])),
             difficulty=Difficulty(row["difficulty"]) if row["difficulty"] else None,
             success=row["success"],
+            has_lucky_puppy_bonus=row["has_lucky_puppy_bonus"],
             score=row["score"],
         )
 
