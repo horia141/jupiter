@@ -1,7 +1,7 @@
 import { styled, Toolbar } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { PropsWithChildren } from "react";
+import { useEffect, type PropsWithChildren, useRef } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 const BIG_SCREEN_WIDTH = "480px";
@@ -19,10 +19,41 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const isBigScreen = useBigScreen();
   const location = useLocation();
 
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  function handleScroll() {
+    if (isBigScreen) {
+    window.sessionStorage.setItem(`scroll:${location.pathname}`, `${drawerRef.current?.scrollTop}`);
+    } else {
+      window.sessionStorage.setItem(`scroll:${location.pathname}`, `${window.pageYOffset}`);
+    }
+  }
+
+  useEffect(() => {
+    if (drawerRef.current === null) {
+      return;
+    }
+
+    if (isBigScreen) {
+    drawerRef.current.addEventListener('scroll', handleScroll);
+    drawerRef.current.scrollTo(0, parseInt(window.sessionStorage.getItem(`scroll:${location.pathname}`) ?? '0'));
+
+    } else {
+      window.addEventListener('scroll', handleScroll);
+      window.scrollTo(0, parseInt(window.sessionStorage.getItem(`scroll:${location.pathname}`) ?? '0'));
+    }
+
+    return () => {
+      drawerRef.current?.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isBigScreen]);
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       {props.show && (
         <StyledMotionDrawer
+          ref={drawerRef}
           id="leaf-panel"
           key={location.pathname}
           initial={{

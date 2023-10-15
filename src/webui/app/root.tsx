@@ -70,7 +70,6 @@ export default function App() {
             </ThemeProvider>
           </GlobalPropertiesContext.Provider>
         </StrictMode>
-        <ScrollRestoration />
         <Scripts />
         <LiveReload />
       </BodyWithNoScroll>

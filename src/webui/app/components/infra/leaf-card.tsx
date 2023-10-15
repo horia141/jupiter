@@ -20,7 +20,7 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
       <StyledButtonGroup isBigScreen={isBigScreen}>
         <ButtonGroup size="small">
           <IconButton>
-            <Link to={props.returnLocation} preventScrollReset>
+            <Link to={props.returnLocation}>
               <KeyboardDoubleArrowRightIcon />
             </Link>
           </IconButton>

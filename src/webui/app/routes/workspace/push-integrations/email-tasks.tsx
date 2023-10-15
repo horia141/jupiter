@@ -89,7 +89,6 @@ export default function EmailTasks() {
               variant="contained"
               to="/workspace/push-integrations/email-tasks/settings"
               component={Link}
-              preventScrollReset
             >
               Setings
             </Button>

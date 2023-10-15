@@ -29,7 +29,6 @@ export function NoTasksCard(props: NoTasksCardProps) {
           size="small"
           component={Link}
           to="/workspace/tools/gen"
-          preventScrollReset
         >
           Generate
         </Button>
@@ -37,7 +36,6 @@ export function NoTasksCard(props: NoTasksCardProps) {
           variant="contained"
           size="small"
           component={Link}
-          preventScrollReset
           to={props.parentNewLocations}
         >
           Create

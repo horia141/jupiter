@@ -139,7 +139,7 @@ interface EntityLinkProps {
 
 export function EntityLink(props: PropsWithChildren<EntityLinkProps>) {
   return (
-    <StyledLink to={props.to} preventScrollReset>
+    <StyledLink to={props.to}>
       {props.children}
     </StyledLink>
   );

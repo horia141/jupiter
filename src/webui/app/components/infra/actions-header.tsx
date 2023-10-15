@@ -12,7 +12,7 @@ export function ActionHeader(props: PropsWithChildren<ActionHeaderProps>) {
     <OuterWrapper>
       <InnerWrapper>{props.children}</InnerWrapper>
       <IconButton sx={{ marginLeft: "auto" }}>
-        <Link to={props.returnLocation} preventScrollReset>
+        <Link to={props.returnLocation}>
           <CloseIcon />
         </Link>
       </IconButton>

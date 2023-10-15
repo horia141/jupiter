@@ -413,7 +413,6 @@ function SmallScreenTimeline({ bigPlans }: SmallScreenTimelineProps) {
               <TimelineLink
                 leftmargin={betterLeftMargin}
                 width={betterWidth}
-                preventScrollReset
                 to={`/workspace/big-plans/${bigPlan.ref_id.the_id}`}
               >
                 <BigPlanStatusTag status={bigPlan.status} format="icon" />
