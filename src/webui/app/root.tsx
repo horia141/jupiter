@@ -6,7 +6,6 @@ import {
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
   ShouldRevalidateFunction,
   useLoaderData,
 } from "@remix-run/react";
