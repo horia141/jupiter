@@ -87,7 +87,6 @@ export default function Persons() {
               variant="contained"
               to={`/workspace/persons/new`}
               component={Link}
-              preventScrollReset
             >
               Create
             </Button>
@@ -99,7 +98,6 @@ export default function Persons() {
                 variant="outlined"
                 to={`/workspace/persons/settings`}
                 component={Link}
-                preventScrollReset
               >
                 Settings
               </Button>

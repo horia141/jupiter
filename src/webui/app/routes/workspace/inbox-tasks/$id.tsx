@@ -57,6 +57,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafCard } from "~/components/infra/leaf-card";
+import { SideCard } from "~/components/layout/side";
 import { MetricTag } from "~/components/metric-tag";
 import { PersonTag } from "~/components/person-tag";
 import { SlackTaskTag } from "~/components/slack-task-tag";
@@ -372,7 +373,7 @@ export default function InboxTask() {
   }, [loaderData]);
 
   return (
-    <LeafCard
+    <SideCard
       key={inboxTask.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -674,7 +675,7 @@ export default function InboxTask() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </SideCard>
   );
 }
 

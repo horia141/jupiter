@@ -91,7 +91,6 @@ export default function Habits() {
             variant="contained"
             to="/workspace/habits/new"
             component={Link}
-            preventScrollReset
           >
             Create
           </Button>

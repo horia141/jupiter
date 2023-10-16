@@ -395,7 +395,6 @@ export default function BigPlan() {
           disabled={loaderData.bigPlan.archived}
           to={`/workspace/inbox-tasks/new?reason=for-big-plan&bigPlanRefId=${loaderData.bigPlan.ref_id.the_id}`}
           component={Link}
-          preventScrollReset
         >
           New Task
         </Button>

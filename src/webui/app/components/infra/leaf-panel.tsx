@@ -1,7 +1,7 @@
 import { styled, Toolbar } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { PropsWithChildren } from "react";
+import { useEffect, useRef, type PropsWithChildren, useLayoutEffect } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 const BIG_SCREEN_WIDTH = "480px";
@@ -19,10 +19,56 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const isBigScreen = useBigScreen();
   const location = useLocation();
 
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  function handleScroll(ref: HTMLDivElement, pathname: string) {
+    if (isBigScreen) {
+      console.log(isBigScreen, window.location.pathname, location.pathname, pathname, ref.scrollTop);
+    window.sessionStorage.setItem(`scroll:${pathname}`, `${ref.scrollTop}`);
+    } else {
+      console.log(isBigScreen, location.pathname, pathname, window.scrollY);
+    window.sessionStorage.setItem(`scroll:${pathname}`, `${window.scrollY}`);
+    }
+  }
+
+  useLayoutEffect(() => {
+    if (drawerRef.current === null) {
+      return;
+    }
+
+    function handleScrollSpecial() {
+      handleScroll(drawerRef.current!, location.pathname);
+    }
+
+    if (isBigScreen) {
+      drawerRef.current.addEventListener("scrollend", handleScrollSpecial);
+      drawerRef.current.scrollTo(
+        0,
+        parseInt(
+          window.sessionStorage.getItem(`scroll:${location.pathname}`) ?? "0"
+        )
+      );
+    } else {
+      window.addEventListener("scrollend", handleScrollSpecial);
+      window.scrollTo(
+        0,
+        parseInt(
+          window.sessionStorage.getItem(`scroll:${location.pathname}`) ?? "0"
+        )
+      );
+    }
+
+    return () => {
+      drawerRef.current?.removeEventListener("scrollend", handleScrollSpecial);
+      window.removeEventListener("scrollend", handleScrollSpecial);
+    };
+  }, [isBigScreen, drawerRef, location]);
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       {props.show && (
         <StyledMotionDrawer
+          ref={drawerRef}
           id="leaf-panel"
           key={location.pathname}
           initial={{
