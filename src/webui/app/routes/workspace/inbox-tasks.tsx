@@ -85,6 +85,7 @@ import {
 } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfo, TopLevelInfoContext } from "~/top-level-context";
+import { SidePanel } from "~/components/layout/side";
 
 enum DragTargetStatus {
   SOURCE_DRAG,
@@ -649,7 +650,7 @@ export default function InboxTasks() {
         )}
       </NestingAwarePanel>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
+      <SidePanel show={shouldShowALeaf}>{outlet}</SidePanel>
     </TrunkCard>
   );
 }

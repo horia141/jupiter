@@ -22,6 +22,7 @@ import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { LeafPanel } from "~/components/infra/leaf-panel";
 import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
 import { TrunkCard } from "~/components/infra/trunk-card";
+import { SidePanel } from "~/components/layout/side";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortChoresNaturally } from "~/logic/domain/chore";
@@ -130,7 +131,7 @@ export default function Chores() {
         </EntityStack>
       </NestingAwarePanel>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
+      <SidePanel show={shouldShowALeaf}>{outlet}</SidePanel>
     </TrunkCard>
   );
 }
