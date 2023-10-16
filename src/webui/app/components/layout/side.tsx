@@ -1,6 +1,6 @@
 import { Toolbar, useTheme } from "@mui/material";
-import { useLocation } from "@remix-run/react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useLocation, useNavigation } from "@remix-run/react";
+import { AnimatePresence, motion, useIsPresent } from "framer-motion";
 import { useEffect, useRef, useLayoutEffect } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -27,11 +27,15 @@ export function SideCard(props: PropsWithChildren<SideCardProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   const location = useLocation();
+  const isPresent = useIsPresent()
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   function handleScroll(ref: HTMLDivElement, pathname: string) {
-      console.log(isBigScreen, window.location.pathname, location.pathname, pathname, ref.scrollTop);
+      console.log(isPresent, window.location.pathname, location.pathname, pathname, ref.scrollTop);
+      if (!isPresent) {
+        return;
+      }
     window.sessionStorage.setItem(`scroll:${pathname}`, `${ref.scrollTop}`);
   }
 
