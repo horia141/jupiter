@@ -6,7 +6,6 @@ import {
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
   ShouldRevalidateFunction,
   useLoaderData,
 } from "@remix-run/react";
@@ -70,7 +69,6 @@ export default function App() {
             </ThemeProvider>
           </GlobalPropertiesContext.Provider>
         </StrictMode>
-        <ScrollRestoration />
         <Scripts />
         <LiveReload />
       </BodyWithNoScroll>

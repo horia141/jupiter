@@ -84,7 +84,6 @@ export default function SmartLists() {
               variant="contained"
               to={`/workspace/smart-lists/new`}
               component={Link}
-              preventScrollReset
             >
               Create
             </Button>

@@ -2,8 +2,10 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import { Box, ButtonGroup, IconButton, styled } from "@mui/material";
-import { Form, Link, useNavigate } from "@remix-run/react";
-import type { PropsWithChildren } from "react";
+import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
+import { useIsPresent } from "framer-motion";
+import { useEffect, useRef, type PropsWithChildren } from "react";
+import { useScrollRestoration } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface LeafCardProps {
@@ -15,12 +17,19 @@ interface LeafCardProps {
 export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
+  const location = useLocation();
+  const isPresent = useIsPresent();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useScrollRestoration(containerRef, location.pathname, isPresent);
+
   return (
     <Form method="post">
-      <StyledButtonGroup isBigScreen={isBigScreen}>
+      <StyledButtonGroup>
         <ButtonGroup size="small">
           <IconButton>
-            <Link to={props.returnLocation} preventScrollReset>
+            <Link to={props.returnLocation}>
               <KeyboardDoubleArrowRightIcon />
             </Link>
           </IconButton>
@@ -41,24 +50,28 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
           </IconButton>
         )}
       </StyledButtonGroup>
-      <Box style={{ padding: "0.5rem " }}>{props.children}</Box>
+      <Box
+        ref={containerRef}
+        style={{
+          padding: "0.5rem ",
+          height: `calc(100vh - 4rem - ${isBigScreen ? "4rem" : "3.5rem"})`,
+          overflowY: "scroll",
+        }}
+      >
+        {props.children}
+      </Box>
     </Form>
   );
 }
 
-interface StyledButtionGroupProps {
-  isBigScreen: boolean;
-}
-
-const StyledButtonGroup = styled("div")<StyledButtionGroupProps>(
-  ({ theme, isBigScreen }) => `
+const StyledButtonGroup = styled("div")(
+  ({ theme }) => `
     display: flex;
     width: 100%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     margin-bottom: 1rem;
-    position: sticky;
-    top: ${isBigScreen ? "4rem" : "3.3rem"};
+    height: 3rem;
     background-color: ${theme.palette.background.paper};
     z-index: ${theme.zIndex.drawer + 1};
     border-radius: 0px;

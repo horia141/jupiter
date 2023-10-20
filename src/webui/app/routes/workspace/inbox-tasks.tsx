@@ -320,7 +320,6 @@ export default function InboxTasks() {
               variant="contained"
               to="/workspace/inbox-tasks/new"
               component={Link}
-              preventScrollReset
             >
               Create
             </Button>

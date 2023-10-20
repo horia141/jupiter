@@ -111,7 +111,6 @@ export default function SmartListViewItems() {
               variant="contained"
               to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
               component={Link}
-              preventScrollReset
             >
               Create
             </Button>
@@ -120,7 +119,6 @@ export default function SmartListViewItems() {
               variant="outlined"
               to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
               component={Link}
-              preventScrollReset
             >
               Details
             </Button>
@@ -132,7 +130,6 @@ export default function SmartListViewItems() {
               variant="outlined"
               to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
               component={Link}
-              preventScrollReset
             >
               Tags
             </Button>

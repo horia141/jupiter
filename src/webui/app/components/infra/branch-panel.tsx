@@ -1,7 +1,7 @@
 import { styled } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import { useHydrated } from "remix-utils";
 import { extractBranchFromPath } from "~/rendering/routes";
 import { useBigScreen } from "~/rendering/use-big-screen";
@@ -68,8 +68,7 @@ interface StyledMotionDrawerProps {
 
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ isBigScreen }) => ({
-    width: isBigScreen ? "100vw" : undefined,
-    height: isBigScreen ? "100vh" : undefined,
+    height: isBigScreen ? "calc(100vh - 4rem)" : "calc(100vh - 3.5rem)",
 
     "&::-webkit-scrollbar": {
       display: "none",

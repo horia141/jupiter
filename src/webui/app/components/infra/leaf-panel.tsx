@@ -1,7 +1,7 @@
 import { styled, Toolbar } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 const BIG_SCREEN_WIDTH = "480px";
@@ -61,12 +61,7 @@ const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
     bottom: 0px;
     width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};
     z-index: ${theme.zIndex.appBar - 1};
-    overflow-y: ${isBigScreen ? "scroll" : "inherit"};
     background-color: ${theme.palette.background.paper};
     border-left: 1px solid rgba(0, 0, 0, 0.12);
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
   `
 );

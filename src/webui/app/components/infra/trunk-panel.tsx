@@ -1,7 +1,7 @@
-import { Container, styled, Toolbar } from "@mui/material";
+import { styled, Toolbar } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import { extractTrunkFromPath } from "~/rendering/routes";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
@@ -34,17 +34,8 @@ export function TrunkPanel(props: PropsWithChildren<TrunkPanelProps>) {
           transition={{ duration: 0.2 }}
           isBigScreen={isBigScreen}
         >
-          <Container
-            maxWidth="lg"
-            disableGutters
-            style={{
-              overflowY: isBigScreen ? "scroll" : undefined,
-              height: isBigScreen ? "100vh" : undefined,
-            }}
-          >
-            <Toolbar />
-            {props.children}
-          </Container>
+          <Toolbar />
+          {props.children}
         </StyledMotionDrawer>
       )}
     </AnimatePresence>
@@ -58,8 +49,8 @@ interface StyledMotionDrawerProps {
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => ({
     backgroundColor: theme.palette.background.paper,
-    width: isBigScreen ? "100vw" : undefined,
-    height: isBigScreen ? "100vh" : undefined,
+    width: "100vw",
+    height: "100vh",
 
     "&::-webkit-scrollbar": {
       display: "none",
