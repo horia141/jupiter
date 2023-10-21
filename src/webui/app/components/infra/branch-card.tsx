@@ -3,17 +3,56 @@ import { useLocation } from "@remix-run/react";
 import { useIsPresent } from "framer-motion";
 import { useEffect, useRef, type PropsWithChildren } from "react";
 import { extractBranchFromPath } from "~/rendering/routes";
-import { useScrollRestoration } from "~/rendering/scroll-restoration";
+import {
+  restoreScrollPosition,
+  saveScrollPosition,
+} from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 export function BranchCard(props: PropsWithChildren) {
   const location = useLocation();
-  const isPresent = useIsPresent();
   const isBigScreen = useBigScreen();
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useScrollRestoration(containerRef, extractBranchFromPath(location.pathname), isPresent);
+  const isPresent = useIsPresent();
+
+  function handleScroll(ref: HTMLDivElement, pathname: string) {
+    if (!isPresent) {
+      return;
+    }
+    saveScrollPosition(ref, pathname);
+  }
+
+  useEffect(() => {
+    if (containerRef.current === null) {
+      return;
+    }
+
+    if (!isPresent) {
+      return;
+    }
+
+    function handleScrollSpecial() {
+      handleScroll(
+        containerRef.current!,
+        extractBranchFromPath(location.pathname)
+      );
+    }
+
+    restoreScrollPosition(
+      containerRef.current,
+      extractBranchFromPath(location.pathname)
+    );
+    containerRef.current.addEventListener("scrollend", handleScrollSpecial);
+
+    return () => {
+      containerRef.current?.removeEventListener(
+        "scrollend",
+        handleScrollSpecial
+      );
+    };
+  }, [containerRef, location]);
 
   return (
     <Container

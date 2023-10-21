@@ -5,7 +5,10 @@ import { Box, ButtonGroup, IconButton, styled } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { useIsPresent } from "framer-motion";
 import { useEffect, useRef, type PropsWithChildren } from "react";
-import { useScrollRestoration } from "~/rendering/scroll-restoration";
+import {
+  restoreScrollPosition,
+  saveScrollPosition,
+} from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface LeafCardProps {
@@ -18,11 +21,41 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   const location = useLocation();
-  const isPresent = useIsPresent();
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useScrollRestoration(containerRef, location.pathname, isPresent);
+  const isPresent = useIsPresent();
+
+  function handleScroll(ref: HTMLDivElement, pathname: string) {
+    if (!isPresent) {
+      return;
+    }
+    saveScrollPosition(ref, pathname);
+  }
+
+  useEffect(() => {
+    if (containerRef.current === null) {
+      return;
+    }
+
+    if (!isPresent) {
+      return;
+    }
+
+    function handleScrollSpecial() {
+      handleScroll(containerRef.current!, location.pathname);
+    }
+
+    restoreScrollPosition(containerRef.current, location.pathname);
+    containerRef.current.addEventListener("scrollend", handleScrollSpecial);
+
+    return () => {
+      containerRef.current?.removeEventListener(
+        "scrollend",
+        handleScrollSpecial
+      );
+    };
+  }, [containerRef, location]);
 
   return (
     <Form method="post">
