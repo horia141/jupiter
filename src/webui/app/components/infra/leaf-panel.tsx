@@ -1,4 +1,4 @@
-import { styled, Toolbar } from "@mui/material";
+import { styled } from "@mui/material";
 import { useLocation } from "@remix-run/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { type PropsWithChildren } from "react";
@@ -41,7 +41,6 @@ export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
           transition={{ duration: 0.2 }}
           isBigScreen={isBigScreen}
         >
-          {isBigScreen && <Toolbar />}
           {props.children}
         </StyledMotionDrawer>
       )}
@@ -56,7 +55,7 @@ interface StyledMotionDrawerProps {
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => `
     position: ${isBigScreen ? "fixed" : "relative"};
-    top: 0px;
+    top: ${isBigScreen ? "4rem" : "0px"};
     right: 0px;
     bottom: 0px;
     width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};

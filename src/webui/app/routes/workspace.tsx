@@ -125,7 +125,7 @@ export default function Workspace() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <AppBar
-        position="fixed"
+        position="static"
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
         <Toolbar>
