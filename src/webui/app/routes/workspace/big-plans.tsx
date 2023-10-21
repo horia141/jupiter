@@ -540,13 +540,13 @@ function computeBigPlanGnattPosition(entry: BigPlan) {
 
   let leftMargin = undefined;
   if (!entry.actionable_date) {
-    leftMargin = 45;
+    leftMargin = 0.45;
   } else {
     const actionableDate = aDateToDate(entry.actionable_date);
     if (actionableDate < startOfYear) {
       leftMargin = 0;
     } else if (actionableDate > endOfYear) {
-      leftMargin = 100;
+      leftMargin = 1;
     } else {
       leftMargin = actionableDate.ordinal / startOfYear.daysInYear;
     }
@@ -554,12 +554,12 @@ function computeBigPlanGnattPosition(entry: BigPlan) {
 
   let width = undefined;
   if (!entry.due_date) {
-    width = 10; // TODO: better here in case there's an actionable_date
+    width = 0.1; // TODO: better here in case there's an actionable_date
   } else {
     const dueDate = aDateToDate(entry.due_date);
 
     if (dueDate > endOfYear) {
-      width = 100 - leftMargin;
+      width = 1 - leftMargin;
     } else if (dueDate < startOfYear) {
       width = 0;
     } else {
