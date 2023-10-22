@@ -15,7 +15,8 @@ import { useBigScreen } from "~/rendering/use-big-screen";
 const BIG_SCREEN_WIDTH_SMALL = "480px";
 const BIG_SCREEN_WIDTH_MEDIUM = "calc(min(720px, 60vw))";
 const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
-const BIG_SCREEN_WIDTH_FULL = "1200px";
+const BIG_SCREEN_WIDTH_FULL_INT = 1200;
+const BIG_SCREEN_WIDTH_FULL = `${BIG_SCREEN_WIDTH_FULL_INT}px`;
 const SMALL_SCREEN_WIDTH = "100%";
 
 export enum LeafCardExpansionState {
@@ -40,6 +41,7 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState(props.initialExpansionState ?? LeafCardExpansionState.SMALL);
+  const [expansionFullRight, setExpansionFullRight] = useState(0);
 
   function handleScroll(ref: HTMLDivElement, pathname: string) {
     if (!isPresent) {
@@ -72,6 +74,22 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
     };
   }, [containerRef, location]);
 
+  // setting right to calc((100vw - BIG_SCREEN_WIDTH_FULL_INT / 2)) doesn't work with framer
+  // motion. It seems to be a bug with framer motion. So we have to calculate the right
+  // pixel value and then it works.
+  function handleChangeExpansionFullRight() {
+    setExpansionFullRight(Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2));
+  }
+
+  useEffect(() => {
+    handleChangeExpansionFullRight();
+    window.addEventListener("resize", handleChangeExpansionFullRight);
+
+    return () => {
+      window.removeEventListener("resize", handleChangeExpansionFullRight);
+    }
+  }, []);
+
   const formVariants = {
     [LeafCardExpansionState.SMALL]: {
       right: "0px"
@@ -83,7 +101,7 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
       right: "0px"
     },
     [LeafCardExpansionState.FULL]: {
-      right: `calc((100vw - ${BIG_SCREEN_WIDTH_FULL}) / 2)`
+      right: `${expansionFullRight}px`,
     }
   }
 

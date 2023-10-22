@@ -19,7 +19,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LinksFunction, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -54,6 +54,12 @@ import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-a
 import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
+
+import editorJsTweaks from "~/styles/editorjs-tweaks.css";
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: editorJsTweaks },
+];
 
 // @secureFn
 export async function loader({ request }: LoaderArgs) {

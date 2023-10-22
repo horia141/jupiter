@@ -104,7 +104,7 @@ export default function Note() {
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/notes"
-      initialExpansionState={LeafCardExpansionState.LARGE}
+      initialExpansionState={LeafCardExpansionState.FULL}
     >
       <Card>
         <GlobalError actionResult={actionData} />
