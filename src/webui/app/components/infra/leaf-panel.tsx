@@ -55,7 +55,6 @@ interface StyledMotionDrawerProps {
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => `
     position: ${isBigScreen ? "fixed" : "relative"};
-    top: ${isBigScreen ? "4rem" : "0px"};
     right: 0px;
     bottom: 0px;
     z-index: ${theme.zIndex.appBar - 1};
