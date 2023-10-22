@@ -15,7 +15,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafCard, LeafCardExpansionState } from "~/components/infra/leaf-card";
 import { NoteEditor } from "~/components/note-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -104,7 +104,7 @@ export default function Note() {
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/notes"
-      startExpanded
+      initialExpansionState={LeafCardExpansionState.LARGE}
     >
       <Card>
         <GlobalError actionResult={actionData} />

@@ -1,11 +1,10 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import { Box, ButtonGroup, IconButton, styled } from "@mui/material";
+import { ButtonGroup, IconButton, styled, useTheme } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
-import SwitchRightIcon from '@mui/icons-material/SwitchRight';
 import SwitchLeftIcon from '@mui/icons-material/SwitchLeft';
-import { MotionConfig, motion, useIsPresent } from "framer-motion";
+import { motion, useIsPresent } from "framer-motion";
 import { useEffect, useRef, type PropsWithChildren, useState } from "react";
 import {
   restoreScrollPosition,
@@ -13,24 +12,34 @@ import {
 } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
-const BIG_SCREEN_WIDTH_STANDARD = "480px";
-const BIG_SCREEN_WIDTH_EXPANDED = "calc(min(720px, 60vw))";
+const BIG_SCREEN_WIDTH_SMALL = "480px";
+const BIG_SCREEN_WIDTH_MEDIUM = "calc(min(720px, 60vw))";
+const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
+const BIG_SCREEN_WIDTH_FULL = "1200px";
 const SMALL_SCREEN_WIDTH = "100%";
+
+export enum LeafCardExpansionState {
+  SMALL = "small",
+  MEDIUM = "medium",
+  LARGE = "large",
+  FULL = "full"
+}
 
 interface LeafCardProps {
   showArchiveButton?: boolean;
   enableArchiveButton?: boolean;
   returnLocation: string;
-  startExpanded?: boolean;
+  initialExpansionState?: LeafCardExpansionState;
 }
 
 export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
+  const theme = useTheme();
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
-  const [isExpanded, setIsExpanded] = useState(props.startExpanded ?? false);
+  const [expansionState, setExpansionState] = useState(props.initialExpansionState ?? LeafCardExpansionState.SMALL);
 
   function handleScroll(ref: HTMLDivElement, pathname: string) {
     if (!isPresent) {
@@ -63,12 +72,33 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
     };
   }, [containerRef, location]);
 
-  const containerVariants = {
-    standard: {
-      width: BIG_SCREEN_WIDTH_STANDARD
+  const formVariants = {
+    [LeafCardExpansionState.SMALL]: {
+      right: "0px"
     },
-    expanded: {
-      width: BIG_SCREEN_WIDTH_EXPANDED
+    [LeafCardExpansionState.MEDIUM]: {
+      right: "0px"
+    },
+    [LeafCardExpansionState.LARGE]: {
+      right: "0px"
+    },
+    [LeafCardExpansionState.FULL]: {
+      right: `calc((100vw - ${BIG_SCREEN_WIDTH_FULL}) / 2)`
+    }
+  }
+
+  const containerVariants = {
+    [LeafCardExpansionState.SMALL]: {
+      width: BIG_SCREEN_WIDTH_SMALL
+    },
+    [LeafCardExpansionState.MEDIUM]: {
+      width: BIG_SCREEN_WIDTH_MEDIUM
+    },
+    [LeafCardExpansionState.LARGE]: {
+      width: BIG_SCREEN_WIDTH_LARGE
+    },
+    [LeafCardExpansionState.FULL]: {
+      width: BIG_SCREEN_WIDTH_FULL
     },
     smallScreen: {
       width: SMALL_SCREEN_WIDTH
@@ -77,13 +107,21 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
 
   return (
     <Form method="post">
+      <motion.div
+        style={{backgroundColor: theme.palette.background.paper,
+        position: "relative", right: "0px"}}
+        initial={false}
+        animate={isBigScreen ? expansionState : "small"}
+        variants={formVariants}
+        transition={{duration: 0.2}}
+        >
       <StyledButtonGroup>
         <ButtonGroup size="small">
-          {isBigScreen && <IconButton onClick={() => setIsExpanded((e) => !e)}>
-              {isExpanded ? <SwitchLeftIcon /> : <SwitchRightIcon />}
+          {isBigScreen && <IconButton onClick={() => setExpansionState((e) => cycleExpansionState(e))}>
+              <SwitchLeftIcon />
           </IconButton>}
           <IconButton>
-            <Link to={props.returnLocation}>
+            <Link to={props.returnLocation} style={{display: "flex"}}>
               <KeyboardDoubleArrowRightIcon />
             </Link>
           </IconButton>
@@ -106,7 +144,7 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
       </StyledButtonGroup>
       <motion.div
         ref={containerRef}
-        animate={isBigScreen ? (isExpanded ? "expanded" : "standard") : "smallScreen"}
+        animate={isBigScreen ? expansionState : "smallScreen"}
         variants={containerVariants}
         transition={{ duration: 0.2 }}
         style={{
@@ -116,6 +154,7 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
         }}
       >
         {props.children}
+      </motion.div>
       </motion.div>
     </Form>
   );
@@ -134,3 +173,16 @@ const StyledButtonGroup = styled("div")(
     box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
     `
 );
+
+function cycleExpansionState(expansionState: LeafCardExpansionState): LeafCardExpansionState {
+  switch (expansionState) {
+    case LeafCardExpansionState.SMALL:
+      return LeafCardExpansionState.MEDIUM;
+    case LeafCardExpansionState.MEDIUM:
+      return LeafCardExpansionState.LARGE;
+    case LeafCardExpansionState.LARGE:
+      return LeafCardExpansionState.FULL;
+    case LeafCardExpansionState.FULL:
+      return LeafCardExpansionState.SMALL;
+  }
+}
