@@ -4,10 +4,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { type PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
-const BIG_SCREEN_WIDTH = "480px";
+
 const BIG_SCREEN_ANIMATION_START = "480px";
 const BIG_SCREEN_ANIMATION_END = "480px";
-const SMALL_SCREEN_WIDTH = "100%";
+
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
@@ -58,7 +58,6 @@ const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
     top: ${isBigScreen ? "4rem" : "0px"};
     right: 0px;
     bottom: 0px;
-    width: ${isBigScreen ? BIG_SCREEN_WIDTH : SMALL_SCREEN_WIDTH};
     z-index: ${theme.zIndex.appBar - 1};
     background-color: ${theme.palette.background.paper};
     border-left: 1px solid rgba(0, 0, 0, 0.12);
