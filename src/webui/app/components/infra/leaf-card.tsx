@@ -1,11 +1,11 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
 import { ButtonGroup, IconButton, styled, useTheme } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
-import SwitchLeftIcon from '@mui/icons-material/SwitchLeft';
 import { motion, useIsPresent } from "framer-motion";
-import { useEffect, useRef, type PropsWithChildren, useState } from "react";
+import { useEffect, useRef, useState, type PropsWithChildren } from "react";
 import {
   restoreScrollPosition,
   saveScrollPosition,
@@ -23,7 +23,7 @@ export enum LeafCardExpansionState {
   SMALL = "small",
   MEDIUM = "medium",
   LARGE = "large",
-  FULL = "full"
+  FULL = "full",
 }
 
 interface LeafCardProps {
@@ -40,7 +40,9 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
   const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const isPresent = useIsPresent();
-  const [expansionState, setExpansionState] = useState(props.initialExpansionState ?? LeafCardExpansionState.SMALL);
+  const [expansionState, setExpansionState] = useState(
+    props.initialExpansionState ?? LeafCardExpansionState.SMALL
+  );
   const [expansionFullRight, setExpansionFullRight] = useState(0);
 
   function handleScroll(ref: HTMLDivElement, pathname: string) {
@@ -78,7 +80,9 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
   // motion. It seems to be a bug with framer motion. So we have to calculate the right
   // pixel value and then it works.
   function handleChangeExpansionFullRight() {
-    setExpansionFullRight(Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2));
+    setExpansionFullRight(
+      Math.max(0, (window.innerWidth - BIG_SCREEN_WIDTH_FULL_INT) / 2)
+    );
   }
 
   useEffect(() => {
@@ -87,92 +91,99 @@ export function LeafCard(props: PropsWithChildren<LeafCardProps>) {
 
     return () => {
       window.removeEventListener("resize", handleChangeExpansionFullRight);
-    }
+    };
   }, []);
 
   const formVariants = {
     [LeafCardExpansionState.SMALL]: {
-      right: "0px"
+      right: "0px",
     },
     [LeafCardExpansionState.MEDIUM]: {
-      right: "0px"
+      right: "0px",
     },
     [LeafCardExpansionState.LARGE]: {
-      right: "0px"
+      right: "0px",
     },
     [LeafCardExpansionState.FULL]: {
       right: `${expansionFullRight}px`,
-    }
-  }
+    },
+  };
 
   const containerVariants = {
     [LeafCardExpansionState.SMALL]: {
-      width: BIG_SCREEN_WIDTH_SMALL
+      width: BIG_SCREEN_WIDTH_SMALL,
     },
     [LeafCardExpansionState.MEDIUM]: {
-      width: BIG_SCREEN_WIDTH_MEDIUM
+      width: BIG_SCREEN_WIDTH_MEDIUM,
     },
     [LeafCardExpansionState.LARGE]: {
-      width: BIG_SCREEN_WIDTH_LARGE
+      width: BIG_SCREEN_WIDTH_LARGE,
     },
     [LeafCardExpansionState.FULL]: {
-      width: BIG_SCREEN_WIDTH_FULL
+      width: BIG_SCREEN_WIDTH_FULL,
     },
     smallScreen: {
-      width: SMALL_SCREEN_WIDTH
-    }
+      width: SMALL_SCREEN_WIDTH,
+    },
   };
 
   return (
     <Form method="post">
       <motion.div
-        style={{backgroundColor: theme.palette.background.paper,
-        position: "relative", right: "0px"}}
+        style={{
+          backgroundColor: theme.palette.background.paper,
+          position: "relative",
+          right: "0px",
+        }}
         initial={false}
         animate={isBigScreen ? expansionState : "small"}
         variants={formVariants}
-        transition={{duration: 0.2}}
-        >
-      <StyledButtonGroup>
-        <ButtonGroup size="small">
-          {isBigScreen && <IconButton onClick={() => setExpansionState((e) => cycleExpansionState(e))}>
-              <SwitchLeftIcon />
-          </IconButton>}
-          <IconButton>
-            <Link to={props.returnLocation} style={{display: "flex"}}>
-              <KeyboardDoubleArrowRightIcon />
-            </Link>
-          </IconButton>
-          <IconButton onClick={() => navigation(-1)}>
-            <ArrowBackIcon />
-          </IconButton>
-        </ButtonGroup>
-
-        {props.showArchiveButton && (
-          <IconButton
-            sx={{ marginLeft: "auto" }}
-            disabled={!props.enableArchiveButton}
-            type="submit"
-            name="intent"
-            value="archive"
-          >
-            <DeleteIcon />
-          </IconButton>
-        )}
-      </StyledButtonGroup>
-      <motion.div
-        ref={containerRef}
-        animate={isBigScreen ? expansionState : "smallScreen"}
-        variants={containerVariants}
         transition={{ duration: 0.2 }}
-        style={{
-          padding: "0.5rem",
-          height: `calc(100vh - 4rem - ${isBigScreen ? "4rem" : "3.5rem"})`,
-          overflowY: "scroll",
-        }}
       >
-        {props.children}
-      </motion.div>
+        <StyledButtonGroup>
+          <ButtonGroup size="small">
+            {isBigScreen && (
+              <IconButton
+                onClick={() => setExpansionState((e) => cycleExpansionState(e))}
+              >
+                <SwitchLeftIcon />
+              </IconButton>
+            )}
+            <IconButton>
+              <Link to={props.returnLocation} style={{ display: "flex" }}>
+                <KeyboardDoubleArrowRightIcon />
+              </Link>
+            </IconButton>
+            <IconButton onClick={() => navigation(-1)}>
+              <ArrowBackIcon />
+            </IconButton>
+          </ButtonGroup>
+
+          {props.showArchiveButton && (
+            <IconButton
+              sx={{ marginLeft: "auto" }}
+              disabled={!props.enableArchiveButton}
+              type="submit"
+              name="intent"
+              value="archive"
+            >
+              <DeleteIcon />
+            </IconButton>
+          )}
+        </StyledButtonGroup>
+        <motion.div
+          ref={containerRef}
+          animate={isBigScreen ? expansionState : "smallScreen"}
+          variants={containerVariants}
+          transition={{ duration: 0.2 }}
+          style={{
+            padding: "0.5rem",
+            height: `calc(100vh - 4rem - ${isBigScreen ? "4rem" : "3.5rem"})`,
+            overflowY: "scroll",
+          }}
+        >
+          {props.children}
+        </motion.div>
       </motion.div>
     </Form>
   );
@@ -192,7 +203,9 @@ const StyledButtonGroup = styled("div")(
     `
 );
 
-function cycleExpansionState(expansionState: LeafCardExpansionState): LeafCardExpansionState {
+function cycleExpansionState(
+  expansionState: LeafCardExpansionState
+): LeafCardExpansionState {
   switch (expansionState) {
     case LeafCardExpansionState.SMALL:
       return LeafCardExpansionState.MEDIUM;

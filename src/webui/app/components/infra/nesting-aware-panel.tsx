@@ -16,25 +16,13 @@ export function NestingAwarePanel(
     return null;
   }
 
-  if (isBigScreen) {
-    return (
-      <Stack spacing={2} useFlexGap>
-        {props.children}
-      </Stack>
-    );
-  } else {
-    if (!props.showOutlet) {
-      return (
-        <Stack
-          spacing={2}
-          useFlexGap
-          sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
-        >
-          {props.children}
-        </Stack>
-      );
-    } else {
-      return null;
-    }
-  }
+  return (
+    <Stack
+      spacing={2}
+      useFlexGap
+      sx={{ paddingLeft: "1rem", paddingRight: "1rem" }}
+    >
+      {props.children}
+    </Stack>
+  );
 }

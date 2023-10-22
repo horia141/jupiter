@@ -1,4 +1,4 @@
 .ce-block__content,
 .ce-toolbar__content {
-    max-width: calc(100% - 100px);
+  max-width: calc(100% - 100px);
 }

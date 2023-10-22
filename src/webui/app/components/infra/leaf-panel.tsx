@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { type PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
-
 const BIG_SCREEN_ANIMATION_START = "480px";
 const BIG_SCREEN_ANIMATION_END = "480px";
 
