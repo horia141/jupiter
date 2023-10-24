@@ -54,7 +54,6 @@ interface StyledMotionDrawerProps {
 const StyledMotionDrawer = styled(motion.div)<StyledMotionDrawerProps>(
   ({ theme, isBigScreen }) => `
     position: fixed;
-    top: ${isBigScreen ? "unset": "3.5rem"};
     left: ${isBigScreen ? "unset" : "0px"};
     right: 0px;
     bottom: 0px;
