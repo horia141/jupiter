@@ -24,7 +24,7 @@ import { parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -103,7 +103,7 @@ export default function NewMetricEntry() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard
+    <LeafPanel
       key={loaderData.metric.ref_id.the_id}
       returnLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}`}
     >
@@ -162,7 +162,7 @@ export default function NewMetricEntry() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

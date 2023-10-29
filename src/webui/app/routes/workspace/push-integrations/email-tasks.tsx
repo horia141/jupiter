@@ -7,6 +7,7 @@ import {
   useFetcher,
   useOutlet,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import { WorkspaceFeature, type EmailTask } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -18,9 +19,8 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { emailTaskNiceName } from "~/logic/domain/email-task";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -78,8 +78,8 @@ export default function EmailTasks() {
   }
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
@@ -139,10 +139,12 @@ export default function EmailTasks() {
             </EntityCard>
           ))}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        {outlet}
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

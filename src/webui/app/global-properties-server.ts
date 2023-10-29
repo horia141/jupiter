@@ -5,6 +5,7 @@ export interface GlobalPropertiesServer {
   env: Env;
   hosting: Hosting;
   baseName: string;
+  title: string;
   description: string;
   localWebApiServerUrl: string;
   localWebApiProgressReporterUrl: string;
@@ -39,6 +40,7 @@ function loadGlobalPropertiesOnServer(): GlobalPropertiesServer {
     env: process.env.ENV as Env,
     hosting: process.env.HOSTING as Hosting,
     baseName: process.env.BASENAME as string,
+    title: process.env.TITLE as string,
     description: process.env.DESCRIPTION as string,
     localWebApiServerUrl: process.env.LOCAL_WEBAPI_SERVER_URL as string,
     localWebApiProgressReporterUrl: process.env

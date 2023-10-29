@@ -44,7 +44,6 @@ export default function BlockEditor(props: BlockEditorProps) {
       },
       onChange: async () => {
         const content = await editor.saver.save();
-        console.log(content);
 
         if (props.onChange) {
           props.onChange(transformEditorJsToContentBlocks(content));

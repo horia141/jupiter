@@ -15,6 +15,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { Button, IconButton, styled } from "@mui/material";
 import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
 import { ResponsiveTimeRange } from "@nivo/calendar";
+import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -24,9 +25,8 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortVacationsNaturally } from "~/logic/domain/vacation";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -79,8 +79,8 @@ export default function Vacations({ request }: LoaderArgs) {
   }
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           <Button
             variant="contained"
@@ -113,10 +113,12 @@ export default function Vacations({ request }: LoaderArgs) {
             </EntityCard>
           ))}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        {outlet}
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

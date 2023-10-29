@@ -3,22 +3,21 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import type { SmartList } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";
 import { ActionHeader } from "~/components/infra/actions-header";
-import { BranchPanel } from "~/components/infra/branch-panel";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
@@ -51,7 +50,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartLists() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
@@ -73,10 +71,10 @@ export default function SmartLists() {
   }
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel
+    <TrunkPanel>
+      <NestingAwareBlock
         branchForceHide={shouldShowABranch}
-        showOutlet={shouldShowABranch || shouldShowALeafToo}
+        shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
         <ActionHeader returnLocation="/workspace">
           <ButtonGroup>
@@ -109,14 +107,12 @@ export default function SmartLists() {
             </EntityCard>
           ))}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <BranchPanel show={shouldShowABranch}>{outlet}</BranchPanel>
-
-      <LeafPanel show={!shouldShowABranch && shouldShowALeafToo}>
-        {outlet}
-      </LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

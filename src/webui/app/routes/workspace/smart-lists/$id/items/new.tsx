@@ -26,7 +26,7 @@ import { CheckboxAsString, parseForm, parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TagsEditor } from "~/components/tags-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -109,7 +109,7 @@ export default function NewSmartListItem() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard
+    <LeafPanel
       key={loaderData.smartList.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -163,7 +163,7 @@ export default function NewSmartListItem() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

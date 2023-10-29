@@ -24,9 +24,8 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolCard } from "~/components/infra/tool-card";
-import { ToolPanel } from "~/components/infra/tool-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -99,9 +98,9 @@ export default function Security() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <TrunkCard>
-      <ToolPanel show={true}>
-        <ToolCard returnLocation="/workspace">
+    <TrunkPanel>
+      <ToolPanel2 returnLocation="/workspace">
+        <Stack useFlexGap gap={2}>
           <Card>
             <GlobalError actionResult={actionData} />
             <CardHeader title="Security" />
@@ -173,9 +172,9 @@ export default function Security() {
               </ButtonGroup>
             </CardActions>
           </Card>
-        </ToolCard>
-      </ToolPanel>
-    </TrunkCard>
+        </Stack>
+      </ToolPanel2>
+    </TrunkPanel>
   );
 }
 

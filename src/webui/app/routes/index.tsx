@@ -1,6 +1,7 @@
-import { Button, ButtonGroup, Container } from "@mui/material";
+import { Button, ButtonGroup } from "@mui/material";
 import { Link, ShouldRevalidateFunction } from "@remix-run/react";
 import { useContext } from "react";
+import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 
@@ -11,7 +12,7 @@ export default function Index() {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   return (
-    <Container maxWidth="lg">
+    <StandaloneContainer>
       <ButtonGroup>
         <Button variant="contained" to="/workspace" component={Link}>
           Go To The Workspace
@@ -25,6 +26,6 @@ export default function Index() {
           Go To The Docs
         </Button>
       </ButtonGroup>
-    </Container>
+    </StandaloneContainer>
   );
 }

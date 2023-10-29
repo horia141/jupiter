@@ -20,7 +20,7 @@ import { parseForm } from "zodix";
 import { getGuestApiClient } from "~/api-clients";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { StandaloneCard } from "~/components/infra/standalone-card";
+import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { commitSession, getSession } from "~/sessions";
 
@@ -89,7 +89,7 @@ export default function ResetPassword() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <StandaloneCard>
+    <StandaloneContainer>
       <Form method="post">
         <Card>
           <GlobalError actionResult={actionData} />
@@ -187,6 +187,6 @@ export default function ResetPassword() {
           New Workspace
         </Button>
       </EntityActionHeader>
-    </StandaloneCard>
+    </StandaloneContainer>
   );
 }

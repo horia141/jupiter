@@ -6,6 +6,7 @@ export interface GlobalPropertiesClient {
   env: Env;
   hosting: Hosting;
   baseName: string;
+  title: string;
   description: string;
   webApiProgressReporterUrl: string;
   docsUrl: string;
@@ -20,6 +21,7 @@ export const GlobalPropertiesContext = createContext<GlobalPropertiesClient>({
   env: Env.LOCAL,
   hosting: Hosting.LOCAL,
   baseName: "FAKE-FAKE",
+  title: "FAKE-FAKE",
   description: "FAKE-FAKE",
   webApiProgressReporterUrl: "FAKE-FAKE",
   docsUrl: "FAKE-FAKE",
@@ -37,6 +39,7 @@ export function serverToClientGlobalProperties(
     env: globalPropertiesServer.env,
     hosting: globalPropertiesServer.hosting,
     baseName: globalPropertiesServer.baseName,
+    title: globalPropertiesServer.title,
     description: globalPropertiesServer.description,
     webApiProgressReporterUrl:
       globalPropertiesServer.hosting === Hosting.LOCAL

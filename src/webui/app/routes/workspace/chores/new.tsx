@@ -35,7 +35,7 @@ import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { difficultyName } from "~/logic/domain/difficulty";
 import { eisenName } from "~/logic/domain/eisen";
@@ -143,7 +143,7 @@ export default function NewChore() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/chores">
+    <LeafPanel returnLocation="/workspace/chores">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -350,7 +350,7 @@ export default function NewChore() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

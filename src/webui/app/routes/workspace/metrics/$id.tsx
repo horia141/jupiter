@@ -3,9 +3,9 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
   useParams,
 } from "@remix-run/react";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
@@ -15,16 +15,16 @@ import { z } from "zod";
 import { parseParams } from "zodix";
 
 import { Button, ButtonGroup, styled } from "@mui/material";
+import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
 import { ActionHeader } from "~/components/infra/actions-header";
-import { BranchCard } from "~/components/infra/branch-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { TimeDiffTag } from "~/components/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
@@ -74,7 +74,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Metric() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
@@ -100,8 +99,8 @@ export default function Metric() {
   }
 
   return (
-    <BranchCard key={loaderData.metric.ref_id.the_id}>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <BranchPanel key={loaderData.metric.ref_id.the_id}>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace/metrics">
           <ButtonGroup>
             <Button
@@ -144,10 +143,12 @@ export default function Metric() {
             </EntityCard>
           ))}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </BranchCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </BranchPanel>
   );
 }
 

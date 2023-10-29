@@ -24,7 +24,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { IconSelector } from "~/components/icon-selector";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -76,7 +76,7 @@ export default function NewSmartList() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/smart-lists">
+    <LeafPanel returnLocation="/workspace/smart-lists">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -107,7 +107,7 @@ export default function NewSmartList() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

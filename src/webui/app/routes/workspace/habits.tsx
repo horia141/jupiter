@@ -3,10 +3,11 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import type { Habit, HabitFindResultEntry, Project } from "jupiter-gen";
 import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
@@ -18,9 +19,8 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortHabitsNaturally } from "~/logic/domain/habit";
@@ -53,7 +53,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Habits() {
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
-  const outlet = useOutlet();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
 
@@ -84,8 +83,8 @@ export default function Habits() {
   }
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           <Button
             variant="contained"
@@ -127,10 +126,12 @@ export default function Habits() {
             );
           })}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

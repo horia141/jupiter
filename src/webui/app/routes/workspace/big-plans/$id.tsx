@@ -39,7 +39,7 @@ import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { bigPlanStatusName } from "~/logic/domain/big-plan-status";
@@ -248,7 +248,7 @@ export default function BigPlan() {
   }, [loaderData]);
 
   return (
-    <LeafCard
+    <LeafPanel
       key={loaderData.bigPlan.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -419,7 +419,7 @@ export default function BigPlan() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

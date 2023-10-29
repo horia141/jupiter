@@ -1,5 +1,5 @@
-import { createTheme, CssBaseline, styled, ThemeProvider } from "@mui/material";
-import { json } from "@remix-run/node";
+import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { json, SerializeFrom } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -29,10 +29,10 @@ export async function loader() {
   });
 }
 
-export function meta() {
+export function meta({ data }: { data: SerializeFrom<typeof loader> }) {
   return {
     charset: "utf-8",
-    title: "Jupiter",
+    title: data.globalProperties.title,
     viewport: "width=device-width,initial-scale=1",
   };
 }
@@ -49,7 +49,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <BodyWithNoScroll>
+      <body>
         <StrictMode>
           <GlobalPropertiesContext.Provider value={loaderData.globalProperties}>
             <ThemeProvider theme={THEME}>
@@ -71,17 +71,7 @@ export default function App() {
         </StrictMode>
         <Scripts />
         <LiveReload />
-      </BodyWithNoScroll>
+      </body>
     </html>
   );
 }
-
-const BodyWithNoScroll = styled("body")({
-  scrollbarWidth: "none",
-  msOverflowStyle: "none",
-  "::-webkit-scrollbar": {
-    display: "none",
-    width: 0,
-    color: "transparent",
-  },
-});

@@ -33,7 +33,7 @@ import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolCard } from "~/components/infra/tool-card";
+import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
 import { PeriodSelect } from "~/components/period-select";
 import { SyncTargetSelect } from "~/components/sync-target-select";
 import {
@@ -198,7 +198,7 @@ export default function Gen() {
     })) ?? [];
 
   return (
-    <ToolCard returnLocation="/workspace">
+    <ToolPanel2 returnLocation="/workspace">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -442,7 +442,7 @@ export default function Gen() {
           </Button>
         </CardActions>
       </Card>
-    </ToolCard>
+    </ToolPanel2>
   );
 }
 

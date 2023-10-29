@@ -1,5 +1,5 @@
 import { ShouldRevalidateFunction } from "@remix-run/react";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
 
@@ -12,9 +12,9 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Subscription() {
   return (
-    <TrunkCard>
+    <TrunkPanel>
       <div dangerouslySetInnerHTML={stripeEmbed()} />
-    </TrunkCard>
+    </TrunkPanel>
   );
 }
 

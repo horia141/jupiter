@@ -7,6 +7,7 @@ import {
   useFetcher,
   useOutlet,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import type { Person } from "jupiter-gen";
 import { PersonRelationship, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
@@ -18,9 +19,8 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { PeriodTag } from "~/components/period-tag";
 import { PersonBirthdayTag } from "~/components/person-birthday-tag";
 import { PersonRelationshipTag } from "~/components/person-relationship-tag";
@@ -79,8 +79,8 @@ export default function Persons() {
   }
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           <ButtonGroup>
             <Button
@@ -140,9 +140,11 @@ export default function Persons() {
             </EntityCard>
           ))}
         </EntityStack>
-      </NestingAwarePanel>
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      </NestingAwareBlock>
+      <AnimatePresence mode="wait" initial={false}>
+        {outlet}
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

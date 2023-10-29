@@ -31,7 +31,7 @@ import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
@@ -244,7 +244,7 @@ export default function EmailTask() {
   }
 
   return (
-    <LeafCard
+    <LeafPanel
       key={loaderData.emailTask.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -488,7 +488,7 @@ export default function EmailTask() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

@@ -16,7 +16,7 @@ import { z } from "zod";
 import { parseQuery } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { StandaloneCard } from "~/components/infra/standalone-card";
+import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { getSession } from "~/sessions";
 
 const QuerySchema = {
@@ -51,7 +51,7 @@ export default function ShowRecoveryToken() {
   }
 
   return (
-    <StandaloneCard>
+    <StandaloneContainer>
       <Card>
         <CardHeader title="Your Recovery Token" />
         <CardContent>
@@ -83,7 +83,7 @@ export default function ShowRecoveryToken() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </StandaloneCard>
+    </StandaloneContainer>
   );
 }
 

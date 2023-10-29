@@ -3,11 +3,12 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
   useParams,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { SmartListItem, SmartListTag } from "jupiter-gen";
 import { ApiError } from "jupiter-gen";
@@ -17,13 +18,12 @@ import { getLoggedInApiClient } from "~/api-clients";
 import Check from "~/components/check";
 import { EntityNameComponent } from "~/components/entity-name";
 import { ActionHeader } from "~/components/infra/actions-header";
-import { BranchCard } from "~/components/infra/branch-card";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
+import { BranchPanel } from "~/components/infra/layout/branch-panel";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -74,7 +74,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewItems() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
@@ -103,8 +102,8 @@ export default function SmartListViewItems() {
   }
 
   return (
-    <BranchCard key={`${loaderData.smartList.ref_id.the_id}/items`}>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <BranchPanel key={`${loaderData.smartList.ref_id.the_id}/items`}>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace/smart-lists">
           <ButtonGroup>
             <Button
@@ -159,10 +158,12 @@ export default function SmartListViewItems() {
             </EntityCard>
           ))}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </BranchCard>
+      <AnimatePresence mode="wait" initial={false}>
+        <Outlet />
+      </AnimatePresence>
+    </BranchPanel>
   );
 }
 

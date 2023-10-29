@@ -1,13 +1,12 @@
-import { Card, CardContent, CardHeader } from "@mui/material";
+import { Card, CardContent, CardHeader, Stack } from "@mui/material";
 import { json, LoaderArgs } from "@remix-run/node";
 import { ShouldRevalidateFunction } from "@remix-run/react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { ToolCard } from "~/components/infra/tool-card";
-import { ToolPanel } from "~/components/infra/tool-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -34,9 +33,9 @@ export default function Gamification() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   return (
-    <TrunkCard>
-      <ToolPanel show={true}>
-        <ToolCard returnLocation="/workspace">
+    <TrunkPanel>
+      <ToolPanel2 returnLocation="/workspace">
+        <Stack useFlexGap gap={2}>
           {loaderData.userScoreOverview && (
             <>
               <Card>
@@ -53,9 +52,9 @@ export default function Gamification() {
               </Card>
             </>
           )}
-        </ToolCard>
-      </ToolPanel>
-    </TrunkCard>
+        </Stack>
+      </ToolPanel2>
+    </TrunkPanel>
   );
 }
 

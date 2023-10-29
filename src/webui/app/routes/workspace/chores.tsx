@@ -7,6 +7,7 @@ import {
   useFetcher,
   useOutlet,
 } from "@remix-run/react";
+import { AnimatePresence } from "framer-motion";
 import type { Chore, ChoreFindResultEntry, Project } from "jupiter-gen";
 import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
 import { useContext } from "react";
@@ -19,9 +20,8 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { PeriodTag } from "~/components/period-tag";
 import { ProjectTag } from "~/components/project-tag";
 import { sortChoresNaturally } from "~/logic/domain/chore";
@@ -85,8 +85,8 @@ export default function Chores() {
   }
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           <Button
             variant="contained"
@@ -128,10 +128,12 @@ export default function Chores() {
             );
           })}
         </EntityStack>
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        {outlet}
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

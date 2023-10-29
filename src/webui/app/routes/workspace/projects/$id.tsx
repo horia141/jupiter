@@ -25,7 +25,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -124,7 +124,7 @@ export default function Project() {
   const inputsEnabled = transition.state === "idle" && !project.archived;
 
   return (
-    <LeafCard
+    <LeafPanel
       key={project.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -161,7 +161,7 @@ export default function Project() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

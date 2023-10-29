@@ -34,7 +34,7 @@ import {
   FieldError,
   GlobalError,
 } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
@@ -263,7 +263,7 @@ export default function NewInboxTask() {
   }
 
   return (
-    <LeafCard returnLocation="/workspace/inbox-tasks">
+    <LeafPanel returnLocation="/workspace/inbox-tasks">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -432,7 +432,7 @@ export default function NewInboxTask() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

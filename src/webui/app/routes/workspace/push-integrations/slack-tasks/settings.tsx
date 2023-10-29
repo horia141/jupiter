@@ -27,7 +27,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -105,7 +105,7 @@ export default function SlackTasksSettings() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/push-integrations/slack-tasks">
+    <LeafPanel returnLocation="/workspace/push-integrations/slack-tasks">
       {isWorkspaceFeatureAvailable(
         topLevelInfo.workspace,
         WorkspaceFeature.PROJECTS
@@ -152,7 +152,7 @@ export default function SlackTasksSettings() {
           </CardActions>
         </Card>
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

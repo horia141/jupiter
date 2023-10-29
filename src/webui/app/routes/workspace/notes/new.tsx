@@ -13,7 +13,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { NoteEditor } from "~/components/note-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -61,7 +61,7 @@ export default function NewNote() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/notes">
+    <LeafPanel returnLocation="/workspace/notes">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -72,7 +72,7 @@ export default function NewNote() {
           </FormControl>
         </CardContent>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

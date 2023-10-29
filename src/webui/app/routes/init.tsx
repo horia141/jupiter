@@ -39,7 +39,7 @@ import {
 import { EntityActionHeader } from "~/components/infra/entity-actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { StandaloneCard } from "~/components/infra/standalone-card";
+import { StandaloneContainer } from "~/components/infra/layout/standalone-container";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { commitSession, getSession } from "~/sessions";
@@ -150,7 +150,7 @@ export default function WorkspaceInit() {
   const globalProperties = useContext(GlobalPropertiesContext);
 
   return (
-    <StandaloneCard>
+    <StandaloneContainer>
       <Form method="post">
         <Card>
           <GlobalError actionResult={actionData} />
@@ -341,7 +341,7 @@ export default function WorkspaceInit() {
           Reset Password
         </Button>
       </EntityActionHeader>
-    </StandaloneCard>
+    </StandaloneContainer>
   );
 }
 

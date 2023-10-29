@@ -56,7 +56,7 @@ import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { EntityLink } from "~/components/infra/entity-card";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { ToolCard } from "~/components/infra/tool-card";
+import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
 import {
   ActionResult,
   isNoErrorSomeData,
@@ -182,7 +182,7 @@ export default function Report() {
   }
 
   return (
-    <ToolCard method="get" returnLocation="/workspace">
+    <ToolPanel2 method="get" returnLocation="/workspace">
       <Card>
         <GlobalError actionResult={loaderData} />
         <CardContent>
@@ -269,7 +269,7 @@ export default function Report() {
             report={loaderData.data.report}
           />
         )}
-    </ToolCard>
+    </ToolPanel2>
   );
 }
 

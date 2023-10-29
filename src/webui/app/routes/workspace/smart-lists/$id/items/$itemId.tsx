@@ -27,7 +27,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { TagsEditor } from "~/components/tags-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -148,7 +148,7 @@ export default function SmartListItem() {
     transition.state === "idle" && !loaderData.smartListItem.archived;
 
   return (
-    <LeafCard
+    <LeafPanel
       key={loaderData.smartListItem.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -221,7 +221,7 @@ export default function SmartListItem() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

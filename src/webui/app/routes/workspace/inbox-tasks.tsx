@@ -49,9 +49,8 @@ import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { ActionHeader } from "~/components/infra/actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { NoTasksCard } from "~/components/no-tasks-card";
 import { TabPanel } from "~/components/tab-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
@@ -312,8 +311,8 @@ export default function InboxTasks() {
   );
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           <ButtonGroup>
             <Button
@@ -647,10 +646,12 @@ export default function InboxTasks() {
             onCardMarkNotDone={handleCardMarkNotDone}
           />
         )}
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        {outlet}
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

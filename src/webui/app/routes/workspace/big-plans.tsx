@@ -30,6 +30,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { AnimatePresence } from "framer-motion";
 import { DateTime } from "luxon";
 import { useContext, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
@@ -41,9 +42,8 @@ import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { LeafPanel } from "~/components/infra/leaf-panel";
-import { NestingAwarePanel } from "~/components/infra/nesting-aware-panel";
-import { TrunkCard } from "~/components/infra/trunk-card";
+import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
+import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { aDateToDate } from "~/logic/domain/adate";
 import { sortBigPlansNaturally } from "~/logic/domain/big-plan";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
@@ -133,8 +133,8 @@ export default function BigPlans() {
   const [showFilterDialog, setShowFilterDialog] = useState(false);
 
   return (
-    <TrunkCard>
-      <NestingAwarePanel showOutlet={shouldShowALeaf}>
+    <TrunkPanel>
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <ActionHeader returnLocation="/workspace">
           <ButtonGroup>
             <Button
@@ -293,10 +293,12 @@ export default function BigPlans() {
             onArchiveBigPlan={archiveBigPlan}
           />
         )}
-      </NestingAwarePanel>
+      </NestingAwareBlock>
 
-      <LeafPanel show={shouldShowALeaf}>{outlet}</LeafPanel>
-    </TrunkCard>
+      <AnimatePresence mode="wait" initial={false}>
+        {outlet}
+      </AnimatePresence>
+    </TrunkPanel>
   );
 }
 

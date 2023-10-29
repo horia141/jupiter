@@ -41,7 +41,7 @@ import { InboxTaskStack } from "~/components/inbox-task-stack";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { aDateToDate } from "~/logic/domain/adate";
 import { difficultyName } from "~/logic/domain/difficulty";
@@ -310,7 +310,7 @@ export default function Chore() {
   }, [loaderData]);
 
   return (
-    <LeafCard
+    <LeafPanel
       key={loaderData.chore.ref_id.the_id}
       showArchiveButton
       enableArchiveButton={inputsEnabled}
@@ -602,7 +602,7 @@ export default function Chore() {
           onCardMarkNotDone={handleCardMarkNotDone}
         />
       )}
-    </LeafCard>
+    </LeafPanel>
   );
 }
 

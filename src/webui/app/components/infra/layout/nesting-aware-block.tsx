@@ -3,14 +3,18 @@ import { PropsWithChildren } from "react";
 import { useBigScreen } from "~/rendering/use-big-screen";
 
 interface NestingAwarePanelProps {
-  showOutlet: boolean;
+  shouldHide: boolean;
   branchForceHide?: boolean;
 }
 
-export function NestingAwarePanel(
+export function NestingAwareBlock(
   props: PropsWithChildren<NestingAwarePanelProps>
 ) {
   const isBigScreen = useBigScreen();
+
+  if (!isBigScreen && props.shouldHide) {
+    return null;
+  }
 
   if (props.branchForceHide) {
     return null;

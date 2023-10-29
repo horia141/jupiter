@@ -23,7 +23,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { LeafCard } from "~/components/infra/leaf-card";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -71,7 +71,7 @@ export default function NewProject() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <LeafCard returnLocation="/workspace/projects">
+    <LeafPanel returnLocation="/workspace/projects">
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -104,7 +104,7 @@ export default function NewProject() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </LeafCard>
+    </LeafPanel>
   );
 }
 
