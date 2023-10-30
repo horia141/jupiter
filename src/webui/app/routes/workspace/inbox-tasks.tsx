@@ -25,7 +25,7 @@ import {
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import type { ShouldRevalidateFunction } from "@remix-run/react";
-import { Link, useFetcher, useOutlet } from "@remix-run/react";
+import { Link, Outlet, useFetcher } from "@remix-run/react";
 
 import type { InboxTask, InboxTaskFindResultEntry } from "jupiter-gen";
 import {
@@ -135,7 +135,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function InboxTasks() {
   const topLevelInfo = useContext(TopLevelInfoContext);
-  const outlet = useOutlet();
   const { entries } = useLoaderDataSafeForAnimation<typeof loader>();
 
   const globalProperties = useContext(GlobalPropertiesContext);
@@ -649,7 +648,7 @@ export default function InboxTasks() {
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
-        {outlet}
+        <Outlet />
       </AnimatePresence>
     </TrunkPanel>
   );

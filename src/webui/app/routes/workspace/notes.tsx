@@ -3,9 +3,9 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { Note } from "jupiter-gen";
@@ -47,7 +47,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function Notes() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
@@ -100,7 +99,7 @@ export default function Notes() {
         </EntityStack>
       </NestingAwareBlock>
       <AnimatePresence mode="wait" initial={false}>
-        {outlet}
+        <Outlet />
       </AnimatePresence>
     </TrunkPanel>
   );

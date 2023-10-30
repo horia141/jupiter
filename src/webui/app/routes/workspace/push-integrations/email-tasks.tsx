@@ -3,9 +3,9 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
 } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { WorkspaceFeature, type EmailTask } from "jupiter-gen";
@@ -49,7 +49,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function EmailTasks() {
-  const outlet = useOutlet();
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);
@@ -142,7 +141,7 @@ export default function EmailTasks() {
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
-        {outlet}
+        <Outlet />
       </AnimatePresence>
     </TrunkPanel>
   );

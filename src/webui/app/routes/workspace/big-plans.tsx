@@ -2,9 +2,9 @@ import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
+  Outlet,
   ShouldRevalidateFunction,
   useFetcher,
-  useOutlet,
 } from "@remix-run/react";
 import type { BigPlan, BigPlanFindResultEntry, Project } from "jupiter-gen";
 import { BigPlanStatus, WorkspaceFeature } from "jupiter-gen";
@@ -89,7 +89,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function BigPlans() {
-  const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const isBigScreen = useBigScreen();
 
@@ -296,7 +295,7 @@ export default function BigPlans() {
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
-        {outlet}
+        <Outlet />
       </AnimatePresence>
     </TrunkPanel>
   );

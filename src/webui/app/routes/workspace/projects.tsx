@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, ShouldRevalidateFunction, useOutlet } from "@remix-run/react";
+import { Link, Outlet, ShouldRevalidateFunction } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
@@ -36,8 +36,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Projects() {
   const projects = useLoaderDataSafeForAnimation<typeof loader>();
-  const outlet = useOutlet();
-
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   return (
@@ -65,7 +63,7 @@ export default function Projects() {
       </NestingAwareBlock>
 
       <AnimatePresence mode="wait" initial={false}>
-        {outlet}
+        <Outlet />
       </AnimatePresence>
     </TrunkPanel>
   );

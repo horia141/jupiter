@@ -106,6 +106,8 @@ interface BranchCardFrameProps {
 const BranchCardFrame = styled(motion.div)<BranchCardFrameProps>(
   ({ theme, isBigScreen }) => ({
     backgroundColor: theme.palette.background.paper,
-    height: isBigScreen ? "calc(var(--vh, 1vh) * 100 - 4rem)" : "calc(var(--vh, 1vh) * 100 - 3.5rem)",
+    height: isBigScreen
+      ? "calc(var(--vh, 1vh) * 100 - 4rem)"
+      : "calc(var(--vh, 1vh) * 100 - 3.5rem)",
   })
 );

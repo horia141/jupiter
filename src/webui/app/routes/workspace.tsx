@@ -49,7 +49,6 @@ import { isUserFeatureAvailable } from "~/logic/domain/user";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
-import { useRootNeedsToShowTrunk } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
@@ -120,22 +119,22 @@ export default function Workspace() {
     );
   }, [scoreAction]);
 
-    // Checkout https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
-    // for reasoning.
+  // Checkout https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
+  // for reasoning.
   function updateOurOwnVh() {
-// First we get the viewport height and we multiple it by 1% to get a value for a vh unit
-let vh = window.innerHeight * 0.01;
-// Then we set the value in the --vh custom property to the root of the document
-document.documentElement.style.setProperty('--vh', `${vh}px`);
+    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
+    let vh = window.innerHeight * 0.01;
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
   }
 
   useEffect(() => {
     updateOurOwnVh();
-        // We listen to the resize event
-    window.addEventListener('resize', updateOurOwnVh);
+    // We listen to the resize event
+    window.addEventListener("resize", updateOurOwnVh);
     return () => {
-      window.removeEventListener('resive', updateOurOwnVh);
-    }
+      window.removeEventListener("resive", updateOurOwnVh);
+    };
   }, []);
 
   const topLevelInfo = {

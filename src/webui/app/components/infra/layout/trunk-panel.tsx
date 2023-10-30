@@ -107,7 +107,9 @@ const TrunkCardFrame = styled(motion.div)<TrunkCardFrameProps>(
     backgroundColor: theme.palette.background.paper,
     width: isBigScreen ? `${theme.breakpoints.values.lg}px` : "100vw",
     margin: "auto",
-    height: isBigScreen ? "calc(var(--vh, 1vh) * 100 - 4rem)" : "calc(var(--vh, 1vh) * 100 - 3.5rem)",
+    height: isBigScreen
+      ? "calc(var(--vh, 1vh) * 100 - 4rem)"
+      : "calc(var(--vh, 1vh) * 100 - 3.5rem)",
     overflowY: "scroll",
   })
 );
