@@ -93,7 +93,6 @@ export default function Workspace() {
   const outlet = useOutlet();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
   const isBigScreen = useBigScreen();
-  const shouldShowTrunk = useRootNeedsToShowTrunk();
   const [showSidebar, setShowSidebar] = useState(isBigScreen);
   const scoreAction = useScoreActionSingleton();
   const globalProperties = useContext(GlobalPropertiesContext);
@@ -120,6 +119,24 @@ export default function Workspace() {
       }
     );
   }, [scoreAction]);
+
+    // Checkout https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
+    // for reasoning.
+  function updateOurOwnVh() {
+// First we get the viewport height and we multiple it by 1% to get a value for a vh unit
+let vh = window.innerHeight * 0.01;
+// Then we set the value in the --vh custom property to the root of the document
+document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+
+  useEffect(() => {
+    updateOurOwnVh();
+        // We listen to the resize event
+    window.addEventListener('resize', updateOurOwnVh);
+    return () => {
+      window.removeEventListener('resive', updateOurOwnVh);
+    }
+  }, []);
 
   const topLevelInfo = {
     userFeatureFlagControls: loaderData.userFeatureFlagControls,

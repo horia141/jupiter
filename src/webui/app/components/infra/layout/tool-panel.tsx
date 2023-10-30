@@ -89,7 +89,7 @@ interface ToolCardContentProps {
 const ToolCardContent = styled(Form)<ToolCardContentProps>(
   ({ isbigscreen }) => ({
     padding: "0.5rem",
-    height: `calc(100vh - 4rem - ${
+    height: `calc(var(--vh, 1vh) * 100 - 4rem - ${
       isbigscreen === "true" ? "4rem" : "3.5rem"
     })`,
     overflowY: "scroll",
