@@ -15,9 +15,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import {
-  LeafPanel,
-} from "~/components/infra/layout/leaf-panel";
+import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { NoteEditor } from "~/components/note-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { LeafCardExpansionState } from "~/rendering/leaf-panel-expansion";

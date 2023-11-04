@@ -1,12 +1,18 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import SwitchLeftIcon from "@mui/icons-material/SwitchLeft";
-import { ButtonGroup, IconButton, styled, useTheme } from "@mui/material";
+import { ButtonGroup, IconButton, styled } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import { PropsWithChildren, useEffect, useRef, useState } from "react";
-import { LeafCardExpansionState, loadLeafPanelExpansion, saveLeafPanelExpansion } from "~/rendering/leaf-panel-expansion";
+import {
+  LeafCardExpansionState,
+  loadLeafPanelExpansion,
+  saveLeafPanelExpansion,
+} from "~/rendering/leaf-panel-expansion";
 import {
   restoreScrollPosition,
   saveScrollPosition,
@@ -24,7 +30,6 @@ const BIG_SCREEN_WIDTH_MEDIUM = "calc(min(720px, 60vw))";
 const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
 const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
-
 
 interface LeafCardProps {
   showArchiveButton?: boolean;
@@ -101,7 +106,10 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
 
   function handleExpansion() {
     setExpansionState((e) => cycleExpansionState(e));
-    saveLeafPanelExpansion(props.returnLocation, cycleExpansionState(expansionState));
+    saveLeafPanelExpansion(
+      props.returnLocation,
+      cycleExpansionState(expansionState)
+    );
   }
 
   useEffect(() => {
@@ -111,6 +119,26 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
     }
     setExpansionState(savedExpansionState);
   }, []);
+
+  function handleScrollTop() {
+    containerRef.current?.scrollTo({
+      left: 0,
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  function handleScrollBottom() {
+    if (!containerRef.current) {
+      return;
+    }
+
+    containerRef.current.scrollTo({
+      left: 0,
+      top: containerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }
 
   const formVariants = {
     initial: {
@@ -168,12 +196,16 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
       <LeafCardControls id="leaf-panel-controls">
         <ButtonGroup size="small">
           {isBigScreen && (
-            <IconButton
-              onClick={handleExpansion}
-            >
+            <IconButton onClick={handleExpansion}>
               <SwitchLeftIcon />
             </IconButton>
           )}
+          <IconButton onClick={handleScrollTop}>
+            <ArrowUpwardIcon />
+          </IconButton>
+          <IconButton onClick={handleScrollBottom}>
+            <ArrowDownwardIcon />
+          </IconButton>
           <IconButton>
             <Link to={props.returnLocation} style={{ display: "flex" }}>
               <KeyboardDoubleArrowRightIcon />
