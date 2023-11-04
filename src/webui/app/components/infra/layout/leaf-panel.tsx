@@ -40,7 +40,7 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
   const containerRef = useRef<HTMLFormElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState(
-    loadLeafPanelExpansion(props.returnLocation) ?? props.initialExpansionState ?? LeafCardExpansionState.SMALL
+    props.initialExpansionState ?? LeafCardExpansionState.SMALL
   );
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
@@ -103,6 +103,14 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
     setExpansionState((e) => cycleExpansionState(e));
     saveLeafPanelExpansion(props.returnLocation, cycleExpansionState(expansionState));
   }
+
+  useEffect(() => {
+    const savedExpansionState = loadLeafPanelExpansion(props.returnLocation);
+    if (!savedExpansionState) {
+      return;
+    }
+    setExpansionState(savedExpansionState);
+  }, []);
 
   const formVariants = {
     initial: {
