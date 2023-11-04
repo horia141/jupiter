@@ -6,6 +6,7 @@ import { ButtonGroup, IconButton, styled, useTheme } from "@mui/material";
 import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import { PropsWithChildren, useEffect, useRef, useState } from "react";
+import { LeafCardExpansionState, loadLeafPanelExpansion, saveLeafPanelExpansion } from "~/rendering/leaf-panel-expansion";
 import {
   restoreScrollPosition,
   saveScrollPosition,
@@ -24,12 +25,6 @@ const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
 const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
 
-export enum LeafCardExpansionState {
-  SMALL = "small",
-  MEDIUM = "medium",
-  LARGE = "large",
-  FULL = "full",
-}
 
 interface LeafCardProps {
   showArchiveButton?: boolean;
@@ -39,14 +34,13 @@ interface LeafCardProps {
 }
 
 export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
-  const theme = useTheme();
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   const location = useLocation();
   const containerRef = useRef<HTMLFormElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState(
-    props.initialExpansionState ?? LeafCardExpansionState.SMALL
+    loadLeafPanelExpansion(props.returnLocation) ?? props.initialExpansionState ?? LeafCardExpansionState.SMALL
   );
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
@@ -105,6 +99,11 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
     };
   }, []);
 
+  function handleExpansion() {
+    setExpansionState((e) => cycleExpansionState(e));
+    saveLeafPanelExpansion(props.returnLocation, cycleExpansionState(expansionState));
+  }
+
   const formVariants = {
     initial: {
       opacity: 0,
@@ -162,7 +161,7 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
         <ButtonGroup size="small">
           {isBigScreen && (
             <IconButton
-              onClick={() => setExpansionState((e) => cycleExpansionState(e))}
+              onClick={handleExpansion}
             >
               <SwitchLeftIcon />
             </IconButton>
