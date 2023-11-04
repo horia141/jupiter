@@ -49,7 +49,6 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SlackTasks() {
-  const outlet = useOutlet();
   const entries = useLoaderDataSafeForAnimation<typeof loader>();
 
   const topLevelInfo = useContext(TopLevelInfoContext);

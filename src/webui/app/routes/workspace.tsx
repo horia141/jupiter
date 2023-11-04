@@ -228,7 +228,7 @@ export default function Workspace() {
                     <Divider orientation="vertical" flexItem />
                     Week:{" "}
                     {scoreAction
-                      ? scoreAction.daily_total_score
+                      ? scoreAction.weekly_total_score
                       : loaderData.userScoreOverview?.weekly_score.total_score}
                   </ListItemText>
                   <Divider />
