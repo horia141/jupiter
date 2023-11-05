@@ -1,4 +1,4 @@
-import { Button, ButtonGroup } from "@mui/material";
+import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -15,7 +15,6 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { EisenTag } from "~/components/eisen-tag";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -78,32 +77,27 @@ export default function Persons() {
   }
 
   return (
-    <TrunkPanel>
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <ButtonGroup>
+    <TrunkPanel
+      createLocation="/workspace/persons/new"
+      extraFilters={
+        <>
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
             <Button
-              variant="contained"
-              to={`/workspace/persons/new`}
+              variant="outlined"
+              to={`/workspace/persons/settings`}
               component={Link}
             >
-              Create
+              Settings
             </Button>
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
-              <Button
-                variant="outlined"
-                to={`/workspace/persons/settings`}
-                component={Link}
-              >
-                Settings
-              </Button>
-            )}
-          </ButtonGroup>
-        </ActionHeader>
-
+          )}
+        </>
+      }
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard

@@ -28,7 +28,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { UserFeatureFlagsEditor } from "~/components/feature-flags-editor";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
@@ -51,7 +51,7 @@ const AccountFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.TRUNK,
+  displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -135,8 +135,8 @@ export default function Account() {
   const allTimezonesAsOptions = (Intl as any).supportedValuesOf("timeZone");
 
   return (
-    <TrunkPanel>
-      <ToolPanel2 returnLocation="/workspace">
+    <TrunkPanel returnLocation="/workspace">
+      <ToolPanel>
         <Stack useFlexGap gap={2}>
           <Card>
             <GlobalError actionResult={actionData} />
@@ -234,7 +234,7 @@ export default function Account() {
             </CardActions>
           </Card>
         </Stack>
-      </ToolPanel2>
+      </ToolPanel>
     </TrunkPanel>
   );
 }

@@ -1,18 +1,11 @@
-import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { SmartList } from "jupiter-gen";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -71,23 +64,14 @@ export default function SmartLists() {
   }
 
   return (
-    <TrunkPanel>
+    <TrunkPanel
+      createLocation="/workspace/smart-lists/new"
+      returnLocation="/workspace"
+    >
       <NestingAwareBlock
         branchForceHide={shouldShowABranch}
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
-        <ActionHeader returnLocation="/workspace">
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              to={`/workspace/smart-lists/new`}
-              component={Link}
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </ActionHeader>
-
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard

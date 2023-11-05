@@ -22,7 +22,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { SyncTargetSelect } from "~/components/sync-target-select";
 import {
   noErrorNoData,
@@ -39,7 +39,7 @@ const GCFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.TOOL,
 };
 
 export async function action({ request }: ActionArgs) {
@@ -75,7 +75,7 @@ export default function GC() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <ToolPanel2 returnLocation="/workspace">
+    <ToolPanel>
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -106,7 +106,7 @@ export default function GC() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </ToolPanel2>
+    </ToolPanel>
   );
 }
 

@@ -1,4 +1,5 @@
-import { Button, ButtonGroup } from "@mui/material";
+import TuneIcon from "@mui/icons-material/Tune";
+import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -13,7 +14,6 @@ import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import EntityIconComponent from "~/components/entity-icon";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -21,6 +21,7 @@ import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { isWorkspaceFeatureAvailable } from "~/logic/domain/workspace";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -52,7 +53,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Metrics() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-
+  const isBigScreen = useBigScreen();
   const topLevelInfo = useContext(TopLevelInfoContext);
 
   const shouldShowABranch = useTrunkNeedsToShowBranch();
@@ -74,35 +75,43 @@ export default function Metrics() {
   }
 
   return (
-    <TrunkPanel>
+    <TrunkPanel
+      createLocation="/workspace/metrics/new"
+      extraFilters={
+        <>
+          {isWorkspaceFeatureAvailable(
+            topLevelInfo.workspace,
+            WorkspaceFeature.PROJECTS
+          ) && (
+            <>
+              {isBigScreen ? (
+                <Button
+                  variant="outlined"
+                  to={`/workspace/metrics/settings`}
+                  component={Link}
+                  startIcon={<TuneIcon />}
+                >
+                  Settings
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  to={`/workspace/metrics/settings`}
+                  component={Link}
+                >
+                  <TuneIcon />
+                </Button>
+              )}
+            </>
+          )}
+        </>
+      }
+      returnLocation="/workspace"
+    >
       <NestingAwareBlock
         branchForceHide={shouldShowABranch}
         shouldHide={shouldShowABranch || shouldShowALeafToo}
       >
-        <ActionHeader returnLocation="/workspace">
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              to={`/workspace/metrics/new`}
-              component={Link}
-            >
-              Create
-            </Button>
-            {isWorkspaceFeatureAvailable(
-              topLevelInfo.workspace,
-              WorkspaceFeature.PROJECTS
-            ) && (
-              <Button
-                variant="outlined"
-                to={`/workspace/metrics/settings`}
-                component={Link}
-              >
-                Settings
-              </Button>
-            )}
-          </ButtonGroup>
-        </ActionHeader>
-
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard

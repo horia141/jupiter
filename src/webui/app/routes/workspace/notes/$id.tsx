@@ -18,7 +18,7 @@ import { FieldError, GlobalError } from "~/components/infra/errors";
 import { LeafPanel } from "~/components/infra/layout/leaf-panel";
 import { NoteEditor } from "~/components/note-editor";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
-import { LeafCardExpansionState } from "~/rendering/leaf-panel-expansion";
+import { LeafPanelExpansionState } from "~/rendering/leaf-panel-expansion";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import { DisplayType } from "~/rendering/use-nested-entities";
@@ -105,7 +105,7 @@ export default function Note() {
       showArchiveButton
       enableArchiveButton={inputsEnabled}
       returnLocation="/workspace/notes"
-      initialExpansionState={LeafCardExpansionState.FULL}
+      initialExpansionState={LeafPanelExpansionState.FULL}
     >
       <Card>
         <GlobalError actionResult={actionData} />

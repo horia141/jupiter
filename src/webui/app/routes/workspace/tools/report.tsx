@@ -56,7 +56,7 @@ import { EntityNameOneLineComponent } from "~/components/entity-name";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { EntityLink } from "~/components/infra/entity-card";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import {
   ActionResult,
   isNoErrorSomeData,
@@ -103,7 +103,7 @@ const ReportFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -182,7 +182,7 @@ export default function Report() {
   }
 
   return (
-    <ToolPanel2 method="get" returnLocation="/workspace">
+    <ToolPanel method="get">
       <Card>
         <GlobalError actionResult={loaderData} />
         <CardContent>
@@ -269,7 +269,7 @@ export default function Report() {
             report={loaderData.data.report}
           />
         )}
-    </ToolPanel2>
+    </ToolPanel>
   );
 }
 

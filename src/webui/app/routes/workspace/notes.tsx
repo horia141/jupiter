@@ -1,18 +1,11 @@
-import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { Note } from "jupiter-gen";
 import { useContext } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -69,20 +62,11 @@ export default function Notes() {
   }
 
   return (
-    <TrunkPanel>
+    <TrunkPanel
+      createLocation="/workspace/notes/new"
+      returnLocation="/workspace"
+    >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              to={`/workspace/notes/new`}
-              component={Link}
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-        </ActionHeader>
-
         <EntityStack>
           {loaderData.entries.map((entry) => (
             <EntityCard

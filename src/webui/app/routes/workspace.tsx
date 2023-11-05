@@ -133,7 +133,7 @@ export default function Workspace() {
     // We listen to the resize event
     window.addEventListener("resize", updateOurOwnVh);
     return () => {
-      window.removeEventListener("resive", updateOurOwnVh);
+      window.removeEventListener("resize", updateOurOwnVh);
     };
   }, []);
 

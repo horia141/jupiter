@@ -5,6 +5,7 @@ export enum DisplayType {
   TRUNK,
   BRANCH,
   LEAF,
+  TOOL,
 }
 
 export function useRootNeedsToShowTrunk() {

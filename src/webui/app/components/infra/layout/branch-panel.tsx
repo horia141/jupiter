@@ -1,5 +1,9 @@
-import { styled } from "@mui/material";
-import { useLocation } from "@remix-run/react";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import CloseIcon from "@mui/icons-material/Close";
+import { Button, ButtonGroup, IconButton, styled } from "@mui/material";
+import { Link, useLocation } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import { useEffect, useRef, type PropsWithChildren } from "react";
 import { useHydrated } from "remix-utils";
@@ -9,18 +13,24 @@ import {
   saveScrollPosition,
 } from "~/rendering/scroll-restoration";
 import { useBigScreen } from "~/rendering/use-big-screen";
+import { useTrunkNeedsToShowLeaf } from "~/rendering/use-nested-entities";
 
 const SMALL_SCREEN_ANIMATION_START = "100vw";
 const SMALL_SCREEN_ANIMATION_END = "100vw";
 
-export function BranchPanel(props: PropsWithChildren) {
+interface BranchPanelProps {
+  createLocation?: string;
+  extraFilters?: JSX.Element;
+  returnLocation: string;
+}
+
+export function BranchPanel(props: PropsWithChildren<BranchPanelProps>) {
   const location = useLocation();
   const isBigScreen = useBigScreen();
-
   const containerRef = useRef<HTMLDivElement>(null);
-
   const isPresent = useIsPresent();
   const isHydrated = useHydrated();
+  const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   // This little function is a hack to get around the fact that Framer Motion
   // generates a translateX(Xpx) CSS applied to the StyledMotionDrawer element.
@@ -75,10 +85,30 @@ export function BranchPanel(props: PropsWithChildren) {
         handleScrollSpecial
       );
     };
-  }, [containerRef, location]);
+  }, [containerRef, location, isBigScreen]);
+
+  function handleScrollTop() {
+    containerRef.current?.scrollTo({
+      left: 0,
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  function handleScrollBottom() {
+    if (!containerRef.current) {
+      return;
+    }
+
+    containerRef.current.scrollTo({
+      left: 0,
+      top: containerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }
 
   return (
-    <BranchCardFrame
+    <BranchPanelFrame
       id="branch-panel"
       key={extractBranchFromPath(location.pathname)}
       transformTemplate={template}
@@ -94,20 +124,88 @@ export function BranchPanel(props: PropsWithChildren) {
       }}
       transition={{ duration: 0.5 }}
     >
-      {props.children}
-    </BranchCardFrame>
+      {(isBigScreen || !shouldShowALeaf) && (
+        <BranchPanelControls id="branch-panel-controls">
+          <ButtonGroup size="small">
+            <IconButton onClick={handleScrollTop}>
+              <ArrowUpwardIcon />
+            </IconButton>
+            <IconButton onClick={handleScrollBottom}>
+              <ArrowDownwardIcon />
+            </IconButton>
+          </ButtonGroup>
+
+          {props.createLocation && (
+            <Button
+              variant="contained"
+              to={props.createLocation}
+              component={Link}
+            >
+              <AddIcon />
+            </Button>
+          )}
+
+          {props.extraFilters}
+
+          <IconButton sx={{ marginLeft: "auto" }}>
+            <Link to={props.returnLocation}>
+              <CloseIcon />
+            </Link>
+          </IconButton>
+        </BranchPanelControls>
+      )}
+
+      <BranchPanelContent
+        id="branch-panel-content"
+        ref={containerRef}
+        isbigscreen={isBigScreen ? "true" : "false"}
+        hasleaf={shouldShowALeaf ? "true" : "false"}
+      >
+        {props.children}
+      </BranchPanelContent>
+    </BranchPanelFrame>
   );
 }
 
-interface BranchCardFrameProps {
+interface BranchPanelFrameProps {
   isBigScreen: boolean;
 }
 
-const BranchCardFrame = styled(motion.div)<BranchCardFrameProps>(
+const BranchPanelFrame = styled(motion.div)<BranchPanelFrameProps>(
   ({ theme, isBigScreen }) => ({
     backgroundColor: theme.palette.background.paper,
-    height: isBigScreen
-      ? "calc(var(--vh, 1vh) * 100 - 4rem)"
-      : "calc(var(--vh, 1vh) * 100 - 3.5rem)",
+  })
+);
+
+const BranchPanelControls = styled("div")(
+  ({ theme }) => `
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      margin-bottom: 1rem;
+      height: 3rem;
+      background-color: ${theme.palette.background.paper};
+      z-index: ${theme.zIndex.drawer + 1};
+      border-radius: 0px;
+      box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+      `
+);
+
+interface BranchPanelContentProps {
+  isbigscreen: string;
+  hasleaf: string;
+}
+
+const BranchPanelContent = styled("div")<BranchPanelContentProps>(
+  ({ isbigscreen, hasleaf }) => ({
+    padding: isbigscreen === "true" ? "0.5rem" : "0px",
+    height: `calc(var(--vh, 1vh) * 100 - ${
+      isbigscreen === "true" ? "4rem" : "3.5rem"
+    } - ${
+      isbigscreen === "true" ? "4rem" : hasleaf === "false" ? "3.5rem" : "0px"
+    })`,
+    overflowY: "scroll",
   })
 );

@@ -4,7 +4,7 @@ import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate
 import { DisplayType } from "~/rendering/use-nested-entities";
 
 export const handle = {
-  displayType: DisplayType.TRUNK,
+  displayType: DisplayType.TOOL,
 };
 
 export const shouldRevalidate: ShouldRevalidateFunction =
@@ -12,7 +12,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Subscription() {
   return (
-    <TrunkPanel>
+    <TrunkPanel returnLocation="/workspace">
       <div dangerouslySetInnerHTML={stripeEmbed()} />
     </TrunkPanel>
   );

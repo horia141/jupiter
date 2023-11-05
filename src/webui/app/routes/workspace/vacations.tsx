@@ -1,7 +1,6 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
-  Link,
   Outlet,
   ShouldRevalidateFunction,
   useFetcher,
@@ -13,7 +12,7 @@ import type { Vacation } from "jupiter-gen";
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { Button, IconButton, styled } from "@mui/material";
+import { IconButton, styled } from "@mui/material";
 import type { CalendarTooltipProps, TimeRangeDayData } from "@nivo/calendar";
 import { ResponsiveTimeRange } from "@nivo/calendar";
 import { AnimatePresence } from "framer-motion";
@@ -22,7 +21,6 @@ import { useEffect, useMemo, useState } from "react";
 import { getLoggedInApiClient } from "~/api-clients";
 import { ADateTag } from "~/components/adate-tag";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -80,18 +78,11 @@ export default function Vacations({ request }: LoaderArgs) {
   }
 
   return (
-    <TrunkPanel>
+    <TrunkPanel
+      createLocation="/workspace/vacations/new"
+      returnLocation="/workspace"
+    >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <Button
-            variant="contained"
-            to="/workspace/vacations/new"
-            component={Link}
-          >
-            Create
-          </Button>
-        </ActionHeader>
-
         <VacationCalendar sortedVacations={sortedVacations} />
 
         <EntityStack>

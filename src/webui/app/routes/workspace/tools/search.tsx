@@ -29,7 +29,7 @@ import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack2 } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { EntityTagSelect } from "~/components/named-entity-tag-select";
 import { TimeDiffTag } from "~/components/time-diff-tag";
 import {
@@ -46,7 +46,7 @@ import { getSession } from "~/sessions";
 import { TopLevelInfoContext } from "~/top-level-context";
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.TOOL,
 };
 
 const QuerySchema = {
@@ -250,7 +250,7 @@ export default function Search() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <ToolPanel2 method="get" returnLocation="?workspace">
+    <ToolPanel method="get">
       <Card>
         <GlobalError actionResult={loaderData} />
         <CardContent>
@@ -513,7 +513,7 @@ export default function Search() {
           })}
         </EntityStack2>
       )}
-    </ToolPanel2>
+    </ToolPanel>
   );
 }
 

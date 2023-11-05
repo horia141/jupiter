@@ -15,7 +15,6 @@ import { ADateTag } from "~/components/adate-tag";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { EisenTag } from "~/components/eisen-tag";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -77,9 +76,9 @@ export default function EmailTasks() {
   }
 
   return (
-    <TrunkPanel>
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
+    <TrunkPanel
+      extraFilters={
+        <>
           {isWorkspaceFeatureAvailable(
             topLevelInfo.workspace,
             WorkspaceFeature.PROJECTS
@@ -92,8 +91,11 @@ export default function EmailTasks() {
               Setings
             </Button>
           )}
-        </ActionHeader>
-
+        </>
+      }
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {sortedEntries.map((entry) => (
             <EntityCard

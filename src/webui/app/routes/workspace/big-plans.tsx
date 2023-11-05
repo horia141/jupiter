@@ -38,7 +38,6 @@ import {
   EntityNameComponent,
   EntityNameOneLineComponent,
 } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -132,19 +131,10 @@ export default function BigPlans() {
   const [showFilterDialog, setShowFilterDialog] = useState(false);
 
   return (
-    <TrunkPanel>
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              to="/workspace/big-plans/new"
-              component={Link}
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-
+    <TrunkPanel
+      createLocation="/workspace/big-plans/new"
+      extraFilters={
+        <>
           {isBigScreen && (
             <ButtonGroup>
               {isWorkspaceFeatureAvailable(
@@ -239,8 +229,11 @@ export default function BigPlans() {
               </Dialog>
             </>
           )}
-        </ActionHeader>
-
+        </>
+      }
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {isWorkspaceFeatureAvailable(
           topLevelInfo.workspace,
           WorkspaceFeature.PROJECTS

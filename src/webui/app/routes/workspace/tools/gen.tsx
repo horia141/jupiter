@@ -33,7 +33,7 @@ import { CheckboxAsString, parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { PeriodSelect } from "~/components/period-select";
 import { SyncTargetSelect } from "~/components/sync-target-select";
 import {
@@ -90,7 +90,7 @@ const GenFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -198,7 +198,7 @@ export default function Gen() {
     })) ?? [];
 
   return (
-    <ToolPanel2 returnLocation="/workspace">
+    <ToolPanel>
       <Card>
         <GlobalError actionResult={actionData} />
         <CardContent>
@@ -442,7 +442,7 @@ export default function Gen() {
           </Button>
         </CardActions>
       </Card>
-    </ToolPanel2>
+    </ToolPanel>
   );
 }
 

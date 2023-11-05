@@ -13,7 +13,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Tools() {
   return (
-    <TrunkPanel>
+    <TrunkPanel returnLocation="/workspace">
       <AnimatePresence mode="wait" initial={false}>
         <Outlet />
       </AnimatePresence>

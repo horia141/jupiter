@@ -1,11 +1,9 @@
-import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, Outlet, ShouldRevalidateFunction } from "@remix-run/react";
+import { Outlet, ShouldRevalidateFunction } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -39,18 +37,11 @@ export default function Projects() {
   const shouldShowALeaf = useTrunkNeedsToShowLeaf();
 
   return (
-    <TrunkPanel>
+    <TrunkPanel
+      createLocation="/workspace/projects/new"
+      returnLocation="/workspace"
+    >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <Button
-            variant="contained"
-            to="/workspace/projects/new"
-            component={Link}
-          >
-            Create
-          </Button>
-        </ActionHeader>
-
         <EntityStack>
           {projects.map((project) => (
             <EntityCard key={project.ref_id.the_id}>

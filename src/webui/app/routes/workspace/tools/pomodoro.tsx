@@ -12,7 +12,7 @@ import { ShouldRevalidateFunction } from "@remix-run/react";
 import { Duration } from "luxon";
 import { useContext, useEffect, useState } from "react";
 import { ClientOnly } from "remix-utils";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { GlobalPropertiesContext } from "~/global-properties-client";
 import { isDevelopment } from "~/logic/domain/env";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
@@ -23,7 +23,7 @@ const DEFAULT_DEV_DURATION = Duration.fromMillis(1000 * 4);
 const DEFAULT_STEP_MS = 1000;
 
 export const handle = {
-  displayType: DisplayType.LEAF,
+  displayType: DisplayType.TOOL,
 };
 
 export const shouldRevalidate: ShouldRevalidateFunction =
@@ -94,7 +94,7 @@ export default function Pomodoro() {
   }, [timerValue, intervalHandle]);
 
   return (
-    <ToolPanel2 returnLocation="/workspace">
+    <ToolPanel>
       <Card>
         <CardHeader title="Pomodoro Timer" />
         <PomodoroCard finished={timerFinished.toString()}>
@@ -128,7 +128,7 @@ export default function Pomodoro() {
           </ButtonGroup>
         </CardActions>
       </Card>
-    </ToolPanel2>
+    </ToolPanel>
   );
 }
 

@@ -14,11 +14,11 @@ import { ApiError } from "jupiter-gen";
 import { z } from "zod";
 import { parseParams } from "zodix";
 
-import { Button, ButtonGroup, styled } from "@mui/material";
+import TuneIcon from "@mui/icons-material/Tune";
+import { Button, styled } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import { getLoggedInApiClient } from "~/api-clients";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -29,6 +29,7 @@ import { TimeDiffTag } from "~/components/time-diff-tag";
 import { aDateToDate, compareADate } from "~/logic/domain/adate";
 import { metricEntryName } from "~/logic/domain/metric-entry";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -75,7 +76,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
 
 export default function Metric() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
-
+  const isBigScreen = useBigScreen();
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
 
   const sortedEntries = [...loaderData.metricEntries].sort((e1, e2) => {
@@ -99,28 +100,34 @@ export default function Metric() {
   }
 
   return (
-    <BranchPanel key={loaderData.metric.ref_id.the_id}>
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace/metrics">
-          <ButtonGroup>
+    <BranchPanel
+      key={loaderData.metric.ref_id.the_id}
+      createLocation={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
+      extraFilters={
+        <>
+          {isBigScreen ? (
             <Button
-              variant="contained"
-              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/entries/new`}
+              variant="outlined"
+              to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
               component={Link}
+              startIcon={<TuneIcon />}
             >
-              Create
+              Details
             </Button>
-
+          ) : (
             <Button
               variant="outlined"
               to={`/workspace/metrics/${loaderData.metric.ref_id.the_id}/details`}
               component={Link}
             >
-              Details
+              <TuneIcon />
             </Button>
-          </ButtonGroup>
-        </ActionHeader>
-
+          )}
+        </>
+      }
+      returnLocation="/workspace/metrics"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <MetricGraph sortedMetricEntries={sortedEntries} />
 
         <EntityStack>

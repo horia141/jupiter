@@ -1,3 +1,6 @@
+import ReorderIcon from "@mui/icons-material/Reorder";
+import TagIcon from "@mui/icons-material/Tag";
+import TuneIcon from "@mui/icons-material/Tune";
 import { Button, ButtonGroup } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -17,7 +20,6 @@ import { parseParams } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import Check from "~/components/check";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { makeCatchBoundary } from "~/components/infra/catch-boundary";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
@@ -26,6 +28,7 @@ import { BranchPanel } from "~/components/infra/layout/branch-panel";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
 import { SmartListTagTag } from "~/components/smart-list-tag-tag";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
+import { useBigScreen } from "~/rendering/use-big-screen";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
 import {
   DisplayType,
@@ -74,6 +77,7 @@ export const shouldRevalidate: ShouldRevalidateFunction =
   standardShouldRevalidate;
 
 export default function SmartListViewItems() {
+  const isBigScreen = useBigScreen();
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   const shouldShowALeaf = useBranchNeedsToShowLeaf();
@@ -102,39 +106,63 @@ export default function SmartListViewItems() {
   }
 
   return (
-    <BranchPanel key={`${loaderData.smartList.ref_id.the_id}/items`}>
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace/smart-lists">
-          <ButtonGroup>
+    <BranchPanel
+      key={`${loaderData.smartList.ref_id.the_id}/items`}
+      createLocation={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
+      extraFilters={
+        <ButtonGroup>
+          {isBigScreen ? (
             <Button
-              variant="contained"
-              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/new`}
+              variant="outlined"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
               component={Link}
+              startIcon={<TuneIcon />}
             >
-              Create
+              "Details"
             </Button>
-
+          ) : (
             <Button
               variant="outlined"
               to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/items/details`}
               component={Link}
             >
-              Details
+              <TuneIcon />
             </Button>
-          </ButtonGroup>
+          )}
 
-          <ButtonGroup>
-            <Button variant="contained">Items</Button>
+          {isBigScreen ? (
+            <Button variant="contained" startIcon={<ReorderIcon />}>
+              "Items"
+            </Button>
+          ) : (
+            <Button variant="contained">
+              <ReorderIcon />
+            </Button>
+          )}
+
+          {isBigScreen ? (
+            <Button
+              variant="outlined"
+              to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
+              startIcon={<TagIcon />}
+              component={Link}
+            >
+              "Tags"
+            </Button>
+          ) : (
             <Button
               variant="outlined"
               to={`/workspace/smart-lists/${loaderData.smartList.ref_id.the_id}/tags`}
               component={Link}
             >
-              Tags
+              <TagIcon />
             </Button>
-          </ButtonGroup>
-        </ActionHeader>
-
+          )}
+        </ButtonGroup>
+      }
+      returnLocation="/workspace/smart-lists"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         <EntityStack>
           {loaderData.smartListItems.map((item) => (
             <EntityCard

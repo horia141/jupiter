@@ -24,7 +24,7 @@ import { parseForm } from "zodix";
 import { getLoggedInApiClient } from "~/api-clients";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { validationErrorToUIErrorInfo } from "~/logic/action-result";
 import { getIntent } from "~/logic/intent";
@@ -40,7 +40,7 @@ const SecurityFormSchema = {
 };
 
 export const handle = {
-  displayType: DisplayType.TRUNK,
+  displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -98,8 +98,8 @@ export default function Security() {
   const inputsEnabled = transition.state === "idle";
 
   return (
-    <TrunkPanel>
-      <ToolPanel2 returnLocation="/workspace">
+    <TrunkPanel returnLocation="/workspace">
+      <ToolPanel>
         <Stack useFlexGap gap={2}>
           <Card>
             <GlobalError actionResult={actionData} />
@@ -173,7 +173,7 @@ export default function Security() {
             </CardActions>
           </Card>
         </Stack>
-      </ToolPanel2>
+      </ToolPanel>
     </TrunkPanel>
   );
 }

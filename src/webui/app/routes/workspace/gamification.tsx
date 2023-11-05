@@ -5,7 +5,7 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { ScoreHistory } from "~/components/gamification/score-history";
 import { ScoreOverview } from "~/components/gamification/score-overview";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
-import { ToolPanel2 } from "~/components/infra/layout/tool-panel";
+import { ToolPanel } from "~/components/infra/layout/tool-panel";
 import { TrunkPanel } from "~/components/infra/layout/trunk-panel";
 import { standardShouldRevalidate } from "~/rendering/standard-should-revalidate";
 import { useLoaderDataSafeForAnimation } from "~/rendering/use-loader-data-for-animation";
@@ -13,7 +13,7 @@ import { DisplayType } from "~/rendering/use-nested-entities";
 import { getSession } from "~/sessions";
 
 export const handle = {
-  displayType: DisplayType.TRUNK,
+  displayType: DisplayType.TOOL,
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -33,8 +33,8 @@ export default function Gamification() {
   const loaderData = useLoaderDataSafeForAnimation<typeof loader>();
 
   return (
-    <TrunkPanel>
-      <ToolPanel2 returnLocation="/workspace">
+    <TrunkPanel returnLocation="/workspace">
+      <ToolPanel>
         <Stack useFlexGap gap={2}>
           {loaderData.userScoreOverview && (
             <>
@@ -53,7 +53,7 @@ export default function Gamification() {
             </>
           )}
         </Stack>
-      </ToolPanel2>
+      </ToolPanel>
     </TrunkPanel>
   );
 }

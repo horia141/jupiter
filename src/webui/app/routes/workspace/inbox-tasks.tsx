@@ -46,7 +46,6 @@ import { getLoggedInApiClient } from "~/api-clients";
 import type { InboxTaskShowOptions } from "~/components/inbox-task-card";
 import { InboxTaskCard } from "~/components/inbox-task-card";
 import { InboxTaskStack } from "~/components/inbox-task-stack";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
 import { FieldError, GlobalError } from "~/components/infra/errors";
 import { NestingAwareBlock } from "~/components/infra/layout/nesting-aware-block";
@@ -310,19 +309,10 @@ export default function InboxTasks() {
   );
 
   return (
-    <TrunkPanel>
-      <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              to="/workspace/inbox-tasks/new"
-              component={Link}
-            >
-              Create
-            </Button>
-          </ButtonGroup>
-
+    <TrunkPanel
+      createLocation="/workspace/inbox-tasks/new"
+      extraFilters={
+        <>
           {isBigScreen && (
             <ButtonGroup>
               <Button
@@ -376,8 +366,11 @@ export default function InboxTasks() {
               Filters
             </Button>
           </ButtonGroup>
-        </ActionHeader>
-
+        </>
+      }
+      returnLocation="/workspace"
+    >
+      <NestingAwareBlock shouldHide={shouldShowALeaf}>
         {shouldDoAGc && (
           <GCSection>
             There are quite a lot of finished inbox tasks. Consider doing a{" "}

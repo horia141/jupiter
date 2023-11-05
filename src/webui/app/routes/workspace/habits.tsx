@@ -1,12 +1,6 @@
-import { Button } from "@mui/material";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  Outlet,
-  ShouldRevalidateFunction,
-  useFetcher,
-} from "@remix-run/react";
+import { Outlet, ShouldRevalidateFunction, useFetcher } from "@remix-run/react";
 import { AnimatePresence } from "framer-motion";
 import type { Habit, HabitFindResultEntry, Project } from "jupiter-gen";
 import { Eisen, RecurringTaskPeriod, WorkspaceFeature } from "jupiter-gen";
@@ -15,7 +9,6 @@ import { getLoggedInApiClient } from "~/api-clients";
 import { DifficultyTag } from "~/components/difficulty-tag";
 import { EisenTag } from "~/components/eisen-tag";
 import { EntityNameComponent } from "~/components/entity-name";
-import { ActionHeader } from "~/components/infra/actions-header";
 import { EntityCard, EntityLink } from "~/components/infra/entity-card";
 import { EntityStack } from "~/components/infra/entity-stack";
 import { makeErrorBoundary } from "~/components/infra/error-boundary";
@@ -83,18 +76,11 @@ export default function Habits() {
   }
 
   return (
-    <TrunkPanel>
+    <TrunkPanel
+      createLocation="/workspace/habits/new"
+      returnLocation="/workspace"
+    >
       <NestingAwareBlock shouldHide={shouldShowALeaf}>
-        <ActionHeader returnLocation="/workspace">
-          <Button
-            variant="contained"
-            to="/workspace/habits/new"
-            component={Link}
-          >
-            Create
-          </Button>
-        </ActionHeader>
-
         <EntityStack>
           {sortedHabits.map((habit) => {
             const entry = entriesByRefId.get(

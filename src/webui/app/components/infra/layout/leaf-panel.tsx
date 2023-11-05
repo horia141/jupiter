@@ -9,7 +9,7 @@ import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
 import { motion, useIsPresent } from "framer-motion";
 import { PropsWithChildren, useEffect, useRef, useState } from "react";
 import {
-  LeafCardExpansionState,
+  LeafPanelExpansionState,
   loadLeafPanelExpansion,
   saveLeafPanelExpansion,
 } from "~/rendering/leaf-panel-expansion";
@@ -31,21 +31,21 @@ const BIG_SCREEN_WIDTH_LARGE = "calc(min(1020px, 80vw))";
 const BIG_SCREEN_WIDTH_FULL_INT = 1200;
 const SMALL_SCREEN_WIDTH = "100%";
 
-interface LeafCardProps {
+interface LeafPanelProps {
   showArchiveButton?: boolean;
   enableArchiveButton?: boolean;
   returnLocation: string;
-  initialExpansionState?: LeafCardExpansionState;
+  initialExpansionState?: LeafPanelExpansionState;
 }
 
-export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
+export function LeafPanel(props: PropsWithChildren<LeafPanelProps>) {
   const isBigScreen = useBigScreen();
   const navigation = useNavigate();
   const location = useLocation();
   const containerRef = useRef<HTMLFormElement>(null);
   const isPresent = useIsPresent();
   const [expansionState, setExpansionState] = useState(
-    props.initialExpansionState ?? LeafCardExpansionState.SMALL
+    props.initialExpansionState ?? LeafPanelExpansionState.SMALL
   );
   const [expansionFullRight, setExpansionFullRight] = useState(0);
   const [expansionFullWidth, setExpansionFullWidth] = useState(
@@ -151,25 +151,25 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
       opacity: 0,
       x: isBigScreen ? BIG_SCREEN_ANIMATION_END : SMALL_SCREEN_ANIMATION_END,
     },
-    [LeafCardExpansionState.SMALL]: {
+    [LeafPanelExpansionState.SMALL]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_SMALL,
     },
-    [LeafCardExpansionState.MEDIUM]: {
+    [LeafPanelExpansionState.MEDIUM]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_MEDIUM,
     },
-    [LeafCardExpansionState.LARGE]: {
+    [LeafPanelExpansionState.LARGE]: {
       right: "0px",
       opacity: 1,
       x: 0,
       width: BIG_SCREEN_WIDTH_LARGE,
     },
-    [LeafCardExpansionState.FULL]: {
+    [LeafPanelExpansionState.FULL]: {
       right: `${expansionFullRight}px`,
       opacity: 1,
       x: 0,
@@ -183,7 +183,7 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
   };
 
   return (
-    <LeafCardFrame
+    <LeafPanelFrame
       id="leaf-panel"
       key={location.pathname}
       initial="initial"
@@ -193,7 +193,7 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
       transition={{ duration: 0.5 }}
       isBigScreen={isBigScreen}
     >
-      <LeafCardControls id="leaf-panel-controls">
+      <LeafPanelControls id="leaf-panel-controls">
         <ButtonGroup size="small">
           {isBigScreen && (
             <IconButton onClick={handleExpansion}>
@@ -227,25 +227,25 @@ export function LeafPanel(props: PropsWithChildren<LeafCardProps>) {
             <DeleteIcon />
           </IconButton>
         )}
-      </LeafCardControls>
+      </LeafPanelControls>
 
-      <LeafCardContent
+      <LeafPanelContent
         id="leaf-panel-content"
         method="post"
         ref={containerRef}
         isbigscreen={isBigScreen ? "true" : "false"}
       >
         {props.children}
-      </LeafCardContent>
-    </LeafCardFrame>
+      </LeafPanelContent>
+    </LeafPanelFrame>
   );
 }
 
-interface LeafCardFrameProps {
+interface LeafPanelFrameProps {
   isBigScreen: boolean;
 }
 
-const LeafCardFrame = styled(motion.div)<LeafCardFrameProps>(
+const LeafPanelFrame = styled(motion.div)<LeafPanelFrameProps>(
   ({ theme, isBigScreen }) => `
       position: ${isBigScreen ? "fixed" : "static"};
       left: ${isBigScreen ? "unset" : "0px"};
@@ -257,7 +257,7 @@ const LeafCardFrame = styled(motion.div)<LeafCardFrameProps>(
     `
 );
 
-const LeafCardControls = styled("div")(
+const LeafPanelControls = styled("div")(
   ({ theme }) => `
       display: flex;
       padding-left: 0.5rem;
@@ -271,11 +271,11 @@ const LeafCardControls = styled("div")(
       `
 );
 
-interface LeafCardContentProps {
+interface LeafPanelContentProps {
   isbigscreen: string;
 }
 
-const LeafCardContent = styled(Form)<LeafCardContentProps>(
+const LeafPanelContent = styled(Form)<LeafPanelContentProps>(
   ({ isbigscreen }) => ({
     padding: "0.5rem",
     height: `calc(var(--vh, 1vh) * 100 - 4rem - ${
@@ -286,16 +286,16 @@ const LeafCardContent = styled(Form)<LeafCardContentProps>(
 );
 
 function cycleExpansionState(
-  expansionState: LeafCardExpansionState
-): LeafCardExpansionState {
+  expansionState: LeafPanelExpansionState
+): LeafPanelExpansionState {
   switch (expansionState) {
-    case LeafCardExpansionState.SMALL:
-      return LeafCardExpansionState.MEDIUM;
-    case LeafCardExpansionState.MEDIUM:
-      return LeafCardExpansionState.LARGE;
-    case LeafCardExpansionState.LARGE:
-      return LeafCardExpansionState.FULL;
-    case LeafCardExpansionState.FULL:
-      return LeafCardExpansionState.SMALL;
+    case LeafPanelExpansionState.SMALL:
+      return LeafPanelExpansionState.MEDIUM;
+    case LeafPanelExpansionState.MEDIUM:
+      return LeafPanelExpansionState.LARGE;
+    case LeafPanelExpansionState.LARGE:
+      return LeafPanelExpansionState.FULL;
+    case LeafPanelExpansionState.FULL:
+      return LeafPanelExpansionState.SMALL;
   }
 }

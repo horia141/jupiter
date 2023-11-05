@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export enum LeafCardExpansionState {
+export enum LeafPanelExpansionState {
   SMALL = "small",
   MEDIUM = "medium",
   LARGE = "large",
@@ -9,7 +9,7 @@ export enum LeafCardExpansionState {
 
 export function saveLeafPanelExpansion(
   entityRoot: string,
-  expansionState: LeafCardExpansionState
+  expansionState: LeafPanelExpansionState
 ) {
   window.sessionStorage.setItem(
     `leaf-panel-expansion:${entityRoot}`,
@@ -19,9 +19,9 @@ export function saveLeafPanelExpansion(
 
 export function loadLeafPanelExpansion(
   entityRoot: string
-): LeafCardExpansionState | null {
+): LeafPanelExpansionState | null {
   const expansionStr = window.sessionStorage.getItem(
     `leaf-panel-expansion:${entityRoot}`
   );
-  return z.nativeEnum(LeafCardExpansionState).or(z.null()).parse(expansionStr);
+  return z.nativeEnum(LeafPanelExpansionState).or(z.null()).parse(expansionStr);
 }
